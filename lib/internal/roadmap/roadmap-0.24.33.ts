@@ -1,0 +1,141 @@
+import type { RoadmapVersionDetail } from "./types";
+
+export const ROADMAP_0_24_33: RoadmapVersionDetail = {
+  version: "0.24.33",
+  title: "Public Signup End-to-End UX and System-admin Review Operations",
+  status: "in_progress",
+  userSummary: [
+    "Connects the public Trial signup UI, applicant dashboard, system-admin review queue, payment-readiness preparation, approval, and approved workspace entry into one QA-ready flow.",
+    "Keeps real PG, real email delivery, production customer mutation, and Worker deployment out of scope.",
+  ],
+  visibleChanges: [
+    "A canonical /signup public entry guides new companies into the Google signup intent instead of mixing it with ordinary login.",
+    "System-admin review shows queue summary, payment-readiness state, and dev/test readiness actions before approval.",
+    "Approval UX explains and surfaces the 409 payment-readiness block and sends the required provisioning confirmation when the server gate allows it.",
+  ],
+  expectedUi: [
+    "Public signup, applicant pending/dashboard, system signup list/detail, and approval actions remain usable on desktop, tablet, and mobile widths.",
+    "Production shows blocked/deferred payment readiness rather than fake readiness controls.",
+  ],
+  developmentPurpose: [
+    "Close the gap between existing signup/provisioning foundations and a full real-device QA scenario.",
+    "Make signup-application payment readiness application-scoped before company creation, then copy provider-neutral evidence during approval.",
+  ],
+  developmentUiStructure: [
+    "Reuse A-type public signup/login components for /signup.",
+    "Reuse SystemShell and existing system signup review components for list/detail/readiness actions.",
+  ],
+  scope: [
+    "APP_VERSION 0.24.33 and roadmap/current-state synchronization.",
+    "Application-scoped signup payment-readiness persistence and dev/test system-admin UI/API.",
+    "Public signup route and login CTA separation.",
+    "System-admin signup queue summary, readiness status, and approval UX.",
+    "Signup review notification outbox links for review started, correction requested, rejection, readiness required, and approval/Trial events.",
+    "Contracts, guarded DB integration hooks, Playwright/static E2E scenario coverage, verification profile, commit/push, and 4. Newest handoff.",
+  ],
+  outOfScope: [
+    "Actual PG provider selection, merchant secret, real card entry, real billing key issuance, production charge/refund/webhook, or actual email delivery.",
+    "Production company creation tests or production signup data mutation.",
+    "Worker source change or Worker deployment.",
+    "0.24.34 or later implementation.",
+  ],
+  implementationPrinciples: [
+    "Confirmed owner policy is not re-asked.",
+    "Fake readiness is dev/test only and server-blocked in production.",
+    "Signup readiness is tied to an application before company creation; company billing references are created only during approved provisioning.",
+    "No raw certificate key, signed URL, raw payment token, card number, CVC, or secret is exposed to the browser or logs.",
+  ],
+  successConditions: [
+    "Public signup CTA/route, application form, system queue/detail, readiness block/success, and approved workspace-entry contracts pass.",
+    "Dev/test DB integration or guarded rollback fixture confirms readiness, approval, duplicate approval, and residual DB/R2 0.",
+    "Targeted ESLint, tsc --noEmit, next build, mutation audit, git diff checks, commit, push, and 4. Newest handoff complete.",
+  ],
+  failureConditions: [
+    "Signup readiness cannot be represented without destructive schema changes.",
+    "Actual PG/email/Worker deployment becomes required.",
+    "Residual DB/R2 fixture state is nonzero after integration.",
+  ],
+  cautions: [
+    "0.24.33 is an end-to-end QA enablement version, not live payment launch.",
+    "Browser E2E may use dev/test auth/session fixtures but should still traverse real UI/API routes.",
+  ],
+  stopConditions: [
+    "Production DB/R2/Worker access is detected.",
+    "Destructive migration, real customer backfill, actual PG credential, or actual email provider is required.",
+    "A second browser E2E or DB integration attempt fails after an in-scope fix.",
+  ],
+  permissionImpact: "guarded",
+  permissionNotes: [
+    "System signup review remains actual active system-admin only.",
+    "Applicant routes remain owned by the applicant session.",
+    "Company-admin/member users cannot access system signup queues or readiness APIs.",
+  ],
+  dbImpact: "guarded",
+  dbImpactNotes: [
+    "Additive migration may add application-scoped payment-readiness persistence if the existing billing table cannot represent pre-company signup readiness.",
+    "Dev/test migration and integration must use approved fingerprint guards.",
+  ],
+  r2Impact: "guarded",
+  r2ImpactNotes: [
+    "Certificate upload/viewer paths reuse existing Worker policy.",
+    "No Worker source change is expected.",
+  ],
+  migrationRequired: true,
+  migrationNotes: "Additive signup payment-readiness migration if required by implementation audit.",
+  automaticTests: [
+    "public signup end-to-end UX contract",
+    "signup payment readiness contract",
+    "signup approval UX contract",
+    "system signup queue contract",
+    "PowerShell menu contract",
+    "roadmap 0.24.33 contract",
+    "targeted ESLint",
+    "tsc --noEmit",
+    "next build",
+    "git diff --check",
+  ],
+  manualTests: [
+    "PC Chrome, iPad Safari, iPhone Safari/Chrome signup and review smoke after Vercel deployment.",
+  ],
+  expectedChangeAreas: [
+    "app/(public)/signup/*",
+    "components/signup/*",
+    "components/system/signup/*",
+    "app/api/system/signup/applications/*",
+    "lib/signup/*",
+    "lib/system/signupReviewRepository.ts",
+    "lib/billing/*",
+    "db/migrations/*0_24_33*",
+    "tools/pipeline/*",
+    "tests/*signup*",
+  ],
+  futureDependencies: [
+    "Actual PG provider and real card registration remain future approved work.",
+    "Actual email delivery provider remains future approved work.",
+  ],
+  recommendedCommitMessage: "0.24.33 공개 가입 UX와 관리자 검토 운영 완료",
+  nextVersionBoundary: ["0.24.34 - read next canonical roadmap/user instruction before implementation."],
+  completionConditions: [
+    "APP_VERSION 0.24.33",
+    "Public signup/review/readiness/provisioning contracts pass.",
+    "Actual PG integration false, actual email delivery false, Worker changed false.",
+    "Commit/push complete and 4. Newest contains exactly latest ZIP and matching repo-state.",
+  ],
+  result: {
+    completedSummary: [
+      "Added the canonical /signup public Trial entry and kept the login page CTA separated for new-company signup.",
+      "Added application-scoped signup payment readiness, guarded system-admin readiness controls, and approval-time copy into company payment references.",
+      "Connected system-admin signup queue/detail readiness state, approval blocking, correction/rejection outbox evidence, and duplicate-safe Trial provisioning.",
+      "Applied the additive public-signup-e2e migration to the approved dev/test DB and verified compatibility/post-apply findings 0.",
+      "Verified dev/test DB integration, certificate PNG/JPEG/PDF/revoke integration, public login/signup browser smoke, and final public-signup-e2e safe profile.",
+    ],
+    commitHash: "",
+    verificationResult: "PASS before commit: compatibility audit PASS, migration apply PASS, post-apply audit PASS, DB integration PASS with residual DB/R2 0, certificate integration PASS with residual DB/R2 0, browser public login/signup smoke 3 passed, verify-safe public-signup-e2e PASS.",
+    remainingIssues: [
+      "Full real-device QA after Vercel deployment remains user confirmation.",
+      "Actual PG provider, actual email delivery, production payment readiness, and Worker changes remain out of scope.",
+    ],
+    userConfirmationRequired: true,
+    userConfirmationResult: "PENDING_PC_IPAD_MOBILE_QA",
+  },
+};

@@ -30,7 +30,8 @@ $AllowedProfiles = @(
     "workspace-commonization",
     "functions-automation",
     "billing-foundation",
-    "billing-operations"
+    "billing-operations",
+    "public-signup-e2e"
 )
 
 function NormalizeWorkflowPath {

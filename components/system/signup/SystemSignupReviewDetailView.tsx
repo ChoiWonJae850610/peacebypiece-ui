@@ -37,6 +37,13 @@ function ConsentEvidenceStatus({ application }: { application: SignupReviewDetai
   );
 }
 
+function readinessLabel(application: SignupReviewDetail): string {
+  if (application.paymentReadiness.ready) return "준비됨";
+  if (application.paymentReadiness.state === "blocked_pending_provider") return "PG 대기";
+  if (application.paymentReadiness.state === "revoked") return "취소됨";
+  return "미준비";
+}
+
 export default function SystemSignupReviewDetailView({ application }: { application: SignupReviewDetail }) {
   return (
     <SystemShell>
@@ -73,6 +80,20 @@ export default function SystemSignupReviewDetailView({ application }: { applicat
           {!application.identityEvidence.googleEmailVerified ? (
             <p className="mt-3 text-sm font-semibold text-[var(--pbp-status-danger)]">Google email_verified가 false입니다. 승인 조건을 충족하지 않습니다.</p>
           ) : null}
+        </section>
+
+        <section className={SYSTEM_CARD_CLASS}>
+          <h2 className={SYSTEM_SECTION_TITLE_CLASS}>결제수단 readiness</h2>
+          <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+            <Field label="상태" value={readinessLabel(application)} />
+            <Field label="provider" value={application.paymentReadiness.providerCode} />
+            <Field label="표시 카드" value={application.paymentReadiness.maskedDisplay} />
+            <Field label="확인 시각" value={formatDate(application.paymentReadiness.verifiedAt)} />
+          </div>
+          <p className="mt-3 text-xs leading-5 text-[var(--pbp-text-muted)]">
+            Trial 승인 전 readiness는 신청서 단위로 저장됩니다. 승인 성공 시 회사 billing reference로 안전한 provider-neutral 증거만 복사하며,
+            실제 카드번호/CVC/원문 PG payload는 저장하지 않습니다.
+          </p>
         </section>
 
         <section className={SYSTEM_CARD_CLASS}>
@@ -115,7 +136,7 @@ export default function SystemSignupReviewDetailView({ application }: { applicat
                 ) : null}
               </div>
             ) : (
-              <p className="text-sm text-[var(--pbp-text-muted)]">제출된 파일이 없습니다. 증빙 viewer는 서버 프록시로만 열리며 signed URL을 노출하지 않습니다.</p>
+              <p className="text-sm text-[var(--pbp-text-muted)]">제출된 파일이 없습니다. 증빙 viewer는 서버 프록시로만 열리며 signed URL은 노출하지 않습니다.</p>
             )}
           </div>
         </section>

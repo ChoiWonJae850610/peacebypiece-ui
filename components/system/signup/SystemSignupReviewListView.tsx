@@ -36,6 +36,27 @@ function consentSummary(item: SignupReviewListResult["applications"][number]): s
   return `${item.activeConsentCount}/2`;
 }
 
+function readinessLabel(item: SignupReviewListResult["applications"][number]): string {
+  if (item.paymentReadiness.ready) return "준비됨";
+  if (item.paymentReadiness.state === "blocked_pending_provider") return "PG 대기";
+  if (item.paymentReadiness.state === "revoked") return "취소됨";
+  return "미준비";
+}
+
+function SummaryCard({ label, value, tone = "neutral" }: { label: string; value: number; tone?: "neutral" | "warning" | "danger" }) {
+  const toneClass = tone === "danger"
+    ? "text-[var(--pbp-status-danger)]"
+    : tone === "warning"
+      ? "text-[var(--pbp-status-warning)]"
+      : "text-[var(--pbp-text-primary)]";
+  return (
+    <div className="min-w-0 rounded-2xl border border-[var(--pbp-border)] bg-[var(--pbp-surface-muted)] px-4 py-3">
+      <p className={SYSTEM_SMALL_TEXT_CLASS}>{label}</p>
+      <p className={`mt-1 text-xl font-semibold ${toneClass}`}>{value}</p>
+    </div>
+  );
+}
+
 export default function SystemSignupReviewListView({ result }: { result: SignupReviewListResult }) {
   const statusQuery = encodeURIComponent(result.filters.join(","));
   return (
@@ -47,8 +68,8 @@ export default function SystemSignupReviewListView({ result }: { result: SignupR
               <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--pbp-text-subtle)]">SIGNUP REVIEW</p>
               <h1 className="mt-2 text-2xl font-semibold text-[var(--pbp-text-primary)]">가입 신청 검토</h1>
               <p className="mt-2 max-w-3xl text-sm leading-6 text-[var(--pbp-text-muted)]">
-                실제 active system-admin 세션으로만 접근하는 가입 검토 queue입니다. 목록은 bounded pagination으로 표시하고,
-                승인/provisioning 실행은 상세 화면의 별도 서버 gate를 통과해야 합니다.
+                actual active system-admin 세션으로만 접근하는 가입 검토 queue입니다. 결제수단 readiness는 승인 전에 신청 단위로 확인되고,
+                dev/test에서는 fake readiness로 실제 PG 없이 승인 흐름을 검증할 수 있습니다.
               </p>
             </div>
             <nav aria-label="가입 신청 상태 필터" className="flex min-w-0 flex-wrap gap-2">
@@ -63,12 +84,19 @@ export default function SystemSignupReviewListView({ result }: { result: SignupR
               ))}
             </nav>
           </div>
+          <div className="mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
+            <SummaryCard label="접수됨" value={result.summary.submitted} />
+            <SummaryCard label="검토 중" value={result.summary.reviewing} />
+            <SummaryCard label="보완 요청" value={result.summary.changesRequested} tone="warning" />
+            <SummaryCard label="provisioning 실패" value={result.summary.provisioningFailed} tone="danger" />
+            <SummaryCard label="결제 준비 미완료" value={result.summary.paymentReadinessMissing} tone="warning" />
+          </div>
         </header>
 
         <section className={SYSTEM_CARD_CLASS}>
           <div className="overflow-x-auto">
-            <div className="min-w-[980px]">
-              <div className="grid grid-cols-[1.1fr_1fr_1fr_0.8fr_0.7fr_0.8fr_0.8fr_0.7fr_0.7fr] gap-3 border-b border-[var(--pbp-border)] px-2 pb-3 text-xs font-semibold text-[var(--pbp-text-muted)]">
+            <div className="min-w-[1120px]">
+              <div className="grid grid-cols-[1.1fr_1fr_1fr_0.7fr_0.7fr_0.8fr_0.8fr_0.7fr_0.7fr_0.8fr] gap-3 border-b border-[var(--pbp-border)] px-2 pb-3 text-xs font-semibold text-[var(--pbp-text-muted)]">
                 <span>신청자</span>
                 <span>회사</span>
                 <span>사업자</span>
@@ -78,13 +106,14 @@ export default function SystemSignupReviewListView({ result }: { result: SignupR
                 <span>보완</span>
                 <span>파일</span>
                 <span>동의</span>
+                <span>결제 준비</span>
               </div>
               <div className="divide-y divide-[var(--pbp-border)]">
                 {result.applications.map((item) => (
                   <Link
                     key={item.id}
                     href={`/system/signup-applications/${encodeURIComponent(item.id)}`}
-                    className="grid min-w-0 grid-cols-[1.1fr_1fr_1fr_0.8fr_0.7fr_0.8fr_0.8fr_0.7fr_0.7fr] gap-3 px-2 py-4 text-sm transition hover:bg-[var(--pbp-surface-muted)]"
+                    className="grid min-w-0 grid-cols-[1.1fr_1fr_1fr_0.7fr_0.7fr_0.8fr_0.8fr_0.7fr_0.7fr_0.8fr] gap-3 px-2 py-4 text-sm transition hover:bg-[var(--pbp-surface-muted)]"
                   >
                     <span className="min-w-0">
                       <span className={`block truncate font-semibold ${SYSTEM_VALUE_TEXT_CLASS}`}>{item.applicantName}</span>
@@ -103,6 +132,9 @@ export default function SystemSignupReviewListView({ result }: { result: SignupR
                     <span>{item.correctionDueAt ? formatDate(item.correctionDueAt) : item.correctionReason ? "요청됨" : "-"}</span>
                     <span>{item.certificate.exists ? "있음" : "없음"}</span>
                     <span>{consentSummary(item)}</span>
+                    <span className={item.paymentReadiness.ready ? "font-semibold text-[var(--pbp-status-success)]" : "font-semibold text-[var(--pbp-status-warning)]"}>
+                      {readinessLabel(item)}
+                    </span>
                   </Link>
                 ))}
                 {result.applications.length === 0 ? (

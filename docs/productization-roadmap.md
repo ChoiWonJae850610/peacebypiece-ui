@@ -1,15 +1,15 @@
 # Productization Roadmap Authority
 
-> Active baseline: `0.24.32`. Current implementation candidate: `0.24.32` PG Billing and Subscription Operations.
+> Active baseline: `0.24.33`. Current implementation candidate: `0.24.33` Public Signup End-to-End UX and System-admin Review Operations.
 > Structured canonical source: `lib/internal/roadmap/`.
 > Runtime roadmap index: `lib/internal/roadmap/index.ts`.
 
 ## Status
 
-- Roadmap checkpoint version: `0.24.32`
-- APP_VERSION: `0.24.32`
-- Feature implementation progress: about `95%`
-- Productization readiness: about `88%`
+- Roadmap checkpoint version: `0.24.33`
+- APP_VERSION: `0.24.33`
+- Feature implementation progress: about `96%`
+- Productization readiness: about `91%`
 - Current-state handoff: `docs/codex-current-state.md`
 - System-admin screen: `/roadmap`
 - Manual QA status: `PENDING_USER_QA`
@@ -40,7 +40,14 @@
 14. `0.24.30` - Storage Capacity Profiles
 15. `0.24.31` - Canonical Policy Conformance Remediation and PG-neutral Billing Foundation
 16. `0.24.32` - PG Billing and Subscription Operations
-17. `0.24.33` - Next official roadmap item after billing operations
+17. `0.24.33` - Public Signup End-to-End UX and System-admin Review Operations
+
+## 0.24.33 - Public Signup End-to-End UX and System-admin Review Operations
+
+- Canonical detail file: `lib/internal/roadmap/roadmap-0.24.33.ts`.
+- Connects `/signup`, applicant dashboard, system-admin signup queue/detail, dev/test payment-readiness controls, approval, Trial provisioning, and approved workspace entry into a QA-ready path.
+- Uses application-scoped payment readiness before company creation, then copies safe provider-neutral evidence to company billing references during approval.
+- Keeps actual PG integration, actual email delivery, production customer mutation, and Worker deployment out of scope.
 
 ## 0.24.32 - PG Billing and Subscription Operations
 

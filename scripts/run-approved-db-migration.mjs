@@ -10,6 +10,7 @@ const migrations = {
   "signup-consents": "db/migrations/patch_0_24_26_signup_application_consents.sql",
   "system-catalog": "db/migrations/patch_0_24_27_system_catalog.sql",
   "billing-operations": "db/migrations/patch_0_24_32_billing_operations.sql",
+  "public-signup-e2e": "db/migrations/patch_0_24_33_public_signup_e2e.sql",
 };
 
 const mode = process.argv[2] ?? "";
@@ -34,6 +35,9 @@ if (mode === "system-catalog" && !/CREATE TABLE IF NOT EXISTS system_catalog_ver
 }
 if (mode === "billing-operations" && !/CREATE TABLE IF NOT EXISTS billing_subscription_states/.test(sql)) {
   throw new Error("Unexpected billing operations migration target.");
+}
+if (mode === "public-signup-e2e" && !/CREATE TABLE IF NOT EXISTS signup_payment_method_references/.test(sql)) {
+  throw new Error("Unexpected public signup e2e migration target.");
 }
 const sqlForSafetyScan = sql
   .replace(/--.*$/gm, "")

@@ -361,6 +361,9 @@ $allowedMigrationChanges = @()
 if ($VerificationProfile -eq "billing-operations") {
     $allowedMigrationChanges = @("db/migrations/patch_0_24_32_billing_operations.sql")
 }
+if ($VerificationProfile -eq "public-signup-e2e") {
+    $allowedMigrationChanges = @("db/migrations/patch_0_24_33_public_signup_e2e.sql")
+}
 $unexpectedMigrationChanges = @($migrationChanges | Where-Object { $allowedMigrationChanges -notcontains $_ })
 if ($unexpectedMigrationChanges.Count -gt 0) {
     throw "Unexpected DB migration/schema changes: $($unexpectedMigrationChanges -join ', ')"

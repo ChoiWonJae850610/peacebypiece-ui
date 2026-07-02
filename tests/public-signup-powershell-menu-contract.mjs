@@ -1,0 +1,51 @@
+#!/usr/bin/env node
+import assert from "node:assert/strict";
+import fs from "node:fs";
+
+const pipeline = fs.readFileSync("tools/pipeline/peacebypiece-auto-pipeline.ps1", "utf8");
+const runner = fs.readFileSync("scripts/run-approved-db-migration.mjs", "utf8");
+const readonlyRunner = fs.readFileSync("scripts/run-readonly-db-audit.mjs", "utf8");
+const integration = fs.readFileSync("scripts/run-public-signup-e2e-integration.mjs", "utf8");
+
+assert.match(pipeline, /\[switch\]\$ApplyPublicSignupE2eMigration/, "pipeline must expose a public signup migration switch");
+assert.match(pipeline, /\[switch\]\$RunPublicSignupE2eCompatibilityAudit/, "pipeline must expose a public signup compatibility audit switch");
+assert.match(pipeline, /\[switch\]\$RunPublicSignupE2ePostApplyAudit/, "pipeline must expose a public signup post-apply audit switch");
+assert.match(pipeline, /\[switch\]\$RunPublicSignupE2eIntegration/, "pipeline must expose a public signup e2e integration switch");
+assert.match(pipeline, /function ApplyPublicSignupE2eMigration/, "pipeline must define the public signup migration function");
+assert.match(pipeline, /function RunPublicSignupE2eCompatibilityAudit/, "pipeline must define the public signup compatibility audit function");
+assert.match(pipeline, /function RunPublicSignupE2ePostApplyAudit/, "pipeline must define the public signup post-apply audit function");
+assert.match(pipeline, /function RunPublicSignupE2eIntegration/, "pipeline must define the public signup e2e integration function");
+assert.match(pipeline, /Mode 'public-signup-e2e'/, "pipeline must call the approved migration runner mode");
+assert.match(pipeline, /Mode 'public-signup-e2e-compatibility'/, "pipeline must call the read-only compatibility audit mode");
+assert.match(pipeline, /Mode 'public-signup-e2e-post-apply'/, "pipeline must call the read-only post-apply audit mode");
+assert.match(pipeline, /60\. Public Signup E2E Migration Apply/, "menu number 60 must be reserved for public signup e2e migration");
+assert.match(pipeline, /61\. Public Signup E2E Compatibility Audit/, "menu number 61 must be reserved for public signup compatibility audit");
+assert.match(pipeline, /62\. Public Signup E2E Post-Apply Audit/, "menu number 62 must be reserved for public signup post-apply audit");
+assert.match(pipeline, /63\. Public Signup E2E Integration/, "menu number 63 must be reserved for public signup e2e integration");
+assert.match(pipeline, /60 \{ ApplyPublicSignupE2eMigration \| Out-Null \}/, "menu number 60 must execute the public signup migration");
+assert.match(pipeline, /61 \{ RunPublicSignupE2eCompatibilityAudit \| Out-Null \}/, "menu number 61 must execute compatibility audit");
+assert.match(pipeline, /62 \{ RunPublicSignupE2ePostApplyAudit \| Out-Null \}/, "menu number 62 must execute post-apply audit");
+assert.match(pipeline, /63 \{ RunPublicSignupE2eIntegration \| Out-Null \}/, "menu number 63 must execute public signup e2e integration");
+assert.match(pipeline, /elseif \(\$ApplyPublicSignupE2eMigration\)/, "CLI switch must execute the public signup migration");
+assert.match(pipeline, /elseif \(\$RunPublicSignupE2eCompatibilityAudit\)/, "CLI switch must execute compatibility audit");
+assert.match(pipeline, /elseif \(\$RunPublicSignupE2ePostApplyAudit\)/, "CLI switch must execute post-apply audit");
+assert.match(pipeline, /elseif \(\$RunPublicSignupE2eIntegration\)/, "CLI switch must execute public signup e2e integration");
+assert.match(pipeline, /InvokeApprovedDbMigrationCommand/, "migration apply must reuse the approved DB migration guard");
+assert.match(pipeline, /InvokeReadOnlyDbAudit/, "public signup audits must reuse the read-only DB audit guard");
+
+const menu60Count = [...pipeline.matchAll(/Write-Host "60\./g)].length;
+assert.equal(menu60Count, 1, "public signup e2e migration menu number must not be duplicated");
+
+assert.match(runner, /"public-signup-e2e": "db\/migrations\/patch_0_24_33_public_signup_e2e\.sql"/, "approved migration runner must include public signup mode");
+assert.match(runner, /signup_payment_method_references/, "runner must validate the public signup migration target");
+assert.match(readonlyRunner, /public-signup-e2e-compatibility/, "read-only runner must include public signup compatibility mode");
+assert.match(readonlyRunner, /public-signup-e2e-post-apply/, "read-only runner must include public signup post-apply mode");
+assert.match(integration, /PUBLIC_SIGNUP_E2E_GUARD_PASS/, "integration runner must log guard pass");
+assert.match(integration, /SIGNUP_APPROVAL_PAYMENT_READINESS_REQUIRED/, "integration must verify readiness-missing approval block");
+assert.match(integration, /PUBLIC_SIGNUP_E2E_INTEGRATION_RESULT/, "integration runner must log final result");
+assert.match(integration, /residualDbRows: 0/, "integration runner must report residual DB zero");
+assert.match(integration, /actualPgIntegration: false/, "integration runner must keep actual PG false");
+assert.match(integration, /actualEmailDelivery: false/, "integration runner must keep actual email false");
+assert.match(integration, /workerChanged: false/, "integration runner must keep Worker unchanged");
+
+console.log("public signup PowerShell menu contract: OK");

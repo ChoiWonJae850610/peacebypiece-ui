@@ -10,6 +10,7 @@ type Props = {
 };
 
 const REASON_MAX_LENGTH = 600;
+const APPROVAL_CONFIRMATION = "RUN_SIGNUP_APPROVAL_PROVISIONING_DEV_TEST";
 
 type ProvisioningPlan = {
   canProvision: boolean;
@@ -41,6 +42,16 @@ function canCloseWithReason(status: SignupReviewStatus): boolean {
 function formatBytes(value: number): string {
   if (value < 1024 * 1024) return `${Math.round(value / 1024)} KB`;
   return `${(value / 1024 / 1024).toFixed(1)} MB`;
+}
+
+function messageForCode(code: string | undefined): string {
+  if (!code) return "요청을 처리하지 못했습니다.";
+  if (code === "SIGNUP_APPROVAL_PAYMENT_READINESS_REQUIRED") return "승인 전에 결제수단 readiness가 필요합니다.";
+  if (code === "SIGNUP_PROVISIONING_EXECUTION_BLOCKED") return "승인 실행 gate가 닫혀 있습니다. dev/test 승인 환경과 confirmation을 확인하세요.";
+  if (code === "SIGNUP_REVIEW_TRANSITION_CONFLICT") return "현재 상태가 변경되어 요청을 적용하지 못했습니다. 새로고침 후 다시 확인하세요.";
+  if (code === "SIGNUP_PAYMENT_READINESS_STATUS_CLOSED") return "이미 종료된 신청에는 readiness를 변경할 수 없습니다.";
+  if (code === "WAFL_RUNTIME_BLOCKED") return "production에서는 fake payment readiness를 만들 수 없습니다.";
+  return code;
 }
 
 export default function SystemSignupReviewDetailActions({ application }: Props) {
@@ -77,10 +88,27 @@ export default function SystemSignupReviewDetailActions({ application }: Props) 
       });
       const payload = await response.json().catch(() => null) as { ok?: boolean; code?: string } | null;
       if (!response.ok || !payload?.ok) {
-        setMessage(payload?.code ?? "SIGNUP_REVIEW_TRANSITION_FAILED");
+        setMessage(messageForCode(payload?.code ?? "SIGNUP_REVIEW_TRANSITION_FAILED"));
         return;
       }
-      setMessage("상태가 갱신되었습니다.");
+      setMessage("검토 상태가 갱신되었습니다.");
+      router.refresh();
+    });
+  }
+
+  async function updatePaymentReadiness(method: "POST" | "DELETE") {
+    setMessage(null);
+    startTransition(async () => {
+      const response = await fetch(`/api/system/signup/applications/${encodeURIComponent(application.id)}/payment-readiness`, {
+        method,
+        cache: "no-store",
+      });
+      const payload = await response.json().catch(() => null) as { ok?: boolean; code?: string } | null;
+      if (!response.ok || !payload?.ok) {
+        setMessage(messageForCode(payload?.code ?? "SIGNUP_PAYMENT_READINESS_FAILED"));
+        return;
+      }
+      setMessage(method === "POST" ? "dev/test 결제 readiness를 준비했습니다." : "결제 readiness를 취소했습니다.");
       router.refresh();
     });
   }
@@ -94,22 +122,22 @@ export default function SystemSignupReviewDetailActions({ application }: Props) 
       });
       const payload = await response.json().catch(() => null) as { ok?: boolean; code?: string; plan?: ProvisioningPlan } | null;
       if (!response.ok || !payload?.ok || !payload.plan) {
-        setMessage(payload?.code ?? "SIGNUP_PROVISIONING_PLAN_UNAVAILABLE");
+        setMessage(messageForCode(payload?.code ?? "SIGNUP_PROVISIONING_PLAN_UNAVAILABLE"));
         return;
       }
       setProvisioningPlan(payload.plan);
-      setMessage(payload.plan.canProvision ? "승인 실행 계획을 확인했습니다. 실제 실행은 별도 서버 gate를 통과해야 합니다." : "승인 실행 차단 사유가 있습니다.");
+      setMessage(payload.plan.canProvision ? "승인 실행 계획을 확인했습니다." : "승인 실행 차단 사유가 있습니다.");
     });
   }
 
-  async function checkApproveGate() {
+  async function approveAndProvision() {
     setMessage(null);
     startTransition(async () => {
       const response = await fetch(`/api/system/signup/applications/${encodeURIComponent(application.id)}/approve`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         cache: "no-store",
-        body: JSON.stringify({}),
+        body: JSON.stringify({ confirmation: APPROVAL_CONFIRMATION }),
       });
       const payload = await response.json().catch(() => null) as {
         ok?: boolean;
@@ -120,10 +148,10 @@ export default function SystemSignupReviewDetailActions({ application }: Props) 
       if (payload?.plan) setProvisioningPlan(payload.plan);
       if (!response.ok || !payload?.ok) {
         const gateReasons = payload?.gate?.reasons?.length ? ` (${payload.gate.reasons.join(", ")})` : "";
-        setMessage(`${payload?.code ?? "SIGNUP_PROVISIONING_EXECUTION_BLOCKED"}${gateReasons}`);
+        setMessage(`${messageForCode(payload?.code)}${gateReasons}`);
         return;
       }
-      setMessage("승인 provisioning이 완료되었습니다.");
+      setMessage("승인과 Trial provisioning이 완료되었습니다.");
       router.refresh();
     });
   }
@@ -161,6 +189,22 @@ export default function SystemSignupReviewDetailActions({ application }: Props) 
           </button>
           <button
             type="button"
+            disabled={isPending || application.status === "approved" || application.status === "rejected" || application.status === "canceled"}
+            onClick={() => updatePaymentReadiness("POST")}
+            className="rounded-full border border-[var(--pbp-border)] bg-[var(--pbp-surface)] px-4 py-2 text-sm font-semibold text-[var(--pbp-text-muted)] disabled:cursor-not-allowed disabled:opacity-45"
+          >
+            dev/test 결제 준비
+          </button>
+          <button
+            type="button"
+            disabled={isPending || !application.paymentReadiness.ready}
+            onClick={() => updatePaymentReadiness("DELETE")}
+            className="rounded-full border border-[var(--pbp-border)] bg-[var(--pbp-surface)] px-4 py-2 text-sm font-semibold text-[var(--pbp-text-muted)] disabled:cursor-not-allowed disabled:opacity-45"
+          >
+            readiness 취소
+          </button>
+          <button
+            type="button"
             disabled={isPending}
             onClick={loadProvisioningPlan}
             className="rounded-full border border-[var(--pbp-border)] bg-[var(--pbp-surface)] px-4 py-2 text-sm font-semibold text-[var(--pbp-text-muted)] disabled:cursor-not-allowed disabled:opacity-45"
@@ -170,11 +214,11 @@ export default function SystemSignupReviewDetailActions({ application }: Props) 
           <button
             type="button"
             disabled={!application.approveEligibility.eligible || isPending}
-            onClick={checkApproveGate}
-            className="rounded-full border border-[var(--pbp-border)] bg-[var(--pbp-surface)] px-4 py-2 text-sm font-semibold text-[var(--pbp-text-muted)] disabled:cursor-not-allowed disabled:opacity-45"
-            title={application.approveEligibility.eligible ? "실제 실행은 서버 execution gate를 통과해야 합니다." : application.approveEligibility.reasons.join(", ")}
+            onClick={approveAndProvision}
+            className="rounded-full bg-[var(--pbp-brand-primary)] px-4 py-2 text-sm font-semibold text-[var(--pbp-text-inverse)] disabled:cursor-not-allowed disabled:opacity-45"
+            title={application.approveEligibility.eligible ? "dev/test 승인 실행 gate와 confirmation을 포함해 provisioning을 실행합니다." : application.approveEligibility.reasons.join(", ")}
           >
-            승인 실행 gate 확인
+            승인 및 Trial 생성
           </button>
         </div>
         <label className="flex min-w-0 flex-col gap-2 text-sm font-semibold text-[var(--pbp-text-primary)]">
@@ -198,7 +242,7 @@ export default function SystemSignupReviewDetailActions({ application }: Props) 
               ))}
             </ul>
           ) : (
-            <p className="mt-2">company/member/subscription provisioning 조건이 준비되어 있으며, 실제 실행은 서버 gate를 통과한 뒤에만 가능합니다.</p>
+            <p className="mt-2">company/member/subscription provisioning 조건이 준비되었습니다. 실제 실행은 서버 gate와 confirmation을 통과한 뒤에만 가능합니다.</p>
           )}
         </div>
         {provisioningPlan ? (
@@ -222,8 +266,7 @@ export default function SystemSignupReviewDetailActions({ application }: Props) 
           </div>
         ) : null}
         <p className="text-xs text-[var(--pbp-text-muted)]">
-          현재 상태가 바뀐 경우 compare-and-set 보호로 충돌 처리됩니다. 이메일 발송은 실행하지 않으며,
-          승인 mutation은 서버 gate와 confirmation 없이 차단됩니다.
+          상태 전환은 compare-and-set으로 보호됩니다. dev/test fake readiness는 실제 카드/PG를 저장하지 않으며 production runtime에서는 서버에서 차단됩니다.
         </p>
         {message ? <p className="break-words text-sm font-semibold text-[var(--pbp-status-warning)]">{message}</p> : null}
       </div>

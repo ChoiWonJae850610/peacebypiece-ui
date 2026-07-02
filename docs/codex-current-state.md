@@ -1,12 +1,12 @@
-# Codex Current State - 0.24.32
+# Codex Current State - 0.24.33
 
 ## Version
 
-- Current version: `0.24.32`.
-- Current implementation version: `0.24.32`.
+- Current version: `0.24.33`.
+- Current implementation version: `0.24.33`.
 - Branch: `master`.
-- Previous completed version: `0.24.31` Canonical Policy Conformance Remediation and PG-neutral Billing Foundation.
-- Next official version: `0.24.33` to be confirmed from the canonical roadmap after this checkpoint.
+- Previous completed version: `0.24.32` PG Billing and Subscription Operations.
+- Current official work: `0.24.33` Public Signup End-to-End UX and System-admin Review Operations.
 
 ## Policy Authority
 
@@ -17,22 +17,21 @@
 - System-admin actual/effective session boundaries and runtime-independent internal read screens remain unchanged from 0.24.25.x corrections.
 - Destructive Reset, Seed, Cleanup, R2 mutation, DB migration, Purge, and production mutation guards remain unchanged.
 
-## 0.24.32 Scope
+## 0.24.33 Scope
 
-0.24.32 is PG Billing and Subscription Operations. It connects the 0.24.31 provider-neutral billing foundation to additive persistence, guarded services, APIs, migration/audit wrappers, and simulator-safe operation paths without real PG/email/provider execution.
+0.24.33 connects the public signup, applicant dashboard, system-admin signup review, payment-readiness preparation, approval, Trial provisioning, and approved workspace entry into one QA-ready flow.
 
-Implemented foundation:
+Implemented / in-scope foundation:
 
-- Canonical policy conformance audit remains: `docs/audits/0.24.31-canonical-policy-conformance-audit.md`.
-- Additive migration file: `db/migrations/patch_0_24_32_billing_operations.sql`.
-- Payment readiness persistence: `company_payment_method_references` stores provider-neutral references only; production fake readiness is blocked.
-- Signup approval gate: approval/provisioning checks persisted payment readiness server-side before Trial starts.
-- Billing lifecycle persistence: `billing_subscription_states` carries canonical lifecycle states without replacing the legacy `company_subscriptions` snapshot.
-- Invoice/payment/refund/retry/event persistence: integer KRW, VAT-included, idempotency keys, safe failure codes, and no raw provider payload.
-- Company export, termination/recovery, notification outbox, and correction auto-reject have persistence and simulator-safe operation seams.
-- Company-admin/system-admin billing operation APIs are guarded by tenant/system scope and same-origin checks.
+- Canonical public entry: `/signup`.
+- Applicant dashboard continues to own draft/submit/correction/resubmit/cancel state.
+- System-admin signup queue/detail continue to use actual active system-admin guards.
+- Payment readiness must be application-scoped before company creation, then copied into company billing references during approval.
+- Dev/test fake readiness is allowed only through guarded system-admin controls; production fake readiness remains blocked.
+- Approval UI must surface `SIGNUP_APPROVAL_PAYMENT_READINESS_REQUIRED` safely and avoid duplicate provisioning.
+- Notification outbox links signup review/approval events without actual email delivery.
 
-Out of scope for 0.24.32:
+Out of scope for 0.24.33:
 
 - Actual PG provider SDK, merchant key, billing key issuance, webhook, real charge, or real refund.
 - Actual email provider integration or external email sending.
@@ -42,7 +41,11 @@ Out of scope for 0.24.32:
 
 ## Verification State
 
-- DB migration this version: additive file added; dev/test apply requires approved fingerprint guard.
+- DB migration this version: `db/migrations/patch_0_24_33_public_signup_e2e.sql` applied once to the approved dev/test DB after compatibility audit PASS and followed by post-apply audit PASS.
+- Public signup DB integration: PASS with dev/test synthetic fixtures, readiness block, readiness creation, approval, Trial provisioning, duplicate approval, correction/resubmit, reject, provisioning failure compensation, and residual DB/R2 0.
+- Certificate integration: PASS for PNG upload, JPEG replacement, PDF replacement, revoke, and residual DB/R2 0 using the existing deployed dev/test Worker policy.
+- Browser E2E: PASS for public login/signup CTA route separation using installed local Chrome through `PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH`.
+- Final verification profile: `public-signup-e2e` PASS, including build, mutation audit with 0 high-risk findings, targeted ESLint, typecheck, contracts, Unicode, and PowerShell checks.
 - Production DB/R2/Worker mutation: false.
 - Actual PG integration: false.
 - Actual email delivery: false.
@@ -51,10 +54,10 @@ Out of scope for 0.24.32:
 
 ## Current Roadmap
 
-- Canonical current detail: `lib/internal/roadmap/roadmap-0.24.32.ts`.
+- Canonical current detail: `lib/internal/roadmap/roadmap-0.24.33.ts`.
 - Productization roadmap document: `docs/productization-roadmap.md`.
 - Runtime roadmap screen: `/roadmap`.
 
 ## Next Version
 
-0.24.33 must be read from the next canonical roadmap/user instruction before implementation. Do not infer live PG, production export, production deletion, or email provider work without explicit scope.
+0.24.34 must be read from the next canonical roadmap/user instruction before implementation. Do not infer live PG, production export, production deletion, or email provider work without explicit scope.

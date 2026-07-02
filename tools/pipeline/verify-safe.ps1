@@ -1,5 +1,5 @@
 param(
-    [ValidateSet("system-admin-storage", "id-control-roadmap", "roadmap-development-contract", "system-admin-internal-access", "repository-cleanup", "source-architecture-cleanup", "automation-infrastructure", "workspace-commonization", "functions-automation", "billing-foundation", "billing-operations")]
+    [ValidateSet("system-admin-storage", "id-control-roadmap", "roadmap-development-contract", "system-admin-internal-access", "repository-cleanup", "source-architecture-cleanup", "automation-infrastructure", "workspace-commonization", "functions-automation", "billing-foundation", "billing-operations", "public-signup-e2e")]
     [string]$Profile = "system-admin-storage",
     [switch]$CheckOnly
 )
@@ -704,6 +704,55 @@ $profileCommands = @{
         @{ Name = "PowerShell encoding contract"; Command = "node"; Arguments = @("tests/pipeline-powershell-encoding-contract.mjs") },
         @{ Name = "authorization runtime boundary contract"; Command = "node"; Arguments = @("tests/authorization-runtime-boundary-contract.mjs") },
         @{ Name = "workspace member session guard contract"; Command = "node"; Arguments = @("tests/workspace-member-session-guard-contract.mjs") }
+    );
+    "public-signup-e2e" = @(
+        @{
+            Name = "targeted ESLint";
+            Command = "node";
+            Arguments = @(
+                "node_modules/eslint/bin/eslint.js",
+                "app/(public)/signup/page.tsx",
+                "app/api/system/signup/applications/[applicationId]/payment-readiness/route.ts",
+                "app/layout.tsx",
+                "components/auth/WaflLoginPage.tsx",
+                "components/system/signup/SystemSignupReviewDetailActions.tsx",
+                "components/system/signup/SystemSignupReviewDetailView.tsx",
+                "components/system/signup/SystemSignupReviewListView.tsx",
+                "lib/billing/index.ts",
+                "lib/billing/signupPaymentReadinessRepository.ts",
+                "lib/constants/version.ts",
+                "lib/internal/roadmap/index.ts",
+                "lib/internal/roadmap/roadmap-0.24.33.ts",
+                "lib/signup/signupApplicationProvisioningRepository.ts",
+                "lib/system/signupReviewRepository.ts",
+                "scripts/run-approved-db-migration.mjs",
+                "scripts/run-public-signup-e2e-integration.mjs",
+                "scripts/run-readonly-db-audit.mjs",
+                "tests/billing-approval-gate-contract.mjs",
+                "tests/e2e/public-signup-e2e.spec.mjs",
+                "tests/public-signup-powershell-menu-contract.mjs",
+                "tests/public-signup-e2e-ux-contract.mjs",
+                "tests/roadmap-0.24.33-contract.mjs",
+                "tests/roadmap-development-contract.mjs",
+                "tests/system-signup-review-foundation-contract.mjs"
+            )
+        },
+        @{ Name = "tsc --noEmit"; Command = "node"; Arguments = @("node_modules/typescript/bin/tsc", "--noEmit") },
+        @{ Name = "public signup e2e UX contract"; Command = "node"; Arguments = @("tests/public-signup-e2e-ux-contract.mjs") },
+        @{ Name = "public signup PowerShell menu contract"; Command = "node"; Arguments = @("tests/public-signup-powershell-menu-contract.mjs") },
+        @{ Name = "system signup review foundation contract"; Command = "node"; Arguments = @("tests/system-signup-review-foundation-contract.mjs") },
+        @{ Name = "billing approval gate contract"; Command = "node"; Arguments = @("tests/billing-approval-gate-contract.mjs") },
+        @{ Name = "signup approval provisioning foundation contract"; Command = "node"; Arguments = @("tests/signup-approval-provisioning-foundation-contract.mjs") },
+        @{ Name = "billing operations schema contract"; Command = "node"; Arguments = @("tests/billing-operations-schema-contract.mjs") },
+        @{ Name = "billing operations service contract"; Command = "node"; Arguments = @("tests/billing-operations-service-contract.mjs") },
+        @{ Name = "roadmap 0.24.33 contract"; Command = "node"; Arguments = @("tests/roadmap-0.24.33-contract.mjs") },
+        @{ Name = "roadmap development contract"; Command = "node"; Arguments = @("tests/roadmap-development-contract.mjs") },
+        @{ Name = "pipeline repo state publication contract"; Command = "node"; Arguments = @("tests/pipeline-repo-state-publication-contract.mjs") },
+        @{ Name = "approved workflow contract"; Command = "node"; Arguments = @("tests/approved-workflow-contract.mjs") },
+        @{ Name = "unicode encoding contract"; Command = "node"; Arguments = @("tests/unicode-encoding-contract.mjs") },
+        @{ Name = "PowerShell encoding contract"; Command = "node"; Arguments = @("tests/pipeline-powershell-encoding-contract.mjs") },
+        @{ Name = "authorization runtime boundary contract"; Command = "node"; Arguments = @("tests/authorization-runtime-boundary-contract.mjs") },
+        @{ Name = "workspace member session guard contract"; Command = "node"; Arguments = @("tests/workspace-member-session-guard-contract.mjs") }
     )
 }
 
@@ -740,6 +789,9 @@ $migrationChanges = @($changedFiles | Where-Object { $_ -match '^(db/migrations/
 $allowedMigrationChanges = @()
 if ($Profile -eq "billing-operations") {
     $allowedMigrationChanges = @("db/migrations/patch_0_24_32_billing_operations.sql")
+}
+if ($Profile -eq "public-signup-e2e") {
+    $allowedMigrationChanges = @("db/migrations/patch_0_24_33_public_signup_e2e.sql")
 }
 $unexpectedMigrationChanges = @($migrationChanges | Where-Object { $allowedMigrationChanges -notcontains $_ })
 if ($unexpectedMigrationChanges.Count -gt 0) {

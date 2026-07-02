@@ -48,6 +48,10 @@ param(
     [switch]$ApplyBillingOperationsMigration,
     [switch]$RunBillingPostApplyAudit,
     [switch]$RunBillingOperationsIntegration,
+    [switch]$RunPublicSignupE2eCompatibilityAudit,
+    [switch]$ApplyPublicSignupE2eMigration,
+    [switch]$RunPublicSignupE2ePostApplyAudit,
+    [switch]$RunPublicSignupE2eIntegration,
     [string]$VerificationResultPath = "",
     [string]$VerificationProfile = ""
 )
@@ -2460,6 +2464,63 @@ function ApplyBillingOperationsMigration {
     return (InvokeApprovedDbMigrationCommand -Mode 'billing-operations' -Title 'Apply Billing Operations Migration' -Label 'Apply_Billing_Operations_Migration' -PauseAfter $PauseAfter)
 }
 
+function ApplyPublicSignupE2eMigration {
+    param([bool]$PauseAfter = $true)
+    return (InvokeApprovedDbMigrationCommand -Mode 'public-signup-e2e' -Title 'Apply Public Signup E2E Migration' -Label 'Apply_Public_Signup_E2E_Migration' -PauseAfter $PauseAfter)
+}
+
+function RunPublicSignupE2eCompatibilityAudit {
+    param([bool]$PauseAfter = $true)
+    return (InvokeReadOnlyDbAudit -Mode 'public-signup-e2e-compatibility' -Title 'Public Signup E2E Compatibility Audit' -Label 'Public_Signup_E2E_Compatibility_Audit' -PauseAfter $PauseAfter)
+}
+
+function RunPublicSignupE2ePostApplyAudit {
+    param([bool]$PauseAfter = $true)
+    return (InvokeReadOnlyDbAudit -Mode 'public-signup-e2e-post-apply' -Title 'Public Signup E2E Post-Apply Audit' -Label 'Public_Signup_E2E_Post_Apply_Audit' -PauseAfter $PauseAfter)
+}
+
+function RunPublicSignupE2eIntegration {
+    param([bool]$PauseAfter = $true)
+
+    if (-not (LoadEnvLocalForSmokeTest)) { if ($PauseAfter) { WaitForDeveloperToolsMenu }; return 1 }
+    $runtime = [string]$env:NEXT_PUBLIC_APP_RUNTIME_MODE
+    if ([string]::IsNullOrWhiteSpace($runtime)) { $runtime = [string]$env:WAFL_SERVER_RUNTIME_MODE }
+    if ([string]::IsNullOrWhiteSpace($runtime)) { $runtime = [string]$env:NODE_ENV }
+    $guard = TestReadOnlyDbAuditGuard -Runtime $runtime -DatabaseUrl $env:DATABASE_URL
+
+    Write-Host ""
+    Write-Host "Public Signup E2E integration guard"
+    Write-Host "Runtime: $runtime"
+    Write-Host "DB fingerprint: $($guard.Fingerprint)"
+    Write-Host "Approved DB fingerprint matched: $($guard.Passed)"
+    Write-Host "Production: false required"
+    Write-Host "Mutation: dev/test synthetic DB fixture rows only, with exact cleanup"
+    Write-Host "R2 Mutation: none"
+    Write-Host "Mode: public-signup-e2e-integration"
+
+    if (-not $guard.Passed) {
+        LogError "Public Signup E2E integration test가 차단되었습니다. dev/test 승인 DB만 허용합니다."
+        if ($PauseAfter) { WaitForDeveloperToolsMenu }
+        return 2
+    }
+
+    $integrationLogDir = Join-Path (Split-Path -Parent $LogDir) "DB_Audit"
+    $previousDbApproved = $env:WAFL_DB_AUDIT_APPROVED
+    $previousDbFingerprint = $env:WAFL_APPROVED_DB_FINGERPRINT
+    $previousConfirmation = $env:WAFL_PUBLIC_SIGNUP_E2E_CONFIRMATION
+    try {
+        $env:WAFL_DB_AUDIT_APPROVED = '1'
+        $env:WAFL_APPROVED_DB_FINGERPRINT = [string]$PipelineConfig.Simulator.ApprovedDbFingerprint
+        $env:WAFL_PUBLIC_SIGNUP_E2E_CONFIRMATION = 'RUN_PUBLIC_SIGNUP_E2E_DEV_TEST'
+        return (InvokeProjectCommandWithResultFile -Title "Public Signup E2E Integration" -Label "Public_Signup_E2E_Integration" -NpmCommand "node scripts/run-public-signup-e2e-integration.mjs" -LoadEnvLocal $false -PauseAfter $PauseAfter -ResultDirectory $integrationLogDir)
+    }
+    finally {
+        if ($null -eq $previousDbApproved) { Remove-Item Env:WAFL_DB_AUDIT_APPROVED -ErrorAction SilentlyContinue } else { $env:WAFL_DB_AUDIT_APPROVED = $previousDbApproved }
+        if ($null -eq $previousDbFingerprint) { Remove-Item Env:WAFL_APPROVED_DB_FINGERPRINT -ErrorAction SilentlyContinue } else { $env:WAFL_APPROVED_DB_FINGERPRINT = $previousDbFingerprint }
+        if ($null -eq $previousConfirmation) { Remove-Item Env:WAFL_PUBLIC_SIGNUP_E2E_CONFIRMATION -ErrorAction SilentlyContinue } else { $env:WAFL_PUBLIC_SIGNUP_E2E_CONFIRMATION = $previousConfirmation }
+    }
+}
+
 function RunBillingPostApplyAudit {
     param([bool]$PauseAfter = $true)
     return (InvokeReadOnlyDbAudit -Mode 'billing-post-apply' -Title 'Billing Post-Apply Audit' -Label 'Billing_Post_Apply_Audit' -PauseAfter $PauseAfter)
@@ -2924,6 +2985,10 @@ function ShowDeveloperToolsMenu {
         Write-Host "57. Billing Migration Apply                     [DEV/TEST DB 변경/별도 승인]"
         Write-Host "58. Billing Post-Apply Audit                    [읽기 전용/DEV·TEST 승인 DB만]"
         Write-Host "59. Billing Simulator Integration               [DEV/TEST DB rollback fixture/cleanup]"
+        Write-Host "60. Public Signup E2E Migration Apply           [DEV/TEST DB 변경/별도 승인]"
+        Write-Host "61. Public Signup E2E Compatibility Audit       [읽기 전용/DEV·TEST 승인 DB만]"
+        Write-Host "62. Public Signup E2E Post-Apply Audit          [읽기 전용/DEV·TEST 승인 DB만]"
+        Write-Host "63. Public Signup E2E Integration               [DEV/TEST DB synthetic fixture/cleanup]"
         Write-Host ""
         Write-Host "[/functions 데이터 변경 작업]"
         Write-Host "21. Simulator DB Seed Execute                    [주의/DEV·TEST]"
@@ -2999,6 +3064,10 @@ function ShowDeveloperToolsMenu {
             57 { ApplyBillingOperationsMigration | Out-Null }
             58 { RunBillingPostApplyAudit | Out-Null }
             59 { RunBillingOperationsIntegration | Out-Null }
+            60 { ApplyPublicSignupE2eMigration | Out-Null }
+            61 { RunPublicSignupE2eCompatibilityAudit | Out-Null }
+            62 { RunPublicSignupE2ePostApplyAudit | Out-Null }
+            63 { RunPublicSignupE2eIntegration | Out-Null }
             0  { return }
             default {
                 Write-Host "등록되지 않은 메뉴 번호입니다. 0~59 범위의 표시된 번호를 입력하세요."
@@ -3311,6 +3380,22 @@ elseif ($RunBillingPostApplyAudit) {
 }
 elseif ($RunBillingOperationsIntegration) {
     $exitCode = RunBillingOperationsIntegration -PauseAfter $false
+    if ($null -ne $exitCode) { exit ([int]$exitCode) }
+}
+elseif ($RunPublicSignupE2eCompatibilityAudit) {
+    $exitCode = RunPublicSignupE2eCompatibilityAudit -PauseAfter $false
+    if ($null -ne $exitCode) { exit ([int]$exitCode) }
+}
+elseif ($ApplyPublicSignupE2eMigration) {
+    $exitCode = ApplyPublicSignupE2eMigration -PauseAfter $false
+    if ($null -ne $exitCode) { exit ([int]$exitCode) }
+}
+elseif ($RunPublicSignupE2ePostApplyAudit) {
+    $exitCode = RunPublicSignupE2ePostApplyAudit -PauseAfter $false
+    if ($null -ne $exitCode) { exit ([int]$exitCode) }
+}
+elseif ($RunPublicSignupE2eIntegration) {
+    $exitCode = RunPublicSignupE2eIntegration -PauseAfter $false
     if ($null -ne $exitCode) { exit ([int]$exitCode) }
 }
 else {

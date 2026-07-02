@@ -76,6 +76,11 @@ type SignupReviewRow = DbQueryResultRow & {
   active_certificate_uploaded_at: Date | string | null;
   active_consent_count: number | string;
   current_consent_count: number | string;
+  payment_readiness_state: string | null;
+  payment_provider_code: string | null;
+  payment_masked_display: string | null;
+  payment_environment: string | null;
+  payment_verified_at: Date | string | null;
 };
 
 type SignupConsentRow = DbQueryResultRow & {
@@ -114,6 +119,14 @@ export type SignupReviewListItem = {
   requiredConsentsComplete: boolean;
   activeConsentCount: number;
   currentConsentCount: number;
+  paymentReadiness: {
+    ready: boolean;
+    state: string;
+    providerCode: string | null;
+    maskedDisplay: string | null;
+    environment: string | null;
+    verifiedAt: string | null;
+  };
 };
 
 export type SignupReviewConsentEvidence = {
@@ -147,6 +160,7 @@ export type SignupReviewDetail = SignupReviewListItem & {
       requiredConsentTypesPresent: boolean;
       requiredConsentVersionsCurrent: boolean;
       certificatePresent: boolean;
+      paymentReadinessReady: boolean;
       provisioningNotStarted: boolean;
     };
   };
@@ -154,6 +168,13 @@ export type SignupReviewDetail = SignupReviewListItem & {
 
 export type SignupReviewListResult = {
   applications: SignupReviewListItem[];
+  summary: {
+    submitted: number;
+    reviewing: number;
+    changesRequested: number;
+    provisioningFailed: number;
+    paymentReadinessMissing: number;
+  };
   pagination: {
     limit: number;
     offset: number;
@@ -244,6 +265,14 @@ function mapListItem(row: SignupReviewRow): SignupReviewListItem {
     requiredConsentsComplete: requiredConsentTypesPresent && requiredConsentVersionsCurrent,
     activeConsentCount,
     currentConsentCount,
+    paymentReadiness: {
+      ready: row.payment_readiness_state === "ready",
+      state: row.payment_readiness_state ?? "not_ready",
+      providerCode: row.payment_provider_code,
+      maskedDisplay: row.payment_masked_display,
+      environment: row.payment_environment,
+      verifiedAt: iso(row.payment_verified_at),
+    },
   };
 }
 
@@ -259,6 +288,7 @@ function mapDetail(row: SignupReviewDetailRow, consents: SignupConsentRow[]): Si
     requiredConsentTypesPresent: listItem.requiredConsentTypesPresent,
     requiredConsentVersionsCurrent: listItem.requiredConsentVersionsCurrent,
     certificatePresent: listItem.certificate.exists,
+    paymentReadinessReady: listItem.paymentReadiness.ready,
     provisioningNotStarted: row.provisioning_status === "not_started",
   };
   const approveReasons = [
@@ -267,6 +297,7 @@ function mapDetail(row: SignupReviewDetailRow, consents: SignupConsentRow[]): Si
     approveChecks.requiredConsentTypesPresent ? null : "required consent types are missing",
     approveChecks.requiredConsentVersionsCurrent ? null : "required consent versions are not current",
     approveChecks.certificatePresent ? null : "business certificate is missing",
+    approveChecks.paymentReadinessReady ? null : "payment readiness is required",
     approveChecks.provisioningNotStarted ? null : "provisioning already started or completed",
   ].filter((reason): reason is string => Boolean(reason));
 
@@ -344,6 +375,12 @@ const BASE_SELECT = `
         VALUES ${CURRENT_CONSENT_POLICY_VALUES_SQL}
       )
   ) AS current_consent_count
+  ,
+  payment.readiness_state AS payment_readiness_state,
+  payment.provider_code AS payment_provider_code,
+  payment.masked_display AS payment_masked_display,
+  payment.environment AS payment_environment,
+  payment.verified_at AS payment_verified_at
 `;
 
 const BASE_FROM = `
@@ -357,6 +394,19 @@ const BASE_FROM = `
     ORDER BY file.uploaded_at DESC, file.id DESC
     LIMIT 1
   ) cert ON true
+  LEFT JOIN LATERAL (
+    SELECT
+      signup_payment.readiness_state,
+      signup_payment.provider_code,
+      signup_payment.masked_display,
+      signup_payment.environment,
+      signup_payment.verified_at
+    FROM signup_payment_method_references signup_payment
+    WHERE signup_payment.application_id = app.id
+      AND signup_payment.revoked_at IS NULL
+    ORDER BY signup_payment.verified_at DESC NULLS LAST, signup_payment.updated_at DESC, signup_payment.id DESC
+    LIMIT 1
+  ) payment ON true
 `;
 
 export async function listSignupReviewApplications(input: {
@@ -388,10 +438,39 @@ export async function listSignupReviewApplications(input: {
     `,
     [statuses, limit, offset],
   );
+  const summaryResult = await queryDb<DbQueryResultRow & {
+    submitted_count: number | string;
+    reviewing_count: number | string;
+    changes_requested_count: number | string;
+    provisioning_failed_count: number | string;
+    payment_readiness_missing_count: number | string;
+  }>(
+    `
+      SELECT
+        count(*) FILTER (WHERE app.status = 'submitted')::int AS submitted_count,
+        count(*) FILTER (WHERE app.status = 'reviewing')::int AS reviewing_count,
+        count(*) FILTER (WHERE app.status = 'changes_requested')::int AS changes_requested_count,
+        count(*) FILTER (WHERE app.status = 'provisioning_failed')::int AS provisioning_failed_count,
+        count(*) FILTER (
+          WHERE app.status IN ('submitted', 'reviewing')
+            AND COALESCE(payment.readiness_state, 'not_ready') <> 'ready'
+        )::int AS payment_readiness_missing_count
+      ${BASE_FROM}
+      WHERE app.status IN ('submitted', 'reviewing', 'changes_requested', 'provisioning_failed')
+    `,
+  );
+  const summaryRow = summaryResult.rows[0];
   const rows = result.rows.slice(0, limit);
   const hasMore = result.rows.length > limit;
   return {
     applications: rows.map(mapListItem),
+    summary: {
+      submitted: Number(summaryRow?.submitted_count ?? 0),
+      reviewing: Number(summaryRow?.reviewing_count ?? 0),
+      changesRequested: Number(summaryRow?.changes_requested_count ?? 0),
+      provisioningFailed: Number(summaryRow?.provisioning_failed_count ?? 0),
+      paymentReadinessMissing: Number(summaryRow?.payment_readiness_missing_count ?? 0),
+    },
     pagination: {
       limit,
       offset,
@@ -436,6 +515,53 @@ function sanitizeReviewReason(value: unknown): string {
   const reason = String(value ?? "").trim().replace(/\s+/g, " ").slice(0, REVIEW_REASON_MAX_LENGTH);
   if (!reason) throw new Error("SIGNUP_REVIEW_REASON_REQUIRED");
   return reason;
+}
+
+async function insertSignupReviewNotificationOutbox(input: {
+  applicationId: string;
+  templateCode: "signup_correction_requested";
+  reason: string;
+  scheduledAt?: Date;
+}): Promise<void> {
+  await queryDb(
+    `
+      INSERT INTO billing_notification_outbox (
+        id,
+        template_code,
+        recipient_scope,
+        safe_payload,
+        status,
+        scheduled_at,
+        environment,
+        idempotency_key,
+        created_at,
+        updated_at
+      )
+      VALUES (
+        gen_random_uuid()::text,
+        $1,
+        'applicant',
+        $2::jsonb,
+        'pending',
+        COALESCE($3, now()),
+        'dev_test',
+        $4,
+        now(),
+        now()
+      )
+      ON CONFLICT (idempotency_key) DO NOTHING
+    `,
+    [
+      input.templateCode,
+      JSON.stringify({
+        applicationId: input.applicationId,
+        reason: input.reason,
+        actualEmailDelivery: false,
+      }),
+      input.scheduledAt ?? null,
+      `signup-review:${input.templateCode}:${input.applicationId}`,
+    ],
+  );
 }
 
 export type SignupReviewTransitionAction = "reviewing" | "changes_requested" | "rejected";
@@ -517,6 +643,13 @@ export async function transitionSignupReviewApplication(input: {
   }
 
   if (result.rowCount !== 1) throw new Error("SIGNUP_REVIEW_TRANSITION_CONFLICT");
+  if (input.action === "changes_requested") {
+    await insertSignupReviewNotificationOutbox({
+      applicationId,
+      templateCode: "signup_correction_requested",
+      reason: sanitizeReviewReason(input.reason),
+    });
+  }
   const detail = await getSignupReviewApplicationDetail(applicationId);
   if (!detail) throw new Error("SIGNUP_REVIEW_APPLICATION_NOT_FOUND");
   return detail;

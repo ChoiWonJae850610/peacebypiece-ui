@@ -85,6 +85,6 @@ assert.doesNotMatch(service, /markProvisioningStarted[\s\S]*provisionApprovedSig
 assert.match(service, /provisionApprovedSignup/, "service must call the provisioning port");
 assert.match(actions, /provisioning-plan/, "UI must expose dry-run plan");
 assert.match(actions, /\/approve/, "UI must connect to the approve gate endpoint");
-assert.doesNotMatch(actions, /RUN_SIGNUP_APPROVAL_PROVISIONING_DEV_TEST/, "UI must not send the mutation confirmation phrase");
+assert.match(actions, /RUN_SIGNUP_APPROVAL_PROVISIONING_DEV_TEST/, "0.24.33 QA UI must send the explicit dev/test mutation confirmation phrase");
 
 console.log("signup approval provisioning foundation contract: OK");

@@ -21,6 +21,7 @@ const requiredWorkflowTokens = [
   '"workspace-commonization"',
   '"billing-foundation"',
   '"billing-operations"',
+  '"public-signup-e2e"',
   "function SelectMatchingVerificationResult",
   "VERIFY_SAFE_RESULT:\\s*PASS",
   "ChangedFingerprint",
@@ -72,6 +73,7 @@ const requiredVerifyTokens = [
   '"workspace-commonization"',
   '"billing-foundation"',
   '"billing-operations"',
+  '"public-signup-e2e"',
   '"roadmap-development-contract"',
   '"system-admin-internal-access"',
   "tools/pipeline/approved-workflow.ps1",
@@ -91,6 +93,8 @@ for (const token of requiredVerifyTokens) {
 for (const token of [
   '"billing-operations"',
   "patch_0_24_32_billing_operations.sql",
+  '"public-signup-e2e"',
+  "patch_0_24_33_public_signup_e2e.sql",
   "unexpectedMigrationChanges",
   "DB migration/schema changes allowed for profile",
 ]) {

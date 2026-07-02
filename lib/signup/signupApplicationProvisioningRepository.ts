@@ -9,6 +9,7 @@ import {
   getTrialEndsAt,
 } from "@/lib/billing/companyTrialPolicy";
 import { createTrialBillingState, insertNotificationOutbox } from "@/lib/billing/billingOperationsRepository";
+import { copySignupReadinessToCompanyPaymentReference } from "@/lib/billing/signupPaymentReadinessRepository";
 import { provisionCompanyCatalog } from "@/lib/catalog/systemCatalogRepository";
 import { SYSTEM_CATALOG_VERSION_CODE } from "@/lib/catalog/systemCatalogPolicy";
 import { withDbTransaction, type DbQueryResultRow, type DbTransactionClient } from "@/lib/db/client";
@@ -361,7 +362,7 @@ async function hasReadyPaymentMethodReference(
       `
         SELECT EXISTS (
           SELECT 1
-          FROM company_payment_method_references payment
+          FROM signup_payment_method_references payment
           WHERE payment.application_id = $1
             AND payment.readiness_state = 'ready'
             AND payment.revoked_at IS NULL
@@ -982,6 +983,12 @@ export class PostgresSignupApprovalProvisioningRepository implements SignupAppro
           "UPDATE companies SET owner_user_id = $2, updated_at = $3 WHERE id = $1",
           [companyId, user.userId, approvedAt],
         );
+        await copySignupReadinessToCompanyPaymentReference({
+          client,
+          applicationId: app.id,
+          companyId,
+          now: approvedAt,
+        });
         const subscriptionId = await insertTrialSubscription(client, { companyId, approvedAt });
         const trial = getTrialSnapshot(approvedAt);
         await createTrialBillingState({

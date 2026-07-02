@@ -28,6 +28,9 @@ for (const token of [
 assert.match(runner, /INSERT INTO signup_applications/);
 assert.match(runner, /INSERT INTO signup_application_consents/);
 assert.match(runner, /INSERT INTO signup_application_files/);
+assert.match(runner, /INSERT INTO signup_payment_method_references/);
+assert.match(runner, /SIGNUP_APPROVAL_PAYMENT_READINESS_REQUIRED/);
+assert.match(runner, /INSERT INTO company_payment_method_references/);
 assert.match(runner, /FOR UPDATE/);
 assert.match(runner, /started\.rowCount !== 1/);
 assert.match(runner, /created_company_id = \$2[\s\S]*status = 'reviewing'[\s\S]*provisioning_status = 'in_progress'/);
@@ -50,7 +53,7 @@ assert.match(runner, /DELETE FROM company_members/);
 assert.match(runner, /DELETE FROM users/);
 assert.match(runner, /DELETE FROM companies/);
 assert.doesNotMatch(runner, /R2_WORKER_UPLOAD_URL|R2_WORKER_UPLOAD_SECRET|putR2Object|deleteR2Object|fetch\(/, "approval provisioning runner must not call R2/Worker");
-assert.doesNotMatch(runner, /SMTP|sendMail|resend|nodemailer|billing_key|payment_method|card/i, "approval provisioning runner must not send email or touch payment");
+assert.doesNotMatch(runner, /SMTP|sendMail|resend|nodemailer|billing_key|cardNumber|cvc|cvv|cardPassword|providerSecret|webhookSecret/i, "approval provisioning runner must not send email or store raw payment secrets");
 
 assert.match(pipeline, /\[switch\]\$RunSignupApprovalProvisioningIntegration/);
 assert.match(pipeline, /\[switch\]\$CleanupSignupApprovalProvisioningFixtures/);

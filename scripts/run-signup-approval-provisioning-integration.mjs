@@ -154,6 +154,16 @@ async function insertApplicationFixture(client, manifest, input = {}) {
     )
     VALUES ($1, $2, 'business_registration', 'signup-approval-fixture.pdf', $3, 'application/pdf', 128, $4)
   `, [fileId, id, `signup-applications/${id}/business-registration/${fileId}.pdf`, input.now]);
+  await q(client, `
+    INSERT INTO signup_payment_method_references (
+      id, application_id, provider_code, provider_customer_reference, payment_method_reference,
+      masked_display, brand, readiness_state, verified_at, is_simulator, environment,
+      created_by_system_user_id, idempotency_key, created_at, updated_at
+    )
+    VALUES ($1, $2, 'fake_dev_test', 'signup-approval-fixture-customer', 'signup-approval-fixture-reference',
+      'FAKE-DEV-TEST', 'SIMULATOR', 'ready', $3, true, 'dev_test', $4, $5, $3, $3)
+    ON CONFLICT (idempotency_key) DO NOTHING
+  `, [`${id}-payment-ready`, id, input.now, input.systemUserId, `signup-approval-payment-readiness:${id}`]);
   return { id, googleSub, email, businessNumber };
 }
 
@@ -209,6 +219,17 @@ async function approveApplication(client, manifest, input) {
       ) AS exists
     `, [app.email_normalized, app.google_sub]);
     if (emailConflict.rows[0]?.exists === true) throw new Error("SIGNUP_APPROVAL_IDENTITY_CONFLICT");
+    const paymentReadiness = await q(client, `
+      SELECT id, provider_code, provider_customer_reference, payment_method_reference, masked_display, brand, verified_at, is_simulator, environment
+      FROM signup_payment_method_references
+      WHERE application_id = $1
+        AND readiness_state = 'ready'
+        AND revoked_at IS NULL
+      ORDER BY verified_at DESC NULLS LAST, updated_at DESC, id DESC
+      LIMIT 1
+    `, [input.applicationId]);
+    const payment = paymentReadiness.rows[0];
+    if (!payment) throw new Error("SIGNUP_APPROVAL_PAYMENT_READINESS_REQUIRED");
 
     const started = await q(client, `
       UPDATE signup_applications
@@ -301,6 +322,29 @@ async function approveApplication(client, manifest, input) {
       )
       VALUES ($1, $2, 'trial', 'trialing', $3, $4, $3, $4, $5, $6, $3, $3)
     `, [subscriptionId, companyId, input.now, trialEndsAt, TRIAL_STORAGE_LIMIT_BYTES, TRIAL_MEMBER_LIMIT]);
+    await q(client, `
+      INSERT INTO company_payment_method_references (
+        id, company_id, application_id, provider_code, provider_customer_reference, payment_method_reference,
+        masked_card_display, card_brand, readiness_state, verified_at, is_simulator, environment,
+        idempotency_key, created_at, updated_at
+      )
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, 'ready', COALESCE($9, $10), $11, $12, $13, $10, $10)
+      ON CONFLICT (idempotency_key) DO NOTHING
+    `, [
+      `${input.applicationId}-company-payment-ready`,
+      companyId,
+      app.id,
+      payment.provider_code,
+      payment.provider_customer_reference,
+      payment.payment_method_reference,
+      payment.masked_display,
+      payment.brand,
+      payment.verified_at,
+      input.now,
+      payment.is_simulator,
+      payment.environment,
+      `signup-approval-payment-reference:${app.id}`,
+    ]);
 
     const companyFileId = remember(manifest.companyFiles, `${input.applicationId}-company-file`);
     await q(client, `

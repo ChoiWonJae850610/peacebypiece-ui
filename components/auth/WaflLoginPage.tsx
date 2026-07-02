@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 import {
   ATypePublicCard,
   ATypePublicFrame,
@@ -33,16 +35,16 @@ export default function WaflLoginPage({ error, returnTo }: WaflLoginPageProps) {
         <>
           업무를 연결하고,
           <br />
-          협업을 완성하세요.
+          작업을 완성하세요
         </>
       }
-      description="작업 배정부터 결과 관리까지 WAFL이 패션 생산의 흐름을 한 화면에서 연결합니다."
+      description="작업 배정부터 결과 관리까지 WAFL은 자유 생산 흐름을 한 화면에서 연결합니다."
       heroItems={["작업지시서", "협력업체", "파일 관리", "생산 흐름"]}
       footer={<p>초대받은 계정 또는 승인된 계정으로 로그인해 주세요.</p>}
     >
       <ATypePublicCard
         eyebrow="WAFL 로그인"
-        title="Google 계정으로 계속하세요."
+        title="Google 계정으로 계속하세요"
         description="등록된 고객사 관리자와 승인된 멤버만 사용할 수 있습니다."
       >
         {errorMessage ? <ATypePublicNotice tone="danger">{errorMessage}</ATypePublicNotice> : null}
@@ -56,14 +58,13 @@ export default function WaflLoginPage({ error, returnTo }: WaflLoginPageProps) {
         </a>
         <div className="rounded-[var(--pbp-radius-xl)] border border-[var(--pbp-border-soft)] bg-[var(--pbp-surface-soft)] p-4 text-sm font-semibold leading-6 text-[var(--pbp-text-secondary)]">
           <p className="font-black text-[var(--pbp-text-primary)]">처음 사용하는 회사인가요?</p>
-          <p className="mt-1">Google 인증 후 7일 Trial 신청서를 작성할 수 있습니다.</p>
-          <a
-            href="/api/auth/google/start?intent=signup"
+          <p className="mt-1">공개 가입 페이지에서 7일 Trial 요청을 시작할 수 있습니다.</p>
+          <Link
+            href="/signup"
             className="mt-3 flex w-full items-center justify-center gap-3 rounded-[var(--pbp-radius-xl)] border border-[var(--pbp-brand-primary)] bg-[var(--pbp-surface-base)] px-4 py-3 text-sm font-black text-[var(--pbp-brand-primary)] transition hover:bg-[var(--pbp-surface-soft)]"
           >
-            <GoogleMark />
             7일 무료로 시작하기
-          </a>
+          </Link>
         </div>
       </ATypePublicCard>
     </ATypePublicFrame>
