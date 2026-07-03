@@ -36,7 +36,8 @@ $AllowedProfiles = @(
     "workorder-size-pdf",
     "public-signup-first-draft-fix",
     "customer-product-ux-cleanup",
-    "workorder-pdf-live-integration"
+    "workorder-pdf-live-integration",
+    "product-ui-runtime-verification"
 )
 
 function NormalizeWorkflowPath {

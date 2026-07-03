@@ -1,4 +1,5 @@
 import WorkOrderFactoryInstructionPanel from "@/components/workorder/factoryInstruction/WorkOrderFactoryInstructionPanel";
+import WorkOrderSizeSpecPanel from "@/components/workorder/detail/WorkOrderSizeSpecPanel";
 import WorkOrderSidePanelAttachmentSections from "@/components/workorder/sidepanel/shared/WorkOrderSidePanelAttachmentSections";
 import type { WorkOrderSidePanelProps, WorkOrderSidePanelVariant } from "@/components/workorder/sidepanel/WorkOrderSidePanel.types";
 
@@ -21,6 +22,8 @@ export default function WorkOrderSidePanelSections({
   canGenerateOrderRequestPdf,
   onGenerateOrderRequestPdf,
   variant,
+  sizeSpecWorkOrderId,
+  sizeSpecLocked,
   factoryInstructionWorkOrderId,
   canEditFactoryInstruction,
   factoryInstructionLockMessage,
@@ -28,25 +31,29 @@ export default function WorkOrderSidePanelSections({
   return (
     <div className="space-y-3">
       <WorkOrderSidePanelAttachmentSections
-      attachmentSections={attachmentSections}
-      canSeeAttachments={canSeeAttachments}
-      canManageAttachments={canManageAttachments}
-      onOpenAttachmentPicker={onOpenAttachmentPicker}
-      onOpenDesignDrawingModal={onOpenDesignDrawingModal}
-      onUploadAttachmentFiles={onUploadAttachmentFiles}
-      onPreviewAttachment={onPreviewAttachment}
-      onDeleteAttachment={onDeleteAttachment}
-      onSetPrimaryDesignAttachment={onSetPrimaryDesignAttachment}
-      canGenerateOrderRequestPdf={canGenerateOrderRequestPdf}
-      onGenerateOrderRequestPdf={onGenerateOrderRequestPdf}
-      writeLocked={writeLocked}
-      writeLockMessage={writeLockMessage}
-      variant={variant}
+        attachmentSections={attachmentSections}
+        canSeeAttachments={canSeeAttachments}
+        canManageAttachments={canManageAttachments}
+        onOpenAttachmentPicker={onOpenAttachmentPicker}
+        onOpenDesignDrawingModal={onOpenDesignDrawingModal}
+        onUploadAttachmentFiles={onUploadAttachmentFiles}
+        onPreviewAttachment={onPreviewAttachment}
+        onDeleteAttachment={onDeleteAttachment}
+        onSetPrimaryDesignAttachment={onSetPrimaryDesignAttachment}
+        canGenerateOrderRequestPdf={canGenerateOrderRequestPdf}
+        onGenerateOrderRequestPdf={onGenerateOrderRequestPdf}
+        writeLocked={writeLocked}
+        writeLockMessage={writeLockMessage}
+        variant={variant}
       />
       <WorkOrderFactoryInstructionPanel
         workOrderId={factoryInstructionWorkOrderId}
         editable={canEditFactoryInstruction}
         lockMessage={factoryInstructionLockMessage}
+      />
+      <WorkOrderSizeSpecPanel
+        workOrderId={sizeSpecWorkOrderId}
+        locked={Boolean(sizeSpecLocked || writeLocked)}
       />
     </div>
   );

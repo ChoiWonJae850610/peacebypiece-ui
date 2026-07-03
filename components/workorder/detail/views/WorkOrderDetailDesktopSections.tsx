@@ -7,7 +7,6 @@ import DetailSectionGroup from "@/components/workorder/detail/shared/DetailSecti
 import WorkOrderHeaderSection from "@/components/workorder/detail/WorkOrderHeaderSection";
 import OrderInfoSection from "@/components/workorder/detail/sections/OrderInfoSection";
 import ProductionCompositionSection from "@/components/workorder/detail/sections/ProductionCompositionSection";
-import WorkOrderSizeSpecPanel from "@/components/workorder/detail/WorkOrderSizeSpecPanel";
 import type { WorkOrderDetailViewModel } from "@/components/workorder/detail/views/detailViewTypes";
 
 type WorkOrderDetailDesktopSectionsProps = {
@@ -44,11 +43,6 @@ export default function WorkOrderDetailDesktopSections({
         </DetailSectionGroup>
 
         <OrderInfoSection {...viewModel.orderInfoProps} />
-
-        <WorkOrderSizeSpecPanel
-          workOrderId={viewModel.workOrderId}
-          locked={viewModel.sizeSpecLocked}
-        />
 
         {viewModel.showProductionComposition ? (
           <ProductionCompositionSection

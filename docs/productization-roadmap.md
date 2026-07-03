@@ -1,18 +1,18 @@
 # Productization Roadmap Authority
 
-> Active baseline: `0.24.34.3.1`. Latest completed work: `0.24.34.3.1` Product Completion, Canonical WAFL UI, and Automated Evidence Standard. Next mandatory work: `0.24.34.4` Workorder Runtime Recovery, Right-side Size Panel, WAFL Modal, and Signup Submission E2E. Next feature after that: `0.24.35` Company-wide Export Execution.
+> Active baseline: `0.24.34.4`. Latest implementation work: `0.24.34.4` Workorder Runtime Recovery, Canonical WAFL Size Panel, and Signup Product E2E. Next feature: `0.24.35` Company-wide Export Execution.
 > Structured canonical source: `lib/internal/roadmap/`.
 > Runtime roadmap index: `lib/internal/roadmap/index.ts`.
 
 ## Status
 
-- Roadmap checkpoint version: `0.24.34.3.1`
-- APP_VERSION: `0.24.34.3.1`
+- Roadmap checkpoint version: `0.24.34.4`
+- APP_VERSION: `0.24.34.4`
 - Feature implementation progress: about `94%` after connecting workorder size/POM editing and incomplete/final PDF paths
 - Productization readiness: about `87%` after restoring Export, deletion, operations, CI, monitoring, and launch work
 - Current-state handoff: `docs/codex-current-state.md`
 - System-admin screen: `/roadmap`
-- Manual QA status: `PENDING_USER_QA`
+- Manual QA status: `PRODUCT_VERIFIED - localhost desktop/mobile/iPad evidence completed`
 - Current planning policy: before 1.0, `master` remains the single development/QA branch and Vercel deployment is used for real-device QA.
 
 ## Internal Access Boundary

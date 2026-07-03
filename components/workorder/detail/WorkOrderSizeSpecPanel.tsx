@@ -2,6 +2,17 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 
+import {
+  WaflDataTableBody,
+  WaflDataTableHeader,
+  WaflDataTableRow,
+  WaflDataTableShell,
+} from "@/components/admin/common/WaflDataTable";
+import ModalShell from "@/components/common/modal/ModalShell";
+import { WaflButton } from "@/components/common/ui/WaflButton";
+import WaflNumberInput from "@/components/common/ui/WaflNumberInput";
+import WaflSelect from "@/components/common/ui/WaflSelect";
+
 type ApiSuccess<T> = { ok: true; data: T };
 type ApiFailure = { ok: false; code?: string; message?: string };
 
@@ -64,7 +75,7 @@ const inchFractions = [
 ];
 
 const measurementTypeLabels: Record<string, string> = {
-  half_flat: "평면 단면",
+  half_flat: "완성 평면",
   circumference: "둘레",
   quarter_pattern_reference: "패턴 1/4 기준",
   length: "길이",
@@ -82,9 +93,17 @@ function normalizeInputValue(value: string) {
   return value.replace(/\s+/g, " ").trim().slice(0, 32);
 }
 
+function valueToNumber(value: string) {
+  const parsed = Number(value.replace(/,/g, "").trim());
+  return Number.isFinite(parsed) ? parsed : 0;
+}
+
 function parseInchValue(value: string): { whole: string; fraction: string } {
   const [whole = "", fraction = ""] = value.trim().split(/\s+/, 2);
-  return { whole: whole.replace(/\D/g, "").slice(0, 3), fraction: inchFractions.some((item) => item.value === fraction) ? fraction : "" };
+  return {
+    whole: whole.replace(/\D/g, "").slice(0, 3),
+    fraction: inchFractions.some((item) => item.value === fraction) ? fraction : "",
+  };
 }
 
 function formatInchValue(whole: string, fraction: string) {
@@ -95,17 +114,23 @@ function formatInchValue(whole: string, fraction: string) {
 
 function getSafePdfMessage(error: unknown) {
   const message = error instanceof Error ? error.message : "";
-  if (message.includes("WORKORDER_FINAL_PDF_NOT_READY")) return "아직 빠진 항목이 있어 미완성 PDF로 만들 수 있습니다.";
-  if (message.includes("PDF_OBJECT_MISSING")) return "PDF 파일을 찾을 수 없습니다. 다시 만들어 주세요.";
+  if (message.includes("WORKORDER_FINAL_PDF_NOT_READY")) {
+    return "아직 비어 있는 항목이 있어 미완성 PDF로 만들 수 있습니다.";
+  }
+  if (message.includes("PDF_OBJECT_MISSING")) {
+    return "PDF 파일을 찾을 수 없습니다. 다시 만들어 주세요.";
+  }
   return "PDF를 만들지 못했습니다. 잠시 후 다시 시도해 주세요.";
 }
 
 export default function WorkOrderSizeSpecPanel({
   workOrderId,
   locked = false,
+  editorPresentation = "modal",
 }: {
   workOrderId: string;
   locked?: boolean;
+  editorPresentation?: "modal" | "inline";
 }) {
   const [state, setState] = useState<"loading" | "ready" | "error" | "saving">("loading");
   const [error, setError] = useState<string | null>(null);
@@ -163,7 +188,9 @@ export default function WorkOrderSizeSpecPanel({
   const filledCount = values.length;
   const totalCount = (spec?.sizes.length ?? 0) * (spec?.poms.length ?? 0);
   const completionLabel = totalCount > 0 ? `${filledCount}/${totalCount} 입력` : "치수 기준 없음";
-  const sizeRangeLabel = spec?.sizes.length ? `${spec.sizes[0]?.displayLabel ?? ""}~${spec.sizes[spec.sizes.length - 1]?.displayLabel ?? ""}` : "-";
+  const sizeRangeLabel = spec?.sizes.length
+    ? `${spec.sizes[0]?.displayLabel ?? ""}~${spec.sizes[spec.sizes.length - 1]?.displayLabel ?? ""}`
+    : "-";
 
   const updateValue = (sizeCode: string, pomCode: string, value: string) => {
     const key = getValueKey(sizeCode, pomCode);
@@ -218,7 +245,7 @@ export default function WorkOrderSizeSpecPanel({
         throw new Error(result?.error ?? "WORKORDER_PDF_CREATE_FAILED");
       }
       const kind = result.documentKind === "final" ? "final" : "incomplete";
-      setPdfStatus(kind === "final" ? "제출용 PDF를 만들었습니다." : "미완성 PDF를 만들었습니다.");
+      setPdfStatus(kind === "final" ? "최종 PDF를 만들었습니다." : "미완성 PDF를 만들었습니다.");
       setPdfLink({
         href: `/api/workorders/${encodeURIComponent(workOrderId)}/generated/workorder-pdf/${encodeURIComponent(result.attachment.id)}/view`,
         label: result.attachment.name,
@@ -232,59 +259,63 @@ export default function WorkOrderSizeSpecPanel({
   };
 
   const isActionDisabled = locked || !editable || state === "saving" || !spec;
+  const gridTemplateColumns = `minmax(180px, 1.4fr) repeat(${Math.max(spec?.sizes.length ?? 1, 1)}, minmax(132px, 1fr))`;
 
   return (
-    <section className="rounded-lg border border-[var(--pbp-divider)] bg-[var(--pbp-surface)] p-4 shadow-sm">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+    <section
+      data-workorder-size-panel="side"
+      className="wafl-shape-surface border border-[var(--pbp-border)] bg-[var(--pbp-surface)] p-4 shadow-none"
+    >
+      <div className="flex flex-col gap-3">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-wide text-[var(--pbp-muted)]">치수표</p>
-          <h3 className="text-base font-semibold text-[var(--pbp-text)]">작업지시서 치수</h3>
-          <p className="mt-1 text-sm text-[var(--pbp-muted)]">
+          <p className="text-xs font-semibold uppercase tracking-wide text-[var(--pbp-text-subtle)]">사이즈 스펙</p>
+          <h3 className="text-base font-semibold text-[var(--pbp-text-primary)]">작업지시서 치수</h3>
+          <p className="mt-1 text-sm text-[var(--pbp-text-muted)]">
             {sizeRangeLabel} · 측정 항목 {spec?.poms.length ?? 0}개 · {spec?.measurementUnit ?? "cm"} · {completionLabel}
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
-          <button
+          <WaflButton
             type="button"
-            className="rounded-md border border-[var(--pbp-divider)] px-3 py-2 text-sm font-semibold disabled:cursor-not-allowed disabled:opacity-50"
+            variant="secondary"
+            size="sm"
             disabled={!spec}
-            onClick={() => setIsEditorOpen(true)}
+            onClick={() => setIsEditorOpen((open) => editorPresentation === "inline" ? !open : true)}
           >
             치수 입력 및 수정
-          </button>
-          <button
+          </WaflButton>
+          <WaflButton
             type="button"
-            className="rounded-md bg-[var(--pbp-primary)] px-3 py-2 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-50"
+            variant="primary"
+            size="sm"
             disabled={locked || isPrinting || !spec}
             onClick={() => void generatePdf()}
             aria-label="작업지시서 출력"
             title="작업지시서 출력"
           >
             {isPrinting ? "출력 중" : "작업지시서 출력"}
-          </button>
+          </WaflButton>
         </div>
       </div>
 
       {state === "loading" ? (
-        <p className="mt-4 text-sm text-[var(--pbp-muted)]">치수 정보를 불러오고 있습니다.</p>
+        <p className="mt-4 text-sm text-[var(--pbp-text-muted)]">치수 정보를 불러오고 있습니다.</p>
       ) : null}
 
       {state === "error" ? (
-        <div className="mt-4 rounded-md border border-[var(--pbp-danger-border)] bg-[var(--pbp-danger-bg)] p-3 text-sm text-[var(--pbp-danger-text)]">
+        <div className="mt-4 wafl-shape-control border border-[var(--pbp-danger-border)] bg-[var(--pbp-danger-bg)] p-3 text-sm text-[var(--pbp-danger-text)]">
           <p>{error}</p>
-          <button type="button" className="mt-2 text-sm font-semibold underline" onClick={() => void loadSpec()}>
+          <WaflButton type="button" variant="secondary" size="sm" className="mt-2" onClick={() => void loadSpec()}>
             다시 시도
-          </button>
+          </WaflButton>
         </div>
       ) : null}
 
       {spec && state !== "loading" && state !== "error" ? (
-        <div className="mt-4 grid gap-3 rounded-md border border-[var(--pbp-divider)] bg-[var(--pbp-surface-muted)] p-3 text-sm text-[var(--pbp-muted)]">
-          <p>
-            치수표는 오른쪽 요약에만 표시됩니다. 세부 입력은 공통 모달에서 수정합니다.
-          </p>
+        <div className="mt-4 grid gap-2 wafl-shape-control border border-[var(--pbp-border)] bg-[var(--pbp-surface-muted)] p-3 text-sm text-[var(--pbp-text-muted)]">
+          <p>치수는 이 오른쪽 패널에서 요약만 표시하고, 전체 입력은 공통 모달에서 수정합니다.</p>
           {spec.poms.length > 0 ? (
-            <p>{spec.poms.slice(0, 4).map((pom) => pom.displayName).join(", ")}{spec.poms.length > 4 ? " 외" : ""}</p>
+            <p>{spec.poms.slice(0, 4).map((pom) => pom.displayName).join(", ")}{spec.poms.length > 4 ? " …" : ""}</p>
           ) : (
             <p>사용할 치수 항목이 없습니다. 회사 카탈로그 설정을 확인해 주세요.</p>
           )}
@@ -292,12 +323,12 @@ export default function WorkOrderSizeSpecPanel({
         </div>
       ) : null}
 
-      <div className="mt-4 border-t border-[var(--pbp-divider)] pt-4">
-        {pdfStatus ? <p className="text-sm text-[var(--pbp-muted)]">{pdfStatus}</p> : null}
+      <div className="mt-4 border-t border-[var(--pbp-border)] pt-4">
+        {pdfStatus ? <p className="text-sm text-[var(--pbp-text-muted)]">{pdfStatus}</p> : null}
         {pdfLink ? (
           <div className="mt-2 flex flex-wrap items-center gap-2 text-sm">
-            <span className="rounded-full border border-[var(--pbp-divider)] px-2 py-1 text-xs font-semibold">
-              {pdfLink.kind === "final" ? "제출용" : "미완성"}
+            <span className="wafl-shape-pill border border-[var(--pbp-border)] px-2 py-1 text-xs font-semibold">
+              {pdfLink.kind === "final" ? "최종본" : "미완성본"}
             </span>
             <a className="font-semibold underline" href={pdfLink.href} target="_blank" rel="noreferrer">
               {pdfLink.label}
@@ -306,114 +337,204 @@ export default function WorkOrderSizeSpecPanel({
         ) : null}
       </div>
 
-      {isEditorOpen && spec ? (
-        <div className="fixed inset-0 z-50 grid place-items-end bg-black/40 sm:place-items-center" role="dialog" aria-modal="true" aria-label="치수 입력 및 수정">
-          <div className="max-h-[92dvh] w-full overflow-hidden rounded-t-2xl bg-[var(--pbp-surface)] shadow-xl sm:max-w-5xl sm:rounded-2xl">
-            <div className="flex items-start justify-between gap-4 border-b border-[var(--pbp-divider)] p-4">
-              <div>
-                <p className="text-xs font-semibold uppercase tracking-wide text-[var(--pbp-muted)]">치수 입력</p>
-                <h4 className="text-lg font-semibold text-[var(--pbp-text)]">사이즈별 측정값</h4>
-                <p className="mt-1 text-sm text-[var(--pbp-muted)]">{completionLabel}</p>
-              </div>
-              <button type="button" onClick={() => setIsEditorOpen(false)} className="rounded-md border border-[var(--pbp-divider)] px-3 py-2 text-sm font-semibold">
-                닫기
-              </button>
-            </div>
-
-            <div className="max-h-[70dvh] overflow-auto p-4">
-              <div className="mb-4 flex flex-wrap items-center gap-2">
-                <label className="text-sm font-semibold text-[var(--pbp-text)]">
-                  단위
-                  <select
-                    className="ml-2 rounded-md border border-[var(--pbp-divider)] bg-[var(--pbp-surface)] px-3 py-2 text-sm"
-                    value={spec.measurementUnit}
-                    disabled={isActionDisabled}
-                    onChange={(event) => setSpec({ ...spec, measurementUnit: event.target.value === "inch" ? "inch" : "cm" })}
-                    aria-label="치수 단위"
-                  >
-                    <option value="cm">cm</option>
-                    <option value="inch">inch</option>
-                  </select>
-                </label>
-              </div>
-
-              <table className="min-w-full border-collapse text-sm">
-                <thead>
-                  <tr>
-                    <th className="sticky left-0 z-10 border-b border-[var(--pbp-divider)] bg-[var(--pbp-surface)] px-3 py-2 text-left font-semibold">
-                      측정 항목
-                    </th>
-                    {spec.sizes.map((size) => (
-                      <th key={size.code} className="border-b border-[var(--pbp-divider)] px-3 py-2 text-left font-semibold">
-                        {size.displayLabel}
-                      </th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
+      {spec && editorPresentation === "inline" && isEditorOpen ? (
+        <div
+          data-workorder-size-inline-editor="true"
+          className="mt-4 grid gap-4 wafl-shape-control border border-[var(--pbp-border)] bg-[var(--pbp-surface)] p-3"
+        >
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="text-sm font-semibold text-[var(--pbp-text-primary)]">단위</span>
+            <WaflSelect
+              value={spec.measurementUnit}
+              disabled={isActionDisabled}
+              onValueChange={(value) => setSpec({ ...spec, measurementUnit: value === "inch" ? "inch" : "cm" })}
+              ariaLabel="치수 단위"
+              options={[
+                { value: "cm", label: "cm" },
+                { value: "inch", label: "inch" },
+              ]}
+              size="sm"
+              width="auto"
+            />
+          </div>
+          <div className="overflow-x-auto">
+            <div className="min-w-[720px]">
+              <WaflDataTableShell>
+                <WaflDataTableHeader gridTemplateColumns={gridTemplateColumns}>
+                  <div className="font-semibold">측정 항목</div>
+                  {spec.sizes.map((size) => (
+                    <div key={size.code} className="font-semibold">
+                      {size.displayLabel}
+                    </div>
+                  ))}
+                </WaflDataTableHeader>
+                <WaflDataTableBody>
                   {spec.poms.map((pom) => (
-                    <tr key={pom.code}>
-                      <th className="sticky left-0 z-10 min-w-[180px] border-b border-[var(--pbp-divider)] bg-[var(--pbp-surface)] px-3 py-2 text-left align-top">
+                    <WaflDataTableRow key={pom.code} gridTemplateColumns={gridTemplateColumns}>
+                      <div className="min-w-[180px] text-left">
                         <span className="block font-semibold">{pom.displayName}</span>
-                        <span className="block text-xs font-normal text-[var(--pbp-muted)]">{measurementTypeLabels[pom.measurementType] ?? pom.measurementType}</span>
-                        {pom.instruction ? <span className="mt-1 block text-xs font-normal text-[var(--pbp-muted)]">{pom.instruction}</span> : null}
-                      </th>
+                        <span className="block text-xs font-normal text-[var(--pbp-text-muted)]">
+                          {measurementTypeLabels[pom.measurementType] ?? pom.measurementType}
+                        </span>
+                      </div>
                       {spec.sizes.map((size) => {
                         const value = draftValues.get(getValueKey(size.code, pom.code)) ?? "";
                         const inchValue = parseInchValue(value);
                         return (
-                          <td key={`${pom.code}-${size.code}`} className="border-b border-[var(--pbp-divider)] px-2 py-2">
+                          <div key={`${pom.code}-${size.code}`} className="min-w-0">
                             {spec.measurementUnit === "inch" ? (
                               <div className="flex min-w-[148px] gap-1">
-                                <input
-                                  className="w-16 rounded-md border border-[var(--pbp-divider)] bg-[var(--pbp-surface)] px-2 py-1.5 text-sm disabled:opacity-60"
-                                  value={inchValue.whole}
+                                <WaflNumberInput
+                                  className="w-16 border border-[var(--pbp-border)] bg-[var(--pbp-surface)] px-2 py-1.5 text-sm disabled:opacity-60"
+                                  value={valueToNumber(inchValue.whole)}
                                   disabled={locked || !editable}
                                   inputMode="numeric"
-                                  placeholder="25"
-                                  onChange={(event) => updateValue(size.code, pom.code, formatInchValue(event.target.value, inchValue.fraction))}
-                                  aria-label={`${pom.displayName} ${size.displayLabel} 정수`}
+                                  onValueChange={(nextValue) => updateValue(size.code, pom.code, formatInchValue(String(Math.trunc(nextValue)), inchValue.fraction))}
+                                  ariaLabel={`${pom.displayName} ${size.displayLabel} 정수`}
                                 />
-                                <select
-                                  className="w-20 rounded-md border border-[var(--pbp-divider)] bg-[var(--pbp-surface)] px-2 py-1.5 text-sm disabled:opacity-60"
+                                <WaflSelect
                                   value={inchValue.fraction}
                                   disabled={locked || !editable}
-                                  onChange={(event) => updateValue(size.code, pom.code, formatInchValue(inchValue.whole, event.target.value))}
-                                  aria-label={`${pom.displayName} ${size.displayLabel} 분수`}
-                                >
-                                  {inchFractions.map((fraction) => <option key={fraction.label} value={fraction.value}>{fraction.label}</option>)}
-                                </select>
+                                  onValueChange={(nextValue) => updateValue(size.code, pom.code, formatInchValue(inchValue.whole, nextValue))}
+                                  ariaLabel={`${pom.displayName} ${size.displayLabel} 분수`}
+                                  options={inchFractions.map((fraction) => ({ value: fraction.value, label: fraction.label }))}
+                                  size="sm"
+                                  width="auto"
+                                  className="w-20"
+                                />
                               </div>
                             ) : (
-                              <input
-                                className="w-24 rounded-md border border-[var(--pbp-divider)] bg-[var(--pbp-surface)] px-2 py-1.5 text-sm disabled:opacity-60"
-                                value={value}
+                              <WaflNumberInput
+                                className="w-24 border border-[var(--pbp-border)] bg-[var(--pbp-surface)] px-2 py-1.5 text-sm disabled:opacity-60"
+                                value={valueToNumber(value)}
                                 disabled={locked || !editable}
                                 inputMode="decimal"
-                                placeholder="54.5"
-                                onChange={(event) => updateValue(size.code, pom.code, event.target.value)}
-                                aria-label={`${pom.displayName} ${size.displayLabel}`}
+                                onValueChange={(nextValue) => updateValue(size.code, pom.code, String(nextValue))}
+                                ariaLabel={`${pom.displayName} ${size.displayLabel}`}
                               />
                             )}
-                          </td>
+                          </div>
                         );
                       })}
-                    </tr>
+                    </WaflDataTableRow>
                   ))}
-                </tbody>
-              </table>
-            </div>
-
-            <div className="flex flex-col gap-2 border-t border-[var(--pbp-divider)] p-4 sm:flex-row sm:justify-end">
-              <button type="button" onClick={() => setIsEditorOpen(false)} className="rounded-md border border-[var(--pbp-divider)] px-4 py-2 text-sm font-semibold">
-                취소
-              </button>
-              <button type="button" onClick={() => void saveSpec()} disabled={isActionDisabled} className="rounded-md bg-[var(--pbp-primary)] px-4 py-2 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-50">
-                {state === "saving" ? "저장 중" : "저장"}
-              </button>
+                </WaflDataTableBody>
+              </WaflDataTableShell>
             </div>
           </div>
+          <div className="flex flex-col gap-2 sm:flex-row sm:justify-end">
+            <WaflButton type="button" variant="secondary" onClick={() => setIsEditorOpen(false)}>
+              닫기
+            </WaflButton>
+            <WaflButton type="button" variant="primary" onClick={() => void saveSpec()} disabled={isActionDisabled}>
+              {state === "saving" ? "저장 중" : "저장"}
+            </WaflButton>
+          </div>
         </div>
+      ) : null}
+
+      {spec && editorPresentation === "modal" ? (
+        <ModalShell
+          open={isEditorOpen}
+          title="사이즈별 측정값"
+          description={completionLabel}
+          onClose={() => setIsEditorOpen(false)}
+          maxWidthClass="md:max-w-5xl"
+          bodyClassName="max-h-[70dvh] overflow-auto"
+          footer={(
+            <div className="flex w-full flex-col gap-2 sm:flex-row sm:justify-end">
+              <WaflButton type="button" variant="secondary" onClick={() => setIsEditorOpen(false)}>
+                취소
+              </WaflButton>
+              <WaflButton type="button" variant="primary" onClick={() => void saveSpec()} disabled={isActionDisabled}>
+                {state === "saving" ? "저장 중" : "저장"}
+              </WaflButton>
+            </div>
+          )}
+        >
+          <div className="mb-4 flex flex-wrap items-center gap-2">
+            <span className="text-sm font-semibold text-[var(--pbp-text-primary)]">단위</span>
+            <WaflSelect
+              value={spec.measurementUnit}
+              disabled={isActionDisabled}
+              onValueChange={(value) => setSpec({ ...spec, measurementUnit: value === "inch" ? "inch" : "cm" })}
+              ariaLabel="치수 단위"
+              options={[
+                { value: "cm", label: "cm" },
+                { value: "inch", label: "inch" },
+              ]}
+              size="sm"
+              width="auto"
+            />
+          </div>
+
+          <div className="min-w-[720px]">
+            <WaflDataTableShell>
+              <WaflDataTableHeader gridTemplateColumns={gridTemplateColumns}>
+                <div className="font-semibold">측정 항목</div>
+                {spec.sizes.map((size) => (
+                  <div key={size.code} className="font-semibold">
+                    {size.displayLabel}
+                  </div>
+                ))}
+              </WaflDataTableHeader>
+              <WaflDataTableBody>
+                {spec.poms.map((pom) => (
+                  <WaflDataTableRow key={pom.code} gridTemplateColumns={gridTemplateColumns}>
+                    <div className="min-w-[180px] text-left">
+                      <span className="block font-semibold">{pom.displayName}</span>
+                      <span className="block text-xs font-normal text-[var(--pbp-text-muted)]">
+                        {measurementTypeLabels[pom.measurementType] ?? pom.measurementType}
+                      </span>
+                      {pom.instruction ? (
+                        <span className="mt-1 block text-xs font-normal text-[var(--pbp-text-muted)]">{pom.instruction}</span>
+                      ) : null}
+                    </div>
+                    {spec.sizes.map((size) => {
+                      const value = draftValues.get(getValueKey(size.code, pom.code)) ?? "";
+                      const inchValue = parseInchValue(value);
+                      return (
+                        <div key={`${pom.code}-${size.code}`} className="min-w-0">
+                          {spec.measurementUnit === "inch" ? (
+                            <div className="flex min-w-[148px] gap-1">
+                              <WaflNumberInput
+                                className="w-16 border border-[var(--pbp-border)] bg-[var(--pbp-surface)] px-2 py-1.5 text-sm disabled:opacity-60"
+                                value={valueToNumber(inchValue.whole)}
+                                disabled={locked || !editable}
+                                inputMode="numeric"
+                                onValueChange={(nextValue) => updateValue(size.code, pom.code, formatInchValue(String(Math.trunc(nextValue)), inchValue.fraction))}
+                                ariaLabel={`${pom.displayName} ${size.displayLabel} 정수`}
+                              />
+                              <WaflSelect
+                                value={inchValue.fraction}
+                                disabled={locked || !editable}
+                                onValueChange={(nextValue) => updateValue(size.code, pom.code, formatInchValue(inchValue.whole, nextValue))}
+                                ariaLabel={`${pom.displayName} ${size.displayLabel} 분수`}
+                                options={inchFractions.map((fraction) => ({ value: fraction.value, label: fraction.label }))}
+                                size="sm"
+                                width="auto"
+                                className="w-20"
+                              />
+                            </div>
+                          ) : (
+                            <WaflNumberInput
+                              className="w-24 border border-[var(--pbp-border)] bg-[var(--pbp-surface)] px-2 py-1.5 text-sm disabled:opacity-60"
+                              value={valueToNumber(value)}
+                              disabled={locked || !editable}
+                              inputMode="decimal"
+                              onValueChange={(nextValue) => updateValue(size.code, pom.code, String(nextValue))}
+                              ariaLabel={`${pom.displayName} ${size.displayLabel}`}
+                            />
+                          )}
+                        </div>
+                      );
+                    })}
+                  </WaflDataTableRow>
+                ))}
+              </WaflDataTableBody>
+            </WaflDataTableShell>
+          </div>
+        </ModalShell>
       ) : null}
     </section>
   );

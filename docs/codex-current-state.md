@@ -1,14 +1,13 @@
-# Codex Current State - 0.24.34.3.1
+# Codex Current State - 0.24.34.4
 
 ## Version
 
-- Current version: `0.24.34.3.1`.
-- Current implementation version: `0.24.34.3.1`.
+- Current version: `0.24.34.4`.
+- Current implementation version: `0.24.34.4`.
 - Branch: `master`.
-- Latest completed version: `0.24.34.3.1` Product Completion, Canonical WAFL UI, and Automated Evidence Standard.
-- Next mandatory work: `0.24.34.4` Workorder Runtime Recovery, Right-side Size Panel, WAFL Modal, and Signup Submission E2E.
-- Next official feature after that: `0.24.35` Company-wide Export Execution.
-- 0.24.34.4 and 0.24.35 implementation have not started.
+- Latest implementation version: `0.24.34.4` Workorder Runtime Recovery, Canonical WAFL Size Panel, and Signup Product E2E.
+- Next official feature: `0.24.35` Company-wide Export Execution.
+- 0.24.35 implementation has not started.
 
 ## Mandatory Read Order
 
@@ -95,9 +94,8 @@ Canonical evidence:
 
 ## Current Roadmap
 
-- Current completed detail: `lib/internal/roadmap/roadmap-0.24.34.3.1.ts`.
-- Next mandatory detail: `0.24.34.4` Workorder Runtime Recovery, Right-side Size Panel, WAFL Modal, and Signup Submission E2E.
-- Next planned feature after the mandatory patch: `0.24.35` Company-wide Export Execution.
+- Current detail: `lib/internal/roadmap/roadmap-0.24.34.4.ts`.
+- Next planned feature: `0.24.35` Company-wide Export Execution.
 - Productization roadmap: `docs/productization-roadmap.md`.
 - Runtime roadmap screen: `/roadmap`.
 
@@ -189,7 +187,7 @@ Out of scope:
 - Worker source changes or deployment.
 - Actual PG/email provider integration.
 
-## Planned Sequence After 0.24.34.3.1
+## Planned Sequence After 0.24.34.4
 
 1. `0.24.34.4 — Workorder Runtime Recovery, Right-side Size Panel, WAFL Modal, and Signup Submission E2E`
 2. `0.24.35 — Company-wide Export Execution`
@@ -212,9 +210,9 @@ Confirmed rules:
 - Full Reset is prohibited as a generic fix; API, loading-state, migration, schema, and query evidence plus user approval are required.
 - Canonical detail: `docs/project/32-product-completion-and-ui-evidence-standard.md`.
 
-## 0.24.34.4 Mandatory Next Scope
+## 0.24.34.4 Completed Scope
 
-Before 0.24.35, Codex must complete:
+Before 0.24.35, Codex completed:
 
 - workorder list/detail indefinite-loading diagnosis and runtime repair without assuming Full Reset,
 - size summary in the canonical right-side panel after 디자인, 첨부 파일, 공장 전달사항, with the center duplicate removed,
@@ -225,3 +223,40 @@ Before 0.24.35, Codex must complete:
 - requirement matrix with every mandatory item at `LEVEL_4_PRODUCT_VERIFIED`.
 
 0.24.35 must not start before this mandatory patch is product-verified.
+
+## 0.24.34.4 Product Verification Result
+
+0.24.34.4 reached `LEVEL_4_PRODUCT_VERIFIED` for the scoped localhost product evidence:
+
+- Product Verified: `true`.
+- E2E/Smoke Summary: `PASS - workorder runtime and public signup browser verification completed`.
+- Workorder repository fetch started: `PASS`.
+- Workorder summary request count: `1`.
+- Workorder detail request count: `1`.
+- Workorder list runtime: `PASS`.
+- Workorder detail runtime: `PASS`.
+- Infinite loading regression: `PASS`.
+- Loading error state: `PASS`.
+- Size right-panel placement: `PASS`.
+- Size central-panel removal: `PASS`.
+- Factory instruction ordering: `PASS`.
+- Canonical WAFL modal import: `PASS`.
+- Direct overlay audit: `PASS`.
+- Desktop/mobile/iPad browser matrix: `PASS`.
+- Public signup browser verification: `PASS - 20/20`.
+- Console error count: `0`.
+- Failed request count: `2 total non-workorder cancelled background requests; 0 workorder failures`.
+- HTTP 4xx/5xx count: `0`.
+- First runtime failure stage: `HMR origin mismatch before repository fetch`.
+- API request 0 root cause: `127.0.0.1 baseURL과 localhost dev server origin 불일치`.
+- Runtime fix: Playwright and session helpers now use `http://localhost:3000` consistently.
+- Full Reset used: `false`.
+- Full Reset reason: `NOT_APPLICABLE - client runtime origin mismatch; DB reset unnecessary`.
+- DB migration applied: `NOT_APPLICABLE - no migration in 0.24.34.4`.
+- Final residual DB rows: `NOT_APPLICABLE - no DB fixture mutation`.
+- Final residual R2 objects: `NOT_APPLICABLE - no R2 mutation`.
+- Business data mutation: `false`.
+- Production mutation: `false`.
+- Worker changed/deployed: `false`.
+
+0.24.35 must not start until this patch is committed, pushed, and the final `4. Newest` handoff contains the matching source ZIP and repo-state.

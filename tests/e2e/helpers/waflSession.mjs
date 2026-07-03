@@ -68,7 +68,7 @@ export async function addWaflSessionCookie(context, payload) {
     return { ok: false, reason: "WAFL_SESSION_SECRET 또는 GOOGLE_OAUTH_CLIENT_SECRET이 필요합니다." };
   }
 
-  const baseURL = process.env.PLAYWRIGHT_BASE_URL || "http://127.0.0.1:3000";
+  const baseURL = process.env.PLAYWRIGHT_BASE_URL || "http://localhost:3000";
   await context.addCookies([
     {
       name: WAFL_AUTH_SESSION_COOKIE,

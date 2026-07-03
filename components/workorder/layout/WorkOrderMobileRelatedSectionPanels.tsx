@@ -6,12 +6,13 @@ import WorkOrderDrawingModal from "@/components/workorder/drawing/WorkOrderDrawi
 import {
   writeDesignDrawingModalOpenState,
 } from "@/components/workorder/drawing/workOrderDrawingModalSession";
+import WorkOrderSizeSpecPanel from "@/components/workorder/detail/WorkOrderSizeSpecPanel";
 import WorkOrderFactoryInstructionPanel from "@/components/workorder/factoryInstruction/WorkOrderFactoryInstructionPanel";
 import WorkOrderAttachmentPanel from "@/components/workorder/sidepanel/WorkOrderAttachmentPanel";
 import type { WorkOrderSidePanelProps } from "@/components/workorder/sidepanel/WorkOrderSidePanel.types";
 import { ATTACHMENT_SCOPE, isDesignAttachmentScope } from "@/lib/constants/workorderIdentity";
 
-export type WorkOrderMobileRelatedSectionKey = "attachment" | "design" | "instruction";
+export type WorkOrderMobileRelatedSectionKey = "attachment" | "design" | "instruction" | "size";
 
 type WorkOrderMobileRelatedSectionPanelsProps = WorkOrderSidePanelProps & {
   activeSection: WorkOrderMobileRelatedSectionKey;
@@ -47,6 +48,16 @@ export default function WorkOrderMobileRelatedSectionPanels({
         workOrderId={props.factoryInstructionWorkOrderId}
         editable={props.canEditFactoryInstruction}
         lockMessage={props.factoryInstructionLockMessage}
+      />
+    );
+  }
+
+  if (activeSection === "size") {
+    return (
+      <WorkOrderSizeSpecPanel
+        workOrderId={props.sizeSpecWorkOrderId}
+        locked={Boolean(props.sizeSpecLocked || props.writeLocked)}
+        editorPresentation="inline"
       />
     );
   }

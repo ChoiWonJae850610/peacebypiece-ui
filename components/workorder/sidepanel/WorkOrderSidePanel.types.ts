@@ -7,6 +7,8 @@ export type WorkOrderSidePanelProps = {
   canManageAttachments: boolean;
   writeLocked?: boolean;
   writeLockMessage?: string;
+  sizeSpecWorkOrderId: string;
+  sizeSpecLocked?: boolean;
   factoryInstructionWorkOrderId: string;
   canEditFactoryInstruction: boolean;
   factoryInstructionLockMessage?: string;
