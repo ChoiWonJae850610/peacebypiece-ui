@@ -1,13 +1,13 @@
 # Productization Roadmap Authority
 
-> Active baseline: `0.24.34.3`. Latest completed work: `0.24.34.3` Workorder PDF Live R2 Integration and Visual Verification. Next planned work: `0.24.35` Company-wide Export Execution.
+> Active baseline: `0.24.34.3.1`. Latest completed work: `0.24.34.3.1` Product Completion, Canonical WAFL UI, and Automated Evidence Standard. Next mandatory work: `0.24.34.4` Workorder Runtime Recovery, Right-side Size Panel, WAFL Modal, and Signup Submission E2E. Next feature after that: `0.24.35` Company-wide Export Execution.
 > Structured canonical source: `lib/internal/roadmap/`.
 > Runtime roadmap index: `lib/internal/roadmap/index.ts`.
 
 ## Status
 
-- Roadmap checkpoint version: `0.24.34.3`
-- APP_VERSION: `0.24.34.3`
+- Roadmap checkpoint version: `0.24.34.3.1`
+- APP_VERSION: `0.24.34.3.1`
 - Feature implementation progress: about `94%` after connecting workorder size/POM editing and incomplete/final PDF paths
 - Productization readiness: about `87%` after restoring Export, deletion, operations, CI, monitoring, and launch work
 - Current-state handoff: `docs/codex-current-state.md`
@@ -46,7 +46,9 @@
 20. `0.24.34.1` - Public Signup First-Draft Flow Fix and Repo-state Metadata Correction
 21. `0.24.34.2` - Customer-facing Product UX, System Catalog, Size Editing, and Workorder PDF Integration Cleanup
 22. `0.24.34.3` - Workorder PDF Live R2 Integration and Visual Verification
-23. `0.24.35` - Company-wide Export Execution
+23. `0.24.34.3.1` - Product Completion, Canonical WAFL UI, and Automated Evidence Standard
+24. `0.24.34.4` - Workorder Runtime Recovery, Right-side Size Panel, WAFL Modal, and Signup Submission E2E
+25. `0.24.35` - Company-wide Export Execution
 24. `0.24.36` - Termination, Recovery, and Automatic Deletion Execution
 25. `0.24.37` - Operations, Inquiry, Monitoring, CI, Accessibility, Performance, and Backup/Restore Foundations
 
@@ -72,6 +74,25 @@ The full implementation audit in `docs/audits/0.24.33.1-unimplemented-feature-fu
 - Final PDF: canonical completion eligibility, size/POM pages, latest-only retention, failure-safe replacement.
 - Keep supplier `order_request_pdf` separate.
 - Rendered-PDF visual verification and real-device PDF QA remain user/manual checks before launch.
+
+
+## 0.24.34.3.1 - Product Completion, Canonical WAFL UI, and Automated Evidence Standard
+
+- Canonical detail file: `lib/internal/roadmap/roadmap-0.24.34.3.1.ts`.
+- Defines LEVEL 1 code, LEVEL 2 static, LEVEL 3 runtime, and LEVEL 4 product verification.
+- Only LEVEL 4 may be reported as UI completion.
+- Requires exact host/section placement, canonical WAFL imports, localhost Playwright screenshots, locators, console/network checks, and evidence manifest.
+- Defines gitignored credential/storageState rules and prohibits evidence-free Full Reset recommendations.
+- Canonical standard: `docs/project/32-product-completion-and-ui-evidence-standard.md`.
+
+## 0.24.34.4 - Workorder Runtime Recovery, Right-side Size Panel, WAFL Modal, and Signup Submission E2E
+
+- Mandatory patch before 0.24.35.
+- Diagnose and repair workorder list/detail indefinite loading with API/loading/migration/query evidence.
+- Move size summary to the canonical right-side panel after 디자인, 첨부 파일, 공장 전달사항 and remove the center duplicate.
+- Replace the screen-local size modal overlay with canonical WAFL modal, inputs, select, table, and buttons.
+- Run signup submit → system-admin queue → approval → Trial → workspace dev/test E2E.
+- Generate desktop/mobile/iPad localhost evidence and finish only at LEVEL_4_PRODUCT_VERIFIED.
 
 ## 0.24.35 - Company-wide Export Execution
 

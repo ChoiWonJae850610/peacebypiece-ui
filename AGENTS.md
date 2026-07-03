@@ -9,6 +9,17 @@
 - If existing implementation, older roadmap text, or general security defaults conflict with final owner policy, classify it as an implementation mismatch and align the roadmap/implementation to the final policy instead of re-asking settled decisions.
 
 
+
+## Product Completion And UI Evidence
+- For every user-visible UI task, read and follow `docs/project/32-product-completion-and-ui-evidence-standard.md`.
+- UI work is complete only at `LEVEL_4_PRODUCT_VERIFIED`: the running localhost product matches the requested location, wording, visual system, responsive behavior, and interaction flow, with required screenshot/locator/console/network evidence.
+- Code existence, passing build, or static contracts alone must be reported as `CODE_COMPLETE` or `STATIC_VERIFIED`, not `completed`.
+- Use the exact canonical WAFL components listed in the standard. A screen-local `fixed inset-0` dialog overlay, custom focus/scroll-lock modal, or duplicated button/input/table visual grammar is a failure when a canonical WAFL component exists.
+- Express layout requirements as exact host component, section order, and forbidden duplicate locations, then verify them with Playwright locators.
+- UI versions require localhost Playwright evidence: desktop/mobile screenshots, iPad when relevant, interaction screenshots, console error 0, unexpected failed request 0, and trace/network diagnostics for failures. Missing evidence means `PRODUCT_QA_INCOMPLETE`.
+- Credentials and Google account passwords must remain in gitignored local environment/storageState inputs and must never enter Git, logs, screenshots, traces, or handoff ZIPs.
+- Do not recommend Full Reset for loading/UI failures until API, server, loading-state, migration, schema, and query evidence proves it is required. Full Reset remains destructive and requires explicit user approval.
+
 ## Start Of Work
 - Before changing files, check `git status`, the current branch, and `HEAD`.
 - Do not edit files when the user asks for analysis, inspection, or reporting only.

@@ -1,13 +1,14 @@
-# Codex Current State - 0.24.34.3
+# Codex Current State - 0.24.34.3.1
 
 ## Version
 
-- Current version: `0.24.34.3`.
-- Current implementation version: `0.24.34.3`.
+- Current version: `0.24.34.3.1`.
+- Current implementation version: `0.24.34.3.1`.
 - Branch: `master`.
-- Latest completed version: `0.24.34.3` Workorder PDF Live R2 Integration and Visual Verification.
-- Next official work: `0.24.35` Company-wide Export Execution.
-- 0.24.35 implementation has not started.
+- Latest completed version: `0.24.34.3.1` Product Completion, Canonical WAFL UI, and Automated Evidence Standard.
+- Next mandatory work: `0.24.34.4` Workorder Runtime Recovery, Right-side Size Panel, WAFL Modal, and Signup Submission E2E.
+- Next official feature after that: `0.24.35` Company-wide Export Execution.
+- 0.24.34.4 and 0.24.35 implementation have not started.
 
 ## Mandatory Read Order
 
@@ -20,8 +21,9 @@ Before implementation, Codex must read in this order:
 5. the latest confirmed topic specs relevant to the target work
 6. `docs/audits/0.24.33.1-unimplemented-feature-full-audit.md`
 7. `docs/productization-roadmap.md`
-8. the target `lib/internal/roadmap/roadmap-*.ts`
-9. older/provisional documents
+8. `docs/project/32-product-completion-and-ui-evidence-standard.md` for every user-visible UI task
+9. the target `lib/internal/roadmap/roadmap-*.ts`
+10. older/provisional documents
 
 Rules:
 
@@ -93,8 +95,9 @@ Canonical evidence:
 
 ## Current Roadmap
 
-- Current completed detail: `lib/internal/roadmap/roadmap-0.24.34.3.ts`.
-- Next planned detail: `0.24.35` Company-wide Export Execution.
+- Current completed detail: `lib/internal/roadmap/roadmap-0.24.34.3.1.ts`.
+- Next mandatory detail: `0.24.34.4` Workorder Runtime Recovery, Right-side Size Panel, WAFL Modal, and Signup Submission E2E.
+- Next planned feature after the mandatory patch: `0.24.35` Company-wide Export Execution.
 - Productization roadmap: `docs/productization-roadmap.md`.
 - Runtime roadmap screen: `/roadmap`.
 
@@ -186,9 +189,39 @@ Out of scope:
 - Worker source changes or deployment.
 - Actual PG/email provider integration.
 
-## Planned Sequence After 0.24.34.3
+## Planned Sequence After 0.24.34.3.1
 
-1. `0.24.35 — Company-wide Export Execution`
-2. `0.24.36 — Termination, Recovery, and Automatic Deletion Execution`
-3. `0.24.37 — Operations, Inquiry, Monitoring, CI, Accessibility, Performance, and Backup/Restore Foundations`
-4. External-dependency/launch versions for actual PG, email, production infrastructure, DNS/domain, legal review, and consolidated launch QA.
+1. `0.24.34.4 — Workorder Runtime Recovery, Right-side Size Panel, WAFL Modal, and Signup Submission E2E`
+2. `0.24.35 — Company-wide Export Execution`
+3. `0.24.36 — Termination, Recovery, and Automatic Deletion Execution`
+4. `0.24.37 — Operations, Inquiry, Monitoring, CI, Accessibility, Performance, and Backup/Restore Foundations`
+5. External-dependency/launch versions for actual PG, email, production infrastructure, DNS/domain, legal review, and consolidated launch QA.
+
+
+## 0.24.34.3.1 Product Completion Standard
+
+`0.24.34.3.1 — Product Completion, Canonical WAFL UI, and Automated Evidence Standard`
+
+Confirmed rules:
+
+- UI work is complete only at `LEVEL_4_PRODUCT_VERIFIED`.
+- Code existence, build, typecheck, lint, and static contracts alone are not product completion.
+- Exact host component, section order, forbidden duplicate locations, and canonical WAFL imports must be stated and verified.
+- Localhost Playwright evidence is mandatory: desktop/mobile screenshots, iPad when relevant, interaction screenshot, locator assertions, console error 0, unexpected failed request 0, and trace/network diagnostics for failures.
+- Credentials remain in gitignored local environment or storageState inputs and never enter Git or handoff ZIPs.
+- Full Reset is prohibited as a generic fix; API, loading-state, migration, schema, and query evidence plus user approval are required.
+- Canonical detail: `docs/project/32-product-completion-and-ui-evidence-standard.md`.
+
+## 0.24.34.4 Mandatory Next Scope
+
+Before 0.24.35, Codex must complete:
+
+- workorder list/detail indefinite-loading diagnosis and runtime repair without assuming Full Reset,
+- size summary in the canonical right-side panel after 디자인, 첨부 파일, 공장 전달사항, with the center duplicate removed,
+- replacement of the screen-local size dialog overlay with canonical WAFL modal and controls,
+- real dev/test signup submit → system-admin queue → approval → Trial → workspace E2E,
+- customer-copy audit in running localhost screens,
+- automated desktop/mobile/iPad screenshots, locator assertions, console/network evidence, and traces,
+- requirement matrix with every mandatory item at `LEVEL_4_PRODUCT_VERIFIED`.
+
+0.24.35 must not start before this mandatory patch is product-verified.
