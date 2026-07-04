@@ -1,13 +1,29 @@
-# Codex Current State - 0.24.34.6
+# Codex Current State - 0.24.34.7
 
 ## Version
 
-- Current version: `0.24.34.6`.
-- Current implementation version: `0.24.34.6`.
+- Current version: `0.24.34.7`.
+- Current implementation version: `0.24.34.7`.
 - Branch: `master`.
-- Latest implementation version: `0.24.34.6` System Admin and Customer Workspace Gap Audit.
+- Latest implementation version: `0.24.34.7` Pipeline Packaging and Cleanup Audit Guard.
 - Next official feature: `0.24.35` Company-wide Export Execution.
 - 0.24.35 implementation has not started.
+
+
+## 0.24.34.7 Packaging/Cleanup Guard
+
+`0.24.34.7` is a pipeline packaging and cleanup-audit version.
+
+Confirmed changes:
+
+- `tools/pipeline/pipeline-patch-processing.ps1` now reads `APP_VERSION` from `lib/constants/version.ts` rather than the `app.ts` re-export file.
+- download-watcher patch processing backup ZIP creation now excludes QA artifacts/test output/report directories and generated files.
+- `tools/pipeline/peacebypiece-auto-pipeline.ps1` source ZIP contract now also blocks `blob-report`, `coverage`, `.nyc_output`, `storageState*.json`, `*.har`, and `*.webm`.
+- source ZIP and QA evidence ZIP remain separate artifacts.
+- Korean docs folder names must not be renamed from Linux/ChatGPT mojibake observation alone; Windows/Git confirmation is required.
+
+0.24.35 remains not started.
+
 
 ## Mandatory Read Order
 
@@ -23,10 +39,13 @@ Before implementation, Codex must read in this order:
 8. `docs/audits/0.24.33.1-unimplemented-feature-full-audit.md`
 9. `docs/audits/0.24.34.6-system-admin-screen-gap-audit.md`
 10. `docs/audits/0.24.34.6-customer-workspace-screen-gap-audit.md`
-11. `docs/productization-roadmap.md`
-12. the target `lib/internal/roadmap/roadmap-*.ts`
-13. the relevant `docs/codex-prompts/0.24.34.5-*` prompt document before each continuation
-14. older/provisional documents
+11. `docs/audits/0.24.34.7-source-zip-packaging-audit.md`
+12. `docs/audits/0.24.34.7-project-structure-and-cleanup-audit.md`
+13. `docs/audits/0.24.34.7-refactor-candidates-audit.md`
+14. `docs/productization-roadmap.md`
+15. the target `lib/internal/roadmap/roadmap-*.ts`
+16. the relevant `docs/codex-prompts/0.24.34.5-*` prompt document before each continuation
+17. older/provisional documents
 
 Current 0.24.34.5 continuation prompt documents:
 

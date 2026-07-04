@@ -368,3 +368,24 @@ Rules:
 - `CONFIRMED` Factory-delivery workorder PDF must not include internal money/cost fields such as unit price, amount, cost, margin, loss amount, or internal calculation values.
 - `CONFIRMED` PDF/screen implementation output requires owner visual review before final commit/push.
 - `CONFIRMED` `0.24.35 — Company-wide Export Execution` remains blocked until the final review prompt completes.
+
+
+## 0.24.34.7 Pipeline Packaging and Cleanup Guard
+
+Status: IMPLEMENTED by static GPT patch; Windows/PowerShell verification required.
+
+Confirmed policy:
+
+- Source ZIP and QA evidence ZIP must remain separate.
+- `artifacts/`, `playwright-report/`, `test-results/`, `reports/`, `blob-report/`, `coverage/`, `.nyc_output/`, generated ZIPs, repo-state files, build-result files, env files, tsbuildinfo, storageState, HAR, and webm evidence must not be included in source ZIP handoffs.
+- `tools/pipeline/pipeline-patch-processing.ps1` is the actual download-watcher patch processing path for backup ZIP creation; `download-watcher.ps1` remains the watcher entry point.
+- repo-state APP_VERSION must be read from `lib/constants/version.ts`, not from `lib/constants/app.ts`.
+- Korean docs folder names that appear broken only in Linux/ChatGPT ZIP extraction must not be renamed unless Windows/Git also show broken paths.
+- Lockfile deletion, report deletion, large-file refactoring, and global WAFL raw UI replacement require separate owner approval and route/file-level verification.
+
+Canonical follow-up audits:
+
+- `docs/audits/0.24.34.7-source-zip-packaging-audit.md`
+- `docs/audits/0.24.34.7-project-structure-and-cleanup-audit.md`
+- `docs/audits/0.24.34.7-refactor-candidates-audit.md`
+

@@ -654,20 +654,27 @@ function InvokeGitOutput {
     return @($output)
 }
 
-function GetAppVersionLineFromProject {
-    $appVersionPath = Join-Path $ProjectDir "lib\constants\app.ts"
+function GetAppVersionValueFromProject {
+    $appVersionPath = Join-Path $ProjectDir "lib\constants\version.ts"
 
     if (-not (Test-Path -LiteralPath $appVersionPath)) {
         return "APP_VERSION file not found: $appVersionPath"
     }
 
-    $match = Select-String -Path $appVersionPath -Pattern "APP_VERSION" -ErrorAction SilentlyContinue | Select-Object -First 1
+    try {
+        $content = [System.IO.File]::ReadAllText($appVersionPath, [System.Text.Encoding]::UTF8)
+        $pattern = "(?m)^\s*export\s+const\s+APP_VERSION\s*=\s*[`\"']([^`\"']+)[`\"']\s*;?"
+        $match = [regex]::Match($content, $pattern)
 
-    if ($null -eq $match) {
-        return "APP_VERSION line not found in lib\constants\app.ts"
+        if ($match.Success) {
+            return $match.Groups[1].Value.Trim()
+        }
+
+        return "APP_VERSION value not found in lib\constants\version.ts"
     }
-
-    return $match.Line.Trim()
+    catch {
+        return "APP_VERSION read error: $($_.Exception.Message)"
+    }
 }
 
 function SaveRepoStateSnapshot {
@@ -736,7 +743,7 @@ function SaveRepoStateSnapshot {
     $lines.Add("")
 
     $lines.Add("APP_VERSION:")
-    $lines.Add((GetAppVersionLineFromProject))
+    $lines.Add((GetAppVersionValueFromProject))
     $lines.Add("")
 
     $lines.Add("Remote:")
@@ -946,7 +953,49 @@ function BackupProjectToZip {
                 Remove-Item -LiteralPath $zipPath -Force
             }
 
-            tar -a -c -f $zipPath --exclude=node_modules --exclude=.next --exclude=.git --exclude=.tmp --exclude=.env.local --exclude=*.log .
+            $tarExcludeArgs = @(
+                "--exclude=node_modules",
+                "--exclude=./node_modules",
+                "--exclude=.next",
+                "--exclude=./.next",
+                "--exclude=.git",
+                "--exclude=./.git",
+                "--exclude=.wrangler",
+                "--exclude=./.wrangler",
+                "--exclude=.tmp",
+                "--exclude=./.tmp",
+                "--exclude=artifacts",
+                "--exclude=./artifacts",
+                "--exclude=playwright-report",
+                "--exclude=./playwright-report",
+                "--exclude=test-results",
+                "--exclude=./test-results",
+                "--exclude=reports",
+                "--exclude=./reports",
+                "--exclude=blob-report",
+                "--exclude=./blob-report",
+                "--exclude=.nyc_output",
+                "--exclude=./.nyc_output",
+                "--exclude=coverage",
+                "--exclude=./coverage",
+                "--exclude=.env",
+                "--exclude=./.env",
+                "--exclude=.env.*",
+                "--exclude=./.env.*",
+                "--exclude=*.zip",
+                "--exclude=repo-state-*.txt",
+                "--exclude=build-result-*.txt",
+                "--exclude=*.tsbuildinfo",
+                "--exclude=*.log",
+                "--exclude=*.bak",
+                "--exclude=*.backup",
+                "--exclude=*.old",
+                "--exclude=*.orig",
+                "--exclude=*.tmp",
+                "--exclude=*.temp"
+            )
+
+            tar -a -c -f $zipPath @tarExcludeArgs .
 
             if ($LASTEXITCODE -ne 0) {
                 LogWarn "백업 zip 생성 실패. git commit 결과에는 영향 없음."

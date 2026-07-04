@@ -1,19 +1,48 @@
 # Productization Roadmap Authority
 
-> Active baseline: `0.24.34.6`. Current checkpoint: `0.24.34.6` System Admin and Customer Workspace Gap Audit. Next feature: `0.24.35` Company-wide Export Execution.
+> Active baseline: `0.24.34.7`. Current checkpoint: `0.24.34.7` Pipeline Packaging and Cleanup Audit Guard. Next feature: `0.24.35` Company-wide Export Execution.
 > Structured canonical source: `lib/internal/roadmap/`.
 > Runtime roadmap index: `lib/internal/roadmap/index.ts`.
 
 ## Status
 
-- Roadmap checkpoint version: `0.24.34.6`
-- APP_VERSION: `0.24.34.6`
-- Feature implementation progress: about `94%` after documenting route-level system-admin and customer-workspace gaps
-- Productization readiness: about `88%` after route-level gap audit coverage was added
+- Roadmap checkpoint version: `0.24.34.7`
+- APP_VERSION: `0.24.34.7`
+- Feature implementation progress: about `94%` after pipeline packaging guard and cleanup audit documentation
+- Productization readiness: about `89%` after source ZIP/evidence ZIP separation and cleanup guard documentation
 - Current-state handoff: `docs/codex-current-state.md`
 - System-admin screen: `/roadmap`
 - Manual QA status: `PRODUCT_QA_INCOMPLETE`
 - Current planning policy: before 1.0, `master` remains the single development/QA branch and Vercel deployment is used for real-device QA.
+
+
+
+
+## 0.24.34.7 Pipeline Packaging and Cleanup Guard
+
+`0.24.34.7` adds low-risk pipeline/documentation guard work before actual 0.24.34.x productization implementation continues.
+
+Canonical audit references:
+
+- `docs/audits/0.24.34.7-source-zip-packaging-audit.md`
+- `docs/audits/0.24.34.7-project-structure-and-cleanup-audit.md`
+- `docs/audits/0.24.34.7-refactor-candidates-audit.md`
+
+Confirmed implementation scope:
+
+- source ZIP exclude correction for the download-watcher patch processing path
+- repo-state APP_VERSION parsing correction
+- menu 7 source ZIP contract alignment in `peacebypiece-auto-pipeline.ps1`
+- cleanup/refactor/delete candidates documented without destructive deletion
+
+Not included:
+
+- Korean docs folder rename
+- lockfile deletion
+- reports/evidence deletion
+- large-file split
+- WAFL raw UI global replacement
+- 0.24.35 Export execution
 
 
 ## 0.24.34.6 Route-level Gap Audits
