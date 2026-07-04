@@ -1,11 +1,11 @@
-# Codex Current State - 0.24.34.5
+# Codex Current State - 0.24.34.6
 
 ## Version
 
-- Current version: `0.24.34.5`.
-- Current implementation version: `0.24.34.5`.
+- Current version: `0.24.34.6`.
+- Current implementation version: `0.24.34.6`.
 - Branch: `master`.
-- Latest implementation version: `0.24.34.5` Live Workorder, Signup, System UI, and PDF Review Checkpoint.
+- Latest implementation version: `0.24.34.6` System Admin and Customer Workspace Gap Audit.
 - Next official feature: `0.24.35` Company-wide Export Execution.
 - 0.24.35 implementation has not started.
 
@@ -19,10 +19,12 @@ Before implementation, Codex must read in this order:
 4. `docs/project/31-pre-codex-integrated-master-plan.md`
 5. the latest confirmed topic specs relevant to the target work
 6. `docs/audits/0.24.33.1-unimplemented-feature-full-audit.md`
-7. `docs/productization-roadmap.md`
-8. `docs/project/32-product-completion-and-ui-evidence-standard.md` for every user-visible UI task
-9. the target `lib/internal/roadmap/roadmap-*.ts`
-10. older/provisional documents
+7. `docs/audits/0.24.34.6-system-admin-screen-gap-audit.md`
+8. `docs/audits/0.24.34.6-customer-workspace-screen-gap-audit.md`
+9. `docs/productization-roadmap.md`
+10. `docs/project/32-product-completion-and-ui-evidence-standard.md` for every user-visible UI task
+11. the target `lib/internal/roadmap/roadmap-*.ts`
+12. older/provisional documents
 
 Rules:
 
@@ -30,6 +32,18 @@ Rules:
 - If implementation, an older roadmap, or general SaaS convention conflicts with final owner policy, classify it as an implementation mismatch.
 - The latest implementation audit is evidence of actual completion state, not a replacement for final owner policy.
 - A historical roadmap entry marked `completed` means that entry's declared scope was completed. It does not prove that every higher-level canonical product requirement in the same domain is finished.
+
+
+## 0.24.34.6 Audit Update
+
+- `0.24.34.6` is a document-only gap audit version created before Codex implementation resumes.
+- Added canonical route-level audits:
+  - `docs/audits/0.24.34.6-system-admin-screen-gap-audit.md`
+  - `docs/audits/0.24.34.6-customer-workspace-screen-gap-audit.md`
+- These audits do not complete implementation. They define the missing and weak productization areas that must be considered in `0.24.34.5` continuations and before `0.24.35`.
+- `0.24.35 — Company-wide Export Execution` remains not started.
+- Known documentation caveat: there are two existing `docs/project/33-*` files. Future new project policy documents should avoid duplicate numbering.
+- Known tooling caveat: the repo-state generator can read APP_VERSION from a re-export file and print `export { APP_VERSION } from "./version";`; future Codex work should read `lib/constants/version.ts` directly.
 
 ## Policy Authority
 

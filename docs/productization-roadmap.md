@@ -1,19 +1,33 @@
 # Productization Roadmap Authority
 
-> Active baseline: `0.24.34.5`. Current checkpoint: `0.24.34.5` Live Workorder, Signup, System UI, and PDF Review Checkpoint. Next feature: `0.24.35` Company-wide Export Execution.
+> Active baseline: `0.24.34.6`. Current checkpoint: `0.24.34.6` System Admin and Customer Workspace Gap Audit. Next feature: `0.24.35` Company-wide Export Execution.
 > Structured canonical source: `lib/internal/roadmap/`.
 > Runtime roadmap index: `lib/internal/roadmap/index.ts`.
 
 ## Status
 
-- Roadmap checkpoint version: `0.24.34.5`
-- APP_VERSION: `0.24.34.5`
-- Feature implementation progress: about `94%` after connecting workorder size/POM editing and incomplete/final PDF paths
-- Productization readiness: about `87%` after restoring Export, deletion, operations, CI, monitoring, and launch work
+- Roadmap checkpoint version: `0.24.34.6`
+- APP_VERSION: `0.24.34.6`
+- Feature implementation progress: about `94%` after documenting route-level system-admin and customer-workspace gaps
+- Productization readiness: about `88%` after route-level gap audit coverage was added
 - Current-state handoff: `docs/codex-current-state.md`
 - System-admin screen: `/roadmap`
 - Manual QA status: `PRODUCT_QA_INCOMPLETE`
 - Current planning policy: before 1.0, `master` remains the single development/QA branch and Vercel deployment is used for real-device QA.
+
+
+## 0.24.34.6 Route-level Gap Audits
+
+`0.24.34.6` adds audit documents rather than implementation code.
+
+Canonical audit references:
+
+- `docs/audits/0.24.34.6-system-admin-screen-gap-audit.md`
+- `docs/audits/0.24.34.6-customer-workspace-screen-gap-audit.md`
+
+These documents must be checked before writing `0.24.34.5` continuation instructions for PDF, size standards, workorder live runtime, signup returning-applicant state, customer dashboard compaction, and system-admin screen cleanup.
+
+The audits explicitly keep `0.24.35 — Company-wide Export Execution` as not started.
 
 ## Internal Access Boundary
 

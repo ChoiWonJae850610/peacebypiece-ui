@@ -306,3 +306,28 @@ Before public launch, verify against current law and actual provider contracts:
 - `CONFIRMED` `/system/companies` is not deleted; it remains approved-customer operations, while `/system/signup-applications` remains pre-approval review.
 - `CONFIRMED` `/system` combines confirmation-needed counts, signup review, trial/billing/storage risk, plan distribution, and customer operations into a compact dashboard.
 - `TODO` Implement the 0.24.34.5 continuation sequence recorded in `docs/project/33-workorder-pdf-size-dashboard-finalization.md` before starting 0.24.35 unless the owner explicitly re-prioritizes.
+
+
+
+## 0.24.34.6 Route-level screen gap audit update
+
+Status: `CONFIRMED_AUDIT`
+Scope: documentation and roadmap alignment before `0.24.35`.
+
+The following audit documents are canonical TODO references for remaining pre-export work:
+
+- `docs/audits/0.24.34.6-system-admin-screen-gap-audit.md`
+- `docs/audits/0.24.34.6-customer-workspace-screen-gap-audit.md`
+
+Confirmed implications:
+
+- `0.24.35 — Company-wide Export Execution` must not start until the `0.24.34.5` continuation split is clearly staged against these audits.
+- `/system/companies` is not deleted. It remains approved-customer operations management.
+- `/system/signup-applications` remains pre-approval review and must be simplified around approve, revision request, reject, and more-menu actions.
+- `/system` must consolidate attention-needed, signup review, Trial, storage-risk, plan distribution, and customer operations into a compact operator dashboard.
+- Customer `/workspace` main must remove or collapse the large `PLAN AND STORAGE` block and prioritize work queues and recent workorders.
+- Factory-delivery workorder PDFs must use the confirmed table-style production document policy: no internal costs, representative design image, factory instruction memo, production materials/process information, and Korean size page when applicable.
+- System size/POM standards must supply Korean display names and snapshot-based workorder size specs.
+- Same Google returning-applicant signup flow must restore the existing application state instead of showing the business-information form again.
+
+This update is an audit and planning record. It does not mark the route-level work as implemented.
