@@ -17,14 +17,25 @@ Before implementation, Codex must read in this order:
 2. `docs/codex-current-state.md`
 3. `docs/project/26-final-policy-decisions-and-master-todo.md`
 4. `docs/project/31-pre-codex-integrated-master-plan.md`
-5. the latest confirmed topic specs relevant to the target work
-6. `docs/audits/0.24.33.1-unimplemented-feature-full-audit.md`
-7. `docs/audits/0.24.34.6-system-admin-screen-gap-audit.md`
-8. `docs/audits/0.24.34.6-customer-workspace-screen-gap-audit.md`
-9. `docs/productization-roadmap.md`
-10. `docs/project/32-product-completion-and-ui-evidence-standard.md` for every user-visible UI task
-11. the target `lib/internal/roadmap/roadmap-*.ts`
-12. older/provisional documents
+5. `docs/project/32-product-completion-and-ui-evidence-standard.md`
+6. `docs/project/33-workorder-pdf-size-dashboard-finalization.md`
+7. the latest confirmed topic specs relevant to the target work
+8. `docs/audits/0.24.33.1-unimplemented-feature-full-audit.md`
+9. `docs/audits/0.24.34.6-system-admin-screen-gap-audit.md`
+10. `docs/audits/0.24.34.6-customer-workspace-screen-gap-audit.md`
+11. `docs/productization-roadmap.md`
+12. the target `lib/internal/roadmap/roadmap-*.ts`
+13. the relevant `docs/codex-prompts/0.24.34.5-*` prompt document before each continuation
+14. older/provisional documents
+
+Current 0.24.34.5 continuation prompt documents:
+
+- `docs/codex-prompts/0.24.34.5-continuation-a-workorder-pdf-template.md`
+- `docs/codex-prompts/0.24.34.5-continuation-b-size-standards-ui.md`
+- `docs/codex-prompts/0.24.34.5-continuation-c-live-workorder-runtime.md`
+- `docs/codex-prompts/0.24.34.5-continuation-d-signup-return-policy-modal.md`
+- `docs/codex-prompts/0.24.34.5-continuation-e-dashboard-system-admin.md`
+- `docs/codex-prompts/0.24.34.5-final-review-and-commit.md`
 
 Rules:
 

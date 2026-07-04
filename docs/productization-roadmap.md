@@ -29,6 +29,27 @@ These documents must be checked before writing `0.24.34.5` continuation instruct
 
 The audits explicitly keep `0.24.35 — Company-wide Export Execution` as not started.
 
+
+## 0.24.34.6 Codex Prompt Documents
+
+`0.24.34.6` also prepares the Codex prompt documents that must be read and executed in sequence when Codex work resumes.
+
+Prompt references:
+
+- `docs/codex-prompts/0.24.34.5-continuation-a-workorder-pdf-template.md`
+- `docs/codex-prompts/0.24.34.5-continuation-b-size-standards-ui.md`
+- `docs/codex-prompts/0.24.34.5-continuation-c-live-workorder-runtime.md`
+- `docs/codex-prompts/0.24.34.5-continuation-d-signup-return-policy-modal.md`
+- `docs/codex-prompts/0.24.34.5-continuation-e-dashboard-system-admin.md`
+- `docs/codex-prompts/0.24.34.5-final-review-and-commit.md`
+
+Execution rule:
+
+- Use one prompt at a time.
+- Do not merge A-E into one large implementation run unless the previous continuation is fully verified.
+- Each prompt must re-read the canonical policy/audit documents listed in `docs/codex-current-state.md`.
+- `0.24.35 — Company-wide Export Execution` remains not started until `0.24.34.5` final review and closeout are complete.
+
 ## Internal Access Boundary
 
 - Non-destructive internal/test/diagnostic features are permission-gated by active `system_admin`.

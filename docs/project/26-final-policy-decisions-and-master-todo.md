@@ -331,3 +331,30 @@ Confirmed implications:
 - Same Google returning-applicant signup flow must restore the existing application state instead of showing the business-information form again.
 
 This update is an audit and planning record. It does not mark the route-level work as implemented.
+
+
+## 99. 0.24.34.6 Codex Prompt Documents and Continuation Order
+
+Status: `CONFIRMED`
+
+Before `0.24.35 — Company-wide Export Execution` starts, the remaining `0.24.34.5` implementation must be executed through the prepared prompt documents. These prompt documents are canonical operational instructions and are linked from current-state and productization roadmap.
+
+Prompt order:
+
+- `docs/codex-prompts/0.24.34.5-continuation-a-workorder-pdf-template.md`
+- `docs/codex-prompts/0.24.34.5-continuation-b-size-standards-ui.md`
+- `docs/codex-prompts/0.24.34.5-continuation-c-live-workorder-runtime.md`
+- `docs/codex-prompts/0.24.34.5-continuation-d-signup-return-policy-modal.md`
+- `docs/codex-prompts/0.24.34.5-continuation-e-dashboard-system-admin.md`
+- `docs/codex-prompts/0.24.34.5-final-review-and-commit.md`
+
+Rules:
+
+- Execute one continuation at a time.
+- Continuation A must settle the factory-delivery workorder PDF template before final PDF visual review.
+- Continuation B must settle system size standards and measurement UI usability before size/PDF completion is claimed.
+- Continuation C must verify real dev/test workorder selection, factory save, generated-document attachment refresh, and PDF viewer behavior.
+- Continuation D must verify the returning signup applicant flow and shared policy viewer/consent evidence.
+- Continuation E must clean up the customer dashboard, system-admin dashboard, signup review UX, and company operations route roles.
+- Final review and commit must not run until owner visual review and required evidence are complete.
+- `0.24.35` remains blocked until this sequence is either completed or explicitly re-scoped by the owner.

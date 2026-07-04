@@ -8,11 +8,13 @@ export const ROADMAP_0_24_34_6: RoadmapVersionDetail = {
     "0.24.35 Export 착수 전에 시스템관리자 화면과 고객사 작업공간 화면의 미완성·보수 항목을 route 단위로 문서화한다.",
     "공장 전달 PDF, 치수 기준정보, 가입 신청 재방문, 고객사 메인 대시보드, system-admin 운영 화면의 잔여 작업을 실제 구현 순서와 연결한다.",
     "이번 버전은 코드 구현이 아니라 GPT 기반 정책·gap audit 문서화 버전이다.",
+    "Codex 재개 시 읽을 continuation prompt 문서를 저장소에 보존한다.",
   ],
   visibleChanges: [
     "새 system-admin route-level gap audit 문서가 추가된다.",
     "새 customer workspace route-level gap audit 문서가 추가된다.",
     "roadmap/current-state/master TODO가 0.24.34.6 감사 문서를 다음 구현 기준으로 참조한다.",
+    "0.24.34.5 continuation A-E와 final review Codex prompt 문서가 추가된다.",
   ],
   expectedUi: [
     "실제 화면 UI는 변경하지 않는다.",
