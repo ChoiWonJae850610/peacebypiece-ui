@@ -1,11 +1,11 @@
-# Codex Current State - 0.24.34.4
+# Codex Current State - 0.24.34.5
 
 ## Version
 
-- Current version: `0.24.34.4`.
-- Current implementation version: `0.24.34.4`.
+- Current version: `0.24.34.5`.
+- Current implementation version: `0.24.34.5`.
 - Branch: `master`.
-- Latest implementation version: `0.24.34.4` Workorder Runtime Recovery, Canonical WAFL Size Panel, and Signup Product E2E.
+- Latest implementation version: `0.24.34.5` Live Workorder, Signup, System UI, and PDF Review Checkpoint.
 - Next official feature: `0.24.35` Company-wide Export Execution.
 - 0.24.35 implementation has not started.
 
@@ -94,7 +94,7 @@ Canonical evidence:
 
 ## Current Roadmap
 
-- Current detail: `lib/internal/roadmap/roadmap-0.24.34.4.ts`.
+- Current detail: `lib/internal/roadmap/roadmap-0.24.34.5.ts`.
 - Next planned feature: `0.24.35` Company-wide Export Execution.
 - Productization roadmap: `docs/productization-roadmap.md`.
 - Runtime roadmap screen: `/roadmap`.
@@ -260,3 +260,83 @@ Before 0.24.35, Codex completed:
 - Worker changed/deployed: `false`.
 
 0.24.35 must not start until this patch is committed, pushed, and the final `4. Newest` handoff contains the matching source ZIP and repo-state.
+
+## 0.24.34.5 Current Checkpoint Scope
+
+0.24.34.5 is a user-review checkpoint, not the start of 0.24.35.
+
+- Product Completion Level target before user review: `PRODUCT_QA_INCOMPLETE` until every live PDF, signup-returning, policy-modal, system-dashboard, and evidence ZIP requirement is complete.
+- Commit/push: `NOT_RUN` until the user reviews PDF and screen evidence.
+- Scope: live workorder selection/loading, factory save error handling, generated PDF/viewer evidence, system size information linkage, returning signup applicant state, policy modal unification, simplified system signup review, compact system dashboard, and system companies role cleanup.
+- Evidence: PDF page PNGs, desktop/mobile/iPad screenshots, JSON manifests, requirement matrix, and a separate QA evidence ZIP under `C:\CWJ_Project\Patch\PeacebyPiece\5. QA_Evidence\`.
+- Exclusions: `0.24.35`, production DB/R2/Worker access, Full Reset, destructive migration, actual PG/email, and final commit/push.
+
+### 0.24.34.5 Continuation Evidence Status
+
+- Product completion level: `PRODUCT_QA_INCOMPLETE`.
+- Product verified: `false` until user PDF/screen review and remaining manual OAuth evidence are complete.
+- Workorder localhost evidence:
+  - Chromium desktop: `PASS`.
+  - Mobile Chromium: `PASS`.
+  - iPad WebKit: `PASS`.
+  - Workorder summary request count across latest manifests: `12`.
+  - Workorder detail request count across latest manifests: `11`.
+  - HTTP 4xx/5xx count across latest manifests: `0`.
+  - Page error count across latest manifests: `0`.
+  - Console error count across latest manifests: `2` (`/api/policies/reagreement` abort/resource timing noise remains recorded, not hidden).
+  - Failed request count across latest manifests: `7` (abort/cancel during navigation; workorder summary/detail/PDF requests completed).
+- Root causes fixed:
+  - Actual dev/test workorder IDs use `wo-...`; opaque route validation previously accepted only `wo_...`.
+  - Generated workorder/order-request PDF viewer previously attempted direct R2 reads while the dev/test flow uses the Worker-backed storage path; the route now performs server-side signed Worker GET without exposing signed URLs to the browser.
+  - Mobile/iPad hydration mismatch from viewport-dependent first render was reduced by using a stable initial layout size and switching after mount.
+- Product screenshot evidence:
+  - Public signup policy modal: `PASS`.
+  - System dashboard: `PASS`.
+  - System companies role cleanup screen: `PASS`.
+  - System signup review screen: `PASS`.
+- PDF evidence:
+  - Server-proxied workorder PDF viewer: `PASS`.
+  - PDF binary saved under `artifacts/pdf-qa/0.24.34.5/`.
+  - PDF page PNG render: `PASS` for page 1 and page 2.
+- Known remaining items:
+  - User visual review of generated PDF and screenshots is still required.
+  - Same Google account returning-applicant OAuth round trip remains manual/blocked in local automation.
+  - Consent hash persistence is not implemented because it requires schema change outside this checkpoint.
+  - Parallel browser PDF generation against the same dev/test fixture is not treated as final PASS; latest final evidence uses per-browser PASS manifests.
+- DB/R2/Worker:
+  - DB migration: `NOT_APPLICABLE - no migration in 0.24.34.5`.
+  - Production mutation: `false`.
+  - Worker changed/deployed: `false`.
+  - Dev/test QA did exercise existing workorder factory save and PDF generation paths; no production data was touched.
+
+
+## 0.24.34.5 Finalization Policy Before Further Implementation
+
+Canonical finalization detail: `docs/project/33-workorder-pdf-size-dashboard-finalization.md`.
+
+Before any further `0.24.34.5` coding or Codex handoff, the finalization policy and sequence in document 33 must be treated as canonical. The next Codex implementation must not start from ad-hoc instructions only.
+
+Confirmed owner decisions recorded there include:
+
+- factory-delivery workorder PDFs use the existing table-style production layout, not the temporary English size-only layout;
+- factory PDFs exclude unit price, amount, internal labor cost, loss cost, total cost, and margin;
+- factory PDFs include representative design image, factory instructions, fabric/accessory/process production information, and Korean size pages when applicable;
+- incomplete and final workorder PDFs share the same template and differ only by status/watermark/missing-item display;
+- generated PDFs must appear in the generated-document/attachment area;
+- size specs are based on system-admin reference data and saved as workorder snapshots;
+- size input must be audited/refactored toward canonical WAFL measurement controls and simplified inch input;
+- the customer workspace dashboard must remove or compact the large `PLAN AND STORAGE` block and prioritize work queues;
+- returning signup applicants must see the correct application state, not the application form again;
+- signup policy viewers must use the canonical policy viewer and policy version/effective-date source;
+- `/system/signup-applications`, `/system`, and `/system/companies` roles must be simplified without deleting customer operations routes.
+
+Implementation order before `0.24.35`:
+
+1. PDF template replacement.
+2. Size reference linkage and input UI cleanup.
+3. Live workorder runtime confirmation.
+4. Signup returning-applicant and policy viewer cleanup.
+5. Customer/system dashboard UX cleanup.
+6. Evidence package, user review, final verification, then commit/push.
+
+`0.24.35 — Company-wide Export Execution` remains blocked until the above checkpoint is resolved or explicitly re-prioritized by the owner.

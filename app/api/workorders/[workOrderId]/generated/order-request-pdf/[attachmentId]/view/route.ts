@@ -4,6 +4,7 @@ import { getCurrentWaflSession } from "@/lib/auth/currentSession";
 import { createCompanyApiAccessBlockedResponse } from "@/lib/billing/companyApiAccessGuard";
 import { isDatabaseConfigured, queryDb } from "@/lib/db/client";
 import { getR2Object } from "@/lib/storage/r2/r2Client";
+import { createR2WorkerFileUrl, isR2WorkerUploadConfigured } from "@/lib/storage/r2/r2WorkerUpload";
 import { isCanonicalWorkOrderPdfStorageKey } from "@/lib/workorder/pdf/workOrderPdfPolicy";
 
 export const runtime = "nodejs";
@@ -37,6 +38,31 @@ function toResponseBody(buffer: Buffer) {
   const body = new ArrayBuffer(buffer.byteLength);
   new Uint8Array(body).set(buffer);
   return body;
+}
+
+async function getPdfObjectBody(storageKey: string): Promise<{
+  body: ArrayBuffer;
+  contentLength: number;
+  contentType: string | null;
+}> {
+  if (isR2WorkerUploadConfigured()) {
+    const signed = createR2WorkerFileUrl({ key: storageKey });
+    const response = await fetch(signed.url, { method: signed.method, cache: "no-store" });
+    if (!response.ok) throw new Error(`PDF_WORKER_GET_FAILED_${response.status}`);
+    const body = await response.arrayBuffer();
+    return {
+      body,
+      contentLength: body.byteLength,
+      contentType: response.headers.get("content-type"),
+    };
+  }
+
+  const object = await getR2Object({ key: storageKey });
+  return {
+    body: toResponseBody(object.body),
+    contentLength: object.contentLength,
+    contentType: object.contentType,
+  };
 }
 
 export async function GET(_request: Request, context: RouteContext) {
@@ -73,10 +99,12 @@ export async function GET(_request: Request, context: RouteContext) {
   }
 
   try {
-    const object = await getR2Object({ key: file.storage_key });
-    if (object.contentType !== "application/pdf") return jsonError("PDF_OBJECT_CONTENT_TYPE_INVALID", 409);
+    const object = await getPdfObjectBody(file.storage_key);
+    const contentType = object.contentType?.split(";")[0]?.trim().toLowerCase() ?? "";
+    if (contentType && contentType !== "application/pdf") return jsonError("PDF_OBJECT_CONTENT_TYPE_INVALID", 409);
+    if (object.contentLength <= 0) return jsonError("PDF_OBJECT_EMPTY", 409);
 
-    return new Response(toResponseBody(object.body), {
+    return new Response(object.body, {
       status: 200,
       headers: {
         "Content-Type": "application/pdf",

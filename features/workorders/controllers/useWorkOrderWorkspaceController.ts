@@ -93,6 +93,15 @@ export function useWorkOrderWorkspaceController({
       ? lifecycleCopy.editProcessingLabel
       : null;
   const selectedDetailLoadingMessage = isSelectedDetailLoading ? loadingCopy.loadingDetailTitle : null;
+  const selectedDetailError = selection.selectedWorkOrderDetailError;
+  const selectedDetailErrorState = selectedDetailError
+    ? {
+        title: "작업지시서 상세 정보를 불러오지 못했습니다.",
+        description: "목록은 계속 사용할 수 있습니다. 잠시 후 다시 시도하거나 다른 작업지시서를 선택해 주세요.",
+        actionLabel: "다시 시도",
+        onRetry: selection.retrySelectedWorkOrderDetail,
+      }
+    : null;
   const workspaceWriteLockMessage =
     manualWriteLockMessage ??
     lifecycleProcessingLabel ??
@@ -346,6 +355,7 @@ export function useWorkOrderWorkspaceController({
     traceWaflFlow("action", "workorder.select", { workOrderId: nextWorkOrderId });
   };
 
+  // eslint-disable-next-line react-hooks/refs -- The builder forwards refs into event/view props without reading current during render.
   const viewModel = buildWorkspaceViewModel({
     companyName: initialCompanyName,
     drawerOpen: ui.drawerOpen,
@@ -552,6 +562,7 @@ export function useWorkOrderWorkspaceController({
       mobileTopBarProps: viewModel.mobileTopBarProps,
       mobileDrawerProps: viewModel.mobileDrawerProps,
       loadingState: workspaceLoadingState,
+      detailErrorState: selectedDetailErrorState,
       homeNavigation,
     },
     overlayProps: {

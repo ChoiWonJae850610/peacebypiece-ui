@@ -27,10 +27,14 @@ export type WorkspaceLayoutState = {
 
 function getViewportSize() {
   if (typeof window === "undefined") {
-    return { width: RESPONSIVE_BREAKPOINTS.desktopMin, height: 900 };
+    return getInitialViewportSize();
   }
 
   return { width: window.innerWidth, height: window.innerHeight };
+}
+
+function getInitialViewportSize(): { width: number; height: number } {
+  return { width: RESPONSIVE_BREAKPOINTS.desktopMin, height: 900 };
 }
 
 export function resolveWorkspaceLayout(
@@ -86,7 +90,7 @@ export function resolveWorkspaceLayout(
 }
 
 export function useWorkspaceLayoutMode(): WorkspaceLayoutState {
-  const [viewportSize, setViewportSize] = useState(getViewportSize);
+  const [viewportSize, setViewportSize] = useState(getInitialViewportSize);
 
   useEffect(() => {
     const handleResize = () => setViewportSize(getViewportSize());

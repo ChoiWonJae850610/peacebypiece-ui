@@ -11,11 +11,14 @@ assert.match(route, /source_type = 'system'/);
 assert.match(route, /generated_document_type = 'order_request_pdf'/);
 assert.match(route, /isCanonicalWorkOrderPdfStorageKey/);
 assert.match(route, /getR2Object/);
+assert.match(route, /createR2WorkerFileUrl/);
+assert.match(route, /fetch\(signed\.url/);
 assert.match(route, /Content-Disposition/);
 assert.match(route, /inline;/);
 assert.match(route, /Cache-Control": "no-store"/);
 assert.match(route, /X-Content-Type-Options": "nosniff"/);
 assert.match(route, /PDF_OBJECT_MISSING/);
-assert.doesNotMatch(route, /NextResponse\.redirect|createR2WorkerFileUrl|signedUrl|downloadUrl|storageKey:\s*file\.storage_key|console\.error/);
+assert.doesNotMatch(route, /NextResponse\.redirect|signedUrl|downloadUrl|storageKey:\s*file\.storage_key|console\.error/);
+assert.doesNotMatch(route, /return\s+NextResponse\.json\([^)]*signed|return\s+NextResponse\.json\([^)]*url/);
 
 console.log("workorder PDF viewer contract passed");

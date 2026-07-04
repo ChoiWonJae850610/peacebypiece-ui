@@ -42,6 +42,6 @@ assert.match(roadmap, /actual email delivery false/i, "0.24.33 must not send rea
 assert.match(playwright, /\/login/, "browser E2E must start from login");
 assert.match(playwright, /\/signup/, "browser E2E must visit public signup");
 assert.match(playwright, /7일 무료로 시작하기/, "browser E2E must click the public Trial CTA");
-assert.match(playwright, /Google로 가입 요청 시작/, "browser E2E must verify the signup OAuth CTA");
+assert.match(playwright, /Google로 가입 신청 시작/, "browser E2E must verify the signup OAuth CTA");
 
 console.log("public signup e2e UX contract: OK");

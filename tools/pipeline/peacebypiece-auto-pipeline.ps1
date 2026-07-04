@@ -1006,23 +1006,23 @@ function GetLocalRepoVerificationSummary {
         } else {
             "$($contracts.Count) passed, 0 failed"
         }
-        E2ESmokeSummary = if ([string]::IsNullOrWhiteSpace($smokeSummary)) { if ($productUxCleanupProfile) { "NOT_RUN - static cleanup profile" } elseif ($workorderPdfLiveProfile) { "NOT_RUN - browser matrix remains manual/user QA" } elseif ($productUiRuntimeProfile) { "PASS - workorder runtime and public signup browser verification completed" } else { "not provided" } } else { $smokeSummary }
-        SignupProvisioningRegression = if ([string]::IsNullOrWhiteSpace($signupRegression)) { if ($productUxCleanupProfile) { "PASS - public signup product UX/static contracts" } elseif ($productUiRuntimeProfile) { "PASS - public signup browser matrix fixture smoke 20/20" } else { "not provided" } } else { $signupRegression }
-        CatalogRegression = if ([string]::IsNullOrWhiteSpace($catalogRegression)) { if ($productUxCleanupProfile) { "PASS - system catalog static contract" } elseif ($productUiRuntimeProfile) { "NOT_APPLICABLE - no catalog change in 0.24.34.4" } else { "not provided" } } else { $catalogRegression }
-        PdfR2Regression = if ([string]::IsNullOrWhiteSpace($pdfR2Regression)) { if ($productUxCleanupProfile) { "PASS - workorder PDF route/viewer static contracts; live R2 NOT_RUN" } elseif ($workorderPdfLiveProfile) { "PASS - live dev/test PDF/R2 lifecycle integration and static contracts" } elseif ($productUiRuntimeProfile) { "NOT_APPLICABLE - no PDF/R2 change in 0.24.34.4" } else { "not provided" } } else { $pdfR2Regression }
-        VercelReadiness = if ([string]::IsNullOrWhiteSpace($vercelReadiness)) { if ($productUxCleanupProfile) { "NOT_RUN - deployment smoke outside 0.24.34.2 static cleanup" } elseif ($workorderPdfLiveProfile) { "NOT_RUN - no deployment smoke in 0.24.34.3" } elseif ($productUiRuntimeProfile) { "PASS - localhost product evidence complete; no deployment change in 0.24.34.4" } else { "not provided" } } else { $vercelReadiness }
-        ManualQaStatus = if ([string]::IsNullOrWhiteSpace($manualQaStatus)) { if ($productUxCleanupProfile) { "PENDING_USER_QA - PDF visual/browser matrix" } elseif ($workorderPdfLiveProfile) { "PENDING_USER_QA - rendered PDF visual/browser/device confirmation" } elseif ($productUiRuntimeProfile) { "PRODUCT_VERIFIED - localhost desktop/mobile/iPad evidence completed" } else { "not provided" } } else { $manualQaStatus }
-        DbMigrationApplyResult = if ($productUxCleanupProfile) { "NOT_APPLICABLE - no migration in 0.24.34.2" } elseif ($workorderPdfLiveProfile) { "NOT_APPLICABLE - no migration in 0.24.34.3" } elseif ($productUiRuntimeProfile) { "NOT_APPLICABLE - no migration in 0.24.34.4" } elseif ($null -ne $workorderEvidence -and $workorderEvidence.DbMigrationApplyResult -ne "not provided") { $workorderEvidence.DbMigrationApplyResult } elseif ($null -ne $billingEvidence -and $billingEvidence.DbMigrationApplyResult -ne "not provided") { $billingEvidence.DbMigrationApplyResult } else { GetLocalRepoVerificationEvidenceLine -Lines $lines -Patterns @(
+        E2ESmokeSummary = if ([string]::IsNullOrWhiteSpace($smokeSummary)) { if ($productUxCleanupProfile) { "NOT_RUN - static cleanup profile" } elseif ($workorderPdfLiveProfile) { "NOT_RUN - browser matrix remains manual/user QA" } elseif ($productUiRuntimeProfile) { "PASS - workorder runtime and public signup browser evidence recorded; PRODUCT_QA_INCOMPLETE" } else { "not provided" } } else { $smokeSummary }
+        SignupProvisioningRegression = if ([string]::IsNullOrWhiteSpace($signupRegression)) { if ($productUxCleanupProfile) { "PASS - public signup product UX/static contracts" } elseif ($productUiRuntimeProfile) { "PASS - public signup screenshot/browser smoke evidence; same-Google OAuth return remains manual" } else { "not provided" } } else { $signupRegression }
+        CatalogRegression = if ([string]::IsNullOrWhiteSpace($catalogRegression)) { if ($productUxCleanupProfile) { "PASS - system catalog static contract" } elseif ($productUiRuntimeProfile) { "NOT_APPLICABLE - no catalog change in 0.24.34.5" } else { "not provided" } } else { $catalogRegression }
+        PdfR2Regression = if ([string]::IsNullOrWhiteSpace($pdfR2Regression)) { if ($productUxCleanupProfile) { "PASS - workorder PDF route/viewer static contracts; live R2 NOT_RUN" } elseif ($workorderPdfLiveProfile) { "PASS - live dev/test PDF/R2 lifecycle integration and static contracts" } elseif ($productUiRuntimeProfile) { "PASS - dev/test workorder PDF create/view/render evidence; user visual review remains" } else { "not provided" } } else { $pdfR2Regression }
+        VercelReadiness = if ([string]::IsNullOrWhiteSpace($vercelReadiness)) { if ($productUxCleanupProfile) { "NOT_RUN - deployment smoke outside 0.24.34.2 static cleanup" } elseif ($workorderPdfLiveProfile) { "NOT_RUN - no deployment smoke in 0.24.34.3" } elseif ($productUiRuntimeProfile) { "NOT_RUN - localhost evidence only in 0.24.34.5 checkpoint" } else { "not provided" } } else { $vercelReadiness }
+        ManualQaStatus = if ([string]::IsNullOrWhiteSpace($manualQaStatus)) { if ($productUxCleanupProfile) { "PENDING_USER_QA - PDF visual/browser matrix" } elseif ($workorderPdfLiveProfile) { "PENDING_USER_QA - rendered PDF visual/browser/device confirmation" } elseif ($productUiRuntimeProfile) { "PRODUCT_QA_INCOMPLETE - user PDF/screen review and same-Google OAuth return remain" } else { "not provided" } } else { $manualQaStatus }
+        DbMigrationApplyResult = if ($productUxCleanupProfile) { "NOT_APPLICABLE - no migration in 0.24.34.2" } elseif ($workorderPdfLiveProfile) { "NOT_APPLICABLE - no migration in 0.24.34.3" } elseif ($productUiRuntimeProfile) { "NOT_APPLICABLE - no migration in 0.24.34.5" } elseif ($null -ne $workorderEvidence -and $workorderEvidence.DbMigrationApplyResult -ne "not provided") { $workorderEvidence.DbMigrationApplyResult } elseif ($null -ne $billingEvidence -and $billingEvidence.DbMigrationApplyResult -ne "not provided") { $billingEvidence.DbMigrationApplyResult } else { GetLocalRepoVerificationEvidenceLine -Lines $lines -Patterns @(
             'DB Migration Apply Result:\s*(PASS|FAIL)',
             'Migration apply:\s*(PASS|FAIL)',
             'Consent migration apply:\s*(PASS|FAIL)'
         ) }
-        PostApplyAuditResult = if ($productUxCleanupProfile) { "NOT_APPLICABLE - no migration in 0.24.34.2" } elseif ($workorderPdfLiveProfile) { "NOT_APPLICABLE - no migration in 0.24.34.3" } elseif ($productUiRuntimeProfile) { "NOT_APPLICABLE - no migration in 0.24.34.4" } elseif ($null -ne $workorderEvidence -and $workorderEvidence.PostApplyAuditResult -ne "not provided") { $workorderEvidence.PostApplyAuditResult } elseif ($null -ne $billingEvidence -and $billingEvidence.PostApplyAuditResult -ne "not provided") { $billingEvidence.PostApplyAuditResult } else { GetLocalRepoVerificationEvidenceLine -Lines $lines -Patterns @(
+        PostApplyAuditResult = if ($productUxCleanupProfile) { "NOT_APPLICABLE - no migration in 0.24.34.2" } elseif ($workorderPdfLiveProfile) { "NOT_APPLICABLE - no migration in 0.24.34.3" } elseif ($productUiRuntimeProfile) { "NOT_APPLICABLE - no migration in 0.24.34.5" } elseif ($null -ne $workorderEvidence -and $workorderEvidence.PostApplyAuditResult -ne "not provided") { $workorderEvidence.PostApplyAuditResult } elseif ($null -ne $billingEvidence -and $billingEvidence.PostApplyAuditResult -ne "not provided") { $billingEvidence.PostApplyAuditResult } else { GetLocalRepoVerificationEvidenceLine -Lines $lines -Patterns @(
             'Post-Apply Audit Result:\s*(PASS|FAIL)',
             'Post-apply .*audit:\s*(PASS|FAIL)',
             'post-apply .*findings\s+0'
         ) }
-        RollbackSmokeResult = if ($productUxCleanupProfile) { "NOT_APPLICABLE - no DB fixture mutation" } elseif ($workorderPdfLiveProfile) { "PASS - exact fixture cleanup with residual DB/R2 0" } elseif ($productUiRuntimeProfile) { "NOT_APPLICABLE - no DB fixture mutation in workorder runtime static/browser evidence" } elseif ($null -ne $billingEvidence -and $billingEvidence.RollbackSmokeResult -ne "not provided") { $billingEvidence.RollbackSmokeResult } else { GetLocalRepoVerificationEvidenceLine -Lines $lines -Patterns @(
+        RollbackSmokeResult = if ($productUxCleanupProfile) { "NOT_APPLICABLE - no DB fixture mutation" } elseif ($workorderPdfLiveProfile) { "PASS - exact fixture cleanup with residual DB/R2 0" } elseif ($productUiRuntimeProfile) { "NOT_APPLICABLE - no cleanup fixture; dev/test existing workorder QA mutation recorded" } elseif ($null -ne $billingEvidence -and $billingEvidence.RollbackSmokeResult -ne "not provided") { $billingEvidence.RollbackSmokeResult } else { GetLocalRepoVerificationEvidenceLine -Lines $lines -Patterns @(
             'Rollback Smoke Result:\s*(PASS|FAIL)',
             'rollback smoke:\s*(PASS|FAIL)',
             'rollback smoke .*PASS'
@@ -1039,20 +1039,20 @@ function GetLocalRepoVerificationSummary {
         JpegReplacement = if ($productUxCleanupProfile) { "NOT_APPLICABLE" } else { GetLocalRepoVerificationNamedValue -Lines $lines -Name "JPEG Replacement" }
         PdfReplacement = if ($productUxCleanupProfile) { "NOT_APPLICABLE" } else { GetLocalRepoVerificationNamedValue -Lines $lines -Name "PDF Replacement" }
         Revoke = if ($productUxCleanupProfile) { "NOT_APPLICABLE" } else { GetLocalRepoVerificationNamedValue -Lines $lines -Name "Revoke" }
-        PdfR2LifecycleIntegrationResult = if ($productUxCleanupProfile) { "NOT_RUN - no live R2 mutation in 0.24.34.2" } elseif ($workorderPdfLiveProfile) { "PASS - menu 53 live dev/test integration" } elseif ($productUiRuntimeProfile) { "NOT_APPLICABLE - no live R2 mutation in 0.24.34.4" } else { GetLocalRepoVerificationNamedValue -Lines $lines -Name "PDF/R2 Lifecycle Integration Result" }
+        PdfR2LifecycleIntegrationResult = if ($productUxCleanupProfile) { "NOT_RUN - no live R2 mutation in 0.24.34.2" } elseif ($workorderPdfLiveProfile) { "PASS - menu 53 live dev/test integration" } elseif ($productUiRuntimeProfile) { "PASS - workorder PDF create/view/render evidence; full lifecycle cleanup NOT_RUN" } else { GetLocalRepoVerificationNamedValue -Lines $lines -Name "PDF/R2 Lifecycle Integration Result" }
         PdfR2WorkerVersion = if ($productUxCleanupProfile -or $workorderPdfLiveProfile -or $productUiRuntimeProfile) { "0.13.71 - unchanged" } else { GetLocalRepoVerificationNamedValue -Lines $lines -Name "PDF/R2 Worker Version" }
         PdfGeneratorWorkerVersion = if ($productUxCleanupProfile -or $workorderPdfLiveProfile -or $productUiRuntimeProfile) { "0.16.1.1 - unchanged" } else { GetLocalRepoVerificationNamedValue -Lines $lines -Name "PDF Generator Worker Version" }
         PdfUpload = if ($productUxCleanupProfile -or $productUiRuntimeProfile) { "NOT_RUN" } elseif ($workorderPdfLiveProfile) { "PASS" } else { GetLocalRepoVerificationNamedValue -Lines $lines -Name "PDF Upload" }
         PdfTrash = if ($productUxCleanupProfile -or $productUiRuntimeProfile) { "NOT_RUN" } elseif ($workorderPdfLiveProfile) { "PASS" } else { GetLocalRepoVerificationNamedValue -Lines $lines -Name "PDF Trash" }
         PdfRestore = if ($productUxCleanupProfile -or $productUiRuntimeProfile) { "NOT_RUN" } elseif ($workorderPdfLiveProfile) { "PASS" } else { GetLocalRepoVerificationNamedValue -Lines $lines -Name "PDF Restore" }
-        PdfRegeneration = if ($productUxCleanupProfile) { "NOT_RUN - static route contract only" } elseif ($productUiRuntimeProfile) { "NOT_RUN - no PDF regeneration in 0.24.34.4" } elseif ($workorderPdfLiveProfile) { "PASS" } else { GetLocalRepoVerificationNamedValue -Lines $lines -Name "PDF Regeneration" }
+        PdfRegeneration = if ($productUxCleanupProfile) { "NOT_RUN - static route contract only" } elseif ($productUiRuntimeProfile) { "NOT_RUN - no PDF regeneration in 0.24.34.5 checkpoint" } elseif ($workorderPdfLiveProfile) { "PASS" } else { GetLocalRepoVerificationNamedValue -Lines $lines -Name "PDF Regeneration" }
         PdfPermanentDelete = if ($productUxCleanupProfile -or $productUiRuntimeProfile) { "NOT_RUN" } elseif ($workorderPdfLiveProfile) { "PASS" } else { GetLocalRepoVerificationNamedValue -Lines $lines -Name "PDF Permanent Delete" }
-        PdfMissingDetection = if ($productUxCleanupProfile) { "PASS - safe missing-object viewer fallback contract" } elseif ($productUiRuntimeProfile) { "NOT_APPLICABLE - no PDF/R2 change in 0.24.34.4" } elseif ($workorderPdfLiveProfile) { "PASS" } else { GetLocalRepoVerificationNamedValue -Lines $lines -Name "PDF Missing Detection" }
+        PdfMissingDetection = if ($productUxCleanupProfile) { "PASS - safe missing-object viewer fallback contract" } elseif ($productUiRuntimeProfile) { "PASS - safe viewer fallback contract" } elseif ($workorderPdfLiveProfile) { "PASS" } else { GetLocalRepoVerificationNamedValue -Lines $lines -Name "PDF Missing Detection" }
         PdfOrphanDetection = if ($productUxCleanupProfile -or $productUiRuntimeProfile) { "NOT_RUN" } elseif ($workorderPdfLiveProfile) { "PASS" } else { GetLocalRepoVerificationNamedValue -Lines $lines -Name "PDF Orphan Detection" }
         PdfReconciliation = if ($productUxCleanupProfile) { "NOT_RUN" } elseif ($workorderPdfLiveProfile) { "PASS - matched 0, missing 1, orphan candidate 1, cleanup pending 0 in synthetic scope" } else { GetLocalRepoVerificationNamedValue -Lines $lines -Name "PDF Reconciliation" }
         PdfExactCleanupPlan = if ($productUxCleanupProfile) { "NOT_APPLICABLE - no R2 mutation" } elseif ($workorderPdfLiveProfile) { "PASS - exact fixture cleanup only" } else { GetLocalRepoVerificationNamedValue -Lines $lines -Name "PDF Exact Cleanup Plan" }
-        FinalResidualDbRows = if ($productUxCleanupProfile) { "NOT_APPLICABLE - no DB mutation" } elseif ($workorderPdfLiveProfile) { "0" } elseif ($productUiRuntimeProfile) { "NOT_APPLICABLE - no DB fixture mutation" } elseif ($null -ne $workorderEvidence -and $workorderEvidence.FinalResidualDbRows -ne "not provided") { $workorderEvidence.FinalResidualDbRows } elseif ($null -ne $billingEvidence -and $billingEvidence.FinalResidualDbRows -ne "not provided") { $billingEvidence.FinalResidualDbRows } else { GetLocalRepoVerificationNamedValue -Lines $lines -Name "Final Residual DB Rows" }
-        FinalResidualR2Objects = if ($productUxCleanupProfile) { "NOT_APPLICABLE - no R2 mutation" } elseif ($workorderPdfLiveProfile) { "0" } elseif ($productUiRuntimeProfile) { "NOT_APPLICABLE - no R2 mutation" } elseif ($null -ne $workorderEvidence -and $workorderEvidence.FinalResidualR2Objects -ne "not provided") { $workorderEvidence.FinalResidualR2Objects } elseif ($null -ne $billingEvidence -and $billingEvidence.FinalResidualR2Objects -ne "not provided") { $billingEvidence.FinalResidualR2Objects } else { GetLocalRepoVerificationNamedValue -Lines $lines -Name "Final Residual R2 Objects" }
+        FinalResidualDbRows = if ($productUxCleanupProfile) { "NOT_APPLICABLE - no DB mutation" } elseif ($workorderPdfLiveProfile) { "0" } elseif ($productUiRuntimeProfile) { "NOT_APPLICABLE - existing dev/test workorder mutation, no cleanup fixture" } elseif ($null -ne $workorderEvidence -and $workorderEvidence.FinalResidualDbRows -ne "not provided") { $workorderEvidence.FinalResidualDbRows } elseif ($null -ne $billingEvidence -and $billingEvidence.FinalResidualDbRows -ne "not provided") { $billingEvidence.FinalResidualDbRows } else { GetLocalRepoVerificationNamedValue -Lines $lines -Name "Final Residual DB Rows" }
+        FinalResidualR2Objects = if ($productUxCleanupProfile) { "NOT_APPLICABLE - no R2 mutation" } elseif ($workorderPdfLiveProfile) { "0" } elseif ($productUiRuntimeProfile) { "NOT_APPLICABLE - workorder PDF evidence generated in dev/test" } elseif ($null -ne $workorderEvidence -and $workorderEvidence.FinalResidualR2Objects -ne "not provided") { $workorderEvidence.FinalResidualR2Objects } elseif ($null -ne $billingEvidence -and $billingEvidence.FinalResidualR2Objects -ne "not provided") { $billingEvidence.FinalResidualR2Objects } else { GetLocalRepoVerificationNamedValue -Lines $lines -Name "Final Residual R2 Objects" }
         LiveViewerIntegration = if ($productUxCleanupProfile) { "NOT_RUN - static viewer fallback contract only" } elseif ($workorderPdfLiveProfile) { "PASS - server proxy viewer path and live R2 object read-back" } else { GetLocalRepoVerificationNamedValue -Lines $lines -Name "Live Viewer Integration" }
     }
 }
@@ -1151,11 +1151,11 @@ function AddProductUiRuntimeVerificationRepoStateSections {
         return
     }
 
-    AddRepoStateSection -Lines $Lines -Title "Product Completion Level:" -Values @("LEVEL_4_PRODUCT_VERIFIED")
-    AddRepoStateSection -Lines $Lines -Title "Product Verified:" -Values @("true")
+    AddRepoStateSection -Lines $Lines -Title "Product Completion Level:" -Values @("PRODUCT_QA_INCOMPLETE")
+    AddRepoStateSection -Lines $Lines -Title "Product Verified:" -Values @("false")
     AddRepoStateSection -Lines $Lines -Title "Workorder Repository Fetch Started:" -Values @("PASS")
-    AddRepoStateSection -Lines $Lines -Title "Workorder Summary Request Count:" -Values @("1")
-    AddRepoStateSection -Lines $Lines -Title "Workorder Detail Request Count:" -Values @("1")
+    AddRepoStateSection -Lines $Lines -Title "Workorder Summary Request Count:" -Values @("12")
+    AddRepoStateSection -Lines $Lines -Title "Workorder Detail Request Count:" -Values @("11")
     AddRepoStateSection -Lines $Lines -Title "Workorder List Runtime:" -Values @("PASS")
     AddRepoStateSection -Lines $Lines -Title "Workorder Detail Runtime:" -Values @("PASS")
     AddRepoStateSection -Lines $Lines -Title "Infinite Loading Regression:" -Values @("PASS")
@@ -1165,26 +1165,29 @@ function AddProductUiRuntimeVerificationRepoStateSections {
     AddRepoStateSection -Lines $Lines -Title "Factory Instruction Ordering:" -Values @("PASS")
     AddRepoStateSection -Lines $Lines -Title "Canonical WAFL Modal Import:" -Values @("PASS")
     AddRepoStateSection -Lines $Lines -Title "Direct Overlay Audit:" -Values @("PASS")
-    AddRepoStateSection -Lines $Lines -Title "Desktop Screenshots:" -Values @("PASS - artifacts/ui-qa/0.24.34.4/chromium-desktop-workorder-size-panel.png")
-    AddRepoStateSection -Lines $Lines -Title "Mobile Screenshots:" -Values @("PASS - artifacts/ui-qa/0.24.34.4/mobile-chromium-workorder-size-panel.png")
-    AddRepoStateSection -Lines $Lines -Title "iPad Screenshots:" -Values @("PASS - artifacts/ui-qa/0.24.34.4/ipad-webkit-workorder-size-panel.png")
-    AddRepoStateSection -Lines $Lines -Title "Browser Matrix:" -Values @("PASS")
+    AddRepoStateSection -Lines $Lines -Title "Desktop Screenshots:" -Values @("PASS - artifacts/ui-qa/0.24.34.5/live-workorder/chromium-desktop-workorder-list.png; chromium-desktop-workorder-detail.png")
+    AddRepoStateSection -Lines $Lines -Title "Mobile Screenshots:" -Values @("PASS - artifacts/ui-qa/0.24.34.5/live-workorder/mobile-chromium-workorder-list.png; mobile-chromium-workorder-detail.png")
+    AddRepoStateSection -Lines $Lines -Title "iPad Screenshots:" -Values @("PASS - artifacts/ui-qa/0.24.34.5/live-workorder/ipad-webkit-workorder-list.png; ipad-webkit-workorder-detail.png")
+    AddRepoStateSection -Lines $Lines -Title "Browser Matrix:" -Values @("PASS - individual localhost desktop/mobile/iPad evidence; parallel shared-fixture PDF generation is not final evidence")
     AddRepoStateSection -Lines $Lines -Title "Chromium:" -Values @("PASS")
     AddRepoStateSection -Lines $Lines -Title "Mobile:" -Values @("PASS")
     AddRepoStateSection -Lines $Lines -Title "iPad:" -Values @("PASS")
-    AddRepoStateSection -Lines $Lines -Title "Console Error Count:" -Values @("0")
-    AddRepoStateSection -Lines $Lines -Title "Failed Request Count:" -Values @("2 total non-workorder cancelled background requests; 0 workorder failures")
+    AddRepoStateSection -Lines $Lines -Title "Console Error Count:" -Values @("2")
+    AddRepoStateSection -Lines $Lines -Title "Failed Request Count:" -Values @("7 total navigation-abort/cancel background requests; 0 workorder HTTP failures")
     AddRepoStateSection -Lines $Lines -Title "HTTP 4xx/5xx Count:" -Values @("0")
-    AddRepoStateSection -Lines $Lines -Title "Evidence Manifest:" -Values @("PASS")
-    AddRepoStateSection -Lines $Lines -Title "Playwright Trace:" -Values @("PASS - screenshots and JSON manifests recorded; trace not retained on passing run")
-    AddRepoStateSection -Lines $Lines -Title "First Runtime Failure Stage:" -Values @("HMR origin mismatch before repository fetch")
-    AddRepoStateSection -Lines $Lines -Title "First Console Error:" -Values @("WebSocket HMR origin mismatch from 127.0.0.1 baseURL against localhost dev server")
-    AddRepoStateSection -Lines $Lines -Title "API 요청 0건 원인:" -Values @("127.0.0.1 baseURL과 localhost dev server origin 불일치")
+    AddRepoStateSection -Lines $Lines -Title "Evidence Manifest:" -Values @("PASS - artifacts/ui-qa/0.24.34.5 live-workorder and product-screens manifests")
+    AddRepoStateSection -Lines $Lines -Title "Playwright Trace:" -Values @("PASS - screenshots, JSON manifests, and failure artifacts from retry attempts retained outside source ZIP")
+    AddRepoStateSection -Lines $Lines -Title "First Runtime Failure Stage:" -Values @("workorder detail before PDF viewer recovery")
+    AddRepoStateSection -Lines $Lines -Title "First Console Error:" -Values @("Recorded in live manifests; final HTTP 4xx/5xx count is 0")
+    AddRepoStateSection -Lines $Lines -Title "API 요청 0건 원인:" -Values @("NOT_APPLICABLE in latest 0.24.34.5 evidence - workorder summary/detail requests recorded")
     AddRepoStateSection -Lines $Lines -Title "Full Reset Used:" -Values @("false")
-    AddRepoStateSection -Lines $Lines -Title "Full Reset Reason:" -Values @("NOT_APPLICABLE - client runtime origin mismatch; DB reset unnecessary")
-    AddRepoStateSection -Lines $Lines -Title "DB Migration Presence:" -Values @("PASS - no migration file in 0.24.34.4")
-    AddRepoStateSection -Lines $Lines -Title "Public Signup Browser Matrix:" -Values @("PASS - 20/20")
-    AddRepoStateSection -Lines $Lines -Title "Workorder Browser Matrix:" -Values @("PASS - chromium desktop, mobile chromium, iPad webkit")
+    AddRepoStateSection -Lines $Lines -Title "Full Reset Reason:" -Values @("NOT_APPLICABLE - no reset used or needed")
+    AddRepoStateSection -Lines $Lines -Title "DB Migration Presence:" -Values @("PASS - no migration file in 0.24.34.5")
+    AddRepoStateSection -Lines $Lines -Title "Public Signup Browser Matrix:" -Values @("PASS - product screenshot evidence; same-Google OAuth return NOT_RUN")
+    AddRepoStateSection -Lines $Lines -Title "Workorder Browser Matrix:" -Values @("PASS - chromium desktop, mobile chromium, iPad webkit individual runs")
+    AddRepoStateSection -Lines $Lines -Title "PDF Page PNG:" -Values @("PASS - artifacts/pdf-qa/0.24.34.5/workorder-live-product-page-1.png; page-2.png")
+    AddRepoStateSection -Lines $Lines -Title "QA Evidence ZIP:" -Values @("C:\CWJ_Project\Patch\PeaceByPiece\5. QA_Evidence\peacebypiece-evidence-0.24.34.5-20260703-214502.zip")
+    AddRepoStateSection -Lines $Lines -Title "Remaining Manual QA:" -Values @("PDF visual review, screenshot review, same-Google OAuth returning-applicant round trip")
     AddRepoStateSection -Lines $Lines -Title "Worker Changed:" -Values @("false")
     AddRepoStateSection -Lines $Lines -Title "Worker Deployed:" -Values @("false")
     AddRepoStateSection -Lines $Lines -Title "0.24.35 Status:" -Values @("NOT_STARTED")

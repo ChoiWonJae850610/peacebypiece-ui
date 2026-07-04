@@ -14,6 +14,13 @@ export type WorkOrderWorkspaceLoadingState = {
   sideDescription: string;
 };
 
+export type WorkOrderWorkspaceDetailErrorState = {
+  title: string;
+  description: string;
+  actionLabel: string;
+  onRetry: () => void;
+};
+
 export type SidebarListProps = ComponentProps<typeof SidebarContent>;
 export type DetailProps = ComponentProps<typeof WorkOrderDetail>;
 export type SidePanelProps = WorkOrderSidePanelProps;
@@ -33,5 +40,6 @@ export type WorkOrderLayoutViewProps = {
   mobileTopBarProps: MobileTopBarProps;
   mobileDrawerProps: MobileDrawerProps;
   loadingState?: WorkOrderWorkspaceLoadingState;
+  detailErrorState?: WorkOrderWorkspaceDetailErrorState | null;
   homeNavigation: WorkOrderHomeNavigation;
 };

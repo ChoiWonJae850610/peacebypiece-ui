@@ -285,6 +285,10 @@ export function useWorkOrder(options: UseWorkOrderOptions = {}) {
     selectedId: coreState.selectedId,
     selectedWorkOrder: coreState.selectedWorkOrder,
     isSelectedWorkOrderDetailLoading: coreState.isSelectedWorkOrderDetailLoading,
+    selectedWorkOrderDetailError: coreState.selectedWorkOrderDetailError,
+    retrySelectedWorkOrderDetail: () => {
+      if (coreState.selectedId) coreState.reloadWorkOrderDetail(coreState.selectedId);
+    },
     currentWorkflowState: derivedState.currentWorkflowState,
     currentDisplayStage: derivedState.currentDisplayStage,
     currentInventoryQuantity: derivedState.currentInventoryQuantity,

@@ -19,12 +19,27 @@ import {
   type WorkOrderFactoryInstruction,
 } from "@/lib/workorder/factoryInstruction/types";
 import type { WaflSaveStatusValue } from "@/components/common/ui";
+import { WaflApiError } from "@/lib/api/waflApiTypes";
 
 export type WorkOrderFactoryInstructionPanelProps = {
   workOrderId: string;
   editable: boolean;
   lockMessage?: string;
 };
+
+function getSafeFactoryInstructionMessage(error: unknown, fallbackMessage: string): string {
+  if (error instanceof WaflApiError) {
+    if (error.status === 404 || error.code === "WORKORDER_NOT_FOUND") {
+      return "작업지시서를 찾을 수 없습니다. 목록에서 다시 선택해 주세요.";
+    }
+    if (error.status === 403) {
+      return "이 작업지시서의 공장 전달사항을 수정할 권한이 없습니다.";
+    }
+    return fallbackMessage;
+  }
+
+  return fallbackMessage;
+}
 
 export default function WorkOrderFactoryInstructionPanel({
   workOrderId,
@@ -45,14 +60,15 @@ export default function WorkOrderFactoryInstructionPanel({
 
   useEffect(() => {
     let active = true;
-    setLoading(true);
-    setSaveStatus("idle");
-    setErrorMessage(null);
-    clearOperationToast();
-    setInstruction(createEmptyWorkOrderFactoryInstruction(workOrderId));
-    setDraft("");
 
     const loadFactoryInstruction = async () => {
+      setLoading(true);
+      setSaveStatus("idle");
+      setErrorMessage(null);
+      clearOperationToast();
+      setInstruction(createEmptyWorkOrderFactoryInstruction(workOrderId));
+      setDraft("");
+
       try {
         const next = await fetchWorkOrderFactoryInstruction(workOrderId);
         if (!active) return;
@@ -60,7 +76,7 @@ export default function WorkOrderFactoryInstructionPanel({
         setDraft(next.content);
       } catch (error) {
         if (!active) return;
-        setErrorMessage(error instanceof Error ? error.message : "공장 전달사항을 불러오지 못했습니다.");
+        setErrorMessage(getSafeFactoryInstructionMessage(error, "공장 전달사항을 불러오지 못했습니다."));
         setSaveStatus("error");
       } finally {
         if (active) setLoading(false);
@@ -110,9 +126,10 @@ export default function WorkOrderFactoryInstructionPanel({
         "success",
       );
     } catch (error) {
-      const message = error instanceof Error
-        ? error.message
-        : getWaflChangeFeedbackMessage(WAFL_CHANGE_TARGET.factoryInstruction, "error");
+      const message = getSafeFactoryInstructionMessage(
+        error,
+        getWaflChangeFeedbackMessage(WAFL_CHANGE_TARGET.factoryInstruction, "error"),
+      );
       setErrorMessage(message);
       setSaveStatus("error");
       showOperationToast(message, "danger");
@@ -132,7 +149,7 @@ export default function WorkOrderFactoryInstructionPanel({
       <WaflDocumentField
         title="공장 전달사항"
         value={draft}
-        placeholder="예: 앞판 원단 방향을 맞춰 재단하고, 완성 후 개별 포장해 주세요."
+        placeholder="예: 앞판 재단 방향을 맞추고, 완성 후 개별 포장해 주세요."
         maxLength={FACTORY_INSTRUCTION_MAX_LENGTH}
         editable={editable}
         loading={loading}

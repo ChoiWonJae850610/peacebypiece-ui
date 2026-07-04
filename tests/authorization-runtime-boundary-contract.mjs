@@ -62,7 +62,7 @@ assert.match(workOrderHandlers, /createWaflNotFoundResponse/);
 assert.doesNotMatch(workOrderHandlers, /spec_sheets row not found for id:\s*\$\{workOrderId\}/);
 
 const opaque = read("lib/routing/opaqueRouteParams.ts");
-assert.ok(opaque.includes("wo_[A-Za-z0-9_-"), "opaque route must accept future wo_ ids");
+assert.ok(opaque.includes("wo[_-][A-Za-z0-9_-"), "opaque route must accept future wo_ and current wo- ids");
 assert.match(opaque, /wafl-fn-company-\[a-j\]-workorder-\\d\{5\}/);
 assert.match(opaque, /createWaflNotFoundResponse/);
 

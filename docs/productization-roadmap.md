@@ -1,18 +1,18 @@
 # Productization Roadmap Authority
 
-> Active baseline: `0.24.34.4`. Latest implementation work: `0.24.34.4` Workorder Runtime Recovery, Canonical WAFL Size Panel, and Signup Product E2E. Next feature: `0.24.35` Company-wide Export Execution.
+> Active baseline: `0.24.34.5`. Current checkpoint: `0.24.34.5` Live Workorder, Signup, System UI, and PDF Review Checkpoint. Next feature: `0.24.35` Company-wide Export Execution.
 > Structured canonical source: `lib/internal/roadmap/`.
 > Runtime roadmap index: `lib/internal/roadmap/index.ts`.
 
 ## Status
 
-- Roadmap checkpoint version: `0.24.34.4`
-- APP_VERSION: `0.24.34.4`
+- Roadmap checkpoint version: `0.24.34.5`
+- APP_VERSION: `0.24.34.5`
 - Feature implementation progress: about `94%` after connecting workorder size/POM editing and incomplete/final PDF paths
 - Productization readiness: about `87%` after restoring Export, deletion, operations, CI, monitoring, and launch work
 - Current-state handoff: `docs/codex-current-state.md`
 - System-admin screen: `/roadmap`
-- Manual QA status: `PRODUCT_VERIFIED - localhost desktop/mobile/iPad evidence completed`
+- Manual QA status: `PRODUCT_QA_INCOMPLETE`
 - Current planning policy: before 1.0, `master` remains the single development/QA branch and Vercel deployment is used for real-device QA.
 
 ## Internal Access Boundary
@@ -48,7 +48,8 @@
 22. `0.24.34.3` - Workorder PDF Live R2 Integration and Visual Verification
 23. `0.24.34.3.1` - Product Completion, Canonical WAFL UI, and Automated Evidence Standard
 24. `0.24.34.4` - Workorder Runtime Recovery, Right-side Size Panel, WAFL Modal, and Signup Submission E2E
-25. `0.24.35` - Company-wide Export Execution
+25. `0.24.34.5` - Live Workorder, Signup, System UI, and PDF Review Checkpoint
+26. `0.24.35` - Company-wide Export Execution
 24. `0.24.36` - Termination, Recovery, and Automatic Deletion Execution
 25. `0.24.37` - Operations, Inquiry, Monitoring, CI, Accessibility, Performance, and Backup/Restore Foundations
 
@@ -93,6 +94,63 @@ The full implementation audit in `docs/audits/0.24.33.1-unimplemented-feature-fu
 - Replace the screen-local size modal overlay with canonical WAFL modal, inputs, select, table, and buttons.
 - Run signup submit → system-admin queue → approval → Trial → workspace dev/test E2E.
 - Generate desktop/mobile/iPad localhost evidence and finish only at LEVEL_4_PRODUCT_VERIFIED.
+
+## 0.24.34.5 - Live Workorder, Signup, System UI, and PDF Review Checkpoint
+
+- Canonical detail file: `lib/internal/roadmap/roadmap-0.24.34.5.ts`.
+- Current status: `PRODUCT_QA_INCOMPLETE`; this checkpoint stops before commit/push and before 0.24.35.
+- Workorder localhost evidence:
+  - Chromium desktop `PASS`.
+  - Mobile Chromium `PASS`.
+  - iPad WebKit `PASS`.
+  - Latest manifests recorded workorder summary requests `12`, detail requests `11`, HTTP 4xx/5xx `0`, page errors `0`, console errors `2`, and failed navigation-abort/cancel requests `7`.
+- Runtime fixes:
+  - Accepted actual dev/test `wo-...` workorder IDs in opaque route validation.
+  - Restored server-side Worker-backed PDF viewer reads for generated workorder and order-request PDFs without browser signed URL exposure.
+  - Stabilized the first responsive layout render to reduce mobile/iPad hydration mismatch.
+- Product screenshot evidence:
+  - Public signup policy modal `PASS`.
+  - System dashboard `PASS`.
+  - System companies role cleanup screen `PASS`.
+  - System signup review screen `PASS`.
+- PDF evidence:
+  - Workorder PDF binary and page PNGs were generated under `artifacts/pdf-qa/0.24.34.5/`.
+  - User visual review is still required before product completion wording.
+- Remaining before completion:
+  - User review of PDF/screenshots.
+  - Same Google returning-applicant OAuth round trip.
+  - Consent hash persistence, which requires a schema decision outside this checkpoint.
+  - Parallel browser PDF generation against a shared dev/test fixture remains a test-fixture limitation, not final completion evidence.
+
+
+
+### 0.24.34.5 Finalization Policy and Split Continuations
+
+Canonical detail: `docs/project/33-workorder-pdf-size-dashboard-finalization.md`.
+
+Owner-confirmed policy before continuing implementation:
+
+- Factory-delivery workorder PDF uses the existing table-style production layout as the base.
+- Factory-delivery PDF excludes all internal cost information: unit price, amount, labor cost, loss cost, total cost, and margin.
+- PDF page 1 includes representative design image, factory instructions, fabric/accessory production information, and additional processes.
+- Size specs are appended as Korean pages only when relevant size data/template exists.
+- Incomplete and final PDFs use one common template and differ only by status, watermark, and missing-item display.
+- Generated incomplete/final PDFs must appear in the generated-document/attachment area.
+- Size defaults come from system-admin reference data and are copied as workorder snapshots.
+- Size input UI must be audited/refactored to canonical WAFL measurement controls; inch input must be whole number plus 1/8 fraction and less visually cluttered on PC/tablet/mobile.
+- Customer workspace main dashboard must remove or compact the large `PLAN AND STORAGE` section and prioritize work queues.
+- Returning signup applicants must be routed to pending/revision/rejected/approved state screens instead of seeing the application form again.
+- Signup policy viewers must reuse the canonical policy viewer and policy document/version/effective-date source.
+- `/system/signup-applications` actions are simplified; `/system` is compacted; `/system/companies` remains approved-customer operations.
+
+Split continuation order before 0.24.35:
+
+1. `0.24.34.5 continuation A` - PDF template replacement and PDF PNG evidence.
+2. `0.24.34.5 continuation B` - size reference linkage and WAFL measurement input cleanup.
+3. `0.24.34.5 continuation C` - live workorder selection, factory save, PDF generate/view confirmation.
+4. `0.24.34.5 continuation D` - returning applicant routing and policy viewer unification.
+5. `0.24.34.5 continuation E` - customer workspace and system-admin dashboard simplification.
+6. `0.24.34.5 final` - evidence ZIP, user review, final verification, commit/push.
 
 ## 0.24.35 - Company-wide Export Execution
 
@@ -209,7 +267,9 @@ The full implementation audit in `docs/audits/0.24.33.1-unimplemented-feature-fu
 
 ## Next Version
 
-### 0.24.35 - Company-wide Export Execution
+#
+
+## 0.24.35 - Company-wide Export Execution
 
 - Read the next canonical roadmap/user instruction before implementation.
 - Execute company-wide Export packaging, download, expiry, split parts, plan usage enforcement, and final termination Export readiness.

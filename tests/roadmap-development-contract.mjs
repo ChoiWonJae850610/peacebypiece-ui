@@ -76,6 +76,7 @@ for (const version of [
   "0.24.34.3",
   "0.24.34.3.1",
   "0.24.34.4",
+  "0.24.34.5",
 ]) {
   const roadmapFile = read(`lib/internal/roadmap/roadmap-${version}.ts`);
   assert.ok(index.includes(`ROADMAP_${version.replace(/\./g, "_")}`), `index missing ${version} import or registration`);
@@ -84,7 +85,7 @@ for (const version of [
 
 for (const token of [
   "ROADMAP_STATUS_LABELS",
-  "currentWorkVersion: \"0.24.34.4\"",
+  "currentWorkVersion: \"0.24.34.5\"",
   "nextWorkVersion: \"0.24.35\"",
   "ROADMAP_0_24_33",
   "ROADMAP_0_24_33_1",
@@ -94,6 +95,7 @@ for (const token of [
   "ROADMAP_0_24_34_3",
   "ROADMAP_0_24_34_3_1",
   "ROADMAP_0_24_34_4",
+  "ROADMAP_0_24_34_5",
 ]) {
   assert.ok(index.includes(token), `roadmap index missing ${token}`);
 }
@@ -136,6 +138,8 @@ for (const token of [
   "Product Completion, Canonical WAFL UI, and Automated Evidence Standard",
   "0.24.34.4",
   "Workorder Runtime Recovery, Right-side Size Panel, WAFL Modal, and Signup Submission E2E",
+  "0.24.34.5",
+  "Live Workorder, Signup, System UI, and PDF Review Checkpoint",
 ]) {
   assert.ok(roadmapDoc.includes(token), `roadmap doc missing ${token}`);
 }

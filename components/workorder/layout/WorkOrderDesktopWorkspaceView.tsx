@@ -6,6 +6,7 @@ import DesktopWorkspaceLayout from "@/components/workorder/layout/DesktopWorkspa
 import type { WorkOrderLayoutViewProps } from "@/components/workorder/layout/types";
 import WorkOrderSidePanel from "@/components/workorder/WorkOrderSidePanel";
 import WorkOrderLoadingState from "@/components/workorder/WorkOrderLoadingState";
+import WorkOrderDetailErrorState from "@/components/workorder/WorkOrderDetailErrorState";
 
 export default function WorkOrderDesktopWorkspaceView({
   appShellRef,
@@ -15,6 +16,7 @@ export default function WorkOrderDesktopWorkspaceView({
   detailProps,
   sidePanelProps,
   loadingState,
+  detailErrorState,
   homeNavigation,
 }: WorkOrderLayoutViewProps) {
   const isLoading = Boolean(loadingState?.isRepositoryLoading);
@@ -34,7 +36,9 @@ export default function WorkOrderDesktopWorkspaceView({
       sidebar={<SidebarContent {...sidebarListProps} homeNavigation={homeNavigation} showHeaderActions={false} />}
       detail={(
         <>
-          {isLoading ? (
+          {detailErrorState ? (
+            <WorkOrderDetailErrorState {...detailErrorState} />
+          ) : isLoading ? (
             <WorkOrderLoadingState
               title={loadingState?.detailTitle ?? ""}
               description={loadingState?.detailDescription}
@@ -48,7 +52,9 @@ export default function WorkOrderDesktopWorkspaceView({
           )}
         </>
       )}
-      sidePanel={isLoading ? (
+      sidePanel={detailErrorState ? (
+        <WorkOrderDetailErrorState {...detailErrorState} />
+      ) : isLoading ? (
         <WorkOrderLoadingState
           variant="side"
           title={loadingState?.sideTitle ?? ""}

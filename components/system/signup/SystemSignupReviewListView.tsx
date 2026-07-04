@@ -6,12 +6,12 @@ import { SYSTEM_CARD_CLASS, SYSTEM_SMALL_TEXT_CLASS, SYSTEM_VALUE_TEXT_CLASS } f
 import type { SignupReviewListResult, SignupReviewStatus } from "@/lib/system/signupReviewRepository";
 
 const FILTERS: Array<{ label: string; value: SignupReviewStatus[] }> = [
-  { label: "기본 queue", value: ["submitted", "reviewing", "changes_requested"] },
+  { label: "기본 대기열", value: ["submitted", "reviewing", "changes_requested"] },
   { label: "접수됨", value: ["submitted"] },
   { label: "검토 중", value: ["reviewing"] },
   { label: "보완 요청", value: ["changes_requested"] },
   { label: "반려", value: ["rejected"] },
-  { label: "provisioning 실패", value: ["provisioning_failed"] },
+  { label: "승인 실패", value: ["provisioning_failed"] },
   { label: "승인 완료", value: ["approved"] },
 ];
 
@@ -32,13 +32,13 @@ function statusTone(status: SignupReviewStatus): "danger" | "warning" | "info" {
 
 function consentSummary(item: SignupReviewListResult["applications"][number]): string {
   if (item.requiredConsentsComplete) return "충족";
-  if (item.requiredConsentTypesPresent && !item.requiredConsentVersionsCurrent) return "버전 불일치";
+  if (item.requiredConsentTypesPresent && !item.requiredConsentVersionsCurrent) return "최신 약관 확인 필요";
   return `${item.activeConsentCount}/2`;
 }
 
 function readinessLabel(item: SignupReviewListResult["applications"][number]): string {
   if (item.paymentReadiness.ready) return "준비됨";
-  if (item.paymentReadiness.state === "blocked_pending_provider") return "PG 대기";
+  if (item.paymentReadiness.state === "blocked_pending_provider") return "결제 연동 대기";
   if (item.paymentReadiness.state === "revoked") return "취소됨";
   return "미준비";
 }
@@ -50,7 +50,7 @@ function SummaryCard({ label, value, tone = "neutral" }: { label: string; value:
       ? "text-[var(--pbp-status-warning)]"
       : "text-[var(--pbp-text-primary)]";
   return (
-    <div className="min-w-0 rounded-2xl border border-[var(--pbp-border)] bg-[var(--pbp-surface-muted)] px-4 py-3">
+    <div className="min-w-0 wafl-shape-control border border-[var(--pbp-border)] bg-[var(--pbp-surface-muted)] px-4 py-3">
       <p className={SYSTEM_SMALL_TEXT_CLASS}>{label}</p>
       <p className={`mt-1 text-xl font-semibold ${toneClass}`}>{value}</p>
     </div>
@@ -68,8 +68,7 @@ export default function SystemSignupReviewListView({ result }: { result: SignupR
               <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--pbp-text-subtle)]">SIGNUP REVIEW</p>
               <h1 className="mt-2 text-2xl font-semibold text-[var(--pbp-text-primary)]">가입 신청 검토</h1>
               <p className="mt-2 max-w-3xl text-sm leading-6 text-[var(--pbp-text-muted)]">
-                actual active system-admin 세션으로만 접근하는 가입 검토 queue입니다. 결제수단 readiness는 승인 전에 신청 단위로 확인되고,
-                dev/test에서는 fake readiness로 실제 PG 없이 승인 흐름을 검증할 수 있습니다.
+                신규 회사 Trial 신청을 검토합니다. 결제수단 준비, 필수 동의, 사업자등록증과 신청 정보를 확인한 뒤 승인하거나 보완 요청/반려할 수 있습니다.
               </p>
             </div>
             <nav aria-label="가입 신청 상태 필터" className="flex min-w-0 flex-wrap gap-2">
@@ -77,7 +76,7 @@ export default function SystemSignupReviewListView({ result }: { result: SignupR
                 <Link
                   key={filter.label}
                   href={filterHref(filter.value)}
-                  className="rounded-full border border-[var(--pbp-border)] px-3 py-1.5 text-xs font-semibold text-[var(--pbp-text-muted)]"
+                  className="wafl-shape-control border border-[var(--pbp-border)] px-3 py-1.5 text-xs font-semibold text-[var(--pbp-text-muted)]"
                 >
                   {filter.label}
                 </Link>
@@ -88,8 +87,8 @@ export default function SystemSignupReviewListView({ result }: { result: SignupR
             <SummaryCard label="접수됨" value={result.summary.submitted} />
             <SummaryCard label="검토 중" value={result.summary.reviewing} />
             <SummaryCard label="보완 요청" value={result.summary.changesRequested} tone="warning" />
-            <SummaryCard label="provisioning 실패" value={result.summary.provisioningFailed} tone="danger" />
-            <SummaryCard label="결제 준비 미완료" value={result.summary.paymentReadinessMissing} tone="warning" />
+            <SummaryCard label="승인 실패" value={result.summary.provisioningFailed} tone="danger" />
+            <SummaryCard label="결제수단 미준비" value={result.summary.paymentReadinessMissing} tone="warning" />
           </div>
         </header>
 
@@ -104,7 +103,7 @@ export default function SystemSignupReviewListView({ result }: { result: SignupR
                 <span>상태</span>
                 <span>제출</span>
                 <span>보완</span>
-                <span>파일</span>
+                <span>증빙</span>
                 <span>동의</span>
                 <span>결제 준비</span>
               </div>
@@ -149,7 +148,7 @@ export default function SystemSignupReviewListView({ result }: { result: SignupR
               {result.pagination.offset > 0 ? (
                 <Link
                   href={`/system/signup-applications?status=${statusQuery}&limit=${result.pagination.limit}&offset=${Math.max(0, result.pagination.offset - result.pagination.limit)}`}
-                  className="rounded-full border border-[var(--pbp-border)] px-4 py-2 text-sm font-semibold text-[var(--pbp-text-muted)]"
+                  className="wafl-shape-control border border-[var(--pbp-border)] px-4 py-2 text-sm font-semibold text-[var(--pbp-text-muted)]"
                 >
                   이전
                 </Link>
@@ -157,7 +156,7 @@ export default function SystemSignupReviewListView({ result }: { result: SignupR
               {result.pagination.nextOffset !== null ? (
                 <Link
                   href={`/system/signup-applications?status=${statusQuery}&limit=${result.pagination.limit}&offset=${result.pagination.nextOffset}`}
-                  className="rounded-full border border-[var(--pbp-border)] px-4 py-2 text-sm font-semibold text-[var(--pbp-text-muted)]"
+                  className="wafl-shape-control border border-[var(--pbp-border)] px-4 py-2 text-sm font-semibold text-[var(--pbp-text-muted)]"
                 >
                   다음
                 </Link>

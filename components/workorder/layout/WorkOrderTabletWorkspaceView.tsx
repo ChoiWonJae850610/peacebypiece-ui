@@ -12,6 +12,7 @@ import WorkOrderEmptyState from "@/components/workorder/WorkOrderEmptyState";
 import type { WorkOrderLayoutViewProps } from "@/components/workorder/layout/types";
 import WorkOrderSidePanel from "@/components/workorder/WorkOrderSidePanel";
 import WorkOrderLoadingState from "@/components/workorder/WorkOrderLoadingState";
+import WorkOrderDetailErrorState from "@/components/workorder/WorkOrderDetailErrorState";
 
 export default function WorkOrderTabletWorkspaceView({
   appShellRef,
@@ -21,6 +22,7 @@ export default function WorkOrderTabletWorkspaceView({
   detailProps,
   sidePanelProps,
   loadingState,
+  detailErrorState,
   homeNavigation,
 }: WorkOrderLayoutViewProps) {
   const isLoading = Boolean(loadingState?.isRepositoryLoading);
@@ -35,7 +37,9 @@ export default function WorkOrderTabletWorkspaceView({
   );
   const detail = (
     <>
-      {isLoading ? (
+      {detailErrorState ? (
+        <WorkOrderDetailErrorState {...detailErrorState} />
+      ) : isLoading ? (
         <WorkOrderLoadingState
           title={loadingState?.detailTitle ?? ""}
           description={loadingState?.detailDescription}
@@ -49,7 +53,9 @@ export default function WorkOrderTabletWorkspaceView({
       )}
     </>
   );
-  const sidePanel = isLoading ? (
+  const sidePanel = detailErrorState ? (
+    <WorkOrderDetailErrorState {...detailErrorState} />
+  ) : isLoading ? (
     <WorkOrderLoadingState
       variant="side"
       title={loadingState?.sideTitle ?? ""}

@@ -20,7 +20,7 @@ function formatBytes(value: number | null): string {
 
 function Field({ label, value }: { label: string; value: string | null | undefined }) {
   return (
-    <div className="min-w-0 rounded-2xl border border-[var(--pbp-border)] bg-[var(--pbp-surface-muted)] px-4 py-3">
+    <div className="min-w-0 wafl-shape-control border border-[var(--pbp-border)] bg-[var(--pbp-surface-muted)] px-4 py-3">
       <p className={SYSTEM_SMALL_TEXT_CLASS}>{label}</p>
       <p className={`mt-1 break-words text-sm font-semibold ${SYSTEM_VALUE_TEXT_CLASS}`}>{value || "-"}</p>
     </div>
@@ -30,16 +30,16 @@ function Field({ label, value }: { label: string; value: string | null | undefin
 function ConsentEvidenceStatus({ application }: { application: SignupReviewDetail }) {
   return (
     <div className="grid gap-3 md:grid-cols-3">
-      <Field label="필수 동의 종류" value={application.requiredConsentTypesPresent ? "충족" : "미충족"} />
-      <Field label="현재 정책 버전" value={application.requiredConsentVersionsCurrent ? "충족" : "미충족"} />
-      <Field label="전체 검토 조건" value={application.requiredConsentsComplete ? "충족" : "미충족"} />
+      <Field label="필수 동의 종류" value={application.requiredConsentTypesPresent ? "충족" : "확인 필요"} />
+      <Field label="최신 정책 버전" value={application.requiredConsentVersionsCurrent ? "충족" : "확인 필요"} />
+      <Field label="전체 검토 조건" value={application.requiredConsentsComplete ? "충족" : "확인 필요"} />
     </div>
   );
 }
 
 function readinessLabel(application: SignupReviewDetail): string {
   if (application.paymentReadiness.ready) return "준비됨";
-  if (application.paymentReadiness.state === "blocked_pending_provider") return "PG 대기";
+  if (application.paymentReadiness.state === "blocked_pending_provider") return "결제 연동 대기";
   if (application.paymentReadiness.state === "revoked") return "취소됨";
   return "미준비";
 }
@@ -57,7 +57,7 @@ export default function SystemSignupReviewDetailView({ application }: { applicat
             </div>
             <div className="flex shrink-0 flex-wrap gap-2">
               <AdminStatusBadge tone="info">{application.status}</AdminStatusBadge>
-              <Link href="/system/signup-applications" className="rounded-full border border-[var(--pbp-border)] px-4 py-2 text-sm font-semibold text-[var(--pbp-text-muted)]">
+              <Link href="/system/signup-applications" className="wafl-shape-control border border-[var(--pbp-border)] px-4 py-2 text-sm font-semibold text-[var(--pbp-text-muted)]">
                 목록
               </Link>
             </div>
@@ -73,26 +73,25 @@ export default function SystemSignupReviewDetailView({ application }: { applicat
             <Field label="제출 시각" value={formatDate(application.submittedAt)} />
             <Field label="사업자번호 검증" value={application.businessValidationStatus} />
             <Field label="검증 시각" value={formatDate(application.businessValidationCheckedAt)} />
-            <Field label="Google email_verified" value={application.identityEvidence.googleEmailVerified ? "true" : "false"} />
-            <Field label="Google subject fingerprint" value={application.identityEvidence.googleSubjectFingerprint} />
-            <Field label="provisioning error" value={application.provisioningErrorCode} />
+            <Field label="이메일 인증" value={application.identityEvidence.googleEmailVerified ? "완료" : "미완료"} />
+            <Field label="신청자 식별" value={application.identityEvidence.googleSubjectFingerprint ? "확인됨" : "-"} />
+            <Field label="승인 오류" value={application.provisioningErrorCode} />
           </div>
           {!application.identityEvidence.googleEmailVerified ? (
-            <p className="mt-3 text-sm font-semibold text-[var(--pbp-status-danger)]">Google email_verified가 false입니다. 승인 조건을 충족하지 않습니다.</p>
+            <p className="mt-3 text-sm font-semibold text-[var(--pbp-status-danger)]">이메일 인증이 완료되지 않아 승인할 수 없습니다.</p>
           ) : null}
         </section>
 
         <section className={SYSTEM_CARD_CLASS}>
-          <h2 className={SYSTEM_SECTION_TITLE_CLASS}>결제수단 readiness</h2>
+          <h2 className={SYSTEM_SECTION_TITLE_CLASS}>결제수단 준비</h2>
           <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
             <Field label="상태" value={readinessLabel(application)} />
-            <Field label="provider" value={application.paymentReadiness.providerCode} />
+            <Field label="제공 방식" value={application.paymentReadiness.providerCode ? "참조 정보 준비됨" : "-"} />
             <Field label="표시 카드" value={application.paymentReadiness.maskedDisplay} />
             <Field label="확인 시각" value={formatDate(application.paymentReadiness.verifiedAt)} />
           </div>
           <p className="mt-3 text-xs leading-5 text-[var(--pbp-text-muted)]">
-            Trial 승인 전 readiness는 신청서 단위로 저장됩니다. 승인 성공 시 회사 billing reference로 안전한 provider-neutral 증거만 복사하며,
-            실제 카드번호/CVC/원문 PG payload는 저장하지 않습니다.
+            Trial 승인 전 결제수단 준비 상태를 확인합니다. 카드번호, CVC, 원본 결제 응답은 저장하거나 표시하지 않습니다.
           </p>
         </section>
 
@@ -103,7 +102,7 @@ export default function SystemSignupReviewDetailView({ application }: { applicat
           </div>
           <div className="mt-4 grid gap-3 md:grid-cols-2">
             {application.consents.map((consent) => (
-              <div key={consent.id} className="min-w-0 rounded-2xl border border-[var(--pbp-border)] bg-[var(--pbp-surface-muted)] p-4">
+              <div key={consent.id} className="min-w-0 wafl-shape-control border border-[var(--pbp-border)] bg-[var(--pbp-surface-muted)] p-4">
                 <p className="break-words text-sm font-semibold text-[var(--pbp-text-primary)]">{consent.consentType}</p>
                 <p className="mt-1 break-words text-xs text-[var(--pbp-text-muted)]">{consent.policyCode} / v{consent.policyVersion}</p>
                 <p className="mt-2 text-xs text-[var(--pbp-text-muted)]">동의 {formatDate(consent.agreedAt)} / 철회 {formatDate(consent.revokedAt)}</p>
@@ -115,7 +114,7 @@ export default function SystemSignupReviewDetailView({ application }: { applicat
 
         <section className={SYSTEM_CARD_CLASS}>
           <h2 className={SYSTEM_SECTION_TITLE_CLASS}>사업자등록증</h2>
-          <div className="mt-4 min-w-0 rounded-2xl border border-[var(--pbp-border)] bg-[var(--pbp-surface-muted)] p-4">
+          <div className="mt-4 min-w-0 wafl-shape-control border border-[var(--pbp-border)] bg-[var(--pbp-surface-muted)] p-4">
             {application.certificate.exists ? (
               <div className="flex min-w-0 flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <div className="min-w-0">
@@ -129,14 +128,14 @@ export default function SystemSignupReviewDetailView({ application }: { applicat
                     href={application.certificateViewerPath}
                     target="_blank"
                     rel="noreferrer"
-                    className="shrink-0 rounded-full bg-[var(--pbp-brand-primary)] px-4 py-2 text-sm font-semibold text-[var(--pbp-text-inverse)]"
+                    className="shrink-0 wafl-shape-control bg-[var(--pbp-brand-primary)] px-4 py-2 text-sm font-semibold text-[var(--pbp-text-inverse)]"
                   >
-                    inline viewer
+                    증빙 보기
                   </a>
                 ) : null}
               </div>
             ) : (
-              <p className="text-sm text-[var(--pbp-text-muted)]">제출된 파일이 없습니다. 증빙 viewer는 서버 프록시로만 열리며 signed URL은 노출하지 않습니다.</p>
+              <p className="text-sm text-[var(--pbp-text-muted)]">제출된 증빙 파일이 없습니다.</p>
             )}
           </div>
         </section>

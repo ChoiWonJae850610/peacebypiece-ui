@@ -13,7 +13,7 @@ import {
 import type { AsyncOperationStatus } from "./useWorkOrderActionTypes";
 import { buildUserRoleState, ROLE } from "@/lib/constants/roles";
 import { DEFAULT_WORKFLOW_STATE } from "@/lib/constants/workorderStates";
-import { createStabilizedWorkOrdersSetter, stabilizeWorkOrders } from "@/lib/workorder/reorder/state";
+import { stabilizeWorkOrders } from "@/lib/workorder/reorder/state";
 import { normalizeWorkOrderDataList } from "@/lib/workorder/normalization";
 import { hasWorkOrderDraftChanges } from "@/lib/workorder/draftState";
 import {
@@ -157,6 +157,7 @@ export function useWorkOrderCoreState(options: UseWorkOrderCoreStateOptions = {}
   );
   const [repositoryStatus, setRepositoryStatus] = useState<AsyncOperationStatus>("loading");
   const [repositoryError, setRepositoryError] = useState<WorkOrderRepositoryError | null>(null);
+  const [detailErrorsById, setDetailErrorsById] = useState<Record<string, WorkOrderRepositoryError | undefined>>({});
   const [saveStatus, setSaveStatus] = useState<"saved" | "dirty" | "saving">("saved");
   const [lastSavedAt, setLastSavedAt] = useState<string | null>(
     selectedId ? initialWorkOrders.find((item) => item.id === selectedId)?.lastSavedAt ?? null : null,
@@ -166,18 +167,21 @@ export function useWorkOrderCoreState(options: UseWorkOrderCoreStateOptions = {}
 
   useEffect(() => {
     isMountedRef.current = true;
+    const inFlightIds = detailLoadInFlightIdsRef.current;
 
     return () => {
       isMountedRef.current = false;
-      detailLoadInFlightIdsRef.current.clear();
+      inFlightIds.clear();
     };
   }, []);
 
   useEffect(() => {
     let cancelled = false;
 
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- Synchronizes repository loading state at the start of an async load.
     setRepositoryStatus("loading");
     setRepositoryError(null);
+    setDetailErrorsById({});
 
     repository
       .loadWorkspaceStateAsync()
@@ -222,8 +226,10 @@ export function useWorkOrderCoreState(options: UseWorkOrderCoreStateOptions = {}
     window.history.replaceState(window.history.state, "", nextUrl);
 
     let cancelled = false;
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- Synchronizes repository loading state for filter changes.
     setRepositoryStatus("loading");
     setRepositoryError(null);
+    setDetailErrorsById({});
     repository
       .loadWorkspaceStateAsync()
       .then((loadedState) => {
@@ -260,19 +266,28 @@ export function useWorkOrderCoreState(options: UseWorkOrderCoreStateOptions = {}
       })
       .catch((error) => {
         setRepositoryError(createRepositoryError("persist", error, "Failed to persist workorder workspace session."));
-        setRepositoryStatus("error");
       });
   }, [currentUserId, permissionTargetUserId, repository, repositoryStatus, selectedId]);
 
-  const setWorkOrders = useCallback(createStabilizedWorkOrdersSetter(setWorkOrdersState), []);
+  const setWorkOrders = useCallback((nextWorkOrders: WorkOrder[] | ((current: WorkOrder[]) => WorkOrder[])) => {
+    setWorkOrdersState((current) => {
+      const resolved = typeof nextWorkOrders === "function" ? nextWorkOrders(current) : nextWorkOrders;
+      return stabilizeWorkOrders(resolved);
+    });
+  }, []);
 
   const selectedWorkOrder = useMemo(
     () => (selectedId ? workOrders.find((item) => item.id === selectedId) : null) ?? createFallbackWorkOrder(),
     [workOrders, selectedId],
   );
+  const selectedWorkOrderDetailError = selectedId ? detailErrorsById[selectedId] ?? null : null;
   const isSelectedWorkOrderDetailLoading = useMemo(
-    () => Boolean(selectedId && workOrders.some((item) => item.id === selectedId && !item.hasDetailSnapshot)),
-    [selectedId, workOrders],
+    () => Boolean(
+      selectedId &&
+        !selectedWorkOrderDetailError &&
+        workOrders.some((item) => item.id === selectedId && !item.hasDetailSnapshot),
+    ),
+    [selectedId, selectedWorkOrderDetailError, workOrders],
   );
 
   const reloadWorkOrderDetail = useCallback((workOrderId: string) => {
@@ -280,6 +295,12 @@ export function useWorkOrderCoreState(options: UseWorkOrderCoreStateOptions = {}
     if (!targetId || detailLoadInFlightIdsRef.current.has(targetId)) return;
 
     detailLoadInFlightIdsRef.current.add(targetId);
+    setDetailErrorsById((current) => {
+      if (!current[targetId]) return current;
+      const next = { ...current };
+      delete next[targetId];
+      return next;
+    });
 
     repository
       .loadWorkOrderDetailAsync(targetId)
@@ -294,10 +315,22 @@ export function useWorkOrderCoreState(options: UseWorkOrderCoreStateOptions = {}
         setPersistedWorkOrders((current) =>
           stabilizeWorkOrders(replaceWithDetailSnapshot(current, normalizedDetail)),
         );
+        setDetailErrorsById((current) => {
+          if (!current[targetId]) return current;
+          const next = { ...current };
+          delete next[targetId];
+          return next;
+        });
       })
       .catch((error) => {
         if (!isMountedRef.current) return;
-        setRepositoryError(createRepositoryError("initialize", error, "Failed to refresh workorder attachments."));
+        const detailError = createRepositoryError(
+          "initialize",
+          null,
+          "작업지시서 상세 정보를 불러오지 못했습니다. 목록에서 다시 선택하거나 잠시 후 다시 시도해 주세요.",
+        );
+        setDetailErrorsById((current) => ({ ...current, [targetId]: detailError }));
+        setRepositoryError(createRepositoryError("initialize", error, detailError.message));
       })
       .finally(() => {
         detailLoadInFlightIdsRef.current.delete(targetId);
@@ -340,6 +373,7 @@ export function useWorkOrderCoreState(options: UseWorkOrderCoreStateOptions = {}
     const persistedSelectedWorkOrder = selectedId ? persistedWorkOrders.find((item) => item.id === selectedId) ?? null : null;
     const isDirty = hasWorkOrderDraftChanges(currentSelectedWorkOrder, persistedSelectedWorkOrder);
 
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- Derives save status from selected draft and persisted snapshots.
     setSaveStatus((previous) => {
       if (previous === "saving") return previous;
       return isDirty ? "dirty" : "saved";
@@ -375,6 +409,8 @@ export function useWorkOrderCoreState(options: UseWorkOrderCoreStateOptions = {}
     setSelectedId,
     selectedWorkOrder,
     isSelectedWorkOrderDetailLoading,
+    selectedWorkOrderDetailError,
+    reloadWorkOrderDetail,
     searchQuery,
     setSearchQuery,
     listStatusFilter,

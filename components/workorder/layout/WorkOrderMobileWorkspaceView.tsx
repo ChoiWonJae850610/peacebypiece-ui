@@ -6,6 +6,7 @@ import WorkOrderMobileWorkspaceShell from "@/components/workorder/layout/WorkOrd
 import WorkOrderMobileRelatedSectionPanels, { type WorkOrderMobileRelatedSectionKey } from "@/components/workorder/layout/WorkOrderMobileRelatedSectionPanels";
 import type { WorkOrderLayoutViewProps } from "@/components/workorder/layout/types";
 import WorkOrderLoadingState from "@/components/workorder/WorkOrderLoadingState";
+import WorkOrderDetailErrorState from "@/components/workorder/WorkOrderDetailErrorState";
 import MobileDrawer from "@/components/layout/MobileDrawer";
 import AdminTopbar from "@/components/admin/layout/AdminTopbar";
 import { WaflMobileDetailContent } from "@/components/common/ui";
@@ -20,12 +21,17 @@ export default function WorkOrderMobileWorkspaceView({
   mobileTopBarProps,
   mobileDrawerProps,
   loadingState,
+  detailErrorState,
 }: WorkOrderLayoutViewProps) {
   const { drawerOverlayPresentation } = useWorkspaceLayoutMode();
   const isLoading = Boolean(loadingState?.isRepositoryLoading);
   const detailScrollResetKey = selectedId;
 
-  const detailContent = isLoading ? (
+  const detailContent = detailErrorState ? (
+    <WaflMobileDetailContent>
+      <WorkOrderDetailErrorState {...detailErrorState} withContentShell={false} />
+    </WaflMobileDetailContent>
+  ) : isLoading ? (
     <WaflMobileDetailContent>
       <WorkOrderLoadingState
         title={loadingState?.detailTitle ?? ""}
@@ -44,6 +50,10 @@ export default function WorkOrderMobileWorkspaceView({
   );
 
   const renderRelatedSection = (activeSection: WorkOrderMobileRelatedSectionKey) => {
+    if (detailErrorState) {
+      return <WorkOrderDetailErrorState {...detailErrorState} withContentShell={false} />;
+    }
+
     if (isLoading) {
       return (
         <WorkOrderLoadingState

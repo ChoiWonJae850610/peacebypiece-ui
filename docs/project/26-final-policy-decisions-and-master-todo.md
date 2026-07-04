@@ -113,6 +113,9 @@ Each requirement is classified as:
 - `CONFIRMED` Provide women 55/66/77, men 90/95/100/105, and XS/S/M/L/XL defaults in cm and inch.
 - `CONFIRMED` Customers can load and edit defaults; system administrators maintain default systems and values.
 - `CONFIRMED` PDF size tables include POM/measurement-position guidance.
+- `CONFIRMED` Workorder size defaults are loaded from system-admin maintained reference data and copied into a workorder snapshot.
+- `CONFIRMED` Later changes to system reference size data do not silently change existing workorders.
+- `CONFIRMED` Inch entry UX should be whole-number plus 1/8-fraction selection and must be usable on PC, tablet, and mobile.
 
 ## 5. Signup, verification, approval, and business registration
 
@@ -134,6 +137,10 @@ Each requirement is classified as:
 - `CONFIRMED` The certificate is retained while the company is active and is deleted with customer data after termination plus the 30-day recovery period.
 - `LEGAL_REVIEW` Validate the certificate retention basis, processor disclosure, and access-log requirements before launch.
 - `CONFIRMED` Rejected/canceled initial requests create no service account; uploaded certificate files are deleted after 30 days; minimal request/rejection records remain for 90 days, then are deleted.
+- `CONFIRMED` A returning applicant who already submitted a signup application sees the current application state, not the new application form again.
+- `CONFIRMED` Returning applicant states include draft, review pending, under review, revision requested, approved, rejected, and cancelled.
+- `CONFIRMED` Signup terms/privacy viewers reuse the canonical policy viewer and the same policy document/version/effective-date source used by settings/admin policy views.
+- `CONFIRMED` Free-trial expiration alone does not require full terms/privacy re-consent; paid conversion uses separate paid-plan and recurring-payment confirmation.
 
 ## 6. Payment failure and service restrictions
 
@@ -182,6 +189,13 @@ Each requirement is classified as:
 - `CONFIRMED` Supplier purchase-order PDF is generated at purchase request.
 - `CONFIRMED` No separate actual-result PDF.
 - `CONFIRMED` Page 1 contains basic information, design, and memo/data summary; later pages contain size specs and details, including POM guidance.
+- `CONFIRMED` Factory-delivery workorder PDF is a production-execution document and excludes internal cost fields: unit price, amount, labor cost, loss cost, total cost, and margin.
+- `CONFIRMED` Factory-delivery workorder PDF includes representative design image, factory instructions, fabric/accessory production information, and additional process information.
+- `CONFIRMED` Fabric and accessory rows in factory-delivery PDF show production information such as type/item/options, quantity, unit, and note, not cost information.
+- `CONFIRMED` Additional process rows in factory-delivery PDF show process name, description, and note, not process cost.
+- `CONFIRMED` Incomplete and final workorder PDFs use the same canonical template; only status, watermark, and missing-item display differ.
+- `CONFIRMED` Generated incomplete/final workorder PDFs appear in the workorder generated-document/attachment area.
+- `CONFIRMED` Workorder size/POM PDF pages must render Korean display names from system reference data where available.
 - `TODO` Select one canonical production renderer and remove or production-block legacy fallbacks after verification.
 
 ## 9. Account termination, recovery, and automatic deletion
@@ -281,3 +295,14 @@ Before public launch, verify against current law and actual provider contracts:
 - DB read-only menus 30–32 are the pre-implementation verification gate.
 - Schema, migration, seed, backfill, production DB/R2, PG, secret, and destructive actions remain separately approved work.
 - No DB migration in 0.24.21.16.
+
+
+## 13. Workspace and system operations dashboard policy
+
+- `CONFIRMED` Customer workspace main dashboard prioritizes operational work queues and recent workorders over subscription/storage detail.
+- `CONFIRMED` The large standalone `PLAN AND STORAGE` block is removed from the main dashboard or compacted into a small summary; detailed management belongs in subscription/settings/file screens.
+- `CONFIRMED` Tablet landscape, mobile, desktop, and iPad layouts must be verified for the compact workspace dashboard.
+- `CONFIRMED` `/system/signup-applications` primary actions are approve, request revision, reject, and more; manual review-start is not a primary CTA.
+- `CONFIRMED` `/system/companies` is not deleted; it remains approved-customer operations, while `/system/signup-applications` remains pre-approval review.
+- `CONFIRMED` `/system` combines confirmation-needed counts, signup review, trial/billing/storage risk, plan distribution, and customer operations into a compact dashboard.
+- `TODO` Implement the 0.24.34.5 continuation sequence recorded in `docs/project/33-workorder-pdf-size-dashboard-finalization.md` before starting 0.24.35 unless the owner explicitly re-prioritizes.

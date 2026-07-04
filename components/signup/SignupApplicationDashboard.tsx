@@ -89,6 +89,20 @@ type SignupCertificateResponse = {
   certificate?: SignupCertificateView | null;
 };
 
+type CustomerPolicyDocumentView = {
+  id: string;
+  title: string;
+  subtitle: string;
+  versionLabel: string;
+  effectiveDateLabel: string;
+  markdown: string;
+};
+
+type CustomerPolicyDocumentResponse = {
+  ok?: boolean;
+  document?: CustomerPolicyDocumentView;
+};
+
 type FormState = {
   requestedCompanyName: string;
   businessName: string;
@@ -141,23 +155,9 @@ const planCards: Array<{
   { code: "studio", name: "Studio", price: "월 39,900원", storage: "5GB", members: "30명" },
 ];
 
-const policyBody: Record<SignupConsentType, { title: string; body: string[] }> = {
-  terms_of_service: {
-    title: "이용약관",
-    body: [
-      "WAFL은 의류 생산 업무를 기록하고 협업하기 위한 서비스입니다.",
-      "가입 신청이 승인되면 7일 무료 체험이 시작되며, 체험 기간 동안 선택한 요금제의 기본 한도 안에서 서비스를 이용할 수 있습니다.",
-      "서비스 이용 중 등록한 회사 정보와 업무 자료는 고객사의 업무 처리 목적에 맞게 보관됩니다.",
-    ],
-  },
-  privacy_policy: {
-    title: "개인정보처리방침",
-    body: [
-      "가입 신청과 서비스 이용을 위해 이름, 이메일, 회사 정보, 사업자등록증 파일을 수집합니다.",
-      "사업자등록증은 가입 승인 검토와 회사 확인 목적으로만 사용됩니다.",
-      "승인 검토와 서비스 제공에 필요한 범위를 넘어 개인정보를 공개하지 않습니다.",
-    ],
-  },
+const policyDocumentIdByConsentType: Record<SignupConsentType, string> = {
+  terms_of_service: "terms-of-service",
+  privacy_policy: "privacy-policy",
 };
 
 const statusCopy: Record<SignupApplicationStatus | "verified_identity", {
@@ -325,7 +325,10 @@ export default function SignupApplicationDashboard() {
   const [error, setError] = useState<string | null>(null);
   const [consentError, setConsentError] = useState<string | null>(null);
   const [certificateError, setCertificateError] = useState<string | null>(null);
-  const [openPolicy, setOpenPolicy] = useState<SignupConsentType | null>(null);
+  const [openPolicy, setOpenPolicy] = useState<SignupConsentPolicyView | null>(null);
+  const [openedPolicyDocument, setOpenedPolicyDocument] = useState<CustomerPolicyDocumentView | null>(null);
+  const [openedPolicyError, setOpenedPolicyError] = useState<string | null>(null);
+  const [openedPolicyLoading, setOpenedPolicyLoading] = useState(false);
 
   const status = application?.status ?? "verified_identity";
   const copy = statusCopy[status];
@@ -594,6 +597,20 @@ export default function SignupApplicationDashboard() {
     }
   }
 
+  function openPolicyDocument(policy: SignupConsentPolicyView) {
+    setOpenedPolicyDocument(null);
+    setOpenedPolicyError(null);
+    setOpenedPolicyLoading(true);
+    setOpenPolicy(policy);
+  }
+
+  function closePolicyDocument() {
+    setOpenPolicy(null);
+    setOpenedPolicyDocument(null);
+    setOpenedPolicyError(null);
+    setOpenedPolicyLoading(false);
+  }
+
   useEffect(() => {
     const timerId = window.setTimeout(() => {
       void loadStatus();
@@ -601,7 +618,45 @@ export default function SignupApplicationDashboard() {
     return () => window.clearTimeout(timerId);
   }, [loadStatus]);
 
-  const openedPolicy = openPolicy ? policyBody[openPolicy] : null;
+  useEffect(() => {
+    if (!openPolicy) return;
+
+    let active = true;
+    const documentId = policyDocumentIdByConsentType[openPolicy.consentType];
+
+    fetch(`/api/policies/customer-documents/${encodeURIComponent(documentId)}`, { cache: "no-store" })
+      .then(async (response) => {
+        const payload = (await response.json().catch(() => null)) as CustomerPolicyDocumentResponse | null;
+        if (!response.ok || !payload?.ok || !payload.document) {
+          throw new Error("POLICY_DOCUMENT_LOAD_FAILED");
+        }
+        if (active) setOpenedPolicyDocument(payload.document);
+      })
+      .catch(() => {
+        if (active) setOpenedPolicyError("정책 문서를 불러오지 못했습니다. 잠시 후 다시 시도해 주세요.");
+      })
+      .finally(() => {
+        if (active) setOpenedPolicyLoading(false);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [openPolicy]);
+
+  useEffect(() => {
+    if (!openPolicy) return;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") closePolicyDocument();
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [openPolicy]);
 
   return (
     <ATypePublicFrame
@@ -740,7 +795,7 @@ export default function SignupApplicationDashboard() {
                       </label>
                       <button
                         type="button"
-                        onClick={() => setOpenPolicy(policy.consentType)}
+                        onClick={() => openPolicyDocument(policy)}
                         className="rounded-[var(--pbp-radius-lg)] border border-[var(--pbp-border-soft)] px-3 py-1.5 text-xs font-black text-[var(--pbp-text-primary)]"
                       >
                         보기
@@ -778,20 +833,32 @@ export default function SignupApplicationDashboard() {
         ) : null}
       </ATypePublicCard>
 
-      {openedPolicy ? (
-        <div className="fixed inset-0 z-50 grid place-items-end bg-black/40 p-0 sm:place-items-center sm:p-6" role="dialog" aria-modal="true" aria-label={openedPolicy.title}>
-          <div className="max-h-[90dvh] w-full overflow-y-auto rounded-t-[var(--pbp-radius-modal)] bg-[var(--pbp-surface-base)] p-5 shadow-[var(--pbp-shadow-modal-a-type)] sm:max-w-lg sm:rounded-[var(--pbp-radius-modal)]">
+      {openPolicy ? (
+        <div className="fixed inset-0 z-50 grid place-items-end bg-black/40 p-0 sm:place-items-center sm:p-6" role="dialog" aria-modal="true" aria-label={openedPolicyDocument?.title ?? openPolicy.label}>
+          <button type="button" aria-label="정책 문서 닫기" className="absolute inset-0 cursor-default" onClick={closePolicyDocument} />
+          <div className="relative max-h-[90dvh] w-full overflow-y-auto rounded-t-[var(--pbp-radius-modal)] bg-[var(--pbp-surface-base)] p-5 shadow-[var(--pbp-shadow-modal-a-type)] sm:max-w-2xl sm:rounded-[var(--pbp-radius-modal)]">
             <div className="flex items-start justify-between gap-4">
               <div>
                 <p className="text-xs font-black uppercase tracking-[0.2em] text-[var(--pbp-brand-soft)]">WAFL</p>
-                <h2 className="mt-2 text-xl font-black text-[var(--pbp-text-primary)]">{openedPolicy.title}</h2>
+                <h2 className="mt-2 text-xl font-black text-[var(--pbp-text-primary)]">{openedPolicyDocument?.title ?? openPolicy.label}</h2>
+                <p className="mt-1 text-xs font-semibold text-[var(--pbp-text-muted)]">
+                  {openedPolicyDocument
+                    ? `${openedPolicyDocument.versionLabel} · ${openedPolicyDocument.effectiveDateLabel}`
+                    : `${openPolicy.policyCode} · ${openPolicy.policyVersion}`}
+                </p>
               </div>
-              <button type="button" onClick={() => setOpenPolicy(null)} className="rounded-full border border-[var(--pbp-border-soft)] px-3 py-1 text-sm font-black text-[var(--pbp-text-primary)]">
+              <button type="button" onClick={closePolicyDocument} className="rounded-full border border-[var(--pbp-border-soft)] px-3 py-1 text-sm font-black text-[var(--pbp-text-primary)]">
                 닫기
               </button>
             </div>
             <div className="mt-5 grid gap-3 text-sm font-semibold leading-7 text-[var(--pbp-text-secondary)]">
-              {openedPolicy.body.map((line) => <p key={line}>{line}</p>)}
+              {openedPolicyLoading ? <p>정책 문서를 불러오는 중입니다.</p> : null}
+              {openedPolicyError ? <ATypePublicNotice tone="warning">{openedPolicyError}</ATypePublicNotice> : null}
+              {openedPolicyDocument ? (
+                <div className="whitespace-pre-wrap break-words rounded-[var(--pbp-radius-lg)] border border-[var(--pbp-border-soft)] bg-[var(--pbp-surface-soft)] p-4 text-sm font-semibold leading-7 text-[var(--pbp-text-secondary)]">
+                  {openedPolicyDocument.markdown}
+                </div>
+              ) : null}
             </div>
           </div>
         </div>
