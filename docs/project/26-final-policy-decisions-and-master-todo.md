@@ -358,3 +358,13 @@ Rules:
 - Continuation E must clean up the customer dashboard, system-admin dashboard, signup review UX, and company operations route roles.
 - Final review and commit must not run until owner visual review and required evidence are complete.
 - `0.24.35` remains blocked until this sequence is either completed or explicitly re-scoped by the owner.
+
+
+## 0.24.34.6 Codex Prompt Execution Guard
+
+- `CONFIRMED` `0.24.34.6` is a document/audit/prompt-preparation version.
+- `CONFIRMED` Remaining `0.24.34.5` productization prompts must run in order: A -> B -> C -> D -> E -> Final.
+- `CONFIRMED` A prompt that changes PDF output or visible UI must create a QA evidence ZIP outside the source ZIP and must not include evidence artifacts in Git or `4. Newest` source ZIP.
+- `CONFIRMED` Factory-delivery workorder PDF must not include internal money/cost fields such as unit price, amount, cost, margin, loss amount, or internal calculation values.
+- `CONFIRMED` PDF/screen implementation output requires owner visual review before final commit/push.
+- `CONFIRMED` `0.24.35 — Company-wide Export Execution` remains blocked until the final review prompt completes.

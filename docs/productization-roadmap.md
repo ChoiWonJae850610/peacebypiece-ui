@@ -45,6 +45,18 @@ Prompt references:
 
 Execution rule:
 
+
+Prompt execution is sequential and checkpointed:
+
+1. Continuation A — factory-delivery workorder PDF template.
+2. Continuation B — size standards and measurement UI.
+3. Continuation C — live workorder runtime and factory save.
+4. Continuation D — returning signup applicant and policy modal.
+5. Continuation E — customer dashboard and system-admin screens.
+6. Final — owner-reviewed verification and Git closeout.
+
+A later prompt must not be executed until the previous prompt has produced its checkpoint ZIP/repo-state and evidence package when applicable.
+
 - Use one prompt at a time.
 - Do not merge A-E into one large implementation run unless the previous continuation is fully verified.
 - Each prompt must re-read the canonical policy/audit documents listed in `docs/codex-current-state.md`.

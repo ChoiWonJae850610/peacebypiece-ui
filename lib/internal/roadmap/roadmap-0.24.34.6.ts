@@ -15,6 +15,7 @@ export const ROADMAP_0_24_34_6: RoadmapVersionDetail = {
     "새 customer workspace route-level gap audit 문서가 추가된다.",
     "roadmap/current-state/master TODO가 0.24.34.6 감사 문서를 다음 구현 기준으로 참조한다.",
     "0.24.34.5 continuation A-E와 final review Codex prompt 문서가 추가된다.",
+    "Codex prompt 문서에 A -> B -> C -> D -> E -> Final 순차 실행 가드와 evidence ZIP 규칙을 보강한다.",
   ],
   expectedUi: [
     "실제 화면 UI는 변경하지 않는다.",
@@ -68,6 +69,8 @@ export const ROADMAP_0_24_34_6: RoadmapVersionDetail = {
     "docs/project/33-* 문서 번호가 이미 중복되어 있으므로 이후 새 project document 번호는 중복을 피한다.",
     "repo-state generator가 APP_VERSION을 잘못 읽는 문제는 다음 Codex 작업에서 보정한다.",
     "정책 문서화 commit은 허용되지만 PDF/화면 구현 결과는 사용자 검수 전 최종 완료 commit/push하지 않는다.",
+    "Codex는 A-E를 한 번에 병합 실행하지 않고, 각 continuation checkpoint 후 다음 prompt로 이동한다.",
+    "PDF/화면 작업은 source ZIP과 별도 QA evidence ZIP을 생성하고 Git/4.Newest source ZIP에서 제외한다.",
   ],
   stopConditions: [
     "기준 ZIP과 repo-state가 0.24.34.5 clean baseline이 아닌 경우",

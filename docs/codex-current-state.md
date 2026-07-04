@@ -45,6 +45,15 @@ Rules:
 - A historical roadmap entry marked `completed` means that entry's declared scope was completed. It does not prove that every higher-level canonical product requirement in the same domain is finished.
 
 
+## 0.24.34.6 Prompt Execution Reinforcement
+
+- `0.24.34.6` is a document/audit/prompt-preparation version, not a product implementation closeout.
+- The `docs/codex-prompts/0.24.34.5-continuation-*.md` documents must be executed one at a time in this order: A -> B -> C -> D -> E -> Final.
+- Each continuation must stop at its checkpoint with source ZIP, matching repo-state, and QA evidence ZIP when the work changes PDF or visible UI.
+- Do not merge A-E into one large implementation run unless the owner explicitly approves it after reviewing the prior checkpoint.
+- PDF/screen implementation output must not be finally committed or pushed before owner visual review.
+- `0.24.35 — Company-wide Export Execution` remains not started until the final review prompt completes.
+
 ## 0.24.34.6 Audit Update
 
 - `0.24.34.6` is a document-only gap audit version created before Codex implementation resumes.
