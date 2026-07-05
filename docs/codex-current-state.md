@@ -1,3 +1,43 @@
+# Codex Current State - 0.24.34.10
+
+## Version
+
+- Current version: `0.24.34.10`.
+- Current implementation version: `0.24.34.10`.
+- Branch: `master`.
+- Latest implementation version: `0.24.34.10` Pipeline Contract Final Check.
+- Next official feature: `0.24.35` Company-wide Export Execution.
+- 0.24.35 implementation has not started.
+
+## 0.24.34.10 Pipeline Contract Final Check
+
+`0.24.34.10` is a GPT-side static checkpoint after the watcher cleanup.
+
+Confirmed baseline before this patch:
+
+- `0.24.34.9` build passed.
+- `repo-state` printed `APP_VERSION: 0.24.34.9`.
+- `master` matched `origin/master`.
+- Working tree was clean.
+- Canonical watcher files are `download-watcher.ps1` and `dev-server-watcher.ps1`.
+- Versioned temporary watcher files must not remain in source ZIPs.
+
+Patch contract going forward:
+
+- `commit-meta.md` must use:
+  - `Version :`
+  - `Summary :`
+  - `Description :`
+  - `수정 파일 목록 :`
+  - `추가 파일 목록 :`
+  - `삭제 파일 목록 :`
+- Do not use `변경 파일 목록 :` for new GPT patches.
+- Source ZIP and QA evidence ZIP must remain separate.
+- Source ZIP must exclude runtime/evidence/build artifacts.
+- `repo-state` must print the concrete `APP_VERSION` value.
+
+## Historical notes
+
 # Codex Current State - 0.24.34.7
 
 ## Version
