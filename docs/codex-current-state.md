@@ -498,3 +498,30 @@ Implementation order before `0.24.35`:
 6. Evidence package, user review, final verification, then commit/push.
 
 `0.24.35 — Company-wide Export Execution` remains blocked until the above checkpoint is resolved or explicitly re-prioritized by the owner.
+
+## 0.24.34.13 Codex Prompt Consistency Final Review
+
+`0.24.34.13` is a GPT-side consistency checkpoint created after the owner provided successful `0.24.34.12` build and repo-state results.
+
+Confirmed baseline before this checkpoint:
+
+- `0.24.34.12` build passed.
+- TypeScript passed.
+- Static page generation completed `66/66`.
+- `master` matched `origin/master`.
+- Working tree was clean.
+- `APP_VERSION` was reported as `0.24.34.12`.
+
+Active Codex prompt execution order remains:
+
+1. A — `0.24.34.5-continuation-a-workorder-pdf-template.md`
+2. B — `0.24.34.5-continuation-b-size-standards-ui.md`
+3. C — `0.24.34.5-continuation-c-live-workorder-runtime.md`
+4. D — `0.24.34.5-continuation-d-signup-return-policy-modal.md`
+5. E — `0.24.34.5-continuation-e-dashboard-system-admin.md`
+6. Final — `0.24.34.5-final-review-and-commit.md`
+
+The prompts must stay separated by checkpoint. A~E must not be merged into one implementation pass. Final must not implement new features.
+
+`0.24.35` remains blocked until owner approval. The next GPT-side task, if needed, is `0.24.34.14` start-gate documentation for Codex.
+
