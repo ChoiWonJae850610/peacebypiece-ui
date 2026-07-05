@@ -1,3 +1,10 @@
+# 0.24.34.11 Applied Result Static Check
+
+- Current GPT checkpoint: `0.24.34.11`.
+- Verified owner-provided `0.24.34.10` repo-state/source ZIP statically.
+- `0.24.35` Export implementation has not started.
+- Next GPT task before Codex: `0.24.34.12` canonical/Codex prompt synchronization.
+
 # Codex Current State - 0.24.34.10
 
 ## Version
