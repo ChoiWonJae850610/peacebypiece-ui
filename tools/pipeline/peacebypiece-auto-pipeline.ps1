@@ -75,8 +75,9 @@ param(
 $PipelineCommonPath = Join-Path $PSScriptRoot "pipeline-common.ps1"
 $PipelinePatchProcessingPath = Join-Path $PSScriptRoot "pipeline-patch-processing.ps1"
 $DownloadWatcherScriptPath = Join-Path $PSScriptRoot "download-watcher.ps1"
+$DevServerWatcherScriptPath = Join-Path $PSScriptRoot "dev-server-watcher.ps1"
 
-foreach ($requiredScript in @($PipelineCommonPath, $PipelinePatchProcessingPath, $DownloadWatcherScriptPath)) {
+foreach ($requiredScript in @($PipelineCommonPath, $PipelinePatchProcessingPath, $DownloadWatcherScriptPath, $DevServerWatcherScriptPath)) {
     if (-not (Test-Path -LiteralPath $requiredScript)) {
         throw "Pipeline 구성 스크립트를 찾을 수 없습니다: $requiredScript"
     }
@@ -196,7 +197,7 @@ function StartDevServerBackground {
     $runningProcess = GetDevServerProcess
 
     if ($null -ne $runningProcess) {
-        LogWarn "npm run dev가 이미 실행 중입니다. PID: $($runningProcess.Id)"
+        LogWarn "npm run dev watcher가 이미 실행 중입니다. PID: $($runningProcess.Id)"
         Start-Sleep -Seconds 1
         return
     }
@@ -207,18 +208,32 @@ function StartDevServerBackground {
         return
     }
 
+    if (-not (Test-Path -LiteralPath $DevServerWatcherScriptPath)) {
+        LogError "npm run dev watcher 스크립트를 찾을 수 없습니다: $DevServerWatcherScriptPath"
+        Start-Sleep -Seconds 2
+        return
+    }
+
     try {
         $pidDir = Split-Path -Parent $DevServerPidFile
         EnsureDirectory -Path $pidDir
 
-        $argumentList = "/c cd /d `"$ProjectDir`" && npm run dev"
-        $process = Start-Process -FilePath "cmd.exe" -ArgumentList $argumentList -WindowStyle Hidden -PassThru
-
+        $powerShellExecutable = GetCurrentPowerShellExecutable
+        $arguments = "-NoProfile -ExecutionPolicy Bypass -File `"$DevServerWatcherScriptPath`" -Background"
+        $process = Start-Process -FilePath $powerShellExecutable -ArgumentList $arguments -WindowStyle Hidden -PassThru
         $process.Id | Set-Content -LiteralPath $DevServerPidFile -Encoding UTF8
-        LogInfo "npm run dev를 백그라운드로 시작했습니다. PID: $($process.Id)"
+        Start-Sleep -Milliseconds 900
+
+        $verified = GetDevServerProcess
+        if ($null -eq $verified) {
+            throw 'npm run dev watcher 프로세스가 시작 직후 종료되었습니다. dev-server.log를 확인하세요.'
+        }
+
+        LogInfo "npm run dev watcher를 백그라운드로 시작했습니다. PID: $($verified.Id)"
     }
     catch {
-        LogError "npm run dev 시작 실패: $($_.Exception.Message)"
+        Remove-Item -LiteralPath $DevServerPidFile -Force -ErrorAction SilentlyContinue
+        LogError "npm run dev watcher 시작 실패: $($_.Exception.Message)"
     }
 
     Start-Sleep -Seconds 1
@@ -2153,7 +2168,7 @@ function ConfirmDevServerStoppedForBuild {
     }
 
     Write-Host ""
-    LogWarn "npm run dev가 실행 중입니다. PID: $($runningProcess.Id)"
+    LogWarn "npm run dev watcher가 실행 중입니다. PID: $($runningProcess.Id)"
     $answer = Read-Host "dev 서버를 종료하고 빌드하시겠습니까? (Y/N)"
 
     if ($answer -notmatch '^[Yy]$') {
@@ -3611,7 +3626,7 @@ function ShowMainMenu {
         $npmBuildStatus = GetNPMBuildStatusText
 
         WriteToggleMenuLine -Prefix "1. Download 폴더 감시 시작/종료 토글" -Status $watcherStatus
-        WriteToggleMenuLine -Prefix "2. npm run dev 시작/종료 토글" -Status $devServerStatus
+        WriteToggleMenuLine -Prefix "2. npm run dev watcher 시작/종료 토글" -Status $devServerStatus
         WriteToggleMenuLine -Prefix "3. 패치 적용 후 자동 Build 토글" -Status $npmBuildStatus
         Write-Host "4. Flush folders - 산출물 폴더 비우기"
         Write-Host "5. 개발 / 테스트 도구"
