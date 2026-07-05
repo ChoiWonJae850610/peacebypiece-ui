@@ -1,3 +1,61 @@
+# 0.24.34.12 Canonical and Codex Prompt Synchronization
+
+- Current GPT checkpoint: `0.24.34.12`.
+- `0.24.34.11` owner-provided build/repo-state result was checked before this patch.
+- Build status from owner log: Next.js production build passed, TypeScript passed, static generation completed `66/66`.
+- Repo-state status from owner log: `master = origin/master`, working tree clean, pushed, `APP_VERSION: 0.24.34.11`.
+- This patch synchronizes the Codex continuation prompt guardrails before `0.24.35`.
+- `0.24.35` Export implementation has not started.
+
+## Mandatory Codex read order for the next implementation window
+
+Every Codex implementation prompt must start by reading these documents in order:
+
+1. `AGENTS.md`
+2. `docs/codex-current-state.md`
+3. `docs/project/26-final-policy-decisions-and-master-todo.md`
+4. `docs/project/31-pre-codex-integrated-master-plan.md`
+5. `docs/project/32-product-completion-and-ui-evidence-standard.md`
+6. `docs/project/33-workorder-pdf-size-dashboard-finalization.md`
+7. Latest relevant `docs/audits/0.24.34.x-*.md`
+8. The target `lib/internal/roadmap/roadmap-*.ts`
+9. Older project documents only when needed for historical context
+
+Confirmed policy decisions already marked `CONFIRMED` must not be re-asked. If a later canonical document conflicts with an older document, the later canonical decision wins.
+
+## Patch packaging contract
+
+GPT/Codex generated patch ZIPs must use flat ZIP structure and the `commit-meta.md` token contract below:
+
+- `Version :`
+- `Summary :`
+- `Description :`
+- `수정 파일 목록 :`
+- `추가 파일 목록 :`
+- `삭제 파일 목록 :`
+
+Do not use the old `변경 파일 목록 :` token. Keep pending tests outside `삭제 파일 목록 :`; use chat response or `pending-tests.md`.
+
+## Source/evidence separation
+
+Source ZIPs must exclude runtime and evidence artifacts including `.git/`, `.next/`, `node_modules/`, `artifacts/`, `playwright-report/`, `test-results/`, `reports/`, `coverage/`, `blob-report/`, `.nyc_output/`, `*.tsbuildinfo`, `*.zip`, `storageState*.json`, `*.har`, and `*.webm`.
+
+QA evidence ZIPs must remain separate from source ZIPs and must not be committed unless an explicit evidence artifact is requested outside source packaging.
+
+## Codex continuation sequence
+
+Run the continuation prompts in this order only:
+
+1. A — Factory-delivery workorder PDF template
+2. B — Size standards and measurement UI
+3. C — Live workorder runtime and factory save
+4. D — Returning signup applicant and policy modal
+5. E — Customer dashboard and system admin screens
+6. Final — final review, evidence check, commit, push
+
+Do not combine A~E into one large implementation. Do not start Final until A~E are completed and user review is complete. Do not start `0.24.35` without owner approval.
+
+
 # 0.24.34.11 Applied Result Static Check
 
 - Current GPT checkpoint: `0.24.34.11`.
