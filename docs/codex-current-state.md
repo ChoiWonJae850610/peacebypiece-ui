@@ -1,3 +1,18 @@
+# 0.24.34.14 Codex 0.24.35 Start Gate
+
+- Current GPT checkpoint: `0.24.34.14`.
+- `0.24.34.13` owner-provided build/repo-state result was checked before this patch.
+- Build status from owner log: Next.js production build passed, TypeScript passed, static generation completed `66/66`.
+- Repo-state status from owner log: `master = origin/master`, working tree clean, pushed, `APP_VERSION: 0.24.34.13`.
+- This patch records the final GPT-side start gate before Codex can begin `0.24.35`.
+- `0.24.35` Export implementation has not started. Owner approval is still required.
+
+## 0.24.35 start gate
+
+Codex must not begin `0.24.35` until the owner explicitly approves implementation after `0.24.34.14` is applied, built, and repo-state is checked.
+
+The first Codex implementation step must be continuation A. Do not combine A~E. Do not run Final as an implementation prompt.
+
 # 0.24.34.12 Canonical and Codex Prompt Synchronization
 
 - Current GPT checkpoint: `0.24.34.12`.
