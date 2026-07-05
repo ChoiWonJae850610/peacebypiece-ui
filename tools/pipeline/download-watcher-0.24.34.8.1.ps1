@@ -1,7 +1,7 @@
 ﻿# ==========================================
 # PeaceByPiece Download Watcher
 # Encoding: UTF-8 with BOM
-# 백그라운드 다운로드 감시 및 패치 처리 전용 실행 파일
+# 0.24.34.8.1 hotfix: repair known pipeline parser error before dot-sourcing
 # ==========================================
 
 param(
@@ -18,6 +18,29 @@ function AssertWatcherDependencyFile {
 
     if ([string]::IsNullOrWhiteSpace($Path) -or -not (Test-Path -LiteralPath $Path)) {
         throw "Pipeline 구성 스크립트를 찾을 수 없습니다: $Path"
+    }
+}
+
+function RepairPipelinePatchProcessingIfNeeded {
+    param([string]$Path)
+
+    AssertWatcherDependencyFile -Path $Path
+
+    $raw = [System.IO.File]::ReadAllText($Path, [System.Text.Encoding]::UTF8)
+
+    # Previous 0.24.34.8 generated an invalid double-quoted regex line for APP_VERSION.
+    # Replace that assignment before dot-sourcing pipeline-patch-processing.ps1.
+    $fixedPatternLine = '        $pattern = ''(?m)^\s*export\s+const\s+APP_VERSION\s*=\s*["'''']([^"'''']+)["'''']\s*;?'''
+    $linePattern = '(?m)^\s*\$pattern\s*=\s*.+APP_VERSION.+$'
+    $regex = New-Object System.Text.RegularExpressions.Regex($linePattern)
+    $updated = $regex.Replace($raw, $fixedPatternLine, 1)
+
+    if ($updated -ne $raw) {
+        $backupPath = "$Path.bak-0.24.34.8.1"
+        if (-not (Test-Path -LiteralPath $backupPath)) {
+            [System.IO.File]::WriteAllText($backupPath, $raw, [System.Text.UTF8Encoding]::new($true))
+        }
+        [System.IO.File]::WriteAllText($Path, $updated, [System.Text.UTF8Encoding]::new($true))
     }
 }
 
@@ -46,6 +69,8 @@ foreach ($requiredScript in @($PipelineCommonPath, $PipelinePatchProcessingPath)
     AssertWatcherDependencyFile -Path $requiredScript
 }
 
+RepairPipelinePatchProcessingIfNeeded -Path $PipelinePatchProcessingPath
+
 . $PipelineCommonPath
 . $PipelinePatchProcessingPath
 
@@ -69,7 +94,7 @@ function InitializeDownloadWatcher {
         $BuildZipDir,
         $LogDir,
         $RepoStatusDir,
-        $NewestResultDIr
+        $NewestResultDir
     )
 
     foreach ($path in $requiredDirectories) {

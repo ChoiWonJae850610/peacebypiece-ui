@@ -663,7 +663,7 @@ function GetAppVersionValueFromProject {
 
     try {
         $content = [System.IO.File]::ReadAllText($appVersionPath, [System.Text.Encoding]::UTF8)
-        $pattern = '(?m)^\s*export\s+const\s+APP_VERSION\s*=\s*["'']([^"'']+)["'']\s*;?'
+        $pattern = "(?m)^\s*export\s+const\s+APP_VERSION\s*=\s*[`\"']([^`\"']+)[`\"']\s*;?"
         $match = [regex]::Match($content, $pattern)
 
         if ($match.Success) {
