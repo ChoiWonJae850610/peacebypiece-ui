@@ -575,3 +575,50 @@ WAFL v2 features must include mobile browser acceptance criteria. This applies t
 ### QA requirement
 
 Any Codex implementation that changes forms, modals, drawers, mobile card stacks, PDF previews, image upload, or Sheet editing must update or reference `docs/project/v2/09-test-plan.md`.
+
+## 0.30.0-alpha.9 seed/test feature acceptance baseline
+
+Every major WAFL v2 feature must have at least one planned seed scenario before Codex implementation starts.
+
+Required feature-to-seed mapping:
+
+```text
+Product/Style creation
+- minimal draft
+- image/sketch attached
+- incomplete but saved Sheet
+
+Sheet cards
+- fabric ready
+- fabric missing price warning
+- accessory skipped
+- factory assigned
+- process issue
+
+Permissions
+- 시스템관리자
+- 고객사 관리자
+- 디자이너
+- 재고관리
+
+PDF/share
+- temporary preview
+- review PDF
+- shared snapshot
+- final snapshot
+- expired/revoked share link
+
+Inventory
+- expected inbound
+- partial inbound
+- defect quantity
+- completed stock reflection
+
+Mobile UX
+- Korean input fields
+- numeric input fields
+- modal/drawer/bottom sheet
+- orientation change
+```
+
+Feature work without a seed/test scenario is not considered implementation-ready.

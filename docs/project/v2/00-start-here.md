@@ -1,4 +1,4 @@
-# WAFL v2 Start Here - 0.30.0-alpha.8
+# WAFL v2 Start Here - 0.30.0-alpha.9
 
 ## Purpose
 
@@ -433,3 +433,77 @@ See:
 docs/project/v2/07-design-system.md
 docs/project/v2/09-test-plan.md
 ```
+
+## 0.30.0-alpha.9 seed/test scenario baseline
+
+This checkpoint defines dev/test seed and QA scenario planning for WAFL v2.
+
+Seed design is part of the product specification, not an implementation permission. It must be treated as a controlled dev/test-only plan that prepares future Codex implementation work.
+
+### Seed baseline principles
+
+```text
+- Seed data is allowed only in dev/test environments.
+- Production data must never be created, reset, overwritten, or deleted by v2 seed work.
+- Seed commands must be explicit, labeled, and environment-guarded.
+- Destructive reset/seed actions require visible confirmation.
+- Neon is the metadata/database baseline.
+- Cloudflare R2 is the object storage baseline.
+- Upload/delete/PDF file flows must use WAFL-controlled API or Worker gateways, not raw browser-managed R2 access.
+- System-admin test switching must remain dev/test-only and audit-logged.
+```
+
+### Required v2 seed coverage
+
+The future v2 seed implementation must cover:
+
+```text
+고객사:
+- normal active company
+- low-data trial company
+- high R2 usage company
+- paused/service-limited company
+- company with incomplete onboarding or policy state when needed for system-admin QA
+
+사용자:
+- 시스템관리자
+- 고객사 관리자
+- 디자이너
+- 재고관리
+
+Sheet/Product scenarios:
+- minimal draft Sheet
+- ready Sheet with image/sketch
+- fabric missing price warning
+- accessory skipped scenario
+- factory/process assigned scenario
+- ordered/shared PDF scenario
+- making scenario
+- inspection with defect quantity
+- completed scenario
+- reorder scenario
+- hold/issue scenario
+
+PDF/R2 scenarios:
+- 임시 PDF(temporary_preview)
+- 검토용 PDF(review)
+- 공유용 PDF(shared_snapshot)
+- 최종 PDF(final_snapshot)
+- 만료/폐기 share link
+- representative image and sketch files
+- R2 usage levels by company/plan
+```
+
+### Future PowerShell / dev console follow-up
+
+This checkpoint does not change the PowerShell automation script. It records required follow-up menu concepts for later Codex work:
+
+```text
+- V2 Seed Plan Validate: safe, dry-run, dev/test-only
+- V2 Seed Apply: data-creating, dev/test-only, confirmation required
+- V2 Seed Reset: destructive, dev/test-only, explicit confirmation required
+- V2 Mobile QA Checklist: safe, report/export only
+- V2 R2 Usage Scenario Seed: dev/test-only, must not touch production R2
+```
+
+See `docs/project/v2/09-test-plan.md` for the detailed seed/test scenario matrix.

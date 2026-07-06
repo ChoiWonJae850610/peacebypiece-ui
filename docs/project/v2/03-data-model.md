@@ -927,3 +927,83 @@ share_links
 ```
 
 Do not design v2 as if the browser stores or deletes raw R2 objects by itself. Any future DB migration or Worker change requires a separate Codex work order and explicit dev/test/production guard.
+
+## 0.30.0-alpha.9 dev/test seed data model baseline
+
+WAFL v2 seed design must model realistic business states without mutating production data.
+
+### Seed ownership model
+
+Seed rows must have clear ownership and environment labels.
+
+```text
+seed_environment
+- local
+- development
+- test
+- demo
+
+seed_source
+- v2_seed_plan
+- manual_test
+- e2e_test
+
+seed_scope
+- company
+- user
+- product
+- sheet
+- file
+- pdf
+- inventory
+- share
+```
+
+Implementation may use explicit columns, metadata JSON, or a separate seed manifest depending on the existing schema. The requirement is traceability: seeded rows must be identifiable and removable in dev/test without touching real production data.
+
+### Neon seed entities
+
+The future Neon seed implementation should cover at least these entity groups:
+
+```text
+companies
+users
+memberships
+products
+sheets
+sheet_cards
+partners
+files
+pdf_snapshots
+share_links
+events
+inventory_movements
+role_permissions
+```
+
+### R2/Worker seed entities
+
+R2-related seed data must not assume raw browser access.
+
+```text
+files metadata in Neon
+-> WAFL API or Worker-controlled upload/delete/read flow
+-> object bytes in R2 or local/dev mock storage
+-> events/audit metadata
+```
+
+Seed scenarios may use mock object keys in local documentation, but actual R2 writes require a separate dev/test-only implementation work order and explicit environment guard.
+
+### Company storage usage scenarios
+
+The seed plan must support multiple storage fill levels so `/system/storage-usage`, customer storage views, and cylindrical usage graphs can be tested.
+
+```text
+low usage: 5-10%
+normal usage: 35-50%
+warning usage: 75-85%
+near-limit usage: 90-98%
+over-limit/service-limited simulation: policy-defined, dev/test only
+```
+
+These scenarios must be represented in Neon metadata and corresponding R2/demo-file records when implemented.
