@@ -1,4 +1,4 @@
-# WAFL v2 Start Here - 0.30.0-alpha.1
+# WAFL v2 Start Here - 0.30.0-alpha.2
 
 ## Purpose
 
@@ -105,7 +105,7 @@ docs/project/v2/
   12-codex-working-rules.md
 ```
 
-This patch creates only the first design baseline documents. Later patches should fill the remaining documents before major implementation.
+The first baseline documents are now expanded with user roles, workflow scenarios, and UI behavior philosophy. Later patches should still complete the data model, permission action codes, status workflow, design system, PDF/share model, test plan, roadmap, and Codex working rules before major implementation.
 
 ## v2 read order
 
@@ -115,10 +115,12 @@ For WAFL v2 work, read:
 2. `docs/codex-current-state.md`
 3. `docs/project/v2/00-start-here.md`
 4. `docs/project/v2/01-product-definition.md`
-5. `docs/project/v2/06-screen-spec.md`
-6. Later v2 canonical documents as they are created.
-7. Operational guardrail documents such as encoding, production guard, evidence standard, patch packaging, R2 policy, and test automation documents.
-8. v1 documents only when explicitly needed for historical or operational reference.
+5. `docs/project/v2/02-ui-philosophy.md`
+6. `docs/project/v2/06-screen-spec.md`
+7. `docs/project/v2/08-feature-spec.md`
+8. Later v2 canonical documents as they are created.
+9. Operational guardrail documents such as encoding, production guard, evidence standard, patch packaging, R2 policy, and test automation documents.
+10. v1 documents only when explicitly needed for historical or operational reference.
 
 ## Keep from v1
 
@@ -163,7 +165,7 @@ A future patch may move v1 documents to `docs/archive/v1-0.24/`, but this must b
 
 ## Current checkpoint boundary
 
-`0.30.0-alpha.1` is a design baseline checkpoint.
+`0.30.0-alpha.2` extends the design baseline with user roles, workflow scenarios, and UI behavior philosophy.
 
 It must not include:
 
@@ -199,3 +201,16 @@ Each Codex prompt must include:
 - Version and `commit-meta.md` rules.
 - Production guard.
 - Completion criteria.
+
+
+## 0.30.0-alpha.2 role/workflow baseline
+
+`0.30.0-alpha.2` adds the second GPT-side design baseline:
+
+- User and role model for v2 planning.
+- Workspace role behavior for owner/admin, designer, production manager, inspection manager, and system admin.
+- External partner handling as PDF/share-link first, account/portal later.
+- Core workflow scenarios for new Sheet creation, fabric order, accessory order, factory instruction, inspection/inbound, reorder, and PDF/share.
+- UI philosophy that keeps WAFL Sheet as the central workspace and Assistant as the next-action guide.
+
+These are still design documents, not implementation changes. They do not authorize DB migration, API implementation, production data mutation, route rewrites, or large source refactoring.

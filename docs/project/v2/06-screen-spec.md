@@ -1,4 +1,4 @@
-# WAFL v2 Screen Spec - First Structure Draft - 0.30.0-alpha.1
+# WAFL v2 Screen Spec - Role/Workflow Screen Draft - 0.30.0-alpha.2
 
 ## Purpose
 
@@ -358,3 +358,96 @@ Recommended later order:
 6. Permission/action code catalog.
 7. Prototype workspace route behind dev/test guard or feature flag.
 8. Real DB/API binding only after the design and data model are stable.
+
+
+## Role-based screen scenarios
+
+These are planning scenarios. Actual visibility must later be controlled by action codes, not hardcoded role names.
+
+### Owner/admin scenario
+
+The owner/admin opens the workspace to understand risk and progress.
+
+Primary screen needs:
+
+- Product/Style search and status grouping.
+- Incomplete Sheet list.
+- Due-date risk.
+- Cost visibility where allowed.
+- Member/permission access through settings.
+- Assistant exception summary.
+
+### Designer scenario
+
+The designer opens the workspace to create or update a Sheet.
+
+Primary screen needs:
+
+- Fast new Sheet action.
+- Image/sketch upload or capture.
+- Base information editing.
+- Fabric/accessory/factory intent cards.
+- Draft PDF preview.
+- Reorder action.
+- Missing-info guidance without excessive blocking.
+
+### Production manager scenario
+
+The production manager opens the workspace to prepare ordering and factory work.
+
+Primary screen needs:
+
+- Fabric/accessory readiness.
+- Supplier/factory cards.
+- Due-date and production risk.
+- Factory instruction PDF/share action.
+- Recent changes and issue flags.
+
+### Inspection manager scenario
+
+The inspection manager opens the workspace to handle received goods and issues.
+
+Primary screen needs:
+
+- Inspection queue or filter.
+- Received quantity input.
+- Defect/issue quantity input.
+- Issue photo/note.
+- Inventory reflection action if allowed.
+- Completion action if allowed.
+
+### System admin scenario
+
+The system admin does not use the customer workspace as a normal customer member.
+
+Primary screen needs remain under `/system`:
+
+- Customer companies.
+- Signup/onboarding.
+- Plan, billing, and storage state.
+- System standards.
+- Audit logs.
+- Dev/test-only support tools where allowed.
+
+## Workflow-to-screen mapping
+
+| Workflow | Main screen area | Assistant role | Secondary screen |
+| --- | --- | --- | --- |
+| New Sheet | Product Explorer + WAFL Sheet wizard | Missing information after creation | None required |
+| Fabric order | Fabric card | Readiness/warning/confirm | Material inquiry/batch view |
+| Accessory order | Accessory card | Readiness/warning/confirm | Material inquiry/batch view |
+| Factory instruction | Factory/process card + PDF/share card | Production readiness | Partner/factory management |
+| Inspection/inbound | Inspection filter or Sheet card | Issue/completion readiness | Inventory/history view |
+| Reorder | Product/Style detail or Sheet top action | Reused/missing data summary | Product history |
+| PDF/share | Sheet top action + PDF/share card | Share readiness and risk | Files/history view |
+
+## Mobile role scenarios
+
+Mobile should be optimized for the action happening now:
+
+- Designer: capture image, edit base info, send draft/share.
+- Production manager: check readiness, send factory instruction, update issue.
+- Inspection manager: enter received/defect quantity, attach photo, mark done.
+- Owner/admin: approve exception, check progress, review cost/risk.
+
+Mobile should not expose every admin function as a cramped list. Deep settings can remain PC/tablet-first unless required for field work.

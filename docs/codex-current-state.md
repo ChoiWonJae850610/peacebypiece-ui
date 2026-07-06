@@ -621,3 +621,52 @@ The prompts must stay separated by checkpoint. A~E must not be merged into one i
 
 `0.24.35` remains blocked until owner approval. The next GPT-side task, if needed, is `0.24.34.14` start-gate documentation for Codex.
 
+
+
+## 0.30.0-alpha.2 WAFL v2 Role/Workflow Design Baseline
+
+`0.30.0-alpha.2` continues the WAFL v2 GPT-side design line after `0.30.0-alpha.1` was applied and built successfully.
+
+Baseline entering this checkpoint:
+
+- Source ZIP: `peacebypiece-ui-0.30.0-alpha.1.zip`.
+- Repo-state: `repo-state-0.30.0-alpha.1-20260706-210150.txt`.
+- Build log: `OK_180_build-0.30.0-alpha.1-20260706-210123.txt`.
+- Branch: `master`.
+- Local/origin master: synchronized.
+- Working tree: clean.
+- `APP_VERSION`: `0.30.0-alpha.1` before this patch.
+
+This checkpoint adds design documentation only:
+
+- `docs/project/v2/02-ui-philosophy.md`.
+- `docs/project/v2/08-feature-spec.md`.
+- Updates to `docs/project/v2/00-start-here.md`.
+- Updates to `docs/project/v2/06-screen-spec.md`.
+- Version bump to `0.30.0-alpha.2`.
+
+Confirmed/recommended role baseline for v2 planning:
+
+1. Owner/admin as the first combined company management planning role.
+2. Designer/product creator.
+3. Production manager.
+4. Inbound/inspection manager.
+5. System admin as a separate PeaceByPiece operator role.
+6. External partners/factories/suppliers remain share-link/PDF recipients in v2 alpha; full partner portal accounts are deferred.
+
+Implementation boundary:
+
+- DB migration: `NOT_APPLICABLE`.
+- API implementation: `NOT_APPLICABLE`.
+- UI route replacement: `NOT_APPLICABLE`.
+- Production mutation: `false`.
+- R2 mutation: `false`.
+- Existing v1 route deletion: `false`.
+
+Next GPT-side design target after this checkpoint:
+
+- Data model.
+- Permission action codes.
+- Status workflow.
+
+Codex remains blocked from broad implementation until the v2 design baselines are sufficiently complete and a scoped Codex work order is provided.
