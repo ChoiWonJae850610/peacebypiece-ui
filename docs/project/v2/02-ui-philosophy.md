@@ -1,4 +1,4 @@
-# WAFL v2 UI Philosophy - 0.30.0-alpha.2
+# WAFL v2 UI Philosophy - 0.30.0-alpha.5
 
 ## Purpose
 
@@ -225,3 +225,37 @@ It does not authorize:
 - Existing route rewrites.
 
 Later `/ui` showroom work should implement static visual samples based on this philosophy and the future `07-design-system.md` document.
+
+## 0.30.0-alpha.5 design-system connection
+
+The UI philosophy is now connected to `docs/project/v2/07-design-system.md`.
+
+Rules added at this checkpoint:
+
+- The attached concept image is a moodboard only.
+- Do not copy the image pixel-for-pixel.
+- `/ui` is the future Figma-style showroom.
+- User-facing labels should be Korean-first.
+- Internal TypeScript/DB/test codes may remain English.
+- The first showroom implementation must demonstrate components before rewriting the full workspace.
+
+`/ui` should later demonstrate:
+
+```text
+WAFLButton
+WAFLCard
+WAFLSheet
+MaterialCard
+AccessoryCard
+FactoryCard
+StatusBadge
+NextActionCard
+AssistantPanel
+Upload/Image area
+Form field variants
+Modal
+Drawer
+Toast
+Mobile card stack
+PDF-like Sheet preview
+```

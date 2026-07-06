@@ -1,3 +1,59 @@
+# 0.30.0-alpha.5 WAFL v2 Design System Baseline
+
+- Current GPT checkpoint: `0.30.0-alpha.5`.
+- Baseline source before this patch: `peacebypiece-ui-0.30.0-alpha.4.zip` with matching repo-state `repo-state-0.30.0-alpha.4-20260706-213531.txt`.
+- Repo-state baseline: `master = origin/master`, working tree clean, pushed, `APP_VERSION: 0.30.0-alpha.4`.
+- Build baseline: owner-provided build log passed Next.js production build, TypeScript, and static generation.
+- This patch adds the first WAFL v2 Figma-style design-system baseline. It is documentation only.
+- New version line: `0.30.0-alpha.5`.
+
+## 0.30.0-alpha.5 confirmed design-system direction
+
+1. `/ui` remains the WAFL v2 design-system showroom.
+2. The attached concept image is a moodboard, not a pixel-copy implementation target.
+3. `docs/project/v2/07-design-system.md` is the implementation standard for design language.
+4. User-facing labels must be Korean-first; internal TypeScript/DB/test code values may remain English.
+5. WAFL v2 design must avoid ERP/backoffice feeling and prioritize image-first, card-based Sheet work.
+6. The next implementation-oriented UI step must be a restricted `/ui` showroom patch, not a full workspace rewrite.
+
+## Updated v2 canonical read order
+
+For WAFL v2 design and later implementation work, read in this order:
+
+1. `AGENTS.md`
+2. `docs/codex-current-state.md`
+3. `docs/project/v2/00-start-here.md`
+4. `docs/project/v2/01-product-definition.md`
+5. `docs/project/v2/02-ui-philosophy.md`
+6. `docs/project/v2/03-data-model.md`
+7. `docs/project/v2/04-permission-action-codes.md`
+8. `docs/project/v2/05-status-workflow.md`
+9. `docs/project/v2/06-screen-spec.md`
+10. `docs/project/v2/07-design-system.md`
+11. `docs/project/v2/08-feature-spec.md`
+12. Later v2 canonical documents as they are created.
+13. Operational guardrail documents such as encoding, production guard, evidence standard, patch packaging, R2 policy, and test automation documents.
+14. v1 documents only when explicitly needed for historical or operational reference.
+
+## 0.30.0-alpha.5 implementation boundary
+
+Allowed in this checkpoint:
+
+- Add `docs/project/v2/07-design-system.md`.
+- Synchronize v2 read-order and design-system references.
+- Update `lib/constants/version.ts` to `0.30.0-alpha.5`.
+
+Not allowed in this checkpoint:
+
+- `/ui` implementation.
+- Workspace route replacement.
+- DB migration.
+- API implementation.
+- R2/storage mutation.
+- Production behavior change.
+- Package changes.
+- Deleting or moving old 0.24.x documents.
+
 # 0.30.0-alpha.1 WAFL v2 Design Baseline Start
 
 - Current GPT checkpoint: `0.30.0-alpha.1`.

@@ -1,4 +1,4 @@
-# WAFL v2 Start Here - 0.30.0-alpha.4
+# WAFL v2 Start Here - 0.30.0-alpha.5
 
 ## Purpose
 
@@ -105,7 +105,7 @@ docs/project/v2/
   12-codex-working-rules.md
 ```
 
-The first baseline documents are now expanded with product definition, UI philosophy, role/workflow scenarios, data model, permission action codes, and status workflow. Later patches should still complete the design system, PDF/share model, test plan, roadmap, and Codex working rules before major implementation.
+The baseline documents are now expanded with product definition, UI philosophy, role/workflow scenarios, data model, permission action codes, status workflow, and the first Figma-style design-system standard. Later patches should still complete the PDF/share model, test plan, roadmap, and Codex working rules before major implementation.
 
 ## v2 read order
 
@@ -120,8 +120,9 @@ For WAFL v2 work, read:
 7. `docs/project/v2/04-permission-action-codes.md`
 8. `docs/project/v2/05-status-workflow.md`
 9. `docs/project/v2/06-screen-spec.md`
-10. `docs/project/v2/08-feature-spec.md`
-11. Later v2 canonical documents as they are created.
+10. `docs/project/v2/07-design-system.md`
+11. `docs/project/v2/08-feature-spec.md`
+12. Later v2 canonical documents as they are created.
 12. Operational guardrail documents such as encoding, production guard, evidence standard, patch packaging, R2 policy, and test automation documents.
 13. v1 documents only when explicitly needed for historical or operational reference.
 
@@ -168,7 +169,7 @@ A future patch may move v1 documents to `docs/archive/v1-0.24/`, but this must b
 
 ## Current checkpoint boundary
 
-`0.30.0-alpha.4` clarifies and corrects the 0.30.0-alpha.3 data/permission/status baseline. `0.30.0-alpha.3` extended the design baseline with data model, permission action codes, and status workflow principles after the 0.30.0-alpha.2 role/workflow baseline.
+`0.30.0-alpha.5` adds the WAFL v2 design-system baseline and clarifies that `/ui` is the later Figma-style showroom. `0.30.0-alpha.4` clarifies and corrects the 0.30.0-alpha.3 data/permission/status baseline. `0.30.0-alpha.3` extended the design baseline with data model, permission action codes, and status workflow principles after the 0.30.0-alpha.2 role/workflow baseline.
 
 It must not include:
 
@@ -179,6 +180,21 @@ It must not include:
 - R2 mutation.
 - Large file movement or deletion.
 - UI implementation beyond later planned `/ui` showroom work.
+
+## 0.30.0-alpha.5 design-system baseline
+
+`0.30.0-alpha.5` adds `docs/project/v2/07-design-system.md` as the first design-system standard.
+
+Confirmed design-system principles:
+
+- The concept image is a moodboard, not an exact implementation target.
+- `docs/project/v2/07-design-system.md` is the design source of truth.
+- `/ui` is the future live showroom for WAFL v2 components.
+- User-facing UI must use Korean labels first.
+- Internal code values may remain English for TypeScript/DB/test stability.
+- WAFL v2 UI must be image-first, card-based, Sheet-centered, and Assistant-guided.
+
+The next UI-related implementation step should be restricted to `/ui` showroom samples, not a full workspace rewrite.
 
 ## Codex handoff rule
 

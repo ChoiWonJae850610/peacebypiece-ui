@@ -1,4 +1,4 @@
-# WAFL v2 Screen Spec - Korean Role/Status Screen Draft - 0.30.0-alpha.4
+# WAFL v2 Screen Spec - Design System Connected Draft - 0.30.0-alpha.5
 
 ## Purpose
 
@@ -562,3 +562,33 @@ This patch clarifies that:
 - Internal role codes are secondary implementation values.
 - User-facing statuses are Korean-first, with English DB/API codes in parentheses.
 - Production and inspection are not separate default roles in v2 alpha unless the owner later decides to split them.
+
+
+## `/ui` showroom requirement - 0.30.0-alpha.5
+
+Before rewriting the real workspace, `/ui` should show the v2 visual language with non-production sample data.
+
+Required showroom sections:
+
+```text
+1. Brand / token overview
+2. Buttons
+3. Cards
+4. Sheet layout sample
+5. MaterialCard / AccessoryCard / FactoryCard
+6. StatusBadge with Korean labels
+7. AssistantPanel / NextActionCard
+8. Upload/Image area
+9. Modal / Drawer / Toast
+10. Mobile card stack
+11. PDF-like Sheet preview
+```
+
+Implementation rules for the later `/ui` patch:
+
+- Keep the route dev/internal guarded as it already is.
+- Use mock/sample data only.
+- Do not connect to Neon or R2.
+- Do not mutate production or dev data.
+- Do not rewrite `/workspace/workorders` in the same patch.
+- Use `docs/project/v2/07-design-system.md` as the design source of truth.
