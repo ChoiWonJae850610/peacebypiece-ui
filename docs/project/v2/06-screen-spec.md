@@ -592,3 +592,68 @@ Implementation rules for the later `/ui` patch:
 - Do not mutate production or dev data.
 - Do not rewrite `/workspace/workorders` in the same patch.
 - Use `docs/project/v2/07-design-system.md` as the design source of truth.
+
+
+## PDF/share screen baseline - 0.30.0-alpha.6
+
+PDF/share is treated as part of the WAFL Sheet screen model.
+
+### PC Sheet placement
+
+The central WAFL Sheet should expose PDF/share in two places:
+
+```text
+1. Sheet-level PDF/share card
+   - 작업지시서 PDF
+   - 발주요청 PDF
+   - 공장전달 PDF
+   - 최근 생성/공유 이력
+
+2. Assistant action area
+   - PDF 생성 가능 여부
+   - 부족한 정보
+   - 공유 전 확인
+   - 카톡용 문구 복사 / 링크 공유
+```
+
+### Card-level placement
+
+PDF/share actions may also appear inside relevant cards:
+
+```text
+원단 카드:
+- 발주요청 PDF 생성
+- 거래처 공유
+
+부자재 카드:
+- 발주요청 PDF 생성
+- 거래처 공유
+
+공장 카드:
+- 공장전달 PDF 생성
+- 공장 공유
+```
+
+### Mobile placement
+
+Mobile should make sharing a short flow:
+
+```text
+Sheet 열기
+-> Assistant 공유 상태 확인
+-> 공유 버튼
+-> PDF 종류 선택
+-> 부족 정보 확인
+-> 링크/문구 생성
+-> 카톡 또는 기기 공유
+```
+
+### Required screen rules
+
+- Do not expose raw R2 URLs.
+- Do not expose R2 object keys.
+- Do not show internal token values.
+- Show Korean-first labels.
+- Show whether a PDF is current or stale after Sheet changes.
+- Show share link expiry/revocation state.
+- Keep external recipient handling link-based in alpha.

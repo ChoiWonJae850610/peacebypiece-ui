@@ -1,3 +1,83 @@
+# 0.30.0-alpha.6 WAFL v2 PDF / Share Baseline
+
+- Current GPT checkpoint: `0.30.0-alpha.6`.
+- Baseline source before this patch: `peacebypiece-ui-0.30.0-alpha.5.zip` with matching repo-state `repo-state-0.30.0-alpha.5-20260706-214112.txt`.
+- Repo-state baseline: `master = origin/master`, working tree clean, pushed, `APP_VERSION: 0.30.0-alpha.5`.
+- Build baseline: owner-provided build log passed Next.js production build, TypeScript, and static generation.
+- This patch adds the first WAFL v2 PDF/share baseline. It is documentation only.
+- New version line: `0.30.0-alpha.6`.
+
+## 0.30.0-alpha.6 confirmed PDF/share direction
+
+1. PDF/share is a first-class Sheet workflow, not a secondary export function.
+2. A generated PDF is a snapshot of the Sheet at a specific time.
+3. Shared PDFs must use WAFL controlled share links, not raw R2 URLs.
+4. Neon remains the metadata DB baseline and Cloudflare R2 remains the object-storage baseline.
+5. KakaoTalk sharing starts as controlled link + copy/share-sheet flow; direct Kakao API integration is later.
+6. External recipients are controlled-link viewers in alpha, not login roles.
+7. Cost visibility must follow `cost.view` and must not leak into external PDFs by default.
+8. PDF/share actions must create event/audit entries when implemented.
+
+## Updated v2 canonical read order
+
+For WAFL v2 design and later implementation work, read in this order:
+
+1. `AGENTS.md`
+2. `docs/codex-current-state.md`
+3. `docs/project/v2/00-start-here.md`
+4. `docs/project/v2/01-product-definition.md`
+5. `docs/project/v2/02-ui-philosophy.md`
+6. `docs/project/v2/03-data-model.md`
+7. `docs/project/v2/04-permission-action-codes.md`
+8. `docs/project/v2/05-status-workflow.md`
+9. `docs/project/v2/06-screen-spec.md`
+10. `docs/project/v2/07-design-system.md`
+11. `docs/project/v2/08-feature-spec.md`
+12. `docs/project/v2/11-pdf-share-spec.md`
+13. Later v2 canonical documents as they are created.
+14. Operational guardrail documents such as encoding, production guard, evidence standard, patch packaging, R2 policy, and test automation documents.
+15. v1 documents only when explicitly needed for historical or operational reference.
+
+## 0.30.0-alpha.6 implementation boundary
+
+Allowed in this checkpoint:
+
+- Add `docs/project/v2/11-pdf-share-spec.md`.
+- Synchronize v2 read-order and PDF/share references.
+- Update `lib/constants/version.ts` to `0.30.0-alpha.6`.
+
+Not allowed in this checkpoint:
+
+- PDF generator implementation.
+- Share-link API implementation.
+- Kakao API integration.
+- DB migration.
+- R2/storage mutation.
+- Workspace route replacement.
+- Production behavior change.
+- Package changes.
+- Deleting or moving old 0.24.x documents.
+
+## Updated 12-point Codex handoff progress after 0.30.0-alpha.6
+
+```text
+1. WAFL v2 product definition fixed: done
+2. Center objects Product / Sheet / SheetCard fixed: done
+3. Main IA and screen model drafted: done
+4. DB table baseline drafted: done, Neon/R2 baseline clarified in 0.30.0-alpha.4
+5. Permission action code catalog drafted: done, Korean role set clarified in 0.30.0-alpha.4
+6. Status model drafted: done, Korean labels clarified in 0.30.0-alpha.4
+7. PDF/share method: done in 0.30.0-alpha.6
+8. /ui design-system component set: done in 0.30.0-alpha.5
+9. Seed/test scenarios: pending
+10. v1 keep/rewrite/archive rules: first baseline done, detailed archive plan pending
+11. Codex read order: updated, final sync pending
+12. 0.30 roadmap: pending
+```
+
+Next GPT-side checkpoint should be `0.30.0-alpha.7` for seed/test scenarios or v1 keep/rewrite/archive detail, unless another owner clarification is needed first.
+
+
 # 0.30.0-alpha.5 WAFL v2 Design System Baseline
 
 - Current GPT checkpoint: `0.30.0-alpha.5`.

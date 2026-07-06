@@ -443,3 +443,57 @@ Do not use this patch to perform:
 - External partner account implementation.
 
 Later implementation must use a Codex prompt with explicit allowed files, forbidden files, migration status, tests, and completion criteria.
+
+
+## PDF/share workflow baseline - 0.30.0-alpha.6
+
+Detailed PDF/share rules are defined in `docs/project/v2/11-pdf-share-spec.md`.
+
+Feature-level baseline:
+
+```text
+WAFL Sheet
+-> PDF snapshot
+-> controlled share link
+-> KakaoTalk-friendly message/copy/share action
+-> event/audit record
+```
+
+Required user-facing PDF types:
+
+```text
+- WAFL 작업지시서 PDF
+- 발주요청 PDF
+- 공장전달 PDF
+```
+
+Default ownership:
+
+```text
+고객사 관리자:
+- generate/share/revoke/view history by default
+
+디자이너:
+- generate/share depending on company permission setting
+
+재고관리:
+- view/download relevant inbound/inspection PDFs by default
+- external sharing only if allowed
+
+시스템관리자:
+- operation/support visibility only, subject to production guard
+```
+
+Alpha external-recipient rule:
+
+```text
+공장/거래처는 alpha 단계에서 로그인 계정이 아니다.
+공장/거래처는 controlled share link 수신자다.
+```
+
+Implementation boundary:
+
+```text
+이 문서는 PDF/share 기능 명세 기준이다.
+DB migration, API route, R2 mutation, Kakao API integration, production share behavior change는 별도 Codex 작업지시문 없이는 금지한다.
+```

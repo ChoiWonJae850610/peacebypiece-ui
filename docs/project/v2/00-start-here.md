@@ -169,7 +169,7 @@ A future patch may move v1 documents to `docs/archive/v1-0.24/`, but this must b
 
 ## Current checkpoint boundary
 
-`0.30.0-alpha.5` adds the WAFL v2 design-system baseline and clarifies that `/ui` is the later Figma-style showroom. `0.30.0-alpha.4` clarifies and corrects the 0.30.0-alpha.3 data/permission/status baseline. `0.30.0-alpha.3` extended the design baseline with data model, permission action codes, and status workflow principles after the 0.30.0-alpha.2 role/workflow baseline.
+`0.30.0-alpha.6` adds the WAFL v2 PDF/share baseline. `0.30.0-alpha.5` adds the WAFL v2 design-system baseline and clarifies that `/ui` is the later Figma-style showroom. `0.30.0-alpha.4` clarifies and corrects the 0.30.0-alpha.3 data/permission/status baseline. `0.30.0-alpha.3` extended the design baseline with data model, permission action codes, and status workflow principles after the 0.30.0-alpha.2 role/workflow baseline.
 
 It must not include:
 
@@ -328,3 +328,38 @@ This correction is recorded as `0.30.0-alpha.4` instead of reusing `0.30.0-alpha
 ```
 
 Next GPT-side checkpoint should be `0.30.0-alpha.5` for design system and `/ui` showroom contract, unless another owner clarification is needed first.
+
+
+## 0.30.0-alpha.6 PDF/share baseline
+
+`0.30.0-alpha.6` adds `docs/project/v2/11-pdf-share-spec.md` as the first PDF/share planning contract.
+
+Confirmed PDF/share principles:
+
+- PDF/share is part of the WAFL Sheet workflow, not a secondary export feature.
+- Generated PDFs are snapshots of Sheet data at a specific time.
+- Shared PDFs must use WAFL controlled links, not raw R2 URLs.
+- Neon remains the metadata DB baseline and Cloudflare R2 remains the object-storage baseline.
+- KakaoTalk support starts with controlled share links and copy/share-sheet flow; direct Kakao API integration is later.
+- External recipients are controlled-link viewers in alpha, not login roles.
+- Cost visibility must follow `cost.view` and must not leak into external PDFs by default.
+- PDF/share implementation must create generation/share/view/revoke events when later built.
+
+## Updated 12-point Codex handoff progress after 0.30.0-alpha.6
+
+```text
+1. WAFL v2 product definition fixed: done
+2. Center objects Product / Sheet / SheetCard fixed: done
+3. Main IA and screen model drafted: done
+4. DB table baseline drafted: done, Neon/R2 baseline clarified in 0.30.0-alpha.4
+5. Permission action code catalog drafted: done, Korean role set clarified in 0.30.0-alpha.4
+6. Status model drafted: done, Korean labels clarified in 0.30.0-alpha.4
+7. PDF/share method: done in 0.30.0-alpha.6
+8. /ui design-system component set: done in 0.30.0-alpha.5
+9. Seed/test scenarios: pending
+10. v1 keep/rewrite/archive rules: first baseline done, detailed archive plan pending
+11. Codex read order: updated, final sync pending
+12. 0.30 roadmap: pending
+```
+
+Next GPT-side checkpoint should be `0.30.0-alpha.7` for seed/test scenarios or v1 keep/rewrite/archive detail, unless another owner clarification is needed first.
