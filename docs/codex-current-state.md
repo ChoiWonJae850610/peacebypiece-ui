@@ -1,3 +1,89 @@
+# 0.30.0-alpha.8 WAFL v2 Mobile Web Interaction / QA Baseline
+
+- Current GPT checkpoint: `0.30.0-alpha.8`.
+- Baseline source before this patch: `peacebypiece-ui-0.30.0-alpha.7.zip` with matching repo-state `repo-state-0.30.0-alpha.7-20260706-223323.txt`.
+- Repo-state baseline: `master = origin/master`, working tree clean, pushed, `APP_VERSION: 0.30.0-alpha.7`.
+- Build baseline: owner-provided build log passed Next.js production build, TypeScript, and static generation.
+- This patch records mobile-web component behavior, input stability, modal/drawer behavior, viewport rotation, and first v2 test-plan baseline. It is documentation only.
+- New version line: `0.30.0-alpha.8`.
+
+## 0.30.0-alpha.8 owner clarification
+
+The owner clarified that WAFL v2 must explicitly account for real mobile-web behavior, not only desktop UI composition.
+
+Known risk areas from prior WAFL testing and product use:
+
+1. iPhone Safari/Chrome can zoom the page when an input receives focus if the input text is too small.
+2. Korean text entry can lose focus or break composition if inputs remount on every character, if unstable React keys are used, or if autosave/validation rerenders the field incorrectly.
+3. Modal and drawer behavior must remain consistent: backdrop treatment, background blur/dimming, body scroll lock, focus trap, ESC behavior on PC, fixed close action, and mobile internal scroll.
+4. Mobile keyboard viewport changes can hide fields or action buttons.
+5. Device orientation changes can break drawer, modal, bottom sheet, PDF preview, and Sheet card layout.
+6. WAFL v2 components must be designed and tested for iPhone, Android, tablet, and PC responsive states before full workspace replacement.
+
+## Updated v2 canonical read order
+
+For WAFL v2 design and later implementation work, read in this order:
+
+1. `AGENTS.md`
+2. `docs/codex-current-state.md`
+3. `docs/project/v2/00-start-here.md`
+4. `docs/project/v2/01-product-definition.md`
+5. `docs/project/v2/02-ui-philosophy.md`
+6. `docs/project/v2/03-data-model.md`
+7. `docs/project/v2/04-permission-action-codes.md`
+8. `docs/project/v2/05-status-workflow.md`
+9. `docs/project/v2/06-screen-spec.md`
+10. `docs/project/v2/07-design-system.md`
+11. `docs/project/v2/08-feature-spec.md`
+12. `docs/project/v2/09-test-plan.md`
+13. `docs/project/v2/11-pdf-share-spec.md`
+14. `docs/project/10-r2-storage-policy.md` before any R2 key/upload/delete implementation.
+15. `cloudflare/README.md`, `cloudflare/r2-upload-worker.js`, and `cloudflare/pdf-generator-worker/README.md` before any Worker implementation.
+16. Operational guardrail documents such as encoding, production guard, evidence standard, patch packaging, and test automation documents.
+17. v1 documents only when explicitly needed for historical or operational reference.
+
+## 0.30.0-alpha.8 implementation boundary
+
+Allowed in this checkpoint:
+
+- Document mobile web input, focus, keyboard, modal, drawer, orientation, and safe-area rules.
+- Add the first v2 test-plan document.
+- Synchronize design-system, screen-spec, feature-spec, and read-order references.
+- Update `lib/constants/version.ts` to `0.30.0-alpha.8`.
+
+Not allowed in this checkpoint:
+
+- UI route implementation.
+- Component implementation.
+- DB migration.
+- API implementation.
+- Worker changes.
+- Cloudflare deployment changes.
+- R2/storage mutation.
+- Production behavior change.
+- Package changes.
+- Deleting or moving old 0.24.x documents.
+
+## Updated 12-point Codex handoff progress after 0.30.0-alpha.8
+
+```text
+1. WAFL v2 product definition fixed: done
+2. Center objects Product / Sheet / SheetCard fixed: done
+3. Main IA and screen model drafted: done
+4. DB table baseline drafted: done, Neon/R2/Worker baseline clarified by 0.30.0-alpha.7
+5. Permission action code catalog drafted: done, Korean role set clarified in 0.30.0-alpha.4
+6. Status model drafted: done, Korean labels clarified in 0.30.0-alpha.4
+7. PDF/share method: done, Worker-controlled storage and temporary/final PDF lifecycle clarified in 0.30.0-alpha.7
+8. /ui design-system component set: done, mobile-web interaction criteria added in 0.30.0-alpha.8
+9. Seed/test scenarios: first v2 test-plan baseline added in 0.30.0-alpha.8, seed data detail still pending
+10. v1 keep/rewrite/archive rules: first baseline done, detailed archive plan pending
+11. Codex read order: updated, test-plan and mobile-web criteria added
+12. 0.30 roadmap: pending
+```
+
+Next GPT-side checkpoint should be `0.30.0-alpha.9` for seed data scenarios and v1 keep/rewrite/archive detail, unless another owner clarification is needed first.
+
+
 # 0.30.0-alpha.7 WAFL v2 PDF / Worker / Lifecycle Clarification
 
 - Current GPT checkpoint: `0.30.0-alpha.7`.

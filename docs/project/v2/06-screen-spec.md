@@ -1,4 +1,4 @@
-# WAFL v2 Screen Spec - Design System Connected Draft - 0.30.0-alpha.5
+# WAFL v2 Screen Spec - Mobile Web Connected Draft - 0.30.0-alpha.8
 
 ## Purpose
 
@@ -716,3 +716,61 @@ Sheet가 최종 PDF 생성 후 변경되었습니다. 새 PDF를 생성하세요
 ```
 
 This is a screen/spec clarification only. It does not implement upload, delete, PDF generation, or Worker changes.
+
+
+## Mobile web and device behavior standard
+
+The screen model must account for real mobile browser behavior.
+
+### Input focus and keyboard behavior
+
+```text
+Requirement:
+- When a mobile user taps an input, the screen must not unexpectedly zoom.
+- The active field must remain visible when the keyboard opens.
+- Korean text input must not lose focus after each character.
+- Numeric fields should request a numeric keypad where appropriate, but must remain editable.
+```
+
+Screen-design implications:
+
+```text
+- Avoid tiny mobile input typography.
+- Avoid dense grids that require 12px/14px input text.
+- Prefer card-level editing and bottom sheets for mobile rather than squeezing PC tables.
+- Preserve focus during autosave, validation, and Assistant updates.
+```
+
+### Modal/drawer behavior
+
+```text
+PC:
+- ESC close when allowed.
+- focus trap.
+- consistent backdrop blur/dimming.
+- scroll position restoration.
+
+Mobile:
+- full-screen modal or bottom sheet, selected intentionally.
+- close action reachable after scroll and keyboard open.
+- body scroll locked while modal/drawer is active.
+- internal content scroll only.
+- safe-area aware bottom actions.
+```
+
+### Orientation behavior
+
+WAFL v2 must treat portrait/landscape changes as a supported scenario.
+
+Checklist:
+
+```text
+- Product Explorer/drawer state remains recoverable.
+- WAFL Sheet cards do not break horizontal layout.
+- Assistant summary remains accessible.
+- PDF preview stays readable.
+- open modal/bottom sheet remains closable.
+- scroll lock does not remain stuck after close or rotation.
+```
+
+If a layout cannot preserve an editing state across rotation, it may safely close or blur the active input, but it must not leave the screen broken.

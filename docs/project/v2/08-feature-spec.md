@@ -537,3 +537,41 @@ R2
 ```
 
 Do not build v2 features around raw public R2 URLs or direct browser-managed storage state.
+
+
+## Mobile web interaction feature requirements
+
+WAFL v2 features must include mobile browser acceptance criteria. This applies to Sheet creation, card editing, PDF/share, image upload, modal flows, and inventory input.
+
+### Input stability requirements
+
+```text
+- Korean input must support continuous typing without losing focus after each character.
+- Autosave and validation must not remount active inputs.
+- Field keys must be stable ids, not current values.
+- Formatting should prefer on-blur behavior when live formatting would disrupt typing.
+- Numeric input must not clear or reset while the user is composing or editing.
+```
+
+### Mobile form requirements
+
+```text
+- input/textarea/select actual mobile font size must stay at least 16px.
+- Important fields must not be hidden behind the mobile keyboard.
+- Required action buttons must remain reachable in modal/bottom-sheet flows.
+- Upload, camera, PDF, share, and delete actions must use readable Korean labels.
+```
+
+### Modal/drawer feature requirements
+
+```text
+- Background scroll lock must work consistently.
+- Backdrop blur/dim style must be shared, not screen-specific.
+- Focus trap must not reset on every keystroke.
+- Closing must restore the prior page scroll position.
+- Device rotation must not leave a drawer, modal, or bottom sheet impossible to close.
+```
+
+### QA requirement
+
+Any Codex implementation that changes forms, modals, drawers, mobile card stacks, PDF previews, image upload, or Sheet editing must update or reference `docs/project/v2/09-test-plan.md`.

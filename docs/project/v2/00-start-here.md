@@ -1,4 +1,4 @@
-# WAFL v2 Start Here - 0.30.0-alpha.5
+# WAFL v2 Start Here - 0.30.0-alpha.8
 
 ## Purpose
 
@@ -105,7 +105,7 @@ docs/project/v2/
   12-codex-working-rules.md
 ```
 
-The baseline documents are now expanded with product definition, UI philosophy, role/workflow scenarios, data model, permission action codes, status workflow, and the first Figma-style design-system standard. Later patches should still complete the PDF/share model, test plan, roadmap, and Codex working rules before major implementation.
+The baseline documents are now expanded with product definition, UI philosophy, role/workflow scenarios, data model, permission action codes, status workflow, design-system standard, PDF/share baseline, Worker-controlled storage lifecycle, and the first mobile-web test-plan baseline. Later patches should still complete seed data scenarios, detailed v1 keep/rewrite/archive planning, 0.30 roadmap, and Codex working rules before major implementation.
 
 ## v2 read order
 
@@ -122,7 +122,9 @@ For WAFL v2 work, read:
 9. `docs/project/v2/06-screen-spec.md`
 10. `docs/project/v2/07-design-system.md`
 11. `docs/project/v2/08-feature-spec.md`
-12. Later v2 canonical documents as they are created.
+12. `docs/project/v2/09-test-plan.md`
+13. `docs/project/v2/11-pdf-share-spec.md`
+14. Later v2 canonical documents as they are created.
 12. Operational guardrail documents such as encoding, production guard, evidence standard, patch packaging, R2 policy, and test automation documents.
 13. v1 documents only when explicitly needed for historical or operational reference.
 
@@ -393,3 +395,41 @@ Sheet data in Neon
 
 This clarification does not authorize Worker code changes, DB migration, R2 mutation, production storage changes, or PDF generator behavior changes.
 
+
+
+## Mobile-web quality baseline
+
+WAFL v2 must be treated as a web app that is used on real devices, not as a desktop-only design exercise.
+
+The design and implementation baseline must account for:
+
+```text
+- iPhone Safari and Chrome input focus behavior
+- Android Chrome input and keyboard behavior
+- Korean IME composition stability
+- mobile keyboard viewport changes
+- modal/drawer backdrop and scroll lock
+- focus trap and focus restoration
+- safe-area inset handling
+- portrait/landscape orientation changes
+- tablet portrait/landscape layout changes
+```
+
+Known prior WAFL risk areas:
+
+```text
+- iPhone input focus can zoom the page when actual input font size is too small.
+- Korean typing can lose focus if fields remount on every character.
+- Autosave, validation, list reordering, or unstable React keys can break input focus.
+- Modal/backdrop/scroll-lock behavior can become inconsistent across screens.
+- Rotating a device can break open drawers, modals, bottom sheets, and PDF previews.
+```
+
+Design-system and component work must therefore include mobile-web interaction acceptance criteria before workspace implementation.
+
+See:
+
+```text
+docs/project/v2/07-design-system.md
+docs/project/v2/09-test-plan.md
+```

@@ -1,4 +1,4 @@
-# WAFL v2 Design System - Figma-style Reference - 0.30.0-alpha.5
+# WAFL v2 Design System - Figma-style Reference - 0.30.0-alpha.8
 
 ## Purpose
 
@@ -654,6 +654,123 @@ Rules:
 - It is a design sample for screen-to-PDF continuity.
 - PDF/share details are defined in `docs/project/v2/11-pdf-share-spec.md` later.
 
+
+## Mobile Web Interaction Standard
+
+WAFL v2 components must be designed for real mobile-web behavior before the main workspace is rebuilt. This section is mandatory for `/ui` showroom work and later workspace implementation.
+
+### iOS input focus zoom prevention
+
+Rules:
+
+```text
+- The actual rendered font-size for input, textarea, and select controls must be at least 16px on mobile.
+- Do not use 12px or 14px input text just to make dense forms fit.
+- If a field should visually feel compact, adjust label, spacing, grouping, or layout instead of shrinking the input font below the mobile-safe baseline.
+- Do not rely on viewport maximum-scale/user-scalable blocking as the primary fix.
+- Do not remove the user's accessibility zoom capability to hide a layout problem.
+```
+
+Reason:
+
+```text
+iPhone Safari/Chrome can zoom the page when a focused input has too-small text. WAFL users should not need to pinch/zoom back after every field.
+```
+
+### Korean IME and focus stability
+
+Rules:
+
+```text
+- Input fields must not remount on every character.
+- React key values must be stable ids, not current field values.
+- Validation errors must not replace the input node while the user is typing.
+- Autosave/debounce must not steal focus.
+- List row editing must not reorder/remount the active row while Korean composition is active.
+- Modal/drawer state must not be recreated on each keystroke.
+```
+
+Implementation notes:
+
+```text
+- Be careful with compositionstart/compositionend behavior for Korean input.
+- Avoid forcing normalization, formatting, or validation during active IME composition unless the field is designed for it.
+- Numeric fields may format on blur rather than on every keystroke when formatting would disturb typing.
+```
+
+### Modal, drawer, and bottom-sheet behavior
+
+Unified modal/drawer rules:
+
+```text
+- Backdrop/overlay style must be consistent across WAFL v2.
+- Background blur/dimming must use shared tokens, not screen-specific random values.
+- Body scroll must be locked while blocking modal/drawer is open.
+- Internal modal content can scroll, but the background page must not scroll.
+- PC modal must support ESC close when the modal type allows it.
+- Focus trap must keep keyboard navigation inside the open modal.
+- Closing the modal should restore focus and preserve page scroll position.
+- The close button must remain reachable, especially on mobile.
+```
+
+Mobile-specific rules:
+
+```text
+- Keyboard opening must not hide the active input or required action button.
+- iOS safe-area insets must be considered for bottom actions and bottom sheets.
+- Full-screen modal and bottom sheet are separate patterns; do not mix them casually.
+- Destructive confirmation must remain readable and tappable on small screens.
+```
+
+### Device orientation and viewport changes
+
+WAFL v2 must be tested across:
+
+```text
+- mobile portrait
+- mobile landscape
+- tablet portrait
+- tablet landscape
+- narrow desktop
+- standard desktop
+```
+
+Orientation-change rules:
+
+```text
+- Open drawer/modal/bottom sheet must remain usable after rotation.
+- Scroll lock must not get stuck after rotation.
+- Sheet cards must not overflow horizontally except in explicitly scrollable table-like areas.
+- PDF preview must preserve readable aspect and not push actions off-screen.
+- Bottom action bars must avoid safe-area overlap.
+- If focus cannot be safely preserved through rotation, it should fail gracefully rather than breaking layout.
+```
+
+### Touch targets
+
+Rules:
+
+```text
+- Important mobile tap targets should be large enough for thumb interaction.
+- Destructive actions need clear spacing from normal actions.
+- Icon-only actions are discouraged on mobile for production-critical work.
+- Upload/camera/PDF/share actions must have visible text labels.
+```
+
+### `/ui` showroom requirements
+
+The `/ui` route should include mobile-web behavior examples before workspace replacement:
+
+```text
+- Form field variants with 16px mobile input text
+- Korean text input example
+- Numeric input example with mobile keypad expectation
+- Modal with backdrop, focus trap, fixed close action, and internal scroll
+- Drawer / bottom sheet with body scroll lock
+- Mobile card stack with safe-area-aware bottom actions
+- PDF-like preview in mobile portrait and landscape widths
+```
+
 ## Do / Don't
 
 ### Do
@@ -680,7 +797,7 @@ Rules:
 
 ## Implementation boundary
 
-This document is design-only for `0.30.0-alpha.5`.
+This document is design-only for `0.30.0-alpha.8`.
 
 It does not authorize:
 
