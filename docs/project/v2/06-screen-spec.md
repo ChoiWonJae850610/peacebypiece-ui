@@ -451,3 +451,97 @@ Mobile should be optimized for the action happening now:
 - Owner/admin: approve exception, check progress, review cost/risk.
 
 Mobile should not expose every admin function as a cramped list. Deep settings can remain PC/tablet-first unless required for field work.
+
+## 0.30.0-alpha.3 screen implications from data/permission/status
+
+The screen model must reflect the new data, permission, and status baselines.
+
+### Data binding implication
+
+The central Sheet should not render as one large form.
+
+Recommended screen/data mapping:
+
+```text
+Product / Style header
+  -> products
+
+WAFL Sheet frame
+  -> sheets
+
+Card shell
+  -> sheet_cards
+
+Fabric card details
+  -> sheet_fabric_cards
+
+Accessory card details
+  -> sheet_accessory_cards
+
+Factory/process cards
+  -> sheet_factory_cards / sheet_process_cards
+
+Images/sketches/files
+  -> files
+
+PDF/share card
+  -> pdf_snapshots / share_links
+
+Assistant and history
+  -> card statuses / sheet status / events
+```
+
+### Permission implication
+
+Buttons and panels should not be shown/hidden by hardcoded role names.
+
+Screen actions should map to action codes:
+
+```text
+Create Sheet -> sheet.create
+Edit Sheet -> sheet.update
+Order fabric -> fabric.order
+Share PDF -> pdf.share
+Invite member -> member.invite
+Run dev reset -> dev.reset.run
+```
+
+The future `/functions` route should present this action-code catalog, not a generic feature list.
+
+### Status implication
+
+The UI must show both Sheet status and card status.
+
+```text
+Sheet status:
+draft / ready / ordered / making / inspection / completed / hold / cancelled
+
+Card status:
+empty / draft / ready / requested / ordered / received / issue / done / skipped
+```
+
+Assistant should translate these into user-facing next actions:
+
+```text
+- 부족한 정보
+- 발주 가능 여부
+- 확인 필요 경고
+- 차단된 액션
+- 최근 변경
+```
+
+### Blocking implication
+
+UI should not block every incomplete case.
+
+Recommended UI behavior:
+
+```text
+info -> show hint
+warning -> show yellow/soft warning
+confirm_required -> ask user to confirm
+blocked -> disable action with clear reason
+```
+
+This screen behavior must be consistent across PC, tablet, and mobile.
+

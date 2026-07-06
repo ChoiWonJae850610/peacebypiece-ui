@@ -670,3 +670,55 @@ Next GPT-side design target after this checkpoint:
 - Status workflow.
 
 Codex remains blocked from broad implementation until the v2 design baselines are sufficiently complete and a scoped Codex work order is provided.
+
+## 0.30.0-alpha.3 WAFL v2 DB/Permission/Status Design Baseline
+
+`0.30.0-alpha.3` continues the WAFL v2 GPT-side design line after `0.30.0-alpha.2` was applied and built successfully.
+
+Baseline entering this checkpoint:
+
+- Source ZIP: `peacebypiece-ui-0.30.0-alpha.2.zip`.
+- Repo-state: `repo-state-0.30.0-alpha.2-20260706-211158.txt`.
+- Build log: `OK_180_build-0.30.0-alpha.2-20260706-211136.txt`.
+- Branch: `master`.
+- Local/origin master: synchronized.
+- Working tree: clean.
+- `APP_VERSION`: `0.30.0-alpha.2` before this patch.
+
+This checkpoint adds design documentation only:
+
+- `docs/project/v2/03-data-model.md`.
+- `docs/project/v2/04-permission-action-codes.md`.
+- `docs/project/v2/05-status-workflow.md`.
+- Updates to `docs/project/v2/00-start-here.md`.
+- Version bump to `0.30.0-alpha.3`.
+
+Confirmed/recommended design baseline for v2 planning:
+
+1. Data model should be hybrid: normalized core entities plus typed card detail tables, not pure JSON-only Sheet cards.
+2. The top-level business object remains Product/Style.
+3. WAFL Sheet remains the living production document.
+4. Sheet Card remains the UI/workflow unit.
+5. Permissions must be action-code based, using a target runtime shape such as `can(user, "sheet.update", sheet)`.
+6. Human-readable roles are default permission bundles, not implementation branches.
+7. Sheet status and card status must be separate.
+8. Assistant should warn/confirm/block based on risk instead of blocking every incomplete draft.
+9. Reorder should create a new Sheet/version rather than mutating a completed Sheet in place.
+10. PDF/share should be treated as Sheet snapshot/share-link workflow, not an unrelated export.
+
+This checkpoint does not authorize:
+
+- DB migration.
+- API implementation.
+- UI route rewrite.
+- R2 mutation.
+- Production behavior change.
+- Seed mutation.
+- Existing v1 document deletion/move.
+- Package dependency change.
+
+Next GPT-side design checkpoint:
+
+- `0.30.0-alpha.4`: design system and `/ui` showroom component contract.
+- Scope: `docs/project/v2/07-design-system.md`, `/ui` showroom requirements, concept-image usage rules, component list, Do/Don't rules.
+

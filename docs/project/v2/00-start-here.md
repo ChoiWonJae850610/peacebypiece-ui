@@ -1,4 +1,4 @@
-# WAFL v2 Start Here - 0.30.0-alpha.2
+# WAFL v2 Start Here - 0.30.0-alpha.3
 
 ## Purpose
 
@@ -105,7 +105,7 @@ docs/project/v2/
   12-codex-working-rules.md
 ```
 
-The first baseline documents are now expanded with user roles, workflow scenarios, and UI behavior philosophy. Later patches should still complete the data model, permission action codes, status workflow, design system, PDF/share model, test plan, roadmap, and Codex working rules before major implementation.
+The first baseline documents are now expanded with product definition, UI philosophy, role/workflow scenarios, data model, permission action codes, and status workflow. Later patches should still complete the design system, PDF/share model, test plan, roadmap, and Codex working rules before major implementation.
 
 ## v2 read order
 
@@ -116,11 +116,14 @@ For WAFL v2 work, read:
 3. `docs/project/v2/00-start-here.md`
 4. `docs/project/v2/01-product-definition.md`
 5. `docs/project/v2/02-ui-philosophy.md`
-6. `docs/project/v2/06-screen-spec.md`
-7. `docs/project/v2/08-feature-spec.md`
-8. Later v2 canonical documents as they are created.
-9. Operational guardrail documents such as encoding, production guard, evidence standard, patch packaging, R2 policy, and test automation documents.
-10. v1 documents only when explicitly needed for historical or operational reference.
+6. `docs/project/v2/03-data-model.md`
+7. `docs/project/v2/04-permission-action-codes.md`
+8. `docs/project/v2/05-status-workflow.md`
+9. `docs/project/v2/06-screen-spec.md`
+10. `docs/project/v2/08-feature-spec.md`
+11. Later v2 canonical documents as they are created.
+12. Operational guardrail documents such as encoding, production guard, evidence standard, patch packaging, R2 policy, and test automation documents.
+13. v1 documents only when explicitly needed for historical or operational reference.
 
 ## Keep from v1
 
@@ -165,7 +168,7 @@ A future patch may move v1 documents to `docs/archive/v1-0.24/`, but this must b
 
 ## Current checkpoint boundary
 
-`0.30.0-alpha.2` extends the design baseline with user roles, workflow scenarios, and UI behavior philosophy.
+`0.30.0-alpha.3` extends the design baseline with data model, permission action codes, and status workflow principles after the 0.30.0-alpha.2 role/workflow baseline.
 
 It must not include:
 
@@ -214,3 +217,51 @@ Each Codex prompt must include:
 - UI philosophy that keeps WAFL Sheet as the central workspace and Assistant as the next-action guide.
 
 These are still design documents, not implementation changes. They do not authorize DB migration, API implementation, production data mutation, route rewrites, or large source refactoring.
+
+## 0.30.0-alpha.3 data/permission/status baseline
+
+`0.30.0-alpha.3` adds the third GPT-side design baseline:
+
+- `docs/project/v2/03-data-model.md`
+- `docs/project/v2/04-permission-action-codes.md`
+- `docs/project/v2/05-status-workflow.md`
+
+Confirmed working defaults:
+
+1. Use a hybrid data model:
+   - normalized core entities,
+   - typed card detail tables,
+   - limited JSON metadata only where appropriate.
+2. Keep Product/Style as the top-level business object.
+3. Keep WAFL Sheet as the central production document.
+4. Keep Sheet Card as the card/workflow unit.
+5. Use action-code based permission checks.
+6. Treat human-readable roles as permission presets, not implementation branches.
+7. Separate Sheet status from card status.
+8. Use Assistant warning/confirmation/blocking by risk.
+9. Treat reorder as new Sheet/version creation.
+10. Treat PDF/share as Sheet snapshot/share-link workflow.
+
+These are still design documents, not implementation changes. They do not authorize DB migration, API implementation, seed mutation, production data changes, route rewrites, R2 mutation, or package dependency changes.
+
+## 12-point Codex handoff progress
+
+Current GPT-side progress against the owner-approved Codex handoff checklist:
+
+```text
+1. WAFL v2 product definition fixed: done
+2. Center objects Product / Sheet / SheetCard fixed: done
+3. Main IA and screen model drafted: done
+4. DB table baseline drafted: done in 0.30.0-alpha.3
+5. Permission action code catalog drafted: done in 0.30.0-alpha.3
+6. Status model drafted: done in 0.30.0-alpha.3
+7. PDF/share method: pending
+8. /ui design-system component set: pending
+9. Seed/test scenarios: pending
+10. v1 keep/rewrite/archive rules: first baseline done, detailed archive plan pending
+11. Codex read order: updated, final sync pending
+12. 0.30 roadmap: pending
+```
+
+Next GPT-side checkpoint should be `0.30.0-alpha.4` for design system and `/ui` showroom contract.
+
