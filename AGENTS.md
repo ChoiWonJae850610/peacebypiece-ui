@@ -1,5 +1,28 @@
 # Codex Operating Rules
 
+## WAFL v2 0.30 Redesign Read Order
+- For WAFL v2 / `0.30.x` redesign work, Codex must read this order before any file modification:
+  1. `AGENTS.md`
+  2. `docs/codex-current-state.md`
+  3. `docs/project/v2/00-start-here.md`
+  4. `docs/project/v2/01-product-definition.md`
+  5. `docs/project/v2/02-ui-philosophy.md`
+  6. `docs/project/v2/03-data-model.md`
+  7. `docs/project/v2/04-permission-action-codes.md`
+  8. `docs/project/v2/05-status-workflow.md`
+  9. `docs/project/v2/06-screen-spec.md`
+  10. `docs/project/v2/07-design-system.md`
+  11. `docs/project/v2/08-feature-spec.md`
+  12. `docs/project/v2/09-test-plan.md`
+  13. `docs/project/v2/10-roadmap-0.30.md`
+  14. `docs/project/v2/11-pdf-share-spec.md`
+  15. `docs/project/v2/12-codex-working-rules.md`
+  16. `docs/project/25-korean-unicode-encoding-standard.md`
+  17. `docs/project/32-product-completion-and-ui-evidence-standard.md`
+- For v2 work, `docs/project/v2/*` is the active product/design/spec authority. Pre-v2 `docs/project/*` documents remain historical references unless `docs/project/v2/12-codex-working-rules.md` explicitly classifies them as keep/reference/archive.
+- Do not implement from old `0.24.x` workorder-centric documents when they conflict with v2 Product/Style, WAFL Sheet, Sheet Card, Korean role label, Neon/R2/Worker, or mobile-web interaction decisions.
+
+
 ## Canonical Project Context
 - For productization/version work, read these files before implementation: `docs/codex-current-state.md`, `docs/project/01-codex-context.md`, `docs/project/02-project-decisions.md`, `docs/project/03-productization.md`, `docs/project/04-release-checklist.md`, `docs/productization-backlog.md`, and the target `lib/internal/roadmap/roadmap-*.ts`.
 - `AGENTS.md` defines operating rules. `docs/project/*` records the project context, durable decisions, productization process, and release checklist. Do not duplicate large policy blocks in both places.

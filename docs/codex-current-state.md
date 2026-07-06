@@ -1,3 +1,57 @@
+# 0.30.0-alpha.10 WAFL v2 Document Governance and Roadmap Baseline
+
+- Current GPT checkpoint: `0.30.0-alpha.10`.
+- Baseline source before this patch: `peacebypiece-ui-0.30.0-alpha.9.zip` with matching repo-state `repo-state-0.30.0-alpha.9-20260706-224435.txt`.
+- Repo-state baseline: `master = origin/master`, working tree clean, pushed, `APP_VERSION: 0.30.0-alpha.9`.
+- Build baseline: owner-provided build log passed Next.js production build, TypeScript, and static generation.
+- This patch records the WAFL v2 document governance, v1 keep/rewrite/archive classification, Codex read order, and 0.30 roadmap baseline. It is documentation only.
+- New version line: `0.30.0-alpha.10`.
+
+## 0.30.0-alpha.10 checkpoint
+
+The owner provided the applied `0.30.0-alpha.9` source, matching repo-state, and successful build log. This checkpoint continues GPT-side design work and does not authorize broad Codex implementation yet.
+
+This checkpoint completes the first-pass Codex-entry design baseline:
+
+```text
+1. WAFL v2 product definition: documented.
+2. Product / WAFL Sheet / Sheet Card center objects: documented.
+3. IA and screen model: documented.
+4. Neon-based data model draft: documented.
+5. Permission action code catalog: documented.
+6. Sheet/Card status workflow: documented.
+7. PDF/share and R2/Worker lifecycle: documented.
+8. v2 design system and /ui showroom target: documented.
+9. dev/test seed and QA scenarios: documented.
+10. v1 keep/rewrite/archive classification: documented.
+11. v2 Codex read order and working rules: documented.
+12. 0.30 roadmap: documented.
+```
+
+Before Codex implementation starts, run one GPT-side consolidated review of `docs/project/v2/*` for conflicts, missing Korean labels, and implementation sequencing. Codex must then receive a narrow work order, not a broad "redesign everything" instruction.
+
+## Active v2 Codex read order
+
+1. `AGENTS.md`
+2. `docs/codex-current-state.md`
+3. `docs/project/v2/00-start-here.md`
+4. `docs/project/v2/01-product-definition.md`
+5. `docs/project/v2/02-ui-philosophy.md`
+6. `docs/project/v2/03-data-model.md`
+7. `docs/project/v2/04-permission-action-codes.md`
+8. `docs/project/v2/05-status-workflow.md`
+9. `docs/project/v2/06-screen-spec.md`
+10. `docs/project/v2/07-design-system.md`
+11. `docs/project/v2/08-feature-spec.md`
+12. `docs/project/v2/09-test-plan.md`
+13. `docs/project/v2/10-roadmap-0.30.md`
+14. `docs/project/v2/11-pdf-share-spec.md`
+15. `docs/project/v2/12-codex-working-rules.md`
+16. `docs/project/25-korean-unicode-encoding-standard.md`
+17. `docs/project/32-product-completion-and-ui-evidence-standard.md`
+
+---
+
 # 0.30.0-alpha.9 WAFL v2 Seed/Test Scenario Baseline
 
 - Current GPT checkpoint: `0.30.0-alpha.9`.

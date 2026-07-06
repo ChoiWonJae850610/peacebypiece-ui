@@ -1,5 +1,26 @@
 # Productization Roadmap Authority
 
+> Active redesign baseline: `0.30.0-alpha.10`. Current active product direction is WAFL v2 `0.30.x`.
+> v2 canonical roadmap: `docs/project/v2/10-roadmap-0.30.md`.
+> Existing `0.24.x` roadmap content below is retained as v1/productization history and reference, not as the active implementation authority for v2.
+
+## WAFL v2 active status - 0.30.0-alpha.10
+
+- Current v2 checkpoint: `0.30.0-alpha.10` Document Governance and Codex-entry Baseline.
+- APP_VERSION: `0.30.0-alpha.10`.
+- v2 design baseline: first pass complete.
+- Active v2 product center: Product/Style → WAFL Sheet → Sheet Card.
+- Active v2 documents: `docs/project/v2/*`.
+- Codex broad implementation: blocked until GPT consolidated review and narrow work order.
+- Codex narrow document sync or `/ui` showroom prototype: allowed only after explicit work order.
+- Production behavior change: blocked.
+- DB migration: blocked until explicit Neon migration plan.
+- R2/Worker mutation: blocked until explicit work order.
+
+---
+
+# Productization Roadmap Authority
+
 > Active baseline: `0.24.34.7`. Current checkpoint: `0.24.34.7` Pipeline Packaging and Cleanup Audit Guard. Next feature: `0.24.35` Company-wide Export Execution.
 > Structured canonical source: `lib/internal/roadmap/`.
 > Runtime roadmap index: `lib/internal/roadmap/index.ts`.

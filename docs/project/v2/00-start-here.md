@@ -1,4 +1,4 @@
-# WAFL v2 Start Here - 0.30.0-alpha.9
+# WAFL v2 Start Here - 0.30.0-alpha.10
 
 ## Purpose
 
@@ -507,3 +507,42 @@ This checkpoint does not change the PowerShell automation script. It records req
 ```
 
 See `docs/project/v2/09-test-plan.md` for the detailed seed/test scenario matrix.
+
+
+## 0.30.0-alpha.10 document governance checkpoint
+
+`0.30.0-alpha.10` closes the first-pass GPT design baseline for Codex entry.
+
+The v2 canonical set is now:
+
+```text
+docs/project/v2/00-start-here.md
+docs/project/v2/01-product-definition.md
+docs/project/v2/02-ui-philosophy.md
+docs/project/v2/03-data-model.md
+docs/project/v2/04-permission-action-codes.md
+docs/project/v2/05-status-workflow.md
+docs/project/v2/06-screen-spec.md
+docs/project/v2/07-design-system.md
+docs/project/v2/08-feature-spec.md
+docs/project/v2/09-test-plan.md
+docs/project/v2/10-roadmap-0.30.md
+docs/project/v2/11-pdf-share-spec.md
+docs/project/v2/12-codex-working-rules.md
+```
+
+### Document precedence
+
+For v2 product, UI, DB, permission, status, PDF/share, test, and roadmap decisions:
+
+1. `AGENTS.md`
+2. `docs/codex-current-state.md`
+3. `docs/project/v2/*`
+4. durable operational rules from existing v1 documents
+5. old `0.24.x` implementation documents only as reference
+
+If a v1 workorder-centric document conflicts with v2, v2 wins unless the conflict is about production guard, Korean encoding, build/test safety, secrets, R2/Worker security, or deployment safety.
+
+### First-pass completion state
+
+The initial 12 Codex-entry criteria are documented, but implementation is still gated. The next step is not broad implementation. The next step is a consolidated GPT review and then a narrow Codex work order.
