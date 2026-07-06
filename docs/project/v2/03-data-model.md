@@ -1007,3 +1007,19 @@ over-limit/service-limited simulation: policy-defined, dev/test only
 ```
 
 These scenarios must be represented in Neon metadata and corresponding R2/demo-file records when implemented.
+
+
+## 0.30.0-alpha.12 operational-policy absorption data boundary
+
+`docs/project/v2/14-operational-policy-absorption.md` is now the active bridge between v1 operational policy and the v2 Product/Sheet/Card model. Data-model work must preserve:
+
+```text
+- tenant/company isolation for Product, Sheet, Card, File, PDF snapshot, Share Link, Event, and Inventory Movement records
+- Neon as source of truth for metadata, status, permissions, events, and billing/storage state
+- R2 as object storage only, controlled by app API or Worker flow
+- typed tables for core card details rather than a pure data_json Sheet model
+- migration safety: read-only audit first, explicit migration plan, rollback stance, dev/test validation, and production guard
+- company export/deletion/restore/purge coverage for every new v2 entity
+```
+
+This section authorizes no migration. It only constrains future schema design.

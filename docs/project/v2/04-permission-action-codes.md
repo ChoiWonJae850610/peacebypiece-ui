@@ -769,3 +769,38 @@ Keep external partners as share-link recipients for v2 alpha.
 Make cost visibility configurable except owner/admin default.
 Block dev/test actions in production.
 ```
+
+
+## 0.30.0-alpha.12 operational permission boundary
+
+Future v2 permission work must keep operational and destructive actions behind explicit action codes. At minimum, the action-code catalog must continue to cover:
+
+```text
+company.approve
+company.pause
+company.resume
+company.provision
+company.export
+company.request_deletion
+company.restore
+company.purge
+subscription.view
+subscription.manage
+storage.view
+storage.manage
+storage.purge
+catalog.manage_system
+catalog.manage_company
+file.upload
+file.view
+file.delete
+file.restore
+pdf.generate
+pdf.share
+pdf.revoke_share
+dev.seed_plan
+dev.seed_apply
+dev.seed_reset
+```
+
+Do not implement future UI branching with hard-coded role checks. Use permission/action-code checks such as `can(user, "pdf.share", sheet)`.

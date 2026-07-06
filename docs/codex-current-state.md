@@ -1,3 +1,63 @@
+# 0.30.0-alpha.12 WAFL v2 Operational Policy Absorption Baseline
+
+- Current GPT checkpoint: `0.30.0-alpha.12`.
+- Baseline source before this patch: `peacebypiece-ui-0.30.0-alpha.11.zip` with matching repo-state `repo-state-0.30.0-alpha.11-20260706-230647.txt`.
+- Repo-state baseline: `master = origin/master`, working tree clean, pushed, `APP_VERSION: 0.30.0-alpha.11`.
+- Build baseline: owner-provided build log passed Next.js production build, TypeScript, and static generation.
+- This patch absorbs the v1-docs gap review findings into the active v2 baseline and drafts the first narrow Codex work order. It is documentation/version/prompt-preparation only.
+- New version line: `0.30.0-alpha.12`.
+
+## 0.30.0-alpha.12 checkpoint
+
+The previous gap review established that v2 changes the product center but does not discard confirmed operational policy. This checkpoint converts that finding into active v2 implementation constraints in `docs/project/v2/14-operational-policy-absorption.md`.
+
+Absorbed policy areas:
+
+```text
+- commercial onboarding / Trial / approval / provisioning
+- billing / plan / storage quota / storage add-on
+- Neon source-of-truth / safe migration / tenant isolation
+- R2 / Worker / file lifecycle
+- production guard and destructive-operation guard
+- system default catalog / categories / sizes / units
+- system-admin and customer-admin account lifecycle
+- company export / deletion / restore / purge
+- product completion evidence
+- PowerShell/dev-test automation follow-up
+```
+
+First recommended Codex work order after this checkpoint:
+
+```text
+docs/codex-prompts/0.30.0-alpha.13-v2-ui-showroom-prototype.md
+```
+
+That work order is mock-only and explicitly forbids DB migration, API implementation, R2/Worker mutation, production behavior change, package dependency change, and broad workspace replacement.
+
+## Active v2 Codex read order
+
+1. `AGENTS.md`
+2. `docs/codex-current-state.md`
+3. `docs/project/v2/00-start-here.md`
+4. `docs/project/v2/01-product-definition.md`
+5. `docs/project/v2/02-ui-philosophy.md`
+6. `docs/project/v2/03-data-model.md`
+7. `docs/project/v2/04-permission-action-codes.md`
+8. `docs/project/v2/05-status-workflow.md`
+9. `docs/project/v2/06-screen-spec.md`
+10. `docs/project/v2/07-design-system.md`
+11. `docs/project/v2/08-feature-spec.md`
+12. `docs/project/v2/09-test-plan.md`
+13. `docs/project/v2/10-roadmap-0.30.md`
+14. `docs/project/v2/11-pdf-share-spec.md`
+15. `docs/project/v2/12-codex-working-rules.md`
+16. `docs/project/v2/13-v1-gap-review.md`
+17. `docs/project/v2/14-operational-policy-absorption.md`
+18. `docs/project/25-korean-unicode-encoding-standard.md`
+19. `docs/project/32-product-completion-and-ui-evidence-standard.md`
+
+---
+
 # 0.30.0-alpha.11 WAFL v2 v1-docs Gap Review Baseline
 
 - Current GPT checkpoint: `0.30.0-alpha.11`.

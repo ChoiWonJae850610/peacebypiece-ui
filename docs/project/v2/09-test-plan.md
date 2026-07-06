@@ -518,3 +518,31 @@ It does not authorize:
 - production behavior change
 - package changes
 ```
+
+
+## 0.30.0-alpha.12 operational QA evidence boundary
+
+Future v2 implementation must report product evidence, not only compile status. Evidence should include:
+
+```text
+- changed route/screen/component
+- user-facing behavior changed
+- permission/action-code behavior changed
+- DB migration 여부
+- R2/Worker mutation 여부
+- production behavior change 여부
+- commands run and exact result
+- manual QA still required
+- real-device/mobile QA targets
+- rollback or follow-up risk
+```
+
+For the first `/ui` showroom prototype, required QA evidence is route-level visual review only:
+
+```text
+- PC `/ui` review
+- mobile-width `/ui` review
+- input font-size/focus check for sample form controls
+- no DB/API/R2/Worker calls from showroom actions
+- existing workspace/system routes not behaviorally changed
+```

@@ -1,19 +1,21 @@
 # Productization Roadmap Authority
 
-> Active redesign baseline: `0.30.0-alpha.11`. Current active product direction is WAFL v2 `0.30.x`.
+> Active redesign baseline: `0.30.0-alpha.12`. Current active product direction is WAFL v2 `0.30.x`.
 > v2 canonical roadmap: `docs/project/v2/10-roadmap-0.30.md`.
 > Existing `0.24.x` roadmap content below is retained as v1/productization history and reference, not as the active implementation authority for v2.
 
-## WAFL v2 active status - 0.30.0-alpha.11
+## WAFL v2 active status - 0.30.0-alpha.12
 
-- Current v2 checkpoint: `0.30.0-alpha.11` v1-docs Gap Review Baseline.
-- APP_VERSION: `0.30.0-alpha.11`.
+- Current v2 checkpoint: `0.30.0-alpha.12` Operational Policy Absorption Baseline.
+- APP_VERSION: `0.30.0-alpha.12`.
 - v2 design baseline: first pass complete.
 - Active v2 product center: Product/Style → WAFL Sheet → Sheet Card.
 - Active v2 documents: `docs/project/v2/*`.
 - v1-docs gap review: `docs/project/v2/13-v1-gap-review.md`.
-- Codex broad implementation: blocked until gap-review findings are absorbed and a narrow work order is approved.
-- Codex narrow document sync or `/ui` showroom prototype: allowed only after explicit work order.
+- v1 gap findings absorption: `docs/project/v2/14-operational-policy-absorption.md`.
+- Recommended first Codex work order: `docs/codex-prompts/0.30.0-alpha.13-v2-ui-showroom-prototype.md`.
+- Codex broad implementation: blocked. Gap-review findings are absorbed, but only narrow work orders are allowed.
+- Codex narrow `/ui` showroom prototype: allowed through the explicit alpha.13 mock-only work order.
 - Production behavior change: blocked.
 - DB migration: blocked until explicit Neon migration plan.
 - R2/Worker mutation: blocked until explicit work order.

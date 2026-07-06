@@ -1,4 +1,4 @@
-# WAFL v2 Roadmap 0.30 - 0.30.0-alpha.11
+# WAFL v2 Roadmap 0.30 - 0.30.0-alpha.12
 
 ## Purpose
 
@@ -112,7 +112,7 @@ Status: done.
 
 ### 0.30.0-alpha.11 - v1-docs gap review baseline
 
-Status: current.
+Status: done.
 
 - Compare v2 first-pass documents with existing v1/pre-v2 project docs.
 - Confirm v2 product direction while preserving confirmed SaaS, DB, R2, PDF, billing, signup, deletion, QA, and production safety policies.
@@ -120,38 +120,38 @@ Status: current.
 - Record v1 workorder-domain to v2 Product/Sheet/Card mapping.
 - Identify blockers before broad Codex implementation.
 
+### 0.30.0-alpha.12 - Operational policy absorption and first Codex gate
+
+Status: current.
+
+- Add `docs/project/v2/14-operational-policy-absorption.md`.
+- Absorb gap-review P0/P1 findings into the active v2 baseline.
+- Preserve signup/Trial/provisioning, billing/storage, Neon source-of-truth, tenant isolation, R2/Worker lifecycle, production guard, catalog/size/unit, account lifecycle, export/deletion/restore/purge, QA evidence, and PowerShell automation policy.
+- Add `docs/codex-prompts/0.30.0-alpha.13-v2-ui-showroom-prototype.md` as the recommended first narrow Codex work order.
+- Keep broad workspace implementation, DB migration, API changes, R2/Worker mutation, and production behavior changes blocked.
+
 ## Next recommended sequence
 
-### 0.30.0-alpha.12 - Gap-review findings absorption
+### 0.30.0-alpha.13 - `/ui` v2 showroom prototype or final docs consistency audit
 
-Recommended mode: GPT high reasoning.
+Recommended mode: Codex medium for document sync, Codex medium-high for `/ui` prototype.
 
-Scope:
+Preferred Option A - `/ui` showroom prototype:
 
-
-- Review all `docs/project/v2/*` for contradictions.
-- Confirm Korean labels.
-- Confirm DB/action/status/PDF/design/test alignment.
-- Produce a Codex work order for document-only cleanup or `/ui` showroom prototype.
-- Do not implement broad workspace changes yet.
-
-### 0.30.0-alpha.12 - Codex document synchronization or /ui prototype gate
-
-Recommended mode: Codex medium for document sync, Codex high for `/ui` prototype.
-
-Option A - document sync only:
-
-- Align `AGENTS.md`, `docs/codex-current-state.md`, v2 docs, and roadmap route metadata if needed.
-- No app behavior changes.
-
-Option B - `/ui` showroom prototype:
-
-- Implement v2 design system samples in `/ui`.
-- Include button/card/sheet/assistant/mobile/input/modal/drawer/toast/PDF-like preview.
+- Use `docs/codex-prompts/0.30.0-alpha.13-v2-ui-showroom-prototype.md`.
+- Implement mock-only v2 design system samples in `/ui`.
+- Include WAFL Sheet, Sheet Card, Assistant, mobile card flow, input, status, upload/image, PDF-like preview, and Do/Don’t samples.
 - No DB migration.
+- No API implementation.
+- No R2/Worker mutation.
 - No production behavior change.
 
-### 0.30.0-alpha.13+ - Implementation planning
+Fallback Option B - docs consistency audit only:
+
+- Re-check `docs/project/v2/*` for contradictions after alpha.12.
+- No app behavior changes.
+
+### 0.30.0-alpha.14+ - Implementation planning
 
 Implementation must be phased:
 
@@ -182,12 +182,12 @@ Codex must not perform broad implementation until all of these are true:
 ## Roadmap status summary
 
 ```text
-Design baseline: first pass complete at 0.30.0-alpha.10
+Design baseline: first pass complete at 0.30.0-alpha.10; operational policy absorbed at 0.30.0-alpha.12
 Implementation readiness: not yet
-Recommended next: GPT consolidated review
+Recommended next: first narrow Codex work order, preferably `/ui` showroom prototype
 Codex broad implementation: blocked
 Codex narrow document sync: allowed after work order
-Codex /ui showroom prototype: allowed after work order
+Codex /ui showroom prototype: allowed by explicit alpha.13 work-order draft
 DB migration: blocked until explicit migration plan
 R2/Worker mutation: blocked until explicit work order
 Production behavior change: blocked

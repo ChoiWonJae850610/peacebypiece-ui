@@ -501,3 +501,25 @@ No immediate decision is forced by this review, but the following must be decide
 4. Whether company-wide export is required before first v2 customer trial.
 5. Whether first Codex implementation target is /ui showroom or docs consistency sync.
 ```
+
+
+## 0.30.0-alpha.12 absorption status
+
+The P0/P1 findings from this review are absorbed into `docs/project/v2/14-operational-policy-absorption.md`.
+
+Use that document as the active v2 implementation constraint for:
+
+```text
+- commercial onboarding / Trial / approval / provisioning
+- billing / plan / storage quota
+- Neon source-of-truth / migration safety / tenant isolation
+- R2 / Worker / file lifecycle
+- production and destructive-operation guard
+- system catalog / size / unit standards
+- admin account lifecycle
+- company export / deletion / restore / purge
+- product completion evidence
+- PowerShell/dev-test automation follow-up
+```
+
+This does not unblock broad workspace implementation. It only makes the preserved operational policies explicit before the first narrow Codex work order.

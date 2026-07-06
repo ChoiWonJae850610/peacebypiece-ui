@@ -1,4 +1,4 @@
-# WAFL v2 Start Here - 0.30.0-alpha.11
+# WAFL v2 Start Here - 0.30.0-alpha.12
 
 ## Purpose
 
@@ -104,9 +104,10 @@ docs/project/v2/
   11-pdf-share-spec.md
   12-codex-working-rules.md
   13-v1-gap-review.md
+  14-operational-policy-absorption.md
 ```
 
-The baseline documents are now expanded with product definition, UI philosophy, role/workflow scenarios, data model, permission action codes, status workflow, design-system standard, PDF/share baseline, Worker-controlled storage lifecycle, and the first mobile-web test-plan baseline. Later patches should still complete seed data scenarios, detailed v1 keep/rewrite/archive planning, 0.30 roadmap, and Codex working rules before major implementation.
+The baseline documents are now expanded with product definition, UI philosophy, role/workflow scenarios, data model, permission action codes, status workflow, design-system standard, PDF/share baseline, Worker-controlled storage lifecycle, mobile-web test-plan baseline, seed/test scenarios, document governance, v1 gap review, and operational-policy absorption. Broad implementation remains blocked until a narrow work order is chosen.
 
 ## v1-docs gap review checkpoint
 
@@ -122,6 +123,27 @@ Do not discard confirmed SaaS/operation/security policies from v1 documents.
 ```
 
 Before any broad implementation, Codex must read the gap review and check whether the target work touches preserved operational policy.
+
+## 0.30.0-alpha.12 operational-policy absorption checkpoint
+
+`0.30.0-alpha.12` adds `docs/project/v2/14-operational-policy-absorption.md` and a first narrow Codex work-order draft for the next `/ui` showroom prototype.
+
+Absorbed active policy areas:
+
+```text
+- commercial onboarding / Trial / approval / provisioning
+- billing / plan / storage quota
+- Neon source-of-truth / migration safety / tenant isolation
+- R2 / Worker / file lifecycle
+- production and destructive-operation guard
+- system catalog / size / unit standards
+- system-admin and customer-admin account lifecycle
+- company export / deletion / restore / purge
+- product completion evidence
+- PowerShell/dev-test automation follow-up
+```
+
+Codex broad implementation remains blocked. The recommended first Codex implementation after this checkpoint is a mock-only `/ui` v2 showroom prototype with no DB migration, no R2/Worker mutation, no API changes, and no production behavior change.
 
 ## v2 read order
 
@@ -139,10 +161,13 @@ For WAFL v2 work, read:
 10. `docs/project/v2/07-design-system.md`
 11. `docs/project/v2/08-feature-spec.md`
 12. `docs/project/v2/09-test-plan.md`
-13. `docs/project/v2/11-pdf-share-spec.md`
-14. Later v2 canonical documents as they are created.
-12. Operational guardrail documents such as encoding, production guard, evidence standard, patch packaging, R2 policy, and test automation documents.
-13. v1 documents only when explicitly needed for historical or operational reference.
+13. `docs/project/v2/10-roadmap-0.30.md`
+14. `docs/project/v2/11-pdf-share-spec.md`
+15. `docs/project/v2/12-codex-working-rules.md`
+16. `docs/project/v2/13-v1-gap-review.md`
+17. `docs/project/v2/14-operational-policy-absorption.md`
+18. Operational guardrail documents such as encoding, production guard, evidence standard, patch packaging, R2 policy, and test automation documents.
+19. v1 documents only when explicitly needed for historical or operational reference.
 
 ## Keep from v1
 
@@ -187,7 +212,7 @@ A future patch may move v1 documents to `docs/archive/v1-0.24/`, but this must b
 
 ## Current checkpoint boundary
 
-`0.30.0-alpha.6` adds the WAFL v2 PDF/share baseline. `0.30.0-alpha.5` adds the WAFL v2 design-system baseline and clarifies that `/ui` is the later Figma-style showroom. `0.30.0-alpha.4` clarifies and corrects the 0.30.0-alpha.3 data/permission/status baseline. `0.30.0-alpha.3` extended the design baseline with data model, permission action codes, and status workflow principles after the 0.30.0-alpha.2 role/workflow baseline.
+`0.30.0-alpha.12` absorbs retained operational policies after the v1 gap review. `0.30.0-alpha.6` adds the WAFL v2 PDF/share baseline. `0.30.0-alpha.5` adds the WAFL v2 design-system baseline and clarifies that `/ui` is the later Figma-style showroom. `0.30.0-alpha.4` clarifies and corrects the 0.30.0-alpha.3 data/permission/status baseline. `0.30.0-alpha.3` extended the design baseline with data model, permission action codes, and status workflow principles after the 0.30.0-alpha.2 role/workflow baseline.
 
 It must not include:
 

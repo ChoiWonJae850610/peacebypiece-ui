@@ -1,4 +1,4 @@
-# WAFL v2 Codex Working Rules - 0.30.0-alpha.11
+# WAFL v2 Codex Working Rules - 0.30.0-alpha.12
 
 ## Purpose
 
@@ -26,8 +26,9 @@ Before any v2 file modification, read:
 14. `docs/project/v2/11-pdf-share-spec.md`
 15. `docs/project/v2/12-codex-working-rules.md`
 16. `docs/project/v2/13-v1-gap-review.md`
-17. `docs/project/25-korean-unicode-encoding-standard.md`
-18. `docs/project/32-product-completion-and-ui-evidence-standard.md`
+17. `docs/project/v2/14-operational-policy-absorption.md`
+18. `docs/project/25-korean-unicode-encoding-standard.md`
+19. `docs/project/32-product-completion-and-ui-evidence-standard.md`
 
 Read v1 documents only when the work order asks for them or when operational safety requires them.
 
@@ -53,6 +54,27 @@ Rule:
 Old workorder-centered screen assumptions are not v2 authority.
 Confirmed SaaS, security, DB, R2, PDF, billing, signup, deletion, QA, and production guard policies remain active until explicitly replaced by a v2 document.
 ```
+
+## Operational policy absorption rule
+
+`docs/project/v2/14-operational-policy-absorption.md` is required reading after the gap review. It converts the gap-review findings into active v2 implementation constraints.
+
+Codex must preserve these areas unless a future work order explicitly replaces them:
+
+```text
+commercial onboarding / Trial / approval / provisioning
+billing / plan / storage quota
+Neon source-of-truth / migration safety / tenant isolation
+R2 / Worker / file lifecycle
+production and destructive-operation guard
+system catalog / size / unit standards
+admin account lifecycle
+company export / deletion / restore / purge
+product completion evidence
+PowerShell/dev-test automation guard
+```
+
+The recommended first implementation work after this checkpoint is `docs/codex-prompts/0.30.0-alpha.13-v2-ui-showroom-prototype.md`. It is mock-only and must not touch DB/API/R2/Worker/production behavior.
 
 ## v1 document classification
 
@@ -238,7 +260,7 @@ Recommended order:
 
 ```text
 1. v2 docs conflict review
-2. /ui design showroom
+2. /ui design showroom using the alpha.13 mock-only work order
 3. action code catalog/type definitions
 4. mock WAFL Sheet prototype
 5. dev/test seed scenarios

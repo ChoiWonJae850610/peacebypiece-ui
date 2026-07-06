@@ -214,8 +214,8 @@
 - Patch ZIPs and full handoff ZIPs must preserve Unicode entry names. Verify Korean paths after ZIP creation before delivery.
 - The canonical detailed standard is `docs/project/25-korean-unicode-encoding-standard.md`.
 
-## WAFL v2 0.30.0-alpha.11 gap review rule
+## WAFL v2 0.30.0-alpha.12 operational policy absorption rule
 
-For WAFL v2 implementation work, `docs/project/v2/13-v1-gap-review.md` must be read after `docs/project/v2/12-codex-working-rules.md`.
+For WAFL v2 implementation work, `docs/project/v2/13-v1-gap-review.md` and `docs/project/v2/14-operational-policy-absorption.md` must be read after `docs/project/v2/12-codex-working-rules.md`.
 
-The gap review clarifies that v2 replaces the Product/Sheet/Card product center, but it does not discard confirmed business, signup, billing, storage, DB, R2, PDF, deletion, QA, and production safety policies from existing project docs.
+The gap review and absorption document clarify that v2 replaces the Product/Sheet/Card product center, but it does not discard confirmed business, signup, billing, storage, DB, R2, PDF, deletion, QA, and production safety policies from existing project docs. The recommended first narrow Codex implementation after alpha.12 is the mock-only `/ui` showroom work order in `docs/codex-prompts/0.30.0-alpha.13-v2-ui-showroom-prototype.md`.
