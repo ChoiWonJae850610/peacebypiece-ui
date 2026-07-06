@@ -1,4 +1,4 @@
-# WAFL v2 Screen Spec - Role/Workflow Screen Draft - 0.30.0-alpha.2
+# WAFL v2 Screen Spec - Korean Role/Status Screen Draft - 0.30.0-alpha.4
 
 ## Purpose
 
@@ -360,13 +360,26 @@ Recommended later order:
 8. Real DB/API binding only after the design and data model are stable.
 
 
+## Korean role set
+
+v2 alpha planning uses four Korean-first roles:
+
+```text
+시스템관리자(system_admin)
+고객사 관리자(customer_admin)
+디자이너(designer)
+재고관리(inventory_manager)
+```
+
+Screen labels should use Korean first. English codes are internal implementation values.
+
 ## Role-based screen scenarios
 
 These are planning scenarios. Actual visibility must later be controlled by action codes, not hardcoded role names.
 
-### Owner/admin scenario
+### 고객사 관리자(customer_admin) scenario
 
-The owner/admin opens the workspace to understand risk and progress.
+고객사 관리자는 고객사 workspace를 열어 전체 제품/Sheet 진행, 위험, 비용, 멤버/권한을 확인한다.
 
 Primary screen needs:
 
@@ -391,32 +404,24 @@ Primary screen needs:
 - Reorder action.
 - Missing-info guidance without excessive blocking.
 
-### Production manager scenario
+### 재고관리(inventory_manager) scenario
 
-The production manager opens the workspace to prepare ordering and factory work.
-
-Primary screen needs:
-
-- Fabric/accessory readiness.
-- Supplier/factory cards.
-- Due-date and production risk.
-- Factory instruction PDF/share action.
-- Recent changes and issue flags.
-
-### Inspection manager scenario
-
-The inspection manager opens the workspace to handle received goods and issues.
+재고관리는 입고, 검수, 불량, 재고 반영을 처리하기 위해 workspace를 연다.
 
 Primary screen needs:
 
-- Inspection queue or filter.
+- Inspection/inbound queue or filter.
+- Fabric/accessory receive state.
 - Received quantity input.
 - Defect/issue quantity input.
 - Issue photo/note.
 - Inventory reflection action if allowed.
 - Completion action if allowed.
+- Recent changes and issue flags.
 
-### System admin scenario
+Production/factory readiness can still appear as Sheet/card information, but v2 alpha does not require a separate production-manager role by default.
+
+### 시스템관리자(system_admin) scenario
 
 The system admin does not use the customer workspace as a normal customer member.
 
@@ -446,13 +451,13 @@ Primary screen needs remain under `/system`:
 Mobile should be optimized for the action happening now:
 
 - Designer: capture image, edit base info, send draft/share.
-- Production manager: check readiness, send factory instruction, update issue.
-- Inspection manager: enter received/defect quantity, attach photo, mark done.
-- Owner/admin: approve exception, check progress, review cost/risk.
+- 고객사 관리자: approve exception, check progress, review cost/risk.
+- 재고관리: enter received/defect quantity, attach photo, mark done.
+- 디자이너: capture image, edit base info, send draft/share.
 
 Mobile should not expose every admin function as a cramped list. Deep settings can remain PC/tablet-first unless required for field work.
 
-## 0.30.0-alpha.3 screen implications from data/permission/status
+## 0.30.0-alpha.4 screen implications from Neon/R2/Korean roles/status
 
 The screen model must reflect the new data, permission, and status baselines.
 
@@ -513,11 +518,11 @@ The future `/functions` route should present this action-code catalog, not a gen
 The UI must show both Sheet status and card status.
 
 ```text
-Sheet status:
-draft / ready / ordered / making / inspection / completed / hold / cancelled
+Sheet status / Sheet 상태:
+초안(draft) / 준비됨(ready) / 발주됨(ordered) / 제작중(making) / 검수중(inspection) / 완료(completed) / 보류(hold) / 취소(cancelled)
 
-Card status:
-empty / draft / ready / requested / ordered / received / issue / done / skipped
+Card status / Card 상태:
+비어있음(empty) / 작성중(draft) / 준비됨(ready) / 요청됨(requested) / 발주됨(ordered) / 입고됨(received) / 이슈(issue) / 완료(done) / 건너뜀(skipped)
 ```
 
 Assistant should translate these into user-facing next actions:
@@ -545,3 +550,15 @@ blocked -> disable action with clear reason
 
 This screen behavior must be consistent across PC, tablet, and mobile.
 
+
+
+## 0.30.0-alpha.4 clarification
+
+This patch clarifies that:
+
+- Neon remains the current DB platform.
+- Cloudflare R2 remains the current file/PDF/image storage platform.
+- User-facing roles are Korean-first: 시스템관리자, 고객사 관리자, 디자이너, 재고관리.
+- Internal role codes are secondary implementation values.
+- User-facing statuses are Korean-first, with English DB/API codes in parentheses.
+- Production and inspection are not separate default roles in v2 alpha unless the owner later decides to split them.

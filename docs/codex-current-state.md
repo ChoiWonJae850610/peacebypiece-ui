@@ -722,3 +722,45 @@ Next GPT-side design checkpoint:
 - `0.30.0-alpha.4`: design system and `/ui` showroom component contract.
 - Scope: `docs/project/v2/07-design-system.md`, `/ui` showroom requirements, concept-image usage rules, component list, Do/Don't rules.
 
+
+
+# 0.30.0-alpha.4 WAFL v2 owner clarification checkpoint
+
+- Current GPT checkpoint: `0.30.0-alpha.4`.
+- Baseline source before this patch: `peacebypiece-ui-0.30.0-alpha.3.zip`.
+- Previous patch `0.30.0-alpha.3` had already been applied and pushed before the owner clarified Korean role/status language and existing Neon/R2 infrastructure.
+- This patch intentionally uses a new version instead of reusing `0.30.0-alpha.3`, because the local PowerShell automation may automatically apply, commit, push, build, and generate repo-state/source ZIP after a patch is downloaded.
+
+Confirmed owner clarifications:
+
+```text
+DB:
+- Current DB is Neon.
+- v2 DB redesign means schema/migration planning on top of Neon unless explicitly changed.
+
+Storage:
+- Current object storage is Cloudflare R2.
+- PDF, PDF snapshots, representative images, sketches, and uploaded attachments use R2.
+
+Roles:
+- 시스템관리자(system_admin)
+- 고객사 관리자(customer_admin)
+- 디자이너(designer)
+- 재고관리(inventory_manager)
+
+Status language:
+- Korean labels must be primary in owner/customer-facing docs and screens.
+- English values remain internal DB/API/TypeScript/test codes.
+```
+
+Updated document focus:
+
+- `docs/project/v2/03-data-model.md`: Neon/R2 baseline and Korean-first role-code mapping.
+- `docs/project/v2/04-permission-action-codes.md`: four-role Korean planning baseline.
+- `docs/project/v2/05-status-workflow.md`: Korean-first Sheet/Card status labels.
+- `docs/project/v2/06-screen-spec.md`: Korean role/status screen implications.
+- `docs/project/v2/00-start-here.md`: correction checkpoint and 12-point progress update.
+
+This patch remains documentation/version only. It does not authorize DB migration, API implementation, route rewrites, R2 mutation, production behavior changes, seed mutation, or package dependency changes.
+
+Next GPT-side checkpoint should be `0.30.0-alpha.5` for WAFL v2 design system and `/ui` showroom contract.

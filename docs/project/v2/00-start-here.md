@@ -1,4 +1,4 @@
-# WAFL v2 Start Here - 0.30.0-alpha.3
+# WAFL v2 Start Here - 0.30.0-alpha.4
 
 ## Purpose
 
@@ -168,7 +168,7 @@ A future patch may move v1 documents to `docs/archive/v1-0.24/`, but this must b
 
 ## Current checkpoint boundary
 
-`0.30.0-alpha.3` extends the design baseline with data model, permission action codes, and status workflow principles after the 0.30.0-alpha.2 role/workflow baseline.
+`0.30.0-alpha.4` clarifies and corrects the 0.30.0-alpha.3 data/permission/status baseline. `0.30.0-alpha.3` extended the design baseline with data model, permission action codes, and status workflow principles after the 0.30.0-alpha.2 role/workflow baseline.
 
 It must not include:
 
@@ -265,3 +265,50 @@ Current GPT-side progress against the owner-approved Codex handoff checklist:
 
 Next GPT-side checkpoint should be `0.30.0-alpha.4` for design system and `/ui` showroom contract.
 
+
+
+## 0.30.0-alpha.4 owner clarification baseline
+
+The owner clarified the following after `0.30.0-alpha.3` had already been applied and pushed:
+
+```text
+Database:
+- Neon DB is already in use.
+- v2 data-model redesign means schema/migration planning on top of Neon unless explicitly changed.
+
+Storage:
+- Cloudflare R2 is already in use.
+- PDF, PDF snapshots, representative images, sketches, and uploaded attachments use R2.
+- Representative images and sketches are core WAFL data, not merely secondary attachments.
+
+Roles:
+- 시스템관리자
+- 고객사 관리자
+- 디자이너
+- 재고관리
+
+Language:
+- User-facing docs/screens use Korean labels first.
+- Internal DB/API/TypeScript/test values may use English codes.
+```
+
+This correction is recorded as `0.30.0-alpha.4` instead of reusing `0.30.0-alpha.3`, because the patch workflow may already commit and push immediately after the owner downloads a patch.
+
+## Updated 12-point Codex handoff progress after 0.30.0-alpha.4
+
+```text
+1. WAFL v2 product definition fixed: done
+2. Center objects Product / Sheet / SheetCard fixed: done
+3. Main IA and screen model drafted: done
+4. DB table baseline drafted: done, Neon/R2 baseline clarified in 0.30.0-alpha.4
+5. Permission action code catalog drafted: done, Korean role set clarified in 0.30.0-alpha.4
+6. Status model drafted: done, Korean labels clarified in 0.30.0-alpha.4
+7. PDF/share method: pending
+8. /ui design-system component set: pending
+9. Seed/test scenarios: pending
+10. v1 keep/rewrite/archive rules: first baseline done, detailed archive plan pending
+11. Codex read order: updated, final sync pending
+12. 0.30 roadmap: pending
+```
+
+Next GPT-side checkpoint should be `0.30.0-alpha.5` for design system and `/ui` showroom contract, unless another owner clarification is needed first.

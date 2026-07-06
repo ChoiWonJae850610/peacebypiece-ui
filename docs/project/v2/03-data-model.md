@@ -1,10 +1,37 @@
-# WAFL v2 Data Model - 0.30.0-alpha.3
+# WAFL v2 Data Model - 0.30.0-alpha.4
 
 ## Purpose
 
 This document defines the first WAFL v2 data-model baseline before implementation.
 
 It is a design contract, not a migration file. It does not authorize DB migration, API implementation, seed mutation, R2 mutation, or production data changes.
+
+
+## Current infrastructure baseline
+
+WAFL currently uses Neon for the application database and Cloudflare R2 for file/object storage.
+
+This v2 data-model document does not mean replacing Neon or ignoring the existing R2 design. The current working assumption is:
+
+```text
+Database:
+- Neon PostgreSQL remains the DB platform.
+- v2 work may redesign schema, migrations, seeds, and typed data contracts on top of Neon.
+- No DB migration is authorized by this document.
+
+Object storage:
+- Cloudflare R2 remains the storage platform.
+- PDF files, PDF snapshots, representative images, sketches, uploaded attachments, and generated artifacts are stored in R2.
+- Representative images and sketches are first-class Sheet/Product data, not merely low-priority attachments.
+- No R2 mutation, purge, copy, or bucket policy change is authorized by this document.
+```
+
+Practical implication:
+
+```text
+Design v2 cleanly, but keep the existing Neon/R2 operational safeguards.
+Do not create a new storage/database direction unless the owner explicitly decides it.
+```
 
 ## Core principle
 
@@ -127,20 +154,33 @@ created_at
 updated_at
 ```
 
-Default planning roles:
+Default planning roles use Korean labels first and internal codes second.
 
 ```text
-owner_admin
-designer
-production_manager
-inspection_manager
-system_admin
+시스템관리자(system_admin)
+- Service operator / owner-side administrator.
+- Global/system-scoped.
+- Not a normal customer-company member.
+
+고객사 관리자(customer_admin)
+- Customer company owner/admin.
+- Broadest customer-side permissions.
+- May manage members, settings, cost visibility, PDF/share, partners, and Sheet progress.
+
+디자이너(designer)
+- Creates and edits Product/Style and WAFL Sheet content.
+- Works mainly with images, sketches, base information, fabric/accessory/factory intent, PDF draft, and reorder.
+
+재고관리(inventory_manager)
+- Handles inbound, inspection, defect quantity, stock reflection, and inventory adjustment where allowed.
 ```
 
-Notes:
+Rules:
 
-- `system_admin` may be global/system-scoped, not tenant-scoped.
-- Owner/admin may be a combined default role in early v2.
+- User-facing docs/screens must show Korean labels first.
+- Internal DB/API/test code may use English codes.
+- The v2 alpha role set should not add separate production-manager and inspection-manager roles unless the owner later decides to split them.
+- External factories/suppliers are not login roles in alpha. They are PDF/share-link recipients first.
 
 ## Product and Sheet entities
 
@@ -798,6 +838,21 @@ lib/internal/v2-data-model.ts
 
 Only after explicit owner approval.
 
+## Korean label and code stance
+
+The DB should store stable code values, but screens and planning documents should explain them in Korean first.
+
+Examples:
+
+```text
+고객사 관리자(customer_admin)
+초안(draft)
+준비됨(ready)
+발주됨(ordered)
+```
+
+This prevents implementation ambiguity while keeping owner review understandable.
+
 ## Migration stance
 
 There is no production customer data yet, but existing code and test data still matter.
@@ -813,11 +868,11 @@ Create migration/seed/reset plans explicitly before any DB action.
 
 ## Open decisions
 
-No blocking owner decision is required for this checkpoint if the hybrid model is accepted as the working baseline.
+The owner has clarified that Neon DB and Cloudflare R2 are already in use and remain the current infrastructure baseline. The owner also clarified the v2 planning role set as 시스템관리자, 고객사 관리자, 디자이너, 재고관리.
 
 The following can be revisited before DB implementation:
 
 1. Whether `sheet_fabric_cards` and `sheet_accessory_cards` should be separate tables or one typed material detail table.
 2. Whether `orders` should be generic across fabric/accessory/factory or split by work type.
-3. Whether inventory is v2 alpha scope or v2 beta scope.
+3. How deep 재고관리(inventory_manager) should go in v2 alpha versus v2 beta.
 4. Whether product category remains the existing 3-level system or becomes more flexible.

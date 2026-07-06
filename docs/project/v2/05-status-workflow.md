@@ -1,4 +1,4 @@
-# WAFL v2 Status Workflow - 0.30.0-alpha.3
+# WAFL v2 Status Workflow - 0.30.0-alpha.4
 
 ## Purpose
 
@@ -41,6 +41,46 @@ Examples:
 공장 거래처가 없습니다. 공장 지시서를 공유할 수 없습니다. -> block
 납기일이 없습니다. 공장 전달 전에 입력하는 것을 권장합니다. -> warning
 ```
+
+## Korean label and internal code rule
+
+User-facing screens and planning explanations should use Korean labels first, with internal codes only as secondary references.
+
+```text
+초안(draft)
+준비됨(ready)
+발주됨(ordered)
+제작중(making)
+검수중(inspection)
+완료(completed)
+보류(hold)
+취소(cancelled)
+```
+
+The English value is still useful as a DB/API/TypeScript enum value. The Korean label is what the owner, customer, and screen copy should primarily see.
+
+## Plain Korean explanation
+
+```text
+Sheet 상태:
+옷 하나의 전체 제작 진행 상태.
+
+Card 상태:
+Sheet 안에 들어있는 원단, 부자재, 공장, 이미지, PDF 같은 각 카드의 개별 처리 상태.
+```
+
+Example:
+
+```text
+Sheet 전체 상태: 제작중(making)
+
+원단 카드: 입고됨(received)
+부자재 카드: 이슈(issue)
+공장 카드: 발주됨(ordered)
+PDF/share 카드: 준비됨(ready)
+```
+
+This separation prevents one global status from becoming too complicated.
 
 ## Product lifecycle status
 
@@ -85,7 +125,7 @@ hold
 cancelled
 ```
 
-### draft
+### 초안(draft)
 
 Meaning:
 
@@ -109,7 +149,7 @@ draft -> hold
 draft -> cancelled
 ```
 
-### ready
+### 준비됨(ready)
 
 Meaning:
 
@@ -134,7 +174,7 @@ ready -> cancelled
 ready -> draft
 ```
 
-### ordered
+### 발주됨(ordered)
 
 Meaning:
 
@@ -150,7 +190,7 @@ ordered -> hold
 ordered -> cancelled
 ```
 
-### making
+### 제작중(making)
 
 Meaning:
 
@@ -166,7 +206,7 @@ making -> hold
 making -> cancelled
 ```
 
-### inspection
+### 검수중(inspection)
 
 Meaning:
 
@@ -182,7 +222,7 @@ inspection -> making
 inspection -> hold
 ```
 
-### completed
+### 완료(completed)
 
 Meaning:
 
@@ -197,7 +237,7 @@ completed -> reopened by explicit permission only
 completed -> reorder creates new Sheet, not direct mutation
 ```
 
-### hold
+### 보류(hold)
 
 Meaning:
 
@@ -221,7 +261,7 @@ Rules:
 - Returning from hold should require the previous stage or selected target stage.
 - Hold reason should be captured as event metadata.
 
-### cancelled
+### 취소(cancelled)
 
 Meaning:
 
@@ -239,6 +279,26 @@ Rules:
 
 - Cancel is not the same as delete.
 - Cancel must create an event.
+
+## Easy Sheet status flow
+
+Normal path:
+
+```text
+초안(draft)
+→ 준비됨(ready)
+→ 발주됨(ordered)
+→ 제작중(making)
+→ 검수중(inspection)
+→ 완료(completed)
+```
+
+Exception path:
+
+```text
+문제가 생김 → 보류(hold)
+진행하지 않음 → 취소(cancelled)
+```
 
 ## Sheet status transition table
 
@@ -272,19 +332,19 @@ done
 skipped
 ```
 
-### empty
+### 비어있음(empty)
 
 No useful data yet.
 
-### draft
+### 초안(draft)
 
 Some data exists but card is incomplete.
 
-### ready
+### 준비됨(ready)
 
 Card has enough information for its next action.
 
-### requested
+### 요청됨(requested)
 
 A request has been created but not accepted/ordered/fulfilled.
 
@@ -295,23 +355,23 @@ fabric order requested
 factory instruction requested
 ```
 
-### ordered
+### 발주됨(ordered)
 
 The card's order or external work has been sent.
 
-### received
+### 입고됨(received)
 
 Material or result has been received.
 
-### issue
+### 이슈(issue)
 
 There is a defect, missing data, late delivery, quantity mismatch, or other problem.
 
-### done
+### 완료(done)
 
 Card work is complete.
 
-### skipped
+### 건너뜀(skipped)
 
 Card is intentionally not needed.
 

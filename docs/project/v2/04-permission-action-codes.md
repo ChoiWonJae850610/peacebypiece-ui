@@ -1,4 +1,4 @@
-# WAFL v2 Permission Action Codes - 0.30.0-alpha.3
+# WAFL v2 Permission Action Codes - 0.30.0-alpha.4
 
 ## Purpose
 
@@ -27,6 +27,27 @@ can(user, "pdf.share", sheet)
 ```
 
 Human-readable roles are default permission bundles. Action codes are the actual contract.
+
+## Korean role-label rule
+
+User-facing roles for v2 are fixed as the first planning set:
+
+```text
+시스템관리자(system_admin)
+고객사 관리자(customer_admin)
+디자이너(designer)
+재고관리(inventory_manager)
+```
+
+Rules:
+
+- 화면과 설명 문서는 한국어 라벨을 먼저 쓴다.
+- DB/API/TypeScript/test code는 안정적인 영어 code를 쓴다.
+- 화면 구현은 역할명 직접 분기 금지다.
+- 역할은 action code 묶음, 즉 permission preset일 뿐이다.
+- 외부 공장/거래처는 alpha에서 로그인 role이 아니라 PDF/share-link 수신자다.
+
+Do not introduce separate `production_manager` or `inspection_manager` default roles unless the owner later decides to split 재고관리 into multiple roles.
 
 ## Permission check shape
 
@@ -411,7 +432,52 @@ Rules:
 
 This is a planning baseline only. It does not modify existing permissions.
 
-### owner_admin
+### 시스템관리자(system_admin)
+
+Meaning:
+
+```text
+서비스 운영자 / WAFL 운영자 / owner-side administrator
+```
+
+Default allowed:
+
+```text
+system.*
+company.view
+company.manage_status
+storage.view
+storage.usage.view
+system.audit.view
+system.catalog.manage
+system.signup.review
+system.billing.view
+dev.test_console.view where runtime_mode_dev_test_only
+```
+
+Not automatically allowed:
+
+```text
+customer sheet mutation
+customer product mutation
+customer file download
+customer private file view without explicit audited support context
+```
+
+Rules:
+
+- 시스템관리자는 고객사 내부 직원이 아니다.
+- 고객사 workspace 데이터를 임의로 수정하는 역할이 아니다.
+- 고객사 데이터 접근이 필요하면 명시적인 support/audit boundary가 있어야 한다.
+- production에서는 dev/test 도구가 차단되어야 한다.
+
+### 고객사 관리자(customer_admin)
+
+Meaning:
+
+```text
+고객사 대표 / 매장 관리자 / 회사 관리자
+```
 
 Default allowed:
 
@@ -448,9 +514,23 @@ product.delete
 sheet.cancel
 file.delete
 role.delete
+company.dangerous_setting.update
 ```
 
-### designer
+Rules:
+
+- 고객사 내부에서 가장 넓은 업무 권한을 가진다.
+- 비용/원가 보기 기본 허용.
+- 멤버/권한/회사 설정 관리 가능.
+- 실제 삭제/취소/재고보정은 확인과 이벤트 기록이 필요하다.
+
+### 디자이너(designer)
+
+Meaning:
+
+```text
+제품/스타일과 WAFL Sheet를 만들고 채우는 사람
+```
 
 Default allowed:
 
@@ -483,13 +563,13 @@ fabric.update
 accessory.view
 accessory.update
 
+factory.view
 factory.assign
 factory.instruction.generate
 
 pdf.generate
 pdf.view
 pdf.download
-pdf.share
 
 partner.view
 ```
@@ -501,6 +581,7 @@ cost.view
 fabric.order
 accessory.order
 factory.instruction.share
+pdf.share
 ```
 
 Not default:
@@ -509,66 +590,40 @@ Not default:
 member.manage
 settings.manage
 inventory.adjust
+inventory.complete
 system.*
 dev.*
 ```
 
-### production_manager
+Rules:
+
+- 디자이너는 새 Sheet 생성과 내용 작성에 최적화한다.
+- 대표 이미지/스케치/원단/부자재/공장 의도 입력은 핵심 권한이다.
+- 재고 수량 직접 보정은 기본 권한이 아니다.
+- 비용/원가 보기와 외부 공유는 고객사 설정으로 조정 가능하다.
+
+### 재고관리(inventory_manager)
+
+Meaning:
+
+```text
+입고 / 검수 / 재고 반영 담당
+```
 
 Default allowed:
 
 ```text
 product.view
 sheet.view
-sheet.update
-sheet.status.update
+sheet.status.update where status_in: inspection/completed related transitions
 
 sheet_card.view
-sheet_card.update
 sheet_card.status.update
 
 fabric.view
-fabric.order
 fabric.receive
 accessory.view
-accessory.order
 accessory.receive
-
-factory.assign
-factory.instruction.generate
-factory.instruction.share
-factory.progress.update
-factory.complete
-
-process.assign
-process.update
-process.order
-process.complete
-
-pdf.view
-pdf.download
-partner.view
-```
-
-Configurable:
-
-```text
-cost.view
-cost.update
-pdf.share
-```
-
-### inspection_manager
-
-Default allowed:
-
-```text
-product.view
-sheet.view
-sheet.status.update
-
-sheet_card.view
-sheet_card.status.update
 
 inspection.view
 inspection.update
@@ -581,8 +636,10 @@ inbound.complete
 
 inventory.view
 inventory.movement.view
+inventory.reflect
 
 file.view
+file.upload_issue_photo
 pdf.view
 partner.view
 ```
@@ -592,35 +649,33 @@ Configurable:
 ```text
 inventory.adjust
 cost.view
+sheet.update_limited
 ```
 
-### system_admin
-
-Default allowed:
+Not default:
 
 ```text
+product.create
+product.delete
+sheet.delete
+fabric.order
+accessory.order
+factory.instruction.share
+pdf.share
+member.manage
+settings.manage
 system.*
-company.view
-storage.view
-storage.usage.view
-system.audit.view
-system.catalog.manage
-```
-
-Not automatically allowed:
-
-```text
-customer sheet mutation
-customer product mutation
-customer file download
+dev.*
 ```
 
 Rules:
 
-- System admin should manage tenant/account/system state.
-- Customer workspace data access should be explicitly guarded and audited.
+- 재고관리는 디자인 정보 작성자가 아니다.
+- 주 업무는 입고, 검수, 불량, 재고 반영, 재고 이력이다.
+- 발주 결정과 외부 공유는 기본 권한이 아니다.
+- 고객사에 따라 제한적 Sheet 수정은 허용할 수 있다.
 
-### external_partner
+### 외부 공장/거래처(external share recipient)
 
 v2 alpha baseline:
 
@@ -630,7 +685,7 @@ Receives PDF/share link.
 Can view only shared artifact within expiration/permission boundary.
 ```
 
-Future portal:
+Future portal only if later approved:
 
 ```text
 partner_portal.view
@@ -693,6 +748,7 @@ Future implementation should create or update:
 ```text
 docs/project/v2/04-permission-action-codes.md
 lib/internal/action-codes.ts
+lib/internal/role-presets.ts
 lib/permissions/can.ts
 db seed for action_codes
 /functions action-code catalog
