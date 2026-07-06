@@ -348,8 +348,10 @@ Flow:
 ```text
 WAFL Sheet
 → Assistant checks share readiness
-→ generate PDF snapshot
-→ create share link if needed
+→ generate 임시 PDF preview if needed
+→ generate 검토용/공유용/최종 PDF snapshot when confirmed
+→ route PDF rendering/storage through WAFL-controlled API/Worker flow
+→ create controlled share link if needed
 → share by KakaoTalk/copy link/download
 → record event
 → track expiry/view state when supported
@@ -360,6 +362,8 @@ Rules:
 - PDF is Sheet output, not an unrelated export module.
 - Share permissions must be action-code controlled.
 - Expiry and access policy are required before real external launch.
+- R2 object access must be mediated by WAFL-controlled app/API/Worker gateway, not direct raw R2 exposure.
+- 임시 PDF and 최종/공유 PDF snapshot must be separated so preview artifacts do not become official records by accident.
 
 ### 8. Mobile field workflow
 
@@ -497,3 +501,39 @@ Implementation boundary:
 이 문서는 PDF/share 기능 명세 기준이다.
 DB migration, API route, R2 mutation, Kakao API integration, production share behavior change는 별도 Codex 작업지시문 없이는 금지한다.
 ```
+
+## 0.30.0-alpha.7 file/PDF storage feature clarification
+
+File and PDF behavior should be described as business features, not raw storage operations.
+
+Business feature names:
+
+```text
+이미지 업로드
+스케치 업로드
+첨부 추가
+PDF 미리보기
+검토용 PDF 생성
+최종 PDF 보관
+공유 링크 생성
+공유 중지
+파일 삭제/복구/영구삭제 요청
+```
+
+Implementation baseline to respect later:
+
+```text
+cloudflare/r2-upload-worker.js
+- R2 upload/download/delete Worker baseline
+
+cloudflare/pdf-generator-worker/
+- PDF Generator Worker deployment baseline
+
+Neon
+- file/pdf/share/event metadata
+
+R2
+- object bytes only, behind controlled access
+```
+
+Do not build v2 features around raw public R2 URLs or direct browser-managed storage state.

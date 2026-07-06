@@ -551,8 +551,11 @@ file_name
 mime_type
 size_bytes
 storage_key
-public_url
-thumbnail_url
+storage_gateway
+storage_status
+thumbnail_file_id nullable
+public_url_deprecated_or_null
+thumbnail_url_deprecated_or_null
 created_by
 created_at
 deleted_at
@@ -573,6 +576,10 @@ Rules:
 - Product main image and sheet sketch are not ordinary attachments.
 - Attachments are lower-level files.
 - R2 tenant isolation and deletion/restore policies must remain mandatory.
+- User-facing screens must not depend on raw R2 URLs.
+- Upload/download/delete/restore/purge behavior must be mediated by WAFL-controlled API/Worker flows.
+- `storage_gateway` should distinguish the current Worker/API pathway when implementation needs it.
+- `public_url` style fields should not be used as the default external sharing mechanism.
 
 ## PDF/share entities
 
@@ -587,6 +594,7 @@ id
 company_id
 sheet_id
 type
+lifecycle_kind
 version_no
 source_hash
 file_id
@@ -608,7 +616,11 @@ inspection_summary
 Rules:
 
 - PDF is a snapshot of Sheet state.
-- Re-generation should create a new snapshot or explicitly replace the latest snapshot according to the future PDF spec.
+- `lifecycle_kind` should distinguish `임시 PDF(temporary_preview)`, `검토용 PDF(review)`, `공유용 PDF(shared_snapshot)`, and `최종 PDF(final_snapshot)` planning states.
+- Temporary/review PDFs may be cleanup candidates.
+- Shared/final PDF snapshots are audit/history artifacts and must not be silently overwritten.
+- Re-generation should create a new snapshot/version, especially after external share.
+- PDF file bytes should be generated/stored through controlled app/API/Worker flows, not through direct browser-to-R2 assumptions.
 
 ### share_links
 
@@ -876,3 +888,42 @@ The following can be revisited before DB implementation:
 2. Whether `orders` should be generic across fabric/accessory/factory or split by work type.
 3. How deep 재고관리(inventory_manager) should go in v2 alpha versus v2 beta.
 4. Whether product category remains the existing 3-level system or becomes more flexible.
+
+## 0.30.0-alpha.7 Worker-controlled storage clarification
+
+The existing infrastructure has Cloudflare R2 and Worker-based storage flows. v2 data modeling must reflect that R2 is a backend object store, not a public user-facing file system.
+
+Current source baseline to consider before implementation:
+
+```text
+cloudflare/r2-upload-worker.js
+- active R2 upload/download/delete Worker baseline
+
+cloudflare/pdf-generator-worker/
+- current PDF Generator Worker deployment baseline
+
+cloudflare/pdf-generator-worker.js
+- deprecated/reference single-file PDF Worker entrypoint
+```
+
+Recommended planning model:
+
+```text
+files
+- metadata in Neon
+- object bytes in R2
+- storage access through WAFL-controlled API/Worker gateway
+
+pdf_snapshots
+- metadata in Neon
+- generated PDF bytes in R2
+- generation/rendering can involve PDF Generator Worker
+- upload/download/delete can involve R2 Worker or app API gateway
+
+share_links
+- metadata/token hash in Neon
+- viewer uses WAFL controlled route
+- controlled route authorizes access and then streams/proxies/redirects according to implementation policy
+```
+
+Do not design v2 as if the browser stores or deletes raw R2 objects by itself. Any future DB migration or Worker change requires a separate Codex work order and explicit dev/test/production guard.

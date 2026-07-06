@@ -657,3 +657,62 @@ Sheet 열기
 - Show whether a PDF is current or stale after Sheet changes.
 - Show share link expiry/revocation state.
 - Keep external recipient handling link-based in alpha.
+
+## 0.30.0-alpha.7 PDF/Worker lifecycle screen implications
+
+The screen must not imply that users directly upload to or delete from R2. User-facing labels should describe business actions, while implementation uses controlled app/API/Worker gateways.
+
+Recommended labels:
+
+```text
+이미지 올리기
+스케치 올리기
+PDF 미리보기
+검토용 PDF 만들기
+최종 PDF로 보관
+공유 링크 만들기
+공유 중지
+삭제 요청
+```
+
+Avoid user-facing labels such as:
+
+```text
+R2 업로드
+Worker PUT
+object key 삭제
+signed URL 복사
+```
+
+PDF/share card should show lifecycle state:
+
+```text
+임시 PDF
+- 미리보기/검토 중
+- 외부 공유 전
+
+검토용 PDF
+- 내부 확인용
+
+공유용 PDF
+- 외부 링크 연결됨
+- 만료일/열람 상태 표시
+
+최종 PDF
+- 공식 보관본
+- 재생성 시 새 버전 생성
+
+만료/폐기 PDF
+- 외부 접근 불가
+```
+
+Assistant examples:
+
+```text
+임시 PDF가 있습니다. 최종 PDF로 보관하거나 다시 생성할 수 있습니다.
+Sheet가 최종 PDF 생성 후 변경되었습니다. 새 PDF를 생성하세요.
+공유 링크가 만료되었습니다. 새 공유 링크를 만들 수 있습니다.
+삭제는 보관 정책에 따라 처리됩니다.
+```
+
+This is a screen/spec clarification only. It does not implement upload, delete, PDF generation, or Worker changes.

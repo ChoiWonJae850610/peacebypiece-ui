@@ -1,3 +1,89 @@
+# 0.30.0-alpha.7 WAFL v2 PDF / Worker / Lifecycle Clarification
+
+- Current GPT checkpoint: `0.30.0-alpha.7`.
+- Baseline source before this patch: `peacebypiece-ui-0.30.0-alpha.6.zip` with matching repo-state `repo-state-0.30.0-alpha.6-20260706-222713.txt`.
+- Repo-state baseline: `master = origin/master`, working tree clean, pushed, `APP_VERSION: 0.30.0-alpha.6`.
+- Build baseline: owner-provided build log passed Next.js production build, TypeScript, and static generation.
+- This patch clarifies the existing PDF/share baseline. It is documentation only.
+- New version line: `0.30.0-alpha.7`.
+
+## 0.30.0-alpha.7 owner clarification
+
+The owner clarified that WAFL should not be documented as if the browser or app directly manages raw R2 objects. Existing project structure includes Cloudflare Worker files for R2 upload/download/delete mediation and a separate PDF Generator Worker baseline.
+
+Confirmed planning direction:
+
+1. Cloudflare R2 remains the object storage platform, but R2 must be treated as a controlled storage backend, not a public user-facing file surface.
+2. Upload, download/view, delete, restore, purge, and PDF generation flows must go through WAFL-controlled server/API/Worker gateways.
+3. The existing `cloudflare/r2-upload-worker.js` is the active R2 upload/download/delete Worker baseline and must be considered before v2 storage implementation.
+4. The existing `cloudflare/pdf-generator-worker/` folder is the current PDF Generator Worker deployment baseline. The old single-file `cloudflare/pdf-generator-worker.js` remains deprecated/reference only unless a later Worker audit changes that status.
+5. PDF lifecycle must distinguish draft/temporary PDFs from final/shared PDF snapshots.
+6. A shared/final PDF snapshot must not be silently overwritten. Regeneration creates a new snapshot/version.
+7. Temporary PDFs are preview/review artifacts and may be cleanup candidates; final/shared PDFs are audit/history artifacts.
+
+## Updated v2 canonical read order
+
+For WAFL v2 design and later implementation work, read in this order:
+
+1. `AGENTS.md`
+2. `docs/codex-current-state.md`
+3. `docs/project/v2/00-start-here.md`
+4. `docs/project/v2/01-product-definition.md`
+5. `docs/project/v2/02-ui-philosophy.md`
+6. `docs/project/v2/03-data-model.md`
+7. `docs/project/v2/04-permission-action-codes.md`
+8. `docs/project/v2/05-status-workflow.md`
+9. `docs/project/v2/06-screen-spec.md`
+10. `docs/project/v2/07-design-system.md`
+11. `docs/project/v2/08-feature-spec.md`
+12. `docs/project/v2/11-pdf-share-spec.md`
+13. `docs/project/10-r2-storage-policy.md` before any R2 key/upload/delete implementation.
+14. `cloudflare/README.md`, `cloudflare/r2-upload-worker.js`, and `cloudflare/pdf-generator-worker/README.md` before any Worker implementation.
+15. Operational guardrail documents such as encoding, production guard, evidence standard, patch packaging, and test automation documents.
+16. v1 documents only when explicitly needed for historical or operational reference.
+
+## 0.30.0-alpha.7 implementation boundary
+
+Allowed in this checkpoint:
+
+- Clarify PDF/share document wording around Worker-controlled R2 access.
+- Clarify temporary/final PDF lifecycle and metadata.
+- Synchronize v2 read-order and screen/feature/data references.
+- Update `lib/constants/version.ts` to `0.30.0-alpha.7`.
+
+Not allowed in this checkpoint:
+
+- Worker code changes.
+- Cloudflare deployment changes.
+- PDF generator implementation changes.
+- Share-link API implementation.
+- DB migration.
+- R2/storage mutation.
+- Workspace route replacement.
+- Production behavior change.
+- Package changes.
+- Deleting or moving old 0.24.x documents.
+
+## Updated 12-point Codex handoff progress after 0.30.0-alpha.7
+
+```text
+1. WAFL v2 product definition fixed: done
+2. Center objects Product / Sheet / SheetCard fixed: done
+3. Main IA and screen model drafted: done
+4. DB table baseline drafted: done, Neon/R2/Worker baseline clarified by 0.30.0-alpha.7
+5. Permission action code catalog drafted: done, Korean role set clarified in 0.30.0-alpha.4
+6. Status model drafted: done, Korean labels clarified in 0.30.0-alpha.4
+7. PDF/share method: done, Worker-controlled storage and temporary/final PDF lifecycle clarified in 0.30.0-alpha.7
+8. /ui design-system component set: done in 0.30.0-alpha.5
+9. Seed/test scenarios: pending
+10. v1 keep/rewrite/archive rules: first baseline done, detailed archive plan pending
+11. Codex read order: updated, Worker/R2 docs added to implementation read order
+12. 0.30 roadmap: pending
+```
+
+Next GPT-side checkpoint should be `0.30.0-alpha.8` for seed/test scenarios or v1 keep/rewrite/archive detail, unless another owner clarification is needed first.
+
+
 # 0.30.0-alpha.6 WAFL v2 PDF / Share Baseline
 
 - Current GPT checkpoint: `0.30.0-alpha.6`.

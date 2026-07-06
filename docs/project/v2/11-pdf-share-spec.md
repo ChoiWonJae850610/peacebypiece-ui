@@ -1,4 +1,4 @@
-# WAFL v2 PDF / Share Spec - 0.30.0-alpha.6
+# WAFL v2 PDF / Share Spec - 0.30.0-alpha.7
 
 ## Purpose
 
@@ -45,6 +45,88 @@ PDF/share v2 planning assumes:
 - Representative image, sketch, attachment, and generated PDF files are R2 objects.
 - Share links are stored in Neon and point to controlled viewer/download routes.
 - No production share link or R2 object may be created by this document alone.
+
+## Worker-controlled storage baseline
+
+R2 must not be described as if the browser or user-facing app directly owns file upload/delete/view behavior.
+
+Current repository baseline:
+
+```text
+cloudflare/r2-upload-worker.js
+- active R2 upload/download/delete Worker baseline
+- mediates signed/authorized PUT, GET, DELETE style access according to existing policy
+
+cloudflare/pdf-generator-worker/
+- current PDF Generator Worker deployment baseline
+- uses the Worker package/Wrangler folder as the active deployment source
+
+cloudflare/pdf-generator-worker.js
+- deprecated/reference single-file PDF Worker entrypoint
+- not the new deployment baseline unless a future audit changes that decision
+```
+
+Planning rule:
+
+```text
+User/browser
+-> WAFL app/API or Worker-controlled request
+-> permission check and company scope check
+-> Neon metadata update
+-> R2 object write/read/delete through controlled gateway
+-> event/audit record
+```
+
+Do not expose raw R2 URLs, bucket names, object keys, signed URLs, upload secrets, Worker secrets, or internal tokens to normal users or external recipients.
+
+Implementation may later choose a combination of Next.js API routes and Cloudflare Workers, but the business rule is fixed: R2 is a backend storage layer behind WAFL-controlled access.
+
+## PDF lifecycle classes
+
+WAFL v2 must distinguish PDF lifecycle classes. This is separate from the PDF type such as 작업지시서 PDF or 공장전달 PDF.
+
+```text
+임시 PDF(temporary_preview)
+- generated for preview while the Sheet is still being edited
+- not an official external delivery artifact by default
+- may have short retention
+- may be automatically cleaned up
+- should not be treated as final business evidence
+
+검토용 PDF(review)
+- generated for internal review before external share
+- can be downloaded internally if permission allows
+- not external by default
+
+공유용 PDF(shared_snapshot)
+- generated or selected for external share
+- connected to share link metadata
+- must create event/audit records
+- must not be silently overwritten
+
+최종 PDF(final_snapshot)
+- official retained version for field delivery, dispute prevention, or history
+- stored as a PDF snapshot
+- retained according to customer/storage policy
+- regeneration creates a new version/snapshot
+
+폐기/만료 PDF(revoked_or_expired)
+- no longer active for external access
+- underlying object retention or purge follows storage policy
+```
+
+A user may generate many 임시 PDFs while editing. That must not produce many official final documents. A PDF becomes a stronger business artifact when it is shared externally, marked final, or tied to a retained snapshot.
+
+Recommended metadata addition:
+
+```text
+pdf_snapshots.lifecycle_kind
+- temporary_preview
+- review
+- shared_snapshot
+- final_snapshot
+- revoked_or_expired
+```
 
 ## Korean-first language rule
 
@@ -204,7 +286,10 @@ Recommended snapshot status:
 
 ```text
 생성중(generating)
-생성완료(generated)
+임시생성됨(temporary_generated)
+검토용(review_ready)
+공유됨(shared)
+최종보관(finalized)
 생성실패(failed)
 폐기됨(revoked)
 만료됨(expired)
@@ -402,6 +487,24 @@ Cost visibility must follow `cost.view`.
 
 Do not include cost fields in external PDFs unless a later explicit policy allows it.
 
+## Worker/R2 access rule
+
+R2 object keys are backend implementation details. Normal screens and external links should never show them.
+
+Required access principle:
+
+```text
+Upload: WAFL app/API -> signed/authorized Worker/API flow -> R2
+View/download: WAFL controlled route -> permission/share check -> Worker/API-backed object access
+Delete: WAFL app/API -> permission/storage policy check -> Worker/API delete or trash flow
+Restore: WAFL app/API -> metadata/object policy check -> controlled restore flow
+Purge: system/admin guarded flow only, never casual user action
+```
+
+The current active Worker baseline for R2 upload/download/delete is `cloudflare/r2-upload-worker.js`. Any v2 implementation must inspect and reconcile that Worker before changing storage behavior.
+
+The current PDF Generator Worker baseline is `cloudflare/pdf-generator-worker/`. Generated PDF bytes may be produced through that Worker and then stored through the controlled R2 path, depending on implementation design.
+
 ## R2 object-key rule
 
 R2 object keys should remain tenant-scoped and non-guessable.
@@ -519,7 +622,7 @@ Available actions:
 
 Do not silently overwrite an already-shared PDF snapshot.
 
-Regeneration should create a new snapshot.
+Regeneration should create a new snapshot. For temporary preview PDFs, implementation may replace or clean up temporary artifacts if metadata and events make it clear they were not external/final business records.
 
 ## Failure rules
 
@@ -529,7 +632,7 @@ Examples:
 
 ```text
 - 이미지 로딩 실패
-- R2 upload 실패
+- R2 Worker/API upload 실패
 - PDF renderer 실패
 - 권한 없음
 - share link 생성 실패
@@ -552,7 +655,7 @@ Internal logs should include enough metadata for support without exposing secret
 - Store generated PDFs as snapshots.
 - Use controlled share links.
 - Use Korean-first labels.
-- Keep R2 details hidden from users.
+- Keep R2 and Worker access details hidden from users.
 - Track generation/share/view/revoke events.
 - Let Assistant warn/confirm/block by risk.
 
@@ -562,6 +665,7 @@ Internal logs should include enough metadata for support without exposing secret
 - Do not silently mutate shared PDF snapshots.
 - Do not include internal cost fields in external PDFs by default.
 - Do not force a full form completion before every PDF.
+- Do not bypass the Worker/API-controlled storage path with direct raw R2 access.
 - Do not build Kakao API integration before the basic share-link workflow is stable.
 - Do not let external recipients become full app roles during alpha unless explicitly decided.
 
