@@ -1,3 +1,84 @@
+# 0.30.0-alpha.1 WAFL v2 Design Baseline Start
+
+- Current GPT checkpoint: `0.30.0-alpha.1`.
+- Baseline source before this patch: `peacebypiece-ui-0.24.34.14.zip` with matching repo-state `repo-state-0.24.34.14-20260705-195710.txt`.
+- Repo-state baseline: `master = origin/master`, working tree clean, pushed, `APP_VERSION: 0.24.34.14`.
+- Build baseline: owner-provided build log passed Next.js production build, TypeScript, and static generation.
+- This patch starts the WAFL v2 redesign line as a document/design checkpoint. It does not implement DB migration, API changes, UI route rewrites, R2 mutations, production behavior changes, or source file moves.
+- New version line: `0.30.0-alpha.1`.
+- Product direction: WAFL is no longer defined primarily as a workorder program. WAFL v2 is defined as a clothing-production card workspace centered on Product/Style, WAFL Sheet, and Sheet Card.
+
+## 0.30.0-alpha.1 confirmed owner decisions
+
+These decisions are confirmed for the first WAFL v2 design baseline and must not be re-asked unless the owner explicitly reopens them:
+
+1. The top-level business object is `Product / Style`.
+   - DB/development language: `products`.
+   - User-facing Korean language: `제품` or `스타일` depending on screen context.
+2. `WAFL Sheet` is the central screen/document object.
+   - The app may still use `작업지시서` in PDF/field-facing contexts.
+   - Preferred app framing: `WAFL Sheet`, not a traditional ERP-style workorder form.
+3. Fabric/accessory/factory/order work should move into Sheet cards and card actions.
+   - Independent material-order screens may remain as secondary inquiry/management screens.
+   - They must not be the main user flow in v2.
+4. New Sheet creation should be lightweight.
+   - Minimum: product name and quantity.
+   - Main image/sketch is strongly recommended but not always required at creation time.
+   - Missing information should be surfaced by Assistant after creation.
+5. Assistant behavior should be risk-based.
+   - Do not block every incomplete state.
+   - Use warning/confirmation/blocking based on business risk.
+   - The Assistant is a guide, not an ERP controller.
+
+## WAFL v2 canonical document read order
+
+For WAFL v2 work, Codex and GPT-side implementation prompts must read in this order:
+
+1. `AGENTS.md`
+2. `docs/codex-current-state.md`
+3. `docs/project/v2/00-start-here.md`
+4. `docs/project/v2/01-product-definition.md`
+5. `docs/project/v2/06-screen-spec.md`
+6. Future v2 canonical documents as they are added, including data model, permission action codes, status workflow, design system, feature spec, test plan, PDF/share spec, and roadmap.
+7. `docs/project/25-korean-unicode-encoding-standard.md`
+8. `docs/project/32-product-completion-and-ui-evidence-standard.md`
+9. v1/0.24.x documents only when explicitly needed for operational, packaging, guardrail, or historical reference.
+
+## 0.30.0-alpha.1 implementation boundary
+
+This patch is design/documentation only.
+
+Allowed in this checkpoint:
+
+- Add `docs/project/v2/` canonical design documents.
+- Update `docs/codex-current-state.md` with the v2 transition baseline.
+- Update `lib/constants/version.ts` to `0.30.0-alpha.1`.
+- Keep existing operational guardrails intact.
+
+Not allowed in this checkpoint:
+
+- DB migration.
+- API implementation.
+- Workspace route replacement.
+- System-admin route replacement.
+- R2/storage mutation.
+- Production behavior change.
+- Deleting or moving old 0.24.x documents.
+- Implementing `/ui`, `/functions`, or `/roadmap` changes beyond future documented planning.
+
+## Patch packaging contract reminder
+
+GPT/Codex generated patch ZIPs must use flat ZIP structure and the `commit-meta.md` token contract below:
+
+- `Version :`
+- `Summary :`
+- `Description :`
+- `수정 파일 목록 :`
+- `추가 파일 목록 :`
+- `삭제 파일 목록 :`
+
+Do not use the old `변경 파일 목록 :` token. The modified/added file lists must match the actual patch files included in the ZIP after path encoding.
+
 # 0.24.34.14 Codex 0.24.35 Start Gate
 
 - Current GPT checkpoint: `0.24.34.14`.
