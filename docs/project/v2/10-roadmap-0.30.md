@@ -1,4 +1,4 @@
-# WAFL v2 Roadmap 0.30 - 0.30.0-alpha.10
+# WAFL v2 Roadmap 0.30 - 0.30.0-alpha.11
 
 ## Purpose
 
@@ -103,20 +103,31 @@ Status: done.
 
 ### 0.30.0-alpha.10 - Document governance and Codex-entry baseline
 
-Status: current.
+Status: done.
 
 - v1 keep/rewrite/archive classification.
 - active v2 Codex read order.
 - 0.30 roadmap.
 - Codex working rules.
 
+### 0.30.0-alpha.11 - v1-docs gap review baseline
+
+Status: current.
+
+- Compare v2 first-pass documents with existing v1/pre-v2 project docs.
+- Confirm v2 product direction while preserving confirmed SaaS, DB, R2, PDF, billing, signup, deletion, QA, and production safety policies.
+- Add `docs/project/v2/13-v1-gap-review.md`.
+- Record v1 workorder-domain to v2 Product/Sheet/Card mapping.
+- Identify blockers before broad Codex implementation.
+
 ## Next recommended sequence
 
-### 0.30.0-alpha.11 - GPT consolidated design review
+### 0.30.0-alpha.12 - Gap-review findings absorption
 
 Recommended mode: GPT high reasoning.
 
 Scope:
+
 
 - Review all `docs/project/v2/*` for contradictions.
 - Confirm Korean labels.

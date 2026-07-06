@@ -1,4 +1,4 @@
-# WAFL v2 Start Here - 0.30.0-alpha.10
+# WAFL v2 Start Here - 0.30.0-alpha.11
 
 ## Purpose
 
@@ -103,9 +103,25 @@ docs/project/v2/
   10-roadmap-0.30.md
   11-pdf-share-spec.md
   12-codex-working-rules.md
+  13-v1-gap-review.md
 ```
 
 The baseline documents are now expanded with product definition, UI philosophy, role/workflow scenarios, data model, permission action codes, status workflow, design-system standard, PDF/share baseline, Worker-controlled storage lifecycle, and the first mobile-web test-plan baseline. Later patches should still complete seed data scenarios, detailed v1 keep/rewrite/archive planning, 0.30 roadmap, and Codex working rules before major implementation.
+
+## v1-docs gap review checkpoint
+
+`0.30.0-alpha.11` adds `docs/project/v2/13-v1-gap-review.md`.
+
+This review compares the v2 first-pass redesign documents with the existing pre-v2 project documents. The review confirms the v2 product direction, but also records that confirmed business, signup, billing, storage, DB safety, R2, PDF, deletion, QA, and production guard policies remain active unless a v2 document explicitly supersedes them.
+
+Implementation rule:
+
+```text
+Do not treat old workorder-centered screen assumptions as v2 authority.
+Do not discard confirmed SaaS/operation/security policies from v1 documents.
+```
+
+Before any broad implementation, Codex must read the gap review and check whether the target work touches preserved operational policy.
 
 ## v2 read order
 

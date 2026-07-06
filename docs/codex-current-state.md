@@ -1,3 +1,61 @@
+# 0.30.0-alpha.11 WAFL v2 v1-docs Gap Review Baseline
+
+- Current GPT checkpoint: `0.30.0-alpha.11`.
+- Baseline source before this patch: `peacebypiece-ui-0.30.0-alpha.10.zip` with matching repo-state `repo-state-0.30.0-alpha.10-20260706-224807.txt`.
+- Repo-state baseline: `master = origin/master`, working tree clean, pushed, `APP_VERSION: 0.30.0-alpha.10`.
+- Build baseline: owner-provided build log passed Next.js production build, TypeScript, and static generation.
+- This patch records the v1-docs vs v2-docs gap review. It is documentation only.
+- New version line: `0.30.0-alpha.11`.
+
+## 0.30.0-alpha.11 checkpoint
+
+The owner asked to compare the first-pass v2 design with the existing docs before Codex implementation. This checkpoint records the gap review in `docs/project/v2/13-v1-gap-review.md`.
+
+Important conclusion:
+
+```text
+v2 replaces the product center and screen model.
+v2 does not erase confirmed commercial, signup, billing, storage, deletion, DB safety, R2, PDF, QA, or production guard policies.
+```
+
+The review identifies required v2 absorption areas:
+
+```text
+- signup / consent / Trial / approval / provisioning
+- plan / billing / storage quota / storage add-on
+- Neon source-of-truth and safe migration
+- R2 / Worker / file lifecycle
+- system default catalog / size / unit
+- system-admin and customer-admin operations
+- company export / deletion / restore / purge
+- product completion evidence
+- PowerShell/dev-test automation follow-up
+- v1 workorder route/domain to v2 Sheet/Card mapping
+```
+
+## Active v2 Codex read order
+
+1. `AGENTS.md`
+2. `docs/codex-current-state.md`
+3. `docs/project/v2/00-start-here.md`
+4. `docs/project/v2/01-product-definition.md`
+5. `docs/project/v2/02-ui-philosophy.md`
+6. `docs/project/v2/03-data-model.md`
+7. `docs/project/v2/04-permission-action-codes.md`
+8. `docs/project/v2/05-status-workflow.md`
+9. `docs/project/v2/06-screen-spec.md`
+10. `docs/project/v2/07-design-system.md`
+11. `docs/project/v2/08-feature-spec.md`
+12. `docs/project/v2/09-test-plan.md`
+13. `docs/project/v2/10-roadmap-0.30.md`
+14. `docs/project/v2/11-pdf-share-spec.md`
+15. `docs/project/v2/12-codex-working-rules.md`
+16. `docs/project/v2/13-v1-gap-review.md`
+17. `docs/project/25-korean-unicode-encoding-standard.md`
+18. `docs/project/32-product-completion-and-ui-evidence-standard.md`
+
+---
+
 # 0.30.0-alpha.10 WAFL v2 Document Governance and Roadmap Baseline
 
 - Current GPT checkpoint: `0.30.0-alpha.10`.

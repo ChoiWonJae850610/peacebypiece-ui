@@ -1,4 +1,4 @@
-# WAFL v2 Codex Working Rules - 0.30.0-alpha.10
+# WAFL v2 Codex Working Rules - 0.30.0-alpha.11
 
 ## Purpose
 
@@ -25,10 +25,34 @@ Before any v2 file modification, read:
 13. `docs/project/v2/10-roadmap-0.30.md`
 14. `docs/project/v2/11-pdf-share-spec.md`
 15. `docs/project/v2/12-codex-working-rules.md`
-16. `docs/project/25-korean-unicode-encoding-standard.md`
-17. `docs/project/32-product-completion-and-ui-evidence-standard.md`
+16. `docs/project/v2/13-v1-gap-review.md`
+17. `docs/project/25-korean-unicode-encoding-standard.md`
+18. `docs/project/32-product-completion-and-ui-evidence-standard.md`
 
 Read v1 documents only when the work order asks for them or when operational safety requires them.
+
+## v1 gap review rule
+
+`docs/project/v2/13-v1-gap-review.md` is required reading before implementation work that touches:
+
+```text
+signup / Trial / provisioning
+plan / billing / storage quota
+Neon DB schema or migration
+R2 / Worker / files / PDF
+system catalog / sizes / units
+admin operations
+company export / deletion / restore / purge
+QA evidence or PowerShell automation
+existing workorder/material/order route replacement
+```
+
+Rule:
+
+```text
+Old workorder-centered screen assumptions are not v2 authority.
+Confirmed SaaS, security, DB, R2, PDF, billing, signup, deletion, QA, and production guard policies remain active until explicitly replaced by a v2 document.
+```
 
 ## v1 document classification
 
@@ -227,4 +251,16 @@ Codex must always preserve the v2 principle:
 
 ```text
 WAFL v2 = 옷 하나를 만들기 위한 카드형 제작 워크스페이스
+```
+
+
+## Confirmed policy preservation clarification
+
+`docs/project/26-final-policy-decisions-and-master-todo.md` is workorder/productization-era, but it contains confirmed business policy. Do not treat it as disposable.
+
+Use this rule:
+
+```text
+Product/screen assumptions from 0.24.x are rewrite/reference.
+Confirmed business, billing, signup, storage, deletion, legal-review, catalog, support, and operations policies remain active until a v2 replacement explicitly supersedes them.
 ```

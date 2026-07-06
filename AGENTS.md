@@ -213,3 +213,9 @@
 - Before finishing any patch that touches Korean paths or text, run `node tests/unicode-encoding-contract.mjs`. For PowerShell changes, also run `node tests/pipeline-powershell-encoding-contract.mjs`.
 - Patch ZIPs and full handoff ZIPs must preserve Unicode entry names. Verify Korean paths after ZIP creation before delivery.
 - The canonical detailed standard is `docs/project/25-korean-unicode-encoding-standard.md`.
+
+## WAFL v2 0.30.0-alpha.11 gap review rule
+
+For WAFL v2 implementation work, `docs/project/v2/13-v1-gap-review.md` must be read after `docs/project/v2/12-codex-working-rules.md`.
+
+The gap review clarifies that v2 replaces the Product/Sheet/Card product center, but it does not discard confirmed business, signup, billing, storage, DB, R2, PDF, deletion, QA, and production safety policies from existing project docs.
