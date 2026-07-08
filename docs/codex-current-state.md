@@ -1,3 +1,33 @@
+# 2.0.0-alpha.1 WAFL v2 App-first Transition Documentation
+
+- Current GPT checkpoint: `2.0.0-alpha.1`.
+- Baseline source before this patch: repository `APP_VERSION: 0.30.0-alpha.27`.
+- Baseline commit: `a35a4e0f1ccb714f5146cd5a29aeb973c025fdc7`.
+- `0.30.0-alpha.27` is the final committed/pushed `/ui` production-card design baseline before the App-first transition.
+- This patch starts the WAFL v2 App-first line.
+- Customer-facing product direction moves to Expo React Native mobile/tablet app first.
+- Next.js remains for system admin, customer admin advanced settings, operations, API, file/PDF/R2/Worker integration, `/ui` design showroom, internal docs, and test console.
+- This patch is documentation and version alignment only.
+- No Expo project is created in this patch.
+- New version line: `2.0.0-alpha.1`.
+
+Explicitly not changed:
+
+```text
+- DB migration
+- API route
+- Neon schema
+- R2 Worker
+- PDF Worker
+- real app implementation
+- Expo skeleton
+- package dependency
+- lockfile
+- production behavior
+```
+
+---
+
 # 0.30.0-alpha.27 WAFL v2 /ui Image/Attachment Compression and Output/Share Delivery Correction
 
 - Current GPT checkpoint: `0.30.0-alpha.27`.

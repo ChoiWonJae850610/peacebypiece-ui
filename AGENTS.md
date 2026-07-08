@@ -1,5 +1,31 @@
 # Codex Operating Rules
 
+## WAFL v2 App-first 2.0 Read Order
+- For WAFL v2 App-first / `2.0.x` work, Codex must read this order before any file modification:
+  1. `AGENTS.md`
+  2. `docs/codex-current-state.md`
+  3. `docs/project/app-v2/00-start-here.md`
+  4. `docs/project/app-v2/01-app-first-product-definition.md`
+  5. `docs/project/app-v2/02-mobile-tablet-ux-principles.md`
+  6. `docs/project/app-v2/03-app-architecture.md`
+  7. `docs/project/app-v2/04-auth-google-apple.md`
+  8. `docs/project/app-v2/05-device-test-plan.md`
+  9. `docs/project/app-v2/06-expo-environment-setup.md`
+  10. `docs/project/app-v2/07-feature-map-from-ui-alpha27.md`
+  11. `docs/project/app-v2/08-roadmap-2.0.md`
+  12. `docs/project/app-v2/09-codex-working-rules.md`
+  13. `docs/project/v2/00-start-here.md` through `docs/project/v2/14-operational-policy-absorption.md`
+  14. `docs/project/25-korean-unicode-encoding-standard.md`
+  15. `docs/project/32-product-completion-and-ui-evidence-standard.md`
+  16. `docs/project/26-final-policy-decisions-and-master-todo.md`
+  17. `docs/project/31-pre-codex-integrated-master-plan.md`
+- `docs/project/app-v2/*` is the priority authority for the `2.0.x` App-first line.
+- Existing `docs/project/v2/*` documents are not deleted. They remain the `0.30.x` `/ui` design baseline and preserved policy reference for Product, Sheet/Card, Korean role labels, Neon/R2/Worker, PDF/share, mobile-web, and QA rules.
+- `/ui` remains an implementation-baseline design showroom. It is not the customer-facing app target.
+- The customer-facing UI direction is Expo React Native first.
+- Next.js remains for system admin, customer admin advanced settings, operations, API, document, internal showroom, and test-console flows.
+- For `2.0.x` work, do not implement from old `0.24.x` workorder-centric documents when they conflict with the App-first product direction or the active `app-v2` documents.
+
 ## WAFL v2 0.30 Redesign Read Order
 - For WAFL v2 / `0.30.x` redesign work, Codex must read this order before any file modification:
   1. `AGENTS.md`
