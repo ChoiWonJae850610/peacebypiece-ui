@@ -38,6 +38,8 @@
   ],
   "exclude": [
     "node_modules",
+    "apps/mobile",
+    "apps/mobile/node_modules",
     ".next/dev"
   ]
 }

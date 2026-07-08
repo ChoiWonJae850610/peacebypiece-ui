@@ -35,11 +35,12 @@ Before any App-first file modification, read:
 10. `docs/project/app-v2/07-feature-map-from-ui-alpha27.md`
 11. `docs/project/app-v2/08-roadmap-2.0.md`
 12. `docs/project/app-v2/09-codex-working-rules.md`
-13. `docs/project/v2/00-start-here.md` through `docs/project/v2/14-operational-policy-absorption.md`
-14. `docs/project/25-korean-unicode-encoding-standard.md`
-15. `docs/project/32-product-completion-and-ui-evidence-standard.md`
-16. `docs/project/26-final-policy-decisions-and-master-todo.md`
-17. `docs/project/31-pre-codex-integrated-master-plan.md`
+13. `docs/project/app-v2/10-public-landing-site.md`
+14. `docs/project/v2/00-start-here.md` through `docs/project/v2/14-operational-policy-absorption.md`
+15. `docs/project/25-korean-unicode-encoding-standard.md`
+16. `docs/project/32-product-completion-and-ui-evidence-standard.md`
+17. `docs/project/26-final-policy-decisions-and-master-todo.md`
+18. `docs/project/31-pre-codex-integrated-master-plan.md`
 
 ## 4. Newest rule
 
@@ -84,6 +85,30 @@ pnpm-workspace.yaml
 
 Do not create `mobile/`, `apps/mobile/`, or an Expo project before the `2.0.0-alpha.2` skeleton work order.
 
+For `2.0.0-alpha.2`, `apps/mobile` is explicitly allowed as a standalone Expo skeleton. Allowed files are limited to:
+
+```text
+apps/mobile/package.json
+apps/mobile/package-lock.json
+apps/mobile/app.json or app.config.*
+apps/mobile/tsconfig.json
+apps/mobile/expo-env.d.ts
+apps/mobile/app/**
+apps/mobile/assets/**
+apps/mobile/components/**
+apps/mobile/constants/**
+apps/mobile/README.md
+```
+
+Do not create a root workspace, root lockfile change, or root package metadata change for the mobile skeleton.
+
+## Route boundary for App-first
+
+- `www.wafl.co.kr` is the public app landing site.
+- `/ui`, `/roadmap`, and `/functions` are localhost-only development check routes.
+- These routes must be blocked on production domains, Vercel preview hosts, and `www.wafl.co.kr`.
+- `/system` and `/workspace` are long-term removal targets, but must not be deleted without a separate explicit replacement/removal work order.
+
 ## Verification baseline
 
 Prefer the project pipeline wrapper when it covers the scope:
@@ -103,3 +128,10 @@ node tests/unicode-encoding-contract.mjs
 ```
 
 Do not run destructive DB/R2/Worker commands for App-first documentation work.
+
+For the mobile skeleton, run mobile checks from `apps/mobile` when dependencies are installed:
+
+```text
+npm run typecheck
+npm run expo:config
+```

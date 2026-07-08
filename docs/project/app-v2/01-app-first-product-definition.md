@@ -16,7 +16,22 @@ The customer product should feel like something used directly on a device in the
 
 The priority target is Expo React Native.
 
-PC web is not the primary customer UI. It remains important for customer-admin advanced settings, operations, internal tools, and back-office style work.
+PC web is not the primary customer product UI.
+
+All real customer product roles enter through the app direction:
+
+- 시스템관리자
+- 고객사 관리자
+- 디자이너
+- 재고관리
+
+Designated Google or Apple accounts may be mapped to 시스템관리자 in later auth work, but this alpha.2 skeleton does not implement real login.
+
+Next.js remains important for the public landing site, API/server integration, file/PDF/R2/Worker boundaries, internal localhost development checks, and remaining legacy/admin surfaces during transition.
+
+`/system` and `/workspace` are long-term product removal targets. They must be deprecated in phases only after the app replaces their duties.
+
+`/ui`, `/roadmap`, and `/functions` are not customer product screens in the App-first line. They are localhost-only development check routes.
 
 ## Login direction
 
@@ -31,13 +46,14 @@ Email/password-only app identity is not the preferred App-first direction unless
 
 This document does not create or implement:
 
-- Expo app skeleton.
 - native auth configuration.
 - Apple Developer Program setup.
 - Google Play Console setup.
 - production OAuth credentials.
 - DB schema changes.
 - API changes.
+
+The first Expo skeleton is created in `apps/mobile` by `2.0.0-alpha.2`, but it is mock-only and does not connect to real auth, camera, files, sharing, DB, API, R2, Worker, or PDF generation.
 
 Those decisions belong to later implementation phases.
 

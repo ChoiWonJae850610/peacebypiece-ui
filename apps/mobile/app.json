@@ -1,0 +1,29 @@
+{
+  "expo": {
+    "name": "WAFL",
+    "slug": "wafl-mobile",
+    "version": "2.0.0-alpha.2",
+    "scheme": "wafl",
+    "orientation": "default",
+    "userInterfaceStyle": "light",
+    "newArchEnabled": true,
+    "plugins": ["expo-router"],
+    "experiments": {
+      "typedRoutes": true
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "kr.co.wafl.app.dev"
+    },
+    "android": {
+      "package": "kr.co.wafl.app.dev",
+      "adaptiveIcon": {
+        "backgroundColor": "#f7f4ed"
+      }
+    },
+    "extra": {
+      "appVersion": "2.0.0-alpha.2",
+      "mockOnly": true
+    }
+  }
+}

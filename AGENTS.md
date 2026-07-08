@@ -14,13 +14,17 @@
   10. `docs/project/app-v2/07-feature-map-from-ui-alpha27.md`
   11. `docs/project/app-v2/08-roadmap-2.0.md`
   12. `docs/project/app-v2/09-codex-working-rules.md`
-  13. `docs/project/v2/00-start-here.md` through `docs/project/v2/14-operational-policy-absorption.md`
-  14. `docs/project/25-korean-unicode-encoding-standard.md`
-  15. `docs/project/32-product-completion-and-ui-evidence-standard.md`
-  16. `docs/project/26-final-policy-decisions-and-master-todo.md`
-  17. `docs/project/31-pre-codex-integrated-master-plan.md`
+  13. `docs/project/app-v2/10-public-landing-site.md`
+  14. `docs/project/v2/00-start-here.md` through `docs/project/v2/14-operational-policy-absorption.md`
+  15. `docs/project/25-korean-unicode-encoding-standard.md`
+  16. `docs/project/32-product-completion-and-ui-evidence-standard.md`
+  17. `docs/project/26-final-policy-decisions-and-master-todo.md`
+  18. `docs/project/31-pre-codex-integrated-master-plan.md`
 - `docs/project/app-v2/*` is the priority authority for the `2.0.x` App-first line.
 - Existing `docs/project/v2/*` documents are not deleted. They remain the `0.30.x` `/ui` design baseline and preserved policy reference for Product, Sheet/Card, Korean role labels, Neon/R2/Worker, PDF/share, mobile-web, and QA rules.
+- `www.wafl.co.kr` is the public marketing, download, pricing, examples, inquiry, trial-request, and waitlist landing site for the WAFL app.
+- `/ui`, `/roadmap`, and `/functions` are localhost-only development check routes for `2.0.x`. They must not be exposed on production domains, Vercel preview hosts, or `www.wafl.co.kr`.
+- `/system` and `/workspace` are long-term removal targets in the App-first product direction, but do not delete them until a separate phased deprecation, guard/hidden, and removal work order replaces their remaining duties.
 - `/ui` remains an implementation-baseline design showroom. It is not the customer-facing app target.
 - The customer-facing UI direction is Expo React Native first.
 - Next.js remains for system admin, customer admin advanced settings, operations, API, document, internal showroom, and test-console flows.

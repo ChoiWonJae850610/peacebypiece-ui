@@ -5,9 +5,21 @@
 This document starts the WAFL v2 App-first line.
 
 Previous baseline: `0.30.0-alpha.27`.
-Current baseline: `2.0.0-alpha.1`.
+Current baseline: `2.0.0-alpha.2`.
 
 The customer-facing product direction moves from a Next.js-first web showroom implementation path to an Expo React Native mobile/tablet app-first path.
+
+## 2.0.0-alpha.2 checkpoint
+
+This checkpoint turns the App-first direction into the first repository structure.
+
+- `www.wafl.co.kr` is the public WAFL app landing site for product introduction, launch/download information, pricing, examples, Instagram CTA, trial request, inquiry, and waitlist.
+- Before launch, public CTAs must use wording such as `출시 준비 중`, `체험 신청`, `문의하기`, and `대기자 신청`.
+- Do not expose TestFlight, Google Play Internal Testing, Expo dev build, or internal tester links on the public landing site.
+- `/ui`, `/roadmap`, and `/functions` are localhost-only development check routes.
+- `/system` and `/workspace` are long-term removal targets in the product direction, but they are not deleted in this checkpoint.
+- `apps/mobile` contains the first Expo React Native skeleton and mock-only 제작 카드 navigation.
+- Root package metadata and root lockfiles remain untouched.
 
 ## Product direction
 
@@ -32,12 +44,11 @@ Expo React Native is the priority target for customer field work and everyday pr
 
 Next.js remains active for:
 
-- system administrator screens,
-- customer administrator advanced settings,
+- public app landing site,
 - operations and internal diagnostics,
 - API routes and server integration,
 - file/PDF/R2/Worker integration,
-- `/ui` design showroom,
+- `/ui`, `/roadmap`, and `/functions` localhost-only development check routes,
 - internal documents,
 - test console.
 
@@ -45,24 +56,20 @@ Next.js remains active for:
 
 ## Boundary for this version
 
-This version creates the App-first baseline documents and aligns the app display version.
+This version creates the App-first skeleton and aligns the app display version.
 
 It does not create:
 
 ```text
-mobile/
-apps/mobile/
-Expo project
-React Native screens
 DB migration
 API change
 R2/Worker/PDF integration change
-package dependency change
-lockfile change
 .env file
+production auth
+real camera/file/share/PDF behavior
 ```
 
-Expo skeleton creation is planned for `2.0.0-alpha.2`.
+Expo dependencies are scoped to `apps/mobile` only.
 
 ## Active document set
 
@@ -78,6 +85,7 @@ docs/project/app-v2/
   07-feature-map-from-ui-alpha27.md
   08-roadmap-2.0.md
   09-codex-working-rules.md
+  10-public-landing-site.md
 ```
 
 ## Relationship to 0.30.x documents

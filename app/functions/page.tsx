@@ -5,12 +5,15 @@ import { isActiveSystemAdminSession } from "@/lib/auth/systemAdminAccess";
 import { APP_VERSION } from "@/lib/constants/version";
 import { WAFL_FUNCTION_CATALOG } from "@/lib/functions/catalog";
 import { getWaflFunctionsRuntimeMode, isWaflFunctionsRuntimeAllowed } from "@/lib/functions/runtimeAccess";
+import { assertLocalOnlyRouteHost } from "@/lib/internal/localOnlyRouteGuard";
 import { canViewFunctionsCatalog } from "@/lib/runtime/runtimePolicy";
 import FunctionsCatalogClient from "./FunctionsCatalogClient";
 
 export const dynamic = "force-dynamic";
 
 export default async function FunctionsPage() {
+  await assertLocalOnlyRouteHost();
+
   const actualSession = await getCurrentWaflAuthSession();
   if (!actualSession) redirect("/?error=SESSION_REQUIRED");
   const isSystemAdmin = await isActiveSystemAdminSession(actualSession);

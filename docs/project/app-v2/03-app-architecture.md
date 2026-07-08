@@ -6,13 +6,14 @@ Expo React Native is the customer-facing app target.
 
 Next.js remains active for:
 
-- system administrator screens,
-- customer administrator advanced settings,
+- public marketing/download/pricing/examples landing site at `www.wafl.co.kr`,
 - operations,
 - API and server-side integration,
 - file/PDF/R2/Worker integration,
-- `/ui` internal showroom,
+- `/ui`, `/roadmap`, and `/functions` localhost-only development check routes,
 - documents and test console.
+
+`/system` and `/workspace` remain in the repository during transition, but they are long-term removal targets for the App-first product direction. Do not physically delete them until a separate work order completes replacement, deprecation, hidden/guarded state, and final removal.
 
 ## Infrastructure baseline
 
@@ -58,11 +59,16 @@ The App-first architecture must preserve:
 
 ## Future Expo choices
 
-The following are candidates for later phases:
+The `2.0.0-alpha.2` skeleton chooses:
 
 - Expo Router.
+- Expo SDK 55.
+- `apps/mobile` as a standalone app folder, not a root workspace.
+
+The following remain candidates for later phases:
+
 - EAS Build.
 - development builds for native auth/camera/file features.
 - App Store and Google Play testing flows.
 
-This `2.0.0-alpha.1` patch makes no actual app skeleton or native project choice.
+This architecture checkpoint still does not authorize DB migration, API route changes, R2/Worker mutation, real upload, real PDF generation, native auth, or production app-store deployment.

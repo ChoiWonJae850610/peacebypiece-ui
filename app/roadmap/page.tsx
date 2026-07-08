@@ -6,6 +6,7 @@ import { AdminStatusBadge, type AdminStatusBadgeTone } from "@/components/admin/
 import { WaflLinkButton, WaflSurface } from "@/components/common/ui";
 import { getCurrentWaflAuthSession } from "@/lib/auth/currentSession";
 import { isActiveSystemAdminSession } from "@/lib/auth/systemAdminAccess";
+import { assertLocalOnlyRouteHost } from "@/lib/internal/localOnlyRouteGuard";
 import {
   getRoadmapVersionAnchor,
   PRODUCTIZATION_ROADMAP,
@@ -199,6 +200,8 @@ function RoadmapVersionCard({ item }: { item: ProductizationRoadmapVersion }) {
 }
 
 export default async function ProductizationRoadmapPage() {
+  await assertLocalOnlyRouteHost();
+
   const actualSession = await getCurrentWaflAuthSession();
   if (!actualSession) {
     redirect("/?error=SESSION_REQUIRED");

@@ -1,3 +1,38 @@
+# 2.0.0-alpha.2 WAFL v2 App-first Expo Skeleton and Public Web Boundary
+
+- Current GPT checkpoint: `2.0.0-alpha.2`.
+- Baseline source before this patch: repository `APP_VERSION: 2.0.0-alpha.1`.
+- Baseline commit: `e0332307604d99e6a63b68f14d3aef71f44a5c77`.
+- This patch creates the first App-first Expo React Native skeleton under `apps/mobile`.
+- Expo SDK choice: SDK 55, because it supports Node `20.19.x` and the owner environment is Node `20.20.2`.
+- The mobile skeleton is mock-only and shows 제작 카드 navigation for 개요, 이미지·첨부, 사이즈·색상, 원단, 부자재, 제작 플로우, and 출력·공유.
+- `www.wafl.co.kr` is recorded as the public WAFL app landing site for app introduction, download area, pricing, examples, Instagram CTA, inquiry, trial request, and waitlist.
+- `/ui`, `/roadmap`, and `/functions` are now localhost-only development check routes.
+- `/system` and `/workspace` are documented as long-term removal targets, but no route is deleted in this patch.
+- New version line: `2.0.0-alpha.2`.
+
+Explicitly not changed:
+
+```text
+- DB migration
+- API route behavior
+- Neon schema
+- Cloudflare R2 Worker
+- PDF Worker
+- real file upload/delete
+- real camera/photo/file picker
+- real share-link generation
+- real PDF generation
+- real auth callback
+- production data
+- root package.json
+- root package-lock.json
+- pnpm lock/workspace files
+- /system or /workspace deletion
+```
+
+---
+
 # 2.0.0-alpha.1 WAFL v2 App-first Transition Documentation
 
 - Current GPT checkpoint: `2.0.0-alpha.1`.

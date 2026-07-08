@@ -56,3 +56,22 @@ For every app feature that edits or shares production data, later implementation
 - no raw R2/Worker/internal token exposure.
 
 This version is documentation only, so no device QA evidence is required yet.
+
+## 2.0.0-alpha.2 skeleton QA
+
+The first `apps/mobile` skeleton requires static verification first:
+
+- Expo config can be read.
+- TypeScript check passes when dependencies are installed.
+- The mock 제작 카드 shows a mobile one-column flow.
+- Tablet widths keep a stable centered card width instead of stretching into a desktop web layout.
+- Tabs move between 개요, 이미지·첨부, 사이즈·색상, 원단, 부자재, 제작 플로우, 출력·공유.
+- No real camera, photo picker, file picker, login, upload, share, PDF, API, R2, Worker, or DB behavior is invoked.
+
+Manual device QA remains required before product verification:
+
+- iPhone portrait one-column review.
+- iPad mini portrait review.
+- iPad Pro landscape review.
+- Galaxy Tab rotation review.
+- Korean text and numeric input checks when editable fields are introduced.
