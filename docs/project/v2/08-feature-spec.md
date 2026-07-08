@@ -6,6 +6,110 @@ This document defines the second WAFL v2 GPT-side design baseline: user roles, r
 
 It is not a database schema and not an implementation instruction. Permission action codes, status definitions, and DB tables will be formalized in later v2 documents.
 
+## 0.30.0-alpha.26 image asset, representative image, attachment inclusion, and summary feature direction
+
+The production-card feature direction should treat images and attachments as Sheet assets with different business meaning.
+
+Feature principles:
+
+- A Sheet can have many image assets, including uploaded image, camera photo, sketch result, and reference image types.
+- Representative image selection is stateful: the first image can become representative when none exists; deleting the representative image should fall back to the first remaining image; deleting the last image leaves no representative image.
+- Attachments are not representative images. They can be previewed and marked for inclusion in production documents.
+- Output/share should read the current representative image and included-attachment state from the Sheet, not from a separate document-only form.
+- Fabric/accessory order request and completion are row-level state transitions and should live near the row status/action cluster.
+- Overview 제작 요약 should separate cost structure into 한벌 단가, 총 예상, 원단 총액, 부자재 총액, and 공정 총액.
+- 로스/여유 cost is included through order quantity times unit price; the main Sheet should not show a separate loss-cost accounting line unless a future accounting feature explicitly requires it.
+- Inch size entry can use a helper for integer plus common apparel fractions without adding a real size-management API in this prototype.
+- This `/ui` correction does not add persistence, real upload/delete, camera capture, image editing/drawing, order mutation, share-link creation, PDF generation, R2/Worker integration, or API integration.
+
+## 0.30.0-alpha.27 compressed image list, output attachment picker, and delivery-request feature direction
+
+The feature direction should separate visual picking from document composition.
+
+Feature principles:
+
+- Image/photo/sketch/reference results are managed in the image list.
+- Representative image selection happens in the image list through a crown selector.
+- The default image list should be thumbnail-first and should not require reading filenames to choose a representative image.
+- Attachment files are not representative images.
+- Production-document attachment inclusion should be selected in output/share, where the user is composing the document snapshot.
+- Output/share can show selected attachments and allow removing them from the included list.
+- 작업지시서 and 공장 전달 작업지시서 can use row selection for preview instead of a separate preview icon.
+- Delivery requests should show compressed rows by default and reveal origin, destination, full items, and memo in a detail drawer, panel, or bottom sheet.
+- This `/ui` correction does not add persistence, real upload/delete, file preview API, camera capture, image editing/drawing, delivery-request mutation, share-link creation, PDF generation, R2/Worker integration, or API integration.
+
+## 0.30.0-alpha.20 Sheet data as input/order/PDF document flow
+
+The Sheet feature direction should support both editing and review without forcing the screen into many small cards.
+
+Feature principles:
+
+- Fabric/accessory/process data may be numerous, but the Sheet should expose summary plus row/list entry points first.
+- A section card can represent many rows. One item does not need one large card on desktop/tablet.
+- Input, order-readiness, and current PDF output should share the same Sheet data shape in the prototype.
+- PDF-friendly structure means the same labels and values can later feed a generated PDF without copying a separate form.
+- Detail editing can happen in drawer, side panel, bottom sheet, or full-screen sheet by device size.
+- This `/ui` correction does not add real persistence, order mutation, share-link creation, PDF generation, basis-data management, or API integration.
+
+## 0.30.0-alpha.21 ordering allowance and delivery-request feature direction
+
+Fabric/accessory ordering must reflect real garment-production quantity handling.
+
+Feature principles:
+
+- Order quantity can be explained as `required quantity + loss/allowance quantity - stock used`, with optional over-order handling.
+- The UI should show required quantity, loss/allowance, stock used, order quantity, leftover/over-order quantity, and handling meaning.
+- Over-order handling may be represented as factory allowance, loss included, leftover converted to stock, or all used in current production.
+- Stock use and leftover stock conversion are planning states in the `/ui` showroom. This patch does not implement inventory movement creation.
+- Unit and process catalogs can retain internal standard/company ownership, but the working screen can present one unified selector with a small origin label.
+- Fabric/accessory order flow and quick delivery request flow should feel connected inside the production card.
+- A delivery request should group selected items with one origin, one destination, contact information, and delivery memo. Multiple origins should create multiple request groups.
+- This `/ui` correction does not add real delivery-request persistence, real order mutation, inventory movement, share-link creation, PDF generation, or API integration.
+
+## 0.30.0-alpha.22 simplified default flow and factory/process direction
+
+The production-card default view should show the workflow before the helper tools.
+
+Feature principles:
+
+- Fabric and accessory default views center on item confirmation, quantity calculation, and order request readiness.
+- Assistive features such as previous-record copy, stock import/reference, supplier history, and input-source selection belong inside editor/drawer flows.
+- Accessory category grouping is useful metadata, but the item row remains the primary operating surface.
+- Delivery request creation should group one origin, one destination, multiple items, and delivery memo. A delivery memo is not a separate default document row.
+- If multiple origins are needed, the UI should imply multiple delivery-request groups.
+- Factory/process work is easiest to understand as representative production factory plus additional process rows.
+- Sewing is normally the representative production-factory work. Special sewing can still be represented as an additional process when it uses a separate partner or cost line.
+- This `/ui` correction does not add persistence, real delivery requests, process/unit catalog mutation, order mutation, inventory movement, share-link creation, PDF generation, or API integration.
+
+## 0.30.0-alpha.23 fixed work hub and reduced action surface
+
+The production-card feature direction should scale to many items without making every section fully expanded or action-heavy.
+
+Feature principles:
+
+- PC/tablet users should be able to keep product navigation, the current production card, and Assistant visible as separate work regions.
+- Tablet portrait and mobile should prioritize the active production-card section and reveal product selection or edit/detail surfaces only when needed.
+- Material order state should narrow possible actions: orderable items can request order, requested items can be marked order-complete, and completed/received items are treated as locked/read-only in the main prototype.
+- Delete remains a visible row action only for editable draft/orderable rows in the mock surface.
+- Process management is represented as representative factory plus additional process rows; additional rows are reorderable/copyable/deletable but do not need workflow status badges in the main list.
+- Output/share is a small set of business document and delivery-request rows, not a repeated contact/factory data dashboard.
+- This `/ui` correction does not add persistence, real delivery requests, process/unit catalog mutation, order mutation, inventory movement, share-link creation, PDF generation, or API integration.
+
+## 0.30.0-alpha.19 basis-data use in Sheet entry
+
+Sheet entry should use existing basis information where possible while still allowing lightweight temporary input.
+
+Feature principles:
+
+- Fabric/accessory supplier names, units, and process names should prefer system basis data or company basis data when available.
+- A customer administrator may later add company-specific units/processes or request a system-standard addition, but this `/ui` showroom patch does not implement those settings flows.
+- Sheet input should support both basis selection and temporary input so a user can continue drafting when a standard is missing.
+- Unit flows should distinguish base/system unit, company unit, and unit-add request.
+- Process flows should distinguish base process, company process, process-add request, and temporary process input.
+- Receiving, inbound, and inventory reflection belong to inventory/inbound flows and should not overload the basic designer Sheet input surface.
+
+This is a feature-direction note only. It does not authorize DB migration, API route changes, system-admin settings changes, customer-admin settings changes, R2/Worker changes, or package changes.
+
 ## Role model principle
 
 WAFL v2 may have human-readable roles, but implementation must not hardcode UI and API behavior by role name.
@@ -622,3 +726,39 @@ Mobile UX
 ```
 
 Feature work without a seed/test scenario is not considered implementation-ready.
+
+## 0.30.0-alpha.24 material action and process card behavior correction
+
+Fabric/accessory behavior should make the next production action obvious without exposing a full workflow engine in the mock showroom.
+
+Feature rules:
+
+- Work-needed tab badge counts should represent material/accessory rows with missing unit price or not-yet-finished ordering work.
+- A zero work-needed count should not render a badge.
+- Material rows in requested, ordered, received, or done-like states are read-only in the default screen and use a closed lock icon.
+- Editable material rows use an open lock icon and may expose delete when the item is draft/orderable.
+- `발주 요청` is the main action for orderable rows.
+- `발주 완료 처리` is the main action for rows already requested but not yet completed.
+- Default rows should not expose `상세 보기` or `계속 입력`; full editing belongs to editor/drawer/bottom-sheet flows in later implementation.
+- Delete is a row-level icon action. It is hidden or unavailable for requested/ordered material rows.
+- `제작 공장` and additional process rows use the same process-card data shape: process, partner, quantity, unit, unit price, amount, due date, memo/warning where needed.
+- Process ordering is represented by a drag handle or long-press mock rather than up/down/copy buttons in the default showroom.
+- Real drag/drop, order mutation, process catalog management, supplier lookup, and DB persistence remain out of scope for `/ui` alpha.24.
+
+This section is a showroom-only correction. It does not authorize API routes, DB persistence, order mutation, delivery-request mutation, real document generation, share-link creation, R2/Worker changes, production guard changes, process/unit management API work, or workspace/system behavior changes.
+
+## 0.30.0-alpha.25 image, size/color, and confirmation feature correction
+
+The `/ui` showroom may demonstrate feature shape for visual references, size/color, output/share inclusion, and confirmation-first actions, but must not cross into real feature wiring.
+
+Feature rules:
+
+- Representative image selection is local mock state only.
+- Image/photo/sketch/attachment controls are visual entry points only; they do not open real upload, delete, camera, drawing, or file APIs.
+- Size/color controls are mock fields only; they do not create size masters, customer catalogs, admin APIs, or DB records.
+- Output/share may show that documents include representative image, size/color, material, process, and memo data, but it does not generate PDFs or share links.
+- Material delete/order/order-complete controls should show confirmation-first behavior and then close the mock panel; they do not mutate material rows, orders, APIs, DB, or external messages.
+- Missing order information should be shown before `발주 요청` proceeds.
+- Process/factory data remains editable-looking mock data only and does not connect to process/unit management APIs.
+
+This section is a showroom-only correction. It does not authorize API routes, DB persistence, upload/delete mutation, image drawing, order mutation, delivery-request mutation, real document generation, share-link creation, R2/Worker changes, production guard changes, process/unit/size management API work, or workspace/system behavior changes.

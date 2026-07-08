@@ -22,6 +22,33 @@ WAFL Sheet
 
 The PDF must feel like the natural output of the Sheet, not a disconnected report generated from a hidden template.
 
+## 0.30.0-alpha.26 output/share mock correction
+
+The `/ui` showroom correction clarifies that PDF/share uses the current Sheet snapshot, including representative image and attachment inclusion state.
+
+Planning rules:
+
+- The representative image shown in the Sheet header should be the same image referenced by output/share preview.
+- If a Sheet has no representative image, the output/share preview must show a clear no-image state instead of implying a hidden fallback upload.
+- Attachments are separate assets. Only attachments marked as included in production documents should be listed in the output/share inclusion summary.
+- Real upload/delete, R2 object mutation, PDF generation, and share-link creation remain out of scope for the `/ui` alpha.26 showroom.
+- The alpha.26 output/share surface is a mock contract for later PDF snapshot behavior, not a Worker/API implementation.
+
+## 0.30.0-alpha.27 output/share attachment and delivery-row correction
+
+The `/ui` showroom correction moves production-document attachment choice into the output/share context.
+
+Planning rules:
+
+- Included attachments for a production document should be selected in the output/share tab, not in the image/attachment management tab.
+- The output/share tab may show selected attachments as removable chips and open an attachment picker mock for selection changes.
+- 작업지시서 and 공장 전달 작업지시서 rows can preview through row click/selection without a separate eye icon.
+- The representative image should be shown as a thumbnail in output/share so the user sees what will be included in the document.
+- Delivery-request rows should show compact origin/destination, item summary, and memo hint by default.
+- Delivery-request detail should show the full item list and memo after row click in a panel, drawer, or bottom sheet.
+- Mobile share/print/save actions for documents and delivery requests should be icon-only with accessible labels.
+- Real file preview API calls, R2 mutation, delivery-request mutation, PDF generation, and share-link creation remain out of scope for the `/ui` alpha.27 showroom.
+
 ## Current infrastructure baseline
 
 WAFL currently uses:
@@ -687,3 +714,114 @@ For implementation, create a later Codex work order with:
 ```
 
 Until then, no DB migration, R2 mutation, API behavior change, or production share behavior change is allowed.
+
+## 0.30.0-alpha.18 user-facing current PDF correction
+
+The internal data model may still keep snapshot/version concepts, but user-facing Sheet screens should be organized around the current PDF.
+
+User-facing rules:
+
+- Use "현재 PDF" as the primary label.
+- Use "PDF 보기", "공유", and "다운로드" as the primary actions.
+- Do not rely on "snapshot", "STEP", "preview mock", or temporary/review/final button splits in normal Sheet content.
+- Interpret the current PDF by Sheet status:
+  - 초안/작성중: 미완성 PDF
+  - 발주 가능: 발주용 PDF
+  - 공장 전달/제작중: 제작중 PDF
+  - 완료: 완성 PDF
+- The PDF/share tab should show included information such as product, fabric, accessory, factory, delivery address, and supplier contacts.
+- Share should be represented as a simple share action or icon-centered control, while still remaining a WAFL-controlled link concept in future implementation.
+
+PDF purpose rules:
+
+- 작업지시 PDF focuses on product and production information.
+- 공장 전달용 PDF focuses on factory, process, fabric/accessory use, and production request information.
+- 퀵 전달용 PDF focuses on delivery address, recipient factory/supplier, material/accessory list, quantity, contact, and delivery memo.
+- These purposes should feel selected by Sheet status and delivery target. Do not turn them into a confusing set of unrelated buttons.
+
+This section is a screen/spec correction only. It does not authorize PDF generation, share-link creation, API route changes, R2 mutation, Worker changes, DB migration, or production behavior changes.
+
+## 0.30.0-alpha.20 PDF-friendly screen structure
+
+The `/ui` Sheet screen should be easy to map to a future PDF without visually becoming a PDF generator.
+
+User-facing rules:
+
+- Continue to use "현재 PDF", "PDF 보기", "공유", and "다운로드".
+- Do not reintroduce snapshot/STEP/developer-preview wording in the working Sheet UI.
+- Represent the current PDF as a Sheet output state, not as several unrelated cards.
+- Use row/list/definition structures for product summary, included information, delivery data, supplier contacts, and PDF purpose.
+- The screen can show a PDF-friendly layout, but it must not call a real PDF Worker, write R2 objects, generate real share links, or mutate database state.
+- A future PDF renderer should be able to consume the same Sheet sections: product, fabric, accessory, process/factory, delivery, memo, and current PDF status.
+
+## 0.30.0-alpha.21 document names and quick delivery request wording
+
+The user-facing output/share screen should use business document names first. PDF remains the technical output format behind view/share/print actions.
+
+User-facing document names:
+
+```text
+작업지시서
+공장 전달 작업지시서
+퀵 전달 메모
+```
+
+Rules:
+
+- Do not repeat `PDF` in every document title.
+- Use short actions: `보기`, `공유`, `인쇄`, and optionally `저장`.
+- It is acceptable that view/share/print produces or uses a PDF later, but the title should read like a business document, not a file format list.
+- Quick delivery memo is connected to a delivery-request flow.
+- A delivery request should include origin, destination, selected items, contact information, and delivery memo.
+- One delivery request should represent one origin and one destination. When several suppliers are involved, show several delivery request groups.
+- This `/ui` correction is mock-only. It does not create real PDF files, share links, delivery requests, R2 objects, Worker calls, API mutations, or database records.
+
+## 0.30.0-alpha.22 output/share row-action simplification
+
+The output/share section should avoid duplicate global actions when each document or delivery-request row already has its own action controls.
+
+User-facing rules:
+
+- Do not place a generic top-level `보기`, `공유`, `인쇄` button group above the document rows when the same actions appear on rows.
+- `작업지시서` and `공장 전달 작업지시서` rows may each expose their own view/share/print actions.
+- A quick delivery memo should be understood as part of a delivery request, not as an independent default document row.
+- Delivery-request rows should include origin, destination, selected items, delivery memo, and row-level share/print/save actions.
+- A delivery request still means one origin and one destination. Multiple origins imply multiple request rows.
+- This `/ui` correction is mock-only. It does not create real PDF files, share links, delivery requests, R2 objects, Worker calls, API mutations, or database records.
+
+## 0.30.0-alpha.23 output/share simplification follow-up
+
+The output/share tab should stay compact after the production card moves to fixed work regions.
+
+User-facing rules:
+
+- The default output/share tab should show only the main business rows: `작업지시서`, `공장 전달 작업지시서`, and `배송요청서 만들기`.
+- Do not repeat factory name, fabric supplier, accessory supplier, or contact tables in the output/share tab when those details already belong to production/process or delivery-request rows.
+- `배송요청 추가하기` is a mock creation entry point. Delivery-request rows still expose `공유`, `인쇄`, and `저장` row actions.
+- No top-level duplicate detail/view/share/print action group should be added above the rows.
+- This `/ui` correction is mock-only. It does not create real PDF files, share links, delivery requests, R2 objects, Worker calls, API mutations, or database records.
+
+## 0.30.0-alpha.24 output/share retained compact behavior
+
+The output/share tab remains compact after the overview and action grammar correction.
+
+User-facing rules:
+
+- Keep `작업지시서`, `공장 전달 작업지시서`, `배송요청서 만들기`, and `배송요청 추가하기` as the visible business-document flow.
+- Do not re-add overview shortcut buttons for output/share.
+- Do not re-add duplicate output/share status rows to the overview summary.
+- Delivery-request rows continue to own `공유`, `인쇄`, and `저장` actions.
+- This `/ui` correction is mock-only. It does not create real PDF files, share links, delivery requests, R2 objects, Worker calls, API mutations, or database records.
+
+## 0.30.0-alpha.25 output/share inclusion clarification
+
+The output/share tab should make the future document scope obvious without becoming a real PDF generator in `/ui`.
+
+User-facing rules:
+
+- `작업지시서` and `공장 전달 작업지시서` may state that they include representative image, size/color, fabric/accessory rows, process/factory rows, and memo data.
+- Representative-image selection in the image/attachment section should be reflected in the output/share mock.
+- Size/color information should be described as document content, not as a separate file or hidden admin setting.
+- Confirmation-first order/delete flows do not create final documents, share links, or order PDFs.
+- Keep row-level `보기`, `공유`, `인쇄`, and `저장` actions mock-only.
+- This `/ui` correction is mock-only. It does not create real PDF files, share links, delivery requests, R2 objects, Worker calls, API mutations, or database records.

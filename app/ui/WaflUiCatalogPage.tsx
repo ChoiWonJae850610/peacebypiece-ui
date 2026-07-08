@@ -41,6 +41,7 @@ import type {
   ScreenChecklist,
   WaflUiCatalogPageProps,
 } from "./waflUiCatalogTypes";
+import V2ShowroomPrototype from "./V2ShowroomPrototype";
 
 const catalogSections: CatalogSection[] = [
   {
@@ -2124,7 +2125,7 @@ function PracticePatternSamples() {
               },
               {
                 name: "금속 단추",
-                meta: "부자재 B · 24 ea",
+                meta: "부자재 B · 24개",
                 status: "발주 완료",
                 tone: "success" as const,
               },
@@ -2836,6 +2837,11 @@ export default function WaflUiCatalogPage({
             </WaflInfoBox>
           </div>
         </WaflPageHero>
+
+        <V2ShowroomPrototype
+          appVersion={appVersion}
+          runtimeMode={runtimeMode}
+        />
 
         <WaflSectionPanel
           title="Catalog sections"

@@ -15,6 +15,37 @@ Codex = 문서 기준 구현자
 컨셉 이미지 = 무드보드 / 방향 참고
 ```
 
+## 0.30.0-alpha.26 showroom component guidance
+
+Image and attachment controls should read as production assets, not decorative upload blocks.
+
+Design guidance:
+
+- Use compact icon buttons for repeated row actions such as representative selection, preview, delete, order request, and order completion.
+- Use a crown icon for representative image selection and a palette/brush visual for sketch-related actions.
+- Image asset rows should fit file-like business reading: small thumbnail area, filename, source/type badge, note, and action cluster.
+- Attachment rows should remain visually separate from image rows and expose the production-document include state as a quiet checkbox/toggle.
+- Mobile image/photo/sketch/attachment add controls may hide labels visually while retaining accessible labels.
+- Production summary cards should separate identity from money: the Sheet header shows identity and representative image; overview 제작 요약 shows cost structure.
+- 로스/여유 설명 should be short and attached to quantity/order context, not styled as an extra accounting line.
+
+## 0.30.0-alpha.27 compact image/output component guidance
+
+The default production-card view should not over-label obvious visual objects.
+
+Design guidance:
+
+- Prefer a thumbnail-first image grid for image/photo/sketch/reference lists.
+- Use a crown icon as the persistent representative-image selector.
+- Use row or thumbnail click for preview; avoid a repeated eye icon where the preview target is obvious.
+- Keep image filename/type detail inside tooltip, title, or preview mock unless the user is editing metadata.
+- Attachment rows should be compact file rows with filename, short type/detail, and delete action.
+- Production-document attachment selection belongs to a document attachment picker pattern in output/share.
+- Selected document attachments can appear as removable chips.
+- Delivery-request rows should have consistent height and truncate long item/memo text.
+- Delivery-request detail belongs to a row-click panel, drawer, or bottom sheet.
+- Mobile document/delivery share, print, and save actions should be icon-only with `title` and `aria-label`.
+
 Design work must proceed in this order:
 
 1. Product and workflow definition.
@@ -809,3 +840,156 @@ It does not authorize:
 - Package changes.
 
 The next implementation-oriented step after design completion should be a restricted `/ui` showroom patch, not a full workspace rewrite.
+
+## 0.30.0-alpha.17 showroom copy and overflow correction
+
+The `/ui` showroom working prototype should look like a usable WAFL screen first and a design explanation second.
+
+Rules:
+
+- Keep help/info copy out of the main working Sheet unless it directly supports the current user action.
+- Move implementation notes, internal action-code examples, and mock-only boundaries to a collapsed design memo area.
+- Visible Sheet/Card status pills should show Korean labels only in the working prototype.
+- Internal English codes may remain in TypeScript, tests, docs, or collapsed developer/reference memo areas.
+- Badge/status pills in mobile frames must use constrained width, truncation, wrapping, or secondary-line text so they do not push content outside cards.
+- Quantities and dates in the working prototype should use Korean business notation such as `360개`, `180 yd`, and `24/07/30`.
+
+## 0.30.0-alpha.18 Sheet input and action-flow correction
+
+WAFL input should feel like working on a garment production card, not filling out an ERP table.
+
+Rules:
+
+- Prefer card-based, step-based, or light inline-edit patterns for Sheet input.
+- Dense tables are acceptable only as secondary full-list/detail views, especially on desktop or tablet landscape.
+- Mobile and tablet portrait should use compact item cards for fabric and accessory work.
+- Fabric/accessory item cards should show item name, supplier/option, required quantity, stock use, order quantity, unit price, amount, status, and one or two next actions.
+- Use data and actions to explain workflow. Avoid long helper boxes when the same meaning can be communicated by amount summaries, status badges, and action buttons.
+- "Add", "input", "amount check", and "order request" should be visually connected in the Sheet section.
+- Current PDF, PDF view, share, and download actions should use clear Korean labels with icons where useful.
+- User-facing prototype copy should not depend on "snapshot", "STEP", or developer preview labels.
+- Product selector cards in compact frames should reserve enough width for text and use one-line ellipsis or a stable two-line treatment rather than allowing vertical clipping.
+
+## 0.30.0-alpha.19 small-frame material cards and status language
+
+Small frames should explain material work through compact rows, not many nested summary boxes.
+
+Rules:
+
+- Fabric/accessory mobile cards should use this structure: item name + short state, supplier + explicit color/option, required/stock/order quantity row, unit price/amount row, and one main action.
+- Avoid excessive label/value boxes inside each material card on mobile.
+- Money, numbers, and units should use nowrap values so `684,000원`, `180yd`, and `단가 3,800원` do not split awkwardly.
+- Keep mobile summary cards to one or two columns. Use list rows when values are long.
+- Color/option is a primary field and must be visible in cards and editors.
+- Status badges should use short Korean labels and avoid vague labels such as issue/received/requested in the main input screen.
+- Concrete warnings such as missing unit price, missing supplier, missing color/option, or quantity confirmation are better than an abstract issue badge.
+- Input-source wording should be user-facing: 새로 입력, 거래처에서 불러오기, 재고에서 가져오기, 이전 기록 복사.
+- Unit selection should visually distinguish base units, company units, and unit-add request without connecting real settings APIs.
+- Process lists should look reorderable/editable rather than fixed timelines when the order can vary by product.
+
+## 0.30.0-alpha.20 card-reduction and PDF-friendly Sheet grammar
+
+The WAFL Sheet surface should feel printable and reviewable while still being editable.
+
+Rules:
+
+- Use cards for major surfaces: Product Explorer, WAFL Sheet section, Assistant, drawer/bottom-sheet, upload/image area, and repeated external examples.
+- Do not turn every metric, category, input source, unit, process, PDF purpose, or included field into its own card.
+- Inside a major section, prefer definition lists, row lists, compact summary lines, chips, and divider-based table-like previews.
+- A selected Sheet section can have one clear header and one row/list body. Avoid nested card-in-card visual rhythm.
+- PDF-friendly layout means labels and values align predictably and can map to a generated document later.
+- Mobile should reduce boxed summaries first. Use sticky metadata, section navigation, current section rows, and bottom-sheet detail entry.
+- Keep buttons close to the rows they affect, but do not wrap every action group in another card.
+- Continue to keep money, quantity, unit, and status text nowrap or truncated where necessary on small frames.
+
+This rule applies to the `/ui` showroom prototype only until real workspace migration work is explicitly approved.
+
+## 0.30.0-alpha.21 icon-first actions, balanced rows, and long text handling
+
+Visible `/ui` prototype controls should feel like production tools, not long button labels.
+
+Rules:
+
+- Section tabs and common action rows may be icon-forward, but must keep accessible labels, `title`, or visible short labels where needed.
+- Desktop can use icon plus short text. Mobile can use icon-centered controls with screen-reader labels when the surrounding context is clear.
+- Document actions should use short labels such as `보기`, `공유`, `인쇄`, and `저장`.
+- Multiple buttons or tabs on one line should not sit awkwardly at the far left. Use centered, evenly distributed, or equal-width layouts where the row has three to five actions.
+- If wrapping is needed, wrap into a balanced grid rather than a ragged list of unrelated button widths.
+- Long factory names, supplier names, addresses, contacts, and delivery memos should use definition-list or row layouts with natural two-line wrapping.
+- Do not force long address/contact text into fixed-height small boxes.
+- Fabric/accessory quantity rows should make production math readable: required, allowance/loss, stock used, order quantity, leftover, and handling.
+- Unit and process choices should appear as one compact list. Company-standard values may use a small suffix such as `회사 기준`, not a large separate box.
+
+This applies to the `/ui` showroom correction only until the real workspace implementation is separately approved.
+
+## 0.30.0-alpha.25 image/size confirmation component behavior
+
+The `/ui` working prototype should keep visual-management and confirmation surfaces consistent with the same WAFL control grammar.
+
+Rules:
+
+- Image/attachment tiles use the same card radius and border treatment as other rows; representative selection uses selected border/background rather than a separate visual language.
+- Image, photo, sketch, and attachment actions should use icon-forward buttons with accessible labels.
+- Size chips, color quantity rows, measurement cells, and unit toggles should stay compact and readable on mobile; mobile inputs/selects/textareas remain 16px or larger.
+- Confirmation panels use the existing surface/card/button grammar and must not imply a real mutation. Use clear cancel/primary actions.
+- Mobile confirmation uses bottom-sheet styling with safe-area padding; desktop/tablet confirmation can be inline inside the work panel.
+- Process rows should use thin row/inline-edit styling, not nested heavy cards.
+- Output/share inclusion summaries should use definition rows or compact lines, not a new document-preview visual system.
+
+This applies to the `/ui` showroom correction only until the real workspace implementation is separately approved.
+
+## 0.30.0-alpha.24 summary restraint and row action placement
+
+The `/ui` working prototype should avoid making every status or count into a badge.
+
+Rules:
+
+- Overview may use plain definition rows. It should not show a grid of status badges.
+- A selected section may use one centered text summary line before the row list.
+- Warning count badges on tabs should be small, yellow/orange-like, and hidden at zero.
+- Tab count badges must fit icon-only mobile tabs without increasing tab height or causing horizontal overflow.
+- Material row top-right controls should follow this order: status badge, lock/unlock icon, delete icon.
+- The lock/unlock state should use iconography and accessible `title`/`aria-label`; do not show a visible `수정 잠김` text label.
+- Locked/read-only rows should be quieter through lower contrast or faint border treatment, not a strong filled background.
+- Rows that need input should be more visually noticeable than rows already requested, ordered, received, or done.
+- Material row primary actions should sit at the lower/right edge. Use send/paper-plane style iconography for `발주 요청` and check iconography for `발주 완료 처리`.
+- Delete should be an icon control near the status cluster and should not be duplicated as a bottom text button.
+- Process cards should use the same action grammar for `제작 공장` and additional process rows: drag handle near the top action area and delete icon near it.
+- Process up/down/copy text buttons are too heavy for the default screen. Use drag-handle/long-press mock instead.
+
+This applies to the `/ui` showroom correction only until the real workspace implementation is separately approved.
+
+## 0.30.0-alpha.22 default-view action density and support-tool placement
+
+Default production-card sections should not feel like every helper and shortcut is competing for attention.
+
+Rules:
+
+- Default fabric/accessory sections should prioritize item rows, quantity math, status, and one or two clear production actions.
+- Assistive controls such as previous record, stock reference, supplier history, input-source explanation, and unit reference should move into drawer/editor/bottom-sheet surfaces.
+- Category chips and filters must not visually outrank the item list. If needed, keep them compact or move them into a filter/edit surface.
+- Document rows and delivery-request rows should own their view/share/print/save actions. Avoid an additional top common action row when it duplicates row actions.
+- Factory/process layouts should visually separate representative production factory information from additional process rows.
+- Process row action buttons may remain icon-centered with accessible labels, but repeated factory address/contact fields should be avoided.
+- Assistant should show blockers, next action, warnings, and output/share availability rather than repeating the full section data already visible nearby.
+
+This applies to the `/ui` showroom correction only until the real workspace implementation is separately approved.
+
+## 0.30.0-alpha.23 fixed-region scroll and row action grammar
+
+The `/ui` working prototype should feel like a stable work surface, not a page that keeps growing as data grows.
+
+Rules:
+
+- Desktop and tablet landscape may use three or two fixed-height work regions. Each region should scroll internally when its content is longer than the frame.
+- Tablet portrait should not reserve permanent vertical space for a full product list. Use a drawer or bottom-sheet style selector mock.
+- Mobile sticky headers should stay lean. Section-specific actions should live in the selected section, not in a global top action row.
+- Fabric/accessory row actions should stay close to the row and use a small fixed vocabulary: `발주 요청`, `발주 완료 처리`, and `삭제` where allowed.
+- Requested, ordered, received, and done material rows should be visually quieter and show a lock/read-only state such as `수정 잠김`.
+- Avoid repeated full-list/detail buttons in the default section body when the prototype is trying to show the normal working view.
+- Metrics should use at most a few badges per section, then fall back to compact text. Do not create a row of many same-weight badges.
+- The accessory tab/icon should feel like a clothing accessory control, not a book/document control.
+- Process rows can use icon-centered up/down/copy/delete actions with accessible labels.
+- Output/share document and delivery-request rows own their row actions; global duplicate action clusters should not be added.
+
+This applies to the `/ui` showroom correction only until the real workspace implementation is separately approved.

@@ -19,6 +19,40 @@ The main screen should feel like a garment production workspace:
 - Order/PDF/share actions in context.
 - Mobile card flow as a first-class experience.
 
+## 0.30.0-alpha.26 screen correction - image assets and compact production card actions
+
+The `/ui` showroom correction clarifies that image/photo/sketch/reference files are not fixed slots.
+
+Screen rules:
+
+- The image section should show a growing image asset list with thumbnail placeholder, file-like name, source type, preview, representative selector, and delete action.
+- The Sheet header reflects the current representative image immediately and must also support a no-representative-image state.
+- Attachments stay separate from image assets and can be marked for inclusion in production documents.
+- Mobile add actions for image/photo/sketch/attachment should be icon-first to avoid crowding a narrow toolbar.
+- Fabric/accessory row actions should stay close to the row status and lock/delete controls; order request and completion should not dominate the bottom of every row.
+- The header should identify the product and representative image. Cost values belong in overview 제작 요약.
+- Overview 제작 요약 should show 한벌 단가, 총 예상, 원단 총액, 부자재 총액, and 공정 총액 without repeating status.
+- Inch entry can use a small helper surface for integer plus fractional values such as 1/8 through 7/8.
+
+## 0.30.0-alpha.27 screen correction - compressed images, output attachments, and delivery rows
+
+The user-facing image tab should be lighter than an asset-management console.
+
+Screen rules:
+
+- Use "이미지 목록" on the user-facing `/ui` surface, while internal documents may still call them image assets.
+- The image list is a multi-image list, not fixed slots.
+- Default image items should center on thumbnail, representative crown, and delete action.
+- File name, long description, and source badges should move to tooltip or preview rather than the default card face.
+- Image click opens preview mock; a separate eye preview icon is unnecessary.
+- Attachments remain separate from images. The image/attachment tab shows compact attachment rows with delete only.
+- Production-document attachment inclusion belongs in the output/share tab through an attachment picker.
+- Output/share can show selected attachments as removable chips.
+- 작업지시서 and 공장 전달 작업지시서 rows can preview by row click/selection without visible eye icons.
+- Delivery-request rows should be compressed: title, origin to destination, one-line item summary, and one-line memo hint.
+- Full delivery-request items and memo should appear after row click in a drawer, panel, or bottom sheet mock.
+- Mobile document and delivery actions should be icon-only with accessible labels.
+
 ## Main workspace structure
 
 The existing 0.24.x three-column mental structure can be reused only after its meaning changes.
@@ -774,3 +808,194 @@ Checklist:
 ```
 
 If a layout cannot preserve an editing state across rotation, it may safely close or blur the active input, but it must not leave the screen broken.
+
+## 0.30.0-alpha.17 `/ui` device-size showroom correction
+
+The `/ui` prototype should show device-specific screen structure with real CSS frame widths, not by shrinking the whole screen with transform scale.
+
+Showroom frame baseline:
+
+```text
+Desktop:
+- Product Explorer / WAFL Sheet / Assistant 3-area work hub.
+
+Tablet 세로:
+- near 768px frame.
+- Product selector, Sheet summary, section tabs, current section preview, Assistant as lower or collapsed panel.
+
+Tablet 가로:
+- near 1024px frame.
+- compact product list, central Sheet, Assistant as side or lower panel.
+
+Mobile:
+- near 390px phone frame.
+- product search/selection entry, sticky section nav, one current section, and bottom sheet inside the phone frame.
+```
+
+User-facing prototype copy should be Korean-first. Do not show internal English status/action codes in the working Sheet area. History/audit can be modeled later, but the main Sheet navigation should prioritize overview, fabric, accessory, factory/process, and PDF/share.
+
+## 0.30.0-alpha.18 `/ui` Sheet input/order/PDF flow correction
+
+The WAFL Sheet screen is a work hub, not a static workorder page or a long all-fields document.
+
+Updated screen rules:
+
+- The overview tab is a manager summary dashboard.
+- Overview must show current Sheet status, estimated unit cost, fabric amount, accessory amount, process amount, total estimate, missing unit price count, unordered item count, factory delivery readiness, and current PDF status.
+- Fabric and accessory work starts inside the Sheet, not in a detached order screen.
+- Fabric and accessory tabs should center on input, unit price, amount, status, and next action.
+- Material/accessory input should feel like add -> input -> amount check -> order request.
+- Input source choices may include direct input, supplier selection, stock use, and previous Sheet copy.
+- When stock is used, the UI should show required quantity, stock use quantity, and order-required quantity together.
+- Fabric and accessory sections may use compact cards or card-like rows. Dense ERP-like tables should not be the primary mobile or tablet portrait representation.
+- History/audit remains outside the main Sheet tab set for this prototype. The main tabs are overview, fabric, accessory, factory/process, and PDF/share.
+- Every device frame should keep amount summary and current PDF status reachable without making the Sheet a long vertical dump.
+
+PDF/share screen copy for user-facing prototype:
+
+- Use "현재 PDF", "PDF 보기", "공유", and "다운로드".
+- Do not rely on "snapshot", "STEP", or developer preview wording in user-facing Sheet content.
+- The current PDF meaning follows Sheet status: draft/incomplete -> 미완성 PDF, ready/orderable -> 발주용 PDF, factory delivery/production -> 제작중 PDF, completed -> 완성 PDF.
+- Factory delivery PDF and quick delivery PDF are PDF purposes selected by Sheet status and delivery target, not three unrelated complex buttons.
+
+This is still a mock-only screen correction. It does not authorize DB migration, API route changes, upload/share/order mutation, R2/Worker changes, PDF Worker changes, production guard changes, or package changes.
+
+## 0.30.0-alpha.19 material/accessory input and process-reference correction
+
+Fabric and accessory entry must be understandable before the real workspace is rebuilt.
+
+Material/accessory status rules:
+
+- User-facing fabric/accessory status should center on `입력중`, `발주 가능`, `발주 요청`, and `발주 완료`.
+- Do not show receiving, inbound, inventory reflection, or received status as the main designer Sheet input flow.
+- Hide or avoid vague labels such as `이슈`, `요청됨`, `입고됨`, and `작성중` in the main Sheet input surface.
+- When something is missing, show concrete warnings: `단가 없음`, `거래처 없음`, `색상 없음`, `수량 부족`, `단위 없음`, or `발주 수량 확인 필요`.
+- Status and action should match: 입력중 -> 계속 입력, 발주 가능 -> 발주 요청, 발주 요청 -> 발주 완료 처리, 발주 완료 -> 상세 보기 or no primary action.
+
+Mobile input rules:
+
+- Mobile must show clear `+ 원단 추가` and `+ 부자재 추가` entry points.
+- The mobile editor should be a bottom-sheet or full-screen style panel inside the phone frame.
+- Fabric editor fields must include fabric name, color, supplier, required quantity, unit, unit price, stock use, order quantity, and memo.
+- Accessory editor fields must include accessory name, category, color/option, supplier, required quantity, unit, unit price, stock use, order quantity, and memo.
+- Color/option and unit fields must be visible, not buried in helper text.
+- Supplier selection should feel like importing from supplier records, while remaining mock-only in `/ui`.
+
+Unit and process reference rules:
+
+- Unit selection should show base/system units, company units, and unit-add request.
+- Process selection should show base process, company process, process-add request, and temporary process input.
+- Processes are not fixed-order. The UI should show add, delete, move up, move down, and copy affordances.
+- Process items should show process name, factory/supplier, quantity, unit, unit price, amount, due date, and memo/warning.
+- Actual system-admin or customer-admin process/unit settings screens are not changed by this showroom patch.
+
+## 0.30.0-alpha.20 PDF-friendly Sheet layout correction
+
+The `/ui` Sheet showroom should not look like many small cards stacked inside a card.
+
+Screen rules:
+
+- Treat the central WAFL Sheet as a production document/work hub, not a card gallery.
+- Keep one large section card per selected Sheet section, then use rows, definition lists, chip rows, and table-like previews inside that section.
+- Use metric boxes sparingly. Prefer one compact summary line for product, fabric count, accessory count, process count, total amount, and current PDF status.
+- Fabric and accessory preview items should be rows inside the section. The full edit/list flow can still be represented by drawer or bottom-sheet mock.
+- Unit, process, and input-source references should read like toolbars or chip rows, not separate info cards.
+- PDF/share should read like the current Sheet output: current PDF state, included information, PDF purpose rows, and delivery data rows.
+- Mobile must not become a stack of small boxed summaries. Use one-line metadata, sticky section navigation, the current section, and a bottom-sheet/full-list entry.
+- Keep alpha19 concepts: simplified material states, concrete warnings, unit/process reference mock, mobile editor mock, and current PDF wording.
+
+This is still a mock-only screen correction. It does not authorize DB migration, API route changes, upload/share/order mutation, R2/Worker changes, PDF Worker changes, production guard changes, package changes, or workspace/system behavior changes.
+
+## 0.30.0-alpha.21 user wording, allowance ordering, and quick delivery correction
+
+The working `/ui` showroom should use natural user-facing Korean even if internal code and documents still use Sheet as the development object name.
+
+Screen rules:
+
+- Avoid exposing `Sheet`, `시트`, `WAFL Sheet`, `Sheet summary`, or `Sheet 상태` in the working user-facing prototype.
+- Prefer `제작 카드`, `제작 요약`, `제품 카드`, `작업 카드`, and `와플 카드` depending on context.
+- Product top summary should focus on product name/type, quantity, due date, unit cost, total estimate, and production state. Current output/document state belongs in overview or output/share sections.
+- Fabric/accessory rows must show required quantity, loss/allowance quantity, stock use quantity, order quantity, and leftover/over-order handling.
+- Leftover/over-order handling can be represented as factory allowance, loss included, stock conversion, all used in current production, or no leftover.
+- Unit selection and process selection may remain system/company-standard internally, but the working UI should present them as one unified list with only small secondary labels such as `회사 기준`.
+- Output/share should use document names such as `작업지시서`, `공장 전달 작업지시서`, and `퀵 전달 메모`; do not repeat `PDF` in every document title.
+- Quick delivery is a delivery-request flow: selected items, origin, destination, contact, and delivery memo. One request should mean one origin and one destination; multiple origins imply multiple requests.
+- Long factory/supplier/address/contact values should use wrapping definition rows, not fixed-height boxes.
+- Tabs and action rows should be icon-forward, centered or evenly distributed, and keep accessible labels/titles.
+
+This section is a showroom-only correction. It does not authorize API routes, DB persistence, delivery-request mutation, real document generation, share-link creation, R2/Worker changes, production guard changes, or workspace/system behavior changes.
+
+## 0.30.0-alpha.22 default-screen assistive-feature reduction
+
+The working `/ui` showroom should keep the default production-card view focused on the information the user must confirm and the next production action.
+
+Screen rules:
+
+- Fabric and accessory default sections should not prominently expose input-source choices, supplier import, stock import, previous-record copy, or long helper copy.
+- Previous record, stock use, and supplier history are assistive functions and should live in editor, drawer, or bottom-sheet mock surfaces.
+- Fabric and accessory default sections should show summary, item rows, add, order request, view all, item status, and next action.
+- Accessory category is supporting row information. A large category chip/summary region is optional and should not take priority over the item list.
+- Output/share should not place generic view/share/print buttons at the top when row-level document and delivery-request actions are available.
+- Quick delivery memo should be represented through delivery-request creation and request rows, not as a standalone input/document row.
+- Factory/process should default to a representative production factory plus additional process list structure.
+- Sewing normally belongs to the representative production factory, but special sewing may still be added as an additional process exception.
+- Additional process rows should not repeat representative factory address/contact information unless that process uses a different partner.
+
+This section is a showroom-only correction. It does not authorize API routes, DB persistence, delivery-request mutation, real document generation, share-link creation, R2/Worker changes, production guard changes, process/unit management API work, or workspace/system behavior changes.
+
+## 0.30.0-alpha.25 image, size/color, and confirmation flow correction
+
+The working `/ui` showroom should show that a production card can manage visual references, size/color data, and output/share preparation without connecting real upload, drawing, or document services.
+
+Screen rules:
+
+- Image/attachment is a first-class section, not a hidden helper. It may show representative image, photo, sketch, detail/reference image, and attachment rows.
+- Representative-image selection should be visible in the production summary and output/share mock.
+- Size/color should be a separate section with size-system choice, size chips, measurement table, unit toggle, and color quantity rows.
+- Output/share should explain that future documents include representative image, size/color, material, process, and memo data.
+- Delete, order request, missing-order-info, and order-complete actions should open a confirmation panel or bottom-sheet mock before any state-changing-looking result.
+- Mobile should keep section tabs horizontally scrollable and show confirmation as a safe-area-aware bottom sheet.
+- Process rows can remain compact inline-edit rows; do not make the center panel long by expanding process detail cards.
+
+This section is a showroom-only correction. It does not authorize API routes, DB persistence, upload/delete mutation, drawing/image editing, order mutation, real document generation, share-link creation, R2/Worker changes, production guard changes, process/unit/size management API work, or workspace/system behavior changes.
+
+## 0.30.0-alpha.24 overview summary and section navigation correction
+
+The working `/ui` showroom should make the production-card entry point short enough that the user immediately understands where to go next.
+
+Screen rules:
+
+- Overview should not be a second dashboard of every section. Keep only 수량, 납기, 한 벌 예상, 총 예상, and one plain 상태 line.
+- Remove overview shortcut buttons such as `원단 입력·발주`, `부자재 입력·발주`, and `출력·공유`. Section tabs are the primary navigation.
+- Do not repeat the same `발주 준비` or work-needed state as multiple badges in the header, overview, and section body.
+- Fabric/accessory missing-price or unordered counts belong as small warning badges on the relevant tab. Hide the badge when the count is zero.
+- Fabric/accessory section summaries should read as centered text such as `원단 6개 · 원단 금액 1,474,200원 · 작업 필요 3건`.
+- Material rows should remove visible `수정 잠김` text. Use lock/unlock icons with accessible labels and a quiet read-only treatment.
+- Material row action placement is top-right status + lock/unlock + delete icon, and lower/right primary order action.
+- `상세 보기` and `계속 입력` should not appear as default material row actions in this showroom pass.
+- Process content remains titled `제작 플로우`.
+- `대표 제작공장` should be presented as `제작 공장` using the same process card grammar as additional process rows.
+- Default process cards should show process name, factory/partner, quantity, unit, unit price, amount, due date, drag-handle mock, and delete icon.
+- Remove default process address/contact/change/copy/up-down/detail buttons from the production flow surface.
+- Assistant should show only current blocker, next recommendation, and output/share availability unless a later implementation needs a real task list.
+
+This section is a showroom-only correction. It does not authorize API routes, DB persistence, delivery-request mutation, real document generation, share-link creation, R2/Worker changes, production guard changes, process/unit management API work, or workspace/system behavior changes.
+
+## 0.30.0-alpha.23 fixed panel scroll and action reduction correction
+
+The working `/ui` showroom should make the production-card structure understandable without turning the center area into a long document.
+
+Screen rules:
+
+- Desktop should present Product Explorer, production card, and Assistant as fixed-height work regions with internal scroll inside each panel.
+- Tablet landscape should use the same work-region idea at tablet width instead of a squeezed long page.
+- Tablet portrait should prioritize the production card; product selection should appear as a drawer/bottom-sheet style mock, not as a permanent long panel above the work.
+- Mobile should not show global fabric/accessory add actions in the sticky header. Add actions belong inside the active fabric or accessory section.
+- Fabric/accessory main sections should not end with duplicate full-list/add/order button groups. Row-level actions and the section-local add action are enough for this prototype.
+- Requested/ordered material rows should read as read-only/locked after order action, with fewer visible actions.
+- Top product summary should not repeat product type, quantity, due date, and status in multiple places.
+- Process content should be titled `제작 플로우`, split representative factory from additional process rows, and avoid status-badge clutter on each process row.
+- Output/share should focus on `작업지시서`, `공장 전달 작업지시서`, and `배송요청서 만들기`; duplicate factory/supplier/contact summaries should not be repeated in this tab.
+- Assistant should stay focused on blockers, recommendation, missing/unordered items, and output/share availability.
+
+This section is a showroom-only correction. It does not authorize API routes, DB persistence, delivery-request mutation, real document generation, share-link creation, R2/Worker changes, production guard changes, process/unit management API work, or workspace/system behavior changes.
