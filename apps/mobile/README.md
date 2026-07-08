@@ -1,8 +1,8 @@
-# WAFL Mobile App Skeleton
+# WAFL Mobile App Mock
 
-Version: `2.0.0-alpha.2`
+Version: `2.0.0-alpha.3`
 
-This is the first Expo React Native skeleton for the App-first WAFL v2 line.
+This Expo React Native app is the App-first WAFL v2 mobile/tablet mock surface.
 
 ## Scope
 
@@ -10,20 +10,21 @@ This is the first Expo React Native skeleton for the App-first WAFL v2 line.
 - SDK line: Expo SDK 55.
 - Node decision: SDK 55 requires Node `20.19.x`; the owner environment `20.20.2` satisfies it.
 - This app is mock-only and does not connect to WAFL DB, API, R2, PDF Worker, file upload, camera, share sheet, Google login, or Apple login.
+- Root package files and root lockfiles are intentionally not part of this app scaffold.
 
 ## Mock screen
 
-The first screen contains a 제작 카드 with these local tabs:
+The first screen contains a production card with these local tabs:
 
 - 개요
-- 이미지·첨부
-- 사이즈·색상
+- 이미지
+- 사이즈
 - 원단
 - 부자재
-- 제작 플로우
-- 출력·공유
+- 제작 흐름
+- 출력
 
-All buttons are placeholders for product direction only.
+The mock demonstrates a representative image placeholder, top production summary, image/attachment rows, size/color rows, fabric/accessory quantity math, production process rows, output document rows, and delivery-request rows. All buttons are placeholders for product direction only.
 
 ## Commands
 
@@ -33,7 +34,7 @@ Run from this folder:
 npm install
 npm run typecheck
 npm run expo:config
-npm run start
+npm run start -- --web
 ```
 
-Do not create a root workspace or change the repository root package files for this skeleton.
+Stop the Expo server after preview. Do not commit generated `.expo`, `node_modules`, or local Expo runtime output.

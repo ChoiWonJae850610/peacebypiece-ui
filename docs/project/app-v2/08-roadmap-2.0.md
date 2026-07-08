@@ -1,4 +1,4 @@
-# WAFL v2 App-first Roadmap 2.0 - 2.0.0-alpha.2
+# WAFL v2 App-first Roadmap 2.0 - 2.0.0-alpha.3
 
 ## Purpose
 
@@ -17,7 +17,7 @@ Status: done.
 
 ### 2.0.0-alpha.2
 
-Status: current.
+Status: done.
 
 - Record `www.wafl.co.kr` as the public WAFL app landing site.
 - Keep `/ui`, `/roadmap`, and `/functions` localhost-only development check routes.
@@ -27,18 +27,25 @@ Status: current.
 - Align app display version to `2.0.0-alpha.2`.
 - Do not connect real DB, API, R2, PDF, Worker, auth, camera, file, or share behavior.
 
-## Next planned checkpoints
-
 ### 2.0.0-alpha.3
 
-- Expand the mock production-card overview UX in the app skeleton.
-- Establish clearer iPhone/tablet navigation and device-frame review direction.
-- Keep implementation mock-only unless a future work order explicitly expands scope.
+Status: current.
+
+- Expand the Expo skeleton into a visually inspectable mock production-card UX.
+- Improve the start/header area with WAFL version, representative image placeholder, production quantity, due date, state, and next recommendation.
+- Keep a one-column iPhone flow while centering the app surface on tablet widths without turning it into a desktop multi-column layout.
+- Add clearer mock sections for overview, image/attachment, size/color, fabric, accessory, production flow, and output/share.
+- Split repeated mock data into constants and repeated row/metric/action components.
+- Keep all controls mock-only: no DB, API, R2, PDF, Worker, auth, camera, file picker, upload, share, or production mutation.
+- Align app display version to `2.0.0-alpha.3`.
+
+## Next planned checkpoints
 
 ### 2.0.0-alpha.4
 
-- Mock image and attachment flow.
-- Define representative-image rules in app UX.
+- Start only after alpha.3 is committed and reviewed.
+- Mock image and attachment interaction details.
+- Define representative-image local-state rules in app UX.
 
 ### 2.0.0-alpha.5
 

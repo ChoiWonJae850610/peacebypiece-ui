@@ -1,3 +1,46 @@
+# 2.0.0-alpha.3 WAFL v2 App-first Production Card Mock UX
+
+- Current GPT checkpoint: `2.0.0-alpha.3`.
+- Baseline source before this patch: repository `APP_VERSION: 2.0.0-alpha.2`.
+- Baseline commit: `3dad6e86956f59e8699fd350a319cdb8b483cc57`.
+- This patch improves the Expo skeleton into a visually inspectable mock production-card app screen.
+- `apps/mobile` now shows a richer mock-only production card with top production summary, image/attachment, size/color, fabric, accessory, production flow, output/share, and delivery-request sections.
+- The mobile app remains React Native primitive based and does not add dependencies.
+- The app display version is aligned to `2.0.0-alpha.3`.
+- Expo generated local outputs such as `.expo` and `apps/mobile/node_modules` are not source deliverables and must not be committed or included in source ZIP handoff.
+
+Explicitly not changed:
+
+```text
+- DB migration
+- API route behavior
+- Neon schema
+- Cloudflare R2 Worker
+- PDF Worker
+- real file upload/delete
+- real camera/photo/file picker
+- real share-link generation
+- real PDF generation
+- real auth callback
+- production data
+- root package.json
+- root package-lock.json
+- pnpm lock/workspace files
+- /system or /workspace deletion
+```
+
+Manual device QA remains required before product verification:
+
+```text
+- iPhone portrait one-column review
+- iPad mini portrait review
+- iPad Pro landscape centered-width review
+- Galaxy Tab portrait/landscape rotation review
+- Expo Web preview inspection after local server run
+```
+
+---
+
 # 2.0.0-alpha.2 WAFL v2 App-first Expo Skeleton and Public Web Boundary
 
 - Current GPT checkpoint: `2.0.0-alpha.2`.

@@ -75,3 +75,25 @@ Manual device QA remains required before product verification:
 - iPad Pro landscape review.
 - Galaxy Tab rotation review.
 - Korean text and numeric input checks when editable fields are introduced.
+
+## 2.0.0-alpha.3 production-card mock QA
+
+The alpha.3 Expo app mock requires these static and preview checks:
+
+- Expo config can be read after the app version changes to `2.0.0-alpha.3`.
+- TypeScript check passes without adding dependencies.
+- The first screen shows WAFL version, representative-image placeholder, product title, quantity, due date, production state, and next recommendation.
+- iPhone-width layout remains a one-column production-card flow.
+- Tablet widths use a stable centered maximum width and do not become a desktop three-column screen.
+- Tabs expose overview, image/attachment, size/color, fabric, accessory, production flow, and output/share sections.
+- Fabric and accessory rows show required quantity, allowance/loss, stock use, order quantity, unit price, amount, state, and mock next action.
+- Output/share shows document rows, included attachments, representative image thumbnail, and delivery-request rows without invoking PDF/share/file APIs.
+- No real camera, photo picker, file picker, login, upload, share, PDF, API, R2, Worker, DB, or production behavior is invoked.
+
+Manual device QA remains required before product verification:
+
+- iPhone portrait one-column review.
+- iPad mini portrait review.
+- iPad Pro landscape centered-width review.
+- Galaxy Tab portrait/landscape rotation review.
+- Expo Web preview inspection with the local server stopped after review.
