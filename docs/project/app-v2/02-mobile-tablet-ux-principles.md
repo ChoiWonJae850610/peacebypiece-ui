@@ -20,7 +20,7 @@ The production card is organized around seven app-first sections:
 
 1. 개요
 2. 이미지·첨부
-3. 사이즈·컬러
+3. 사이즈·색상
 4. 원단
 5. 부자재
 6. 제작 플로우

@@ -19,6 +19,7 @@ import {
   deliveryRows,
   fabricRows,
   imageMocks,
+  nextCheckByTab,
   outputRows,
   overviewInfo,
   processRows,
@@ -59,7 +60,10 @@ export default function ProductionCardMock() {
           <View style={styles.detailPane}>
             <ProductionHeader isTablet={isTablet} />
             <TabRail activeTab={activeTab} setActiveTab={setActiveTab} isTablet={isTablet} />
-            <View style={styles.section}>{renderActiveTab(activeTab, isTablet)}</View>
+            <View style={styles.section}>
+              <NextCheckPanel activeTab={activeTab} />
+              {renderActiveTab(activeTab, isTablet)}
+            </View>
           </View>
         </View>
         <BottomNavigation />
@@ -271,6 +275,26 @@ function TabRail({
   );
 }
 
+function NextCheckPanel({ activeTab }: { activeTab: ProductionTabId }) {
+  const item = nextCheckByTab[activeTab];
+  const toneStyle =
+    item.tone === "warning"
+      ? styles.nextCheckWarning
+      : item.tone === "ready"
+        ? styles.nextCheckReady
+        : styles.nextCheckNeutral;
+
+  return (
+    <View style={[styles.nextCheckPanel, toneStyle]}>
+      <Text style={styles.nextCheckEyebrow}>다음 확인</Text>
+      <View style={styles.flex}>
+        <Text style={styles.nextCheckTitle}>{item.title}</Text>
+        <Text style={styles.nextCheckDetail}>{item.detail}</Text>
+      </View>
+    </View>
+  );
+}
+
 function renderActiveTab(activeTab: ProductionTabId, isTablet: boolean) {
   switch (activeTab) {
     case "overview":
@@ -372,6 +396,10 @@ function SizesTab({ isTablet }: { isTablet: boolean }) {
         title="사이즈·색상"
         caption="표준, 고객사, 자유 사이즈를 같은 표에서 확인하고 cm/inch 전환과 1/8 helper를 mock으로 표시합니다."
       />
+      <View style={styles.quantityCheck}>
+        <Text style={styles.quantityCheckTitle}>색상별 수량 합계</Text>
+        <Text style={styles.quantityCheckText}>아이보리 80벌 + 네이비 120벌 + 블랙 160벌 = 총 360벌</Text>
+      </View>
       <View style={styles.segmentRow}>
         <Text style={styles.segmentSelected}>cm</Text>
         <Text style={styles.segment}>inch</Text>
@@ -442,18 +470,24 @@ function FlowTab() {
     <View>
       <SectionTitle
         title="제작 플로우"
-        caption="제작 공장과 추가 공정을 작업 순서로 보여줍니다. 이동은 drag 또는 길게 누르기 예정 방향만 표시합니다."
+        caption="제작 공장, 추가 공정, 공장 전달 준비 상태를 정리합니다. 이동은 drag 또는 길게 누르기 예정 방향만 표시합니다."
       />
+      <View style={styles.flowSummary}>
+        <Text style={styles.inlineMetric}>제작 공장 1곳</Text>
+        <Text style={styles.inlineMetric}>추가 공정 2건</Text>
+        <Text style={styles.inlineMetric}>전달 전 확인 2건</Text>
+      </View>
       {processRows.map((row, index) => (
         <View key={row.process} style={styles.processRow}>
           <Text style={styles.dragHandle}>{index + 1}</Text>
           <View style={styles.flex}>
             <View style={styles.rowHead}>
               <Text style={styles.rowTitle}>{row.process}</Text>
-              <Text style={styles.rowBadge}>{index === 0 ? "제작 공장" : row.status}</Text>
+              <Text style={styles.rowBadge}>{index === 0 ? "제작 공장" : "추가 공정"}</Text>
             </View>
             <Text style={styles.rowDetail}>{row.partner} · {row.quantity} · 납기 {row.dueDate}</Text>
             <Text style={styles.rowMeta}>단가 {row.unitPrice} · 금액 {row.amount} · 단위 {row.unit}</Text>
+            <Text style={styles.statusLine}>전달/확인 상태 · {row.status}</Text>
             <Text style={styles.smallText}>{row.memo}</Text>
           </View>
         </View>
@@ -469,7 +503,7 @@ function OutputTab() {
     <View>
       <SectionTitle
         title="제작 문서"
-        caption="문서 구성, 공유, 인쇄, 저장, 첨부 포함 선택을 mock으로 보여줍니다. 실제 생성과 공유는 호출하지 않습니다."
+        caption="문서 종류와 포함 항목을 먼저 확인하고, 보기·공유·인쇄·저장은 compact action으로만 보여줍니다."
       />
       <View style={styles.outputPreview}>
         <View style={styles.previewThumb}>
@@ -477,7 +511,7 @@ function OutputTab() {
         </View>
         <View style={styles.flex}>
           <Text style={styles.rowTitle}>현재 제작 카드 기준 미리보기</Text>
-          <Text style={styles.rowDetail}>대표 이미지, 사이즈·색상, 원단, 부자재, 제작 플로우, 메모</Text>
+          <Text style={styles.rowDetail}>대표 이미지, 사이즈·색상, 원단, 부자재, 제작 공장, 공정 메모</Text>
           <View style={styles.chipRow}>
             {included.map((item) => (
               <Text key={item.title} style={styles.fileChip}>{item.title}</Text>
@@ -485,12 +519,17 @@ function OutputTab() {
           </View>
         </View>
       </View>
-      <Text style={styles.subsectionTitle}>첨부파일 포함 선택 placeholder</Text>
+      <Text style={styles.subsectionTitle}>문서 종류와 포함 항목</Text>
       {outputRows.map((row) => (
         <View key={row.title} style={styles.outputRow}>
           <View style={styles.flex}>
             <Text style={styles.rowTitle}>{row.title}</Text>
             <Text style={styles.rowDetail}>{row.detail}</Text>
+            <View style={styles.chipRow}>
+              {row.includes.map((item) => (
+                <Text key={item} style={styles.fileChip}>{item}</Text>
+              ))}
+            </View>
             <Text style={styles.smallText}>{row.state}</Text>
           </View>
           <View style={styles.outputActions}>
@@ -508,7 +547,8 @@ function OutputTab() {
             <View style={styles.flex}>
               <Text style={styles.rowTitle}>{row.title}</Text>
               <Text style={styles.rowDetail}>{row.origin} → {row.destination}</Text>
-              <Text style={styles.smallText}>{row.items} · {row.memo}</Text>
+              <Text style={styles.smallText}>{row.items} · {row.contact}</Text>
+              <Text style={styles.smallText}>전달 메모 · {row.memo}</Text>
             </View>
             <IconButton label="배송요청 저장" symbol="S" />
           </View>
@@ -1127,6 +1167,47 @@ const styles = StyleSheet.create({
     borderRadius: 14,
     padding: 14
   },
+  nextCheckPanel: {
+    alignItems: "flex-start",
+    borderRadius: 11,
+    flexDirection: "row",
+    gap: 10,
+    marginBottom: 13,
+    paddingHorizontal: 11,
+    paddingVertical: 10
+  },
+  nextCheckNeutral: {
+    backgroundColor: "#f6efe5"
+  },
+  nextCheckWarning: {
+    backgroundColor: "#fff1d3"
+  },
+  nextCheckReady: {
+    backgroundColor: "#edf2e7"
+  },
+  nextCheckEyebrow: {
+    backgroundColor: "#17263d",
+    borderRadius: 999,
+    color: "#ffffff",
+    flexShrink: 0,
+    fontSize: 10,
+    fontWeight: "900",
+    overflow: "hidden",
+    paddingHorizontal: 7,
+    paddingVertical: 4
+  },
+  nextCheckTitle: {
+    color: "#17263d",
+    fontSize: 13,
+    fontWeight: "900",
+    lineHeight: 18
+  },
+  nextCheckDetail: {
+    color: "#5d544b",
+    fontSize: 12,
+    lineHeight: 17,
+    marginTop: 2
+  },
   sectionHeader: {
     gap: 5,
     marginBottom: 11
@@ -1252,6 +1333,24 @@ const styles = StyleSheet.create({
     gap: 7,
     marginBottom: 10
   },
+  quantityCheck: {
+    backgroundColor: "#f6efe5",
+    borderRadius: 10,
+    gap: 3,
+    marginBottom: 10,
+    paddingHorizontal: 10,
+    paddingVertical: 8
+  },
+  quantityCheckTitle: {
+    color: "#17263d",
+    fontSize: 12,
+    fontWeight: "900"
+  },
+  quantityCheckText: {
+    color: "#5d544b",
+    fontSize: 12,
+    lineHeight: 17
+  },
   segment: {
     backgroundColor: "#f5f1e8",
     borderRadius: 999,
@@ -1344,6 +1443,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: 9,
     paddingVertical: 5
   },
+  flowSummary: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 6,
+    marginBottom: 4
+  },
   dataRow: {
     borderTopColor: "#f0e7dc",
     borderTopWidth: 1,
@@ -1375,6 +1480,12 @@ const styles = StyleSheet.create({
     color: "#7b4b32",
     fontSize: 12,
     fontWeight: "800",
+    lineHeight: 18
+  },
+  statusLine: {
+    color: "#9b4a27",
+    fontSize: 12,
+    fontWeight: "900",
     lineHeight: 18
   },
   rowBadge: {

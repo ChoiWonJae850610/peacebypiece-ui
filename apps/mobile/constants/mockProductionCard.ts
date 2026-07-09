@@ -104,6 +104,7 @@ export type DocumentRow = {
   title: string;
   detail: string;
   state: string;
+  includes: string[];
 };
 
 export type DeliveryRow = {
@@ -111,7 +112,14 @@ export type DeliveryRow = {
   origin: string;
   destination: string;
   items: string;
+  contact: string;
   memo: string;
+};
+
+export type NextCheckItem = {
+  title: string;
+  detail: string;
+  tone: "neutral" | "warning" | "ready";
 };
 
 export const PRODUCTION_TABS: ProductionTab[] = [
@@ -169,14 +177,14 @@ export const productionCardMock = {
   unitCost: "34,850원",
   totalEstimate: "12,546,000원",
   representativeImage: "정면 착장",
-  nextAction: "안감 거래처를 확정하면 공장 전달 작업지시서를 검토할 수 있습니다.",
+  nextAction: "공장 전달 전 안감 거래처, 색상별 수량, 포함 첨부를 확인합니다.",
   outputState: "제작 문서 검토 가능",
   tradingSummary: "서울패브릭 / 버튼하우스 / 한강 봉제",
   memo: "허리끈 위치와 단추 간격을 검품 때 우선 확인합니다."
 };
 
 export const summaryMetrics: SummaryMetric[] = [
-  { label: "수량", value: productionCardMock.quantity, note: "컬러 3종 합계" },
+  { label: "수량", value: productionCardMock.quantity, note: "색상 3종 합계" },
   { label: "납기", value: productionCardMock.dueDate, note: "공장 전달 전 재확인" },
   { label: "상태", value: productionCardMock.statusLabel, note: "발주 전 확인 단계" },
   { label: "한벌 단가", value: productionCardMock.unitCost, note: "내부 검토용" },
@@ -193,8 +201,46 @@ export const overviewInfo: InfoItem[] = [
   { label: "제품 타입", value: productionCardMock.productType },
   { label: "거래/제작", value: productionCardMock.tradingSummary },
   { label: "짧은 메모", value: productionCardMock.memo },
-  { label: "다음 작업", value: productionCardMock.nextAction }
+  { label: "다음 확인", value: productionCardMock.nextAction }
 ];
+
+export const nextCheckByTab: Record<ProductionTabId, NextCheckItem> = {
+  overview: {
+    title: "납기와 총 예상 금액 확인",
+    detail: "공장 전달 전에 기본정보, 색상별 수량, 총 예상 금액을 한 번 더 확인합니다.",
+    tone: "ready"
+  },
+  images: {
+    title: "대표 이미지와 첨부 확인",
+    detail: "첨부파일 포함 여부는 출력·공유 탭에서 선택합니다.",
+    tone: "neutral"
+  },
+  sizes: {
+    title: "사이즈·색상 수량 합계 확인",
+    detail: "색상별 수량 합계가 총 수량 360벌과 맞는지 확인합니다.",
+    tone: "ready"
+  },
+  fabric: {
+    title: "미발주 원단 2건",
+    detail: "발주 요청 전 재고 사용수량과 초과분 처리를 확인합니다.",
+    tone: "warning"
+  },
+  accessories: {
+    title: "옵션·색상 미확정 1건",
+    detail: "행택 끈 거래처와 단가를 확인하면 부자재 발주 요청이 가능합니다.",
+    tone: "warning"
+  },
+  flow: {
+    title: "공장 전달 전 확인",
+    detail: "제작 공장, 추가 공정, 공정 메모, 단가, 납기를 확인합니다.",
+    tone: "warning"
+  },
+  output: {
+    title: "문서 출력 전 포함 항목 확인",
+    detail: "작업지시서 출력 전 원단 수량, 첨부 포함 여부, 배송요청 메모를 확인합니다.",
+    tone: "ready"
+  }
+};
 
 export const imageMocks: ImageMock[] = [
   { id: "front", title: "정면 착장", kind: "대표", selected: true, note: "첫 이미지가 자동 대표가 되는 mock" },
@@ -378,8 +424,8 @@ export const processRows: ProcessRow[] = [
     unitPrice: "9,800원",
     amount: "3,528,000원",
     dueDate: "08/12",
-    status: "진행 예정",
-    memo: "대표 생산 공장, 봉제와 마감 담당"
+    status: "공장 전달 준비",
+    memo: "대표 제작 공장입니다. 봉제와 마감 지시서를 전달하기 전 원단/부자재 준비 상태를 확인합니다."
   },
   {
     process: "워싱",
@@ -389,8 +435,8 @@ export const processRows: ProcessRow[] = [
     unitPrice: "2,200원",
     amount: "792,000원",
     dueDate: "08/15",
-    status: "일정 확인",
-    memo: "부드러운 촉감 확인 후 다음 공정 진행"
+    status: "공정 메모 필요",
+    memo: "워싱 강도와 촉감 기준을 공장 전달 작업지시서에 남겨야 합니다."
   },
   {
     process: "검품",
@@ -400,16 +446,36 @@ export const processRows: ProcessRow[] = [
     unitPrice: "1,600원",
     amount: "576,000원",
     dueDate: "08/18",
-    status: "대기",
-    memo: "단추 간격과 허리끈 길이 중점 확인"
+    status: "납기 확인 필요",
+    memo: "검품 기준은 단추 간격과 허리끈 길이입니다. 검품 납기와 단가를 다시 확인합니다."
   }
 ];
 
 export const outputRows: DocumentRow[] = [
-  { title: "작업지시서", detail: "대표 이미지, 사이즈·색상, 원단, 부자재, 제작 플로우, 메모 포함", state: "보기 가능" },
-  { title: "공장 전달 작업지시서", detail: "내부 단가 제외, 공장 작업 정보와 첨부 2건 포함", state: "공장 전달 전 확인" },
-  { title: "배송요청서 만들기", detail: "출발지, 도착지, 품목, 연락처, 배송 메모를 묶는 mock 흐름", state: "작성 대기" },
-  { title: "배송요청 추가하기", detail: "거래처별 요청서를 추가하는 mock 진입점", state: "추가 가능" }
+  {
+    title: "작업지시서",
+    detail: "제작 카드 전체 기준 문서",
+    state: "보기 가능",
+    includes: ["대표 이미지", "사이즈·색상", "원단", "부자재", "제작 공장"]
+  },
+  {
+    title: "공장 전달 작업지시서",
+    detail: "공장에 전달할 제작 정보 중심",
+    state: "공장 전달 전 확인",
+    includes: ["대표 이미지", "사이즈·색상", "원단 사용", "공정 메모", "첨부 2건"]
+  },
+  {
+    title: "배송요청서 만들기",
+    detail: "출발지 1곳, 도착지 1곳, 여러 품목, 전달 메모를 묶는 흐름",
+    state: "작성 대기",
+    includes: ["출발지", "도착지", "여러 품목", "전달 메모"]
+  },
+  {
+    title: "배송요청 추가하기",
+    detail: "거래처별 배송요청서를 추가하는 mock 진입점",
+    state: "추가 가능",
+    includes: ["거래처", "품목", "도착지", "메모"]
+  }
 ];
 
 export const deliveryRows: DeliveryRow[] = [
@@ -418,6 +484,7 @@ export const deliveryRows: DeliveryRow[] = [
     origin: "서울패브릭",
     destination: "한강 봉제",
     items: "원단 2종 / 부자재 1종",
+    contact: "공장 담당자 확인",
     memo: "8월 7일 오전 입고 요청"
   },
   {
@@ -425,6 +492,7 @@ export const deliveryRows: DeliveryRow[] = [
     origin: "한강 봉제",
     destination: "동대문 검품",
     items: "완성품 360벌",
+    contact: "검품실 담당자 확인",
     memo: "블랙 컬러 단추 간격 우선 확인"
   }
 ];

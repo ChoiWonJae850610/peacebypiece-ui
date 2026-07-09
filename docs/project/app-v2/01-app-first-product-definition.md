@@ -2,12 +2,12 @@
 
 ## Definition
 
-WAFL v2 is a mobile/tablet-first production workspace that organizes the clothing production process around product, style, image, attachment, size/color, material, accessory, production flow, output, and sharing inside one production card.
+WAFL v2 is a mobile/tablet-first production workspace that organizes the clothing production process around product, style, image, attachment, size/color, material, accessory, production flow, output, and sharing inside one production card. User-facing Korean copy uses `사이즈·색상`.
 
 Korean product phrase:
 
 ```text
-WAFL v2는 동대문 의류 제작 과정을 제품/스타일 단위로 정리하고, 대표 이미지, 이미지·첨부, 사이즈·컬러, 원단, 부자재, 제작 플로우, 출력·공유를 하나의 제작 카드 안에서 관리하는 모바일·태블릿 우선 의류 제작 워크스페이스다.
+WAFL v2는 동대문 의류 제작 과정을 제품/스타일 단위로 정리하고, 대표 이미지, 이미지·첨부, 사이즈·색상, 원단, 부자재, 제작 플로우, 출력·공유를 하나의 제작 카드 안에서 관리하는 모바일·태블릿 우선 의류 제작 워크스페이스다.
 ```
 
 ## Product stance
@@ -72,7 +72,7 @@ For user-facing app copy, use natural Korean such as:
 - 제작 카드
 - 제작 요약
 - 이미지 목록
-- 사이즈·컬러
+- 사이즈·색상
 - 제작 플로우
 - 출력·공유
 - 작업지시서

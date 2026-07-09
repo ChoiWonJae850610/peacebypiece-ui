@@ -1,4 +1,4 @@
-# WAFL v2 App-first Roadmap 2.0 - 2.0.0-alpha.5
+# WAFL v2 App-first Roadmap 2.0 - 2.0.0-alpha.6
 
 ## Purpose
 
@@ -55,7 +55,7 @@ Status: done.
 
 ### 2.0.0-alpha.5
 
-Status: current.
+Status: done.
 
 - Correct the App-first mobile mock visual fidelity after App Design Theme v1 adoption.
 - Remove runtime design-explanation strip from the app surface and keep theme rationale in docs.
@@ -64,31 +64,45 @@ Status: current.
 - Keep the mock professional, dense, and production-oriented without external assets, font files, or new dependencies.
 - Keep normal mobile production-card screens portrait-first and tablet portrait/landscape support with restrained width.
 - Keep all actions mock-only and preserve the one-current-primary-action rule for fabric/accessory rows.
-- Defer image/attachment deepening and representative-image UX rules to `2.0.0-alpha.6`.
+- Defer image/attachment deepening and representative-image UX rules to a later checkpoint.
 - Align app display version to `2.0.0-alpha.5`.
+
+### 2.0.0-alpha.6
+
+Status: current.
+
+- Align the `apps/mobile` mock with the settled `/ui` production-card flow.
+- Reframe the app mock away from generic production/project management and toward WAFL production-card input, order, factory-delivery, document, and delivery-request work.
+- Add compact tab-aware `다음 확인` / `작업 사인` guidance.
+- Reframe production flow as `제작 공장 + 추가 공정 + 공장 전달 준비`, not a full process-tracking system.
+- Show output/share as document type plus included information first, with compact mock actions after.
+- Keep user-facing wording as `사이즈·색상`.
+- Keep alpha.5 visual fidelity improvements intact.
+- Do not connect real DB, API, R2, PDF Worker, upload, camera, file picker, share, order, delivery, drag, or long-press behavior.
+- Align app display version to `2.0.0-alpha.6`.
 
 ## Next planned checkpoints
 
-### 2.0.0-alpha.6
+### 2.0.0-alpha.7
 
 - Improve image and attachment mock details.
 - Refine representative-image local-state rules and camera/photo/attachment placeholders.
 - Keep all camera, picker, upload, share, and storage behavior mock-only.
 
-### 2.0.0-alpha.7
+### 2.0.0-alpha.8
 
 - Mock size/color flow.
 - Preserve inch fraction entry direction.
 
-### 2.0.0-alpha.8
+### 2.0.0-alpha.9
 
 - Mock fabric and accessory card flows.
 
-### 2.0.0-alpha.9
+### 2.0.0-alpha.10
 
 - Mock production flow.
 
-### 2.0.0-alpha.10
+### 2.0.0-alpha.11
 
 - Mock output and share flow.
 

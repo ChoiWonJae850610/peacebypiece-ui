@@ -127,3 +127,17 @@ Final color values may be tuned after device review. The current contract is sem
 - Font or image assets with unclear license.
 - New font download or external image download in this version.
 - Real camera, file picker, upload, share link, PDF generation, API, DB, R2, or Worker connection in this visual foundation version.
+
+## 10. Production-Card Language Alignment
+
+`2.0.0-alpha.6` keeps the visual theme while tightening the WAFL production-card flow.
+
+- The app mock should not feel like a generic production-management, project-management, or schedule-tracking product.
+- Use production-card language first: `제작 카드`, `제작 요약`, `이미지·첨부`, `사이즈·색상`, `원단`, `부자재`, `제작 플로우`, and `출력·공유`.
+- The production-flow section should read as `제작 공장 + 추가 공정 + 공장 전달 준비`.
+- Prefer `공장 전달 준비`, `작업지시서 전달 준비`, `공정 메모 필요`, `단가 확인 필요`, `납기 확인 필요`, `전달 전 확인`, and `전달 완료`.
+- Avoid default mock statuses such as `진행 예정`, `일정 확인`, and `대기` when they make the screen feel like a generic tracking board.
+- Replace developer-like `Assistant` framing with compact user-facing labels such as `다음 확인`, `작업 사인`, `확인할 일`, or `오늘 확인`.
+- Output/share should show `작업지시서`, `공장 전달 작업지시서`, `배송요청서 만들기`, and `배송요청 추가하기` as business document rows, with included information shown before compact actions.
+- User-facing copy should use `사이즈·색상`; internal implementation may still use `size` and `color`.
+- Image/attachment detail deepening is not part of this alpha.6 alignment pass and remains deferred.

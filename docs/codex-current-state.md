@@ -1,3 +1,54 @@
+# 2.0.0-alpha.6 WAFL v2 App-first /ui Alignment Correction
+
+- Current GPT checkpoint: `2.0.0-alpha.6`.
+- Baseline source before this patch: repository `APP_VERSION: 2.0.0-alpha.5`.
+- Baseline commit: `1ee39d6f54a49d49468c21eae55b267bd905c7b9`.
+- This patch aligns the `apps/mobile` mock with the settled `/ui` production-card flow instead of adding real features.
+- The mobile mock now emphasizes the production-card input, order, factory-delivery, document, and delivery-request flow from the `/ui` baseline.
+- A compact tab-aware `다음 확인` panel replaces a generic assistant feeling and shows the next business check for overview, image/attachment, size/color, fabric, accessory, production flow, and output/share.
+- The production-flow section is reframed away from generic production-progress tracking and toward `제작 공장 + 추가 공정 + 공장 전달 준비`.
+- Production-flow wording now uses WAFL-specific checks such as `공장 전달 준비`, `공정 메모 필요`, and `납기 확인 필요`, rather than generic `진행 예정`, `일정 확인`, or `대기`.
+- Output/share now shows document type and included information first, then compact view/share/print/save mock actions.
+- Delivery-request rows show one origin, one destination, multiple items, contact confirmation, and delivery memo.
+- Size/color user-facing wording is kept as `사이즈·색상` across the mobile mock and updated App-first docs.
+- Image/attachment deepening, representative-image UX rules, and camera/photo/attachment placeholder details are deferred to `2.0.0-alpha.7`.
+- No real DB, API, R2, PDF Worker, upload, camera, file picker, share, auth, order, delivery, drag, or long-press behavior is connected.
+- Font files, external images, new dependencies, root package metadata changes, root lockfile changes, and production behavior are still not added.
+
+Explicitly not changed:
+
+```text
+- DB migration
+- API route behavior
+- Neon schema
+- Cloudflare R2 Worker
+- PDF Worker
+- real file upload/delete
+- real camera/photo/file picker
+- real share-link generation
+- real PDF generation
+- real auth callback
+- real order/delivery mutation
+- real drag/long-press mutation
+- production data
+- root package.json
+- root package-lock.json
+- pnpm lock/workspace files
+- /system or /workspace deletion
+```
+
+Manual device QA remains required before product verification:
+
+```text
+- iPhone portrait one-column production-card flow review
+- iPad mini portrait review
+- iPad Pro landscape centered workbench review
+- Galaxy Tab portrait/landscape rotation review
+- Expo Web preview inspection after local server run
+```
+
+---
+
 # 2.0.0-alpha.5 WAFL v2 App-first Visual Fidelity Correction
 
 - Current GPT checkpoint: `2.0.0-alpha.5`.
@@ -10,7 +61,7 @@
 - Representative image, list thumbnail, output preview, and material/accessory rows use React Native `View`/`Text` based garment and swatch placeholders instead of plain text boxes or external assets.
 - Mobile remains portrait-first for normal production-card screens. Tablet portrait/landscape keeps a centered workbench with restrained width and no heavy desktop admin three-panel layout.
 - Status-based material/accessory rows still expose only one current primary action.
-- Image/attachment deepening, representative-image UX details, and camera/photo/attachment placeholder rules are deferred to `2.0.0-alpha.6`.
+- Image/attachment deepening, representative-image UX details, and camera/photo/attachment placeholder rules are deferred beyond `2.0.0-alpha.6`.
 - Font files, external images, new dependencies, root package metadata changes, root lockfile changes, and production behavior are still not added.
 - Expo generated local outputs such as `.expo` and `apps/mobile/node_modules` are not source deliverables and must not be committed or included in source ZIP handoff.
 
