@@ -2,6 +2,7 @@
 
 # dependencies
 /node_modules/
+apps/mobile/node_modules/
 cloudflare/pdf-generator-worker/node_modules/
 .pnp
 .pnp.*
@@ -16,6 +17,8 @@ cloudflare/pdf-generator-worker/node_modules/
 
 # production / build
 /.next/
+apps/mobile/.expo/
+apps/mobile/.expo-shared/
 out/
 build/
 *.tsbuildinfo

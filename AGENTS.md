@@ -15,11 +15,12 @@
   11. `docs/project/app-v2/08-roadmap-2.0.md`
   12. `docs/project/app-v2/09-codex-working-rules.md`
   13. `docs/project/app-v2/10-public-landing-site.md`
-  14. `docs/project/v2/00-start-here.md` through `docs/project/v2/14-operational-policy-absorption.md`
-  15. `docs/project/25-korean-unicode-encoding-standard.md`
-  16. `docs/project/32-product-completion-and-ui-evidence-standard.md`
-  17. `docs/project/26-final-policy-decisions-and-master-todo.md`
-  18. `docs/project/31-pre-codex-integrated-master-plan.md`
+  14. `docs/project/app-v2/11-app-design-theme-v1.md`
+  15. `docs/project/v2/00-start-here.md` through `docs/project/v2/14-operational-policy-absorption.md`
+  16. `docs/project/25-korean-unicode-encoding-standard.md`
+  17. `docs/project/32-product-completion-and-ui-evidence-standard.md`
+  18. `docs/project/26-final-policy-decisions-and-master-todo.md`
+  19. `docs/project/31-pre-codex-integrated-master-plan.md`
 - `docs/project/app-v2/*` is the priority authority for the `2.0.x` App-first line.
 - Existing `docs/project/v2/*` documents are not deleted. They remain the `0.30.x` `/ui` design baseline and preserved policy reference for Product, Sheet/Card, Korean role labels, Neon/R2/Worker, PDF/share, mobile-web, and QA rules.
 - `www.wafl.co.kr` is the public marketing, download, pricing, examples, inquiry, trial-request, and waitlist landing site for the WAFL app.
@@ -27,6 +28,9 @@
 - `/system` and `/workspace` are long-term removal targets in the App-first product direction, but do not delete them until a separate phased deprecation, guard/hidden, and removal work order replaces their remaining duties.
 - `/ui` remains an implementation-baseline design showroom. It is not the customer-facing app target.
 - The customer-facing UI direction is Expo React Native first.
+- `docs/project/app-v2/11-app-design-theme-v1.md` defines the first app visual foundation: `동대문 제작 워크룸 / Dongdaemun Atelier Ops`.
+- Normal mobile production-card screens are portrait-first. Mobile landscape is not the default production-card target; the future sketch/drawing module may be the mobile-landscape exception.
+- Tablet app screens must support portrait and landscape without becoming a compressed desktop admin layout.
 - Next.js remains for system admin, customer admin advanced settings, operations, API, document, internal showroom, and test-console flows.
 - For `2.0.x` work, do not implement from old `0.24.x` workorder-centric documents when they conflict with the App-first product direction or the active `app-v2` documents.
 

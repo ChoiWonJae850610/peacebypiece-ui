@@ -1,3 +1,49 @@
+# 2.0.0-alpha.4 WAFL v2 App Design Theme v1 and Mobile Mock Redesign
+
+- Current GPT checkpoint: `2.0.0-alpha.4`.
+- Baseline source before this patch: repository `APP_VERSION: 2.0.0-alpha.3`.
+- Baseline commit: `2c7cadf3ae9a4ec99a505ccfaf71482e1a457f8d`.
+- This patch adds the first App-first visual foundation document: `docs/project/app-v2/11-app-design-theme-v1.md`.
+- Theme direction: `동대문 제작 워크룸 / Dongdaemun Atelier Ops`.
+- `apps/mobile` is redesigned as a mock-only professional production workroom surface with warm paper/off-white base, deep navy primary, brick orange/thread amber production accents, and deep olive completion states.
+- The mobile mock keeps normal production-card screens portrait-first and uses compact, information-dense cards rather than large portfolio-style samples.
+- Tablet mock behavior is represented as a centered/wide workbench with a production-card list and selected card detail, without turning into a heavy desktop admin three-panel layout.
+- Status-based row actions now expose only one current primary action: input/check guidance, `발주 요청`, `발주 완료`, or no action for completed rows.
+- Font files, external images, new dependencies, real camera/file/upload/share/PDF/API/DB/R2/Worker connections, and root package metadata changes are still not added.
+- Expo generated local outputs such as `.expo` and `apps/mobile/node_modules` are not source deliverables and must not be committed or included in source ZIP handoff.
+
+Explicitly not changed:
+
+```text
+- DB migration
+- API route behavior
+- Neon schema
+- Cloudflare R2 Worker
+- PDF Worker
+- real file upload/delete
+- real camera/photo/file picker
+- real share-link generation
+- real PDF generation
+- real auth callback
+- production data
+- root package.json
+- root package-lock.json
+- pnpm lock/workspace files
+- /system or /workspace deletion
+```
+
+Manual device QA remains required before product verification:
+
+```text
+- iPhone portrait one-column review
+- iPad mini portrait review
+- iPad Pro landscape centered-width review
+- Galaxy Tab portrait/landscape rotation review
+- Expo Web preview inspection after local server run
+```
+
+---
+
 # 2.0.0-alpha.3 WAFL v2 App-first Production Card Mock UX
 
 - Current GPT checkpoint: `2.0.0-alpha.3`.

@@ -2,7 +2,7 @@
   "expo": {
     "name": "WAFL",
     "slug": "wafl-mobile",
-    "version": "2.0.0-alpha.3",
+    "version": "2.0.0-alpha.4",
     "scheme": "wafl",
     "orientation": "default",
     "userInterfaceStyle": "light",
@@ -18,11 +18,11 @@
     "android": {
       "package": "kr.co.wafl.app.dev",
       "adaptiveIcon": {
-        "backgroundColor": "#f7f4ed"
+        "backgroundColor": "#f3eee4"
       }
     },
     "extra": {
-      "appVersion": "2.0.0-alpha.3",
+      "appVersion": "2.0.0-alpha.4",
       "mockOnly": true
     }
   }

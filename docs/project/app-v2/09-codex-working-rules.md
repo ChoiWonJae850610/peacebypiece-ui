@@ -36,22 +36,44 @@ Before any App-first file modification, read:
 11. `docs/project/app-v2/08-roadmap-2.0.md`
 12. `docs/project/app-v2/09-codex-working-rules.md`
 13. `docs/project/app-v2/10-public-landing-site.md`
-14. `docs/project/v2/00-start-here.md` through `docs/project/v2/14-operational-policy-absorption.md`
-15. `docs/project/25-korean-unicode-encoding-standard.md`
-16. `docs/project/32-product-completion-and-ui-evidence-standard.md`
-17. `docs/project/26-final-policy-decisions-and-master-todo.md`
-18. `docs/project/31-pre-codex-integrated-master-plan.md`
+14. `docs/project/app-v2/11-app-design-theme-v1.md`
+15. `docs/project/v2/00-start-here.md` through `docs/project/v2/14-operational-policy-absorption.md`
+16. `docs/project/25-korean-unicode-encoding-standard.md`
+17. `docs/project/32-product-completion-and-ui-evidence-standard.md`
+18. `docs/project/26-final-policy-decisions-and-master-todo.md`
+19. `docs/project/31-pre-codex-integrated-master-plan.md`
 
 ## 4. Newest rule
 
 `4. Newest` should contain final deliverables only.
 
-Keep only:
+For `2.0.x` App-first pipeline handoff, keep only:
 
 - source ZIP,
-- repo-state,
-- build log,
-- verification log.
+- repo-state.
+
+Build logs and verification logs should be stored under `Logs/Repo_Status` and referenced from repo-state unless a future pipeline contract explicitly changes this.
+
+The source ZIP must exclude:
+
+```text
+node_modules
+apps/mobile/node_modules
+.next
+.tmp
+artifacts
+reports
+.env*
+test-results
+playwright-report
+coverage
+*.tsbuildinfo
+cloudflare/pdf-generator-worker/node_modules
+generated zip files
+repo-state txt
+build logs
+verification logs
+```
 
 Patch ZIPs, when requested, must use a flat structure and include a top-level `commit-meta.md`.
 
@@ -135,3 +157,16 @@ For the mobile skeleton, run mobile checks from `apps/mobile` when dependencies 
 npm run typecheck
 npm run expo:config
 ```
+
+## App design theme rule
+
+`docs/project/app-v2/11-app-design-theme-v1.md` is the active visual foundation for `2.0.0-alpha.4` and later until replaced.
+
+Rules:
+
+- The app theme is `동대문 제작 워크룸 / Dongdaemun Atelier Ops`.
+- Normal mobile production-card screens are portrait-first.
+- Tablet must support portrait and landscape.
+- The future sketch/drawing module may allow mobile landscape as an exception.
+- Do not add font files, external images, or new dependencies for visual polish unless a work order explicitly approves them.
+- Real camera, file upload, share, PDF, API, DB, R2, and Worker behavior must remain disconnected during mock-only visual foundation work.

@@ -1,4 +1,4 @@
-# WAFL v2 App-first Roadmap 2.0 - 2.0.0-alpha.3
+# WAFL v2 App-first Roadmap 2.0 - 2.0.0-alpha.4
 
 ## Purpose
 
@@ -29,7 +29,7 @@ Status: done.
 
 ### 2.0.0-alpha.3
 
-Status: current.
+Status: done.
 
 - Expand the Expo skeleton into a visually inspectable mock production-card UX.
 - Improve the start/header area with WAFL version, representative image placeholder, production quantity, due date, state, and next recommendation.
@@ -39,28 +39,42 @@ Status: current.
 - Keep all controls mock-only: no DB, API, R2, PDF, Worker, auth, camera, file picker, upload, share, or production mutation.
 - Align app display version to `2.0.0-alpha.3`.
 
-## Next planned checkpoints
-
 ### 2.0.0-alpha.4
 
-- Start only after alpha.3 is committed and reviewed.
-- Mock image and attachment interaction details.
-- Define representative-image local-state rules in app UX.
+Status: current.
+
+- Add `docs/project/app-v2/11-app-design-theme-v1.md`.
+- Apply App Design Theme v1: `동대문 제작 워크룸 / Dongdaemun Atelier Ops`.
+- Redesign `apps/mobile` mock visual foundation toward a dense Korean apparel production workroom.
+- Use warm paper/off-white base, deep navy primary, brick orange/thread amber production accents, and deep olive completion status.
+- Keep normal mobile production-card screens portrait-first.
+- Keep tablet portrait/landscape support without turning the app into a desktop admin three-panel layout.
+- Keep actions icon-first, and expose only one current primary action for fabric/accessory status rows.
+- Do not add new dependencies, font files, external image assets, real camera/file/upload/share/PDF/API/DB/R2/Worker behavior, or root package metadata changes.
+- Align app display version to `2.0.0-alpha.4`.
+
+## Next planned checkpoints
 
 ### 2.0.0-alpha.5
+
+- Start only after alpha.4 is committed and reviewed.
+- Improve image and attachment mock details.
+- Refine representative-image local-state rules and camera/photo/attachment placeholders.
+
+### 2.0.0-alpha.6
 
 - Mock size/color flow.
 - Preserve inch fraction entry direction.
 
-### 2.0.0-alpha.6
+### 2.0.0-alpha.7
 
 - Mock fabric and accessory card flows.
 
-### 2.0.0-alpha.7
+### 2.0.0-alpha.8
 
 - Mock production flow.
 
-### 2.0.0-alpha.8
+### 2.0.0-alpha.9
 
 - Mock output and share flow.
 

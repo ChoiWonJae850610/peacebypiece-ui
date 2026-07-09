@@ -14,10 +14,27 @@ export type ProductionTab = {
   alertCount?: number;
 };
 
+export type ProductionCardListItem = {
+  id: string;
+  title: string;
+  sheetNo: string;
+  quantity: string;
+  dueDate: string;
+  status: string;
+  thumbnail: string;
+  totalEstimate: string;
+  issue?: string;
+};
+
 export type SummaryMetric = {
   label: string;
   value: string;
   note: string;
+};
+
+export type InfoItem = {
+  label: string;
+  value: string;
 };
 
 export type ImageMock = {
@@ -35,9 +52,11 @@ export type AttachmentMock = {
 };
 
 export type SizeRow = {
+  group: string;
   size: string;
   chestCm: string;
   lengthCm: string;
+  shoulderCm: string;
   chestIn: string;
   lengthIn: string;
 };
@@ -48,9 +67,12 @@ export type ColorRow = {
   note: string;
 };
 
+export type MaterialStatus = "입력중" | "발주 가능" | "발주 요청" | "발주 완료" | "주의/잠김";
+
 export type MaterialRow = {
   name: string;
   supplier: string;
+  category?: string;
   colorOrOption: string;
   required: string;
   allowance: string;
@@ -60,10 +82,10 @@ export type MaterialRow = {
   unit: string;
   unitPrice: string;
   amount: string;
-  status: string;
+  status: MaterialStatus;
   warning: string;
   locked: boolean;
-  primaryAction: string;
+  primaryAction: "발주 요청" | "발주 완료" | "정보 확인" | null;
 };
 
 export type ProcessRow = {
@@ -74,6 +96,7 @@ export type ProcessRow = {
   unitPrice: string;
   amount: string;
   dueDate: string;
+  status: string;
   memo: string;
 };
 
@@ -93,45 +116,90 @@ export type DeliveryRow = {
 
 export const PRODUCTION_TABS: ProductionTab[] = [
   { id: "overview", label: "개요", shortLabel: "개요" },
-  { id: "images", label: "이미지", shortLabel: "이미지" },
-  { id: "sizes", label: "사이즈", shortLabel: "사이즈" },
+  { id: "images", label: "이미지·첨부", shortLabel: "이미지" },
+  { id: "sizes", label: "사이즈·색상", shortLabel: "사이즈" },
   { id: "fabric", label: "원단", shortLabel: "원단", alertCount: 1 },
   { id: "accessories", label: "부자재", shortLabel: "부자재", alertCount: 1 },
-  { id: "flow", label: "제작 흐름", shortLabel: "흐름" },
-  { id: "output", label: "출력", shortLabel: "출력" }
+  { id: "flow", label: "제작 플로우", shortLabel: "플로우" },
+  { id: "output", label: "출력·공유", shortLabel: "문서" }
+];
+
+export const productionCards: ProductionCardListItem[] = [
+  {
+    id: "sheet-2408-119",
+    title: "리넨 셔츠 원피스",
+    sheetNo: "WAFL-2408-119",
+    quantity: "360벌",
+    dueDate: "08/20",
+    status: "발주 준비",
+    thumbnail: "정면",
+    totalEstimate: "12,546,000원",
+    issue: "원단 1건 확인"
+  },
+  {
+    id: "sheet-2408-121",
+    title: "세미 와이드 팬츠",
+    sheetNo: "WAFL-2408-121",
+    quantity: "240벌",
+    dueDate: "08/24",
+    status: "입력중",
+    thumbnail: "스와치",
+    totalEstimate: "7,980,000원"
+  },
+  {
+    id: "sheet-2408-124",
+    title: "울 블렌드 자켓",
+    sheetNo: "WAFL-2408-124",
+    quantity: "120벌",
+    dueDate: "09/02",
+    status: "발주 요청",
+    thumbnail: "도식",
+    totalEstimate: "18,240,000원",
+    issue: "납기 확인"
+  }
 ];
 
 export const productionCardMock = {
   title: "리넨 셔츠 원피스",
+  sheetNo: "WAFL-2408-119",
   productType: "여성 원피스 / 여름 1차 생산",
   statusLabel: "발주 준비",
   quantity: "360벌",
-  dueDate: "26/08/20",
+  dueDate: "2026.08.20",
   unitCost: "34,850원",
   totalEstimate: "12,546,000원",
   representativeImage: "정면 착장",
-  nextAction: "원단 거래처 1건을 확인하면 공장 전달 문서를 준비할 수 있습니다.",
-  outputState: "작업지시서 mock 준비"
+  nextAction: "안감 거래처를 확정하면 공장 전달 작업지시서를 검토할 수 있습니다.",
+  outputState: "제작 문서 검토 가능",
+  tradingSummary: "서울패브릭 / 버튼하우스 / 한강 봉제",
+  memo: "허리끈 위치와 단추 간격을 검품 때 우선 확인합니다."
 };
 
 export const summaryMetrics: SummaryMetric[] = [
   { label: "수량", value: productionCardMock.quantity, note: "컬러 3종 합계" },
-  { label: "납기", value: productionCardMock.dueDate, note: "공장 전달 전 확인" },
-  { label: "예상 단가", value: productionCardMock.unitCost, note: "내부 검토용" },
-  { label: "총 예상", value: productionCardMock.totalEstimate, note: "원단+부자재+공정" },
-  { label: "상태", value: productionCardMock.statusLabel, note: "발주 전 확인 단계" }
+  { label: "납기", value: productionCardMock.dueDate, note: "공장 전달 전 재확인" },
+  { label: "상태", value: productionCardMock.statusLabel, note: "발주 전 확인 단계" },
+  { label: "한벌 단가", value: productionCardMock.unitCost, note: "내부 검토용" },
+  { label: "총 예상", value: productionCardMock.totalEstimate, note: "원단+부자재+공정" }
 ];
 
 export const costMetrics: SummaryMetric[] = [
-  { label: "원단 총액", value: "6,482,000원", note: "로스 포함 주문 수량 기준" },
-  { label: "부자재 총액", value: "1,164,000원", note: "카테고리별 합산" },
+  { label: "원단 총액", value: "6,482,000원", note: "로스/여유 포함 발주수량 기준" },
+  { label: "부자재 총액", value: "1,164,000원", note: "주요 부자재 합산" },
   { label: "공정 총액", value: "4,900,000원", note: "대표 공장+추가 공정" }
 ];
 
+export const overviewInfo: InfoItem[] = [
+  { label: "제품 타입", value: productionCardMock.productType },
+  { label: "거래/제작", value: productionCardMock.tradingSummary },
+  { label: "짧은 메모", value: productionCardMock.memo },
+  { label: "다음 작업", value: productionCardMock.nextAction }
+];
+
 export const imageMocks: ImageMock[] = [
-  { id: "front", title: "정면 착장", kind: "대표", selected: true, note: "작업지시서 상단에 들어갈 대표 이미지" },
+  { id: "front", title: "정면 착장", kind: "대표", selected: true, note: "첫 이미지가 자동 대표가 되는 mock" },
   { id: "detail", title: "앞판 디테일", kind: "사진", selected: false, note: "카라와 버튼 간격 확인" },
-  { id: "sketch", title: "허리 라인 스케치", kind: "스케치", selected: false, note: "절개선과 허리끈 위치" },
+  { id: "sketch", title: "허리 라인", kind: "스케치", selected: false, note: "절개선과 허리끈 위치" },
   { id: "reference", title: "소매 참고", kind: "참고", selected: false, note: "소매 통과 커프스 폭 참고" }
 ];
 
@@ -142,17 +210,17 @@ export const attachmentRows: AttachmentMock[] = [
 ];
 
 export const sizeRows: SizeRow[] = [
-  { size: "XS", chestCm: "45.0", lengthCm: "112.0", chestIn: "17 3/4", lengthIn: "44 1/8" },
-  { size: "S", chestCm: "47.5", lengthCm: "113.0", chestIn: "18 3/4", lengthIn: "44 1/2" },
-  { size: "M", chestCm: "50.0", lengthCm: "114.5", chestIn: "19 5/8", lengthIn: "45 1/8" },
-  { size: "55", chestCm: "46.0", lengthCm: "112.5", chestIn: "18 1/8", lengthIn: "44 1/4" },
-  { size: "66", chestCm: "49.0", lengthCm: "114.0", chestIn: "19 1/4", lengthIn: "44 7/8" }
+  { group: "표준", size: "XS", chestCm: "45.0", lengthCm: "112.0", shoulderCm: "36.5", chestIn: "17 3/4", lengthIn: "44 1/8" },
+  { group: "표준", size: "S", chestCm: "47.5", lengthCm: "113.0", shoulderCm: "37.5", chestIn: "18 3/4", lengthIn: "44 1/2" },
+  { group: "표준", size: "M", chestCm: "50.0", lengthCm: "114.5", shoulderCm: "39.0", chestIn: "19 5/8", lengthIn: "45 1/8" },
+  { group: "고객사", size: "55", chestCm: "46.0", lengthCm: "112.5", shoulderCm: "37.0", chestIn: "18 1/8", lengthIn: "44 1/4" },
+  { group: "자유", size: "FREE", chestCm: "52.0", lengthCm: "116.0", shoulderCm: "40.0", chestIn: "20 1/2", lengthIn: "45 5/8" }
 ];
 
 export const colorRows: ColorRow[] = [
   { color: "아이보리", quantity: "80벌", note: "XS 20 / S 35 / M 25" },
   { color: "네이비", quantity: "120벌", note: "S 45 / M 55 / 66 20" },
-  { color: "블랙", quantity: "160벌", note: "S 40 / M 80 / 66 40" }
+  { color: "블랙", quantity: "160벌", note: "S 40 / M 80 / FREE 40" }
 ];
 
 export const fabricRows: MaterialRow[] = [
@@ -185,7 +253,7 @@ export const fabricRows: MaterialRow[] = [
     unit: "yd",
     unitPrice: "8,600원",
     amount: "1,797,400원",
-    status: "확인 필요",
+    status: "입력중",
     warning: "거래처 없음",
     locked: false,
     primaryAction: "정보 확인"
@@ -205,7 +273,24 @@ export const fabricRows: MaterialRow[] = [
     status: "발주 요청",
     warning: "요청 후 잠금",
     locked: true,
-    primaryAction: "발주 완료 처리"
+    primaryAction: "발주 완료"
+  },
+  {
+    name: "테이프 보강 원단",
+    supplier: "대광텍스",
+    colorOrOption: "오프화이트",
+    required: "45 yd",
+    allowance: "5 yd",
+    stockUse: "50 yd",
+    orderQuantity: "0 yd",
+    leftover: "기존 재고 사용",
+    unit: "yd",
+    unitPrice: "6,200원",
+    amount: "0원",
+    status: "발주 완료",
+    warning: "보기만 가능",
+    locked: true,
+    primaryAction: null
   }
 ];
 
@@ -213,6 +298,7 @@ export const accessoryRows: MaterialRow[] = [
   {
     name: "천연 자개 버튼",
     supplier: "버튼하우스",
+    category: "단추",
     colorOrOption: "18mm / 아이보리",
     required: "2,160개",
     allowance: "216개",
@@ -230,6 +316,7 @@ export const accessoryRows: MaterialRow[] = [
   {
     name: "케어 라벨",
     supplier: "라벨팩토리",
+    category: "라벨",
     colorOrOption: "화이트 / 한글 세탁표기",
     required: "420장",
     allowance: "30장",
@@ -242,11 +329,12 @@ export const accessoryRows: MaterialRow[] = [
     status: "발주 요청",
     warning: "요청 후 잠금",
     locked: true,
-    primaryAction: "발주 완료 처리"
+    primaryAction: "발주 완료"
   },
   {
     name: "행택 끈",
     supplier: "거래처 확인 필요",
+    category: "포장",
     colorOrOption: "면끈 / 네이비",
     required: "360개",
     allowance: "36개",
@@ -256,10 +344,28 @@ export const accessoryRows: MaterialRow[] = [
     unit: "개",
     unitPrice: "단가 없음",
     amount: "확인 필요",
-    status: "확인 필요",
+    status: "입력중",
     warning: "단가 없음",
     locked: false,
     primaryAction: "정보 확인"
+  },
+  {
+    name: "폴리백",
+    supplier: "팩토리팩",
+    category: "포장",
+    colorOrOption: "투명 / M",
+    required: "360장",
+    allowance: "40장",
+    stockUse: "0장",
+    orderQuantity: "400장",
+    leftover: "출고 포장 포함",
+    unit: "장",
+    unitPrice: "130원",
+    amount: "52,000원",
+    status: "발주 완료",
+    warning: "보기만 가능",
+    locked: true,
+    primaryAction: null
   }
 ];
 
@@ -271,7 +377,8 @@ export const processRows: ProcessRow[] = [
     unit: "벌",
     unitPrice: "9,800원",
     amount: "3,528,000원",
-    dueDate: "26/08/12",
+    dueDate: "08/12",
+    status: "진행 예정",
     memo: "대표 생산 공장, 봉제와 마감 담당"
   },
   {
@@ -281,7 +388,8 @@ export const processRows: ProcessRow[] = [
     unit: "벌",
     unitPrice: "2,200원",
     amount: "792,000원",
-    dueDate: "26/08/15",
+    dueDate: "08/15",
+    status: "일정 확인",
     memo: "부드러운 촉감 확인 후 다음 공정 진행"
   },
   {
@@ -291,13 +399,14 @@ export const processRows: ProcessRow[] = [
     unit: "벌",
     unitPrice: "1,600원",
     amount: "576,000원",
-    dueDate: "26/08/18",
+    dueDate: "08/18",
+    status: "대기",
     memo: "단추 간격과 허리끈 길이 중점 확인"
   }
 ];
 
 export const outputRows: DocumentRow[] = [
-  { title: "작업지시서", detail: "대표 이미지, 사이즈/컬러, 원단, 부자재, 공정, 메모 포함", state: "미리보기 가능" },
+  { title: "작업지시서", detail: "대표 이미지, 사이즈·색상, 원단, 부자재, 제작 플로우, 메모 포함", state: "보기 가능" },
   { title: "공장 전달 작업지시서", detail: "내부 단가 제외, 공장 작업 정보와 첨부 2건 포함", state: "공장 전달 전 확인" },
   { title: "배송요청서 만들기", detail: "출발지, 도착지, 품목, 연락처, 배송 메모를 묶는 mock 흐름", state: "작성 대기" },
   { title: "배송요청 추가하기", detail: "거래처별 요청서를 추가하는 mock 진입점", state: "추가 가능" }

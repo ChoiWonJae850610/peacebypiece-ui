@@ -57,6 +57,30 @@ For every app feature that edits or shares production data, later implementation
 
 This version is documentation only, so no device QA evidence is required yet.
 
+## 2.0.0-alpha.4 design theme and orientation QA
+
+The alpha.4 mobile mock applies `동대문 제작 워크룸 / Dongdaemun Atelier Ops` as the first app visual foundation.
+
+Static and preview checks:
+
+- Expo config can be read after the app version changes to `2.0.0-alpha.4`.
+- TypeScript check passes without adding dependencies.
+- The first screen reads as a professional production workroom, not a portfolio, landing page, or generic sample app.
+- Mobile portrait shows compact WAFL header actions, production-card list, selected card summary, horizontal tabs, and one-column tab content.
+- Mobile normal production-card flow is portrait-first; mobile landscape remains not-supported for this general mock.
+- Tablet portrait keeps a centered readable production-card surface without over-wide cards.
+- Tablet landscape may show production-card list and selected detail side by side, but must not become a desktop admin three-panel interface.
+- Status-driven fabric/accessory actions show only one primary action for the current state.
+- No real camera, photo picker, file picker, login, upload, share, PDF, API, R2, Worker, DB, or production behavior is invoked.
+
+Manual device QA remains required before product verification:
+
+- iPhone portrait one-column review.
+- iPad mini portrait review.
+- iPad Pro landscape workbench review.
+- Galaxy Tab portrait/landscape rotation review.
+- Expo Web preview inspection with the local server stopped after review.
+
 ## 2.0.0-alpha.2 skeleton QA
 
 The first `apps/mobile` skeleton requires static verification first:
