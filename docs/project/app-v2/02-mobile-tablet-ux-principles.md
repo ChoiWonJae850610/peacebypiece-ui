@@ -100,6 +100,23 @@ The alpha.8 mobile mock correction applies these real-use UX principles:
 
 This correction remains mock-only and does not connect camera, file picker, upload, share, PDF generation, API, DB, R2, Worker, push notification, order, delivery, drag, or long-press behavior.
 
+## 2.0.0-alpha.9 button and action cluster polish
+
+The alpha.9 mobile mock correction tightens button/action grammar:
+
+- Fabric and accessory cards should not repeat large text primary buttons at the bottom of every row.
+- The status badge, current-state primary action icon, lock/read state, view, delete, and optional photo affordance belong in one compact row-top action cluster.
+- The current-state primary action remains one item only: order request, order completion, or information check.
+- Completed or locked rows should not show editable primary actions. They show badge/read-only/locked direction.
+- Add actions for fabric and accessory sections should live near the section header as compact `+` icon buttons.
+- Image/attachment should show compact entry points for image upload, camera, sketch, and attachment without connecting real picker/camera/upload behavior.
+- Inline-edit direction is represented by editable-looking field affordance, not repeated edit buttons on every row.
+- Production-flow rail spacing should be regular, with the six baseline steps kept as the top rail and detailed process rows grouped inside the process step.
+- Flow-step addition is advanced/exception direction; the default visible `+` action should emphasize process addition.
+- Output/share icon rows should share the same compact visual grammar as other mock actions.
+
+This correction remains mock-only and does not connect real inline edit save, camera, file picker, upload, share, PDF generation, API, DB, R2, Worker, push notification, order, delivery, drag, or long-press behavior.
+
 ## Reordering and movement
 
 Production process ordering should use drag or long-press style UX where it is natural for the device.

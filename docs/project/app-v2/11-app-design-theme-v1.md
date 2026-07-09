@@ -172,3 +172,19 @@ Final color values may be tuned after device review. The current contract is sem
 - Cutting can be represented as a removable default step, while adding an internal process remains separate from adding a flow step.
 - Output/share should keep a document-workbench feel without repeated action clusters.
 - No dependency, external asset, font file, real upload, camera, file picker, share, PDF, API, DB, R2, Worker, push notification, order, delivery, drag, or long-press integration is added by this correction.
+
+## 13. Button And Action Cluster Polish
+
+`2.0.0-alpha.9` keeps Dongdaemun Atelier Ops but tightens repeated button grammar.
+
+- Row information must read before action controls.
+- Fabric and accessory rows use a compact action cluster at the row top, next to the status badge.
+- The current-state primary action may be icon-only when its accessibility label is explicit.
+- The default row surface should not repeat large text buttons such as order request, order complete, or information check.
+- Section add actions use compact header `+` buttons instead of bottom button stacks.
+- Inline edit should feel like touching the value itself, not hunting for a repeated edit button.
+- Locked/completed rows use badge and lock/read-only language rather than edit/action affordances.
+- Image/attachment actions are grouped in a compact top row for image upload, camera, sketch, and attachment placeholders.
+- Production-flow uses the six-step rail as the main rhythm; internal process rows belong inside the process step.
+- Output/share action icons should share size, spacing, and density with the rest of the app.
+- No dependency, external asset, font file, real upload, camera, file picker, share, PDF, API, DB, R2, Worker, push notification, order, delivery, inline-edit save, drag, or long-press integration is added by this correction.

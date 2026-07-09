@@ -183,3 +183,25 @@ Implementation boundary:
 ```text
 No real upload, camera, file picker, share, PDF generation, delivery request, order mutation, API, DB, R2, Worker, push notification, drag, long-press, auth, or storage behavior is authorized by this real-use UX correction.
 ```
+
+## 2.0.0-alpha.9 button/action cluster polish
+
+`2.0.0-alpha.9` keeps the alpha.8 real-use structure and reduces action clutter in the `apps/mobile` mock.
+
+Core correction:
+
+- Fabric and accessory row actions move into a compact row-top cluster next to the status badge.
+- Bottom repeated text buttons such as order request/order complete/information check are removed from fabric/accessory rows.
+- One current-state primary action remains available per row as an icon-like action; completed/locked rows have no primary mutation affordance.
+- Fabric and accessory add actions move to section-header `+` buttons.
+- Inline edit is shown as field/row affordance, not a repeated edit button. Actual edit persistence is not implemented.
+- Image/attachment shows a compact top action row for image upload, camera, sketch, and attachment mock entry points.
+- Production flow keeps the six-step rail while detailed process rows are understood as items inside the process step.
+- Process addition is the default visible add action; flow-step addition is described as advanced/exception mock direction.
+- Output/share keeps the document workbench and aligns view/share/print/save placeholders with the compact icon action grammar.
+
+Implementation boundary:
+
+```text
+No real upload, camera, file picker, share, PDF generation, delivery request, order mutation, inline edit save, API, DB, R2, Worker, push notification, drag, long-press, auth, or storage behavior is authorized by this button/action polish.
+```

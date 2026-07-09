@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { type ReactNode, useMemo, useState } from "react";
 import {
   Pressable,
   SafeAreaView,
@@ -352,6 +352,12 @@ function ImagesTab({ isTablet }: { isTablet: boolean }) {
         title="이미지·첨부"
         caption="사진은 제목을 매번 입력하지 않고 썸네일로 고릅니다. 첫 이미지는 자동 대표가 되며, 첨부는 허용 확장자 mock만 표시합니다."
       />
+      <SectionActionRow>
+        <IconButton label="이미지 업로드 mock" symbol="↑" />
+        <IconButton label="카메라 촬영 mock" symbol="◎" />
+        <IconButton label="스케치 열기 mock" symbol="✎" />
+        <IconButton label="첨부파일 추가 mock" symbol="＋" />
+      </SectionActionRow>
       <View style={styles.compactNotice}>
         <Text style={styles.compactNoticeText}>첫 이미지는 자동 대표 · 대표 삭제 시 다음 이미지가 대표 · 실제 카메라/파일 선택 없음</Text>
       </View>
@@ -365,11 +371,11 @@ function ImagesTab({ isTablet }: { isTablet: boolean }) {
               <GarmentPreview compact label={item.kind} />
               {item.selected ? <Text style={styles.crownBadge}>대표</Text> : null}
             </View>
-            <View style={styles.imageActionRow}>
+            <ActionCluster>
               <IconButton label={item.selected ? "대표 이미지" : "대표로 선택"} symbol={item.selected ? "★" : "☆"} />
               <IconButton label="자세히 보기" symbol="⌕" />
               <IconButton label="삭제 예정" symbol="×" danger />
-            </View>
+            </ActionCluster>
           </View>
         ))}
       </View>
@@ -476,14 +482,16 @@ function MaterialTab({
 
   return (
     <View>
-      <SectionTitle title={title} caption={summary} />
+      <View style={styles.sectionTitleWithActions}>
+        <View style={styles.flex}>
+          <SectionTitle title={title} caption={summary} />
+        </View>
+        <HeaderAddButton label={`${title} 추가`} />
+      </View>
       <View style={styles.rowSummary}>
         <Text style={styles.inlineMetric}>품목 {rows.length}건</Text>
         <Text style={styles.inlineMetric}>발주 가능 {orderable}건</Text>
         <Text style={styles.inlineMetric}>발주 요청 {requested}건</Text>
-      </View>
-      <View style={styles.sectionActionRow}>
-        <PrimaryAction label={`${title} 추가`} status="발주 가능" />
       </View>
       {rows.map((row) => (
         <MaterialRow key={row.name} row={row} />
@@ -540,17 +548,21 @@ function FlowTab() {
         <Text style={styles.inlineMetric}>추가 공정 2건</Text>
         <Text style={styles.inlineMetric}>준비 2건</Text>
       </View>
-      <View style={styles.sectionActionRow}>
-        <PrimaryAction label="공정 추가" status="발주 가능" />
-        <PrimaryAction label="플로우 추가" status="발주 요청" />
+      <View style={styles.processSectionHeader}>
+        <View style={styles.flex}>
+          <Text style={styles.subsectionTitle}>공정 단계 안의 세부 공정</Text>
+          <Text style={styles.smallText}>봉제·워싱·자수·라벨 같은 항목은 6단계 중 공정 안에 쌓입니다.</Text>
+        </View>
+        <HeaderAddButton label="공정 추가" />
       </View>
+      <Text style={styles.advancedFlowHint}>플로우 단계 추가는 고급/예외 mock이며 나중에 action sheet에서 분리합니다.</Text>
       {processRows.map((row, index) => (
         <View key={row.process} style={styles.processRow}>
           <Text style={styles.dragHandle}>{index + 1}</Text>
           <View style={styles.flex}>
             <View style={styles.rowHead}>
               <Text style={styles.rowTitle}>{row.process}</Text>
-              <Text style={styles.rowBadge}>{index === 0 ? "제작 공장" : "추가 공정"}</Text>
+              <Text style={styles.rowBadge}>공정 안 항목</Text>
             </View>
             <Text style={styles.rowDetail}>{row.partner} · {row.quantity} · 납기 {row.dueDate}</Text>
             <Text style={styles.rowMeta}>단가 {row.unitPrice} · 금액 {row.amount} · 단위 {row.unit}</Text>
@@ -618,8 +630,8 @@ function DocumentWorkbench({ included }: { included: typeof attachmentRows }) {
         <View style={styles.documentActionBar}>
           <IconButton label="보기" symbol="□" />
           <IconButton label="공유" symbol="↗" />
-          <IconButton label="인쇄" symbol="P" />
-          <IconButton label="저장" symbol="S" />
+          <IconButton label="인쇄" symbol="⎙" />
+          <IconButton label="저장" symbol="↓" />
         </View>
       </View>
     </View>
@@ -661,7 +673,7 @@ function OutputTab() {
               <Text style={styles.smallText}>{row.items} · {row.contact}</Text>
               <Text style={styles.smallText}>전달 메모 · {row.memo}</Text>
             </View>
-            <IconButton label="배송요청 저장" symbol="S" />
+            <IconButton label="배송요청 저장" symbol="↓" />
           </View>
         ))}
       </View>
@@ -688,6 +700,8 @@ function InfoRow({ label, value }: { label: string; value: string }) {
 }
 
 function MaterialRow({ row }: { row: MaterialRowData }) {
+  const primaryAction = getMaterialAction(row);
+
   return (
     <View style={[styles.dataRow, row.locked && styles.lockedRow]}>
       <View style={styles.rowHead}>
@@ -700,9 +714,9 @@ function MaterialRow({ row }: { row: MaterialRowData }) {
         </View>
         <View style={styles.statusCluster}>
           <Text style={[styles.rowBadge, statusBadgeStyle(row.status)]}>{row.status}</Text>
+          {primaryAction ? <IconButton label={primaryAction.label} symbol={primaryAction.symbol} emphasized /> : null}
           <IconButton label={row.locked ? "잠김" : "수정 가능"} symbol={row.locked ? "●" : "○"} danger={row.status === "주의/잠김"} />
           <IconButton label="보기" symbol="⌕" />
-          {!row.locked ? <IconButton label="편집" symbol="✎" /> : null}
           {!row.locked ? <IconButton label="삭제 예정" symbol="×" danger /> : null}
           <IconButton label="개별 사진 선택 사항" symbol="▧" />
         </View>
@@ -715,10 +729,23 @@ function MaterialRow({ row }: { row: MaterialRowData }) {
       </Text>
       <View style={styles.materialFooter}>
         <Text style={styles.smallText}>{row.leftover} · {row.warning} · 사진 선택 사항</Text>
-        {row.primaryAction ? <PrimaryAction label={row.primaryAction} status={row.status} /> : <Text style={styles.doneText}>완료 상태 · 보기만 가능</Text>}
+        <InlineEditHint locked={row.locked} />
       </View>
     </View>
   );
+}
+
+function getMaterialAction(row: MaterialRowData) {
+  if (!row.primaryAction || row.status === "발주 완료") {
+    return null;
+  }
+  if (row.status === "발주 요청") {
+    return { label: `${row.primaryAction} mock`, symbol: "✓" };
+  }
+  if (row.status === "발주 가능") {
+    return { label: `${row.primaryAction} mock`, symbol: "↗" };
+  }
+  return { label: `${row.primaryAction} mock`, symbol: "!" };
 }
 
 function PrimaryAction({ label, status }: { label: string; status: MaterialStatus }) {
@@ -730,6 +757,30 @@ function PrimaryAction({ label, status }: { label: string; status: MaterialStatu
     >
       <Text style={styles.primaryActionText}>{label}</Text>
     </Pressable>
+  );
+}
+
+function ActionCluster({ children }: { children: ReactNode }) {
+  return <View style={styles.actionCluster}>{children}</View>;
+}
+
+function SectionActionRow({ children }: { children: ReactNode }) {
+  return <View style={styles.sectionActionRow}>{children}</View>;
+}
+
+function HeaderAddButton({ label }: { label: string }) {
+  return (
+    <Pressable accessibilityRole="button" accessibilityLabel={`${label} mock 동작`} style={styles.headerAddButton}>
+      <Text style={styles.headerAddButtonText}>＋</Text>
+    </Pressable>
+  );
+}
+
+function InlineEditHint({ locked }: { locked: boolean }) {
+  return (
+    <Text style={[styles.inlineEditHint, locked && styles.inlineEditHintLocked]}>
+      {locked ? "잠김 · 보기만 가능" : "값을 눌러 수정 mock"}
+    </Text>
   );
 }
 
@@ -765,10 +816,24 @@ function getMaterialTone(row: MaterialRowData) {
   return "fabric";
 }
 
-function IconButton({ label, symbol, danger = false }: { label: string; symbol: string; danger?: boolean }) {
+function IconButton({
+  label,
+  symbol,
+  danger = false,
+  emphasized = false
+}: {
+  label: string;
+  symbol: string;
+  danger?: boolean;
+  emphasized?: boolean;
+}) {
   return (
-    <Pressable accessibilityRole="button" accessibilityLabel={`${label} mock 동작`} style={[styles.iconButton, danger && styles.iconDanger]}>
-      <Text style={[styles.iconText, danger && styles.iconDangerText]}>{symbol}</Text>
+    <Pressable
+      accessibilityRole="button"
+      accessibilityLabel={`${label} mock 동작`}
+      style={[styles.iconButton, emphasized && styles.iconEmphasized, danger && styles.iconDanger]}
+    >
+      <Text style={[styles.iconText, emphasized && styles.iconEmphasizedText, danger && styles.iconDangerText]}>{symbol}</Text>
     </Pressable>
   );
 }
@@ -891,10 +956,16 @@ const styles = StyleSheet.create({
   iconDanger: {
     backgroundColor: "#fff0eb"
   },
+  iconEmphasized: {
+    backgroundColor: "#23375a"
+  },
   iconText: {
     color: "#17263d",
     fontSize: 12,
     fontWeight: "900"
+  },
+  iconEmphasizedText: {
+    color: "#ffffff"
   },
   iconDangerText: {
     color: "#9a4035"
@@ -1464,6 +1535,13 @@ const styles = StyleSheet.create({
     gap: 6,
     justifyContent: "flex-end"
   },
+  actionCluster: {
+    alignItems: "center",
+    flexDirection: "row",
+    flexShrink: 0,
+    gap: 6,
+    justifyContent: "flex-end"
+  },
   crownBadge: {
     backgroundColor: "#c75f35",
     borderRadius: 999,
@@ -1515,6 +1593,27 @@ const styles = StyleSheet.create({
     flexWrap: "wrap",
     gap: 7,
     marginBottom: 10
+  },
+  sectionTitleWithActions: {
+    alignItems: "flex-start",
+    flexDirection: "row",
+    gap: 10,
+    justifyContent: "space-between"
+  },
+  headerAddButton: {
+    alignItems: "center",
+    backgroundColor: "#23375a",
+    borderRadius: 999,
+    height: 34,
+    justifyContent: "center",
+    marginTop: 2,
+    width: 34
+  },
+  headerAddButtonText: {
+    color: "#ffffff",
+    fontSize: 18,
+    fontWeight: "900",
+    lineHeight: 22
   },
   quantityCheck: {
     backgroundColor: "#f6efe5",
@@ -1675,11 +1774,12 @@ const styles = StyleSheet.create({
   },
   progressRail: {
     alignItems: "flex-start",
+    gap: 0,
     paddingBottom: 4
   },
   progressStep: {
-    minWidth: 76,
-    paddingRight: 8
+    minWidth: 88,
+    paddingRight: 10
   },
   progressTopLine: {
     alignItems: "center",
@@ -1752,6 +1852,21 @@ const styles = StyleSheet.create({
     flexWrap: "wrap",
     gap: 6,
     marginBottom: 4
+  },
+  processSectionHeader: {
+    alignItems: "flex-start",
+    flexDirection: "row",
+    gap: 10,
+    justifyContent: "space-between",
+    marginBottom: 4,
+    marginTop: 4
+  },
+  advancedFlowHint: {
+    color: "#7a6c5c",
+    fontSize: 11,
+    fontWeight: "800",
+    lineHeight: 16,
+    marginBottom: 2
   },
   dataRow: {
     borderTopColor: "#f0e7dc",
@@ -1832,6 +1947,18 @@ const styles = StyleSheet.create({
     flexWrap: "wrap",
     gap: 8,
     justifyContent: "space-between"
+  },
+  inlineEditHint: {
+    borderBottomColor: "#b98c5a",
+    borderBottomWidth: 1,
+    color: "#7b4b32",
+    fontSize: 11,
+    fontWeight: "900",
+    lineHeight: 16
+  },
+  inlineEditHintLocked: {
+    borderBottomColor: "transparent",
+    color: "#6d6257"
   },
   primaryAction: {
     backgroundColor: "#23375a",

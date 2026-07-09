@@ -1,4 +1,4 @@
-# WAFL v2 App-first Roadmap 2.0 - 2.0.0-alpha.8
+# WAFL v2 App-first Roadmap 2.0 - 2.0.0-alpha.9
 
 ## Purpose
 
@@ -99,7 +99,7 @@ Status: done.
 
 ### 2.0.0-alpha.8
 
-Status: current.
+Status: done.
 
 - Correct the `apps/mobile` mock toward real apparel-production usage rather than feature integration.
 - Hide internal production-card IDs from customer-facing list, header, image/attachment, size/color, material/accessory, production-flow, output/share, and document preview surfaces.
@@ -119,12 +119,25 @@ Status: current.
 
 ### 2.0.0-alpha.9
 
-- Apply user feedback from the alpha.8 real-use screen review or continue image/attachment/detail UX correction.
-- Do not start real upload/share/PDF/API/DB integration unless a separate work order explicitly allows it.
+Status: current.
+
+- Polish the `apps/mobile` mock button/action grammar after the alpha.8 real-use review.
+- Remove repeated fabric/accessory bottom text primary buttons.
+- Move fabric/accessory current-state primary actions into the row-top action cluster beside the status badge.
+- Keep only one current-state primary action per fabric/accessory row; completed/locked rows show badge/read-only direction.
+- Move fabric/accessory add actions to section-header `+` icon buttons.
+- Restore and clarify the image/attachment top action row: image upload, camera, sketch, and attachment mock entry points.
+- Keep image tiles thumbnail-first without per-image title/description input burden.
+- Show inline-edit affordance instead of a repeated edit button; actual save/edit persistence remains out of scope.
+- Widen and regularize the production-flow rail and group detailed process rows inside the process step.
+- Keep process addition as the default visible `+` action and treat flow-step addition as an advanced/exception mock direction.
+- Polish output/share icon action rows without adding real PDF/share/print/save behavior.
+- Do not connect real DB, API, R2, PDF Worker, upload, camera, file picker, share, push notification, order, delivery, inline-edit persistence, drag, or long-press behavior.
+- Align app display version to `2.0.0-alpha.9`.
 
 ### 2.0.0-alpha.10
 
-- Mock fabric and accessory card flows.
+- Apply alpha.9 user feedback and continue image/attachment/detail UX correction.
 
 ### 2.0.0-alpha.11
 
