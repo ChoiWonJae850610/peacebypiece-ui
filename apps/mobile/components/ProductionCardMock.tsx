@@ -33,7 +33,7 @@ import {
 } from "@/constants/mockProductionCard";
 
 const maxPhoneWidth = 520;
-const maxTabletWidth = 1120;
+const maxTabletWidth = 1040;
 
 export default function ProductionCardMock() {
   const [activeTab, setActiveTab] = useState<ProductionTabId>("overview");
@@ -50,7 +50,6 @@ export default function ProductionCardMock() {
     <SafeAreaView style={styles.safeArea}>
       <ScrollView contentContainerStyle={[styles.page, { width: contentWidth }]}>
         <TopBar isTablet={isTablet} />
-        <ThemeStrip />
         <View style={[styles.workbench, isWideTablet && styles.workbenchWide]}>
           <ProductionCardList
             selectedCardId={selectedCardId}
@@ -81,17 +80,7 @@ function TopBar({ isTablet }: { isTablet: boolean }) {
         <IconButton label="알림" symbol="!" />
         <IconButton label="더보기" symbol="..." />
       </View>
-      {isTablet ? <Text style={styles.deviceHint}>Tablet workbench</Text> : null}
-    </View>
-  );
-}
-
-function ThemeStrip() {
-  return (
-    <View style={styles.themeStrip}>
-      <View style={styles.threadLine} />
-      <Text style={styles.themeTitle}>Dongdaemun Atelier Ops</Text>
-      <Text style={styles.themeCopy}>원단, 부자재, 공정, 납기를 한 번에 읽는 mock-only 앱 시안입니다.</Text>
+      {isTablet ? <Text style={styles.deviceHint}>Tablet</Text> : null}
     </View>
   );
 }
@@ -139,9 +128,7 @@ function ProductionListCard({
       onPress={onPress}
       style={[styles.listCard, selected && styles.listCardSelected]}
     >
-      <View style={styles.listThumb}>
-        <Text style={styles.listThumbText}>{card.thumbnail}</Text>
-      </View>
+      <MiniGarmentThumb label={card.thumbnail} />
       <View style={styles.flex}>
         <View style={styles.rowHead}>
           <Text style={styles.listCardTitle}>{card.title}</Text>
@@ -162,10 +149,7 @@ function ProductionListCard({
 function ProductionHeader({ isTablet }: { isTablet: boolean }) {
   return (
     <View style={[styles.header, isTablet && styles.headerTablet]}>
-      <View style={styles.heroImage}>
-        <Text style={styles.heroImageText}>대표</Text>
-        <Text style={styles.heroImageSub}>{productionCardMock.representativeImage}</Text>
-      </View>
+      <GarmentPreview compact={!isTablet} label={productionCardMock.representativeImage} count={4} />
       <View style={styles.headerText}>
         <View style={styles.statusRow}>
           <Text style={styles.statusBadge}>{productionCardMock.statusLabel}</Text>
@@ -190,6 +174,67 @@ function MiniStat({ label, value }: { label: string; value: string }) {
     <View style={styles.miniStat}>
       <Text style={styles.miniLabel}>{label}</Text>
       <Text style={styles.miniValue}>{value}</Text>
+    </View>
+  );
+}
+
+function GarmentPreview({ label, count, compact = false }: { label: string; count?: number; compact?: boolean }) {
+  return (
+    <View style={[styles.garmentPreview, compact && styles.garmentPreviewCompact]}>
+      <View style={styles.hangerLine} />
+      <View style={styles.hangerHook} />
+      <View style={styles.garmentShape}>
+        <View style={styles.collarShape} />
+        <View style={styles.sleeveLeft} />
+        <View style={styles.sleeveRight} />
+        <View style={styles.waistLine} />
+      </View>
+      <View style={styles.fabricShadow} />
+      <Text style={styles.imageLabel}>{label}</Text>
+      {count ? <Text style={styles.imageCount}>{count}</Text> : null}
+    </View>
+  );
+}
+
+function MiniGarmentThumb({ label }: { label: string }) {
+  return (
+    <View style={styles.miniGarmentThumb}>
+      <View style={styles.miniHangerLine} />
+      <View style={styles.miniGarmentBody}>
+        <View style={styles.miniCollar} />
+      </View>
+      <Text style={styles.miniThumbLabel}>{label}</Text>
+    </View>
+  );
+}
+
+function SwatchVisual({
+  tone = "fabric",
+  label
+}: {
+  tone?: "fabric" | "lining" | "navy" | "button" | "label" | "package";
+  label?: string;
+}) {
+  const toneStyle =
+    tone === "navy"
+      ? styles.swatchNavy
+      : tone === "lining"
+        ? styles.swatchLining
+        : tone === "button"
+          ? styles.swatchButton
+          : tone === "label"
+            ? styles.swatchLabel
+            : tone === "package"
+              ? styles.swatchPackage
+              : styles.swatchFabric;
+
+  return (
+    <View style={[styles.swatchVisual, toneStyle]}>
+      <View style={styles.swatchLine} />
+      <View style={styles.swatchLineShort} />
+      <View style={styles.swatchLayer} />
+      {tone === "button" ? <View style={styles.buttonDots} /> : null}
+      {label ? <Text style={styles.swatchLabelText}>{label}</Text> : null}
     </View>
   );
 }
@@ -252,21 +297,18 @@ function OverviewTab({ isTablet }: { isTablet: boolean }) {
     <View>
       <SectionTitle title="제작 요약" caption="대표 이미지, 수량, 납기, 상태, 금액을 먼저 읽는 압축 개요입니다." />
       <View style={[styles.overviewGrid, isTablet && styles.overviewGridTablet]}>
-        <View style={styles.overviewImage}>
-          <Text style={styles.heroImageText}>대표 이미지</Text>
-          <Text style={styles.heroImageSub}>{productionCardMock.representativeImage}</Text>
-        </View>
+        <GarmentPreview label={productionCardMock.representativeImage} count={4} />
         <View style={styles.flex}>
-          <View style={styles.metricGrid}>
+          <View style={styles.summaryList}>
             {summaryMetrics.map((item) => (
-              <MetricBox key={item.label} label={item.label} value={item.value} note={item.note} />
+              <MetricLine key={item.label} label={item.label} value={item.value} note={item.note} />
             ))}
           </View>
         </View>
       </View>
-      <View style={[styles.metricGrid, styles.costGrid]}>
+      <View style={styles.costList}>
         {costMetrics.map((item) => (
-          <MetricBox key={item.label} label={item.label} value={item.value} note={item.note} />
+          <MetricLine key={item.label} label={item.label} value={item.value} note={item.note} compact />
         ))}
       </View>
       <View style={styles.subsection}>
@@ -285,9 +327,6 @@ function ImagesTab({ isTablet }: { isTablet: boolean }) {
         title="이미지·첨부"
         caption="대표 이미지와 첨부파일을 분리해서 보여줍니다. 실제 카메라, 파일 선택, 업로드는 연결하지 않습니다."
       />
-      <View style={styles.noticeBox}>
-        <Text style={styles.noticeText}>첫 이미지가 자동 대표가 되고, 출력 포함 여부는 출력·공유 탭에서 선택합니다.</Text>
-      </View>
       <View style={[styles.imageGrid, isTablet && styles.imageGridTablet]}>
         {imageMocks.map((item) => (
           <Pressable
@@ -296,12 +335,15 @@ function ImagesTab({ isTablet }: { isTablet: boolean }) {
             accessibilityLabel={`${item.title} 이미지 mock`}
             style={[styles.imageTile, item.selected && styles.imageTileSelected]}
           >
-            <View style={styles.thumbnail}>
-              <Text style={styles.thumbnailKind}>{item.selected ? "대표" : item.kind}</Text>
-              <Text style={styles.thumbnailTitle}>{item.title}</Text>
+            <View style={styles.imageTileVisualWrap}>
+              <GarmentPreview compact label={item.selected ? "대표" : item.kind} />
+              {item.selected ? <Text style={styles.crownBadge}>대표</Text> : null}
             </View>
             <View style={styles.rowHead}>
-              <Text style={styles.smallText}>{item.note}</Text>
+              <View style={styles.flex}>
+                <Text style={styles.rowTitle}>{item.title}</Text>
+                <Text style={styles.smallText}>{item.note}</Text>
+              </View>
               <IconButton label="삭제 예정" symbol="x" danger />
             </View>
           </Pressable>
@@ -384,9 +426,9 @@ function MaterialTab({
     <View>
       <SectionTitle title={title} caption={summary} />
       <View style={styles.rowSummary}>
-        <MiniStat label="품목" value={`${rows.length}건`} />
-        <MiniStat label="발주 가능" value={`${orderable}건`} />
-        <MiniStat label="발주 요청" value={`${requested}건`} />
+        <Text style={styles.inlineMetric}>품목 {rows.length}건</Text>
+        <Text style={styles.inlineMetric}>발주 가능 {orderable}건</Text>
+        <Text style={styles.inlineMetric}>발주 요청 {requested}건</Text>
       </View>
       {rows.map((row) => (
         <MaterialRow key={row.name} row={row} />
@@ -431,8 +473,7 @@ function OutputTab() {
       />
       <View style={styles.outputPreview}>
         <View style={styles.previewThumb}>
-          <Text style={styles.thumbnailKind}>대표</Text>
-          <Text style={styles.thumbnailTitle}>{productionCardMock.representativeImage}</Text>
+          <GarmentPreview compact label="문서" />
         </View>
         <View style={styles.flex}>
           <Text style={styles.rowTitle}>현재 제작 카드 기준 미리보기</Text>
@@ -486,16 +527,6 @@ function SectionTitle({ title, caption }: { title: string; caption: string }) {
   );
 }
 
-function MetricBox({ label, value, note }: { label: string; value: string; note: string }) {
-  return (
-    <View style={styles.metricBox}>
-      <Text style={styles.metricLabel}>{label}</Text>
-      <Text style={styles.metricValue}>{value}</Text>
-      <Text style={styles.smallText}>{note}</Text>
-    </View>
-  );
-}
-
 function InfoRow({ label, value }: { label: string; value: string }) {
   return (
     <View style={styles.infoRow}>
@@ -509,6 +540,7 @@ function MaterialRow({ row }: { row: MaterialRowData }) {
   return (
     <View style={[styles.dataRow, row.locked && styles.lockedRow]}>
       <View style={styles.rowHead}>
+        <SwatchVisual tone={getMaterialTone(row)} label={row.category} />
         <View style={styles.flex}>
           <Text style={styles.rowTitle}>{row.name}</Text>
           <Text style={styles.rowDetail}>
@@ -544,6 +576,38 @@ function PrimaryAction({ label, status }: { label: string; status: MaterialStatu
       <Text style={styles.primaryActionText}>{label}</Text>
     </Pressable>
   );
+}
+
+function MetricLine({ label, value, note, compact = false }: { label: string; value: string; note: string; compact?: boolean }) {
+  return (
+    <View style={[styles.metricLine, compact && styles.metricLineCompact]}>
+      <View style={styles.flex}>
+        <Text style={styles.metricLabel}>{label}</Text>
+        <Text style={styles.smallText}>{note}</Text>
+      </View>
+      <Text style={styles.metricValue}>{value}</Text>
+    </View>
+  );
+}
+
+function getMaterialTone(row: MaterialRowData) {
+  const text = `${row.name} ${row.colorOrOption} ${row.category ?? ""}`;
+  if (text.includes("네이비")) {
+    return "navy";
+  }
+  if (text.includes("안감")) {
+    return "lining";
+  }
+  if (text.includes("버튼")) {
+    return "button";
+  }
+  if (text.includes("라벨")) {
+    return "label";
+  }
+  if (text.includes("폴리백") || text.includes("행택")) {
+    return "package";
+  }
+  return "fabric";
 }
 
 function IconButton({ label, symbol, danger = false }: { label: string; symbol: string; danger?: boolean }) {
@@ -593,11 +657,11 @@ function statusBadgeStyle(status: MaterialStatus) {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: "#f3eee4"
+    backgroundColor: "#f4efe6"
   },
   page: {
     alignSelf: "center",
-    gap: 12,
+    gap: 10,
     paddingBottom: 24,
     paddingTop: 10
   },
@@ -630,17 +694,14 @@ const styles = StyleSheet.create({
   },
   iconButton: {
     alignItems: "center",
-    backgroundColor: "#fffaf2",
-    borderColor: "#d8d0c3",
-    borderRadius: 7,
-    borderWidth: 1,
+    backgroundColor: "rgba(255, 250, 242, 0.72)",
+    borderRadius: 999,
     height: 32,
     justifyContent: "center",
     width: 32
   },
   iconDanger: {
-    backgroundColor: "#fff2ef",
-    borderColor: "#e2b7af"
+    backgroundColor: "#fff0eb"
   },
   iconText: {
     color: "#17263d",
@@ -650,47 +711,23 @@ const styles = StyleSheet.create({
   iconDangerText: {
     color: "#9a4035"
   },
-  themeStrip: {
-    backgroundColor: "#fffaf2",
-    borderColor: "#d8d0c3",
-    borderRadius: 8,
-    borderWidth: 1,
-    gap: 4,
-    padding: 10
-  },
-  threadLine: {
-    backgroundColor: "#c75f35",
-    borderRadius: 99,
-    height: 3,
-    width: 72
-  },
-  themeTitle: {
-    color: "#17263d",
-    fontSize: 14,
-    fontWeight: "900"
-  },
-  themeCopy: {
-    color: "#63584e",
-    fontSize: 12,
-    lineHeight: 17
-  },
   workbench: {
-    gap: 12
+    gap: 10
   },
   workbenchWide: {
     alignItems: "flex-start",
-    flexDirection: "row"
+    flexDirection: "row",
+    gap: 14
   },
   listPane: {
-    backgroundColor: "#faf6ee",
-    borderColor: "#d8d0c3",
-    borderRadius: 8,
-    borderWidth: 1,
+    backgroundColor: "#f8f1e7",
+    borderRadius: 12,
     gap: 8,
     padding: 10
   },
   listPaneTablet: {
-    minWidth: 300
+    maxWidth: 292,
+    minWidth: 276
   },
   listHeader: {
     alignItems: "center",
@@ -714,32 +751,17 @@ const styles = StyleSheet.create({
   },
   listCard: {
     alignItems: "center",
-    backgroundColor: "#ffffff",
-    borderColor: "#e0d8cb",
-    borderRadius: 8,
-    borderWidth: 1,
+    backgroundColor: "rgba(255, 252, 247, 0.78)",
+    borderLeftColor: "transparent",
+    borderLeftWidth: 3,
+    borderRadius: 10,
     flexDirection: "row",
     gap: 10,
     padding: 9
   },
   listCardSelected: {
-    borderColor: "#23375a",
-    borderWidth: 2
-  },
-  listThumb: {
-    alignItems: "center",
-    backgroundColor: "#efe4d3",
-    borderColor: "#d8c2a5",
-    borderRadius: 7,
-    borderWidth: 1,
-    height: 54,
-    justifyContent: "center",
-    width: 54
-  },
-  listThumbText: {
-    color: "#6b563b",
-    fontSize: 12,
-    fontWeight: "900"
+    backgroundColor: "#ffffff",
+    borderLeftColor: "#23375a"
   },
   listCardTitle: {
     color: "#17263d",
@@ -769,39 +791,14 @@ const styles = StyleSheet.create({
     minWidth: 0
   },
   header: {
-    backgroundColor: "#ffffff",
-    borderColor: "#d8d0c3",
-    borderRadius: 8,
-    borderWidth: 1,
+    backgroundColor: "#fffdf8",
+    borderRadius: 14,
     flexDirection: "row",
     gap: 12,
     padding: 12
   },
   headerTablet: {
     alignItems: "center"
-  },
-  heroImage: {
-    alignItems: "center",
-    aspectRatio: 1,
-    backgroundColor: "#efe4d3",
-    borderColor: "#d8c2a5",
-    borderRadius: 8,
-    borderWidth: 1,
-    justifyContent: "center",
-    minWidth: 84,
-    width: 92
-  },
-  heroImageText: {
-    color: "#17263d",
-    fontSize: 13,
-    fontWeight: "900"
-  },
-  heroImageSub: {
-    color: "#615649",
-    fontSize: 12,
-    fontWeight: "800",
-    marginTop: 4,
-    textAlign: "center"
   },
   headerText: {
     flex: 1,
@@ -852,13 +849,11 @@ const styles = StyleSheet.create({
   headerStats: {
     flexDirection: "row",
     flexWrap: "wrap",
-    gap: 8
+    gap: 6
   },
   miniStat: {
-    backgroundColor: "#f5f1e8",
-    borderColor: "#ded4c5",
-    borderRadius: 7,
-    borderWidth: 1,
+    backgroundColor: "#f7f0e5",
+    borderRadius: 9,
     flexGrow: 1,
     minWidth: 88,
     paddingHorizontal: 9,
@@ -875,25 +870,236 @@ const styles = StyleSheet.create({
     fontWeight: "900",
     marginTop: 2
   },
+  garmentPreview: {
+    alignItems: "center",
+    backgroundColor: "#efe4d3",
+    borderRadius: 12,
+    height: 172,
+    justifyContent: "center",
+    minWidth: 132,
+    overflow: "hidden",
+    position: "relative",
+    width: 148
+  },
+  garmentPreviewCompact: {
+    height: 92,
+    minWidth: 86,
+    width: 92
+  },
+  hangerLine: {
+    backgroundColor: "#8e7d68",
+    borderRadius: 99,
+    height: 2,
+    position: "absolute",
+    top: 22,
+    width: "58%"
+  },
+  hangerHook: {
+    borderColor: "#8e7d68",
+    borderRadius: 10,
+    borderWidth: 2,
+    height: 14,
+    position: "absolute",
+    top: 12,
+    width: 12
+  },
+  garmentShape: {
+    backgroundColor: "#23375a",
+    borderRadius: 16,
+    height: "50%",
+    marginTop: 12,
+    position: "relative",
+    width: "46%"
+  },
+  collarShape: {
+    alignSelf: "center",
+    backgroundColor: "#efe4d3",
+    borderBottomLeftRadius: 12,
+    borderBottomRightRadius: 12,
+    height: 18,
+    width: 30
+  },
+  sleeveLeft: {
+    backgroundColor: "#2d4369",
+    borderRadius: 10,
+    height: "50%",
+    left: -22,
+    position: "absolute",
+    top: 14,
+    transform: [{ rotate: "18deg" }],
+    width: 26
+  },
+  sleeveRight: {
+    backgroundColor: "#2d4369",
+    borderRadius: 10,
+    height: "50%",
+    position: "absolute",
+    right: -22,
+    top: 14,
+    transform: [{ rotate: "-18deg" }],
+    width: 26
+  },
+  waistLine: {
+    backgroundColor: "rgba(255, 250, 242, 0.36)",
+    height: 2,
+    marginTop: "auto",
+    width: "100%"
+  },
+  fabricShadow: {
+    backgroundColor: "rgba(40, 32, 24, 0.12)",
+    borderRadius: 99,
+    bottom: 32,
+    height: 7,
+    position: "absolute",
+    width: "50%"
+  },
+  imageLabel: {
+    bottom: 9,
+    color: "#51483e",
+    fontSize: 10,
+    fontWeight: "900",
+    left: 8,
+    position: "absolute",
+    right: 26
+  },
+  imageCount: {
+    backgroundColor: "rgba(255, 250, 242, 0.86)",
+    borderRadius: 999,
+    bottom: 7,
+    color: "#17263d",
+    fontSize: 10,
+    fontWeight: "900",
+    overflow: "hidden",
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    position: "absolute",
+    right: 8
+  },
+  miniGarmentThumb: {
+    alignItems: "center",
+    backgroundColor: "#eadfce",
+    borderRadius: 9,
+    height: 58,
+    justifyContent: "center",
+    overflow: "hidden",
+    position: "relative",
+    width: 48
+  },
+  miniHangerLine: {
+    backgroundColor: "#8e7d68",
+    borderRadius: 99,
+    height: 2,
+    position: "absolute",
+    top: 9,
+    width: 26
+  },
+  miniGarmentBody: {
+    backgroundColor: "#23375a",
+    borderRadius: 7,
+    height: 26,
+    marginTop: 5,
+    width: 24
+  },
+  miniCollar: {
+    alignSelf: "center",
+    backgroundColor: "#eadfce",
+    borderBottomLeftRadius: 6,
+    borderBottomRightRadius: 6,
+    height: 7,
+    width: 12
+  },
+  miniThumbLabel: {
+    bottom: 3,
+    color: "#554b43",
+    fontSize: 8,
+    fontWeight: "900",
+    position: "absolute"
+  },
+  swatchVisual: {
+    backgroundColor: "#ded0bd",
+    borderRadius: 9,
+    flexShrink: 0,
+    height: 46,
+    overflow: "hidden",
+    position: "relative",
+    width: 46
+  },
+  swatchNavy: {
+    backgroundColor: "#22375a"
+  },
+  swatchLining: {
+    backgroundColor: "#cbb998"
+  },
+  swatchButton: {
+    backgroundColor: "#6f5744"
+  },
+  swatchLabel: {
+    backgroundColor: "#f4efe5"
+  },
+  swatchPackage: {
+    backgroundColor: "#b9874e"
+  },
+  swatchFabric: {
+    backgroundColor: "#d5c2a4"
+  },
+  swatchLine: {
+    backgroundColor: "rgba(255, 255, 255, 0.32)",
+    height: 2,
+    position: "absolute",
+    top: 13,
+    width: "100%"
+  },
+  swatchLineShort: {
+    backgroundColor: "rgba(255, 255, 255, 0.24)",
+    height: 2,
+    position: "absolute",
+    right: 0,
+    top: 25,
+    width: "70%"
+  },
+  swatchLayer: {
+    backgroundColor: "rgba(0, 0, 0, 0.1)",
+    bottom: 0,
+    height: 12,
+    position: "absolute",
+    width: "100%"
+  },
+  buttonDots: {
+    alignSelf: "center",
+    backgroundColor: "rgba(255, 250, 242, 0.72)",
+    borderRadius: 99,
+    height: 10,
+    marginTop: 17,
+    width: 10
+  },
+  swatchLabelText: {
+    bottom: 4,
+    color: "#332d28",
+    fontSize: 8,
+    fontWeight: "900",
+    left: 3,
+    position: "absolute",
+    right: 3,
+    textAlign: "center"
+  },
   tabRail: {
-    gap: 7,
-    paddingVertical: 2
+    gap: 10,
+    paddingHorizontal: 2,
+    paddingVertical: 4
   },
   tab: {
     alignItems: "center",
-    backgroundColor: "#fffaf2",
-    borderColor: "#d8d0c3",
-    borderRadius: 8,
-    borderWidth: 1,
+    backgroundColor: "transparent",
+    borderBottomColor: "transparent",
+    borderBottomWidth: 2,
     flexDirection: "row",
     gap: 5,
     minWidth: 70,
-    paddingHorizontal: 10,
-    paddingVertical: 9
+    paddingHorizontal: 3,
+    paddingVertical: 8
   },
   tabSelected: {
-    backgroundColor: "#17263d",
-    borderColor: "#17263d"
+    borderBottomColor: "#17263d"
   },
   tabText: {
     color: "#5d544b",
@@ -902,7 +1108,7 @@ const styles = StyleSheet.create({
     textAlign: "center"
   },
   tabTextSelected: {
-    color: "#ffffff"
+    color: "#17263d"
   },
   tabAlert: {
     backgroundColor: "#dfad45",
@@ -917,11 +1123,9 @@ const styles = StyleSheet.create({
     textAlign: "center"
   },
   section: {
-    backgroundColor: "#ffffff",
-    borderColor: "#d8d0c3",
-    borderRadius: 8,
-    borderWidth: 1,
-    padding: 12
+    backgroundColor: "#fffdf8",
+    borderRadius: 14,
+    padding: 14
   },
   sectionHeader: {
     gap: 5,
@@ -944,34 +1148,26 @@ const styles = StyleSheet.create({
     alignItems: "stretch",
     flexDirection: "row"
   },
-  overviewImage: {
+  summaryList: {
+    gap: 2
+  },
+  costList: {
+    borderTopColor: "#eee3d5",
+    borderTopWidth: 1,
+    marginTop: 12,
+    paddingTop: 4
+  },
+  metricLine: {
     alignItems: "center",
-    backgroundColor: "#efe4d3",
-    borderColor: "#d8c2a5",
-    borderRadius: 8,
-    borderWidth: 1,
-    justifyContent: "center",
-    minHeight: 112,
-    padding: 12
-  },
-  metricGrid: {
+    borderBottomColor: "#f0e7dc",
+    borderBottomWidth: 1,
     flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 8
+    gap: 10,
+    justifyContent: "space-between",
+    paddingVertical: 8
   },
-  costGrid: {
-    marginTop: 10
-  },
-  metricBox: {
-    backgroundColor: "#faf6ee",
-    borderColor: "#e0d8cb",
-    borderRadius: 8,
-    borderWidth: 1,
-    flexBasis: "31%",
-    flexGrow: 1,
-    gap: 4,
-    minWidth: 126,
-    padding: 10
+  metricLineCompact: {
+    paddingVertical: 7
   },
   metricLabel: {
     color: "#7a6c5c",
@@ -999,20 +1195,6 @@ const styles = StyleSheet.create({
     fontSize: 13,
     lineHeight: 19
   },
-  noticeBox: {
-    backgroundColor: "#fff7e7",
-    borderColor: "#e6c57b",
-    borderRadius: 8,
-    borderWidth: 1,
-    marginBottom: 10,
-    padding: 9
-  },
-  noticeText: {
-    color: "#654c1e",
-    fontSize: 12,
-    fontWeight: "800",
-    lineHeight: 18
-  },
   imageGrid: {
     gap: 9
   },
@@ -1021,37 +1203,31 @@ const styles = StyleSheet.create({
     flexWrap: "wrap"
   },
   imageTile: {
-    borderColor: "#d8d0c3",
-    borderRadius: 8,
-    borderWidth: 1,
+    backgroundColor: "#fffaf2",
+    borderRadius: 12,
     flexGrow: 1,
     gap: 7,
     minWidth: 148,
     padding: 8
   },
   imageTileSelected: {
-    backgroundColor: "#fff7e7",
-    borderColor: "#c75f35"
+    backgroundColor: "#fff4df"
   },
-  thumbnail: {
-    alignItems: "center",
-    aspectRatio: 1.45,
-    backgroundColor: "#efe4d3",
-    borderRadius: 7,
-    justifyContent: "center",
-    padding: 8
+  imageTileVisualWrap: {
+    position: "relative"
   },
-  thumbnailKind: {
-    color: "#17263d",
-    fontSize: 12,
-    fontWeight: "900"
-  },
-  thumbnailTitle: {
-    color: "#615649",
-    fontSize: 12,
-    fontWeight: "800",
-    marginTop: 4,
-    textAlign: "center"
+  crownBadge: {
+    backgroundColor: "#c75f35",
+    borderRadius: 999,
+    color: "#ffffff",
+    fontSize: 10,
+    fontWeight: "900",
+    overflow: "hidden",
+    paddingHorizontal: 7,
+    paddingVertical: 3,
+    position: "absolute",
+    right: 6,
+    top: 6
   },
   subsection: {
     marginTop: 12
@@ -1134,10 +1310,8 @@ const styles = StyleSheet.create({
     flexWrap: "wrap"
   },
   colorRow: {
-    backgroundColor: "#faf6ee",
-    borderColor: "#e0d8cb",
-    borderRadius: 8,
-    borderWidth: 1,
+    backgroundColor: "#fffaf2",
+    borderRadius: 10,
     flexGrow: 1,
     gap: 4,
     minWidth: 148,
@@ -1157,11 +1331,21 @@ const styles = StyleSheet.create({
   rowSummary: {
     flexDirection: "row",
     flexWrap: "wrap",
-    gap: 8,
+    gap: 6,
     marginBottom: 6
   },
+  inlineMetric: {
+    backgroundColor: "#f7f0e5",
+    borderRadius: 999,
+    color: "#64584c",
+    fontSize: 11,
+    fontWeight: "900",
+    overflow: "hidden",
+    paddingHorizontal: 9,
+    paddingVertical: 5
+  },
   dataRow: {
-    borderTopColor: "#ece4d8",
+    borderTopColor: "#f0e7dc",
     borderTopWidth: 1,
     gap: 7,
     paddingVertical: 11
@@ -1279,10 +1463,8 @@ const styles = StyleSheet.create({
   },
   outputPreview: {
     alignItems: "center",
-    backgroundColor: "#faf6ee",
-    borderColor: "#e0d8cb",
-    borderRadius: 8,
-    borderWidth: 1,
+    backgroundColor: "#fffaf2",
+    borderRadius: 12,
     flexDirection: "row",
     gap: 10,
     marginBottom: 10,

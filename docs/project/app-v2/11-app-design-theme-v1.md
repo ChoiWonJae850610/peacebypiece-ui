@@ -104,7 +104,20 @@ Final color values may be tuned after device review. The current contract is sem
 | 제작 플로우 | Process workbench | Main factory, additional processes, partner, quantity, unit, unit price, amount, due date, stage status; drag/long-press direction only |
 | 출력·공유 | 제작 문서 composition | 작업지시서, 공장 전달 작업지시서, 배송요청서 만들기, 배송요청 추가하기, view/share/print/save, attachment inclusion placeholder |
 
-## 8. Forbidden Direction
+## 8. Runtime Visual Fidelity Rule
+
+`2.0.0-alpha.5` applies this theme as an app surface correction, not as an in-app concept board.
+
+- Do not show a runtime theme explanation strip such as `Dongdaemun Atelier Ops` inside the normal app surface.
+- Keep theme rationale in documentation and let the screen itself communicate the production workroom direction.
+- Avoid repeated bordered boxes when a divider, row, tab underline, or quiet background contrast is enough.
+- Use representative image, garment thumbnail, output preview, and swatch placeholders built from React Native `View` and `Text`.
+- Do not add external image assets, font files, icon libraries, or dependencies for these placeholders.
+- Material and accessory rows should reveal fabric/accessory sense through compact swatches plus production data, not through large decorative cards.
+- Summary values should prefer dense line rows over portfolio-style metric cards.
+- Mobile must stay portrait-first for normal production-card screens, while tablet keeps restrained centered/wide workbench layouts.
+
+## 9. Forbidden Direction
 
 - Student portfolio feeling.
 - Excessive gradient styling.

@@ -1,3 +1,52 @@
+# 2.0.0-alpha.5 WAFL v2 App-first Visual Fidelity Correction
+
+- Current GPT checkpoint: `2.0.0-alpha.5`.
+- Baseline source before this patch: repository `APP_VERSION: 2.0.0-alpha.4`.
+- Baseline commit: `8666afbeb67d71826463f27e2f388db256532e6d`.
+- This patch corrects the `apps/mobile` mock visual fidelity after App Design Theme v1 adoption.
+- Scope is visual foundation only: no new feature integration and no real DB, API, R2, PDF Worker, upload, camera, file picker, share, auth, order, or delivery mutation.
+- The runtime app no longer shows a design-explanation strip. Theme language remains in docs, while the app surface behaves like a production tool.
+- The mock reduces repeated boxed-card feeling with softer list rows, line-based metrics, compact tab treatment, and practical workbench spacing.
+- Representative image, list thumbnail, output preview, and material/accessory rows use React Native `View`/`Text` based garment and swatch placeholders instead of plain text boxes or external assets.
+- Mobile remains portrait-first for normal production-card screens. Tablet portrait/landscape keeps a centered workbench with restrained width and no heavy desktop admin three-panel layout.
+- Status-based material/accessory rows still expose only one current primary action.
+- Image/attachment deepening, representative-image UX details, and camera/photo/attachment placeholder rules are deferred to `2.0.0-alpha.6`.
+- Font files, external images, new dependencies, root package metadata changes, root lockfile changes, and production behavior are still not added.
+- Expo generated local outputs such as `.expo` and `apps/mobile/node_modules` are not source deliverables and must not be committed or included in source ZIP handoff.
+
+Explicitly not changed:
+
+```text
+- DB migration
+- API route behavior
+- Neon schema
+- Cloudflare R2 Worker
+- PDF Worker
+- real file upload/delete
+- real camera/photo/file picker
+- real share-link generation
+- real PDF generation
+- real auth callback
+- real order/delivery mutation
+- production data
+- root package.json
+- root package-lock.json
+- pnpm lock/workspace files
+- /system or /workspace deletion
+```
+
+Manual device QA remains required before product verification:
+
+```text
+- iPhone portrait one-column visual fidelity review
+- iPad mini portrait review
+- iPad Pro landscape centered workbench review
+- Galaxy Tab portrait/landscape rotation review
+- Expo Web preview inspection after local server run
+```
+
+---
+
 # 2.0.0-alpha.4 WAFL v2 App Design Theme v1 and Mobile Mock Redesign
 
 - Current GPT checkpoint: `2.0.0-alpha.4`.
