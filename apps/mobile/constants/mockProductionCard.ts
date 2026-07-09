@@ -51,6 +51,12 @@ export type AttachmentMock = {
   included: boolean;
 };
 
+export type SizeTemplate = {
+  productType: string;
+  fields: string[];
+  selected?: boolean;
+};
+
 export type SizeRow = {
   group: string;
   size: string;
@@ -59,6 +65,7 @@ export type SizeRow = {
   shoulderCm: string;
   chestIn: string;
   lengthIn: string;
+  shoulderIn: string;
 };
 
 export type ColorRow = {
@@ -106,8 +113,9 @@ export type ProgressStep = {
   shortLabel: string;
   partner: string;
   handoffDate: string;
-  status: "완료" | "전달 준비" | "공정 메모 필요" | "납기 확인 필요" | "공장 확인 필요" | "전달 전 확인";
+  status: "준비" | "작업중" | "완료";
   memo: string;
+  removable?: boolean;
 };
 
 export type DocumentRow = {
@@ -260,17 +268,25 @@ export const imageMocks: ImageMock[] = [
 ];
 
 export const attachmentRows: AttachmentMock[] = [
-  { title: "원단 스와치 확인.pdf", detail: "문서 첨부", included: true },
-  { title: "공장 전달 메모.txt", detail: "메모 첨부", included: true },
-  { title: "내부 단가 검토.xlsx", detail: "내부 검토", included: false }
+  { title: "원단 스와치 확인.pdf", detail: "PDF 문서 · 출력 포함", included: true },
+  { title: "부자재 참고 이미지.png", detail: "이미지 파일 · 출력 포함", included: true },
+  { title: "봉제 라벨 참고.webp", detail: "이미지 파일 · 출력 제외", included: false }
+];
+
+export const sizeTemplates: SizeTemplate[] = [
+  { productType: "상의", fields: ["가슴", "총장", "어깨", "소매"], selected: true },
+  { productType: "하의", fields: ["허리", "밑위", "허벅지", "총장", "밑단"] },
+  { productType: "원피스", fields: ["가슴", "허리", "총장", "어깨", "소매"] },
+  { productType: "아우터/점퍼", fields: ["가슴", "총장", "어깨", "소매", "암홀"] },
+  { productType: "맨투맨/오버롤", fields: ["가슴", "허리", "총장", "어깨", "밑단"] }
 ];
 
 export const sizeRows: SizeRow[] = [
-  { group: "표준", size: "XS", chestCm: "45.0", lengthCm: "112.0", shoulderCm: "36.5", chestIn: "17 3/4", lengthIn: "44 1/8" },
-  { group: "표준", size: "S", chestCm: "47.5", lengthCm: "113.0", shoulderCm: "37.5", chestIn: "18 3/4", lengthIn: "44 1/2" },
-  { group: "표준", size: "M", chestCm: "50.0", lengthCm: "114.5", shoulderCm: "39.0", chestIn: "19 5/8", lengthIn: "45 1/8" },
-  { group: "고객사", size: "55", chestCm: "46.0", lengthCm: "112.5", shoulderCm: "37.0", chestIn: "18 1/8", lengthIn: "44 1/4" },
-  { group: "자유", size: "FREE", chestCm: "52.0", lengthCm: "116.0", shoulderCm: "40.0", chestIn: "20 1/2", lengthIn: "45 5/8" }
+  { group: "표준", size: "XS", chestCm: "45.0", lengthCm: "112.0", shoulderCm: "36.5", chestIn: "17 3/4", lengthIn: "44 1/8", shoulderIn: "14 3/8" },
+  { group: "표준", size: "S", chestCm: "47.5", lengthCm: "113.0", shoulderCm: "37.5", chestIn: "18 3/4", lengthIn: "44 1/2", shoulderIn: "14 3/4" },
+  { group: "표준", size: "M", chestCm: "50.0", lengthCm: "114.5", shoulderCm: "39.0", chestIn: "19 5/8", lengthIn: "45 1/8", shoulderIn: "15 3/8" },
+  { group: "고객사", size: "55", chestCm: "46.0", lengthCm: "112.5", shoulderCm: "37.0", chestIn: "18 1/8", lengthIn: "44 1/4", shoulderIn: "14 5/8" },
+  { group: "자유", size: "FREE", chestCm: "52.0", lengthCm: "116.0", shoulderCm: "40.0", chestIn: "20 1/2", lengthIn: "45 5/8", shoulderIn: "15 3/4" }
 ];
 
 export const colorRows: ColorRow[] = [
@@ -434,7 +450,7 @@ export const processRows: ProcessRow[] = [
     unitPrice: "9,800원",
     amount: "3,528,000원",
     dueDate: "08/12",
-    status: "공장 전달 준비",
+    status: "준비",
     memo: "대표 제작 공장입니다. 봉제와 마감 지시서를 전달하기 전 원단/부자재 준비 상태를 확인합니다."
   },
   {
@@ -445,7 +461,7 @@ export const processRows: ProcessRow[] = [
     unitPrice: "2,200원",
     amount: "792,000원",
     dueDate: "08/15",
-    status: "공정 메모 필요",
+    status: "작업중",
     memo: "워싱 강도와 촉감 기준을 공장 전달 작업지시서에 남겨야 합니다."
   },
   {
@@ -456,7 +472,7 @@ export const processRows: ProcessRow[] = [
     unitPrice: "1,600원",
     amount: "576,000원",
     dueDate: "08/18",
-    status: "납기 확인 필요",
+    status: "준비",
     memo: "검품 기준은 단추 간격과 허리끈 길이입니다. 검품 납기와 단가를 다시 확인합니다."
   }
 ];
@@ -464,7 +480,7 @@ export const processRows: ProcessRow[] = [
 export const progressSteps: ProgressStep[] = [
   {
     id: "order-request",
-    label: "발주 요청",
+    label: "발주",
     shortLabel: "발주",
     partner: "서울패브릭 / 버튼하우스",
     handoffDate: "2026.08.06",
@@ -477,7 +493,7 @@ export const progressSteps: ProgressStep[] = [
     shortLabel: "자재",
     partner: "서울패브릭 / 라벨팩토리",
     handoffDate: "2026.08.09",
-    status: "전달 준비",
+    status: "작업중",
     memo: "공장 전달 전 원단 여유분과 라벨 공급처를 확인"
   },
   {
@@ -486,34 +502,35 @@ export const progressSteps: ProgressStep[] = [
     shortLabel: "재단",
     partner: "한강 봉제",
     handoffDate: "2026.08.10",
-    status: "전달 전 확인",
-    memo: "재단 지시 전 색상별 수량과 사이즈 표를 다시 맞춤"
+    status: "준비",
+    memo: "재단은 기본 단계지만 봉제 공장에서 함께 처리하면 삭제 가능한 단계로 표시",
+    removable: true
   },
   {
     id: "sewing-process",
-    label: "봉제/추가공정",
+    label: "공정",
     shortLabel: "공정",
     partner: "한강 봉제 / 성수 워싱",
     handoffDate: "2026.08.12",
-    status: "공정 메모 필요",
-    memo: "워싱 강도와 봉제 메모를 공장 전달 작업지시서에 포함"
+    status: "작업중",
+    memo: "공정 안에 봉제, 나염, 단추 작업, 라벨 부착 같은 내부 공정을 붙이는 구조"
   },
   {
     id: "inspection-package",
-    label: "검수/포장",
+    label: "검수",
     shortLabel: "검수",
     partner: "동대문 검품 / 패키지팩",
     handoffDate: "2026.08.18",
-    status: "납기 확인 필요",
+    status: "준비",
     memo: "검수 기준과 포장 입고 시간을 출고 전 다시 확인"
   },
   {
     id: "shipping-ready",
-    label: "출고 준비",
+    label: "출고",
     shortLabel: "출고",
     partner: "한강 봉제",
     handoffDate: "2026.08.20",
-    status: "공장 확인 필요",
+    status: "준비",
     memo: "완성 수량, 불량 수량, 배송요청 메모를 출고 전에 확정"
   }
 ];

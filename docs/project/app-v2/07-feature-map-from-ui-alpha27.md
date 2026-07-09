@@ -159,3 +159,27 @@ Implementation boundary:
 ```text
 No real upload, camera, file picker, share, PDF generation, delivery request, order mutation, API, DB, R2, Worker, drag, long-press, auth, or storage behavior is authorized by this signature UI correction.
 ```
+
+## 2.0.0-alpha.8 real-use UX correction
+
+`2.0.0-alpha.8` tightens the `apps/mobile` mock around real apparel-production usage.
+
+Core correction:
+
+- Internal production-card IDs may remain in mock data keys, but customer-facing app surfaces should prioritize product name, quantity, due date, status, partner, and amount instead of IDs such as `WAFL-2408-119`.
+- The image/attachment tab should not ask the user to title and describe every image by default. Image tiles are thumbnail-first, with representative selection, detail view, and delete affordances.
+- The first image can be represented as the automatic representative image in mock UI. Real camera, gallery, file picker, upload, delete, and preview APIs are still not connected.
+- Attachments are not representative images. Attachment examples should follow the existing WAFL/R2 allowed file shape and avoid unsupported mock examples such as `.txt` and `.xlsx`.
+- Factory delivery memo is a field in the production card, not a memo file in the attachment list.
+- Size/color should show only the selected unit at a time. The same table cell should not show `cm` and `inch` together.
+- Size-add and color-add actions should be visible as mock entry points. Product-type size templates may be shown as editable suggestions, not final catalog policy.
+- Fabric/accessory rows should remove `E`/`L` letter markers and use compact icon-like action clusters. Individual item photos are optional, not required for entry.
+- Production flow defaults to six steps: order, material, cutting, process, inspection, and shipping. Flow statuses are simplified to `준비`, `작업중`, and `완료`.
+- Cutting may be shown as a removable default step. Adding a process inside the process step is separate from adding a new flow step.
+- Output/share keeps document-workbench direction while reducing repeated action controls.
+
+Implementation boundary:
+
+```text
+No real upload, camera, file picker, share, PDF generation, delivery request, order mutation, API, DB, R2, Worker, push notification, drag, long-press, auth, or storage behavior is authorized by this real-use UX correction.
+```

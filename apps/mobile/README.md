@@ -1,6 +1,6 @@
 # WAFL Mobile App Mock
 
-Version: `2.0.0-alpha.7`
+Version: `2.0.0-alpha.8`
 
 This Expo React Native app is the App-first WAFL v2 mobile/tablet mock surface.
 
@@ -22,6 +22,7 @@ Current visual foundation:
 - `2.0.0-alpha.5` removes the runtime theme explanation strip, reduces boxed sample-app feeling, and uses built-in `View`/`Text` garment and swatch placeholders instead of external assets.
 - `2.0.0-alpha.6` aligns the mock back to the `/ui` production-card flow: next-check panel, `제작 공장 + 추가 공정 + 공장 전달 준비`, document rows with included information first, delivery-request rows, and user-facing `사이즈·색상` wording.
 - `2.0.0-alpha.7` adds WAFL signature UI corrections: a production-flow progress rail, output/share document workbench mock, dependency-free icon action cleanup, and nested button structure cleanup.
+- `2.0.0-alpha.8` corrects real-use UX fit: customer-facing IDs are hidden, image cards remove per-image title/description burden, attachments use existing image/PDF allowed-extension mock examples, factory memo is a field, size units show one selected unit, material/accessory action clusters remove E/L letters, and production flow uses six baseline steps with simple states.
 
 ## Mock screen
 
@@ -35,9 +36,9 @@ The first screen contains a production-card list and a selected production card 
 - 제작 플로우
 - 출력·공유
 
-The mock demonstrates a representative image placeholder, compact production summary, image/attachment rows, size/color rows, fabric/accessory quantity math, production-flow progress rail, production factory/additional-process rows, output document workbench, and delivery-request rows. Status-based material actions show only one current primary action. All buttons are placeholders for product direction only.
+The mock demonstrates a representative image placeholder, compact production summary, thumbnail-first image selection, allowed-extension attachment rows, size/color rows with cm/inch switching, fabric/accessory quantity math, production-flow progress rail, production factory/additional-process rows, output document workbench, and delivery-request rows. Status-based material actions show only one current primary action. All buttons are placeholders for product direction only.
 
-Image/attachment deepening, representative-image local-state rules, and camera/photo/attachment placeholder details are deferred to `2.0.0-alpha.8`.
+Further field feedback on the alpha.8 real-use screen shape can continue in `2.0.0-alpha.9`; real camera/photo/file picker/upload/share/PDF behavior remains deferred.
 
 ## Commands
 

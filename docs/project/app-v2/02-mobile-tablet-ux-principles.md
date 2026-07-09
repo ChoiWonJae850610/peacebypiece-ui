@@ -81,6 +81,25 @@ Mobile and tablet controls should prefer:
 
 Do not expose large bottom button stacks or repeated copy-heavy buttons on default production-card screens.
 
+## 2.0.0-alpha.8 real-use correction
+
+The alpha.8 mobile mock correction applies these real-use UX principles:
+
+- Customer-facing default surfaces should not expose internal production-card IDs.
+- Image tiles should stay thumbnail-first and avoid per-image title/description input burden.
+- Representative-image controls, detail-view affordance, and delete affordance should be compact and separate.
+- Attachments should stay separate from images and use only allowed image/PDF mock examples.
+- Factory delivery memo should be a production-card field, not an uploaded memo file.
+- Size/color unit selection should display only the selected unit at a time.
+- Size-add and color-add actions should be visible without making mobile controls too tall.
+- Product-type size templates are suggestions, not fixed catalog policy.
+- Fabric/accessory row actions should use compact icon-like clusters instead of letter badges.
+- Fabric/accessory photos are optional and must not block default entry.
+- Production flow should start from six baseline steps and simple states: `준비`, `작업중`, `완료`.
+- Output/share should reduce repeated actions and keep row/workbench clarity.
+
+This correction remains mock-only and does not connect camera, file picker, upload, share, PDF generation, API, DB, R2, Worker, push notification, order, delivery, drag, or long-press behavior.
+
 ## Reordering and movement
 
 Production process ordering should use drag or long-press style UX where it is natural for the device.

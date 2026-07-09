@@ -1,4 +1,4 @@
-# WAFL v2 App-first Roadmap 2.0 - 2.0.0-alpha.7
+# WAFL v2 App-first Roadmap 2.0 - 2.0.0-alpha.8
 
 ## Purpose
 
@@ -81,11 +81,9 @@ Status: done.
 - Do not connect real DB, API, R2, PDF Worker, upload, camera, file picker, share, order, delivery, drag, or long-press behavior.
 - Align app display version to `2.0.0-alpha.6`.
 
-## Next planned checkpoints
-
 ### 2.0.0-alpha.7
 
-Status: current.
+Status: done.
 
 - Strengthen the `apps/mobile` mock as a WAFL signature production-card UI.
 - Add a compact production-flow progress rail for `발주 요청`, `자재 준비`, `재단`, `봉제/추가공정`, `검수/포장`, and `출고 준비`.
@@ -97,16 +95,32 @@ Status: current.
 - Do not connect real DB, API, R2, PDF Worker, upload, camera, file picker, share, order, delivery, drag, or long-press behavior.
 - Align app display version to `2.0.0-alpha.7`.
 
+## Next planned checkpoints
+
 ### 2.0.0-alpha.8
 
-- Improve image and attachment mock details.
-- Refine representative-image local-state rules and camera/photo/attachment placeholders.
-- Keep all camera, picker, upload, share, and storage behavior mock-only.
+Status: current.
+
+- Correct the `apps/mobile` mock toward real apparel-production usage rather than feature integration.
+- Hide internal production-card IDs from customer-facing list, header, image/attachment, size/color, material/accessory, production-flow, output/share, and document preview surfaces.
+- Remove per-image title/description burden from the default image tile face.
+- Show representative-image crown/selection, first-image auto-representative direction, detail-view affordance, and delete affordance as mock UI only.
+- Keep attachments separate from images and use existing WAFL allowed-extension shape for mock files: image/PDF examples only.
+- Represent factory delivery memo as an editable-looking field, not a `.txt` attachment.
+- Make cm/inch unit selection change the displayed measurement values so one cell never mixes both units.
+- Show size-add and color-add mock actions plus product-type size-template suggestions.
+- Remove `E`/`L` letter badges from fabric/accessory rows and use compact icon-like action clusters with one current primary action.
+- Mark individual material/accessory photos as optional only.
+- Normalize production flow to the six baseline steps: order, material, cutting, process, inspection, shipping.
+- Simplify production-flow statuses to `준비`, `작업중`, and `완료`; show cutting as removable and separate process addition from flow-step addition.
+- Polish output/share while keeping the alpha.7 document workbench and avoiding repeated action clusters.
+- Do not connect real DB, API, R2, PDF Worker, upload, camera, file picker, share, push notification, order, delivery, drag, or long-press behavior.
+- Align app display version to `2.0.0-alpha.8`.
 
 ### 2.0.0-alpha.9
 
-- Mock size/color flow.
-- Preserve inch fraction entry direction.
+- Apply user feedback from the alpha.8 real-use screen review or continue image/attachment/detail UX correction.
+- Do not start real upload/share/PDF/API/DB integration unless a separate work order explicitly allows it.
 
 ### 2.0.0-alpha.10
 

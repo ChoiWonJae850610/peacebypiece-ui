@@ -1,3 +1,59 @@
+# 2.0.0-alpha.8 WAFL v2 App-first Real-Use UX Alignment Correction
+
+- Current GPT checkpoint: `2.0.0-alpha.8`.
+- Baseline source before this patch: repository `APP_VERSION: 2.0.0-alpha.7`.
+- Baseline commit: `fe9c9cef17ab1f84522ef1bbdd3370432555cf15`.
+- This patch corrects the `apps/mobile` mock toward real apparel-production usage instead of adding real feature integration.
+- Customer-facing mock screens no longer show internal production-card IDs such as `WAFL-2408-119` in the list, header, or document preview.
+- Image tiles now behave like thumbnail-first visual references: no per-image title/description input burden on the default surface, with representative-image crown/selection and detail/delete affordances only.
+- The first-image auto-representative rule, representative fallback direction, and no-real-camera/file-picker/upload boundary are shown as mock copy only.
+- Attachment mock rows now follow the existing WAFL/R2 allowed file shape by using image/PDF examples only; `.txt` and `.xlsx` examples were removed from the mobile mock.
+- Factory delivery memo is represented as a separate editable-looking field, not as an attached text file.
+- Size/color now shows only the selected unit (`cm` or `inch`) in the measurement table; the same cell no longer mixes both units.
+- Size/color includes visible size-add and color-add mock actions plus product-type template suggestions for top, bottom, one-piece, outer/jumper, and sweatshirt/overall patterns.
+- Fabric and accessory rows no longer expose `E`/`L` letters. Row actions use compact icon-like controls for lock/read, view, edit, delete, and optional photo selection while preserving one current primary action.
+- Fabric/accessory item photo is presented as optional only; default item entry is not blocked by a missing photo.
+- Production flow now uses the baseline six steps: order, material, cutting, process, inspection, and shipping. Statuses are simplified to `준비`, `작업중`, and `완료`.
+- Cutting is displayed as a removable default step, and process addition is separated from flow-step addition.
+- Output/share keeps the alpha.7 document workbench but reduces repeated row action clusters and focuses on document setting, included items, and delivery-request summaries.
+- No real DB, API, R2, PDF Worker, upload, camera, file picker, share, push notification, auth, order, delivery, drag, or long-press behavior is connected.
+- Font files, external images, new dependencies, root package metadata changes, root lockfile changes, and production behavior are still not added.
+
+Explicitly not changed:
+
+```text
+- DB migration
+- API route behavior
+- Neon schema
+- Cloudflare R2 Worker
+- PDF Worker
+- real file upload/delete
+- real camera/photo/file picker
+- real share-link generation
+- real PDF generation
+- real auth callback
+- real order/delivery mutation
+- real push notification
+- real drag/long-press mutation
+- production data
+- root package.json
+- root package-lock.json
+- pnpm lock/workspace files
+- /system or /workspace deletion
+```
+
+Manual device QA remains required before product verification:
+
+```text
+- iPhone portrait one-column production-card flow review
+- iPad mini portrait review
+- iPad Pro landscape centered workbench review
+- Galaxy Tab portrait/landscape rotation review
+- Expo Web preview inspection after local server run
+```
+
+---
+
 # 2.0.0-alpha.7 WAFL v2 App-first Signature UI Correction
 
 - Current GPT checkpoint: `2.0.0-alpha.7`.

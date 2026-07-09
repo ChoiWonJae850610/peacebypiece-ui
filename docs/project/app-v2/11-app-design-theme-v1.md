@@ -154,3 +154,21 @@ Final color values may be tuned after device review. The current contract is sem
 - Button-like actions must not be nested inside another button-like tile. Image tiles can be static containers while their delete/representative actions remain separate controls.
 - Image/attachment mock deepening is deferred to `2.0.0-alpha.8`.
 - The alpha.7 correction must not add real API, DB, R2, PDF Worker, upload, camera, file picker, share, order, delivery, drag, or long-press behavior.
+
+## 12. Real-Use UX Correction
+
+`2.0.0-alpha.8` keeps Dongdaemun Atelier Ops but removes mock-app friction that would feel unrealistic in apparel production work.
+
+- Do not expose internal production-card IDs on customer-facing default surfaces.
+- Image tiles should be thumbnail-first and should not ask for a title or description per image on the default screen.
+- Representative-image selection should be visible through a compact crown/selection affordance.
+- Attachments should follow the existing WAFL file policy shape in mock examples: image and PDF examples are acceptable; unsupported text/spreadsheet examples should not be invented.
+- Factory delivery memo belongs to a memo field, not to an attachment file.
+- Size/color tables should show one selected unit at a time. A unit toggle must change the displayed values if it is shown.
+- Product-type size templates are suggestions and must remain editable in the mock direction.
+- Fabric and accessory rows should use compact icon-like action clusters, not exposed `E`/`L` letters.
+- Fabric/accessory photos are optional affordances, not required fields.
+- Production-flow visual language should use six baseline steps and simple states: `준비`, `작업중`, `완료`.
+- Cutting can be represented as a removable default step, while adding an internal process remains separate from adding a flow step.
+- Output/share should keep a document-workbench feel without repeated action clusters.
+- No dependency, external asset, font file, real upload, camera, file picker, share, PDF, API, DB, R2, Worker, push notification, order, delivery, drag, or long-press integration is added by this correction.

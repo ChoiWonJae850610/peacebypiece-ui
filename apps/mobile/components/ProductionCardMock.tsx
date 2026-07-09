@@ -27,6 +27,7 @@ import {
   productionCardMock,
   productionCards,
   sizeRows,
+  sizeTemplates,
   summaryMetrics,
   type MaterialRow as MaterialRowData,
   type MaterialStatus,
@@ -137,7 +138,6 @@ function ProductionListCard({
       <View style={styles.flex}>
         <View style={styles.rowHead}>
           <Text style={styles.listCardTitle}>{card.title}</Text>
-          <Text style={styles.sheetNo}>{card.sheetNo}</Text>
         </View>
         <Text style={styles.listMeta}>
           {card.quantity} · 납기 {card.dueDate} · {card.totalEstimate}
@@ -158,7 +158,7 @@ function ProductionHeader({ isTablet }: { isTablet: boolean }) {
       <View style={styles.headerText}>
         <View style={styles.statusRow}>
           <Text style={styles.statusBadge}>{productionCardMock.statusLabel}</Text>
-          <Text style={styles.metaText}>{productionCardMock.sheetNo}</Text>
+          <Text style={styles.metaText}>대표 이미지 자동 반영</Text>
         </View>
         <Text style={styles.title}>{productionCardMock.title}</Text>
         <Text style={styles.subtitle}>
@@ -350,8 +350,11 @@ function ImagesTab({ isTablet }: { isTablet: boolean }) {
     <View>
       <SectionTitle
         title="이미지·첨부"
-        caption="대표 이미지와 첨부파일을 분리해서 보여줍니다. 실제 카메라, 파일 선택, 업로드는 연결하지 않습니다."
+        caption="사진은 제목을 매번 입력하지 않고 썸네일로 고릅니다. 첫 이미지는 자동 대표가 되며, 첨부는 허용 확장자 mock만 표시합니다."
       />
+      <View style={styles.compactNotice}>
+        <Text style={styles.compactNoticeText}>첫 이미지는 자동 대표 · 대표 삭제 시 다음 이미지가 대표 · 실제 카메라/파일 선택 없음</Text>
+      </View>
       <View style={[styles.imageGrid, isTablet && styles.imageGridTablet]}>
         {imageMocks.map((item) => (
           <View
@@ -359,15 +362,13 @@ function ImagesTab({ isTablet }: { isTablet: boolean }) {
             style={[styles.imageTile, item.selected && styles.imageTileSelected]}
           >
             <View style={styles.imageTileVisualWrap}>
-              <GarmentPreview compact label={item.selected ? "대표" : item.kind} />
+              <GarmentPreview compact label={item.kind} />
               {item.selected ? <Text style={styles.crownBadge}>대표</Text> : null}
             </View>
-            <View style={styles.rowHead}>
-              <View style={styles.flex}>
-                <Text style={styles.rowTitle}>{item.title}</Text>
-                <Text style={styles.smallText}>{item.note}</Text>
-              </View>
-              <IconButton label="삭제 예정" symbol="x" danger />
+            <View style={styles.imageActionRow}>
+              <IconButton label={item.selected ? "대표 이미지" : "대표로 선택"} symbol={item.selected ? "★" : "☆"} />
+              <IconButton label="자세히 보기" symbol="⌕" />
+              <IconButton label="삭제 예정" symbol="×" danger />
             </View>
           </View>
         ))}
@@ -380,29 +381,53 @@ function ImagesTab({ isTablet }: { isTablet: boolean }) {
               <Text style={styles.rowTitle}>{item.title}</Text>
               <Text style={styles.rowDetail}>{item.detail} · 포함 선택은 제작 문서에서 처리</Text>
             </View>
-            <IconButton label="첨부 삭제 예정" symbol="x" danger />
+            <IconButton label="첨부 삭제 예정" symbol="×" danger />
           </View>
         ))}
+      </View>
+      <View style={styles.memoFieldMock}>
+        <Text style={styles.infoLabel}>공장 전달 메모</Text>
+        <Text style={styles.infoValue}>워싱 강도와 라벨 위치는 공장 전달 전에 여기에서 수정합니다.</Text>
+        <Text style={styles.smallText}>완료 전 수정 가능 · 완료 후 잠금 예정 · 관리자 알림은 이후 구현</Text>
       </View>
     </View>
   );
 }
 
 function SizesTab({ isTablet }: { isTablet: boolean }) {
+  const [unitMode, setUnitMode] = useState<"cm" | "inch">("cm");
+  const unitSuffix = unitMode === "cm" ? "cm" : "inch";
+
   return (
     <View>
       <SectionTitle
         title="사이즈·색상"
-        caption="표준, 고객사, 자유 사이즈를 같은 표에서 확인하고 cm/inch 전환과 1/8 helper를 mock으로 표시합니다."
+        caption="선택한 단위만 표에 표시합니다. 제품 유형별 추천 치수는 시작점이고, 실제 값은 자유 수정 mock입니다."
       />
       <View style={styles.quantityCheck}>
         <Text style={styles.quantityCheckTitle}>색상별 수량 합계</Text>
-        <Text style={styles.quantityCheckText}>아이보리 80벌 + 네이비 120벌 + 블랙 160벌 = 총 360벌</Text>
+        <Text style={styles.quantityCheckText}>총 360벌</Text>
+      </View>
+      <View style={styles.sectionActionRow}>
+        <PrimaryAction label="사이즈 추가" status="발주 가능" />
+        <PrimaryAction label="색상 추가" status="발주 가능" />
       </View>
       <View style={styles.segmentRow}>
-        <Text style={styles.segmentSelected}>cm</Text>
-        <Text style={styles.segment}>inch</Text>
-        <Text style={styles.segment}>1/8 helper</Text>
+        <Pressable accessibilityRole="button" accessibilityLabel="cm 단위 보기" onPress={() => setUnitMode("cm")}>
+          <Text style={unitMode === "cm" ? styles.segmentSelected : styles.segment}>cm</Text>
+        </Pressable>
+        <Pressable accessibilityRole="button" accessibilityLabel="inch 단위 보기" onPress={() => setUnitMode("inch")}>
+          <Text style={unitMode === "inch" ? styles.segmentSelected : styles.segment}>inch</Text>
+        </Pressable>
+        <Text style={styles.segment}>1/8 helper 예정</Text>
+      </View>
+      <View style={styles.templateStrip}>
+        {sizeTemplates.map((template) => (
+          <View key={template.productType} style={[styles.templateChip, template.selected && styles.templateChipSelected]}>
+            <Text style={[styles.templateTitle, template.selected && styles.templateTitleSelected]}>{template.productType}</Text>
+            <Text style={[styles.templateDetail, template.selected && styles.templateDetailSelected]}>{template.fields.join(" · ")}</Text>
+          </View>
+        ))}
       </View>
       <ScrollView horizontal showsHorizontalScrollIndicator={false}>
         <View style={styles.sizeTable}>
@@ -417,9 +442,9 @@ function SizesTab({ isTablet }: { isTablet: boolean }) {
             <View key={`${row.group}-${row.size}`} style={styles.tableRow}>
               <Text style={styles.tableCellStrong}>{row.group}</Text>
               <Text style={styles.tableCellStrong}>{row.size}</Text>
-              <Text style={styles.tableCell}>{row.chestCm} cm / {row.chestIn}</Text>
-              <Text style={styles.tableCell}>{row.lengthCm} cm / {row.lengthIn}</Text>
-              <Text style={styles.tableCell}>{row.shoulderCm} cm</Text>
+              <Text style={styles.tableCell}>{unitMode === "cm" ? row.chestCm : row.chestIn} {unitSuffix}</Text>
+              <Text style={styles.tableCell}>{unitMode === "cm" ? row.lengthCm : row.lengthIn} {unitSuffix}</Text>
+              <Text style={styles.tableCell}>{unitMode === "cm" ? row.shoulderCm : row.shoulderIn} {unitSuffix}</Text>
             </View>
           ))}
         </View>
@@ -457,6 +482,9 @@ function MaterialTab({
         <Text style={styles.inlineMetric}>발주 가능 {orderable}건</Text>
         <Text style={styles.inlineMetric}>발주 요청 {requested}건</Text>
       </View>
+      <View style={styles.sectionActionRow}>
+        <PrimaryAction label={`${title} 추가`} status="발주 가능" />
+      </View>
       {rows.map((row) => (
         <MaterialRow key={row.name} row={row} />
       ))}
@@ -468,8 +496,8 @@ function ProgressRail() {
   return (
     <View style={styles.progressBlock}>
       <View style={styles.progressHeader}>
-        <Text style={styles.subsectionTitle}>제작 흐름 진행 레일</Text>
-        <Text style={styles.smallText}>발주 요청부터 출고 준비까지, 현재 카드 기준 전달 준비 상태만 보여주는 mock</Text>
+        <Text style={styles.subsectionTitle}>기본 제작 플로우 6단계</Text>
+        <Text style={styles.smallText}>발주 · 자재 · 재단 · 공정 · 검수 · 출고를 준비/작업중/완료로만 표시합니다.</Text>
       </View>
       <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.progressRail}>
         {progressSteps.map((step, index) => (
@@ -491,7 +519,7 @@ function ProgressRail() {
               <Text style={[styles.rowBadge, progressStatusBadge(step.status)]}>{step.status}</Text>
             </View>
             <Text style={styles.rowDetail}>{step.partner} · 전달일 {step.handoffDate}</Text>
-            <Text style={styles.smallText}>{step.memo}</Text>
+            <Text style={styles.smallText}>{step.memo}{step.removable ? " · 삭제 가능 mock" : ""}</Text>
           </View>
         ))}
       </View>
@@ -504,13 +532,17 @@ function FlowTab() {
     <View>
       <SectionTitle
         title="제작 플로우"
-        caption="제작 공장, 추가 공정, 공장 전달 준비 상태를 정리합니다. 이동은 drag 또는 길게 누르기 예정 방향만 표시합니다."
+        caption="기본 단계는 유지하되 재단은 삭제 가능하고, 공정 안에는 봉제·나염·라벨 같은 내부 공정을 추가하는 구조입니다."
       />
       <ProgressRail />
       <View style={styles.flowSummary}>
         <Text style={styles.inlineMetric}>제작 공장 1곳</Text>
         <Text style={styles.inlineMetric}>추가 공정 2건</Text>
-        <Text style={styles.inlineMetric}>전달 전 확인 2건</Text>
+        <Text style={styles.inlineMetric}>준비 2건</Text>
+      </View>
+      <View style={styles.sectionActionRow}>
+        <PrimaryAction label="공정 추가" status="발주 가능" />
+        <PrimaryAction label="플로우 추가" status="발주 요청" />
       </View>
       {processRows.map((row, index) => (
         <View key={row.process} style={styles.processRow}>
@@ -522,7 +554,7 @@ function FlowTab() {
             </View>
             <Text style={styles.rowDetail}>{row.partner} · {row.quantity} · 납기 {row.dueDate}</Text>
             <Text style={styles.rowMeta}>단가 {row.unitPrice} · 금액 {row.amount} · 단위 {row.unit}</Text>
-            <Text style={styles.statusLine}>전달/확인 상태 · {row.status}</Text>
+            <Text style={styles.statusLine}>상태 · {row.status}</Text>
             <Text style={styles.smallText}>{row.memo}</Text>
           </View>
         </View>
@@ -552,7 +584,7 @@ function DocumentWorkbench({ included }: { included: typeof attachmentRows }) {
           </View>
           <View style={styles.flex}>
             <Text style={styles.documentPreviewTitle}>{selectedDocument.title}</Text>
-            <Text style={styles.rowDetail}>작지번호 {productionCardMock.sheetNo} · {productionCardMock.title}</Text>
+            <Text style={styles.rowDetail}>{productionCardMock.title}</Text>
             <Text style={styles.smallText}>{productionCardMock.quantity} · 납기 {productionCardMock.dueDate}</Text>
           </View>
         </View>
@@ -601,10 +633,10 @@ function OutputTab() {
     <View>
       <SectionTitle
         title="제작 문서"
-        caption="문서 종류와 포함 항목을 먼저 확인하고, 보기·공유·인쇄·저장은 compact action으로만 보여줍니다."
+        caption="문서 선택, 포함 항목, 공유 설정을 한 곳에서 확인합니다. 실제 PDF 생성과 공유는 연결하지 않습니다."
       />
       <DocumentWorkbench included={included} />
-      <Text style={styles.subsectionTitle}>문서 종류와 포함 항목</Text>
+      <Text style={styles.subsectionTitle}>문서 설정</Text>
       {outputRows.map((row) => (
         <View key={row.title} style={styles.outputRow}>
           <View style={styles.flex}>
@@ -616,12 +648,6 @@ function OutputTab() {
               ))}
             </View>
             <Text style={styles.smallText}>{row.state}</Text>
-          </View>
-          <View style={styles.outputActions}>
-            <IconButton label={`${row.title} 보기`} symbol="□" />
-            <IconButton label={`${row.title} 공유`} symbol="↗" />
-            <IconButton label={`${row.title} 인쇄`} symbol="P" />
-            <IconButton label={`${row.title} 저장`} symbol="S" />
           </View>
         </View>
       ))}
@@ -674,7 +700,11 @@ function MaterialRow({ row }: { row: MaterialRowData }) {
         </View>
         <View style={styles.statusCluster}>
           <Text style={[styles.rowBadge, statusBadgeStyle(row.status)]}>{row.status}</Text>
-          <IconButton label={row.locked ? "잠김" : "편집"} symbol={row.locked ? "L" : "E"} danger={row.status === "주의/잠김"} />
+          <IconButton label={row.locked ? "잠김" : "수정 가능"} symbol={row.locked ? "●" : "○"} danger={row.status === "주의/잠김"} />
+          <IconButton label="보기" symbol="⌕" />
+          {!row.locked ? <IconButton label="편집" symbol="✎" /> : null}
+          {!row.locked ? <IconButton label="삭제 예정" symbol="×" danger /> : null}
+          <IconButton label="개별 사진 선택 사항" symbol="▧" />
         </View>
       </View>
       <Text style={styles.rowDetail}>
@@ -684,7 +714,7 @@ function MaterialRow({ row }: { row: MaterialRowData }) {
         단위 {row.unit} · 단가 {row.unitPrice} · 금액 {row.amount}
       </Text>
       <View style={styles.materialFooter}>
-        <Text style={styles.smallText}>{row.leftover} · {row.warning}</Text>
+        <Text style={styles.smallText}>{row.leftover} · {row.warning} · 사진 선택 사항</Text>
         {row.primaryAction ? <PrimaryAction label={row.primaryAction} status={row.status} /> : <Text style={styles.doneText}>완료 상태 · 보기만 가능</Text>}
       </View>
     </View>
@@ -767,10 +797,10 @@ function progressStepTone(status: string) {
   if (status === "완료") {
     return styles.progressDotDone;
   }
-  if (status === "전달 준비" || status === "전달 전 확인") {
+  if (status === "작업중") {
     return styles.progressDotCurrent;
   }
-  if (status.includes("필요")) {
+  if (status === "준비") {
     return styles.progressDotWarning;
   }
   return styles.progressDotMuted;
@@ -780,7 +810,7 @@ function progressStatusText(status: string) {
   if (status === "완료") {
     return styles.progressStatusDone;
   }
-  if (status.includes("필요")) {
+  if (status === "준비") {
     return styles.progressStatusWarning;
   }
   return styles.progressStatusCurrent;
@@ -790,7 +820,7 @@ function progressStatusBadge(status: string) {
   if (status === "완료") {
     return styles.statusCompleted;
   }
-  if (status.includes("필요")) {
+  if (status === "작업중") {
     return styles.statusRequested;
   }
   return styles.statusReady;
@@ -1340,6 +1370,19 @@ const styles = StyleSheet.create({
     fontSize: 12,
     lineHeight: 18
   },
+  compactNotice: {
+    backgroundColor: "#f6efe5",
+    borderRadius: 10,
+    marginBottom: 10,
+    paddingHorizontal: 10,
+    paddingVertical: 8
+  },
+  compactNoticeText: {
+    color: "#5d544b",
+    fontSize: 12,
+    fontWeight: "800",
+    lineHeight: 17
+  },
   overviewGrid: {
     gap: 10
   },
@@ -1415,6 +1458,12 @@ const styles = StyleSheet.create({
   imageTileVisualWrap: {
     position: "relative"
   },
+  imageActionRow: {
+    alignItems: "center",
+    flexDirection: "row",
+    gap: 6,
+    justifyContent: "flex-end"
+  },
   crownBadge: {
     backgroundColor: "#c75f35",
     borderRadius: 999,
@@ -1431,6 +1480,15 @@ const styles = StyleSheet.create({
   subsection: {
     marginTop: 12
   },
+  memoFieldMock: {
+    backgroundColor: "#fffaf2",
+    borderColor: "#eadfce",
+    borderRadius: 10,
+    borderWidth: 1,
+    gap: 4,
+    marginTop: 12,
+    padding: 10
+  },
   subsectionTitle: {
     color: "#17263d",
     fontSize: 15,
@@ -1446,6 +1504,13 @@ const styles = StyleSheet.create({
     paddingVertical: 10
   },
   segmentRow: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 7,
+    marginBottom: 10
+  },
+  sectionActionRow: {
+    alignItems: "center",
     flexDirection: "row",
     flexWrap: "wrap",
     gap: 7,
@@ -1486,6 +1551,41 @@ const styles = StyleSheet.create({
     fontWeight: "900",
     paddingHorizontal: 11,
     paddingVertical: 7
+  },
+  templateStrip: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 7,
+    marginBottom: 10
+  },
+  templateChip: {
+    backgroundColor: "#f7f0e5",
+    borderColor: "#eadfce",
+    borderRadius: 10,
+    borderWidth: 1,
+    gap: 2,
+    paddingHorizontal: 9,
+    paddingVertical: 7
+  },
+  templateChipSelected: {
+    backgroundColor: "#23375a",
+    borderColor: "#23375a"
+  },
+  templateTitle: {
+    color: "#17263d",
+    fontSize: 12,
+    fontWeight: "900"
+  },
+  templateTitleSelected: {
+    color: "#ffffff"
+  },
+  templateDetail: {
+    color: "#6d6257",
+    fontSize: 10,
+    fontWeight: "700"
+  },
+  templateDetailSelected: {
+    color: "#f8efe2"
   },
   sizeTable: {
     minWidth: 660
