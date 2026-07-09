@@ -1,4 +1,4 @@
-# WAFL v2 App-first Roadmap 2.0 - 2.0.0-alpha.6
+# WAFL v2 App-first Roadmap 2.0 - 2.0.0-alpha.7
 
 ## Purpose
 
@@ -69,7 +69,7 @@ Status: done.
 
 ### 2.0.0-alpha.6
 
-Status: current.
+Status: done.
 
 - Align the `apps/mobile` mock with the settled `/ui` production-card flow.
 - Reframe the app mock away from generic production/project management and toward WAFL production-card input, order, factory-delivery, document, and delivery-request work.
@@ -85,24 +85,38 @@ Status: current.
 
 ### 2.0.0-alpha.7
 
+Status: current.
+
+- Strengthen the `apps/mobile` mock as a WAFL signature production-card UI.
+- Add a compact production-flow progress rail for `발주 요청`, `자재 준비`, `재단`, `봉제/추가공정`, `검수/포장`, and `출고 준비`.
+- Keep the progress rail as a handoff/readiness view, not a real-time production tracking system.
+- Add an output/share document preview/workbench mock with document list, selected sheet preview, included information, delivery-request summary, and compact icon actions.
+- Clean up icon-style action grammar without adding a new dependency.
+- Fix the nested button risk by separating image tile containers from delete action controls.
+- Preserve alpha.5 visual fidelity and alpha.6 `/ui` production-card flow alignment.
+- Do not connect real DB, API, R2, PDF Worker, upload, camera, file picker, share, order, delivery, drag, or long-press behavior.
+- Align app display version to `2.0.0-alpha.7`.
+
+### 2.0.0-alpha.8
+
 - Improve image and attachment mock details.
 - Refine representative-image local-state rules and camera/photo/attachment placeholders.
 - Keep all camera, picker, upload, share, and storage behavior mock-only.
 
-### 2.0.0-alpha.8
+### 2.0.0-alpha.9
 
 - Mock size/color flow.
 - Preserve inch fraction entry direction.
 
-### 2.0.0-alpha.9
+### 2.0.0-alpha.10
 
 - Mock fabric and accessory card flows.
 
-### 2.0.0-alpha.10
+### 2.0.0-alpha.11
 
 - Mock production flow.
 
-### 2.0.0-alpha.11
+### 2.0.0-alpha.12
 
 - Mock output and share flow.
 

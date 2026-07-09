@@ -1,3 +1,53 @@
+# 2.0.0-alpha.7 WAFL v2 App-first Signature UI Correction
+
+- Current GPT checkpoint: `2.0.0-alpha.7`.
+- Baseline source before this patch: repository `APP_VERSION: 2.0.0-alpha.6`.
+- Baseline commit: `396b90dec09b1746d519d7dbf96e434ff8b07894`.
+- This patch strengthens the `apps/mobile` mock as a WAFL signature production-card UI instead of adding real feature integration.
+- The production-flow tab now includes a compact progress rail from `발주 요청` through `출고 준비`, with WAFL-specific handoff states such as `전달 준비`, `공정 메모 필요`, and `납기 확인 필요`.
+- The production-flow detail remains a mock factory/process preparation surface. It does not become a real-time production tracker, drag system, or long-press implementation.
+- The output/share tab now includes a document preview/workbench mock: document list, selected production-document sheet preview, included information chips, delivery-request summary, and compact icon actions.
+- Icon-style actions are kept dependency-free with `View`/`Text`/`Pressable` grammar because no new icon dependency is added.
+- The image tile structure no longer nests an action `Pressable` inside an outer image-tile `Pressable`; the tile is a container and the delete action is the only button-like control in that tile.
+- Existing alpha.5 visual fidelity and alpha.6 production-card wording are preserved.
+- Image/attachment mock deepening, representative-image UX rules, and camera/photo/attachment placeholder details are deferred to `2.0.0-alpha.8`.
+- No real DB, API, R2, PDF Worker, upload, camera, file picker, share, auth, order, delivery, drag, or long-press behavior is connected.
+- Font files, external images, new dependencies, root package metadata changes, root lockfile changes, and production behavior are still not added.
+
+Explicitly not changed:
+
+```text
+- DB migration
+- API route behavior
+- Neon schema
+- Cloudflare R2 Worker
+- PDF Worker
+- real file upload/delete
+- real camera/photo/file picker
+- real share-link generation
+- real PDF generation
+- real auth callback
+- real order/delivery mutation
+- real drag/long-press mutation
+- production data
+- root package.json
+- root package-lock.json
+- pnpm lock/workspace files
+- /system or /workspace deletion
+```
+
+Manual device QA remains required before product verification:
+
+```text
+- iPhone portrait one-column production-card flow review
+- iPad mini portrait review
+- iPad Pro landscape centered workbench review
+- Galaxy Tab portrait/landscape rotation review
+- Expo Web preview inspection after local server run
+```
+
+---
+
 # 2.0.0-alpha.6 WAFL v2 App-first /ui Alignment Correction
 
 - Current GPT checkpoint: `2.0.0-alpha.6`.
@@ -11,7 +61,7 @@
 - Output/share now shows document type and included information first, then compact view/share/print/save mock actions.
 - Delivery-request rows show one origin, one destination, multiple items, contact confirmation, and delivery memo.
 - Size/color user-facing wording is kept as `사이즈·색상` across the mobile mock and updated App-first docs.
-- Image/attachment deepening, representative-image UX rules, and camera/photo/attachment placeholder details are deferred to `2.0.0-alpha.7`.
+- Image/attachment deepening, representative-image UX rules, and camera/photo/attachment placeholder details are deferred to `2.0.0-alpha.8`.
 - No real DB, API, R2, PDF Worker, upload, camera, file picker, share, auth, order, delivery, drag, or long-press behavior is connected.
 - Font files, external images, new dependencies, root package metadata changes, root lockfile changes, and production behavior are still not added.
 

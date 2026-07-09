@@ -100,6 +100,16 @@ export type ProcessRow = {
   memo: string;
 };
 
+export type ProgressStep = {
+  id: string;
+  label: string;
+  shortLabel: string;
+  partner: string;
+  handoffDate: string;
+  status: "완료" | "전달 준비" | "공정 메모 필요" | "납기 확인 필요" | "공장 확인 필요" | "전달 전 확인";
+  memo: string;
+};
+
 export type DocumentRow = {
   title: string;
   detail: string;
@@ -448,6 +458,63 @@ export const processRows: ProcessRow[] = [
     dueDate: "08/18",
     status: "납기 확인 필요",
     memo: "검품 기준은 단추 간격과 허리끈 길이입니다. 검품 납기와 단가를 다시 확인합니다."
+  }
+];
+
+export const progressSteps: ProgressStep[] = [
+  {
+    id: "order-request",
+    label: "발주 요청",
+    shortLabel: "발주",
+    partner: "서울패브릭 / 버튼하우스",
+    handoffDate: "2026.08.06",
+    status: "완료",
+    memo: "원단 1건과 부자재 1건은 요청 완료, 남은 입력중 항목은 별도 확인"
+  },
+  {
+    id: "material-ready",
+    label: "자재 준비",
+    shortLabel: "자재",
+    partner: "서울패브릭 / 라벨팩토리",
+    handoffDate: "2026.08.09",
+    status: "전달 준비",
+    memo: "공장 전달 전 원단 여유분과 라벨 공급처를 확인"
+  },
+  {
+    id: "cutting",
+    label: "재단",
+    shortLabel: "재단",
+    partner: "한강 봉제",
+    handoffDate: "2026.08.10",
+    status: "전달 전 확인",
+    memo: "재단 지시 전 색상별 수량과 사이즈 표를 다시 맞춤"
+  },
+  {
+    id: "sewing-process",
+    label: "봉제/추가공정",
+    shortLabel: "공정",
+    partner: "한강 봉제 / 성수 워싱",
+    handoffDate: "2026.08.12",
+    status: "공정 메모 필요",
+    memo: "워싱 강도와 봉제 메모를 공장 전달 작업지시서에 포함"
+  },
+  {
+    id: "inspection-package",
+    label: "검수/포장",
+    shortLabel: "검수",
+    partner: "동대문 검품 / 패키지팩",
+    handoffDate: "2026.08.18",
+    status: "납기 확인 필요",
+    memo: "검수 기준과 포장 입고 시간을 출고 전 다시 확인"
+  },
+  {
+    id: "shipping-ready",
+    label: "출고 준비",
+    shortLabel: "출고",
+    partner: "한강 봉제",
+    handoffDate: "2026.08.20",
+    status: "공장 확인 필요",
+    memo: "완성 수량, 불량 수량, 배송요청 메모를 출고 전에 확정"
   }
 ];
 

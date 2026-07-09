@@ -23,6 +23,7 @@ import {
   outputRows,
   overviewInfo,
   processRows,
+  progressSteps,
   productionCardMock,
   productionCards,
   sizeRows,
@@ -353,10 +354,8 @@ function ImagesTab({ isTablet }: { isTablet: boolean }) {
       />
       <View style={[styles.imageGrid, isTablet && styles.imageGridTablet]}>
         {imageMocks.map((item) => (
-          <Pressable
+          <View
             key={item.id}
-            accessibilityRole="button"
-            accessibilityLabel={`${item.title} 이미지 mock`}
             style={[styles.imageTile, item.selected && styles.imageTileSelected]}
           >
             <View style={styles.imageTileVisualWrap}>
@@ -370,7 +369,7 @@ function ImagesTab({ isTablet }: { isTablet: boolean }) {
               </View>
               <IconButton label="삭제 예정" symbol="x" danger />
             </View>
-          </Pressable>
+          </View>
         ))}
       </View>
       <View style={styles.subsection}>
@@ -465,6 +464,41 @@ function MaterialTab({
   );
 }
 
+function ProgressRail() {
+  return (
+    <View style={styles.progressBlock}>
+      <View style={styles.progressHeader}>
+        <Text style={styles.subsectionTitle}>제작 흐름 진행 레일</Text>
+        <Text style={styles.smallText}>발주 요청부터 출고 준비까지, 현재 카드 기준 전달 준비 상태만 보여주는 mock</Text>
+      </View>
+      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.progressRail}>
+        {progressSteps.map((step, index) => (
+          <View key={step.id} style={styles.progressStep}>
+            <View style={styles.progressTopLine}>
+              <View style={[styles.progressDot, progressStepTone(step.status)]} />
+              {index < progressSteps.length - 1 ? <View style={styles.progressConnector} /> : null}
+            </View>
+            <Text style={styles.progressShort}>{step.shortLabel}</Text>
+            <Text style={[styles.progressStatus, progressStatusText(step.status)]}>{step.status}</Text>
+          </View>
+        ))}
+      </ScrollView>
+      <View style={styles.progressDetailList}>
+        {progressSteps.map((step) => (
+          <View key={`${step.id}-detail`} style={styles.progressDetailRow}>
+            <View style={styles.progressDetailHead}>
+              <Text style={styles.rowTitle}>{step.label}</Text>
+              <Text style={[styles.rowBadge, progressStatusBadge(step.status)]}>{step.status}</Text>
+            </View>
+            <Text style={styles.rowDetail}>{step.partner} · 전달일 {step.handoffDate}</Text>
+            <Text style={styles.smallText}>{step.memo}</Text>
+          </View>
+        ))}
+      </View>
+    </View>
+  );
+}
+
 function FlowTab() {
   return (
     <View>
@@ -472,6 +506,7 @@ function FlowTab() {
         title="제작 플로우"
         caption="제작 공장, 추가 공정, 공장 전달 준비 상태를 정리합니다. 이동은 drag 또는 길게 누르기 예정 방향만 표시합니다."
       />
+      <ProgressRail />
       <View style={styles.flowSummary}>
         <Text style={styles.inlineMetric}>제작 공장 1곳</Text>
         <Text style={styles.inlineMetric}>추가 공정 2건</Text>
@@ -496,6 +531,69 @@ function FlowTab() {
   );
 }
 
+function DocumentWorkbench({ included }: { included: typeof attachmentRows }) {
+  const selectedDocument = outputRows[0];
+  const primaryDelivery = deliveryRows[0];
+
+  return (
+    <View style={styles.documentWorkbench}>
+      <View style={styles.documentList}>
+        {outputRows.map((row, index) => (
+          <View key={row.title} style={[styles.documentListRow, index === 0 && styles.documentListRowSelected]}>
+            <Text style={styles.rowTitle}>{row.title}</Text>
+            <Text style={styles.smallText}>{row.state}</Text>
+          </View>
+        ))}
+      </View>
+      <View style={styles.documentPreviewSheet}>
+        <View style={styles.documentPreviewHeader}>
+          <View style={styles.previewThumb}>
+            <GarmentPreview compact label="문서" />
+          </View>
+          <View style={styles.flex}>
+            <Text style={styles.documentPreviewTitle}>{selectedDocument.title}</Text>
+            <Text style={styles.rowDetail}>작지번호 {productionCardMock.sheetNo} · {productionCardMock.title}</Text>
+            <Text style={styles.smallText}>{productionCardMock.quantity} · 납기 {productionCardMock.dueDate}</Text>
+          </View>
+        </View>
+        <View style={styles.documentPreviewGrid}>
+          <InfoRow label="총 예상" value={productionCardMock.totalEstimate} />
+          <InfoRow label="한벌 단가" value={productionCardMock.unitCost} />
+          <InfoRow label="원단/부자재" value="원단 4건 · 부자재 4건" />
+          <InfoRow label="공장/공정" value="제작 공장 + 추가 공정 2건" />
+        </View>
+        <View style={styles.documentMemoBox}>
+          <Text style={styles.infoLabel}>공장 전달 메모</Text>
+          <Text style={styles.infoValue}>{productionCardMock.memo}</Text>
+        </View>
+      </View>
+      <View style={styles.documentSidePanel}>
+        <Text style={styles.subsectionTitle}>포함 항목</Text>
+        <View style={styles.chipRow}>
+          {selectedDocument.includes.map((item) => (
+            <Text key={item} style={styles.fileChip}>{item}</Text>
+          ))}
+          {included.map((item) => (
+            <Text key={item.title} style={styles.fileChip}>{item.title}</Text>
+          ))}
+        </View>
+        <View style={styles.deliverySummaryBox}>
+          <Text style={styles.subsectionTitle}>배송요청 요약</Text>
+          <Text style={styles.rowDetail}>{primaryDelivery.origin} → {primaryDelivery.destination}</Text>
+          <Text style={styles.smallText}>{primaryDelivery.items} · {primaryDelivery.contact}</Text>
+          <Text style={styles.smallText}>전달 메모 · {primaryDelivery.memo}</Text>
+        </View>
+        <View style={styles.documentActionBar}>
+          <IconButton label="보기" symbol="□" />
+          <IconButton label="공유" symbol="↗" />
+          <IconButton label="인쇄" symbol="P" />
+          <IconButton label="저장" symbol="S" />
+        </View>
+      </View>
+    </View>
+  );
+}
+
 function OutputTab() {
   const included = attachmentRows.filter((item) => item.included);
 
@@ -505,20 +603,7 @@ function OutputTab() {
         title="제작 문서"
         caption="문서 종류와 포함 항목을 먼저 확인하고, 보기·공유·인쇄·저장은 compact action으로만 보여줍니다."
       />
-      <View style={styles.outputPreview}>
-        <View style={styles.previewThumb}>
-          <GarmentPreview compact label="문서" />
-        </View>
-        <View style={styles.flex}>
-          <Text style={styles.rowTitle}>현재 제작 카드 기준 미리보기</Text>
-          <Text style={styles.rowDetail}>대표 이미지, 사이즈·색상, 원단, 부자재, 제작 공장, 공정 메모</Text>
-          <View style={styles.chipRow}>
-            {included.map((item) => (
-              <Text key={item.title} style={styles.fileChip}>{item.title}</Text>
-            ))}
-          </View>
-        </View>
-      </View>
+      <DocumentWorkbench included={included} />
       <Text style={styles.subsectionTitle}>문서 종류와 포함 항목</Text>
       {outputRows.map((row) => (
         <View key={row.title} style={styles.outputRow}>
@@ -676,6 +761,39 @@ function NavItem({ label, symbol, selected = false }: { label: string; symbol: s
       <Text style={[styles.navLabel, selected && styles.navLabelSelected]}>{label}</Text>
     </Pressable>
   );
+}
+
+function progressStepTone(status: string) {
+  if (status === "완료") {
+    return styles.progressDotDone;
+  }
+  if (status === "전달 준비" || status === "전달 전 확인") {
+    return styles.progressDotCurrent;
+  }
+  if (status.includes("필요")) {
+    return styles.progressDotWarning;
+  }
+  return styles.progressDotMuted;
+}
+
+function progressStatusText(status: string) {
+  if (status === "완료") {
+    return styles.progressStatusDone;
+  }
+  if (status.includes("필요")) {
+    return styles.progressStatusWarning;
+  }
+  return styles.progressStatusCurrent;
+}
+
+function progressStatusBadge(status: string) {
+  if (status === "완료") {
+    return styles.statusCompleted;
+  }
+  if (status.includes("필요")) {
+    return styles.statusRequested;
+  }
+  return styles.statusReady;
 }
 
 function statusBadgeStyle(status: MaterialStatus) {
@@ -1443,6 +1561,92 @@ const styles = StyleSheet.create({
     paddingHorizontal: 9,
     paddingVertical: 5
   },
+  progressBlock: {
+    backgroundColor: "#fffaf2",
+    borderColor: "#eadfce",
+    borderRadius: 12,
+    borderWidth: 1,
+    marginBottom: 12,
+    padding: 10
+  },
+  progressHeader: {
+    gap: 3,
+    marginBottom: 8
+  },
+  progressRail: {
+    alignItems: "flex-start",
+    paddingBottom: 4
+  },
+  progressStep: {
+    minWidth: 76,
+    paddingRight: 8
+  },
+  progressTopLine: {
+    alignItems: "center",
+    flexDirection: "row",
+    height: 18
+  },
+  progressDot: {
+    borderRadius: 999,
+    height: 12,
+    width: 12
+  },
+  progressDotDone: {
+    backgroundColor: "#4d6a3a"
+  },
+  progressDotCurrent: {
+    backgroundColor: "#c75f35"
+  },
+  progressDotWarning: {
+    backgroundColor: "#dfad45"
+  },
+  progressDotMuted: {
+    backgroundColor: "#c9bba8"
+  },
+  progressConnector: {
+    backgroundColor: "#dfd3c3",
+    flex: 1,
+    height: 2,
+    marginLeft: 5
+  },
+  progressShort: {
+    color: "#17263d",
+    fontSize: 12,
+    fontWeight: "900",
+    marginTop: 5
+  },
+  progressStatus: {
+    fontSize: 10,
+    fontWeight: "900",
+    lineHeight: 14,
+    marginTop: 2
+  },
+  progressStatusDone: {
+    color: "#4d6a3a"
+  },
+  progressStatusCurrent: {
+    color: "#9b4a27"
+  },
+  progressStatusWarning: {
+    color: "#8a5d12"
+  },
+  progressDetailList: {
+    borderTopColor: "#eee3d5",
+    borderTopWidth: 1,
+    marginTop: 9
+  },
+  progressDetailRow: {
+    borderBottomColor: "#f0e7dc",
+    borderBottomWidth: 1,
+    gap: 4,
+    paddingVertical: 9
+  },
+  progressDetailHead: {
+    alignItems: "center",
+    flexDirection: "row",
+    gap: 8,
+    justifyContent: "space-between"
+  },
   flowSummary: {
     flexDirection: "row",
     flexWrap: "wrap",
@@ -1580,6 +1784,77 @@ const styles = StyleSheet.create({
     gap: 10,
     marginBottom: 10,
     padding: 9
+  },
+  documentWorkbench: {
+    backgroundColor: "#fffaf2",
+    borderColor: "#eadfce",
+    borderRadius: 12,
+    borderWidth: 1,
+    gap: 10,
+    marginBottom: 12,
+    padding: 10
+  },
+  documentList: {
+    borderBottomColor: "#eee3d5",
+    borderBottomWidth: 1,
+    gap: 6,
+    paddingBottom: 9
+  },
+  documentListRow: {
+    backgroundColor: "#f7f0e5",
+    borderLeftColor: "transparent",
+    borderLeftWidth: 3,
+    borderRadius: 9,
+    gap: 2,
+    paddingHorizontal: 9,
+    paddingVertical: 8
+  },
+  documentListRowSelected: {
+    backgroundColor: "#ffffff",
+    borderLeftColor: "#23375a"
+  },
+  documentPreviewSheet: {
+    backgroundColor: "#ffffff",
+    borderColor: "#d9d0c2",
+    borderRadius: 9,
+    borderWidth: 1,
+    gap: 10,
+    padding: 10
+  },
+  documentPreviewHeader: {
+    alignItems: "center",
+    flexDirection: "row",
+    gap: 10
+  },
+  documentPreviewTitle: {
+    color: "#17263d",
+    fontSize: 17,
+    fontWeight: "900",
+    lineHeight: 23
+  },
+  documentPreviewGrid: {
+    borderTopColor: "#eee3d5",
+    borderTopWidth: 1
+  },
+  documentMemoBox: {
+    backgroundColor: "#f7f0e5",
+    borderRadius: 8,
+    gap: 4,
+    padding: 9
+  },
+  documentSidePanel: {
+    gap: 8
+  },
+  deliverySummaryBox: {
+    borderTopColor: "#eee3d5",
+    borderTopWidth: 1,
+    gap: 4,
+    paddingTop: 8
+  },
+  documentActionBar: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 6
   },
   previewThumb: {
     alignItems: "center",

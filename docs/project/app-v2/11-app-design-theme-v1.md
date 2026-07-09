@@ -141,3 +141,16 @@ Final color values may be tuned after device review. The current contract is sem
 - Output/share should show `작업지시서`, `공장 전달 작업지시서`, `배송요청서 만들기`, and `배송요청 추가하기` as business document rows, with included information shown before compact actions.
 - User-facing copy should use `사이즈·색상`; internal implementation may still use `size` and `color`.
 - Image/attachment detail deepening is not part of this alpha.6 alignment pass and remains deferred.
+
+## 11. Signature UI Correction
+
+`2.0.0-alpha.7` adds WAFL signature UI cues without changing the mock-only boundary.
+
+- The production-flow tab may use a compact progress rail to show the production-card handoff path: `발주 요청`, `자재 준비`, `재단`, `봉제/추가공정`, `검수/포장`, and `출고 준비`.
+- The rail should read as readiness and handoff guidance, not as a generic schedule tracker or real-time production status engine.
+- Use WAFL-specific statuses such as `완료`, `전달 준비`, `공정 메모 필요`, `납기 확인 필요`, `공장 확인 필요`, and `전달 전 확인`.
+- Output/share should look like a document workbench: document list, selected production-document preview sheet, included information, delivery-request summary, and compact icon action cluster.
+- Icon actions may be built with `View`/`Text`/`Pressable` when no direct icon dependency exists. Do not add a dependency only for visual polish.
+- Button-like actions must not be nested inside another button-like tile. Image tiles can be static containers while their delete/representative actions remain separate controls.
+- Image/attachment mock deepening is deferred to `2.0.0-alpha.8`.
+- The alpha.7 correction must not add real API, DB, R2, PDF Worker, upload, camera, file picker, share, order, delivery, drag, or long-press behavior.

@@ -131,10 +131,31 @@ Core correction:
 - Output/share should show document types and included information before actions. Document names should remain business names first, not repeated PDF titles.
 - Delivery-request rows should imply one origin, one destination, multiple items, contact confirmation, and delivery memo.
 - User-facing text should use `사이즈·색상`, while internal code names may remain `size` and `color`.
-- Image/attachment detail deepening is deferred to `2.0.0-alpha.7`.
+- Image/attachment detail deepening is deferred to `2.0.0-alpha.8`.
 
 Implementation boundary:
 
 ```text
 No real upload, camera, file picker, share, PDF generation, delivery request, order mutation, API, DB, R2, Worker, drag, or long-press behavior is authorized by this alignment correction.
+```
+
+## 2.0.0-alpha.7 signature UI correction
+
+`2.0.0-alpha.7` strengthens the `apps/mobile` mock signature UI while keeping the same mock-only boundary.
+
+Core correction:
+
+- The production-flow tab should show a compact progress rail for `발주 요청 -> 자재 준비 -> 재단 -> 봉제/추가공정 -> 검수/포장 -> 출고 준비`.
+- The rail uses WAFL-specific handoff states such as `완료`, `전달 준비`, `공정 메모 필요`, `납기 확인 필요`, `공장 확인 필요`, and `전달 전 확인`.
+- The rail is a production-card handoff/readiness view, not a real-time production tracking system.
+- The output/share tab should read like a document workbench: document list, selected document preview sheet, included-information summary, delivery-request summary, and compact icon actions.
+- Document names remain business names first and do not repeat `PDF` in every row.
+- Icon actions remain dependency-free unless an icon package is already a direct mobile dependency.
+- The image tile must not nest a button-like action inside another button-like tile; selection/preview regions and action controls must be separated.
+- Image/attachment mock deepening is deferred to `2.0.0-alpha.8`.
+
+Implementation boundary:
+
+```text
+No real upload, camera, file picker, share, PDF generation, delivery request, order mutation, API, DB, R2, Worker, drag, long-press, auth, or storage behavior is authorized by this signature UI correction.
 ```
