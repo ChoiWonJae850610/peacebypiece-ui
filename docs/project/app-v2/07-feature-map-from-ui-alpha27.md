@@ -205,3 +205,23 @@ Implementation boundary:
 ```text
 No real upload, camera, file picker, share, PDF generation, delivery request, order mutation, inline edit save, API, DB, R2, Worker, push notification, drag, long-press, auth, or storage behavior is authorized by this button/action polish.
 ```
+
+## 2.0.0-alpha.10 icon action interpretability polish
+
+`2.0.0-alpha.10` keeps the alpha.9 compact action structure and makes repeated icons easier to understand.
+
+Core correction:
+
+- Image/attachment top actions show photo, camera, sketch, and attachment as compact captioned icon controls.
+- Image tile detail/view is represented by pressing the thumbnail, so the tile action cluster does not carry an extra ambiguous view icon.
+- Representative-image and delete controls remain separate from the thumbnail detail surface to avoid nested button patterns.
+- Fabric and accessory row clusters use consistent compact labels for current action, lock/edit state, view, delete, and optional photo.
+- Status-driven row behavior still exposes only one primary current action: order request, order completion, or information check.
+- Size-add and color-add move beside the size-template and color-list areas they affect.
+- The production-flow rail expands across available width more evenly while keeping the six baseline steps.
+
+Implementation boundary:
+
+```text
+No real upload, camera, file picker, share, PDF generation, delivery request, order mutation, inline edit save, API, DB, R2, Worker, push notification, drag, long-press, auth, or storage behavior is authorized by this icon/action polish.
+```

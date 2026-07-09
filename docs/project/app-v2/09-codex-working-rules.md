@@ -170,3 +170,14 @@ Rules:
 - The future sketch/drawing module may allow mobile landscape as an exception.
 - Do not add font files, external images, or new dependencies for visual polish unless a work order explicitly approves them.
 - Real camera, file upload, share, PDF, API, DB, R2, and Worker behavior must remain disconnected during mock-only visual foundation work.
+
+## 2.0.0-alpha.10 icon/action polish rule
+
+For the alpha.10 mobile mock:
+
+- Compact icon actions may include short Korean captions when symbols alone are ambiguous.
+- Image thumbnail detail/view and destructive tile actions must stay as sibling controls, not nested buttons.
+- Fabric/accessory rows must keep one current status action at most.
+- Delete, lock, view, optional photo, order request, and order complete controls should use a consistent compact row grammar.
+- Size/color add controls should be placed near the list/table they affect.
+- Do not add dependencies, icon libraries, external assets, real camera/file picker/upload/share/PDF/order/delivery behavior, API, DB, R2, Worker, or push notification behavior for this polish pass.

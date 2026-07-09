@@ -188,3 +188,15 @@ Final color values may be tuned after device review. The current contract is sem
 - Production-flow uses the six-step rail as the main rhythm; internal process rows belong inside the process step.
 - Output/share action icons should share size, spacing, and density with the rest of the app.
 - No dependency, external asset, font file, real upload, camera, file picker, share, PDF, API, DB, R2, Worker, push notification, order, delivery, inline-edit save, drag, or long-press integration is added by this correction.
+
+## 14. Icon Action Interpretability Polish
+
+`2.0.0-alpha.10` keeps the compact action grammar but allows short captions where symbols alone slow down production judgment.
+
+- Repeated icons may include one-word Korean captions such as `사진`, `카메라`, `스케치`, `첨부`, `발주`, `완료`, `보기`, and `삭제`.
+- Captioned icon buttons should remain compact; they must not become large portfolio-style CTA buttons.
+- Thumbnail detail/view should live on the thumbnail surface, while destructive and representative actions stay as separate sibling controls.
+- Material row action grammar should be stable across fabric and accessory rows: status badge, one current action when allowed, lock/edit state, view, delete, optional photo.
+- Size/color add controls should be small `+` chips near the affected list or table.
+- The production-flow rail should feel like a workbench timeline that uses available width, not a cramped sample-app strip.
+- No dependency, external asset, font file, real upload, camera, file picker, share, PDF, API, DB, R2, Worker, push notification, order, delivery, inline-edit save, drag, or long-press integration is added by this correction.

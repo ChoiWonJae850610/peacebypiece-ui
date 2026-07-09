@@ -117,6 +117,20 @@ The alpha.9 mobile mock correction tightens button/action grammar:
 
 This correction remains mock-only and does not connect real inline edit save, camera, file picker, upload, share, PDF generation, API, DB, R2, Worker, push notification, order, delivery, drag, or long-press behavior.
 
+## 2.0.0-alpha.10 icon action interpretability polish
+
+The alpha.10 mobile mock correction keeps the alpha.9 action-density direction and improves whether repeated icons are understandable at production speed:
+
+- Image/attachment top actions should read as photo, camera, sketch, and attachment entry points. Short captions are allowed when pure symbols are ambiguous.
+- Thumbnail detail/view should be attached to the thumbnail surface itself, while representative and delete actions remain separate sibling controls.
+- Fabric and accessory action clusters should use consistent compact labels for current-state action, lock/edit state, view, delete, and optional photo selection.
+- Delete must remain visually red/danger-toned and should not be confused with close, cancel, or dismiss.
+- Size-add and color-add controls should sit beside the size-template and color-list areas they affect, not as detached large buttons.
+- The six-step production-flow rail should use available tablet/phone width evenly before falling back to horizontal scrolling.
+- Button-like controls must not be nested inside another button-like control.
+
+This correction remains mock-only and does not connect real inline edit save, camera, file picker, upload, share, PDF generation, API, DB, R2, Worker, push notification, order, delivery, drag, or long-press behavior.
+
 ## Reordering and movement
 
 Production process ordering should use drag or long-press style UX where it is natural for the device.

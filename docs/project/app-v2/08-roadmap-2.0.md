@@ -1,4 +1,4 @@
-# WAFL v2 App-first Roadmap 2.0 - 2.0.0-alpha.9
+# WAFL v2 App-first Roadmap 2.0 - 2.0.0-alpha.10
 
 ## Purpose
 
@@ -119,7 +119,7 @@ Status: done.
 
 ### 2.0.0-alpha.9
 
-Status: current.
+Status: done.
 
 - Polish the `apps/mobile` mock button/action grammar after the alpha.8 real-use review.
 - Remove repeated fabric/accessory bottom text primary buttons.
@@ -137,7 +137,17 @@ Status: current.
 
 ### 2.0.0-alpha.10
 
-- Apply alpha.9 user feedback and continue image/attachment/detail UX correction.
+Status: current.
+
+- Apply alpha.9 user feedback and polish action/icon interpretability in the `apps/mobile` mock.
+- Make image/attachment top entry points readable as photo, camera, sketch, and attachment without connecting real picker/camera/upload behavior.
+- Move image detail affordance onto the thumbnail itself and keep tile actions limited to representative selection and delete.
+- Normalize fabric/accessory action clusters with compact labels for current action, lock/edit state, view, delete, and optional photo selection.
+- Keep only one status-based primary action per fabric/accessory row: order request, order completion, or information check.
+- Move size-add and color-add actions into their relevant size-template and color-list areas as compact `+` chips.
+- Expand the six-step production-flow rail across available width while keeping detailed process rows grouped below.
+- Do not connect real DB, API, R2, PDF Worker, upload, camera, file picker, share, push notification, order, delivery, inline-edit persistence, drag, or long-press behavior.
+- Align app display version to `2.0.0-alpha.10`.
 
 ### 2.0.0-alpha.11
 

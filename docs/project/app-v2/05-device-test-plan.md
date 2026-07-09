@@ -121,3 +121,16 @@ Manual device QA remains required before product verification:
 - iPad Pro landscape centered-width review.
 - Galaxy Tab portrait/landscape rotation review.
 - Expo Web preview inspection with the local server stopped after review.
+
+## 2.0.0-alpha.10 icon/action QA
+
+The alpha.10 mobile mock requires review of action interpretability after the compact action polish:
+
+- iPhone portrait: image top actions should clearly read as photo, camera, sketch, and attachment without oversized buttons.
+- iPhone portrait: image thumbnail detail, representative selection, and delete should be understandable without nested-button behavior.
+- iPad mini portrait: fabric/accessory row clusters should not wrap into confusing order, and delete should remain visually dangerous.
+- iPad Pro landscape: the six-step production-flow rail should use the available width more evenly and should not look cramped.
+- Galaxy Tab portrait/landscape: size-add and color-add chips should stay near their target sections after rotation.
+- Expo Web preview should not show React nested button warnings for the thumbnail/action layout.
+
+Manual device QA remains required before product verification. This checkpoint still does not invoke real camera, file picker, upload, share, PDF, API, DB, R2, Worker, order, delivery, or push behavior.

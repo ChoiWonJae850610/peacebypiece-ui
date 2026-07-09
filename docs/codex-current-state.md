@@ -1,3 +1,55 @@
+# 2.0.0-alpha.10 WAFL v2 App-first Icon Action Interpretability Polish
+
+- Current GPT checkpoint: `2.0.0-alpha.10`.
+- Baseline source before this patch: repository `APP_VERSION: 2.0.0-alpha.9`.
+- Baseline commit: `57889601e9de78bf3e5fecf13bc3feee23380f0f`.
+- This patch keeps the `apps/mobile` mock-only boundary and polishes action/icon interpretability after alpha.9 field feedback.
+- Image/attachment top actions now read as photo, camera, sketch, and attachment entry points with compact icon captions instead of ambiguous standalone symbols.
+- Image thumbnails now carry the detail-view affordance on the thumbnail itself, while the separate tile action cluster is reduced to representative-image and delete controls.
+- Fabric and accessory row action clusters use a consistent grammar for current-state action, lock/edit state, view, delete, and optional photo selection.
+- Status-based primary actions still expose only one current action: order request, order completion, or information check.
+- Size-add and color-add actions move beside their relevant size-template and color-list areas as compact `+` chips instead of detached large buttons.
+- The six-step production-flow rail expands across the available width more evenly, while detailed process rows remain grouped below.
+- No nested button pattern is intentionally added. Thumbnail detail press areas and action buttons remain sibling controls.
+- No real DB, API, R2, PDF Worker, upload, camera, file picker, share, push notification, auth, order, delivery, inline-edit persistence, drag, or long-press behavior is connected.
+- Font files, external images, new dependencies, root package metadata changes, root lockfile changes, and production behavior are still not added.
+
+Explicitly not changed:
+
+```text
+- DB migration
+- API route behavior
+- Neon schema
+- Cloudflare R2 Worker
+- PDF Worker
+- real file upload/delete
+- real camera/photo/file picker
+- real share-link generation
+- real PDF generation
+- real auth callback
+- real order/delivery mutation
+- real inline edit save
+- real push notification
+- real drag/long-press mutation
+- production data
+- root package.json
+- root package-lock.json
+- pnpm lock/workspace files
+- /system or /workspace deletion
+```
+
+Manual device QA remains required before product verification:
+
+```text
+- iPhone portrait icon-caption density review
+- iPad mini portrait action cluster review
+- iPad Pro landscape production-flow rail review
+- Galaxy Tab portrait/landscape rotation review
+- Expo Web preview inspection after local server run
+```
+
+---
+
 # 2.0.0-alpha.9 WAFL v2 App-first Button and Action Cluster UX Polish
 
 - Current GPT checkpoint: `2.0.0-alpha.9`.

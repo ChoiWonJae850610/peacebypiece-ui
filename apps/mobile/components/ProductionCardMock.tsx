@@ -353,10 +353,10 @@ function ImagesTab({ isTablet }: { isTablet: boolean }) {
         caption="사진은 제목을 매번 입력하지 않고 썸네일로 고릅니다. 첫 이미지는 자동 대표가 되며, 첨부는 허용 확장자 mock만 표시합니다."
       />
       <SectionActionRow>
-        <IconButton label="이미지 업로드 mock" symbol="↑" />
-        <IconButton label="카메라 촬영 mock" symbol="◎" />
-        <IconButton label="스케치 열기 mock" symbol="✎" />
-        <IconButton label="첨부파일 추가 mock" symbol="＋" />
+        <IconButton label="사진 선택 mock" symbol="▧" caption="사진" />
+        <IconButton label="카메라 촬영 mock" symbol="◎" caption="카메라" />
+        <IconButton label="스케치 열기 mock" symbol="✎" caption="스케치" />
+        <IconButton label="첨부파일 추가 mock" symbol="＋" caption="첨부" />
       </SectionActionRow>
       <View style={styles.compactNotice}>
         <Text style={styles.compactNoticeText}>첫 이미지는 자동 대표 · 대표 삭제 시 다음 이미지가 대표 · 실제 카메라/파일 선택 없음</Text>
@@ -367,14 +367,18 @@ function ImagesTab({ isTablet }: { isTablet: boolean }) {
             key={item.id}
             style={[styles.imageTile, item.selected && styles.imageTileSelected]}
           >
-            <View style={styles.imageTileVisualWrap}>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel={`${item.kind} 이미지 상세보기 mock 동작`}
+              style={styles.imageTileVisualWrap}
+            >
               <GarmentPreview compact label={item.kind} />
               {item.selected ? <Text style={styles.crownBadge}>대표</Text> : null}
-            </View>
+              <Text style={styles.imageTapHint}>눌러서 상세</Text>
+            </Pressable>
             <ActionCluster>
-              <IconButton label={item.selected ? "대표 이미지" : "대표로 선택"} symbol={item.selected ? "★" : "☆"} />
-              <IconButton label="자세히 보기" symbol="⌕" />
-              <IconButton label="삭제 예정" symbol="×" danger />
+              <IconButton label={item.selected ? "대표 이미지" : "대표로 선택"} symbol={item.selected ? "★" : "☆"} caption="대표" />
+              <IconButton label="삭제 예정" symbol="×" danger caption="삭제" />
             </ActionCluster>
           </View>
         ))}
@@ -414,10 +418,6 @@ function SizesTab({ isTablet }: { isTablet: boolean }) {
         <Text style={styles.quantityCheckTitle}>색상별 수량 합계</Text>
         <Text style={styles.quantityCheckText}>총 360벌</Text>
       </View>
-      <View style={styles.sectionActionRow}>
-        <PrimaryAction label="사이즈 추가" status="발주 가능" />
-        <PrimaryAction label="색상 추가" status="발주 가능" />
-      </View>
       <View style={styles.segmentRow}>
         <Pressable accessibilityRole="button" accessibilityLabel="cm 단위 보기" onPress={() => setUnitMode("cm")}>
           <Text style={unitMode === "cm" ? styles.segmentSelected : styles.segment}>cm</Text>
@@ -434,6 +434,7 @@ function SizesTab({ isTablet }: { isTablet: boolean }) {
             <Text style={[styles.templateDetail, template.selected && styles.templateDetailSelected]}>{template.fields.join(" · ")}</Text>
           </View>
         ))}
+        <AddChip label="사이즈 추가" />
       </View>
       <ScrollView horizontal showsHorizontalScrollIndicator={false}>
         <View style={styles.sizeTable}>
@@ -463,6 +464,7 @@ function SizesTab({ isTablet }: { isTablet: boolean }) {
             <Text style={styles.smallText}>{row.note}</Text>
           </View>
         ))}
+        <AddChip label="색상 추가" />
       </View>
     </View>
   );
@@ -714,11 +716,11 @@ function MaterialRow({ row }: { row: MaterialRowData }) {
         </View>
         <View style={styles.statusCluster}>
           <Text style={[styles.rowBadge, statusBadgeStyle(row.status)]}>{row.status}</Text>
-          {primaryAction ? <IconButton label={primaryAction.label} symbol={primaryAction.symbol} emphasized /> : null}
-          <IconButton label={row.locked ? "잠김" : "수정 가능"} symbol={row.locked ? "●" : "○"} danger={row.status === "주의/잠김"} />
-          <IconButton label="보기" symbol="⌕" />
-          {!row.locked ? <IconButton label="삭제 예정" symbol="×" danger /> : null}
-          <IconButton label="개별 사진 선택 사항" symbol="▧" />
+          {primaryAction ? <IconButton label={primaryAction.label} symbol={primaryAction.symbol} caption={primaryAction.caption} emphasized /> : null}
+          <IconButton label={row.locked ? "잠김" : "수정 가능"} symbol={row.locked ? "●" : "○"} caption={row.locked ? "잠금" : "수정"} danger={row.status === "주의/잠김"} />
+          <IconButton label="보기" symbol="□" caption="보기" />
+          {!row.locked ? <IconButton label="삭제 예정" symbol="×" danger caption="삭제" /> : null}
+          <IconButton label="개별 사진 선택 사항" symbol="▧" caption="사진" />
         </View>
       </View>
       <Text style={styles.rowDetail}>
@@ -740,24 +742,12 @@ function getMaterialAction(row: MaterialRowData) {
     return null;
   }
   if (row.status === "발주 요청") {
-    return { label: `${row.primaryAction} mock`, symbol: "✓" };
+    return { label: `${row.primaryAction} mock`, symbol: "✓", caption: "완료" };
   }
   if (row.status === "발주 가능") {
-    return { label: `${row.primaryAction} mock`, symbol: "↗" };
+    return { label: `${row.primaryAction} mock`, symbol: "↗", caption: "발주" };
   }
-  return { label: `${row.primaryAction} mock`, symbol: "!" };
-}
-
-function PrimaryAction({ label, status }: { label: string; status: MaterialStatus }) {
-  return (
-    <Pressable
-      accessibilityRole="button"
-      accessibilityLabel={`${label} mock 동작`}
-      style={[styles.primaryAction, status === "발주 요청" && styles.primaryActionOrange]}
-    >
-      <Text style={styles.primaryActionText}>{label}</Text>
-    </Pressable>
-  );
+  return { label: `${row.primaryAction} mock`, symbol: "!", caption: "확인" };
 }
 
 function ActionCluster({ children }: { children: ReactNode }) {
@@ -772,6 +762,15 @@ function HeaderAddButton({ label }: { label: string }) {
   return (
     <Pressable accessibilityRole="button" accessibilityLabel={`${label} mock 동작`} style={styles.headerAddButton}>
       <Text style={styles.headerAddButtonText}>＋</Text>
+    </Pressable>
+  );
+}
+
+function AddChip({ label }: { label: string }) {
+  return (
+    <Pressable accessibilityRole="button" accessibilityLabel={`${label} mock 동작`} style={styles.addChip}>
+      <Text style={styles.addChipSymbol}>＋</Text>
+      <Text style={styles.addChipText}>{label}</Text>
     </Pressable>
   );
 }
@@ -820,20 +819,27 @@ function IconButton({
   label,
   symbol,
   danger = false,
-  emphasized = false
+  emphasized = false,
+  caption
 }: {
   label: string;
   symbol: string;
   danger?: boolean;
   emphasized?: boolean;
+  caption?: string;
 }) {
   return (
     <Pressable
       accessibilityRole="button"
       accessibilityLabel={`${label} mock 동작`}
-      style={[styles.iconButton, emphasized && styles.iconEmphasized, danger && styles.iconDanger]}
+      style={[styles.iconButton, caption && styles.iconButtonCaption, emphasized && styles.iconEmphasized, danger && styles.iconDanger]}
     >
       <Text style={[styles.iconText, emphasized && styles.iconEmphasizedText, danger && styles.iconDangerText]}>{symbol}</Text>
+      {caption ? (
+        <Text style={[styles.iconCaptionText, emphasized && styles.iconEmphasizedText, danger && styles.iconDangerText]}>
+          {caption}
+        </Text>
+      ) : null}
     </Pressable>
   );
 }
@@ -953,6 +959,14 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     width: 32
   },
+  iconButtonCaption: {
+    flexDirection: "row",
+    gap: 3,
+    height: 30,
+    minWidth: 52,
+    paddingHorizontal: 8,
+    width: "auto"
+  },
   iconDanger: {
     backgroundColor: "#fff0eb"
   },
@@ -962,6 +976,11 @@ const styles = StyleSheet.create({
   iconText: {
     color: "#17263d",
     fontSize: 12,
+    fontWeight: "900"
+  },
+  iconCaptionText: {
+    color: "#4f463f",
+    fontSize: 10,
     fontWeight: "900"
   },
   iconEmphasizedText: {
@@ -1529,11 +1548,18 @@ const styles = StyleSheet.create({
   imageTileVisualWrap: {
     position: "relative"
   },
-  imageActionRow: {
-    alignItems: "center",
-    flexDirection: "row",
-    gap: 6,
-    justifyContent: "flex-end"
+  imageTapHint: {
+    backgroundColor: "rgba(23, 38, 61, 0.72)",
+    borderRadius: 999,
+    bottom: 6,
+    color: "#ffffff",
+    fontSize: 10,
+    fontWeight: "900",
+    overflow: "hidden",
+    paddingHorizontal: 7,
+    paddingVertical: 3,
+    position: "absolute",
+    right: 6
   },
   actionCluster: {
     alignItems: "center",
@@ -1614,6 +1640,30 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: "900",
     lineHeight: 22
+  },
+  addChip: {
+    alignItems: "center",
+    backgroundColor: "#fffaf2",
+    borderColor: "#23375a",
+    borderRadius: 999,
+    borderStyle: "dashed",
+    borderWidth: 1,
+    flexDirection: "row",
+    gap: 4,
+    justifyContent: "center",
+    minHeight: 34,
+    paddingHorizontal: 10,
+    paddingVertical: 7
+  },
+  addChipSymbol: {
+    color: "#23375a",
+    fontSize: 13,
+    fontWeight: "900"
+  },
+  addChipText: {
+    color: "#23375a",
+    fontSize: 11,
+    fontWeight: "900"
   },
   quantityCheck: {
     backgroundColor: "#f6efe5",
@@ -1775,11 +1825,14 @@ const styles = StyleSheet.create({
   progressRail: {
     alignItems: "flex-start",
     gap: 0,
+    justifyContent: "space-between",
+    minWidth: "100%",
     paddingBottom: 4
   },
   progressStep: {
-    minWidth: 88,
-    paddingRight: 10
+    flex: 1,
+    minWidth: 74,
+    paddingRight: 8
   },
   progressTopLine: {
     alignItems: "center",
@@ -1878,8 +1931,9 @@ const styles = StyleSheet.create({
     opacity: 0.82
   },
   rowHead: {
-    alignItems: "center",
+    alignItems: "flex-start",
     flexDirection: "row",
+    flexWrap: "wrap",
     gap: 8,
     justifyContent: "space-between"
   },
@@ -1939,6 +1993,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     flexDirection: "row",
     flexShrink: 0,
+    flexWrap: "wrap",
     gap: 6
   },
   materialFooter: {
@@ -1959,24 +2014,6 @@ const styles = StyleSheet.create({
   inlineEditHintLocked: {
     borderBottomColor: "transparent",
     color: "#6d6257"
-  },
-  primaryAction: {
-    backgroundColor: "#23375a",
-    borderColor: "#23375a",
-    borderRadius: 7,
-    borderWidth: 1,
-    flexShrink: 0,
-    paddingHorizontal: 10,
-    paddingVertical: 7
-  },
-  primaryActionOrange: {
-    backgroundColor: "#c75f35",
-    borderColor: "#c75f35"
-  },
-  primaryActionText: {
-    color: "#ffffff",
-    fontSize: 12,
-    fontWeight: "900"
   },
   doneText: {
     color: "#4d6a3a",

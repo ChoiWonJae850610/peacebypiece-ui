@@ -1,6 +1,6 @@
 # WAFL Mobile App Mock
 
-Version: `2.0.0-alpha.9`
+Version: `2.0.0-alpha.10`
 
 This Expo React Native app is the App-first WAFL v2 mobile/tablet mock surface.
 
@@ -24,6 +24,7 @@ Current visual foundation:
 - `2.0.0-alpha.7` adds WAFL signature UI corrections: a production-flow progress rail, output/share document workbench mock, dependency-free icon action cleanup, and nested button structure cleanup.
 - `2.0.0-alpha.8` corrects real-use UX fit: customer-facing IDs are hidden, image cards remove per-image title/description burden, attachments use existing image/PDF allowed-extension mock examples, factory memo is a field, size units show one selected unit, material/accessory action clusters remove E/L letters, and production flow uses six baseline steps with simple states.
 - `2.0.0-alpha.9` polishes button/action grammar: fabric/accessory bottom text buttons move into compact row action clusters, add actions move to section-header `+` icons, image/attachment action row is clarified, production-flow rail/process grouping is tightened, and output/share actions stay compact.
+- `2.0.0-alpha.10` polishes icon interpretability: image actions show photo/camera/sketch/attachment captions, thumbnail detail is attached to the image itself, material/accessory actions use consistent compact labels, size/color add chips sit beside their target areas, and the six-step production rail uses the available width more evenly.
 
 ## Mock screen
 
@@ -39,7 +40,7 @@ The first screen contains a production-card list and a selected production card 
 
 The mock demonstrates a representative image placeholder, compact production summary, thumbnail-first image selection, allowed-extension attachment rows, size/color rows with cm/inch switching, fabric/accessory quantity math, compact row action clusters, production-flow progress rail, process-step detail rows, output document workbench, and delivery-request rows. Status-based material actions show only one current primary action in the row action cluster. All buttons are placeholders for product direction only.
 
-Further field feedback on the alpha.9 button/action polish can continue in `2.0.0-alpha.10`; real camera/photo/file picker/upload/share/PDF behavior remains deferred.
+Further field feedback on the alpha.10 icon/action polish can continue in `2.0.0-alpha.11`; real camera/photo/file picker/upload/share/PDF behavior remains deferred.
 
 ## Commands
 
