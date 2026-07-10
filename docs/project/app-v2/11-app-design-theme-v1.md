@@ -225,3 +225,14 @@ Final color values may be tuned after device review. The current contract is sem
 - Order request actions should read as production requests, not message sending.
 - Production rail columns should be orderly: dot, step label, and state stacked on one axis.
 - No dependency, external asset, font file, real upload, camera, file picker, sketch, share, print, PDF, API, DB, R2, Worker, push notification, order, delivery, inline-edit save, drag, or long-press integration is added by this correction.
+
+## 17. Alpha.12 UX Follow-up Correction
+
+`2.0.0-alpha.13` keeps Dongdaemun Atelier Ops and makes the alpha.12 correction more legible in the mock UI.
+
+- Action symbols should look like production tools: photo, camera, sketch, attachment, representative selection, request, delete.
+- Default image review should emphasize the visual reference, not memo or title-entry work.
+- Current-value selectors should feel like quick production choices, not a settings screen.
+- Material and accessory row actions should sit near quantity and amount data so production users can scan and act quickly.
+- The production-flow rail should read as one calm handoff line across the card.
+- No dependency, external asset, font file, real upload, camera, file picker, sketch, share, print, PDF, API, DB, R2, Worker, push notification, order, delivery, inline-edit save, drag, or long-press integration is added by this correction.

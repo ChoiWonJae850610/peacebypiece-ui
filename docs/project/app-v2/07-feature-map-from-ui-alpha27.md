@@ -269,3 +269,21 @@ Implementation boundary:
 ```text
 No real upload, camera, file picker, sketch, share, print, PDF generation, delivery request, order mutation, inline edit save, API, DB, R2, Worker, push notification, drag, long-press, auth, or storage behavior is authorized by this UX follow-up correction.
 ```
+
+## 2.0.0-alpha.13 alpha.12 UX follow-up correction
+
+`2.0.0-alpha.13` remains a mock-only UX correction. It does not start output/share deepening.
+
+Core correction:
+
+- Image/attachment entry actions use dependency-free visual helper icons and Korean labels.
+- Carousel memo text is hidden from the default screen; optional titles are only shown when real title data exists.
+- Size/color current selectors expose only the current value on the default screen.
+- Fabric/accessory row actions are placed with the amount line instead of becoming separate bottom rows.
+- The production-flow rail is a single continuous horizontal line with six evenly placed dots.
+
+Implementation boundary:
+
+```text
+No real upload, camera, file picker, sketch, share, print, PDF generation, delivery request, order mutation, inline edit save, API, DB, R2, Worker, push notification, drag, long-press, auth, or storage behavior is authorized by this UX follow-up correction.
+```

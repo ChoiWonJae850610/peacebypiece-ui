@@ -167,3 +167,16 @@ The alpha.12 mobile mock correction tightens the alpha.11 direction before outpu
 - Production-flow rail dot, step label, and status should share one center axis.
 
 This correction remains mock-only and does not connect real inline edit save, camera, file picker, upload, share, PDF generation, API, DB, R2, Worker, push notification, order, delivery, sketch, drag, or long-press behavior.
+
+## 2.0.0-alpha.13 alpha.12 UX follow-up correction
+
+The alpha.13 mobile mock correction makes the alpha.12 rules visible in the actual screen:
+
+- Image/attachment actions should use dependency-free visual helper icons plus labels, not ambiguous text symbols.
+- The carousel should keep image, title area, counter, and index controls visually centered.
+- Image memo is not shown by default; title fallback labels stay small and non-mandatory.
+- Size/color defaults show only current-value selector buttons such as `공용`, `상의`, and `cm`.
+- Material/accessory actions sit with unit, price, and amount information so repeated rows stay compact.
+- The six-step production rail is one continuous line with dots placed on top, not separate connector fragments.
+
+This correction remains mock-only and does not connect real inline edit save, camera, file picker, upload, share, PDF generation, API, DB, R2, Worker, push notification, order, delivery, sketch, drag, or long-press behavior.

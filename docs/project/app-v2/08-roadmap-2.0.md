@@ -1,4 +1,4 @@
-# WAFL v2 App-first Roadmap 2.0 - 2.0.0-alpha.12
+# WAFL v2 App-first Roadmap 2.0 - 2.0.0-alpha.13
 
 ## Purpose
 
@@ -165,7 +165,7 @@ Status: done.
 
 ### 2.0.0-alpha.12
 
-Status: current.
+Status: done.
 
 - Apply alpha.11 field feedback before starting output/share flow deepening.
 - Center and stabilize the image carousel, left/right navigation, current index, and centered index pills.
@@ -180,6 +180,21 @@ Status: current.
 - Align production-flow rail dot, step label, and status on one centered axis while preserving the six baseline steps.
 - Do not connect real DB, API, R2, PDF Worker, upload, camera, image picker, sketch, share, print, order, delivery, inline-edit persistence, drag, or long-press behavior.
 - Align app display version to `2.0.0-alpha.12`.
+
+### 2.0.0-alpha.13
+
+Status: current.
+
+- Correct alpha.12 UX items that still read as under-applied in the `apps/mobile` mock.
+- Replace image/attachment action symbols with dependency-free visual helper icons for photo, camera, sketch, attachment, and representative-image selection.
+- Keep image memo hidden by default and show fallback image labels only as small non-mandatory labels when a real title is absent.
+- Change size/color controls so the default screen shows only current-value selector buttons for gender, product category, and unit.
+- Keep saved size templates behind load/save mock entry points instead of showing the full list by default.
+- Move fabric/accessory row actions onto the unit/price/amount line so repeated item rows stay compact.
+- Keep material action rules: input can request/delete, requested can complete/cancel/delete, completed has no action buttons.
+- Change the production-flow rail from segmented connectors to one continuous line with evenly placed dots, labels, and statuses.
+- Do not connect real DB, API, R2, PDF Worker, upload, camera, image picker, sketch, share, print, order, delivery, inline-edit persistence, drag, or long-press behavior.
+- Align app display version to `2.0.0-alpha.13`.
 
 ## Later integration phases
 

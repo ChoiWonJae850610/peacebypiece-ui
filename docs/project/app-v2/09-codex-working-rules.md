@@ -207,3 +207,16 @@ For the alpha.12 mobile mock:
 - Completed material/accessory rows should show no action buttons.
 - `발주요청` action should be text-first and must not use send/mail/airplane-like symbols.
 - Do not add dependencies, icon libraries, external assets, real camera/file picker/upload/sketch/share/print/PDF/order/delivery behavior, API, DB, R2, Worker, or push notification behavior for this polish pass.
+
+## 2.0.0-alpha.13 alpha.12 UX follow-up rule
+
+For the alpha.13 mobile mock:
+
+- Treat this as another alpha.12 UX correction, not output/share flow deepening.
+- Image action icons must be dependency-free visual helper components or existing local primitives, not emoji or new icon dependencies.
+- Image memo should stay hidden on the default carousel surface.
+- Size/color selectors should show current values only on the default screen.
+- Material/accessory row actions should sit on the same visual line as unit, unit price, and amount when possible.
+- Completed material/accessory rows should show no action buttons.
+- Production rail should use one continuous line with dots on top, not visually separate connector fragments.
+- Do not add dependencies, icon libraries, external assets, real camera/file picker/upload/sketch/share/print/PDF/order/delivery behavior, API, DB, R2, Worker, or push notification behavior for this polish pass.

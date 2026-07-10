@@ -1,3 +1,57 @@
+# 2.0.0-alpha.13 WAFL v2 App-first Alpha.12 UX Follow-up Correction
+
+- Current GPT checkpoint: `2.0.0-alpha.13`.
+- Baseline source before this patch: repository `APP_VERSION: 2.0.0-alpha.12`.
+- Baseline commit: `c6fd1d831066d70e44d496a83eb375aeaefba116`.
+- This patch keeps the `apps/mobile` mock-only boundary and corrects the alpha.12 UX items that still read too much like visible settings, bottom action rows, or segmented process fragments.
+- Image/attachment actions now use dependency-free visual helper icons for photo, camera, sketch, attachment, and representative selection instead of ambiguous text symbols or emoji-like glyphs.
+- The carousel keeps the focused image centered, floats the stable `n / total` counter, centers the caption area, and hides memo by default.
+- Image titles remain optional: real titles are shown only when present, while fallback labels such as `사진 2` or `스케치 1` stay visually small and non-mandatory.
+- Size/color selectors now show only current-value buttons such as `공용`, `상의`, and `cm` on the default screen; option piles are not permanently exposed.
+- Size template load/save and size/body-part add actions remain grouped at the same top level without listing every saved template by default.
+- Fabric/accessory row actions move onto the unit/price/amount line so repeated rows stay shorter and the user's eye reads amount plus allowed action together.
+- `발주요청` stays text-first and no longer depends on a send/mail/airplane-like action symbol.
+- Completed material/accessory rows remain read-only and expose no action buttons.
+- The six-step production-flow rail now uses one continuous horizontal line with evenly placed dots, labels, and statuses on the same center axis.
+- No real DB, API, R2, PDF Worker, upload, camera, image picker, sketch, share, print, order, delivery, inline-edit persistence, drag, or long-press behavior is connected.
+- Font files, external images, new dependencies, root package metadata changes, root lockfile changes, and production behavior are still not added.
+
+Explicitly not changed:
+
+```text
+- DB migration
+- API route behavior
+- Neon schema
+- Cloudflare R2 Worker
+- PDF Worker
+- real file upload/delete
+- real camera/photo/file picker/sketch
+- real share-link generation
+- real PDF generation
+- real auth callback
+- real order/delivery mutation
+- real inline edit save
+- real push notification
+- real drag/long-press mutation
+- production data
+- root package.json
+- root package-lock.json
+- pnpm lock/workspace files
+- /system or /workspace deletion
+```
+
+Manual device QA remains required before product verification:
+
+```text
+- iPhone portrait image carousel/action icon review
+- iPad mini portrait current-value selector review
+- iPad Pro landscape material row amount/action alignment review
+- Galaxy Tab portrait/landscape continuous production rail review
+- Expo Web preview inspection after local server run
+```
+
+---
+
 # 2.0.0-alpha.12 WAFL v2 App-first Alpha.11 UX Follow-up Correction
 
 - Current GPT checkpoint: `2.0.0-alpha.12`.

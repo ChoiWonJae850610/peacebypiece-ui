@@ -350,6 +350,7 @@ function ImagesTab({ isTablet }: { isTablet: boolean }) {
   const activeImage = imageMocks[activeImageIndex];
   const totalImages = imageMocks.length;
   const imageTitle = getImageDisplayTitle(activeImage, activeImageIndex);
+  const hasImageTitle = activeImage.title.trim().length > 0;
   const moveImage = (direction: -1 | 1) => {
     setActiveImageIndex((current) => (current + direction + totalImages) % totalImages);
   };
@@ -361,15 +362,16 @@ function ImagesTab({ isTablet }: { isTablet: boolean }) {
         caption="대표 이미지를 중심으로 넘겨 보며, 제목은 선택 입력입니다. 첫 이미지는 자동 대표가 되는 mock입니다."
       />
       <SectionActionRow>
-        <IconButton label="사진 선택 mock" symbol="▧" caption="사진" />
-        <IconButton label="카메라 촬영 mock" symbol="▣" caption="카메라" />
-        <IconButton label="스케치 열기 mock" symbol="✎" caption="스케치" />
-        <IconButton label="첨부파일 추가 mock" symbol="+" caption="첨부" />
+        <IconButton label="사진 선택 mock" icon="photo" caption="사진" />
+        <IconButton label="카메라 촬영 mock" icon="camera" caption="카메라" />
+        <IconButton label="스케치 열기 mock" icon="sketch" caption="스케치" />
+        <IconButton label="첨부파일 추가 mock" icon="clip" caption="첨부" />
       </SectionActionRow>
       <View style={styles.compactNotice}>
         <Text style={styles.compactNoticeText}>첫 이미지는 자동 대표 · 현재 이미지 {activeImageIndex + 1} / {totalImages}</Text>
       </View>
       <View style={[styles.imageCarouselCard, isTablet && styles.imageCarouselCardTablet]}>
+        <Text style={styles.imageIndexFloating}>{activeImageIndex + 1} / {totalImages}</Text>
         <View style={styles.imageCarouselTop}>
           <Pressable
             accessibilityRole="button"
@@ -397,17 +399,17 @@ function ImagesTab({ isTablet }: { isTablet: boolean }) {
           </Pressable>
         </View>
         <View style={styles.imageCaptionRow}>
-          <View style={styles.flex}>
+          {hasImageTitle ? (
             <View style={styles.imageTitleLine}>
               <Text style={styles.rowTitle}>{imageTitle}</Text>
               <Text style={styles.optionalMark}>제목 선택</Text>
             </View>
-            <Text style={styles.smallText}>메모 mock · {activeImage.note}</Text>
-          </View>
-          <Text style={styles.imageIndex}>{activeImageIndex + 1} / {totalImages}</Text>
+          ) : (
+            <Text style={styles.imageFallbackLabel}>{imageTitle}</Text>
+          )}
         </View>
         <ActionCluster>
-          <IconButton label={activeImage.selected ? "대표 이미지" : "대표로 선택"} symbol={activeImage.selected ? "★" : "☆"} caption={activeImage.selected ? "대표" : "지정"} />
+          <IconButton label={activeImage.selected ? "대표 이미지" : "대표로 선택"} icon="crown" caption={activeImage.selected ? "대표" : "지정"} />
           <IconButton label="삭제 예정" symbol="x" danger caption="삭제" />
         </ActionCluster>
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.thumbnailStrip}>
@@ -571,17 +573,18 @@ function ProgressRail() {
         <Text style={styles.smallText}>발주 · 자재 · 재단 · 공정 · 검수 · 출고를 준비/작업중/완료로만 표시합니다.</Text>
       </View>
       <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.progressRail}>
-        {progressSteps.map((step, index) => (
-          <View key={step.id} style={styles.progressStep}>
-            <View style={styles.progressTopLine}>
-              {index > 0 ? <View style={styles.progressConnectorLeft} /> : null}
-              <View style={[styles.progressDot, progressStepTone(step.status)]} />
-              {index < progressSteps.length - 1 ? <View style={styles.progressConnectorRight} /> : null}
+        <View style={styles.progressRailTrack}>
+          <View style={styles.progressContinuousLine} />
+          {progressSteps.map((step) => (
+            <View key={step.id} style={styles.progressStep}>
+              <View style={styles.progressTopLine}>
+                <View style={[styles.progressDot, progressStepTone(step.status)]} />
+              </View>
+              <Text style={styles.progressShort}>{step.shortLabel}</Text>
+              <Text style={[styles.progressStatus, progressStatusText(step.status)]}>{step.status}</Text>
             </View>
-            <Text style={styles.progressShort}>{step.shortLabel}</Text>
-            <Text style={[styles.progressStatus, progressStatusText(step.status)]}>{step.status}</Text>
-          </View>
-        ))}
+          ))}
+        </View>
       </ScrollView>
       <View style={styles.progressDetailList}>
         {progressSteps.map((step) => (
@@ -782,26 +785,27 @@ function MaterialRow({ row }: { row: MaterialRowData }) {
       <Text style={styles.rowDetail}>
         필요 {row.required} · 로스/여유 {row.allowance} · 재고 {row.stockUse} · 발주 {row.orderQuantity}
       </Text>
-      <Text style={styles.rowMeta}>
-        단위 {row.unit} · 단가 {row.unitPrice} · 금액 {row.amount}
-      </Text>
-      {actions.length ? (
-        <View style={styles.materialActionRow}>
-          {actions.map((action) => (
-            <IconButton
-              key={action.caption}
-              label={`${action.label} mock`}
-              symbol={action.symbol}
-              caption={action.caption}
-              emphasized={action.emphasized}
-              danger={action.danger}
-            />
-          ))}
-        </View>
-      ) : null}
+      <View style={styles.materialMetaLine}>
+        <Text style={styles.rowMeta}>
+          단위 {row.unit} · 단가 {row.unitPrice} · 금액 {row.amount}
+        </Text>
+        {actions.length ? (
+          <View style={styles.materialActionInline}>
+            {actions.map((action) => (
+              <IconButton
+                key={action.caption}
+                label={`${action.label} mock`}
+                symbol={action.symbol}
+                caption={action.caption}
+                emphasized={action.emphasized}
+                danger={action.danger}
+              />
+            ))}
+          </View>
+        ) : null}
+      </View>
       <View style={styles.materialFooter}>
         <Text style={styles.smallText}>{row.leftover} · {row.warning}</Text>
-        <InlineEditHint status={row.status} />
       </View>
     </View>
   );
@@ -819,7 +823,7 @@ function getMaterialActions(row: MaterialRowData) {
     ];
   }
   return [
-    { label: "발주 요청", symbol: "☑", caption: "발주요청", emphasized: true },
+    { label: "발주 요청", symbol: "요청", caption: "발주요청", emphasized: true },
     { label: "삭제 예정", symbol: "x", caption: "삭제", danger: true }
   ];
 }
@@ -860,42 +864,20 @@ function CurrentValueSelector({
   options: string[];
   onSelect?: (value: string) => void;
 }) {
+  const nextValue = options[(options.indexOf(value) + 1) % options.length] ?? value;
   return (
-    <View style={styles.currentSelector}>
-      <View style={styles.currentSelectorHead}>
-        <Text style={styles.infoLabel}>{label}</Text>
+    <Pressable
+      accessibilityRole="button"
+      accessibilityLabel={`${label} 현재값 ${value}. 선택 패널 열기 mock`}
+      onPress={() => onSelect?.(nextValue)}
+      style={styles.currentSelector}
+    >
+      <Text style={styles.currentSelectorLabel}>{label}</Text>
+      <View style={styles.currentSelectorValueRow}>
         <Text style={styles.currentSelectorValue}>{value}</Text>
+        <Text style={styles.currentSelectorChevron}>v</Text>
       </View>
-      <View style={styles.selectorOptionRow}>
-        {options.map((option) => (
-          <Pressable
-            key={option}
-            accessibilityRole="button"
-            accessibilityLabel={`${label} ${option} 선택 mock`}
-            onPress={() => onSelect?.(option)}
-          >
-            <Text style={option === value ? styles.selectorOptionSelected : styles.selectorOption}>
-              {option}
-            </Text>
-          </Pressable>
-        ))}
-      </View>
-    </View>
-  );
-}
-
-function InlineEditHint({ status }: { status: MaterialStatus }) {
-  const locked = status !== "입력중";
-  const message =
-    status === "완료"
-      ? "완료 · 읽기 전용"
-      : status === "발주요청"
-        ? "발주요청 후 수정 불가 · 취소하면 입력중으로 돌아가는 mock"
-        : "입력 가능 · 값을 눌러 수정 mock";
-  return (
-    <Text style={[styles.inlineEditHint, locked && styles.inlineEditHintLocked]}>
-      {message}
-    </Text>
+    </Pressable>
   );
 }
 
@@ -934,12 +916,14 @@ function getMaterialTone(row: MaterialRowData) {
 function IconButton({
   label,
   symbol,
+  icon,
   danger = false,
   emphasized = false,
   caption
 }: {
   label: string;
-  symbol: string;
+  symbol?: string;
+  icon?: IconKind;
   danger?: boolean;
   emphasized?: boolean;
   caption?: string;
@@ -950,13 +934,56 @@ function IconButton({
       accessibilityLabel={`${label} mock 동작`}
       style={[styles.iconButton, caption && styles.iconButtonCaption, emphasized && styles.iconEmphasized, danger && styles.iconDanger]}
     >
-      <Text style={[styles.iconText, emphasized && styles.iconEmphasizedText, danger && styles.iconDangerText]}>{symbol}</Text>
+      {icon ? (
+        <IconMark icon={icon} emphasized={emphasized} danger={danger} />
+      ) : (
+        <Text style={[styles.iconText, emphasized && styles.iconEmphasizedText, danger && styles.iconDangerText]}>{symbol}</Text>
+      )}
       {caption ? (
         <Text style={[styles.iconCaptionText, emphasized && styles.iconEmphasizedText, danger && styles.iconDangerText]}>
           {caption}
         </Text>
       ) : null}
     </Pressable>
+  );
+}
+
+type IconKind = "photo" | "camera" | "sketch" | "clip" | "crown";
+
+function IconMark({ icon, emphasized = false, danger = false }: { icon: IconKind; emphasized?: boolean; danger?: boolean }) {
+  const inkStyle = emphasized ? styles.iconShapeLight : danger ? styles.iconShapeDanger : styles.iconShapeDark;
+
+  if (icon === "photo") {
+    return (
+      <View style={[styles.iconPhotoFrame, inkStyle]}>
+        <View style={[styles.iconPhotoSun, inkStyle]} />
+        <View style={[styles.iconPhotoGround, inkStyle]} />
+      </View>
+    );
+  }
+  if (icon === "camera") {
+    return (
+      <View style={[styles.iconCameraBody, inkStyle]}>
+        <View style={[styles.iconCameraLens, inkStyle]} />
+      </View>
+    );
+  }
+  if (icon === "sketch") {
+    return (
+      <View style={styles.iconSketchBox}>
+        <View style={[styles.iconSketchLine, inkStyle]} />
+        <View style={[styles.iconSketchTip, inkStyle]} />
+      </View>
+    );
+  }
+  if (icon === "clip") {
+    return <View style={[styles.iconClipShape, inkStyle]} />;
+  }
+  return (
+    <View style={styles.iconCrownBox}>
+      <View style={[styles.iconCrownBase, inkStyle]} />
+      <View style={[styles.iconCrownPeak, inkStyle]} />
+    </View>
   );
 }
 
@@ -1116,6 +1143,15 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: "900"
   },
+  iconShapeDark: {
+    borderColor: "#17263d"
+  },
+  iconShapeLight: {
+    borderColor: "#ffffff"
+  },
+  iconShapeDanger: {
+    borderColor: "#9a4035"
+  },
   iconCaptionText: {
     color: "#4f463f",
     fontSize: 10,
@@ -1126,6 +1162,96 @@ const styles = StyleSheet.create({
   },
   iconDangerText: {
     color: "#9a4035"
+  },
+  iconPhotoFrame: {
+    borderRadius: 3,
+    borderWidth: 1.5,
+    height: 14,
+    position: "relative",
+    width: 16
+  },
+  iconPhotoSun: {
+    borderRadius: 999,
+    borderWidth: 1.4,
+    height: 4,
+    position: "absolute",
+    right: 2,
+    top: 2,
+    width: 4
+  },
+  iconPhotoGround: {
+    borderBottomWidth: 1.5,
+    bottom: 3,
+    height: 6,
+    left: 3,
+    position: "absolute",
+    transform: [{ rotate: "-18deg" }],
+    width: 10
+  },
+  iconCameraBody: {
+    borderRadius: 4,
+    borderWidth: 1.5,
+    height: 13,
+    justifyContent: "center",
+    width: 17
+  },
+  iconCameraLens: {
+    alignSelf: "center",
+    borderRadius: 999,
+    borderWidth: 1.5,
+    height: 6,
+    width: 6
+  },
+  iconSketchBox: {
+    height: 16,
+    justifyContent: "center",
+    width: 16
+  },
+  iconSketchLine: {
+    alignSelf: "center",
+    borderBottomWidth: 2,
+    height: 2,
+    transform: [{ rotate: "-35deg" }],
+    width: 14
+  },
+  iconSketchTip: {
+    borderLeftWidth: 2,
+    borderTopWidth: 2,
+    height: 5,
+    position: "absolute",
+    right: 1,
+    top: 2,
+    transform: [{ rotate: "10deg" }],
+    width: 5
+  },
+  iconClipShape: {
+    borderBottomWidth: 1.5,
+    borderLeftWidth: 1.5,
+    borderRadius: 7,
+    borderRightWidth: 1.5,
+    height: 15,
+    transform: [{ rotate: "-15deg" }],
+    width: 10
+  },
+  iconCrownBox: {
+    height: 15,
+    justifyContent: "flex-end",
+    width: 17
+  },
+  iconCrownBase: {
+    borderBottomWidth: 2,
+    height: 3,
+    width: 17
+  },
+  iconCrownPeak: {
+    borderLeftWidth: 2,
+    borderTopWidth: 2,
+    height: 10,
+    left: 4,
+    position: "absolute",
+    top: 3,
+    transform: [{ rotate: "45deg" }],
+    width: 10
   },
   workbench: {
     gap: 10
@@ -1709,7 +1835,8 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     borderWidth: 1,
     gap: 9,
-    padding: 9
+    padding: 9,
+    position: "relative"
   },
   imageCarouselCardTablet: {
     alignSelf: "center",
@@ -1722,7 +1849,9 @@ const styles = StyleSheet.create({
     gap: 8
   },
   imageHeroPress: {
+    alignItems: "center",
     flex: 1,
+    justifyContent: "center",
     position: "relative"
   },
   imageNavButton: {
@@ -1741,9 +1870,8 @@ const styles = StyleSheet.create({
   },
   imageCaptionRow: {
     alignItems: "center",
-    flexDirection: "row",
-    gap: 10,
-    justifyContent: "space-between"
+    justifyContent: "center",
+    minHeight: 24
   },
   imageTitleLine: {
     alignItems: "center",
@@ -1761,6 +1889,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: 7,
     paddingVertical: 3
   },
+  imageFallbackLabel: {
+    color: "#7a6c5c",
+    fontSize: 11,
+    fontWeight: "800",
+    textAlign: "center"
+  },
   imageIndex: {
     backgroundColor: "#f0e4d3",
     borderRadius: 999,
@@ -1771,6 +1905,20 @@ const styles = StyleSheet.create({
     overflow: "hidden",
     paddingHorizontal: 8,
     paddingVertical: 5
+  },
+  imageIndexFloating: {
+    backgroundColor: "#f0e4d3",
+    borderRadius: 999,
+    color: "#5d544b",
+    fontSize: 11,
+    fontWeight: "900",
+    overflow: "hidden",
+    paddingHorizontal: 8,
+    paddingVertical: 5,
+    position: "absolute",
+    right: 9,
+    top: 9,
+    zIndex: 3
   },
   thumbnailStrip: {
     alignItems: "center",
@@ -1948,27 +2096,46 @@ const styles = StyleSheet.create({
     marginBottom: 10
   },
   selectorGrid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
     gap: 8,
     marginBottom: 10
   },
   currentSelector: {
+    alignItems: "center",
     backgroundColor: "#fffaf2",
     borderColor: "#eadfce",
-    borderRadius: 10,
+    borderRadius: 999,
     borderWidth: 1,
-    gap: 7,
-    padding: 10
-  },
-  currentSelectorHead: {
-    alignItems: "center",
+    flexGrow: 1,
     flexDirection: "row",
     gap: 8,
-    justifyContent: "space-between"
+    justifyContent: "space-between",
+    minHeight: 36,
+    minWidth: 92,
+    paddingHorizontal: 11,
+    paddingVertical: 7
+  },
+  currentSelectorLabel: {
+    color: "#7a6c5c",
+    fontSize: 10,
+    fontWeight: "900"
+  },
+  currentSelectorValueRow: {
+    alignItems: "center",
+    flexDirection: "row",
+    gap: 4
   },
   currentSelectorValue: {
     color: "#17263d",
-    fontSize: 14,
+    fontSize: 13,
     fontWeight: "900"
+  },
+  currentSelectorChevron: {
+    color: "#8d8174",
+    fontSize: 10,
+    fontWeight: "900",
+    marginTop: 1
   },
   selectorOptionRow: {
     flexDirection: "row",
@@ -2167,12 +2334,24 @@ const styles = StyleSheet.create({
     marginBottom: 8
   },
   progressRail: {
-    alignItems: "flex-start",
-    gap: 0,
+    alignItems: "stretch",
     justifyContent: "center",
     minWidth: "100%",
     paddingBottom: 5,
     paddingHorizontal: 8
+  },
+  progressRailTrack: {
+    flexDirection: "row",
+    minWidth: "100%",
+    position: "relative"
+  },
+  progressContinuousLine: {
+    backgroundColor: "#dfd3c3",
+    height: 2,
+    left: 44,
+    position: "absolute",
+    right: 44,
+    top: 9
   },
   progressStep: {
     alignItems: "center",
@@ -2181,10 +2360,8 @@ const styles = StyleSheet.create({
   },
   progressTopLine: {
     alignItems: "center",
-    flexDirection: "row",
     height: 20,
     justifyContent: "center",
-    position: "relative",
     width: "100%"
   },
   progressDot: {
@@ -2330,9 +2507,11 @@ const styles = StyleSheet.create({
   },
   rowMeta: {
     color: "#7b4b32",
+    flex: 1,
     fontSize: 12,
     fontWeight: "800",
-    lineHeight: 18
+    lineHeight: 18,
+    minWidth: 180
   },
   statusLine: {
     color: "#9b4a27",
@@ -2381,6 +2560,20 @@ const styles = StyleSheet.create({
     textAlign: "center"
   },
   materialActionRow: {
+    alignItems: "center",
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 6,
+    justifyContent: "flex-end"
+  },
+  materialMetaLine: {
+    alignItems: "center",
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 8,
+    justifyContent: "space-between"
+  },
+  materialActionInline: {
     alignItems: "center",
     flexDirection: "row",
     flexWrap: "wrap",
