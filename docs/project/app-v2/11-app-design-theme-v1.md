@@ -262,3 +262,16 @@ Final color values may be tuned after device review. The current contract is sem
 - Per-item material/accessory `발주` is separate from global `작지 발주`.
 - The icon library does not authorize real camera, file picker, upload, share, print, PDF, order, delivery, API, DB, R2, Worker, schema, migration, or production mutation work.
 - Package metadata checked: `lucide-react-native` uses ISC; `react-native-svg` uses MIT.
+
+## 20. Alpha.16 Tab Alignment And Editable-Affordance Correction
+
+`2.0.0-alpha.16` keeps Dongdaemun Atelier Ops and corrects small repeated-use signals that affect production speed.
+
+- Section tabs must feel centered, balanced, and deliberately scrollable on mobile/tablet.
+- Active tab text and underline should share one center axis so the selected section is unmistakable.
+- Production-card search should appear where users expect it: directly under the 제작 카드 목록 header.
+- Editable affordance should be subtle and field-local, not a repeated edit button.
+- Locked, requested, or completed rows should remove editable affordance and rely on status, quieter row treatment, and lock/read-only meaning.
+- Bottom navigation must use concrete icons plus Korean labels. Internal shortcut letters such as `C/I/D/S` are not customer-facing UI.
+- The production rail remains a compact workbench cue and should not grow a connector beyond the `출고` step.
+- This correction does not authorize real search, edit-save, upload, camera, file picker, sketch, share, print, PDF, order, delivery, API, DB, R2, Worker, schema, migration, or production mutation work.

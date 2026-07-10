@@ -181,6 +181,20 @@ The alpha.15 mobile mock correction replaces temporary icon drawings with a real
 
 This correction remains mock-only and does not connect real inline edit save, camera, file picker, upload, share, print, PDF generation, API, DB, R2, Worker, push notification, order, delivery, sketch, drag, long-press, schema, migration, or production mutation behavior.
 
+## 2.0.0-alpha.16 tab alignment and editable affordance correction
+
+The alpha.16 mobile/tablet mock correction keeps the alpha.15 icon system and makes repeated production use easier to understand:
+
+- Mobile and tablet section tabs should stay visible, centered, and evenly spaced enough to read quickly.
+- Phone tabs may horizontally scroll, but the scrollable nature should be visually understandable through spacing and partial continuation.
+- The selected tab's text and underline must share a stable center axis.
+- The production-card list should expose a clear search-field location for product/style, factory/vendor, due date, and status lookup without connecting a real search API.
+- Editable-looking affordance belongs only on values that can be edited in the current mock state.
+- Requested, completed, or locked rows should remove editable affordance and read as read-only.
+- Bottom navigation should use Lucide icons plus short Korean labels, not internal shortcut letters.
+
+This correction remains mock-only and does not connect real search, inline edit save, camera, file picker, upload, share, print, PDF generation, API, DB, R2, Worker, push notification, order, delivery, schema, migration, or production mutation behavior.
+
 ## 2.0.0-alpha.12 alpha.11 UX follow-up correction
 
 The alpha.12 mobile mock correction tightens the alpha.11 direction before output/share deepening:

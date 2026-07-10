@@ -3,6 +3,7 @@ import {
   Bell,
   Camera,
   Check,
+  ClipboardList,
   ClipboardCheck,
   Crown,
   Eye,
@@ -20,6 +21,7 @@ import {
   Ruler,
   Save,
   Search,
+  Settings,
   Share2,
   Trash2,
   X,
@@ -161,6 +163,7 @@ function ProductionCardList({
         <Text style={styles.listTitle}>제작 카드 목록</Text>
         <Text style={styles.listCount}>{productionCards.length}</Text>
       </View>
+      <ProductionCardSearchMock />
       {productionCards.map((card) => (
         <ProductionListCard
           key={card.id}
@@ -170,6 +173,19 @@ function ProductionCardList({
         />
       ))}
     </View>
+  );
+}
+
+function ProductionCardSearchMock() {
+  return (
+    <Pressable
+      accessibilityRole="button"
+      accessibilityLabel="제작 카드 목록 검색 mock 열기"
+      style={styles.listSearchField}
+    >
+      <IconMark icon="search" />
+      <Text style={styles.listSearchPlaceholder}>제품명 · 스타일명 · 공장/거래처 · 납기 · 상태 검색</Text>
+    </Pressable>
   );
 }
 
@@ -393,7 +409,12 @@ function TabRail({
   isTablet: boolean;
 }) {
   return (
-    <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.tabRail}>
+    <View style={styles.tabRailFrame}>
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={[styles.tabRail, isTablet ? styles.tabRailTablet : styles.tabRailMobile]}
+      >
       {PRODUCTION_TABS.map((tab) => {
         const selected = activeTab === tab.id;
         return (
@@ -402,16 +423,22 @@ function TabRail({
             accessibilityRole="button"
             accessibilityLabel={`${tab.label} 보기`}
             onPress={() => setActiveTab(tab.id)}
-            style={[styles.tab, selected && styles.tabSelected]}
+            style={[styles.tab, isTablet ? styles.tabTablet : styles.tabMobile, selected && styles.tabSelected]}
           >
-            <Text style={[styles.tabText, selected && styles.tabTextSelected]}>
-              {isTablet ? tab.label : tab.shortLabel}
-            </Text>
-            {tab.alertCount ? <Text style={styles.tabAlert}>{tab.alertCount}</Text> : null}
+            <View style={styles.tabInner}>
+              <View style={styles.tabLabelRow}>
+                <Text style={[styles.tabText, selected && styles.tabTextSelected]}>
+                  {isTablet ? tab.label : tab.shortLabel}
+                </Text>
+                {tab.alertCount ? <Text style={styles.tabAlert}>{tab.alertCount}</Text> : null}
+              </View>
+              <View style={[styles.tabUnderline, selected && styles.tabUnderlineSelected]} />
+            </View>
           </Pressable>
         );
       })}
-    </ScrollView>
+      </ScrollView>
+    </View>
   );
 }
 
@@ -776,10 +803,16 @@ function FlowTab({ workOrderIssued }: { workOrderIssued: boolean }) {
               <Text style={styles.rowTitle}>{row.process}</Text>
               <Text style={styles.rowBadge}>공정 안 항목</Text>
             </View>
-            <Text style={styles.rowDetail}>{row.partner} · {row.quantity} · 납기 {row.dueDate}</Text>
-            <Text style={styles.rowMeta}>단가 {row.unitPrice} · 금액 {row.amount} · 단위 {row.unit}</Text>
-            <Text style={styles.statusLine}>상태 · {row.status}</Text>
-            <Text style={styles.smallText}>{row.memo}</Text>
+            <View style={styles.processFieldGrid}>
+              <InlineField label="전달처" value={row.partner} editable={row.status !== "완료"} />
+              <InlineField label="수량" value={row.quantity} editable={row.status !== "완료"} />
+              <InlineField label="납기" value={row.dueDate} editable={row.status !== "완료"} />
+              <InlineField label="단위" value={row.unit} editable={row.status !== "완료"} />
+              <InlineField label="단가" value={row.unitPrice} editable={row.status !== "완료"} />
+              <InlineField label="상태" value={row.status} editable={row.status !== "완료"} />
+              <InlineField label="메모" value={row.memo} editable={row.status !== "완료"} wide />
+            </View>
+            <Text style={styles.rowMeta}>금액 {row.amount}</Text>
           </View>
         </View>
       ))}
@@ -914,6 +947,7 @@ function InfoRow({ label, value }: { label: string; value: string }) {
 function MaterialRow({ row }: { row: MaterialRowData }) {
   const actions = getMaterialActions(row);
   const locked = row.status !== "입력중";
+  const editable = row.status === "입력중";
 
   return (
     <View style={[styles.dataRow, materialRowStateStyle(row.status), locked && styles.lockedRow, row.status === "완료" && styles.completedRow]}>
@@ -921,18 +955,21 @@ function MaterialRow({ row }: { row: MaterialRowData }) {
         <SwatchVisual tone={getMaterialTone(row)} label={row.category} />
         <View style={styles.flex}>
           <Text style={styles.rowTitle}>{row.name}</Text>
-          <Text style={styles.rowDetail}>
-            {row.supplier} · {row.colorOrOption}{row.category ? ` · ${row.category}` : ""}
-          </Text>
+          <Text style={styles.rowDetail}>{row.category ? `${row.category} · ` : ""}{editable ? "거래처·수량 확인" : "발주 정보 고정"}</Text>
         </View>
         <Text style={[styles.rowBadge, styles.materialStatusBadge, statusBadgeStyle(row.status)]}>{row.status}</Text>
       </View>
-      <Text style={styles.rowDetail}>
-        필요 {row.required} · 로스/여유 {row.allowance} · 재고 {row.stockUse} · 발주 {row.orderQuantity}
-      </Text>
+      <View style={styles.materialFieldGrid}>
+        <InlineField label="거래처" value={row.supplier} editable={editable} />
+        <InlineField label="색상/옵션" value={row.colorOrOption} editable={editable} />
+        <InlineField label="필요" value={row.required} editable={editable} />
+        <InlineField label="로스/여유" value={row.allowance} editable={editable} />
+        <InlineField label="재고 사용" value={row.stockUse} editable={editable} />
+        <InlineField label="단위" value={row.unit} editable={editable} />
+      </View>
       <View style={styles.materialMetaLine}>
         <Text style={styles.rowMeta}>
-          단위 {row.unit} · 단가 {row.unitPrice} · 금액 {row.amount}
+          발주 {row.orderQuantity} · 단가 {row.unitPrice} · 금액 {row.amount}
         </Text>
         {actions.length ? (
           <View style={styles.materialActionInline}>
@@ -951,8 +988,29 @@ function MaterialRow({ row }: { row: MaterialRowData }) {
         ) : null}
       </View>
       <View style={styles.materialFooter}>
-        <Text style={styles.smallText}>{row.leftover} · {row.warning}</Text>
+        <InlineField label="메모" value={`${row.leftover} · ${row.warning}`} editable={editable} wide />
       </View>
+    </View>
+  );
+}
+
+function InlineField({
+  label,
+  value,
+  editable,
+  wide = false
+}: {
+  label: string;
+  value: string;
+  editable: boolean;
+  wide?: boolean;
+}) {
+  return (
+    <View style={[styles.inlineField, editable && styles.inlineFieldEditable, !editable && styles.inlineFieldReadOnly, wide && styles.inlineFieldWide]}>
+      <Text style={styles.inlineFieldLabel}>{label}</Text>
+      <Text style={[styles.inlineFieldValue, editable && styles.inlineFieldValueEditable]} numberOfLines={wide ? 2 : 1}>
+        {value}
+      </Text>
     </View>
   );
 }
@@ -1126,6 +1184,7 @@ type IconKind =
   | "measure"
   | "swatchAdd"
   | "requestDoc"
+  | "cards"
   | "clipboardCheck"
   | "fileCheck"
   | "fileText"
@@ -1136,6 +1195,7 @@ type IconKind =
   | "search"
   | "bell"
   | "more"
+  | "settings"
   | "undo"
   | "check"
   | "delete"
@@ -1153,6 +1213,7 @@ const iconMap: Record<IconKind, LucideIcon> = {
   measure: Ruler,
   swatchAdd: Palette,
   requestDoc: FileUp,
+  cards: ClipboardList,
   clipboardCheck: ClipboardCheck,
   fileCheck: FileCheck,
   fileText: FileText,
@@ -1163,19 +1224,40 @@ const iconMap: Record<IconKind, LucideIcon> = {
   search: Search,
   bell: Bell,
   more: MoreHorizontal,
+  settings: Settings,
   undo: RotateCcw,
   check: Check,
   delete: Trash2,
   x: X
 };
 
-function IconMark({ icon, emphasized = false, danger = false }: { icon: IconKind; emphasized?: boolean; danger?: boolean }) {
-  return <WaflIcon icon={icon} emphasized={emphasized} danger={danger} />;
+function IconMark({
+  icon,
+  emphasized = false,
+  danger = false,
+  selected = false
+}: {
+  icon: IconKind;
+  emphasized?: boolean;
+  danger?: boolean;
+  selected?: boolean;
+}) {
+  return <WaflIcon icon={icon} emphasized={emphasized} danger={danger} selected={selected} />;
 }
 
-function WaflIcon({ icon, emphasized = false, danger = false }: { icon: IconKind; emphasized?: boolean; danger?: boolean }) {
+function WaflIcon({
+  icon,
+  emphasized = false,
+  danger = false,
+  selected = false
+}: {
+  icon: IconKind;
+  emphasized?: boolean;
+  danger?: boolean;
+  selected?: boolean;
+}) {
   const IconComponent = iconMap[icon];
-  const color = emphasized ? "#ffffff" : danger ? "#9a4035" : "#17263d";
+  const color = emphasized ? "#ffffff" : danger ? "#9a4035" : selected ? "#c75f35" : "#17263d";
   const iconSize = icon === "more" ? 19 : icon === "crown" ? 18 : 17;
 
   return <IconComponent color={color} size={iconSize} strokeWidth={2.25} />;
@@ -1184,18 +1266,18 @@ function WaflIcon({ icon, emphasized = false, danger = false }: { icon: IconKind
 function BottomNavigation() {
   return (
     <View style={styles.bottomNav}>
-      <NavItem label="카드" symbol="C" selected />
-      <NavItem label="이미지" symbol="I" />
-      <NavItem label="문서" symbol="D" />
-      <NavItem label="설정" symbol="S" />
+      <NavItem label="카드" icon="cards" selected />
+      <NavItem label="이미지" icon="photo" />
+      <NavItem label="문서" icon="fileText" />
+      <NavItem label="설정" icon="settings" />
     </View>
   );
 }
 
-function NavItem({ label, symbol, selected = false }: { label: string; symbol: string; selected?: boolean }) {
+function NavItem({ label, icon, selected = false }: { label: string; icon: IconKind; selected?: boolean }) {
   return (
-    <Pressable accessibilityRole="button" accessibilityLabel={`${label} 이동 mock`} style={styles.navItem}>
-      <Text style={[styles.navSymbol, selected && styles.navSymbolSelected]}>{symbol}</Text>
+    <Pressable accessibilityRole="button" accessibilityLabel={`${label} 이동 mock`} style={[styles.navItem, selected && styles.navItemSelected]}>
+      <IconMark icon={icon} selected={selected} />
       <Text style={[styles.navLabel, selected && styles.navLabelSelected]}>{label}</Text>
     </Pressable>
   );
@@ -1434,6 +1516,25 @@ const styles = StyleSheet.create({
     alignItems: "center",
     flexDirection: "row",
     justifyContent: "space-between"
+  },
+  listSearchField: {
+    alignItems: "center",
+    backgroundColor: "#fffdf8",
+    borderColor: "#ded4c5",
+    borderRadius: 10,
+    borderWidth: 1,
+    flexDirection: "row",
+    gap: 8,
+    minHeight: 36,
+    paddingHorizontal: 10,
+    paddingVertical: 8
+  },
+  listSearchPlaceholder: {
+    color: "#756b60",
+    flex: 1,
+    fontSize: 12,
+    fontWeight: "800",
+    minWidth: 0
   },
   listTitle: {
     color: "#17263d",
@@ -1937,33 +2038,76 @@ const styles = StyleSheet.create({
     right: 3,
     textAlign: "center"
   },
+  tabRailFrame: {
+    backgroundColor: "rgba(255, 250, 242, 0.72)",
+    borderColor: "#eadfce",
+    borderRadius: 12,
+    borderWidth: 1,
+    overflow: "hidden"
+  },
   tabRail: {
-    gap: 10,
-    paddingHorizontal: 2,
-    paddingVertical: 4
+    alignItems: "stretch",
+    gap: 8,
+    paddingVertical: 3
+  },
+  tabRailTablet: {
+    justifyContent: "center",
+    minWidth: "100%",
+    paddingHorizontal: 8
+  },
+  tabRailMobile: {
+    paddingHorizontal: 12
   },
   tab: {
     alignItems: "center",
     backgroundColor: "transparent",
-    borderBottomColor: "transparent",
-    borderBottomWidth: 2,
-    flexDirection: "row",
-    gap: 5,
-    minWidth: 70,
-    paddingHorizontal: 3,
-    paddingVertical: 8
+    borderRadius: 9,
+    justifyContent: "center",
+    paddingHorizontal: 2,
+    paddingVertical: 5
+  },
+  tabTablet: {
+    flexGrow: 1,
+    minWidth: 92
+  },
+  tabMobile: {
+    minWidth: 74
   },
   tabSelected: {
-    borderBottomColor: "#17263d"
+    backgroundColor: "#fffdf8"
+  },
+  tabInner: {
+    alignItems: "center",
+    gap: 4,
+    justifyContent: "center",
+    minHeight: 34
+  },
+  tabLabelRow: {
+    alignItems: "center",
+    flexDirection: "row",
+    gap: 4,
+    justifyContent: "center",
+    minWidth: 0
   },
   tabText: {
     color: "#5d544b",
-    fontSize: 13,
+    flexShrink: 1,
+    fontSize: 12,
     fontWeight: "900",
+    lineHeight: 17,
     textAlign: "center"
   },
   tabTextSelected: {
     color: "#17263d"
+  },
+  tabUnderline: {
+    backgroundColor: "transparent",
+    borderRadius: 999,
+    height: 2,
+    width: 28
+  },
+  tabUnderlineSelected: {
+    backgroundColor: "#17263d"
   },
   tabAlert: {
     backgroundColor: "#dfad45",
@@ -2928,6 +3072,46 @@ const styles = StyleSheet.create({
     gap: 8,
     justifyContent: "space-between"
   },
+  materialFieldGrid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 6
+  },
+  inlineField: {
+    borderBottomWidth: 1,
+    borderRadius: 7,
+    flexGrow: 1,
+    gap: 2,
+    minWidth: 104,
+    paddingHorizontal: 7,
+    paddingVertical: 5
+  },
+  inlineFieldEditable: {
+    backgroundColor: "#fff8eb",
+    borderBottomColor: "#b98c5a"
+  },
+  inlineFieldReadOnly: {
+    backgroundColor: "transparent",
+    borderBottomColor: "transparent",
+    paddingHorizontal: 0
+  },
+  inlineFieldWide: {
+    minWidth: "100%"
+  },
+  inlineFieldLabel: {
+    color: "#7a6c5c",
+    fontSize: 9,
+    fontWeight: "900"
+  },
+  inlineFieldValue: {
+    color: "#4f463f",
+    fontSize: 12,
+    fontWeight: "800",
+    lineHeight: 16
+  },
+  inlineFieldValueEditable: {
+    color: "#17263d"
+  },
   inlineEditHint: {
     borderBottomColor: "#b98c5a",
     borderBottomWidth: 1,
@@ -2952,6 +3136,12 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     gap: 10,
     paddingVertical: 11
+  },
+  processFieldGrid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 6,
+    marginTop: 5
   },
   dragHandle: {
     backgroundColor: "#f5f1e8",
@@ -3110,16 +3300,15 @@ const styles = StyleSheet.create({
   },
   navItem: {
     alignItems: "center",
+    borderRadius: 8,
     gap: 3,
-    minWidth: 54
+    minHeight: 44,
+    minWidth: 58,
+    paddingHorizontal: 8,
+    paddingVertical: 4
   },
-  navSymbol: {
-    color: "#756b60",
-    fontSize: 12,
-    fontWeight: "900"
-  },
-  navSymbolSelected: {
-    color: "#c75f35"
+  navItemSelected: {
+    backgroundColor: "#fff2dc"
   },
   navLabel: {
     color: "#756b60",

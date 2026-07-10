@@ -246,3 +246,17 @@ For the alpha.15 mobile mock:
 - Per-item `발주` and global `작지 발주` must stay distinct.
 - Do not introduce another icon library for the same purpose.
 - Do not add font files, external image assets, root package changes, root lockfile changes, real camera/file picker/upload/sketch/share/print/PDF/order/delivery behavior, API, DB, R2, Worker, schema, migration, or production mutation.
+
+## 2.0.0-alpha.16 tab/search/editability rule
+
+For the alpha.16 mobile/tablet mock:
+
+- Keep section tabs visible on mobile and tablet; do not replace them with a dropdown.
+- Tablet tabs should align as a balanced row inside the production-card content width.
+- Mobile tabs may horizontally scroll, but active text and underline should remain visually centered.
+- Add only a mock search entry point for the production-card list. Do not connect real search/filtering.
+- Use subtle editable affordance only for fields whose current row/process state is editable in the mock.
+- Remove editable affordance from requested, completed, or locked rows.
+- Bottom navigation must use Lucide icons plus Korean labels, not internal shortcut letters.
+- Reuse the existing icon library from alpha.15; do not add another dependency.
+- Do not add font files, external image assets, root package changes, root lockfile changes, real search/edit-save/camera/file picker/upload/sketch/share/print/PDF/order/delivery behavior, API, DB, R2, Worker, schema, migration, or production mutation.

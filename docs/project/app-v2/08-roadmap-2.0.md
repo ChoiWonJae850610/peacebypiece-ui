@@ -1,4 +1,4 @@
-# WAFL v2 App-first Roadmap 2.0 - 2.0.0-alpha.15
+# WAFL v2 App-first Roadmap 2.0 - 2.0.0-alpha.16
 
 ## Purpose
 
@@ -216,7 +216,7 @@ Status: done.
 
 ### 2.0.0-alpha.15
 
-Status: current.
+Status: done.
 
 - Adopt an actual icon library for the `apps/mobile` mock instead of continuing temporary hand-drawn icon primitives.
 - Add `lucide-react-native` and Expo-compatible `react-native-svg` under `apps/mobile` only.
@@ -229,6 +229,22 @@ Status: current.
 - Tighten the production-flow rail so the line ends at `출고`.
 - Do not connect real DB, API, R2, PDF Worker, upload, camera, image picker, sketch, share, print, order, delivery, inline-edit persistence, schema, migration, or production mutation.
 - Align app display version to `2.0.0-alpha.15`.
+
+### 2.0.0-alpha.16
+
+Status: current.
+
+- Correct mobile and tablet section-tab alignment after the alpha.15 icon-library pass.
+- Keep mobile section tabs visible and horizontally scrollable instead of replacing them with a dropdown.
+- Center active tab text and underline on one stable axis and improve tab spacing.
+- Add a compact mock search field under the 제작 카드 목록 header for product/style, factory/vendor, due date, and status lookup.
+- Add subtle editable affordance only for values editable in the current mock state.
+- Remove editable affordance from requested, completed, or locked material/accessory rows.
+- Apply the same subtle editable/read-only distinction to production-flow process fields.
+- Replace bottom-nav `C/I/D/S` shortcut letters with Lucide icons plus Korean labels.
+- Keep the six-step production rail line ending at `출고`.
+- Do not connect real DB, API, R2, PDF Worker, upload, camera, image picker, sketch, share, print, order, delivery, search API, inline-edit persistence, schema, migration, or production mutation.
+- Align app display version to `2.0.0-alpha.16`.
 
 ## Later integration phases
 

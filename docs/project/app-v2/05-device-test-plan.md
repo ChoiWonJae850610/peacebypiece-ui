@@ -193,6 +193,30 @@ Manual device QA remains owner confirmation:
 
 No real camera, picker, upload, share, print, PDF, DB, API, R2, Worker, order, delivery, schema, migration, or production mutation evidence is expected for this mock-only version.
 
+## 2.0.0-alpha.16 tab/search/editability QA
+
+Automatic checks:
+
+- `apps/mobile npm run typecheck`
+- `apps/mobile npm run expo:config`
+- root `npx tsc --noEmit`
+- root `npm run build`
+- targeted eslint for `apps/mobile/components/ProductionCardMock.tsx`
+- `git diff --check`
+- `node tests/unicode-encoding-contract.mjs`
+- approved workflow verify
+
+Manual device QA remains owner confirmation:
+
+- iPhone portrait: section tabs remain visible, centered, horizontally scrollable, and the active underline is centered under the selected label.
+- iPhone portrait: bottom nav shows icon plus Korean labels only; no `C/I/D/S` shortcut letters remain.
+- iPad mini portrait: 제작 카드 목록 search field is clearly placed under the list header.
+- iPad Pro landscape: tablet tabs read as balanced within the content width, not left-pushed.
+- Galaxy Tab portrait/landscape: editable affordance appears only on input/active rows and disappears on requested/completed rows.
+- Galaxy Tab portrait/landscape: production rail line still ends at `출고`.
+
+No real camera, picker, upload, share, print, PDF, DB, API, R2, Worker, order, delivery, search API, inline edit save, schema, migration, or production mutation evidence is expected for this mock-only version.
+
 ## 2.0.0-alpha.12 alpha.11 UX follow-up QA
 
 The alpha.12 mobile mock requires review of the follow-up corrections:

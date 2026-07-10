@@ -312,3 +312,24 @@ Implementation boundary:
 ```text
 No real upload, camera, file picker, sketch, share, print, PDF generation, delivery request, order mutation, inline edit save, API, DB, R2, Worker, push notification, drag, long-press, auth, or storage behavior is authorized by this UX follow-up correction.
 ```
+
+## 2.0.0-alpha.16 tab alignment, search entry, and editability correction
+
+`2.0.0-alpha.16` keeps the `/ui` alpha.27 feature map and alpha.15 icon system while correcting practical app navigation and editability signals.
+
+Core correction:
+
+- Section tabs remain the primary navigation on mobile and tablet.
+- Tablet tabs are balanced within the production-card surface instead of reading as a left-aligned row.
+- Mobile tabs stay horizontally scrollable with centered active label/underline treatment.
+- The production-card list exposes a mock search-field location for product/style, factory/vendor, due date, and status lookup.
+- Fabric/accessory rows show editable-looking field affordance only while `입력중`.
+- Requested and completed rows remove edit affordance and read as locked/read-only.
+- Production-flow process fields use the same editable/read-only visual distinction.
+- Bottom navigation uses real icons plus Korean labels instead of internal shortcut letters.
+
+Implementation boundary:
+
+```text
+No real search/filtering, inline edit save, upload, camera, file picker, sketch, share, print, PDF generation, delivery request, order mutation, API, DB, R2, Worker, push notification, drag, long-press, auth, or storage behavior is authorized by this correction.
+```

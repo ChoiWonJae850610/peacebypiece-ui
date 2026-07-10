@@ -1,3 +1,59 @@
+# 2.0.0-alpha.16 WAFL v2 App-first Tab Alignment and Editable-Affordance UX Correction
+
+- Current GPT checkpoint: `2.0.0-alpha.16`.
+- Baseline source before this patch: repository `APP_VERSION: 2.0.0-alpha.15`.
+- Baseline commit: `2e5ba9ca8e4cd884e1ffc788b1977533c38d8181`.
+- This patch keeps the `apps/mobile` mock-only boundary and corrects navigation, search, and editable-value readability found after the alpha.15 icon-library pass.
+- Mobile and tablet section tabs remain visible and horizontally scrollable, but tab items now use more stable centered alignment, wider spacing, and a centered active underline.
+- Tablet tab rows are balanced inside the production-card width instead of reading as a left-pushed row.
+- A compact mock search field is added under `제작 카드 목록` so product/style, factory/vendor, due date, and status search location is clear without connecting a real search API.
+- Fabric/accessory rows now show subtle editable field affordance only while the row is `입력중`.
+- Rows in `발주요청` or `완료` no longer show editable affordance and read as locked/read-only mock rows.
+- Production-flow detail rows show subtle editable affordance for partner, quantity, due date, unit, unit price, status, and memo while the process is not complete.
+- The bottom navigation no longer exposes unexplained `C/I/D/S` letters. It uses Lucide icons plus Korean labels for 카드, 이미지, 문서, and 설정.
+- The production-flow rail remains six steps and the connector line ends at `출고`.
+- `작지 발주` remains a local mock confirmation flow only.
+- No real DB, API, R2, PDF Worker, upload, camera, image picker, sketch, share, print, order, delivery, search, inline-edit save, schema, migration, or production mutation is connected.
+- No new dependency, font file, or external image asset is added. Existing `lucide-react-native` icons from alpha.15 are reused.
+- Root `package.json` and root lockfile remain unchanged; `apps/mobile` package metadata is version-aligned only.
+
+Explicitly not changed:
+
+```text
+- DB migration
+- API route behavior
+- Neon schema
+- Cloudflare R2 Worker
+- PDF Worker
+- real file upload/delete
+- real camera/photo/file picker/sketch
+- real search API/filtering
+- real share-link generation
+- real PDF generation
+- real auth callback
+- real order/delivery mutation
+- real inline edit save
+- real push notification
+- real drag/long-press mutation
+- production data
+- root package.json
+- root package-lock.json
+- pnpm lock/workspace files
+- /system or /workspace deletion
+```
+
+Manual device QA remains required before product verification:
+
+```text
+- iPhone portrait section tab centering, horizontal scroll discoverability, and bottom nav readability
+- iPad mini portrait tab spacing and 제작 카드 목록 search field review
+- iPad Pro landscape tablet tab row balance and editable field affordance review
+- Galaxy Tab portrait/landscape production rail ending and bottom nav review
+- Expo Web preview inspection after local server run
+```
+
+---
+
 # 2.0.0-alpha.15 WAFL v2 App-first Icon Library Adoption
 
 - Current GPT checkpoint: `2.0.0-alpha.15`.
