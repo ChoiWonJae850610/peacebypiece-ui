@@ -220,3 +220,18 @@ For the alpha.13 mobile mock:
 - Completed material/accessory rows should show no action buttons.
 - Production rail should use one continuous line with dots on top, not visually separate connector fragments.
 - Do not add dependencies, icon libraries, external assets, real camera/file picker/upload/sketch/share/print/PDF/order/delivery behavior, API, DB, R2, Worker, or push notification behavior for this polish pass.
+
+## 2.0.0-alpha.14 UI polish + work-order CTA rule
+
+For the alpha.14 mobile mock:
+
+- Treat this as UI polish plus local `작지 발주` CTA mock only.
+- Do not start real output/share, PDF, print, order, delivery, upload, camera, image picker, sketch, API, DB, R2, Worker, schema, migration, or production mutation work.
+- Image/attachment icons must remain dependency-free local primitives.
+- Size/color selectors must keep stable widths when mock values change.
+- Status badges and action buttons must use distinct visual grammar.
+- Per-item `발주` and global `작지 발주` must remain verbally and visually distinct.
+- The `작지 발주` confirmation panel may change only local screen state.
+- After mock completion, the rail may show `발주` complete and `자재` derived from existing fabric/accessory statuses.
+- Completed material/accessory rows still show no action buttons.
+- Do not add dependencies, icon libraries, external assets, fonts, root package changes, root lockfile changes, or real production integration.

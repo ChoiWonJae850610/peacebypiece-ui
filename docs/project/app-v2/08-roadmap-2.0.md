@@ -1,4 +1,4 @@
-# WAFL v2 App-first Roadmap 2.0 - 2.0.0-alpha.13
+# WAFL v2 App-first Roadmap 2.0 - 2.0.0-alpha.14
 
 ## Purpose
 
@@ -183,7 +183,7 @@ Status: done.
 
 ### 2.0.0-alpha.13
 
-Status: current.
+Status: done.
 
 - Correct alpha.12 UX items that still read as under-applied in the `apps/mobile` mock.
 - Replace image/attachment action symbols with dependency-free visual helper icons for photo, camera, sketch, attachment, and representative-image selection.
@@ -195,6 +195,24 @@ Status: current.
 - Change the production-flow rail from segmented connectors to one continuous line with evenly placed dots, labels, and statuses.
 - Do not connect real DB, API, R2, PDF Worker, upload, camera, image picker, sketch, share, print, order, delivery, inline-edit persistence, drag, or long-press behavior.
 - Align app display version to `2.0.0-alpha.13`.
+
+### 2.0.0-alpha.14
+
+Status: current.
+
+- Apply alpha.13 field feedback as a UI polish and local work-order CTA mock pass.
+- Make image/attachment icons read as photo, camera, sketch, attachment, and representative crown without adding dependencies or assets.
+- Remove meaningless decorative hanger marks from the main garment preview.
+- Keep size/color selector widths stable across gender, category, and `cm`/`inch` changes.
+- Add dependency-free helper icons to size/color load, save, size add, body-part add, and color add actions.
+- Shorten material/accessory actions to `발주`, `완료`, `취소`, and `삭제`.
+- Separate status badge styling from action button styling so repeated rows are scannable.
+- Keep material order icons as production-document request shapes, not send/mail/airplane metaphors.
+- Tighten the production rail so it ends at `출고` and emphasizes the current step.
+- Add a top summary `작지 발주` CTA with a local confirmation panel and readiness checklist.
+- After mock completion, show `발주` as complete and derive `자재` from existing fabric/accessory statuses.
+- Do not connect real DB, API, R2, PDF Worker, upload, camera, image picker, sketch, share, print, order, delivery, inline-edit persistence, schema, migration, or production mutation.
+- Align app display version to `2.0.0-alpha.14`.
 
 ## Later integration phases
 

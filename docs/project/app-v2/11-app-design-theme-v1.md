@@ -236,3 +236,17 @@ Final color values may be tuned after device review. The current contract is sem
 - Material and accessory row actions should sit near quantity and amount data so production users can scan and act quickly.
 - The production-flow rail should read as one calm handoff line across the card.
 - No dependency, external asset, font file, real upload, camera, file picker, sketch, share, print, PDF, API, DB, R2, Worker, push notification, order, delivery, inline-edit save, drag, or long-press integration is added by this correction.
+
+## 18. Alpha.14 UI Polish + Work Order CTA Mock
+
+`2.0.0-alpha.14` keeps Dongdaemun Atelier Ops and tightens small UI signals that slow repeated production judgment.
+
+- Icons should look like the production action they represent: photo, camera, sketch, attachment, representative crown, request document, undo, check, and delete.
+- The image preview should avoid decorative details that do not help production review.
+- Selector widths should stay fixed enough that repeated field use does not feel unstable.
+- Action buttons should not look like status badges. Status is a label; action is a button.
+- Per-item material/accessory `발주` is separate from the global `작지 발주`.
+- `작지 발주` should feel like a document/readiness checkpoint, not an immediate hidden mutation.
+- Production-flow emphasis should guide the current step without turning the rail into a decorative timeline.
+- Local CTA completion may update only mock screen state.
+- No dependency, external asset, font file, real upload, camera, file picker, sketch, share, print, PDF, API, DB, R2, Worker, push notification, order, delivery, schema, migration, inline-edit save, drag, or long-press integration is added by this correction.

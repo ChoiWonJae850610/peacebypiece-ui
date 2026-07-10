@@ -32,15 +32,31 @@ import {
   type MaterialRow as MaterialRowData,
   type MaterialStatus,
   type ProductionCardListItem,
+  type ProgressStep,
   type ProductionTabId
 } from "@/constants/mockProductionCard";
 
 const maxPhoneWidth = 520;
 const maxTabletWidth = 1040;
+const progressStepWidth = 88;
+
+type WorkOrderState = "ready" | "issued";
+
+const workOrderChecks = [
+  "대표 이미지 있음",
+  "총 수량 360벌",
+  "색상/사이즈 수량 일치",
+  "원단 4건",
+  "부자재 4건",
+  "납기 2026.08.20",
+  "포함 첨부 2건"
+];
 
 export default function ProductionCardMock() {
   const [activeTab, setActiveTab] = useState<ProductionTabId>("overview");
   const [selectedCardId, setSelectedCardId] = useState(productionCards[0].id);
+  const [workOrderIssued, setWorkOrderIssued] = useState(false);
+  const [orderConfirmOpen, setOrderConfirmOpen] = useState(false);
   const { width, height } = useWindowDimensions();
   const isTablet = width >= 760;
   const isWideTablet = isTablet && width > height;
@@ -60,11 +76,24 @@ export default function ProductionCardMock() {
             isTablet={isTablet}
           />
           <View style={styles.detailPane}>
-            <ProductionHeader isTablet={isTablet} />
+            <ProductionHeader
+              isTablet={isTablet}
+              workOrderState={workOrderIssued ? "issued" : "ready"}
+              onOpenOrderConfirm={() => setOrderConfirmOpen(true)}
+            />
+            {orderConfirmOpen ? (
+              <WorkOrderConfirmPanel
+                onClose={() => setOrderConfirmOpen(false)}
+                onComplete={() => {
+                  setWorkOrderIssued(true);
+                  setOrderConfirmOpen(false);
+                }}
+              />
+            ) : null}
             <TabRail activeTab={activeTab} setActiveTab={setActiveTab} isTablet={isTablet} />
             <View style={styles.section}>
               <NextCheckPanel activeTab={activeTab} />
-              {renderActiveTab(activeTab, isTablet)}
+              {renderActiveTab(activeTab, isTablet, workOrderIssued)}
             </View>
           </View>
         </View>
@@ -151,7 +180,15 @@ function ProductionListCard({
   );
 }
 
-function ProductionHeader({ isTablet }: { isTablet: boolean }) {
+function ProductionHeader({
+  isTablet,
+  workOrderState,
+  onOpenOrderConfirm
+}: {
+  isTablet: boolean;
+  workOrderState: WorkOrderState;
+  onOpenOrderConfirm: () => void;
+}) {
   return (
     <View style={[styles.header, isTablet && styles.headerTablet]}>
       <GarmentPreview compact={!isTablet} label={productionCardMock.representativeImage} count={4} />
@@ -167,8 +204,83 @@ function ProductionHeader({ isTablet }: { isTablet: boolean }) {
         <View style={styles.headerStats}>
           <MiniStat label="한벌" value={productionCardMock.unitCost} />
           <MiniStat label="총 예상" value={productionCardMock.totalEstimate} />
-          <MiniStat label="문서" value={productionCardMock.outputState} />
+          <WorkOrderStatusCard state={workOrderState} onPress={onOpenOrderConfirm} />
         </View>
+      </View>
+    </View>
+  );
+}
+
+function WorkOrderStatusCard({
+  state,
+  onPress
+}: {
+  state: WorkOrderState;
+  onPress: () => void;
+}) {
+  const issued = state === "issued";
+  return (
+    <View style={[styles.workOrderCard, issued && styles.workOrderCardIssued]}>
+      <View style={styles.workOrderStatusRow}>
+        <Text style={styles.miniLabel}>문서</Text>
+        <Text style={[styles.workOrderStatus, issued && styles.workOrderStatusIssued]}>
+          {issued ? "작지 발주 완료" : "작지 발주 가능"}
+        </Text>
+      </View>
+      <Text style={styles.workOrderDetail}>
+        {issued ? "발주 완료 후 주요 정보 잠금 예정" : "확인 필요 0건 · 출력 전 확인"}
+      </Text>
+      <Pressable
+        accessibilityRole="button"
+        accessibilityLabel={issued ? "작지 보기 mock 동작" : "작지 발주 확인 mock 열기"}
+        onPress={onPress}
+        style={[styles.workOrderButton, issued && styles.workOrderButtonIssued]}
+      >
+        <Text style={[styles.workOrderButtonText, issued && styles.workOrderButtonTextIssued]}>
+          {issued ? "작지 보기" : "작지 발주"}
+        </Text>
+      </Pressable>
+    </View>
+  );
+}
+
+function WorkOrderConfirmPanel({
+  onClose,
+  onComplete
+}: {
+  onClose: () => void;
+  onComplete: () => void;
+}) {
+  return (
+    <View style={styles.workOrderConfirmPanel}>
+      <View style={styles.workOrderConfirmHeader}>
+        <View style={styles.flex}>
+          <Text style={styles.subsectionTitle}>작지 발주 전 확인</Text>
+          <Text style={styles.smallText}>실제 출력, 공유, 저장 없이 화면 상태만 바꾸는 mock 확인 sheet입니다.</Text>
+        </View>
+        <Pressable accessibilityRole="button" accessibilityLabel="작지 발주 확인 닫기 mock" onPress={onClose} style={styles.confirmCloseButton}>
+          <Text style={styles.confirmCloseText}>x</Text>
+        </Pressable>
+      </View>
+      <View style={styles.confirmCheckGrid}>
+        {workOrderChecks.map((item) => (
+          <View key={item} style={styles.confirmCheckItem}>
+            <IconMark icon="check" />
+            <Text style={styles.confirmCheckText}>{item}</Text>
+          </View>
+        ))}
+      </View>
+      <View style={styles.confirmLockNotice}>
+        <Text style={styles.infoLabel}>발주 완료 후</Text>
+        <Text style={styles.infoValue}>주요 제작 정보는 잠금 예정입니다. 수정이 필요하면 발주 취소, 정정, 재발주 흐름으로 이어지는 방향만 mock으로 표시합니다.</Text>
+      </View>
+      <View style={styles.confirmActionRow}>
+        <Pressable accessibilityRole="button" accessibilityLabel="작지 미리보기 mock" style={styles.secondaryConfirmButton}>
+          <Text style={styles.secondaryConfirmButtonText}>미리보기</Text>
+        </Pressable>
+        <Pressable accessibilityRole="button" accessibilityLabel="작지 출력 및 발주 완료 mock" onPress={onComplete} style={styles.primaryConfirmButton}>
+          <Text style={styles.primaryConfirmButtonText}>작지 출력 및 발주 완료</Text>
+        </Pressable>
       </View>
     </View>
   );
@@ -186,8 +298,6 @@ function MiniStat({ label, value }: { label: string; value: string }) {
 function GarmentPreview({ label, count, compact = false }: { label: string; count?: number; compact?: boolean }) {
   return (
     <View style={[styles.garmentPreview, compact && styles.garmentPreviewCompact]}>
-      <View style={styles.hangerLine} />
-      <View style={styles.hangerHook} />
       <View style={styles.garmentShape}>
         <View style={styles.collarShape} />
         <View style={styles.sleeveLeft} />
@@ -296,7 +406,7 @@ function NextCheckPanel({ activeTab }: { activeTab: ProductionTabId }) {
   );
 }
 
-function renderActiveTab(activeTab: ProductionTabId, isTablet: boolean) {
+function renderActiveTab(activeTab: ProductionTabId, isTablet: boolean, workOrderIssued: boolean) {
   switch (activeTab) {
     case "overview":
       return <OverviewTab isTablet={isTablet} />;
@@ -309,7 +419,7 @@ function renderActiveTab(activeTab: ProductionTabId, isTablet: boolean) {
     case "accessories":
       return <MaterialTab title="부자재" summary="카테고리는 보조 정보로 두고 품목, 옵션, 수량, 상태를 먼저 읽습니다." rows={accessoryRows} />;
     case "flow":
-      return <FlowTab />;
+      return <FlowTab workOrderIssued={workOrderIssued} />;
     case "output":
       return <OutputTab />;
     default:
@@ -468,9 +578,10 @@ function SizesTab({ isTablet }: { isTablet: boolean }) {
         <Text style={styles.quantityCheckText}>총 360벌</Text>
       </View>
       <View style={styles.selectorGrid}>
-        <CurrentValueSelector label="성별" value="공용" options={["공용", "여성", "남성"]} />
-        <CurrentValueSelector label="품목" value="상의" options={["상의", "하의", "아우터"]} />
+        <CurrentValueSelector selectorKind="gender" label="성별" value="공용" options={["공용", "여성", "남성"]} />
+        <CurrentValueSelector selectorKind="category" label="품목" value="상의" options={["상의", "하의", "아우터"]} />
         <CurrentValueSelector
+          selectorKind="unit"
           label="단위"
           value={unitMode}
           options={["cm", "inch"]}
@@ -486,12 +597,12 @@ function SizesTab({ isTablet }: { isTablet: boolean }) {
       </View>
       <View style={styles.splitActionRow}>
         <View style={styles.actionGroupLeft}>
-          <AddChip label="불러오기" />
-          <AddChip label="현재 구성 저장" />
+          <AddChip label="불러오기" icon="folder" />
+          <AddChip label="현재 구성 저장" icon="save" />
         </View>
         <View style={styles.actionGroupRight}>
-          <AddChip label="사이즈 추가" />
-          <AddChip label="부위 추가" />
+          <AddChip label="사이즈 추가" icon="rowAdd" />
+          <AddChip label="부위 추가" icon="measure" />
         </View>
       </View>
       <ScrollView horizontal showsHorizontalScrollIndicator={false}>
@@ -525,7 +636,7 @@ function SizesTab({ isTablet }: { isTablet: boolean }) {
             <Text style={styles.smallText}>{row.note}</Text>
           </View>
         ))}
-        <AddChip label="색상 추가" />
+        <AddChip label="색상 추가" icon="swatchAdd" />
       </View>
     </View>
   );
@@ -565,7 +676,9 @@ function MaterialTab({
   );
 }
 
-function ProgressRail() {
+function ProgressRail({ workOrderIssued }: { workOrderIssued: boolean }) {
+  const displaySteps = getDisplayProgressSteps(workOrderIssued);
+
   return (
     <View style={styles.progressBlock}>
       <View style={styles.progressHeader}>
@@ -573,21 +686,24 @@ function ProgressRail() {
         <Text style={styles.smallText}>발주 · 자재 · 재단 · 공정 · 검수 · 출고를 준비/작업중/완료로만 표시합니다.</Text>
       </View>
       <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.progressRail}>
-        <View style={styles.progressRailTrack}>
+        <View style={[styles.progressRailTrack, { width: displaySteps.length * progressStepWidth }]}>
           <View style={styles.progressContinuousLine} />
-          {progressSteps.map((step) => (
-            <View key={step.id} style={styles.progressStep}>
+          {displaySteps.map((step) => {
+            const current = isCurrentProgressStep(step.status);
+            return (
+            <View key={step.id} style={[styles.progressStep, current && styles.progressStepCurrent]}>
               <View style={styles.progressTopLine}>
-                <View style={[styles.progressDot, progressStepTone(step.status)]} />
+                <View style={[styles.progressDot, progressStepTone(step.status), current && styles.progressDotCurrentRing]} />
               </View>
-              <Text style={styles.progressShort}>{step.shortLabel}</Text>
-              <Text style={[styles.progressStatus, progressStatusText(step.status)]}>{step.status}</Text>
+              <Text style={[styles.progressShort, current && styles.progressShortCurrent]}>{step.shortLabel}</Text>
+              <Text style={[styles.progressStatus, progressStatusText(step.status), current && styles.progressStatusCurrentPill]}>{step.status}</Text>
             </View>
-          ))}
+            );
+          })}
         </View>
       </ScrollView>
       <View style={styles.progressDetailList}>
-        {progressSteps.map((step) => (
+        {displaySteps.map((step) => (
           <View key={`${step.id}-detail`} style={styles.progressDetailRow}>
             <View style={styles.progressDetailHead}>
               <Text style={styles.rowTitle}>{step.label}</Text>
@@ -602,14 +718,14 @@ function ProgressRail() {
   );
 }
 
-function FlowTab() {
+function FlowTab({ workOrderIssued }: { workOrderIssued: boolean }) {
   return (
     <View>
       <SectionTitle
         title="제작 플로우"
         caption="기본 단계는 유지하되 재단은 삭제 가능하고, 공정 안에는 봉제·나염·라벨 같은 내부 공정을 추가하는 구조입니다."
       />
-      <ProgressRail />
+      <ProgressRail workOrderIssued={workOrderIssued} />
       <View style={styles.flowSummary}>
         <Text style={styles.inlineMetric}>제작 공장 1곳</Text>
         <Text style={styles.inlineMetric}>추가 공정 2건</Text>
@@ -795,10 +911,11 @@ function MaterialRow({ row }: { row: MaterialRowData }) {
               <IconButton
                 key={action.caption}
                 label={`${action.label} mock`}
-                symbol={action.symbol}
+                icon={action.icon}
                 caption={action.caption}
                 emphasized={action.emphasized}
                 danger={action.danger}
+                action
               />
             ))}
           </View>
@@ -811,20 +928,28 @@ function MaterialRow({ row }: { row: MaterialRowData }) {
   );
 }
 
-function getMaterialActions(row: MaterialRowData) {
+type MaterialAction = {
+  label: string;
+  icon: IconKind;
+  caption: string;
+  emphasized?: boolean;
+  danger?: boolean;
+};
+
+function getMaterialActions(row: MaterialRowData): MaterialAction[] {
   if (row.status === "완료") {
     return [];
   }
   if (row.status === "발주요청") {
     return [
-      { label: "발주 완료 처리", symbol: "✓", caption: "완료", emphasized: true },
-      { label: "발주 요청 취소", symbol: "↶", caption: "취소" },
-      { label: "삭제 예정", symbol: "x", caption: "삭제", danger: true }
+      { label: "발주 완료 처리", icon: "check", caption: "완료", emphasized: true },
+      { label: "발주 요청 취소", icon: "undo", caption: "취소" },
+      { label: "삭제 예정", icon: "delete", caption: "삭제", danger: true }
     ];
   }
   return [
-    { label: "발주 요청", symbol: "요청", caption: "발주요청", emphasized: true },
-    { label: "삭제 예정", symbol: "x", caption: "삭제", danger: true }
+    { label: "발주 요청", icon: "requestDoc", caption: "발주", emphasized: true },
+    { label: "삭제 예정", icon: "delete", caption: "삭제", danger: true }
   ];
 }
 
@@ -844,21 +969,23 @@ function HeaderAddButton({ label }: { label: string }) {
   );
 }
 
-function AddChip({ label }: { label: string }) {
+function AddChip({ label, icon }: { label: string; icon: IconKind }) {
   return (
     <Pressable accessibilityRole="button" accessibilityLabel={`${label} mock 동작`} style={styles.addChip}>
-      <Text style={styles.addChipSymbol}>＋</Text>
+      <IconMark icon={icon} />
       <Text style={styles.addChipText}>{label}</Text>
     </Pressable>
   );
 }
 
 function CurrentValueSelector({
+  selectorKind,
   label,
   value,
   options,
   onSelect
 }: {
+  selectorKind: "gender" | "category" | "unit";
   label: string;
   value: string;
   options: string[];
@@ -870,12 +997,12 @@ function CurrentValueSelector({
       accessibilityRole="button"
       accessibilityLabel={`${label} 현재값 ${value}. 선택 패널 열기 mock`}
       onPress={() => onSelect?.(nextValue)}
-      style={styles.currentSelector}
+      style={[styles.currentSelector, selectorWidthStyle(selectorKind)]}
     >
       <Text style={styles.currentSelectorLabel}>{label}</Text>
       <View style={styles.currentSelectorValueRow}>
         <Text style={styles.currentSelectorValue}>{value}</Text>
-        <Text style={styles.currentSelectorChevron}>v</Text>
+        <Text style={styles.currentSelectorChevron}>▾</Text>
       </View>
     </Pressable>
   );
@@ -919,7 +1046,8 @@ function IconButton({
   icon,
   danger = false,
   emphasized = false,
-  caption
+  caption,
+  action = false
 }: {
   label: string;
   symbol?: string;
@@ -927,12 +1055,21 @@ function IconButton({
   danger?: boolean;
   emphasized?: boolean;
   caption?: string;
+  action?: boolean;
 }) {
   return (
     <Pressable
       accessibilityRole="button"
       accessibilityLabel={`${label} mock 동작`}
-      style={[styles.iconButton, caption && styles.iconButtonCaption, emphasized && styles.iconEmphasized, danger && styles.iconDanger]}
+      style={[
+        styles.iconButton,
+        caption && styles.iconButtonCaption,
+        action && styles.iconActionButton,
+        emphasized && styles.iconEmphasized,
+        action && emphasized && styles.iconActionEmphasized,
+        danger && styles.iconDanger,
+        action && danger && styles.iconActionDanger
+      ]}
     >
       {icon ? (
         <IconMark icon={icon} emphasized={emphasized} danger={danger} />
@@ -948,7 +1085,21 @@ function IconButton({
   );
 }
 
-type IconKind = "photo" | "camera" | "sketch" | "clip" | "crown";
+type IconKind =
+  | "photo"
+  | "camera"
+  | "sketch"
+  | "clip"
+  | "crown"
+  | "folder"
+  | "save"
+  | "rowAdd"
+  | "measure"
+  | "swatchAdd"
+  | "requestDoc"
+  | "undo"
+  | "check"
+  | "delete";
 
 function IconMark({ icon, emphasized = false, danger = false }: { icon: IconKind; emphasized?: boolean; danger?: boolean }) {
   const inkStyle = emphasized ? styles.iconShapeLight : danger ? styles.iconShapeDanger : styles.iconShapeDark;
@@ -979,10 +1130,79 @@ function IconMark({ icon, emphasized = false, danger = false }: { icon: IconKind
   if (icon === "clip") {
     return <View style={[styles.iconClipShape, inkStyle]} />;
   }
+  if (icon === "folder") {
+    return (
+      <View style={[styles.iconFolderShape, inkStyle]}>
+        <View style={[styles.iconFolderTab, inkStyle]} />
+      </View>
+    );
+  }
+  if (icon === "save") {
+    return (
+      <View style={[styles.iconSaveShape, inkStyle]}>
+        <View style={[styles.iconSaveSlot, inkStyle]} />
+      </View>
+    );
+  }
+  if (icon === "rowAdd") {
+    return (
+      <View style={styles.iconGridShape}>
+        <View style={[styles.iconGridLine, inkStyle]} />
+        <View style={[styles.iconPlusVertical, inkStyle]} />
+        <View style={[styles.iconPlusHorizontal, inkStyle]} />
+      </View>
+    );
+  }
+  if (icon === "measure") {
+    return (
+      <View style={[styles.iconMeasureShape, inkStyle]}>
+        <View style={[styles.iconMeasureTick, inkStyle]} />
+        <View style={[styles.iconMeasureTickSmall, inkStyle]} />
+      </View>
+    );
+  }
+  if (icon === "swatchAdd") {
+    return (
+      <View style={styles.iconSwatchAddBox}>
+        <View style={[styles.iconSwatchDot, inkStyle]} />
+        <View style={[styles.iconPlusVertical, inkStyle]} />
+        <View style={[styles.iconPlusHorizontal, inkStyle]} />
+      </View>
+    );
+  }
+  if (icon === "requestDoc") {
+    return (
+      <View style={[styles.iconRequestDoc, inkStyle]}>
+        <View style={[styles.iconRequestLine, inkStyle]} />
+        <View style={[styles.iconRequestArrow, inkStyle]} />
+      </View>
+    );
+  }
+  if (icon === "undo") {
+    return (
+      <View style={styles.iconUndoBox}>
+        <View style={[styles.iconUndoArc, inkStyle]} />
+        <View style={[styles.iconUndoHead, inkStyle]} />
+      </View>
+    );
+  }
+  if (icon === "check") {
+    return <View style={[styles.iconCheckShape, inkStyle]} />;
+  }
+  if (icon === "delete") {
+    return (
+      <View style={styles.iconDeleteBox}>
+        <View style={[styles.iconDeleteLineA, inkStyle]} />
+        <View style={[styles.iconDeleteLineB, inkStyle]} />
+      </View>
+    );
+  }
   return (
     <View style={styles.iconCrownBox}>
       <View style={[styles.iconCrownBase, inkStyle]} />
+      <View style={[styles.iconCrownSideLeft, inkStyle]} />
       <View style={[styles.iconCrownPeak, inkStyle]} />
+      <View style={[styles.iconCrownSideRight, inkStyle]} />
     </View>
   );
 }
@@ -1020,6 +1240,45 @@ function progressStepTone(status: string) {
   return styles.progressDotMuted;
 }
 
+function getDisplayProgressSteps(workOrderIssued: boolean): ProgressStep[] {
+  if (!workOrderIssued) {
+    return progressSteps;
+  }
+
+  return progressSteps.map((step) => {
+    if (step.shortLabel === "발주") {
+      return {
+        ...step,
+        status: "완료",
+        memo: "작지 출력 및 발주 완료 mock 상태입니다."
+      };
+    }
+    if (step.shortLabel === "자재") {
+      return {
+        ...step,
+        status: deriveMaterialProgressStatus(),
+        memo: "원단/부자재 개별 발주 상태에 따라 자재 단계가 준비, 작업중, 완료로 표시됩니다."
+      };
+    }
+    return step;
+  });
+}
+
+function deriveMaterialProgressStatus(): ProgressStep["status"] {
+  const rows = [...fabricRows, ...accessoryRows];
+  if (rows.every((row) => row.status === "완료")) {
+    return "완료";
+  }
+  if (rows.some((row) => row.status === "발주요청")) {
+    return "작업중";
+  }
+  return "준비";
+}
+
+function isCurrentProgressStep(status: string) {
+  return status === "작업중";
+}
+
 function progressStatusText(status: string) {
   if (status === "완료") {
     return styles.progressStatusDone;
@@ -1038,6 +1297,16 @@ function progressStatusBadge(status: string) {
     return styles.statusRequested;
   }
   return styles.statusReady;
+}
+
+function selectorWidthStyle(kind: "gender" | "category" | "unit") {
+  if (kind === "unit") {
+    return styles.currentSelectorUnit;
+  }
+  if (kind === "category") {
+    return styles.currentSelectorCategory;
+  }
+  return styles.currentSelectorGender;
 }
 
 function statusBadgeStyle(status: MaterialStatus) {
@@ -1131,6 +1400,21 @@ const styles = StyleSheet.create({
     minWidth: 52,
     paddingHorizontal: 8,
     width: "auto"
+  },
+  iconActionButton: {
+    backgroundColor: "#ffffff",
+    borderColor: "#d8d0c3",
+    borderRadius: 8,
+    borderWidth: 1,
+    minWidth: 58
+  },
+  iconActionEmphasized: {
+    backgroundColor: "#23375a",
+    borderColor: "#23375a"
+  },
+  iconActionDanger: {
+    backgroundColor: "#fff5f0",
+    borderColor: "#e5b7ac"
   },
   iconDanger: {
     backgroundColor: "#fff0eb"
@@ -1233,6 +1517,170 @@ const styles = StyleSheet.create({
     transform: [{ rotate: "-15deg" }],
     width: 10
   },
+  iconFolderShape: {
+    borderBottomWidth: 1.5,
+    borderLeftWidth: 1.5,
+    borderRadius: 3,
+    borderRightWidth: 1.5,
+    borderTopWidth: 1.5,
+    height: 12,
+    marginTop: 3,
+    width: 17
+  },
+  iconFolderTab: {
+    borderTopWidth: 1.5,
+    height: 4,
+    left: 1,
+    position: "absolute",
+    top: -5,
+    width: 8
+  },
+  iconSaveShape: {
+    borderRadius: 3,
+    borderWidth: 1.5,
+    height: 16,
+    width: 15
+  },
+  iconSaveSlot: {
+    borderBottomWidth: 1.5,
+    bottom: 3,
+    height: 5,
+    left: 3,
+    position: "absolute",
+    right: 3
+  },
+  iconGridShape: {
+    height: 16,
+    justifyContent: "center",
+    width: 16
+  },
+  iconGridLine: {
+    borderBottomWidth: 1.5,
+    height: 5,
+    width: 13
+  },
+  iconPlusVertical: {
+    borderLeftWidth: 1.7,
+    height: 8,
+    position: "absolute",
+    right: 1,
+    top: 1
+  },
+  iconPlusHorizontal: {
+    borderTopWidth: 1.7,
+    position: "absolute",
+    right: -2,
+    top: 5,
+    width: 8
+  },
+  iconMeasureShape: {
+    borderBottomWidth: 1.7,
+    height: 14,
+    transform: [{ rotate: "-18deg" }],
+    width: 17
+  },
+  iconMeasureTick: {
+    borderLeftWidth: 1.3,
+    height: 6,
+    left: 4,
+    position: "absolute",
+    top: 7
+  },
+  iconMeasureTickSmall: {
+    borderLeftWidth: 1.3,
+    height: 4,
+    left: 11,
+    position: "absolute",
+    top: 9
+  },
+  iconSwatchAddBox: {
+    height: 16,
+    width: 16
+  },
+  iconSwatchDot: {
+    borderRadius: 999,
+    borderWidth: 1.5,
+    height: 10,
+    left: 0,
+    position: "absolute",
+    top: 4,
+    width: 10
+  },
+  iconRequestDoc: {
+    borderRadius: 2,
+    borderWidth: 1.5,
+    height: 16,
+    width: 13
+  },
+  iconRequestLine: {
+    borderTopWidth: 1.4,
+    left: 3,
+    position: "absolute",
+    right: 3,
+    top: 5
+  },
+  iconRequestArrow: {
+    borderRightWidth: 1.5,
+    borderTopWidth: 1.5,
+    bottom: 2,
+    height: 6,
+    position: "absolute",
+    right: -5,
+    transform: [{ rotate: "45deg" }],
+    width: 6
+  },
+  iconUndoBox: {
+    height: 16,
+    width: 16
+  },
+  iconUndoArc: {
+    borderLeftWidth: 1.7,
+    borderRadius: 999,
+    borderTopWidth: 1.7,
+    height: 13,
+    left: 2,
+    position: "absolute",
+    top: 2,
+    transform: [{ rotate: "-22deg" }],
+    width: 13
+  },
+  iconUndoHead: {
+    borderLeftWidth: 1.7,
+    borderTopWidth: 1.7,
+    height: 6,
+    left: 1,
+    position: "absolute",
+    top: 2,
+    transform: [{ rotate: "-25deg" }],
+    width: 6
+  },
+  iconCheckShape: {
+    borderBottomWidth: 2,
+    borderRightWidth: 2,
+    height: 12,
+    transform: [{ rotate: "40deg" }],
+    width: 7
+  },
+  iconDeleteBox: {
+    height: 15,
+    width: 15
+  },
+  iconDeleteLineA: {
+    borderTopWidth: 1.9,
+    left: 1,
+    position: "absolute",
+    top: 7,
+    transform: [{ rotate: "45deg" }],
+    width: 14
+  },
+  iconDeleteLineB: {
+    borderTopWidth: 1.9,
+    left: 1,
+    position: "absolute",
+    top: 7,
+    transform: [{ rotate: "-45deg" }],
+    width: 14
+  },
   iconCrownBox: {
     height: 15,
     justifyContent: "flex-end",
@@ -1252,6 +1700,26 @@ const styles = StyleSheet.create({
     top: 3,
     transform: [{ rotate: "45deg" }],
     width: 10
+  },
+  iconCrownSideLeft: {
+    borderLeftWidth: 2,
+    borderTopWidth: 2,
+    height: 8,
+    left: 0,
+    position: "absolute",
+    top: 6,
+    transform: [{ rotate: "35deg" }],
+    width: 8
+  },
+  iconCrownSideRight: {
+    borderRightWidth: 2,
+    borderTopWidth: 2,
+    height: 8,
+    position: "absolute",
+    right: 0,
+    top: 6,
+    transform: [{ rotate: "-35deg" }],
+    width: 8
   },
   workbench: {
     gap: 10
@@ -1411,6 +1879,154 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: "900",
     marginTop: 2
+  },
+  workOrderCard: {
+    backgroundColor: "#f7f0e5",
+    borderColor: "#23375a",
+    borderRadius: 10,
+    borderWidth: 1,
+    flexGrow: 1,
+    gap: 6,
+    minWidth: 156,
+    paddingHorizontal: 9,
+    paddingVertical: 8
+  },
+  workOrderCardIssued: {
+    backgroundColor: "#edf2e7",
+    borderColor: "#4d6a3a"
+  },
+  workOrderStatusRow: {
+    alignItems: "center",
+    flexDirection: "row",
+    gap: 7,
+    justifyContent: "space-between"
+  },
+  workOrderStatus: {
+    color: "#23375a",
+    fontSize: 12,
+    fontWeight: "900"
+  },
+  workOrderStatusIssued: {
+    color: "#3f5731"
+  },
+  workOrderDetail: {
+    color: "#6d6257",
+    fontSize: 10,
+    fontWeight: "800",
+    lineHeight: 14
+  },
+  workOrderButton: {
+    alignItems: "center",
+    backgroundColor: "#23375a",
+    borderRadius: 8,
+    minHeight: 30,
+    justifyContent: "center",
+    paddingHorizontal: 10,
+    paddingVertical: 7
+  },
+  workOrderButtonIssued: {
+    backgroundColor: "#ffffff",
+    borderColor: "#4d6a3a",
+    borderWidth: 1
+  },
+  workOrderButtonText: {
+    color: "#ffffff",
+    fontSize: 12,
+    fontWeight: "900"
+  },
+  workOrderButtonTextIssued: {
+    color: "#3f5731"
+  },
+  workOrderConfirmPanel: {
+    backgroundColor: "#fffaf2",
+    borderColor: "#d9d0c2",
+    borderRadius: 14,
+    borderWidth: 1,
+    gap: 10,
+    padding: 12
+  },
+  workOrderConfirmHeader: {
+    alignItems: "flex-start",
+    flexDirection: "row",
+    gap: 10,
+    justifyContent: "space-between"
+  },
+  confirmCloseButton: {
+    alignItems: "center",
+    backgroundColor: "#f2e9dc",
+    borderRadius: 999,
+    height: 30,
+    justifyContent: "center",
+    width: 30
+  },
+  confirmCloseText: {
+    color: "#5d544b",
+    fontSize: 13,
+    fontWeight: "900"
+  },
+  confirmCheckGrid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 7
+  },
+  confirmCheckItem: {
+    alignItems: "center",
+    backgroundColor: "#ffffff",
+    borderColor: "#eadfce",
+    borderRadius: 999,
+    borderWidth: 1,
+    flexDirection: "row",
+    gap: 5,
+    paddingHorizontal: 8,
+    paddingVertical: 6
+  },
+  confirmCheckText: {
+    color: "#3d342e",
+    fontSize: 11,
+    fontWeight: "900"
+  },
+  confirmLockNotice: {
+    backgroundColor: "#f6efe5",
+    borderLeftColor: "#c75f35",
+    borderLeftWidth: 3,
+    borderRadius: 10,
+    gap: 4,
+    padding: 9
+  },
+  confirmActionRow: {
+    alignItems: "center",
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 8,
+    justifyContent: "flex-end"
+  },
+  secondaryConfirmButton: {
+    alignItems: "center",
+    backgroundColor: "#ffffff",
+    borderColor: "#d9d0c2",
+    borderRadius: 8,
+    borderWidth: 1,
+    minHeight: 36,
+    paddingHorizontal: 12,
+    paddingVertical: 8
+  },
+  secondaryConfirmButtonText: {
+    color: "#23375a",
+    fontSize: 12,
+    fontWeight: "900"
+  },
+  primaryConfirmButton: {
+    alignItems: "center",
+    backgroundColor: "#23375a",
+    borderRadius: 8,
+    minHeight: 36,
+    paddingHorizontal: 12,
+    paddingVertical: 8
+  },
+  primaryConfirmButtonText: {
+    color: "#ffffff",
+    fontSize: 12,
+    fontWeight: "900"
   },
   garmentPreview: {
     alignItems: "center",
@@ -2107,7 +2723,6 @@ const styles = StyleSheet.create({
     borderColor: "#eadfce",
     borderRadius: 999,
     borderWidth: 1,
-    flexGrow: 1,
     flexDirection: "row",
     gap: 8,
     justifyContent: "space-between",
@@ -2115,6 +2730,15 @@ const styles = StyleSheet.create({
     minWidth: 92,
     paddingHorizontal: 11,
     paddingVertical: 7
+  },
+  currentSelectorGender: {
+    width: 104
+  },
+  currentSelectorCategory: {
+    width: 110
+  },
+  currentSelectorUnit: {
+    width: 92
   },
   currentSelectorLabel: {
     color: "#7a6c5c",
@@ -2355,8 +2979,11 @@ const styles = StyleSheet.create({
   },
   progressStep: {
     alignItems: "center",
-    minWidth: 88,
+    width: progressStepWidth,
     paddingHorizontal: 4
+  },
+  progressStepCurrent: {
+    transform: [{ translateY: -1 }]
   },
   progressTopLine: {
     alignItems: "center",
@@ -2375,6 +3002,12 @@ const styles = StyleSheet.create({
   },
   progressDotCurrent: {
     backgroundColor: "#c75f35"
+  },
+  progressDotCurrentRing: {
+    borderColor: "#fffaf2",
+    borderWidth: 3,
+    height: 18,
+    width: 18
   },
   progressDotWarning: {
     backgroundColor: "#dfad45"
@@ -2409,6 +3042,10 @@ const styles = StyleSheet.create({
     marginTop: 5,
     textAlign: "center"
   },
+  progressShortCurrent: {
+    color: "#9b4a27",
+    fontSize: 13
+  },
   progressStatus: {
     fontSize: 10,
     fontWeight: "900",
@@ -2424,6 +3061,14 @@ const styles = StyleSheet.create({
   },
   progressStatusWarning: {
     color: "#8a5d12"
+  },
+  progressStatusCurrentPill: {
+    backgroundColor: "#ffe1c8",
+    borderRadius: 999,
+    color: "#8f4327",
+    overflow: "hidden",
+    paddingHorizontal: 6,
+    paddingVertical: 2
   },
   progressDetailList: {
     borderTopColor: "#eee3d5",

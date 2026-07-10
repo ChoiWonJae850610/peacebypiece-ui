@@ -149,6 +149,28 @@ The alpha.11 mobile mock requires review of the corrected production-card UX:
 
 Manual device QA remains required before product verification. This checkpoint still does not invoke real camera, file picker, upload, share, PDF, API, DB, R2, Worker, order, delivery, sketch, or push behavior.
 
+## 2.0.0-alpha.14 UI polish and work-order CTA QA
+
+Automatic checks:
+
+- `apps/mobile npm run typecheck`
+- `apps/mobile npm run expo:config`
+- root `npx tsc --noEmit`
+- root `npm run build`
+- targeted eslint for `apps/mobile/components/ProductionCardMock.tsx`
+- `git diff --check`
+- `node tests/unicode-encoding-contract.mjs`
+- approved workflow verify
+
+Manual device QA remains owner confirmation:
+
+- iPhone portrait: image/attachment icons, representative crown, no decorative hanger in image preview, and `작지 발주` CTA readability.
+- iPad mini portrait: size/color selector widths stay stable while toggling `cm`/`inch`.
+- iPad Pro landscape: fabric/accessory action buttons are distinct from status badges and remain on the amount line.
+- Galaxy Tab portrait/landscape: production rail ends at `출고`, current step is emphasized, and post-CTA `발주 완료 / 자재 작업중` mock state is understandable.
+
+No real camera, picker, upload, share, print, PDF, DB, API, R2, Worker, order, delivery, schema, migration, or production mutation evidence is expected for this mock-only version.
+
 ## 2.0.0-alpha.12 alpha.11 UX follow-up QA
 
 The alpha.12 mobile mock requires review of the follow-up corrections:

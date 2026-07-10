@@ -274,6 +274,21 @@ No real upload, camera, file picker, sketch, share, print, PDF generation, deliv
 
 `2.0.0-alpha.13` remains a mock-only UX correction. It does not start output/share deepening.
 
+## 2.0.0-alpha.14 UI polish and work-order CTA mock
+
+`2.0.0-alpha.14` keeps the `/ui` alpha.27 feature map as reference but only polishes the App-first mobile/tablet mock.
+
+- Image/attachment action entry points are clearer dependency-free local icons.
+- Representative-image selection uses a clearer crown-like mark.
+- The main garment preview removes meaningless decoration so image review stays production-focused.
+- Size/color uses stable current-value selectors and icon-assisted load/save/add actions.
+- Fabric/accessory action labels are shortened and separated from status badges.
+- `발주` remains the per-item material/accessory action. `작지 발주` is the global work-order/document CTA.
+- `작지 발주` uses local confirmation-panel mock state only.
+- Production flow connects global `작지 발주` to the first rail step and derives the material step from current item statuses.
+
+The version still does not implement real DB, API, R2, Worker, PDF, upload, camera, image picker, sketch, share, print, order, delivery, schema, migration, or production mutation behavior.
+
 Core correction:
 
 - Image/attachment entry actions use dependency-free visual helper icons and Korean labels.

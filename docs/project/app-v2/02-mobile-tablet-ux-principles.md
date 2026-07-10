@@ -152,6 +152,22 @@ The alpha.11 mobile mock correction keeps the alpha.10 compact grammar and remov
 
 This correction remains mock-only and does not connect real inline edit save, camera, file picker, upload, share, PDF generation, API, DB, R2, Worker, push notification, order, delivery, sketch, drag, or long-press behavior.
 
+## 2.0.0-alpha.14 UI polish and work-order CTA mock
+
+The alpha.14 mobile mock correction keeps the alpha.13 compact production-card direction and adds only local visual/CTA polish:
+
+- Image action icons should read as photo, camera, sketch, attachment, and representative crown without external icon assets.
+- The representative image area should not include unexplained ornament such as a hanger line or hook when it does not carry production meaning.
+- Size/color current-value selectors should keep stable widths when values change, especially `cm` and `inch`.
+- Size/color load/save/add actions may use small helper icons, but they remain mock-only entry points.
+- Fabric/accessory action buttons should be visually distinct from status badges. Status is a quiet label; action is a compact button.
+- Per-item material actions use `발주`, `완료`, `취소`, and `삭제`; the global document action uses `작지 발주`.
+- The production rail should end visually at `출고` and emphasize only the current working step.
+- `작지 발주` is a top summary CTA that opens a confirmation panel before changing local mock state.
+- After `작지 발주` mock completion, `발주` becomes complete and the `자재` step reflects current fabric/accessory statuses.
+
+This correction remains mock-only and does not connect real inline edit save, camera, file picker, upload, share, print, PDF generation, API, DB, R2, Worker, push notification, order, delivery, sketch, drag, long-press, schema, migration, or production mutation behavior.
+
 ## 2.0.0-alpha.12 alpha.11 UX follow-up correction
 
 The alpha.12 mobile mock correction tightens the alpha.11 direction before output/share deepening:
