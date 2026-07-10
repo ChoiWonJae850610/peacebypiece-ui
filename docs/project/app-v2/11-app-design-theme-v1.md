@@ -212,3 +212,16 @@ Final color values may be tuned after device review. The current contract is sem
 - Material and accessory actions should read as status flow, not as a pile of row tools. `입력중` can request/delete, `발주요청` can complete/cancel/delete, and `완료` is read-only.
 - Production flow remains a six-step handoff rail and should be visually centered and calm enough for tablet review.
 - No dependency, external asset, font file, real upload, camera, file picker, sketch, share, print, PDF, API, DB, R2, Worker, push notification, order, delivery, inline-edit save, drag, or long-press integration is added by this correction.
+
+## 16. Alpha.11 UX Follow-up Correction
+
+`2.0.0-alpha.12` keeps Dongdaemun Atelier Ops and removes remaining mock-screen friction before output/share flow work.
+
+- Carousel review should feel centered and calm, with one focused image and centered index controls.
+- Image labels should support real field work where many photos are added without title entry.
+- Selector controls should show the current production choice first and keep alternatives small.
+- Saved templates belong behind load/save entry points, not as a permanent visual list.
+- Material/accessory status should be read from fixed text and action grammar first; color accents only reinforce state.
+- Order request actions should read as production requests, not message sending.
+- Production rail columns should be orderly: dot, step label, and state stacked on one axis.
+- No dependency, external asset, font file, real upload, camera, file picker, sketch, share, print, PDF, API, DB, R2, Worker, push notification, order, delivery, inline-edit save, drag, or long-press integration is added by this correction.

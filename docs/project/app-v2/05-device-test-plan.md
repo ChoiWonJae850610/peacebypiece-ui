@@ -148,3 +148,18 @@ The alpha.11 mobile mock requires review of the corrected production-card UX:
 - Expo Web preview should not show React nested button warnings for carousel/image/action controls.
 
 Manual device QA remains required before product verification. This checkpoint still does not invoke real camera, file picker, upload, share, PDF, API, DB, R2, Worker, order, delivery, sketch, or push behavior.
+
+## 2.0.0-alpha.12 alpha.11 UX follow-up QA
+
+The alpha.12 mobile mock requires review of the follow-up corrections:
+
+- iPhone portrait: image carousel should keep the image, navigation, current index, and index pills centered and visually stable.
+- iPhone portrait: image titles should read as optional, with fallback labels when title data is empty.
+- iPhone portrait: photo/camera/sketch/attachment actions should be understandable without emoji-like glyphs.
+- iPad mini portrait: gender/category/unit should read as current-value selectors, not a large settings chip pile.
+- iPad mini portrait: saved size-template examples should not be listed by default.
+- iPad Pro landscape: material/accessory status labels should stay aligned across rows, with actions consistently placed.
+- Galaxy Tab portrait/landscape: production-flow dot, label, and status should stay centered on one axis after rotation.
+- Expo Web preview should not show React nested button warnings for carousel, selector, or material-row controls.
+
+Manual device QA remains required before product verification. This checkpoint still does not invoke real camera, file picker, upload, share, PDF, API, DB, R2, Worker, order, delivery, sketch, or push behavior.

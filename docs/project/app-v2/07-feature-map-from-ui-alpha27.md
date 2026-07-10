@@ -247,3 +247,25 @@ Implementation boundary:
 ```text
 No real upload, camera, file picker, sketch, share, print, PDF generation, delivery request, order mutation, inline edit save, API, DB, R2, Worker, push notification, drag, long-press, auth, or storage behavior is authorized by this UX correction.
 ```
+
+## 2.0.0-alpha.12 alpha.11 UX follow-up correction
+
+`2.0.0-alpha.12` is not output/share deepening. It corrects the alpha.11 mock UX before the next flow work.
+
+Core correction:
+
+- Image carousel index controls are centered below the focused image instead of drifting to one side.
+- Image title is optional. Empty image/sketch titles fall back to safe labels while retaining optional notes in mock data.
+- Image top actions keep text labels and use dependency-free helper symbols for photo, camera, sketch, and attachment.
+- Size/color changes from a visible settings-chip pile to current-value selectors for gender, category, and unit.
+- Saved size templates are hidden from the default screen and represented by load/save mock entry points plus a current-configuration summary.
+- Size actions are split between configuration management and direct table editing.
+- Fabric/accessory status labels use fixed placement; status color is secondary support, not the only state indicator.
+- `발주요청` is shown as text-first action, without send-like icon dependence.
+- Production-flow rail columns align dot, step, and state vertically.
+
+Implementation boundary:
+
+```text
+No real upload, camera, file picker, sketch, share, print, PDF generation, delivery request, order mutation, inline edit save, API, DB, R2, Worker, push notification, drag, long-press, auth, or storage behavior is authorized by this UX follow-up correction.
+```

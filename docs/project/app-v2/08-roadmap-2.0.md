@@ -1,4 +1,4 @@
-# WAFL v2 App-first Roadmap 2.0 - 2.0.0-alpha.11
+# WAFL v2 App-first Roadmap 2.0 - 2.0.0-alpha.12
 
 ## Purpose
 
@@ -151,7 +151,7 @@ Status: done.
 
 ### 2.0.0-alpha.11
 
-Status: current.
+Status: done.
 
 - Apply alpha.10 field feedback and correct practical UX friction in the `apps/mobile` mock.
 - Replace the uneven image grid with a one-image carousel/card, current index, representative state, sibling representative/delete actions, and an optional thumbnail strip.
@@ -165,7 +165,21 @@ Status: current.
 
 ### 2.0.0-alpha.12
 
-- Mock output and share flow.
+Status: current.
+
+- Apply alpha.11 field feedback before starting output/share flow deepening.
+- Center and stabilize the image carousel, left/right navigation, current index, and centered index pills.
+- Treat image and sketch titles as optional by showing safe fallback labels when no title is present.
+- Keep photo, camera, sketch, and attachment entry actions readable with text labels and dependency-free symbols.
+- Replace the always-visible gender/category/unit chip pile with compact current-value selectors.
+- Hide saved size-template lists from the default screen; show only the current configuration plus load/save entry points.
+- Separate size-template management actions from direct table-edit actions in the size section top action row.
+- Keep material/accessory status text in a fixed position and use row border/background as secondary status support only.
+- Keep allowed material/accessory actions per status: input can request/delete, requested can complete/cancel/delete, completed has no buttons.
+- Replace send-like order symbols with explicit `발주요청` text and a neutral request/check helper symbol.
+- Align production-flow rail dot, step label, and status on one centered axis while preserving the six baseline steps.
+- Do not connect real DB, API, R2, PDF Worker, upload, camera, image picker, sketch, share, print, order, delivery, inline-edit persistence, drag, or long-press behavior.
+- Align app display version to `2.0.0-alpha.12`.
 
 ## Later integration phases
 

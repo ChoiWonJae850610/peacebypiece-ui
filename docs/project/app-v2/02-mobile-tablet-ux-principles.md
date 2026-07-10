@@ -151,3 +151,19 @@ The alpha.11 mobile mock correction keeps the alpha.10 compact grammar and remov
 - The six-step production rail should be centered and readable on phone/tablet widths before horizontal scrolling is needed.
 
 This correction remains mock-only and does not connect real inline edit save, camera, file picker, upload, share, PDF generation, API, DB, R2, Worker, push notification, order, delivery, sketch, drag, or long-press behavior.
+
+## 2.0.0-alpha.12 alpha.11 UX follow-up correction
+
+The alpha.12 mobile mock correction tightens the alpha.11 direction before output/share deepening:
+
+- Image carousel contents, navigation, `n / total`, and index pills should read as one centered carousel system.
+- Image and sketch titles are optional. When no title exists, use safe fallback labels instead of forcing title input.
+- Photo, camera, sketch, and attachment actions need text labels and dependency-free helper symbols; avoid emoji-like or send-like symbols that confuse the work meaning.
+- Size/color should show current values first through compact selectors. Do not expose all gender/category/unit choices as one large settings chip pile.
+- Saved size-template lists should not be shown on the default production-card screen. Show the current configuration and expose load/save as mock entry points.
+- Size table management and direct table editing actions should be visually separated.
+- Fabric/accessory status text stays in a consistent position; color or border is only secondary support.
+- Order actions should say `발주요청` clearly and should not rely on send/mail/airplane-like icons.
+- Production-flow rail dot, step label, and status should share one center axis.
+
+This correction remains mock-only and does not connect real inline edit save, camera, file picker, upload, share, PDF generation, API, DB, R2, Worker, push notification, order, delivery, sketch, drag, or long-press behavior.

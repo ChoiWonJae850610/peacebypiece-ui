@@ -266,12 +266,12 @@ export const nextCheckByTab: Record<ProductionTabId, NextCheckItem> = {
 
 export const imageMocks: ImageMock[] = [
   { id: "front", title: "정면 착장", kind: "사진", selected: true, note: "첫 이미지가 자동 대표가 되는 mock" },
-  { id: "detail", title: "앞판 디테일", kind: "사진", selected: false, note: "카라와 버튼 간격 확인" },
-  { id: "sketch", title: "허리 라인 스케치", kind: "스케치", selected: false, note: "절개선과 허리끈 위치" },
+  { id: "detail", title: "", kind: "사진", selected: false, note: "카라와 버튼 간격 확인" },
+  { id: "sketch", title: "", kind: "스케치", selected: false, note: "절개선과 허리끈 위치" },
   { id: "reference", title: "소매 참고", kind: "참고", selected: false, note: "소매 통과 커프스 폭 참고" },
   { id: "back", title: "뒷면 착장", kind: "사진", selected: false, note: "뒷판 절개와 여밈 확인" },
   { id: "button", title: "버튼 간격", kind: "사진", selected: false, note: "자개 버튼 간격 확인" },
-  { id: "label", title: "케어라벨 위치", kind: "참고", selected: false, note: "라벨 위치 전달용" },
+  { id: "label", title: "", kind: "첨부 이미지", selected: false, note: "라벨 위치 전달용" },
   { id: "fabric", title: "원단 질감", kind: "사진", selected: false, note: "리넨 조직감 확인" },
   { id: "fit", title: "피팅 참고", kind: "참고", selected: false, note: "전체 핏 균형 참고" },
   { id: "package", title: "포장 참고", kind: "참고", selected: false, note: "폴리백 접힘 방향 참고" }

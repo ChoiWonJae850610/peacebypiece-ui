@@ -193,3 +193,17 @@ For the alpha.11 mobile mock:
 - Fabric/accessory status actions must follow `입력중` -> `발주요청` -> `완료`; request and complete controls must not be visible together.
 - Production-flow rail readability is a layout concern only. Do not redefine the process model or add persistence.
 - Do not add dependencies, icon libraries, external assets, real camera/file picker/upload/sketch/share/print/PDF/order/delivery behavior, API, DB, R2, Worker, or push notification behavior for this polish pass.
+
+## 2.0.0-alpha.12 alpha.11 UX follow-up rule
+
+For the alpha.12 mobile mock:
+
+- Do not start output/share flow deepening until alpha.11 carousel, selector, material status, and production rail feedback is corrected.
+- Image carousel index pills should be centered and stable.
+- Image/sketch titles are optional and must have fallback labels.
+- Size/color should use current-value selectors rather than one large always-visible option pile.
+- Saved template lists should be hidden from the default screen.
+- Material/accessory status labels should remain fixed in position across rows.
+- Completed material/accessory rows should show no action buttons.
+- `발주요청` action should be text-first and must not use send/mail/airplane-like symbols.
+- Do not add dependencies, icon libraries, external assets, real camera/file picker/upload/sketch/share/print/PDF/order/delivery behavior, API, DB, R2, Worker, or push notification behavior for this polish pass.
