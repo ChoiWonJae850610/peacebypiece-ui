@@ -60,11 +60,14 @@ Final color values may be tuned after device review. The current contract is sem
 
 ## 3. Font Policy
 
-- This version does not add font files.
-- The app uses system font fallback first so layout density, Korean readability, and production rhythm can be verified before bundling typography.
-- If a free/open font is bundled later, Pretendard and Noto Sans KR are candidate families.
-- When a font is bundled, its LICENSE file must be included in the repository.
+- `2.0.0-alpha.18` applies 에이투지체 / A2Z as the first bundled app UI font from owner-provided local files.
+- Font assets live under `apps/mobile/assets/fonts/a2z/`.
+- Source/license tracking lives at `apps/mobile/assets/fonts/a2z/FONT-SOURCE.md`.
+- The app screen does not need font attribution text.
+- A2Z Regular, Medium, SemiBold, and Bold are the primary runtime UI weights.
+- A2Z Black and ExtraBold are included as assets but should not be overused on dense production-card screens.
 - Codex must not arbitrarily download or include font files.
+- PDF/Worker font embedding is separate from app UI font application and must be handled in a later PDF-specific version.
 
 ## 4. Card Rules
 
@@ -288,3 +291,14 @@ Final color values may be tuned after device review. The current contract is sem
 - The six-step production rail is a summary of work position, not a manual checklist for every base step.
 - Process detail rows are the real mock management surface for factory/additional processes and should use compact meta summaries plus memo and amount.
 - This correction does not authorize real search, edit-save, upload, camera, file picker, sketch, share, print, PDF, order, delivery, API, DB, R2, Worker, schema, migration, drag, long-press, or production mutation work.
+
+## 22. Alpha.18 A2Z App Font Application
+
+`2.0.0-alpha.18` applies 에이투지체 / A2Z to the app mock as a typography foundation, not a feature integration.
+
+- A2Z should support the Dongdaemun Atelier Ops feeling by making Korean production labels, amounts, and action text feel native to the app.
+- The bundled font applies to ProductionCardMock text, tabs, badges, button captions, bottom navigation labels, and amount/quantity values.
+- Runtime weight mapping should stay practical: Regular for body, Medium/SemiBold for work labels, Bold for strong headings and badges.
+- Black and ExtraBold are available for future review but should not dominate the current production-card UI.
+- Font source/license details are tracked in `FONT-SOURCE.md`, not displayed in the app.
+- This correction does not authorize PDF/Worker font embedding, real upload, camera, file picker, sketch, share, print, PDF generation, order, delivery, API, DB, R2, Worker, schema, migration, or production mutation work.

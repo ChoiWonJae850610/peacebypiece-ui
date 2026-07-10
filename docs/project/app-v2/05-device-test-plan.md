@@ -240,6 +240,29 @@ Manual device QA remains owner confirmation:
 
 No real camera, picker, upload, share, print, PDF, DB, API, R2, Worker, order, delivery, search API, inline edit save, schema, migration, drag, long-press, or production mutation evidence is expected for this mock-only version.
 
+## 2.0.0-alpha.18 A2Z app font QA
+
+Automatic checks:
+
+- `apps/mobile npm run typecheck`
+- `apps/mobile npm run expo:config`
+- root `npx tsc --noEmit`
+- root `npm run build`
+- targeted eslint for `apps/mobile/components/ProductionCardMock.tsx`
+- `git diff --check`
+- `node tests/unicode-encoding-contract.mjs`
+- approved workflow verify
+
+Manual device QA remains owner confirmation:
+
+- iPhone portrait: small Korean labels should remain readable with A2Z.
+- iPad mini portrait: tabs, bottom navigation, and button labels should not feel too heavy.
+- iPad Pro landscape: amount, quantity, fabric, and accessory rows should preserve scan speed.
+- Galaxy Tab portrait/landscape: Korean and numeric weight balance should feel stable after rotation.
+- Expo Web on Windows: the mock should use A2Z rather than system font fallback.
+
+No real camera, picker, upload, share, print, PDF, PDF font embedding, DB, API, R2, Worker, order, delivery, search API, inline edit save, schema, migration, drag, long-press, or production mutation evidence is expected for this mock-only version.
+
 ## 2.0.0-alpha.12 alpha.11 UX follow-up QA
 
 The alpha.12 mobile mock requires review of the follow-up corrections:

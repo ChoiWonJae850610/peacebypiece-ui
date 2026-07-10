@@ -209,6 +209,19 @@ The alpha.17 mobile/tablet mock correction keeps the alpha.16 navigation/search 
 
 This correction remains mock-only and does not connect real search, inline edit save, camera, file picker, upload, share, print, PDF generation, API, DB, R2, Worker, push notification, order, delivery, schema, migration, drag, long-press, or production mutation behavior.
 
+## 2.0.0-alpha.18 A2Z app font application
+
+The alpha.18 mobile/tablet mock applies 에이투지체 / A2Z as the app UI font while keeping the alpha.17 mock structure unchanged:
+
+- A2Z is bundled as local app assets under `apps/mobile/assets/fonts/a2z/`.
+- The app should use A2Z for Korean labels, amount/quantity values, section tabs, buttons, status badges, and bottom navigation.
+- Body text should stay readable and not become overly heavy; Regular, Medium, SemiBold, and Bold are the primary runtime weights.
+- Black and ExtraBold are included as assets but should not be overused in normal production-card screens.
+- The app screen does not show font source attribution.
+- PDF/Worker font embedding remains out of scope and needs a separate PDF-specific check before generated documents use this font.
+
+This correction remains mock-only and does not connect real search, inline edit save, camera, file picker, upload, share, print, PDF generation, PDF font embedding, API, DB, R2, Worker, push notification, order, delivery, schema, migration, drag, long-press, or production mutation behavior.
+
 ## 2.0.0-alpha.12 alpha.11 UX follow-up correction
 
 The alpha.12 mobile mock correction tightens the alpha.11 direction before output/share deepening:

@@ -32,11 +32,14 @@ import {
   SafeAreaView,
   ScrollView,
   StyleSheet,
-  Text,
+  Text as NativeText,
+  type TextProps,
+  type TextStyle,
   View,
   useWindowDimensions
 } from "react-native";
 
+import { WAFL_FONTS } from "@/constants/fonts";
 import { MOBILE_APP_VERSION } from "@/constants/version";
 import {
   PRODUCTION_TABS,
@@ -69,6 +72,28 @@ const maxTabletWidth = 1040;
 const progressStepWidth = 88;
 
 type WorkOrderState = "ready" | "issued";
+
+function Text({ style, ...props }: TextProps) {
+  const flattened = StyleSheet.flatten(style) as TextStyle | undefined;
+  const fontFamily = getA2zFontFamily(flattened?.fontWeight);
+
+  return <NativeText {...props} style={[{ fontFamily }, style]} />;
+}
+
+function getA2zFontFamily(fontWeight: TextStyle["fontWeight"] | undefined) {
+  const weight = typeof fontWeight === "number" ? fontWeight : Number.parseInt(String(fontWeight ?? ""), 10);
+
+  if (weight >= 900) {
+    return WAFL_FONTS.bold;
+  }
+  if (weight >= 700) {
+    return WAFL_FONTS.semibold;
+  }
+  if (weight >= 500) {
+    return WAFL_FONTS.medium;
+  }
+  return WAFL_FONTS.body;
+}
 
 const workOrderChecks = [
   "대표 이미지 있음",

@@ -1,3 +1,56 @@
+# 2.0.0-alpha.18 WAFL v2 App-first A2Z App Font Application
+
+- Current GPT checkpoint: `2.0.0-alpha.18`.
+- Baseline source before this patch: repository `APP_VERSION: 2.0.0-alpha.17`.
+- Baseline commit: `1ab6041c3c9b50aa3a6a668b9371fc47a6a0ca61`.
+- This patch keeps the `apps/mobile` mock-only boundary and applies 에이투지체 / A2Z as the mobile/tablet app mock UI font.
+- A2Z TTF assets are added under `apps/mobile/assets/fonts/a2z/` with English repo filenames for Thin, ExtraLight, Light, Regular, Medium, SemiBold, Bold, ExtraBold, and Black.
+- Font source and license tracking is recorded in `apps/mobile/assets/fonts/a2z/FONT-SOURCE.md`.
+- The app screen does not show font attribution text.
+- `apps/mobile/constants/fonts.ts` defines A2Z font-family tokens and runtime assets.
+- `apps/mobile/app/_layout.tsx` loads the A2Z font assets with the existing Expo font runtime before rendering the app.
+- `ProductionCardMock` maps existing text weights to A2Z Regular, Medium, SemiBold, and Bold so Korean labels, amount values, tabs, buttons, badges, and bottom navigation use the bundled font without overusing Black/ExtraBold.
+- PDF/Worker font embedding is not implemented in this patch and must be handled in a separate PDF-specific version.
+- No real DB, API, R2, PDF Worker, upload, camera, image picker, sketch, share, print, order, delivery, search, inline-edit save, schema, migration, or production mutation is connected.
+- No new dependency is added. Root `package.json` and root lockfile remain unchanged; `apps/mobile` package metadata is version-aligned only.
+
+Explicitly not changed:
+
+```text
+- DB migration
+- API route behavior
+- Neon schema
+- Cloudflare R2 Worker
+- PDF Worker
+- real file upload/delete
+- real camera/photo/file picker/sketch
+- real search API/filtering
+- real share-link generation
+- real PDF generation or PDF font embed
+- real auth callback
+- real order/delivery mutation
+- real inline edit save
+- real push notification
+- real drag/long-press mutation
+- production data
+- root package.json
+- root package-lock.json
+- pnpm lock/workspace files
+- /system or /workspace deletion
+```
+
+Manual device QA remains required before product verification:
+
+```text
+- iPhone portrait small Korean label readability with A2Z
+- iPad mini portrait tabs, bottom navigation, and button label readability
+- iPad Pro landscape amount/quantity/material row readability
+- Galaxy Tab portrait/landscape Korean/numeric weight balance
+- Expo Web preview inspection that A2Z, not system fallback, is applied
+```
+
+---
+
 # 2.0.0-alpha.17 WAFL v2 App-first Inline Edit Visual Language and Production Flow Simplification
 
 - Current GPT checkpoint: `2.0.0-alpha.17`.

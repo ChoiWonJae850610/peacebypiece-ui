@@ -276,3 +276,18 @@ For the alpha.17 mobile/tablet mock:
 - Preserve alpha.16 tab alignment, production-card search mock, bottom nav Korean labels, and the local mock `작지 발주` CTA.
 - Reuse the existing icon library from alpha.15; do not add another dependency.
 - Do not add font files, external image assets, root package changes, root lockfile changes, real search/edit-save/camera/file picker/upload/sketch/share/print/PDF/order/delivery behavior, API, DB, R2, Worker, schema, migration, drag, long-press, or production mutation.
+
+## 2.0.0-alpha.18 A2Z app font rule
+
+For the alpha.18 mobile/tablet mock:
+
+- Treat the work as app UI font application only.
+- Use only the owner-provided local A2Z TTF files. Do not download fonts or fetch web fonts.
+- Store app font assets under `apps/mobile/assets/fonts/a2z/` with stable English filenames.
+- Add a source/license tracking file at `apps/mobile/assets/fonts/a2z/FONT-SOURCE.md`.
+- Do not show font attribution inside the app UI.
+- Load the font through the existing Expo font runtime if available without adding a new dependency.
+- Prefer A2Z Regular, Medium, SemiBold, and Bold for runtime UI. Do not overuse Black or ExtraBold.
+- Preserve alpha.17 production-card structure and mock-only behavior.
+- Do not apply this font to PDF/Worker generation in this version.
+- Do not add root package changes, root lockfile changes, real search/edit-save/camera/file picker/upload/sketch/share/print/PDF/order/delivery behavior, API, DB, R2, Worker, schema, migration, drag, long-press, or production mutation.

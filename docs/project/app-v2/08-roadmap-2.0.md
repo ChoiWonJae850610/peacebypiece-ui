@@ -1,4 +1,4 @@
-# WAFL v2 App-first Roadmap 2.0 - 2.0.0-alpha.17
+# WAFL v2 App-first Roadmap 2.0 - 2.0.0-alpha.18
 
 ## Purpose
 
@@ -248,7 +248,7 @@ Status: done.
 
 ### 2.0.0-alpha.17
 
-Status: current.
+Status: done.
 
 - Redesign inline-edit visual language after alpha.16 so dense rows do not look like repeated small input boxes.
 - Keep fabric/accessory rows as compact summary cards with item identity, status, summary tokens, amount line, and note.
@@ -261,6 +261,21 @@ Status: current.
 - Concentrate practical management in process-detail rows and show process meta as compact summary data rather than boxed fields.
 - Do not connect real DB, API, R2, PDF Worker, upload, camera, image picker, sketch, share, print, order, delivery, search API, inline-edit persistence, drag, long-press, schema, migration, or production mutation.
 - Align app display version to `2.0.0-alpha.17`.
+
+### 2.0.0-alpha.18
+
+Status: current.
+
+- Apply 에이투지체 / A2Z as the bundled app UI font for the `apps/mobile` mock.
+- Add all nine A2Z TTF weights under `apps/mobile/assets/fonts/a2z/` with English repo filenames.
+- Add `apps/mobile/assets/fonts/a2z/FONT-SOURCE.md` for internal source/license tracking.
+- Load the A2Z font assets through the existing Expo font runtime before rendering the app.
+- Map existing text weights in `ProductionCardMock` to A2Z Regular, Medium, SemiBold, and Bold for Korean labels, amount/quantity values, tabs, buttons, badges, and bottom navigation.
+- Keep A2Z Black and ExtraBold available as assets but avoid overusing them in the dense production-card UI.
+- Do not show font attribution in the app UI.
+- Do not apply A2Z to PDF/Worker font embedding in this version.
+- Do not connect real DB, API, R2, PDF Worker, upload, camera, image picker, sketch, share, print, order, delivery, search API, inline-edit persistence, drag, long-press, schema, migration, or production mutation.
+- Align app display version to `2.0.0-alpha.18`.
 
 ## Later integration phases
 
