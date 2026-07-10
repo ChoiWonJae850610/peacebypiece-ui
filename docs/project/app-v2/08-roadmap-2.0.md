@@ -1,4 +1,4 @@
-# WAFL v2 App-first Roadmap 2.0 - 2.0.0-alpha.16
+# WAFL v2 App-first Roadmap 2.0 - 2.0.0-alpha.17
 
 ## Purpose
 
@@ -232,7 +232,7 @@ Status: done.
 
 ### 2.0.0-alpha.16
 
-Status: current.
+Status: done.
 
 - Correct mobile and tablet section-tab alignment after the alpha.15 icon-library pass.
 - Keep mobile section tabs visible and horizontally scrollable instead of replacing them with a dropdown.
@@ -245,6 +245,22 @@ Status: current.
 - Keep the six-step production rail line ending at `출고`.
 - Do not connect real DB, API, R2, PDF Worker, upload, camera, image picker, sketch, share, print, order, delivery, search API, inline-edit persistence, schema, migration, or production mutation.
 - Align app display version to `2.0.0-alpha.16`.
+
+### 2.0.0-alpha.17
+
+Status: current.
+
+- Redesign inline-edit visual language after alpha.16 so dense rows do not look like repeated small input boxes.
+- Keep fabric/accessory rows as compact summary cards with item identity, status, summary tokens, amount line, and note.
+- Show subtle editable affordance only in `입력중` rows through dotted underline/value emphasis.
+- Keep `발주요청` and `완료` rows read-only/locked by removing editable affordance.
+- Preserve existing status-based material actions: input can request/delete, requested can complete/cancel/delete, completed shows no action buttons.
+- Preserve section tab alignment, production-card search mock, bottom navigation Korean icon labels, and local mock `작지 발주` CTA.
+- Keep the six-step production rail as the base flow summary and keep the rail line ending at `출고`.
+- Remove or reduce the long base-step detail list below the rail so the mock does not imply every step is manually managed.
+- Concentrate practical management in process-detail rows and show process meta as compact summary data rather than boxed fields.
+- Do not connect real DB, API, R2, PDF Worker, upload, camera, image picker, sketch, share, print, order, delivery, search API, inline-edit persistence, drag, long-press, schema, migration, or production mutation.
+- Align app display version to `2.0.0-alpha.17`.
 
 ## Later integration phases
 

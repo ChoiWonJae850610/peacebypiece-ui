@@ -275,3 +275,16 @@ Final color values may be tuned after device review. The current contract is sem
 - Bottom navigation must use concrete icons plus Korean labels. Internal shortcut letters such as `C/I/D/S` are not customer-facing UI.
 - The production rail remains a compact workbench cue and should not grow a connector beyond the `출고` step.
 - This correction does not authorize real search, edit-save, upload, camera, file picker, sketch, share, print, PDF, order, delivery, API, DB, R2, Worker, schema, migration, or production mutation work.
+
+## 21. Alpha.17 Inline Edit Visual Language And Flow Simplification
+
+`2.0.0-alpha.17` keeps Dongdaemun Atelier Ops and turns dense editable areas back into read-first production summaries.
+
+- Fabric and accessory rows should look like compact material summary cards, not miniature form screens.
+- Editable state is a quiet property of the value itself, such as dotted underline or slightly stronger value color.
+- Do not wrap every supplier, color, quantity, loss, stock, and unit value in its own rectangular field.
+- Requested and completed rows should feel locked or read-only through status, subdued row tone, and missing edit affordance.
+- The amount line remains visually important because order quantity, unit price, and total are production decisions.
+- The six-step production rail is a summary of work position, not a manual checklist for every base step.
+- Process detail rows are the real mock management surface for factory/additional processes and should use compact meta summaries plus memo and amount.
+- This correction does not authorize real search, edit-save, upload, camera, file picker, sketch, share, print, PDF, order, delivery, API, DB, R2, Worker, schema, migration, drag, long-press, or production mutation work.

@@ -260,3 +260,19 @@ For the alpha.16 mobile/tablet mock:
 - Bottom navigation must use Lucide icons plus Korean labels, not internal shortcut letters.
 - Reuse the existing icon library from alpha.15; do not add another dependency.
 - Do not add font files, external image assets, root package changes, root lockfile changes, real search/edit-save/camera/file picker/upload/sketch/share/print/PDF/order/delivery behavior, API, DB, R2, Worker, schema, migration, or production mutation.
+
+## 2.0.0-alpha.17 inline edit and production-flow simplification rule
+
+For the alpha.17 mobile/tablet mock:
+
+- Treat the work as visual-language correction, not output/share or real edit integration.
+- Fabric/accessory rows must read as compact material summary rows, not a grid of repeated input boxes.
+- `입력중` rows may show subtle editable value affordance with dotted underline or quiet value emphasis.
+- `발주요청` and `완료` rows must remove editable affordance and keep locked/read-only meaning.
+- Do not show long helper copy for every editable value.
+- Keep the six-step production rail, but remove or greatly reduce the base-step detail list under it.
+- Concentrate practical process management in `공정 단계 안의 세부 공정`.
+- Process detail rows should show compact meta summaries and memo, not small boxed fields.
+- Preserve alpha.16 tab alignment, production-card search mock, bottom nav Korean labels, and the local mock `작지 발주` CTA.
+- Reuse the existing icon library from alpha.15; do not add another dependency.
+- Do not add font files, external image assets, root package changes, root lockfile changes, real search/edit-save/camera/file picker/upload/sketch/share/print/PDF/order/delivery behavior, API, DB, R2, Worker, schema, migration, drag, long-press, or production mutation.

@@ -758,17 +758,9 @@ function ProgressRail({ workOrderIssued }: { workOrderIssued: boolean }) {
           })}
         </View>
       </ScrollView>
-      <View style={styles.progressDetailList}>
-        {displaySteps.map((step) => (
-          <View key={`${step.id}-detail`} style={styles.progressDetailRow}>
-            <View style={styles.progressDetailHead}>
-              <Text style={styles.rowTitle}>{step.label}</Text>
-              <Text style={[styles.rowBadge, progressStatusBadge(step.status)]}>{step.status}</Text>
-            </View>
-            <Text style={styles.rowDetail}>{step.partner} · 전달일 {step.handoffDate}</Text>
-            <Text style={styles.smallText}>{step.memo}{step.removable ? " · 삭제 가능 mock" : ""}</Text>
-          </View>
-        ))}
+      <View style={styles.progressCompactNote}>
+        <Text style={styles.rowDetail}>기본 플로우는 작업 흐름 요약입니다.</Text>
+        <Text style={styles.smallText}>업체별 상세 관리는 아래 공정 상세에서 정리합니다.</Text>
       </View>
     </View>
   );
@@ -796,25 +788,7 @@ function FlowTab({ workOrderIssued }: { workOrderIssued: boolean }) {
       </View>
       <Text style={styles.advancedFlowHint}>플로우 단계 추가는 고급/예외 mock이며 나중에 action sheet에서 분리합니다.</Text>
       {processRows.map((row, index) => (
-        <View key={row.process} style={styles.processRow}>
-          <Text style={styles.dragHandle}>{index + 1}</Text>
-          <View style={styles.flex}>
-            <View style={styles.rowHead}>
-              <Text style={styles.rowTitle}>{row.process}</Text>
-              <Text style={styles.rowBadge}>공정 안 항목</Text>
-            </View>
-            <View style={styles.processFieldGrid}>
-              <InlineField label="전달처" value={row.partner} editable={row.status !== "완료"} />
-              <InlineField label="수량" value={row.quantity} editable={row.status !== "완료"} />
-              <InlineField label="납기" value={row.dueDate} editable={row.status !== "완료"} />
-              <InlineField label="단위" value={row.unit} editable={row.status !== "완료"} />
-              <InlineField label="단가" value={row.unitPrice} editable={row.status !== "완료"} />
-              <InlineField label="상태" value={row.status} editable={row.status !== "완료"} />
-              <InlineField label="메모" value={row.memo} editable={row.status !== "완료"} wide />
-            </View>
-            <Text style={styles.rowMeta}>금액 {row.amount}</Text>
-          </View>
-        </View>
+        <ProcessDetailRow key={row.process} row={row} index={index} />
       ))}
     </View>
   );
@@ -959,13 +933,13 @@ function MaterialRow({ row }: { row: MaterialRowData }) {
         </View>
         <Text style={[styles.rowBadge, styles.materialStatusBadge, statusBadgeStyle(row.status)]}>{row.status}</Text>
       </View>
-      <View style={styles.materialFieldGrid}>
-        <InlineField label="거래처" value={row.supplier} editable={editable} />
-        <InlineField label="색상/옵션" value={row.colorOrOption} editable={editable} />
-        <InlineField label="필요" value={row.required} editable={editable} />
-        <InlineField label="로스/여유" value={row.allowance} editable={editable} />
-        <InlineField label="재고 사용" value={row.stockUse} editable={editable} />
-        <InlineField label="단위" value={row.unit} editable={editable} />
+      <View style={styles.materialSummaryStrip}>
+        <SummaryToken label="거래처" value={row.supplier} editable={editable} />
+        <SummaryToken label="색상/옵션" value={row.colorOrOption} editable={editable} />
+        <SummaryToken label="필요" value={row.required} editable={editable} />
+        <SummaryToken label="로스/여유" value={row.allowance} editable={editable} />
+        <SummaryToken label="재고" value={row.stockUse} editable={editable} />
+        <SummaryToken label="단위" value={row.unit} editable={editable} compact />
       </View>
       <View style={styles.materialMetaLine}>
         <Text style={styles.rowMeta}>
@@ -987,30 +961,57 @@ function MaterialRow({ row }: { row: MaterialRowData }) {
           </View>
         ) : null}
       </View>
-      <View style={styles.materialFooter}>
-        <InlineField label="메모" value={`${row.leftover} · ${row.warning}`} editable={editable} wide />
-      </View>
+      <Text style={[styles.materialNote, editable && styles.materialNoteEditable]}>
+        {row.leftover} · {row.warning}
+      </Text>
     </View>
   );
 }
 
-function InlineField({
+function SummaryToken({
   label,
   value,
   editable,
-  wide = false
+  compact = false
 }: {
   label: string;
   value: string;
   editable: boolean;
-  wide?: boolean;
+  compact?: boolean;
 }) {
   return (
-    <View style={[styles.inlineField, editable && styles.inlineFieldEditable, !editable && styles.inlineFieldReadOnly, wide && styles.inlineFieldWide]}>
-      <Text style={styles.inlineFieldLabel}>{label}</Text>
-      <Text style={[styles.inlineFieldValue, editable && styles.inlineFieldValueEditable]} numberOfLines={wide ? 2 : 1}>
+    <View style={[styles.summaryToken, compact && styles.summaryTokenCompact]}>
+      <Text style={styles.summaryTokenLabel}>{label}</Text>
+      <Text style={[styles.summaryTokenValue, editable && styles.summaryTokenValueEditable]} numberOfLines={1}>
         {value}
       </Text>
+    </View>
+  );
+}
+
+function ProcessDetailRow({ row, index }: { row: (typeof processRows)[number]; index: number }) {
+  const editable = row.status !== "완료";
+
+  return (
+    <View style={styles.processRow}>
+      <Text style={styles.dragHandle}>{index + 1}</Text>
+      <View style={styles.flex}>
+        <View style={styles.rowHead}>
+          <View style={styles.flex}>
+            <Text style={styles.rowTitle}>{row.process}</Text>
+            <Text style={styles.rowDetail}>{row.partner}</Text>
+          </View>
+          <Text style={[styles.rowBadge, progressStatusBadge(row.status)]}>{row.status}</Text>
+        </View>
+        <View style={styles.processMetaStrip}>
+          <SummaryToken label="수량" value={row.quantity} editable={editable} compact />
+          <SummaryToken label="납기" value={row.dueDate} editable={editable} compact />
+          <SummaryToken label="단가" value={row.unitPrice} editable={editable} compact />
+          <SummaryToken label="단위" value={row.unit} editable={editable} compact />
+        </View>
+        <Text style={styles.processMemo}>{row.memo}</Text>
+        <Text style={styles.rowMeta}>금액 {row.amount}</Text>
+      </View>
     </View>
   );
 }
@@ -2910,22 +2911,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: 6,
     paddingVertical: 2
   },
-  progressDetailList: {
+  progressCompactNote: {
     borderTopColor: "#eee3d5",
     borderTopWidth: 1,
-    marginTop: 9
-  },
-  progressDetailRow: {
-    borderBottomColor: "#f0e7dc",
-    borderBottomWidth: 1,
-    gap: 4,
-    paddingVertical: 9
-  },
-  progressDetailHead: {
-    alignItems: "center",
-    flexDirection: "row",
-    gap: 8,
-    justifyContent: "space-between"
+    gap: 2,
+    marginTop: 9,
+    paddingTop: 8
   },
   flowSummary: {
     flexDirection: "row",
@@ -3065,64 +3056,52 @@ const styles = StyleSheet.create({
     gap: 6,
     justifyContent: "flex-end"
   },
-  materialFooter: {
+  materialSummaryStrip: {
     alignItems: "center",
     flexDirection: "row",
     flexWrap: "wrap",
-    gap: 8,
-    justifyContent: "space-between"
+    gap: 5,
+    rowGap: 4
   },
-  materialFieldGrid: {
+  summaryToken: {
+    alignItems: "baseline",
     flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 6
-  },
-  inlineField: {
-    borderBottomWidth: 1,
-    borderRadius: 7,
     flexGrow: 1,
-    gap: 2,
-    minWidth: 104,
-    paddingHorizontal: 7,
-    paddingVertical: 5
+    gap: 4,
+    minWidth: 118
   },
-  inlineFieldEditable: {
-    backgroundColor: "#fff8eb",
-    borderBottomColor: "#b98c5a"
+  summaryTokenCompact: {
+    flexGrow: 0,
+    minWidth: 74
   },
-  inlineFieldReadOnly: {
-    backgroundColor: "transparent",
-    borderBottomColor: "transparent",
-    paddingHorizontal: 0
-  },
-  inlineFieldWide: {
-    minWidth: "100%"
-  },
-  inlineFieldLabel: {
+  summaryTokenLabel: {
     color: "#7a6c5c",
     fontSize: 9,
     fontWeight: "900"
   },
-  inlineFieldValue: {
+  summaryTokenValue: {
+    borderBottomColor: "transparent",
+    borderBottomWidth: 1,
     color: "#4f463f",
     fontSize: 12,
     fontWeight: "800",
-    lineHeight: 16
+    lineHeight: 17,
+    maxWidth: 180,
+    paddingBottom: 1
   },
-  inlineFieldValueEditable: {
+  summaryTokenValueEditable: {
+    borderBottomColor: "#b98c5a",
+    borderStyle: "dotted",
     color: "#17263d"
   },
-  inlineEditHint: {
-    borderBottomColor: "#b98c5a",
-    borderBottomWidth: 1,
-    color: "#7b4b32",
+  materialNote: {
+    color: "#6d6257",
     fontSize: 11,
-    fontWeight: "900",
+    fontWeight: "800",
     lineHeight: 16
   },
-  inlineEditHintLocked: {
-    borderBottomColor: "transparent",
-    color: "#6d6257"
+  materialNoteEditable: {
+    color: "#7b4b32"
   },
   doneText: {
     color: "#4d6a3a",
@@ -3142,6 +3121,19 @@ const styles = StyleSheet.create({
     flexWrap: "wrap",
     gap: 6,
     marginTop: 5
+  },
+  processMetaStrip: {
+    alignItems: "center",
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 8,
+    marginTop: 4
+  },
+  processMemo: {
+    color: "#4f463f",
+    fontSize: 12,
+    lineHeight: 18,
+    marginTop: 4
   },
   dragHandle: {
     backgroundColor: "#f5f1e8",

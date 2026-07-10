@@ -195,6 +195,20 @@ The alpha.16 mobile/tablet mock correction keeps the alpha.15 icon system and ma
 
 This correction remains mock-only and does not connect real search, inline edit save, camera, file picker, upload, share, print, PDF generation, API, DB, R2, Worker, push notification, order, delivery, schema, migration, or production mutation behavior.
 
+## 2.0.0-alpha.17 inline edit visual language and production flow simplification
+
+The alpha.17 mobile/tablet mock correction keeps the alpha.16 navigation/search work and reduces boxed-input pressure in dense production rows:
+
+- Fabric and accessory rows should read as compact summary cards, not as a grid of small input boxes.
+- Editable values may use dotted underline, value emphasis, or quiet chip-like treatment only while the row is `입력중`.
+- Requested and completed rows remove editable affordance and rely on badge, row tone, and read-only/locked meaning.
+- Material notes should stay as one-line production notes rather than another input-like field.
+- The six-step production-flow rail remains a high-level flow summary.
+- The long step-by-step detail list under the rail is removed or reduced because the current mock should not imply every base step requires manual management.
+- Practical management is concentrated in `공정 단계 안의 세부 공정`, where process rows show process, partner, quantity, due date, unit price, status, memo, and amount as compact summary data.
+
+This correction remains mock-only and does not connect real search, inline edit save, camera, file picker, upload, share, print, PDF generation, API, DB, R2, Worker, push notification, order, delivery, schema, migration, drag, long-press, or production mutation behavior.
+
 ## 2.0.0-alpha.12 alpha.11 UX follow-up correction
 
 The alpha.12 mobile mock correction tightens the alpha.11 direction before output/share deepening:

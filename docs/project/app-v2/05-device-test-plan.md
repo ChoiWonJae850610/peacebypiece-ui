@@ -217,6 +217,29 @@ Manual device QA remains owner confirmation:
 
 No real camera, picker, upload, share, print, PDF, DB, API, R2, Worker, order, delivery, search API, inline edit save, schema, migration, or production mutation evidence is expected for this mock-only version.
 
+## 2.0.0-alpha.17 inline edit visual language QA
+
+Automatic checks:
+
+- `apps/mobile npm run typecheck`
+- `apps/mobile npm run expo:config`
+- root `npx tsc --noEmit`
+- root `npm run build`
+- targeted eslint for `apps/mobile/components/ProductionCardMock.tsx`
+- `git diff --check`
+- `node tests/unicode-encoding-contract.mjs`
+- approved workflow verify
+
+Manual device QA remains owner confirmation:
+
+- iPhone portrait: 원단/부자재 rows should scan as summary rows, not repeated input boxes.
+- iPhone portrait: only `입력중` rows should show subtle editable value emphasis.
+- iPad mini portrait: material/accessory row height should remain compact enough to scan several rows.
+- iPad Pro landscape: the production-flow rail should remain six steps, with no long base-step detail list below it.
+- Galaxy Tab portrait/landscape: process-detail rows should read as meta summaries plus memo and amount, not small field boxes.
+
+No real camera, picker, upload, share, print, PDF, DB, API, R2, Worker, order, delivery, search API, inline edit save, schema, migration, drag, long-press, or production mutation evidence is expected for this mock-only version.
+
 ## 2.0.0-alpha.12 alpha.11 UX follow-up QA
 
 The alpha.12 mobile mock requires review of the follow-up corrections:

@@ -1,6 +1,6 @@
 # WAFL Mobile App Mock
 
-Version: `2.0.0-alpha.16`
+Version: `2.0.0-alpha.17`
 
 This Expo React Native app is the App-first WAFL v2 mobile/tablet mock surface.
 
@@ -31,6 +31,7 @@ Current visual foundation:
 - `2.0.0-alpha.14` polishes the alpha.13 mock: image/action icons read more directly, size/color selectors keep stable widths, material action buttons are visually separated from status badges, the production rail highlights the current step, and a local mock `작지 발주` confirmation CTA is added without real output/order integration.
 - `2.0.0-alpha.15` adopts `lucide-react-native` plus Expo-compatible `react-native-svg` for real cross-platform icons, replaces temporary hand-drawn action icons with a central WAFL icon mapping, and tightens the production rail so the line ends at `출고`.
 - `2.0.0-alpha.16` corrects mobile/tablet section-tab centering, keeps tabs scrollable on phone widths, adds a compact 제작 카드 목록 search-field mock, shows subtle inline-edit affordance only on editable rows, removes editable affordance from locked/completed rows, and replaces bottom-nav `C/I/D/S` letters with Lucide icons plus Korean labels.
+- `2.0.0-alpha.17` redesigns inline-edit visual language so 원단/부자재 rows read as compact summary cards instead of repeated input boxes, keeps requested/completed rows locked/read-only, simplifies the production-flow rail area, and concentrates actual management into process-detail summary rows.
 
 ## Icon dependency
 
@@ -50,9 +51,9 @@ The first screen contains a production-card list and a selected production card 
 - 제작 플로우
 - 출력·공유
 
-The mock demonstrates a representative image placeholder, compact production summary, carousel-based image review, optional image titles with small fallback labels, allowed-extension attachment rows with upload time, compact fixed-width current-value size/color selectors, cm/inch switching, fabric/accessory quantity math, fixed-position status labels, amount-line status-based row actions, a local mock `작지 발주` confirmation CTA, Lucide-backed action icons, continuous production-flow progress rail, process-step detail rows, output document workbench, and delivery-request rows. Status-based material actions show only the actions allowed for the current status. All buttons are placeholders for product direction only.
+The mock demonstrates a representative image placeholder, compact production summary, carousel-based image review, optional image titles with small fallback labels, allowed-extension attachment rows with upload time, compact fixed-width current-value size/color selectors, cm/inch switching, fabric/accessory quantity math, compact material summary rows, fixed-position status labels, amount-line status-based row actions, a local mock `작지 발주` confirmation CTA, Lucide-backed action icons, continuous production-flow progress rail, simplified rail guidance, process-detail summary rows, output document workbench, and delivery-request rows. Status-based material actions show only the actions allowed for the current status. All buttons are placeholders for product direction only.
 
-Further field feedback on the alpha.16 tab/search/editability correction can continue in `2.0.0-alpha.17`; real camera/photo/file picker/upload/share/PDF/order/search/edit-save behavior remains deferred.
+Further field feedback on the alpha.17 inline-edit and production-flow simplification can continue in `2.0.0-alpha.18`; real camera/photo/file picker/upload/share/PDF/order/search/edit-save behavior remains deferred.
 
 ## Commands
 

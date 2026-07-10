@@ -1,3 +1,58 @@
+# 2.0.0-alpha.17 WAFL v2 App-first Inline Edit Visual Language and Production Flow Simplification
+
+- Current GPT checkpoint: `2.0.0-alpha.17`.
+- Baseline source before this patch: repository `APP_VERSION: 2.0.0-alpha.16`.
+- Baseline commit: `1c9737611dbfb9236ebc1fad9955124554d512da`.
+- This patch keeps the `apps/mobile` mock-only boundary and corrects alpha.16 editable-value affordance that still felt like repeated boxed inputs.
+- Fabric/accessory rows now read as compact material summary cards: item identity, status, summary tokens, amount line, and note.
+- Editable values in `입력중` rows use subtle dotted underline/value emphasis instead of small rectangular field boxes.
+- Rows in `발주요청` or `완료` continue to remove editable affordance and read as locked/read-only mock rows.
+- The production-flow six-step rail is preserved as a high-level `발주 · 자재 · 재단 · 공정 · 검수 · 출고` summary.
+- The detailed step-by-step list under the rail is removed and replaced by a compact note so the mock does not imply every base step must be manually managed.
+- The actual management target is concentrated in the process-detail rows under `공정 단계 안의 세부 공정`.
+- Process detail rows now show process name, partner, status badge, compact meta tokens, memo, and amount instead of repeated boxed fields.
+- Existing section tab alignment, production-card search mock, bottom navigation Korean icon labels, and `작지 발주` local mock CTA are preserved.
+- No real DB, API, R2, PDF Worker, upload, camera, image picker, sketch, share, print, order, delivery, search, inline-edit save, schema, migration, or production mutation is connected.
+- No new dependency, font file, or external image asset is added.
+- Root `package.json` and root lockfile remain unchanged; `apps/mobile` package metadata is version-aligned only.
+
+Explicitly not changed:
+
+```text
+- DB migration
+- API route behavior
+- Neon schema
+- Cloudflare R2 Worker
+- PDF Worker
+- real file upload/delete
+- real camera/photo/file picker/sketch
+- real search API/filtering
+- real share-link generation
+- real PDF generation
+- real auth callback
+- real order/delivery mutation
+- real inline edit save
+- real push notification
+- real drag/long-press mutation
+- production data
+- root package.json
+- root package-lock.json
+- pnpm lock/workspace files
+- /system or /workspace deletion
+```
+
+Manual device QA remains required before product verification:
+
+```text
+- iPhone portrait material/accessory row scan speed and dotted editable affordance review
+- iPad mini portrait material/accessory card height and summary-token wrapping review
+- iPad Pro landscape production-flow rail plus simplified process-detail review
+- Galaxy Tab portrait/landscape locked/requested/completed read-only distinction review
+- Expo Web preview inspection after local server run
+```
+
+---
+
 # 2.0.0-alpha.16 WAFL v2 App-first Tab Alignment and Editable-Affordance UX Correction
 
 - Current GPT checkpoint: `2.0.0-alpha.16`.

@@ -333,3 +333,23 @@ Implementation boundary:
 ```text
 No real search/filtering, inline edit save, upload, camera, file picker, sketch, share, print, PDF generation, delivery request, order mutation, API, DB, R2, Worker, push notification, drag, long-press, auth, or storage behavior is authorized by this correction.
 ```
+
+## 2.0.0-alpha.17 inline edit visual language and production-flow simplification
+
+`2.0.0-alpha.17` keeps the alpha.16 tab/search/navigation correction while changing dense row editing from field boxes to read-first summaries.
+
+Core correction:
+
+- Fabric/accessory rows stay row-first but no longer show every value inside small input-like boxes.
+- `입력중` rows show subtle editable value affordance through dotted underline/value emphasis.
+- `발주요청` and `완료` rows keep the same data but remove editable affordance and read as locked/read-only.
+- Amount-line actions remain status-based: input rows can request/delete, requested rows can complete/cancel/delete, completed rows show no action buttons.
+- The production-flow rail remains the six baseline steps and the line still ends at `출고`.
+- The base-step detail list below the rail is removed or reduced to a compact note.
+- Process management is represented by the process-detail rows inside the `공정` step, with compact meta summaries instead of repeated input boxes.
+
+Implementation boundary:
+
+```text
+No real search, inline edit save, camera, file picker, upload, share, print, PDF generation, API, DB, R2, Worker, order, delivery, drag, long-press, schema, migration, or production mutation behavior is authorized by this correction.
+```
