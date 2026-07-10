@@ -225,3 +225,25 @@ Implementation boundary:
 ```text
 No real upload, camera, file picker, share, PDF generation, delivery request, order mutation, inline edit save, API, DB, R2, Worker, push notification, drag, long-press, auth, or storage behavior is authorized by this icon/action polish.
 ```
+
+## 2.0.0-alpha.11 practical UX correction
+
+`2.0.0-alpha.11` keeps the alpha.10 mock-only app and corrects production-card UX details that were still too sample-like.
+
+Core correction:
+
+- Image/attachment moves from multi-tile display to a one-image carousel/card with current index, left/right controls, representative state, and sibling representative/delete actions.
+- The visible copy no longer explains thumbnail detail with "tap for detail"; the mock affordance remains available through the image surface and thumbnail strip.
+- Attachment rows include file type, output include/exclude, and upload timestamp in `YYYY.MM.DD HH:mm:ss` format.
+- Overview replaces ambiguous trading/production and short memo fields with participating company rows and a clearer next-check work card.
+- Size/color adds gender, product category, unit selection, saved template load/save, `+ size`, and `+ body part` mock entry points.
+- The size table removes the generic division column and shows size, chest, length, shoulder, and sleeve in the selected unit only.
+- Color rows include small swatches derived from the color name without adding a color-picker library.
+- Fabric and accessory rows use only `입력중`, `발주요청`, and `완료`, with request/delete, complete/cancel/delete, or read-only behavior respectively.
+- The production-flow rail keeps the six baseline steps while improving centered spacing and current-step readability.
+
+Implementation boundary:
+
+```text
+No real upload, camera, file picker, sketch, share, print, PDF generation, delivery request, order mutation, inline edit save, API, DB, R2, Worker, push notification, drag, long-press, auth, or storage behavior is authorized by this UX correction.
+```

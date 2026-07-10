@@ -1,3 +1,55 @@
+# 2.0.0-alpha.11 WAFL v2 App-first UX Correction
+
+- Current GPT checkpoint: `2.0.0-alpha.11`.
+- Baseline source before this patch: repository `APP_VERSION: 2.0.0-alpha.10`.
+- Baseline commit: `00fa7cd5380f8790ca9d1b2a0916b8c043c8b870`.
+- This patch keeps the `apps/mobile` mock-only boundary and corrects practical UX issues found after alpha.10.
+- Image/attachment now uses a single-image carousel card with left/right movement, current index, representative-image state, separate representative/delete controls, and no visible "tap for detail" instruction.
+- Attachment rows show filename, file type, output include/exclude, and upload timestamp in `YYYY.MM.DD HH:mm:ss` mock format.
+- The overview removes ambiguous trading/production and short memo rows. It shows participating companies and a stronger next-check work card instead.
+- Size/color now starts from gender, product category, unit, and saved template load/save mock controls. The size table removes the generic division column and uses `size / chest / length / shoulder / sleeve`; color rows include small swatches.
+- Fabric and accessory status flow is simplified to `입력중`, `발주요청`, and `완료`: editable/request/delete, complete/cancel/delete, and read-only respectively.
+- The six-step production rail remains `발주`, `자재`, `재단`, `공정`, `검수`, `출고`, with more centered spacing and clearer current-step emphasis.
+- No nested button pattern is intentionally added. Carousel image navigation, thumbnail selection, and action controls are sibling press targets.
+- No real DB, API, R2, PDF Worker, upload, camera, file picker, sketch, share, print, order, delivery, inline-edit persistence, drag, or long-press behavior is connected.
+- Font files, external images, new dependencies, root package metadata changes, root lockfile changes, and production behavior are still not added.
+
+Explicitly not changed:
+
+```text
+- DB migration
+- API route behavior
+- Neon schema
+- Cloudflare R2 Worker
+- PDF Worker
+- real file upload/delete
+- real camera/photo/file picker/sketch
+- real share-link generation
+- real PDF generation
+- real auth callback
+- real order/delivery mutation
+- real inline edit save
+- real push notification
+- real drag/long-press mutation
+- production data
+- root package.json
+- root package-lock.json
+- pnpm lock/workspace files
+- /system or /workspace deletion
+```
+
+Manual device QA remains required before product verification:
+
+```text
+- iPhone portrait carousel and material status review
+- iPad mini portrait size/color and attachment timestamp review
+- iPad Pro landscape centered production-flow rail review
+- Galaxy Tab portrait/landscape rotation review
+- Expo Web preview inspection after local server run
+```
+
+---
+
 # 2.0.0-alpha.10 WAFL v2 App-first Icon Action Interpretability Polish
 
 - Current GPT checkpoint: `2.0.0-alpha.10`.

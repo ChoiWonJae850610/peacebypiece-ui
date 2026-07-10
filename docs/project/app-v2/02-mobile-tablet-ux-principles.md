@@ -136,3 +136,18 @@ This correction remains mock-only and does not connect real inline edit save, ca
 Production process ordering should use drag or long-press style UX where it is natural for the device.
 
 The app may use explicit fallback controls for accessibility, but the default visual direction should not make process movement look like a PC-only table operation.
+
+## 2.0.0-alpha.11 practical UX correction
+
+The alpha.11 mobile mock correction keeps the alpha.10 compact grammar and removes practical friction from field feedback:
+
+- Image/attachment should not default to an uneven grid when there are many images. Use a one-image carousel/card, current index, clear representative state, and sibling representative/delete actions.
+- Attachment rows should show upload time in `YYYY.MM.DD HH:mm:ss` format with file type and output include/exclude state.
+- Overview should avoid ambiguous labels such as trading/production and should not put a generic short memo into the main summary. Participating companies and next-check work should be clearer.
+- Size/color starts with gender, product category, unit, and saved template controls. The size table should show one selected unit and business-readable columns: size, chest, length, shoulder, sleeve.
+- Color rows should include small visual swatches without adding a color-picker dependency.
+- Fabric and accessory status flow is limited to `입력중`, `발주요청`, and `완료`. Do not show request and complete actions at the same time.
+- Completed material rows are read-only, request rows are locked until cancelled in the mock, and input rows remain editable-looking.
+- The six-step production rail should be centered and readable on phone/tablet widths before horizontal scrolling is needed.
+
+This correction remains mock-only and does not connect real inline edit save, camera, file picker, upload, share, PDF generation, API, DB, R2, Worker, push notification, order, delivery, sketch, drag, or long-press behavior.

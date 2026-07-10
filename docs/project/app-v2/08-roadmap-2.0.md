@@ -1,4 +1,4 @@
-# WAFL v2 App-first Roadmap 2.0 - 2.0.0-alpha.10
+# WAFL v2 App-first Roadmap 2.0 - 2.0.0-alpha.11
 
 ## Purpose
 
@@ -137,7 +137,7 @@ Status: done.
 
 ### 2.0.0-alpha.10
 
-Status: current.
+Status: done.
 
 - Apply alpha.9 user feedback and polish action/icon interpretability in the `apps/mobile` mock.
 - Make image/attachment top entry points readable as photo, camera, sketch, and attachment without connecting real picker/camera/upload behavior.
@@ -151,7 +151,17 @@ Status: current.
 
 ### 2.0.0-alpha.11
 
-- Mock production flow.
+Status: current.
+
+- Apply alpha.10 field feedback and correct practical UX friction in the `apps/mobile` mock.
+- Replace the uneven image grid with a one-image carousel/card, current index, representative state, sibling representative/delete actions, and an optional thumbnail strip.
+- Show attachment upload time in `YYYY.MM.DD HH:mm:ss` format with file type and output include/exclude state.
+- Clean up overview ambiguity by replacing trading/production and short memo rows with participating company rows and a stronger next-check work card.
+- Redesign size/color around gender, product category, selected unit, saved template load/save, business-readable measurement columns, and color swatches.
+- Simplify fabric/accessory order status flow to `입력중`, `발주요청`, and `완료`, with only the actions allowed for the current status.
+- Improve the six-step production-flow rail spacing and current-step readability without changing the process model.
+- Do not connect real DB, API, R2, PDF Worker, upload, camera, file picker, sketch, share, print, order, delivery, inline-edit persistence, drag, or long-press behavior.
+- Align app display version to `2.0.0-alpha.11`.
 
 ### 2.0.0-alpha.12
 

@@ -346,11 +346,18 @@ function OverviewTab({ isTablet }: { isTablet: boolean }) {
 }
 
 function ImagesTab({ isTablet }: { isTablet: boolean }) {
+  const [activeImageIndex, setActiveImageIndex] = useState(2);
+  const activeImage = imageMocks[activeImageIndex];
+  const totalImages = imageMocks.length;
+  const moveImage = (direction: -1 | 1) => {
+    setActiveImageIndex((current) => (current + direction + totalImages) % totalImages);
+  };
+
   return (
     <View>
       <SectionTitle
         title="이미지·첨부"
-        caption="사진은 제목을 매번 입력하지 않고 썸네일로 고릅니다. 첫 이미지는 자동 대표가 되며, 첨부는 허용 확장자 mock만 표시합니다."
+        caption="이미지는 한 번에 하나씩 크게 확인하고 좌우로 넘깁니다. 첫 이미지는 자동 대표가 되며 실제 카메라/파일 선택은 연결하지 않습니다."
       />
       <SectionActionRow>
         <IconButton label="사진 선택 mock" symbol="▧" caption="사진" />
@@ -359,29 +366,61 @@ function ImagesTab({ isTablet }: { isTablet: boolean }) {
         <IconButton label="첨부파일 추가 mock" symbol="＋" caption="첨부" />
       </SectionActionRow>
       <View style={styles.compactNotice}>
-        <Text style={styles.compactNoticeText}>첫 이미지는 자동 대표 · 대표 삭제 시 다음 이미지가 대표 · 실제 카메라/파일 선택 없음</Text>
+        <Text style={styles.compactNoticeText}>첫 이미지는 자동 대표 · 현재 이미지 {activeImageIndex + 1} / {totalImages} · 실제 업로드 없음</Text>
       </View>
-      <View style={[styles.imageGrid, isTablet && styles.imageGridTablet]}>
-        {imageMocks.map((item) => (
-          <View
-            key={item.id}
-            style={[styles.imageTile, item.selected && styles.imageTileSelected]}
+      <View style={[styles.imageCarouselCard, isTablet && styles.imageCarouselCardTablet]}>
+        <View style={styles.imageCarouselTop}>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="이전 이미지 보기 mock 동작"
+            onPress={() => moveImage(-1)}
+            style={styles.imageNavButton}
           >
-            <Pressable
-              accessibilityRole="button"
-              accessibilityLabel={`${item.kind} 이미지 상세보기 mock 동작`}
-              style={styles.imageTileVisualWrap}
-            >
-              <GarmentPreview compact label={item.kind} />
-              {item.selected ? <Text style={styles.crownBadge}>대표</Text> : null}
-              <Text style={styles.imageTapHint}>눌러서 상세</Text>
-            </Pressable>
-            <ActionCluster>
-              <IconButton label={item.selected ? "대표 이미지" : "대표로 선택"} symbol={item.selected ? "★" : "☆"} caption="대표" />
-              <IconButton label="삭제 예정" symbol="×" danger caption="삭제" />
-            </ActionCluster>
+            <Text style={styles.imageNavText}>‹</Text>
+          </Pressable>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={`${activeImage.title} 이미지 상세보기 mock 동작`}
+            style={styles.imageHeroPress}
+          >
+            <GarmentPreview label={activeImage.kind} />
+            {activeImage.selected ? <Text style={styles.crownBadge}>대표</Text> : null}
+          </Pressable>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="다음 이미지 보기 mock 동작"
+            onPress={() => moveImage(1)}
+            style={styles.imageNavButton}
+          >
+            <Text style={styles.imageNavText}>›</Text>
+          </Pressable>
+        </View>
+        <View style={styles.imageCaptionRow}>
+          <View style={styles.flex}>
+            <Text style={styles.rowTitle}>{activeImage.title}</Text>
+            <Text style={styles.smallText}>{activeImage.note}</Text>
           </View>
-        ))}
+          <Text style={styles.imageIndex}>{activeImageIndex + 1} / {totalImages}</Text>
+        </View>
+        <ActionCluster>
+          <IconButton label={activeImage.selected ? "대표 이미지" : "대표로 선택"} symbol={activeImage.selected ? "★" : "☆"} caption={activeImage.selected ? "대표" : "지정"} />
+          <IconButton label="삭제 예정" symbol="×" danger caption="삭제" />
+        </ActionCluster>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.thumbnailStrip}>
+          {imageMocks.map((item, index) => (
+            <Pressable
+              key={item.id}
+              accessibilityRole="button"
+              accessibilityLabel={`${index + 1}번째 이미지 선택 mock 동작`}
+              onPress={() => setActiveImageIndex(index)}
+              style={[styles.thumbnailDot, index === activeImageIndex && styles.thumbnailDotActive]}
+            >
+              <Text style={[styles.thumbnailDotText, index === activeImageIndex && styles.thumbnailDotTextActive]}>
+                {index + 1}
+              </Text>
+            </Pressable>
+          ))}
+        </ScrollView>
       </View>
       <View style={styles.subsection}>
         <Text style={styles.subsectionTitle}>첨부파일 목록</Text>
@@ -389,7 +428,10 @@ function ImagesTab({ isTablet }: { isTablet: boolean }) {
           <View key={item.title} style={styles.attachmentRow}>
             <View style={styles.flex}>
               <Text style={styles.rowTitle}>{item.title}</Text>
-              <Text style={styles.rowDetail}>{item.detail} · 포함 선택은 제작 문서에서 처리</Text>
+              <Text style={styles.rowDetail}>
+                {item.detail} · {item.included ? "출력 포함" : "출력 제외"}
+              </Text>
+              <Text style={styles.smallText}>업로드 {item.uploadedAt}</Text>
             </View>
             <IconButton label="첨부 삭제 예정" symbol="×" danger />
           </View>
@@ -412,11 +454,19 @@ function SizesTab({ isTablet }: { isTablet: boolean }) {
     <View>
       <SectionTitle
         title="사이즈·색상"
-        caption="선택한 단위만 표에 표시합니다. 제품 유형별 추천 치수는 시작점이고, 실제 값은 자유 수정 mock입니다."
+        caption="성별, 제품 분류, 단위를 먼저 고르고 저장된 치수 구성을 불러오는 mock입니다. 표에는 선택한 단위만 표시합니다."
       />
       <View style={styles.quantityCheck}>
         <Text style={styles.quantityCheckTitle}>색상별 수량 합계</Text>
         <Text style={styles.quantityCheckText}>총 360벌</Text>
+      </View>
+      <View style={styles.templateStrip}>
+        <Text style={styles.segmentSelected}>여성</Text>
+        <Text style={styles.segment}>남성</Text>
+        <Text style={styles.segment}>공용</Text>
+        <Text style={styles.segmentSelected}>상의</Text>
+        <Text style={styles.segment}>하의</Text>
+        <Text style={styles.segment}>아우터</Text>
       </View>
       <View style={styles.segmentRow}>
         <Pressable accessibilityRole="button" accessibilityLabel="cm 단위 보기" onPress={() => setUnitMode("cm")}>
@@ -427,6 +477,10 @@ function SizesTab({ isTablet }: { isTablet: boolean }) {
         </Pressable>
         <Text style={styles.segment}>1/8 helper 예정</Text>
       </View>
+      <View style={styles.sectionActionRow}>
+        <AddChip label="불러오기" />
+        <AddChip label="현재 구성 저장" />
+      </View>
       <View style={styles.templateStrip}>
         {sizeTemplates.map((template) => (
           <View key={template.productType} style={[styles.templateChip, template.selected && styles.templateChipSelected]}>
@@ -434,24 +488,27 @@ function SizesTab({ isTablet }: { isTablet: boolean }) {
             <Text style={[styles.templateDetail, template.selected && styles.templateDetailSelected]}>{template.fields.join(" · ")}</Text>
           </View>
         ))}
+      </View>
+      <View style={styles.tableActionRow}>
         <AddChip label="사이즈 추가" />
+        <AddChip label="부위 추가" />
       </View>
       <ScrollView horizontal showsHorizontalScrollIndicator={false}>
         <View style={styles.sizeTable}>
           <View style={styles.tableHeader}>
-            <Text style={styles.tableCellStrong}>구분</Text>
             <Text style={styles.tableCellStrong}>사이즈</Text>
             <Text style={styles.tableCell}>가슴</Text>
             <Text style={styles.tableCell}>총장</Text>
             <Text style={styles.tableCell}>어깨</Text>
+            <Text style={styles.tableCell}>소매</Text>
           </View>
           {sizeRows.map((row) => (
-            <View key={`${row.group}-${row.size}`} style={styles.tableRow}>
-              <Text style={styles.tableCellStrong}>{row.group}</Text>
+            <View key={row.size} style={styles.tableRow}>
               <Text style={styles.tableCellStrong}>{row.size}</Text>
               <Text style={styles.tableCell}>{unitMode === "cm" ? row.chestCm : row.chestIn} {unitSuffix}</Text>
               <Text style={styles.tableCell}>{unitMode === "cm" ? row.lengthCm : row.lengthIn} {unitSuffix}</Text>
               <Text style={styles.tableCell}>{unitMode === "cm" ? row.shoulderCm : row.shoulderIn} {unitSuffix}</Text>
+              <Text style={styles.tableCell}>{unitMode === "cm" ? row.sleeveCm : row.sleeveIn} {unitSuffix}</Text>
             </View>
           ))}
         </View>
@@ -459,7 +516,10 @@ function SizesTab({ isTablet }: { isTablet: boolean }) {
       <View style={[styles.colorGrid, isTablet && styles.colorGridTablet]}>
         {colorRows.map((row) => (
           <View key={row.color} style={styles.colorRow}>
-            <Text style={styles.colorChip}>{row.color}</Text>
+            <View style={styles.colorTitleRow}>
+              <View style={[styles.colorSwatch, colorSwatchStyle(row.swatch)]} />
+              <Text style={styles.colorChip}>{row.color}</Text>
+            </View>
             <Text style={styles.rowTitle}>{row.quantity}</Text>
             <Text style={styles.smallText}>{row.note}</Text>
           </View>
@@ -479,8 +539,9 @@ function MaterialTab({
   summary: string;
   rows: MaterialRowData[];
 }) {
-  const orderable = rows.filter((row) => row.status === "발주 가능").length;
-  const requested = rows.filter((row) => row.status === "발주 요청").length;
+  const inputCount = rows.filter((row) => row.status === "입력중").length;
+  const requested = rows.filter((row) => row.status === "발주요청").length;
+  const completed = rows.filter((row) => row.status === "완료").length;
 
   return (
     <View>
@@ -492,8 +553,9 @@ function MaterialTab({
       </View>
       <View style={styles.rowSummary}>
         <Text style={styles.inlineMetric}>품목 {rows.length}건</Text>
-        <Text style={styles.inlineMetric}>발주 가능 {orderable}건</Text>
-        <Text style={styles.inlineMetric}>발주 요청 {requested}건</Text>
+        <Text style={styles.inlineMetric}>입력중 {inputCount}건</Text>
+        <Text style={styles.inlineMetric}>발주요청 {requested}건</Text>
+        <Text style={styles.inlineMetric}>완료 {completed}건</Text>
       </View>
       {rows.map((row) => (
         <MaterialRow key={row.name} row={row} />
@@ -702,10 +764,11 @@ function InfoRow({ label, value }: { label: string; value: string }) {
 }
 
 function MaterialRow({ row }: { row: MaterialRowData }) {
-  const primaryAction = getMaterialAction(row);
+  const actions = getMaterialActions(row);
+  const locked = row.status !== "입력중";
 
   return (
-    <View style={[styles.dataRow, row.locked && styles.lockedRow]}>
+    <View style={[styles.dataRow, locked && styles.lockedRow, row.status === "완료" && styles.completedRow]}>
       <View style={styles.rowHead}>
         <SwatchVisual tone={getMaterialTone(row)} label={row.category} />
         <View style={styles.flex}>
@@ -716,11 +779,16 @@ function MaterialRow({ row }: { row: MaterialRowData }) {
         </View>
         <View style={styles.statusCluster}>
           <Text style={[styles.rowBadge, statusBadgeStyle(row.status)]}>{row.status}</Text>
-          {primaryAction ? <IconButton label={primaryAction.label} symbol={primaryAction.symbol} caption={primaryAction.caption} emphasized /> : null}
-          <IconButton label={row.locked ? "잠김" : "수정 가능"} symbol={row.locked ? "●" : "○"} caption={row.locked ? "잠금" : "수정"} danger={row.status === "주의/잠김"} />
-          <IconButton label="보기" symbol="□" caption="보기" />
-          {!row.locked ? <IconButton label="삭제 예정" symbol="×" danger caption="삭제" /> : null}
-          <IconButton label="개별 사진 선택 사항" symbol="▧" caption="사진" />
+          {actions.map((action) => (
+            <IconButton
+              key={action.caption}
+              label={`${action.label} mock`}
+              symbol={action.symbol}
+              caption={action.caption}
+              emphasized={action.emphasized}
+              danger={action.danger}
+            />
+          ))}
         </View>
       </View>
       <Text style={styles.rowDetail}>
@@ -730,24 +798,28 @@ function MaterialRow({ row }: { row: MaterialRowData }) {
         단위 {row.unit} · 단가 {row.unitPrice} · 금액 {row.amount}
       </Text>
       <View style={styles.materialFooter}>
-        <Text style={styles.smallText}>{row.leftover} · {row.warning} · 사진 선택 사항</Text>
-        <InlineEditHint locked={row.locked} />
+        <Text style={styles.smallText}>{row.leftover} · {row.warning}</Text>
+        <InlineEditHint status={row.status} />
       </View>
     </View>
   );
 }
 
-function getMaterialAction(row: MaterialRowData) {
-  if (!row.primaryAction || row.status === "발주 완료") {
-    return null;
+function getMaterialActions(row: MaterialRowData) {
+  if (row.status === "완료") {
+    return [];
   }
-  if (row.status === "발주 요청") {
-    return { label: `${row.primaryAction} mock`, symbol: "✓", caption: "완료" };
+  if (row.status === "발주요청") {
+    return [
+      { label: "발주 완료 처리", symbol: "✓", caption: "완료", emphasized: true },
+      { label: "발주 요청 취소", symbol: "↶", caption: "취소" },
+      { label: "삭제 예정", symbol: "×", caption: "삭제", danger: true }
+    ];
   }
-  if (row.status === "발주 가능") {
-    return { label: `${row.primaryAction} mock`, symbol: "↗", caption: "발주" };
-  }
-  return { label: `${row.primaryAction} mock`, symbol: "!", caption: "확인" };
+  return [
+    { label: "발주 요청", symbol: "↗", caption: "발주", emphasized: true },
+    { label: "삭제 예정", symbol: "×", caption: "삭제", danger: true }
+  ];
 }
 
 function ActionCluster({ children }: { children: ReactNode }) {
@@ -775,10 +847,17 @@ function AddChip({ label }: { label: string }) {
   );
 }
 
-function InlineEditHint({ locked }: { locked: boolean }) {
+function InlineEditHint({ status }: { status: MaterialStatus }) {
+  const locked = status !== "입력중";
+  const message =
+    status === "완료"
+      ? "완료 · 읽기 전용"
+      : status === "발주요청"
+        ? "발주요청 후 수정 불가 · 취소하면 입력중으로 돌아가는 mock"
+        : "입력 가능 · 값을 눌러 수정 mock";
   return (
     <Text style={[styles.inlineEditHint, locked && styles.inlineEditHintLocked]}>
-      {locked ? "잠김 · 보기만 가능" : "값을 눌러 수정 mock"}
+      {message}
     </Text>
   );
 }
@@ -899,18 +978,24 @@ function progressStatusBadge(status: string) {
 
 function statusBadgeStyle(status: MaterialStatus) {
   switch (status) {
-    case "발주 가능":
-      return styles.statusReady;
-    case "발주 요청":
+    case "발주요청":
       return styles.statusRequested;
-    case "발주 완료":
+    case "완료":
       return styles.statusCompleted;
-    case "주의/잠김":
-      return styles.statusDanger;
     case "입력중":
     default:
       return styles.statusDraft;
   }
+}
+
+function colorSwatchStyle(swatch: "ivory" | "navy" | "black") {
+  if (swatch === "navy") {
+    return styles.colorSwatchNavy;
+  }
+  if (swatch === "black") {
+    return styles.colorSwatchBlack;
+  }
+  return styles.colorSwatchIvory;
 }
 
 const styles = StyleSheet.create({
@@ -1407,6 +1492,7 @@ const styles = StyleSheet.create({
   },
   nextCheckPanel: {
     alignItems: "flex-start",
+    borderLeftWidth: 4,
     borderRadius: 11,
     flexDirection: "row",
     gap: 10,
@@ -1415,13 +1501,16 @@ const styles = StyleSheet.create({
     paddingVertical: 10
   },
   nextCheckNeutral: {
-    backgroundColor: "#f6efe5"
+    backgroundColor: "#f6efe5",
+    borderLeftColor: "#8d8174"
   },
   nextCheckWarning: {
-    backgroundColor: "#fff1d3"
+    backgroundColor: "#fff1d3",
+    borderLeftColor: "#c75f35"
   },
   nextCheckReady: {
-    backgroundColor: "#edf2e7"
+    backgroundColor: "#edf2e7",
+    borderLeftColor: "#4d6a3a"
   },
   nextCheckEyebrow: {
     backgroundColor: "#17263d",
@@ -1560,6 +1649,85 @@ const styles = StyleSheet.create({
     paddingVertical: 3,
     position: "absolute",
     right: 6
+  },
+  imageCarouselCard: {
+    backgroundColor: "#fffaf2",
+    borderColor: "#eadfce",
+    borderRadius: 12,
+    borderWidth: 1,
+    gap: 9,
+    padding: 9
+  },
+  imageCarouselCardTablet: {
+    alignSelf: "center",
+    maxWidth: 520,
+    width: "100%"
+  },
+  imageCarouselTop: {
+    alignItems: "center",
+    flexDirection: "row",
+    gap: 8
+  },
+  imageHeroPress: {
+    flex: 1,
+    position: "relative"
+  },
+  imageNavButton: {
+    alignItems: "center",
+    backgroundColor: "#17263d",
+    borderRadius: 999,
+    height: 34,
+    justifyContent: "center",
+    width: 34
+  },
+  imageNavText: {
+    color: "#ffffff",
+    fontSize: 28,
+    fontWeight: "900",
+    lineHeight: 30
+  },
+  imageCaptionRow: {
+    alignItems: "center",
+    flexDirection: "row",
+    gap: 10,
+    justifyContent: "space-between"
+  },
+  imageIndex: {
+    backgroundColor: "#f0e4d3",
+    borderRadius: 999,
+    color: "#5d544b",
+    flexShrink: 0,
+    fontSize: 11,
+    fontWeight: "900",
+    overflow: "hidden",
+    paddingHorizontal: 8,
+    paddingVertical: 5
+  },
+  thumbnailStrip: {
+    gap: 6,
+    paddingTop: 2
+  },
+  thumbnailDot: {
+    alignItems: "center",
+    backgroundColor: "#f3eadb",
+    borderColor: "#e1d4c2",
+    borderRadius: 999,
+    borderWidth: 1,
+    height: 28,
+    justifyContent: "center",
+    width: 28
+  },
+  thumbnailDotActive: {
+    backgroundColor: "#17263d",
+    borderColor: "#17263d"
+  },
+  thumbnailDotText: {
+    color: "#665c52",
+    fontSize: 11,
+    fontWeight: "900"
+  },
+  thumbnailDotTextActive: {
+    color: "#ffffff"
   },
   actionCluster: {
     alignItems: "center",
@@ -1707,6 +1875,14 @@ const styles = StyleSheet.create({
     gap: 7,
     marginBottom: 10
   },
+  tableActionRow: {
+    alignItems: "center",
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 7,
+    justifyContent: "flex-end",
+    marginBottom: 8
+  },
   templateChip: {
     backgroundColor: "#f7f0e5",
     borderColor: "#eadfce",
@@ -1783,6 +1959,27 @@ const styles = StyleSheet.create({
     minWidth: 148,
     padding: 10
   },
+  colorTitleRow: {
+    alignItems: "center",
+    flexDirection: "row",
+    gap: 7
+  },
+  colorSwatch: {
+    borderColor: "#d9cbb7",
+    borderRadius: 999,
+    borderWidth: 1,
+    height: 18,
+    width: 18
+  },
+  colorSwatchIvory: {
+    backgroundColor: "#f5ead6"
+  },
+  colorSwatchNavy: {
+    backgroundColor: "#17263d"
+  },
+  colorSwatchBlack: {
+    backgroundColor: "#181512"
+  },
   colorChip: {
     backgroundColor: "#efe4d3",
     borderRadius: 999,
@@ -1825,19 +2022,21 @@ const styles = StyleSheet.create({
   progressRail: {
     alignItems: "flex-start",
     gap: 0,
-    justifyContent: "space-between",
+    justifyContent: "center",
     minWidth: "100%",
-    paddingBottom: 4
+    paddingBottom: 5,
+    paddingHorizontal: 8
   },
   progressStep: {
-    flex: 1,
-    minWidth: 74,
-    paddingRight: 8
+    alignItems: "center",
+    minWidth: 88,
+    paddingHorizontal: 4
   },
   progressTopLine: {
     alignItems: "center",
     flexDirection: "row",
-    height: 18
+    height: 20,
+    width: "100%"
   },
   progressDot: {
     borderRadius: 999,
@@ -1860,19 +2059,21 @@ const styles = StyleSheet.create({
     backgroundColor: "#dfd3c3",
     flex: 1,
     height: 2,
-    marginLeft: 5
+    marginHorizontal: 5
   },
   progressShort: {
     color: "#17263d",
     fontSize: 12,
     fontWeight: "900",
-    marginTop: 5
+    marginTop: 5,
+    textAlign: "center"
   },
   progressStatus: {
     fontSize: 10,
     fontWeight: "900",
     lineHeight: 14,
-    marginTop: 2
+    marginTop: 2,
+    textAlign: "center"
   },
   progressStatusDone: {
     color: "#4d6a3a"
@@ -1929,6 +2130,9 @@ const styles = StyleSheet.create({
   },
   lockedRow: {
     opacity: 0.82
+  },
+  completedRow: {
+    backgroundColor: "#fbfaf6"
   },
   rowHead: {
     alignItems: "flex-start",

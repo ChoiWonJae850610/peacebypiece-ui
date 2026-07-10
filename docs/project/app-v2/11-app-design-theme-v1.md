@@ -200,3 +200,15 @@ Final color values may be tuned after device review. The current contract is sem
 - Size/color add controls should be small `+` chips near the affected list or table.
 - The production-flow rail should feel like a workbench timeline that uses available width, not a cramped sample-app strip.
 - No dependency, external asset, font file, real upload, camera, file picker, share, PDF, API, DB, R2, Worker, push notification, order, delivery, inline-edit save, drag, or long-press integration is added by this correction.
+
+## 15. Practical UX Correction
+
+`2.0.0-alpha.11` keeps Dongdaemun Atelier Ops and makes the app mock feel less like a sample screen under heavier real production-card data.
+
+- The image area should feel like a production review carousel: one image in focus, clear current index, representative state, quick representative/delete actions, and optional thumbnail strip.
+- Attachment metadata should be operational, not decorative: filename, type, output include/exclude, and upload timestamp.
+- Overview should surface participating makers and next work, not generic memo/help language.
+- Size/color should feel like a saved measurement workbench: gender, category, unit, template load/save, size rows, body-part addition, and color quantity swatches.
+- Material and accessory actions should read as status flow, not as a pile of row tools. `입력중` can request/delete, `발주요청` can complete/cancel/delete, and `완료` is read-only.
+- Production flow remains a six-step handoff rail and should be visually centered and calm enough for tablet review.
+- No dependency, external asset, font file, real upload, camera, file picker, sketch, share, print, PDF, API, DB, R2, Worker, push notification, order, delivery, inline-edit save, drag, or long-press integration is added by this correction.

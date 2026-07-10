@@ -49,6 +49,7 @@ export type AttachmentMock = {
   title: string;
   detail: string;
   included: boolean;
+  uploadedAt: string;
 };
 
 export type SizeTemplate = {
@@ -58,23 +59,25 @@ export type SizeTemplate = {
 };
 
 export type SizeRow = {
-  group: string;
   size: string;
   chestCm: string;
   lengthCm: string;
   shoulderCm: string;
+  sleeveCm: string;
   chestIn: string;
   lengthIn: string;
   shoulderIn: string;
+  sleeveIn: string;
 };
 
 export type ColorRow = {
   color: string;
   quantity: string;
   note: string;
+  swatch: "ivory" | "navy" | "black";
 };
 
-export type MaterialStatus = "입력중" | "발주 가능" | "발주 요청" | "발주 완료" | "주의/잠김";
+export type MaterialStatus = "입력중" | "발주요청" | "완료";
 
 export type MaterialRow = {
   name: string;
@@ -92,7 +95,7 @@ export type MaterialRow = {
   status: MaterialStatus;
   warning: string;
   locked: boolean;
-  primaryAction: "발주 요청" | "발주 완료" | "정보 확인" | null;
+  primaryAction: "발주요청" | "완료" | null;
 };
 
 export type ProcessRow = {
@@ -217,9 +220,10 @@ export const costMetrics: SummaryMetric[] = [
 
 export const overviewInfo: InfoItem[] = [
   { label: "제품 타입", value: productionCardMock.productType },
-  { label: "거래/제작", value: productionCardMock.tradingSummary },
-  { label: "짧은 메모", value: productionCardMock.memo },
-  { label: "다음 확인", value: productionCardMock.nextAction }
+  { label: "원단", value: "서울패브릭" },
+  { label: "부자재", value: "버튼하우스 · 라벨팩토리" },
+  { label: "봉제", value: "한강 봉제" },
+  { label: "검품", value: "동대문 검품" }
 ];
 
 export const nextCheckByTab: Record<ProductionTabId, NextCheckItem> = {
@@ -261,38 +265,42 @@ export const nextCheckByTab: Record<ProductionTabId, NextCheckItem> = {
 };
 
 export const imageMocks: ImageMock[] = [
-  { id: "front", title: "정면 착장", kind: "대표", selected: true, note: "첫 이미지가 자동 대표가 되는 mock" },
+  { id: "front", title: "정면 착장", kind: "사진", selected: true, note: "첫 이미지가 자동 대표가 되는 mock" },
   { id: "detail", title: "앞판 디테일", kind: "사진", selected: false, note: "카라와 버튼 간격 확인" },
-  { id: "sketch", title: "허리 라인", kind: "스케치", selected: false, note: "절개선과 허리끈 위치" },
-  { id: "reference", title: "소매 참고", kind: "참고", selected: false, note: "소매 통과 커프스 폭 참고" }
+  { id: "sketch", title: "허리 라인 스케치", kind: "스케치", selected: false, note: "절개선과 허리끈 위치" },
+  { id: "reference", title: "소매 참고", kind: "참고", selected: false, note: "소매 통과 커프스 폭 참고" },
+  { id: "back", title: "뒷면 착장", kind: "사진", selected: false, note: "뒷판 절개와 여밈 확인" },
+  { id: "button", title: "버튼 간격", kind: "사진", selected: false, note: "자개 버튼 간격 확인" },
+  { id: "label", title: "케어라벨 위치", kind: "참고", selected: false, note: "라벨 위치 전달용" },
+  { id: "fabric", title: "원단 질감", kind: "사진", selected: false, note: "리넨 조직감 확인" },
+  { id: "fit", title: "피팅 참고", kind: "참고", selected: false, note: "전체 핏 균형 참고" },
+  { id: "package", title: "포장 참고", kind: "참고", selected: false, note: "폴리백 접힘 방향 참고" }
 ];
 
 export const attachmentRows: AttachmentMock[] = [
-  { title: "원단 스와치 확인.pdf", detail: "PDF 문서 · 출력 포함", included: true },
-  { title: "부자재 참고 이미지.png", detail: "이미지 파일 · 출력 포함", included: true },
-  { title: "봉제 라벨 참고.webp", detail: "이미지 파일 · 출력 제외", included: false }
+  { title: "원단 스와치 확인.pdf", detail: "PDF 문서", included: true, uploadedAt: "2026.08.03 14:21:35" },
+  { title: "부자재 참고 이미지.png", detail: "이미지 파일", included: true, uploadedAt: "2026.08.03 14:24:02" },
+  { title: "봉제 라벨 참고.webp", detail: "이미지 파일", included: false, uploadedAt: "2026.08.04 09:12:18" }
 ];
 
 export const sizeTemplates: SizeTemplate[] = [
-  { productType: "상의", fields: ["가슴", "총장", "어깨", "소매"], selected: true },
-  { productType: "하의", fields: ["허리", "밑위", "허벅지", "총장", "밑단"] },
-  { productType: "원피스", fields: ["가슴", "허리", "총장", "어깨", "소매"] },
-  { productType: "아우터/점퍼", fields: ["가슴", "총장", "어깨", "소매", "암홀"] },
-  { productType: "맨투맨/오버롤", fields: ["가슴", "허리", "총장", "어깨", "밑단"] }
+  { productType: "여성 원피스 기본", fields: ["가슴", "총장", "어깨", "소매"], selected: true },
+  { productType: "공용 셔츠 기본", fields: ["가슴", "총장", "어깨", "소매"] },
+  { productType: "고객사 여름 원피스", fields: ["가슴", "허리", "총장", "소매"] }
 ];
 
 export const sizeRows: SizeRow[] = [
-  { group: "표준", size: "XS", chestCm: "45.0", lengthCm: "112.0", shoulderCm: "36.5", chestIn: "17 3/4", lengthIn: "44 1/8", shoulderIn: "14 3/8" },
-  { group: "표준", size: "S", chestCm: "47.5", lengthCm: "113.0", shoulderCm: "37.5", chestIn: "18 3/4", lengthIn: "44 1/2", shoulderIn: "14 3/4" },
-  { group: "표준", size: "M", chestCm: "50.0", lengthCm: "114.5", shoulderCm: "39.0", chestIn: "19 5/8", lengthIn: "45 1/8", shoulderIn: "15 3/8" },
-  { group: "고객사", size: "55", chestCm: "46.0", lengthCm: "112.5", shoulderCm: "37.0", chestIn: "18 1/8", lengthIn: "44 1/4", shoulderIn: "14 5/8" },
-  { group: "자유", size: "FREE", chestCm: "52.0", lengthCm: "116.0", shoulderCm: "40.0", chestIn: "20 1/2", lengthIn: "45 5/8", shoulderIn: "15 3/4" }
+  { size: "XS", chestCm: "45.0", lengthCm: "112.0", shoulderCm: "36.5", sleeveCm: "22.0", chestIn: "17 3/4", lengthIn: "44 1/8", shoulderIn: "14 3/8", sleeveIn: "8 5/8" },
+  { size: "S", chestCm: "47.5", lengthCm: "113.0", shoulderCm: "37.5", sleeveCm: "22.5", chestIn: "18 3/4", lengthIn: "44 1/2", shoulderIn: "14 3/4", sleeveIn: "8 7/8" },
+  { size: "M", chestCm: "50.0", lengthCm: "114.5", shoulderCm: "39.0", sleeveCm: "23.0", chestIn: "19 5/8", lengthIn: "45 1/8", shoulderIn: "15 3/8", sleeveIn: "9" },
+  { size: "55", chestCm: "46.0", lengthCm: "112.5", shoulderCm: "37.0", sleeveCm: "22.5", chestIn: "18 1/8", lengthIn: "44 1/4", shoulderIn: "14 5/8", sleeveIn: "8 7/8" },
+  { size: "FREE", chestCm: "52.0", lengthCm: "116.0", shoulderCm: "40.0", sleeveCm: "24.0", chestIn: "20 1/2", lengthIn: "45 5/8", shoulderIn: "15 3/4", sleeveIn: "9 1/2" }
 ];
 
 export const colorRows: ColorRow[] = [
-  { color: "아이보리", quantity: "80벌", note: "XS 20 / S 35 / M 25" },
-  { color: "네이비", quantity: "120벌", note: "S 45 / M 55 / 66 20" },
-  { color: "블랙", quantity: "160벌", note: "S 40 / M 80 / FREE 40" }
+  { color: "아이보리", quantity: "80벌", note: "XS 20 / S 35 / M 25", swatch: "ivory" },
+  { color: "네이비", quantity: "120벌", note: "S 45 / M 55 / 66 20", swatch: "navy" },
+  { color: "블랙", quantity: "160벌", note: "S 40 / M 80 / FREE 40", swatch: "black" }
 ];
 
 export const fabricRows: MaterialRow[] = [
@@ -308,10 +316,10 @@ export const fabricRows: MaterialRow[] = [
     unit: "yd",
     unitPrice: "12,800원",
     amount: "4,889,600원",
-    status: "발주 가능",
+    status: "입력중",
     warning: "주문 수량 확인 필요",
     locked: false,
-    primaryAction: "발주 요청"
+    primaryAction: "발주요청"
   },
   {
     name: "안감 레이온",
@@ -328,7 +336,7 @@ export const fabricRows: MaterialRow[] = [
     status: "입력중",
     warning: "거래처 없음",
     locked: false,
-    primaryAction: "정보 확인"
+    primaryAction: "발주요청"
   },
   {
     name: "허리끈 배색 원단",
@@ -342,10 +350,10 @@ export const fabricRows: MaterialRow[] = [
     unit: "yd",
     unitPrice: "9,200원",
     amount: "487,600원",
-    status: "발주 요청",
+    status: "발주요청",
     warning: "요청 후 잠금",
     locked: true,
-    primaryAction: "발주 완료"
+    primaryAction: "완료"
   },
   {
     name: "테이프 보강 원단",
@@ -359,7 +367,7 @@ export const fabricRows: MaterialRow[] = [
     unit: "yd",
     unitPrice: "6,200원",
     amount: "0원",
-    status: "발주 완료",
+    status: "완료",
     warning: "보기만 가능",
     locked: true,
     primaryAction: null
@@ -380,10 +388,10 @@ export const accessoryRows: MaterialRow[] = [
     unit: "개",
     unitPrice: "240원",
     amount: "498,240원",
-    status: "발주 가능",
+    status: "입력중",
     warning: "수량 확인",
     locked: false,
-    primaryAction: "발주 요청"
+    primaryAction: "발주요청"
   },
   {
     name: "케어 라벨",
@@ -398,10 +406,10 @@ export const accessoryRows: MaterialRow[] = [
     unit: "장",
     unitPrice: "420원",
     amount: "155,400원",
-    status: "발주 요청",
+    status: "발주요청",
     warning: "요청 후 잠금",
     locked: true,
-    primaryAction: "발주 완료"
+    primaryAction: "완료"
   },
   {
     name: "행택 끈",
@@ -419,7 +427,7 @@ export const accessoryRows: MaterialRow[] = [
     status: "입력중",
     warning: "단가 없음",
     locked: false,
-    primaryAction: "정보 확인"
+    primaryAction: "발주요청"
   },
   {
     name: "폴리백",
@@ -434,7 +442,7 @@ export const accessoryRows: MaterialRow[] = [
     unit: "장",
     unitPrice: "130원",
     amount: "52,000원",
-    status: "발주 완료",
+    status: "완료",
     warning: "보기만 가능",
     locked: true,
     primaryAction: null
