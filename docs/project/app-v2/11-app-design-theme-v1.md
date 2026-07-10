@@ -250,3 +250,15 @@ Final color values may be tuned after device review. The current contract is sem
 - Production-flow emphasis should guide the current step without turning the rail into a decorative timeline.
 - Local CTA completion may update only mock screen state.
 - No dependency, external asset, font file, real upload, camera, file picker, sketch, share, print, PDF, API, DB, R2, Worker, push notification, order, delivery, schema, migration, inline-edit save, drag, or long-press integration is added by this correction.
+
+## 19. Alpha.15 Icon Library Adoption
+
+`2.0.0-alpha.15` keeps Dongdaemun Atelier Ops and moves the app mock from temporary drawn icons to a consistent icon library.
+
+- The mobile mock uses `lucide-react-native` for action icons and `react-native-svg` as the Expo-compatible SVG runtime.
+- Icon selection should favor concrete production meaning over decoration: photo, camera, sketch, attachment, crown, folder, save, ruler, palette, document request, clipboard check, preview, share, print, undo, check, delete, search, notification, and more.
+- The WAFL icon wrapper/mapping is the preferred place to choose icons and tune size, stroke, and tone.
+- Status badges and action buttons remain visually distinct.
+- Per-item material/accessory `발주` is separate from global `작지 발주`.
+- The icon library does not authorize real camera, file picker, upload, share, print, PDF, order, delivery, API, DB, R2, Worker, schema, migration, or production mutation work.
+- Package metadata checked: `lucide-react-native` uses ISC; `react-native-svg` uses MIT.

@@ -171,6 +171,28 @@ Manual device QA remains owner confirmation:
 
 No real camera, picker, upload, share, print, PDF, DB, API, R2, Worker, order, delivery, schema, migration, or production mutation evidence is expected for this mock-only version.
 
+## 2.0.0-alpha.15 icon library QA
+
+Automatic checks:
+
+- `apps/mobile npm run typecheck`
+- `apps/mobile npm run expo:config`
+- root `npx tsc --noEmit`
+- root `npm run build`
+- targeted eslint for `apps/mobile/components/ProductionCardMock.tsx`
+- `git diff --check`
+- `node tests/unicode-encoding-contract.mjs`
+- approved workflow verify
+
+Manual device QA remains owner confirmation:
+
+- iPhone portrait: Lucide icons read as photo, camera, sketch, attachment, crown, material order, cancel, complete, delete, and `작지 발주`.
+- iPad mini portrait: icon + label buttons wrap without making cards too tall.
+- iPad Pro landscape: material/accessory action buttons remain distinct from status badges.
+- Galaxy Tab portrait/landscape: production rail line ends at `출고` after rotation.
+
+No real camera, picker, upload, share, print, PDF, DB, API, R2, Worker, order, delivery, schema, migration, or production mutation evidence is expected for this mock-only version.
+
 ## 2.0.0-alpha.12 alpha.11 UX follow-up QA
 
 The alpha.12 mobile mock requires review of the follow-up corrections:

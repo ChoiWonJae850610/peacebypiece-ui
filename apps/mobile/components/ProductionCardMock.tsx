@@ -1,5 +1,31 @@
 import { type ReactNode, useMemo, useState } from "react";
 import {
+  Bell,
+  Camera,
+  Check,
+  ClipboardCheck,
+  Crown,
+  Eye,
+  FileCheck,
+  FileText,
+  FileUp,
+  FolderOpen,
+  Image as ImageIcon,
+  MoreHorizontal,
+  Palette,
+  Paperclip,
+  Plus,
+  Printer,
+  RotateCcw,
+  Ruler,
+  Save,
+  Search,
+  Share2,
+  Trash2,
+  X,
+  type LucideIcon
+} from "lucide-react-native";
+import {
   Pressable,
   SafeAreaView,
   ScrollView,
@@ -111,9 +137,9 @@ function TopBar({ isTablet }: { isTablet: boolean }) {
         <Text style={styles.topMeta}>동대문 제작 워크룸 · {MOBILE_APP_VERSION}</Text>
       </View>
       <View style={styles.iconRow}>
-        <IconButton label="검색" symbol="⌕" />
-        <IconButton label="알림" symbol="!" />
-        <IconButton label="더보기" symbol="..." />
+        <IconButton label="검색" icon="search" />
+        <IconButton label="알림" icon="bell" />
+        <IconButton label="더보기" icon="more" />
       </View>
       {isTablet ? <Text style={styles.deviceHint}>Tablet</Text> : null}
     </View>
@@ -236,6 +262,7 @@ function WorkOrderStatusCard({
         onPress={onPress}
         style={[styles.workOrderButton, issued && styles.workOrderButtonIssued]}
       >
+        <IconMark icon={issued ? "fileText" : "clipboardCheck"} emphasized={!issued} />
         <Text style={[styles.workOrderButtonText, issued && styles.workOrderButtonTextIssued]}>
           {issued ? "작지 보기" : "작지 발주"}
         </Text>
@@ -259,7 +286,7 @@ function WorkOrderConfirmPanel({
           <Text style={styles.smallText}>실제 출력, 공유, 저장 없이 화면 상태만 바꾸는 mock 확인 sheet입니다.</Text>
         </View>
         <Pressable accessibilityRole="button" accessibilityLabel="작지 발주 확인 닫기 mock" onPress={onClose} style={styles.confirmCloseButton}>
-          <Text style={styles.confirmCloseText}>x</Text>
+          <IconMark icon="x" />
         </Pressable>
       </View>
       <View style={styles.confirmCheckGrid}>
@@ -276,9 +303,11 @@ function WorkOrderConfirmPanel({
       </View>
       <View style={styles.confirmActionRow}>
         <Pressable accessibilityRole="button" accessibilityLabel="작지 미리보기 mock" style={styles.secondaryConfirmButton}>
+          <IconMark icon="eye" />
           <Text style={styles.secondaryConfirmButtonText}>미리보기</Text>
         </Pressable>
         <Pressable accessibilityRole="button" accessibilityLabel="작지 출력 및 발주 완료 mock" onPress={onComplete} style={styles.primaryConfirmButton}>
+          <IconMark icon="fileCheck" emphasized />
           <Text style={styles.primaryConfirmButtonText}>작지 출력 및 발주 완료</Text>
         </Pressable>
       </View>
@@ -520,7 +549,7 @@ function ImagesTab({ isTablet }: { isTablet: boolean }) {
         </View>
         <ActionCluster>
           <IconButton label={activeImage.selected ? "대표 이미지" : "대표로 선택"} icon="crown" caption={activeImage.selected ? "대표" : "지정"} />
-          <IconButton label="삭제 예정" symbol="x" danger caption="삭제" />
+          <IconButton label="삭제 예정" icon="delete" danger caption="삭제" />
         </ActionCluster>
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.thumbnailStrip}>
           {imageMocks.map((item, index) => (
@@ -549,7 +578,7 @@ function ImagesTab({ isTablet }: { isTablet: boolean }) {
               </Text>
               <Text style={styles.smallText}>업로드 {item.uploadedAt}</Text>
             </View>
-            <IconButton label="첨부 삭제 예정" symbol="x" danger />
+            <IconButton label="첨부 삭제 예정" icon="delete" danger />
           </View>
         ))}
       </View>
@@ -811,10 +840,10 @@ function DocumentWorkbench({ included }: { included: typeof attachmentRows }) {
           <Text style={styles.smallText}>전달 메모 · {primaryDelivery.memo}</Text>
         </View>
         <View style={styles.documentActionBar}>
-          <IconButton label="보기" symbol="□" />
-          <IconButton label="공유" symbol="↗" />
-          <IconButton label="인쇄" symbol="⎙" />
-          <IconButton label="저장" symbol="↓" />
+          <IconButton label="보기" icon="eye" />
+          <IconButton label="공유" icon="share" />
+          <IconButton label="인쇄" icon="printer" />
+          <IconButton label="저장" icon="save" />
         </View>
       </View>
     </View>
@@ -856,7 +885,7 @@ function OutputTab() {
               <Text style={styles.smallText}>{row.items} · {row.contact}</Text>
               <Text style={styles.smallText}>전달 메모 · {row.memo}</Text>
             </View>
-            <IconButton label="배송요청 저장" symbol="↓" />
+            <IconButton label="배송요청 저장" icon="save" />
           </View>
         ))}
       </View>
@@ -964,7 +993,7 @@ function SectionActionRow({ children }: { children: ReactNode }) {
 function HeaderAddButton({ label }: { label: string }) {
   return (
     <Pressable accessibilityRole="button" accessibilityLabel={`${label} mock 동작`} style={styles.headerAddButton}>
-      <Text style={styles.headerAddButtonText}>＋</Text>
+      <IconMark icon="plus" emphasized />
     </Pressable>
   );
 }
@@ -1097,114 +1126,59 @@ type IconKind =
   | "measure"
   | "swatchAdd"
   | "requestDoc"
+  | "clipboardCheck"
+  | "fileCheck"
+  | "fileText"
+  | "eye"
+  | "share"
+  | "printer"
+  | "plus"
+  | "search"
+  | "bell"
+  | "more"
   | "undo"
   | "check"
-  | "delete";
+  | "delete"
+  | "x";
+
+const iconMap: Record<IconKind, LucideIcon> = {
+  photo: ImageIcon,
+  camera: Camera,
+  sketch: Palette,
+  clip: Paperclip,
+  crown: Crown,
+  folder: FolderOpen,
+  save: Save,
+  rowAdd: Plus,
+  measure: Ruler,
+  swatchAdd: Palette,
+  requestDoc: FileUp,
+  clipboardCheck: ClipboardCheck,
+  fileCheck: FileCheck,
+  fileText: FileText,
+  eye: Eye,
+  share: Share2,
+  printer: Printer,
+  plus: Plus,
+  search: Search,
+  bell: Bell,
+  more: MoreHorizontal,
+  undo: RotateCcw,
+  check: Check,
+  delete: Trash2,
+  x: X
+};
 
 function IconMark({ icon, emphasized = false, danger = false }: { icon: IconKind; emphasized?: boolean; danger?: boolean }) {
-  const inkStyle = emphasized ? styles.iconShapeLight : danger ? styles.iconShapeDanger : styles.iconShapeDark;
+  return <WaflIcon icon={icon} emphasized={emphasized} danger={danger} />;
+}
 
-  if (icon === "photo") {
-    return (
-      <View style={[styles.iconPhotoFrame, inkStyle]}>
-        <View style={[styles.iconPhotoSun, inkStyle]} />
-        <View style={[styles.iconPhotoGround, inkStyle]} />
-      </View>
-    );
-  }
-  if (icon === "camera") {
-    return (
-      <View style={[styles.iconCameraBody, inkStyle]}>
-        <View style={[styles.iconCameraLens, inkStyle]} />
-      </View>
-    );
-  }
-  if (icon === "sketch") {
-    return (
-      <View style={styles.iconSketchBox}>
-        <View style={[styles.iconSketchLine, inkStyle]} />
-        <View style={[styles.iconSketchTip, inkStyle]} />
-      </View>
-    );
-  }
-  if (icon === "clip") {
-    return <View style={[styles.iconClipShape, inkStyle]} />;
-  }
-  if (icon === "folder") {
-    return (
-      <View style={[styles.iconFolderShape, inkStyle]}>
-        <View style={[styles.iconFolderTab, inkStyle]} />
-      </View>
-    );
-  }
-  if (icon === "save") {
-    return (
-      <View style={[styles.iconSaveShape, inkStyle]}>
-        <View style={[styles.iconSaveSlot, inkStyle]} />
-      </View>
-    );
-  }
-  if (icon === "rowAdd") {
-    return (
-      <View style={styles.iconGridShape}>
-        <View style={[styles.iconGridLine, inkStyle]} />
-        <View style={[styles.iconPlusVertical, inkStyle]} />
-        <View style={[styles.iconPlusHorizontal, inkStyle]} />
-      </View>
-    );
-  }
-  if (icon === "measure") {
-    return (
-      <View style={[styles.iconMeasureShape, inkStyle]}>
-        <View style={[styles.iconMeasureTick, inkStyle]} />
-        <View style={[styles.iconMeasureTickSmall, inkStyle]} />
-      </View>
-    );
-  }
-  if (icon === "swatchAdd") {
-    return (
-      <View style={styles.iconSwatchAddBox}>
-        <View style={[styles.iconSwatchDot, inkStyle]} />
-        <View style={[styles.iconPlusVertical, inkStyle]} />
-        <View style={[styles.iconPlusHorizontal, inkStyle]} />
-      </View>
-    );
-  }
-  if (icon === "requestDoc") {
-    return (
-      <View style={[styles.iconRequestDoc, inkStyle]}>
-        <View style={[styles.iconRequestLine, inkStyle]} />
-        <View style={[styles.iconRequestArrow, inkStyle]} />
-      </View>
-    );
-  }
-  if (icon === "undo") {
-    return (
-      <View style={styles.iconUndoBox}>
-        <View style={[styles.iconUndoArc, inkStyle]} />
-        <View style={[styles.iconUndoHead, inkStyle]} />
-      </View>
-    );
-  }
-  if (icon === "check") {
-    return <View style={[styles.iconCheckShape, inkStyle]} />;
-  }
-  if (icon === "delete") {
-    return (
-      <View style={styles.iconDeleteBox}>
-        <View style={[styles.iconDeleteLineA, inkStyle]} />
-        <View style={[styles.iconDeleteLineB, inkStyle]} />
-      </View>
-    );
-  }
-  return (
-    <View style={styles.iconCrownBox}>
-      <View style={[styles.iconCrownBase, inkStyle]} />
-      <View style={[styles.iconCrownSideLeft, inkStyle]} />
-      <View style={[styles.iconCrownPeak, inkStyle]} />
-      <View style={[styles.iconCrownSideRight, inkStyle]} />
-    </View>
-  );
+function WaflIcon({ icon, emphasized = false, danger = false }: { icon: IconKind; emphasized?: boolean; danger?: boolean }) {
+  const IconComponent = iconMap[icon];
+  const color = emphasized ? "#ffffff" : danger ? "#9a4035" : "#17263d";
+  const iconSize = icon === "more" ? 19 : icon === "crown" ? 18 : 17;
+
+  return <IconComponent color={color} size={iconSize} strokeWidth={2.25} />;
 }
 
 function BottomNavigation() {
@@ -1427,15 +1401,6 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: "900"
   },
-  iconShapeDark: {
-    borderColor: "#17263d"
-  },
-  iconShapeLight: {
-    borderColor: "#ffffff"
-  },
-  iconShapeDanger: {
-    borderColor: "#9a4035"
-  },
   iconCaptionText: {
     color: "#4f463f",
     fontSize: 10,
@@ -1446,280 +1411,6 @@ const styles = StyleSheet.create({
   },
   iconDangerText: {
     color: "#9a4035"
-  },
-  iconPhotoFrame: {
-    borderRadius: 3,
-    borderWidth: 1.5,
-    height: 14,
-    position: "relative",
-    width: 16
-  },
-  iconPhotoSun: {
-    borderRadius: 999,
-    borderWidth: 1.4,
-    height: 4,
-    position: "absolute",
-    right: 2,
-    top: 2,
-    width: 4
-  },
-  iconPhotoGround: {
-    borderBottomWidth: 1.5,
-    bottom: 3,
-    height: 6,
-    left: 3,
-    position: "absolute",
-    transform: [{ rotate: "-18deg" }],
-    width: 10
-  },
-  iconCameraBody: {
-    borderRadius: 4,
-    borderWidth: 1.5,
-    height: 13,
-    justifyContent: "center",
-    width: 17
-  },
-  iconCameraLens: {
-    alignSelf: "center",
-    borderRadius: 999,
-    borderWidth: 1.5,
-    height: 6,
-    width: 6
-  },
-  iconSketchBox: {
-    height: 16,
-    justifyContent: "center",
-    width: 16
-  },
-  iconSketchLine: {
-    alignSelf: "center",
-    borderBottomWidth: 2,
-    height: 2,
-    transform: [{ rotate: "-35deg" }],
-    width: 14
-  },
-  iconSketchTip: {
-    borderLeftWidth: 2,
-    borderTopWidth: 2,
-    height: 5,
-    position: "absolute",
-    right: 1,
-    top: 2,
-    transform: [{ rotate: "10deg" }],
-    width: 5
-  },
-  iconClipShape: {
-    borderBottomWidth: 1.5,
-    borderLeftWidth: 1.5,
-    borderRadius: 7,
-    borderRightWidth: 1.5,
-    height: 15,
-    transform: [{ rotate: "-15deg" }],
-    width: 10
-  },
-  iconFolderShape: {
-    borderBottomWidth: 1.5,
-    borderLeftWidth: 1.5,
-    borderRadius: 3,
-    borderRightWidth: 1.5,
-    borderTopWidth: 1.5,
-    height: 12,
-    marginTop: 3,
-    width: 17
-  },
-  iconFolderTab: {
-    borderTopWidth: 1.5,
-    height: 4,
-    left: 1,
-    position: "absolute",
-    top: -5,
-    width: 8
-  },
-  iconSaveShape: {
-    borderRadius: 3,
-    borderWidth: 1.5,
-    height: 16,
-    width: 15
-  },
-  iconSaveSlot: {
-    borderBottomWidth: 1.5,
-    bottom: 3,
-    height: 5,
-    left: 3,
-    position: "absolute",
-    right: 3
-  },
-  iconGridShape: {
-    height: 16,
-    justifyContent: "center",
-    width: 16
-  },
-  iconGridLine: {
-    borderBottomWidth: 1.5,
-    height: 5,
-    width: 13
-  },
-  iconPlusVertical: {
-    borderLeftWidth: 1.7,
-    height: 8,
-    position: "absolute",
-    right: 1,
-    top: 1
-  },
-  iconPlusHorizontal: {
-    borderTopWidth: 1.7,
-    position: "absolute",
-    right: -2,
-    top: 5,
-    width: 8
-  },
-  iconMeasureShape: {
-    borderBottomWidth: 1.7,
-    height: 14,
-    transform: [{ rotate: "-18deg" }],
-    width: 17
-  },
-  iconMeasureTick: {
-    borderLeftWidth: 1.3,
-    height: 6,
-    left: 4,
-    position: "absolute",
-    top: 7
-  },
-  iconMeasureTickSmall: {
-    borderLeftWidth: 1.3,
-    height: 4,
-    left: 11,
-    position: "absolute",
-    top: 9
-  },
-  iconSwatchAddBox: {
-    height: 16,
-    width: 16
-  },
-  iconSwatchDot: {
-    borderRadius: 999,
-    borderWidth: 1.5,
-    height: 10,
-    left: 0,
-    position: "absolute",
-    top: 4,
-    width: 10
-  },
-  iconRequestDoc: {
-    borderRadius: 2,
-    borderWidth: 1.5,
-    height: 16,
-    width: 13
-  },
-  iconRequestLine: {
-    borderTopWidth: 1.4,
-    left: 3,
-    position: "absolute",
-    right: 3,
-    top: 5
-  },
-  iconRequestArrow: {
-    borderRightWidth: 1.5,
-    borderTopWidth: 1.5,
-    bottom: 2,
-    height: 6,
-    position: "absolute",
-    right: -5,
-    transform: [{ rotate: "45deg" }],
-    width: 6
-  },
-  iconUndoBox: {
-    height: 16,
-    width: 16
-  },
-  iconUndoArc: {
-    borderLeftWidth: 1.7,
-    borderRadius: 999,
-    borderTopWidth: 1.7,
-    height: 13,
-    left: 2,
-    position: "absolute",
-    top: 2,
-    transform: [{ rotate: "-22deg" }],
-    width: 13
-  },
-  iconUndoHead: {
-    borderLeftWidth: 1.7,
-    borderTopWidth: 1.7,
-    height: 6,
-    left: 1,
-    position: "absolute",
-    top: 2,
-    transform: [{ rotate: "-25deg" }],
-    width: 6
-  },
-  iconCheckShape: {
-    borderBottomWidth: 2,
-    borderRightWidth: 2,
-    height: 12,
-    transform: [{ rotate: "40deg" }],
-    width: 7
-  },
-  iconDeleteBox: {
-    height: 15,
-    width: 15
-  },
-  iconDeleteLineA: {
-    borderTopWidth: 1.9,
-    left: 1,
-    position: "absolute",
-    top: 7,
-    transform: [{ rotate: "45deg" }],
-    width: 14
-  },
-  iconDeleteLineB: {
-    borderTopWidth: 1.9,
-    left: 1,
-    position: "absolute",
-    top: 7,
-    transform: [{ rotate: "-45deg" }],
-    width: 14
-  },
-  iconCrownBox: {
-    height: 15,
-    justifyContent: "flex-end",
-    width: 17
-  },
-  iconCrownBase: {
-    borderBottomWidth: 2,
-    height: 3,
-    width: 17
-  },
-  iconCrownPeak: {
-    borderLeftWidth: 2,
-    borderTopWidth: 2,
-    height: 10,
-    left: 4,
-    position: "absolute",
-    top: 3,
-    transform: [{ rotate: "45deg" }],
-    width: 10
-  },
-  iconCrownSideLeft: {
-    borderLeftWidth: 2,
-    borderTopWidth: 2,
-    height: 8,
-    left: 0,
-    position: "absolute",
-    top: 6,
-    transform: [{ rotate: "35deg" }],
-    width: 8
-  },
-  iconCrownSideRight: {
-    borderRightWidth: 2,
-    borderTopWidth: 2,
-    height: 8,
-    position: "absolute",
-    right: 0,
-    top: 6,
-    transform: [{ rotate: "-35deg" }],
-    width: 8
   },
   workbench: {
     gap: 10
@@ -1919,6 +1610,8 @@ const styles = StyleSheet.create({
     alignItems: "center",
     backgroundColor: "#23375a",
     borderRadius: 8,
+    flexDirection: "row",
+    gap: 6,
     minHeight: 30,
     justifyContent: "center",
     paddingHorizontal: 10,
@@ -2006,6 +1699,8 @@ const styles = StyleSheet.create({
     borderColor: "#d9d0c2",
     borderRadius: 8,
     borderWidth: 1,
+    flexDirection: "row",
+    gap: 6,
     minHeight: 36,
     paddingHorizontal: 12,
     paddingVertical: 8
@@ -2019,6 +1714,8 @@ const styles = StyleSheet.create({
     alignItems: "center",
     backgroundColor: "#23375a",
     borderRadius: 8,
+    flexDirection: "row",
+    gap: 6,
     minHeight: 36,
     paddingHorizontal: 12,
     paddingVertical: 8
@@ -2966,7 +2663,6 @@ const styles = StyleSheet.create({
   },
   progressRailTrack: {
     flexDirection: "row",
-    minWidth: "100%",
     position: "relative"
   },
   progressContinuousLine: {

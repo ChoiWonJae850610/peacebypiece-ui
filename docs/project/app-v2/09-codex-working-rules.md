@@ -235,3 +235,14 @@ For the alpha.14 mobile mock:
 - After mock completion, the rail may show `발주` complete and `자재` derived from existing fabric/accessory statuses.
 - Completed material/accessory rows still show no action buttons.
 - Do not add dependencies, icon libraries, external assets, fonts, root package changes, root lockfile changes, or real production integration.
+
+## 2.0.0-alpha.15 icon library rule
+
+For the alpha.15 mobile mock:
+
+- `apps/mobile` may use `lucide-react-native` with `react-native-svg` for the icon system.
+- Prefer the WAFL local icon wrapper/mapping over ad hoc inline drawings, emoji, or temporary text symbols.
+- Keep icon plus short label where pure icon-only slows production judgment.
+- Per-item `발주` and global `작지 발주` must stay distinct.
+- Do not introduce another icon library for the same purpose.
+- Do not add font files, external image assets, root package changes, root lockfile changes, real camera/file picker/upload/sketch/share/print/PDF/order/delivery behavior, API, DB, R2, Worker, schema, migration, or production mutation.

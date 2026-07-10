@@ -1,3 +1,57 @@
+# 2.0.0-alpha.15 WAFL v2 App-first Icon Library Adoption
+
+- Current GPT checkpoint: `2.0.0-alpha.15`.
+- Baseline source before this patch: repository `APP_VERSION: 2.0.0-alpha.14`.
+- Baseline commit: `32c56058a515b59229cee11152e73ea9cc123357`.
+- This patch keeps the `apps/mobile` mock-only boundary and replaces the remaining hand-drawn/temporary action icon grammar with a real React Native icon library.
+- Added `lucide-react-native` to `apps/mobile` for cross-platform production action icons.
+- Added `react-native-svg` to `apps/mobile` through Expo-compatible install because Lucide React Native renders SVG icons.
+- License/package metadata checked: `lucide-react-native@1.24.0` is ISC; `react-native-svg@15.15.3` is MIT.
+- The mobile mock now uses a single WAFL icon wrapper/mapping for photo, camera, sketch, attachment, crown, folder, save, plus, ruler, palette, document request, work-order CTA, preview, share, print, undo, check, delete, search, notification, and more actions.
+- Temporary inline icon drawings were removed from `ProductionCardMock.tsx`; action meaning is now controlled through the central icon mapping.
+- Per-item material/accessory `발주` remains separate from the global `작지 발주` CTA.
+- The production-flow rail track no longer stretches to the full container width, so the line ends at the `출고` dot instead of continuing past it.
+- `작지 발주` remains a local mock confirmation flow only.
+- No real DB, API, R2, PDF Worker, upload, camera, image picker, sketch, share, print, order, delivery, inline-edit persistence, schema, migration, or production mutation is connected.
+- No font files or external image assets are added.
+- Root `package.json` and root lockfile remain unchanged; dependency changes are limited to `apps/mobile/package.json` and `apps/mobile/package-lock.json`.
+
+Explicitly not changed:
+
+```text
+- DB migration
+- API route behavior
+- Neon schema
+- Cloudflare R2 Worker
+- PDF Worker
+- real file upload/delete
+- real camera/photo/file picker/sketch
+- real share-link generation
+- real PDF generation
+- real auth callback
+- real order/delivery mutation
+- real inline edit save
+- real push notification
+- real drag/long-press mutation
+- production data
+- root package.json
+- root package-lock.json
+- pnpm lock/workspace files
+- /system or /workspace deletion
+```
+
+Manual device QA remains required before product verification:
+
+```text
+- iPhone portrait icon readability and work-order CTA review
+- iPad mini portrait selector width and icon/label wrapping review
+- iPad Pro landscape material row action/status distinction review
+- Galaxy Tab portrait/landscape production rail ending review
+- Expo Web preview inspection after local server run
+```
+
+---
+
 # 2.0.0-alpha.14 WAFL v2 App-first UI Polish + Work Order CTA Mock
 
 - Current GPT checkpoint: `2.0.0-alpha.14`.

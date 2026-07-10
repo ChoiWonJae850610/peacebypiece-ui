@@ -289,6 +289,16 @@ No real upload, camera, file picker, sketch, share, print, PDF generation, deliv
 
 The version still does not implement real DB, API, R2, Worker, PDF, upload, camera, image picker, sketch, share, print, order, delivery, schema, migration, or production mutation behavior.
 
+## 2.0.0-alpha.15 icon library adoption
+
+`2.0.0-alpha.15` maps the mobile/tablet mock actions to an actual icon system while keeping the `/ui` alpha.27 feature map as product reference.
+
+- The app mock uses `lucide-react-native` for repeated production action icons.
+- `react-native-svg` is included because Lucide React Native depends on SVG rendering.
+- Image, attachment, size/color, material/accessory, document, work-order CTA, output/share, and top-bar actions are routed through the WAFL icon mapping.
+- Temporary drawn icon primitives are not the default direction after this point.
+- This does not add real picker, camera, upload, PDF, share, print, order, delivery, API, DB, R2, Worker, schema, migration, or production mutation behavior.
+
 Core correction:
 
 - Image/attachment entry actions use dependency-free visual helper icons and Korean labels.

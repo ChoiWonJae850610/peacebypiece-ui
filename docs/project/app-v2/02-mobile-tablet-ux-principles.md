@@ -168,6 +168,19 @@ The alpha.14 mobile mock correction keeps the alpha.13 compact production-card d
 
 This correction remains mock-only and does not connect real inline edit save, camera, file picker, upload, share, print, PDF generation, API, DB, R2, Worker, push notification, order, delivery, sketch, drag, long-press, schema, migration, or production mutation behavior.
 
+## 2.0.0-alpha.15 icon library adoption
+
+The alpha.15 mobile mock correction replaces temporary icon drawings with a real icon library while preserving the alpha.14 interaction structure:
+
+- Use `lucide-react-native` icons through the WAFL wrapper/mapping for repeated production actions.
+- Keep icon + short label for actions where symbol-only reading is too slow.
+- Do not use emoji, decorative glyphs, or one-off custom SVG files for ordinary action icons.
+- Keep mobile portrait density and tablet portrait/landscape stability.
+- Keep the production-flow rail ending at `출고`.
+- Keep `작지 발주` as a local mock confirmation flow only.
+
+This correction remains mock-only and does not connect real inline edit save, camera, file picker, upload, share, print, PDF generation, API, DB, R2, Worker, push notification, order, delivery, sketch, drag, long-press, schema, migration, or production mutation behavior.
+
 ## 2.0.0-alpha.12 alpha.11 UX follow-up correction
 
 The alpha.12 mobile mock correction tightens the alpha.11 direction before output/share deepening:

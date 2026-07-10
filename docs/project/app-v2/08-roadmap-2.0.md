@@ -1,4 +1,4 @@
-# WAFL v2 App-first Roadmap 2.0 - 2.0.0-alpha.14
+# WAFL v2 App-first Roadmap 2.0 - 2.0.0-alpha.15
 
 ## Purpose
 
@@ -198,7 +198,7 @@ Status: done.
 
 ### 2.0.0-alpha.14
 
-Status: current.
+Status: done.
 
 - Apply alpha.13 field feedback as a UI polish and local work-order CTA mock pass.
 - Make image/attachment icons read as photo, camera, sketch, attachment, and representative crown without adding dependencies or assets.
@@ -213,6 +213,22 @@ Status: current.
 - After mock completion, show `발주` as complete and derive `자재` from existing fabric/accessory statuses.
 - Do not connect real DB, API, R2, PDF Worker, upload, camera, image picker, sketch, share, print, order, delivery, inline-edit persistence, schema, migration, or production mutation.
 - Align app display version to `2.0.0-alpha.14`.
+
+### 2.0.0-alpha.15
+
+Status: current.
+
+- Adopt an actual icon library for the `apps/mobile` mock instead of continuing temporary hand-drawn icon primitives.
+- Add `lucide-react-native` and Expo-compatible `react-native-svg` under `apps/mobile` only.
+- Record package metadata and license basis: `lucide-react-native` ISC, `react-native-svg` MIT.
+- Keep root `package.json` and root lockfile unchanged.
+- Replace image, camera, sketch, attachment, crown, size/color, material/accessory, document, work-order CTA, top-bar, and output action icons with a central WAFL icon mapping.
+- Preserve icon plus short label grammar where it helps production users read actions quickly.
+- Keep per-item `발주` distinct from global `작지 발주`.
+- Keep `작지 발주` as a local mock confirmation flow only.
+- Tighten the production-flow rail so the line ends at `출고`.
+- Do not connect real DB, API, R2, PDF Worker, upload, camera, image picker, sketch, share, print, order, delivery, inline-edit persistence, schema, migration, or production mutation.
+- Align app display version to `2.0.0-alpha.15`.
 
 ## Later integration phases
 
