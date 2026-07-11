@@ -37,11 +37,14 @@ Before any App-first file modification, read:
 12. `docs/project/app-v2/09-codex-working-rules.md`
 13. `docs/project/app-v2/10-public-landing-site.md`
 14. `docs/project/app-v2/11-app-design-theme-v1.md`
-15. `docs/project/v2/00-start-here.md` through `docs/project/v2/14-operational-policy-absorption.md`
-16. `docs/project/25-korean-unicode-encoding-standard.md`
-17. `docs/project/32-product-completion-and-ui-evidence-standard.md`
-18. `docs/project/26-final-policy-decisions-and-master-todo.md`
-19. `docs/project/31-pre-codex-integrated-master-plan.md`
+15. `docs/project/app-v2/12-v1-db-api-performance-audit.md`
+16. `docs/project/app-v2/13-core-domain-schema-v2.md`
+17. `docs/project/app-v2/14-v2-schema-migration-and-performance-plan.md`
+18. `docs/project/v2/00-start-here.md` through `docs/project/v2/14-operational-policy-absorption.md`
+19. `docs/project/25-korean-unicode-encoding-standard.md`
+20. `docs/project/32-product-completion-and-ui-evidence-standard.md`
+21. `docs/project/26-final-policy-decisions-and-master-todo.md`
+22. `docs/project/31-pre-codex-integrated-master-plan.md`
 
 ## 4. Newest rule
 
@@ -291,3 +294,13 @@ For the alpha.18 mobile/tablet mock:
 - Preserve alpha.17 production-card structure and mock-only behavior.
 - Do not apply this font to PDF/Worker generation in this version.
 - Do not add root package changes, root lockfile changes, real search/edit-save/camera/file picker/upload/sketch/share/print/PDF/order/delivery behavior, API, DB, R2, Worker, schema, migration, drag, long-press, or production mutation.
+
+## 2.0.0-alpha.19 DB/API performance audit and schema design rule
+
+- Treat alpha.19 as read-only source audit and design documentation, not DB implementation.
+- Base all v1 findings on repository migrations, schema, routes, services, repositories, and query code. Mark deployed-schema or runtime claims as unverified unless measured.
+- Use `12-v1-db-api-performance-audit.md` for v1 evidence, `13-core-domain-schema-v2.md` for the target domain contract, and `14-v2-schema-migration-and-performance-plan.md` for future gates.
+- Keep list and detail contracts separate, require company scope, use bounded cursor pagination, and keep core search/filter fields relational.
+- Keep mutable draft data separate from finalized revision and generated-document snapshots.
+- Do not add or modify migration/schema SQL, API implementation, DB repository, seed/fixture, R2/Worker/PDF implementation, business data, or production data in alpha.19.
+- Do not run DB benchmarks in alpha.19. Define the 500/5,000-row measurement contract for a later dev/test-only phase.

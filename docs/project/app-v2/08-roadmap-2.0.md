@@ -1,4 +1,4 @@
-# WAFL v2 App-first Roadmap 2.0 - 2.0.0-alpha.18
+# WAFL v2 App-first Roadmap 2.0 - 2.0.0-alpha.19
 
 ## Purpose
 
@@ -264,7 +264,7 @@ Status: done.
 
 ### 2.0.0-alpha.18
 
-Status: current.
+Status: done.
 
 - Apply 에이투지체 / A2Z as the bundled app UI font for the `apps/mobile` mock.
 - Add all nine A2Z TTF weights under `apps/mobile/assets/fonts/a2z/` with English repo filenames.
@@ -276,6 +276,20 @@ Status: current.
 - Do not apply A2Z to PDF/Worker font embedding in this version.
 - Do not connect real DB, API, R2, PDF Worker, upload, camera, image picker, sketch, share, print, order, delivery, search API, inline-edit persistence, drag, long-press, schema, migration, or production mutation.
 - Align app display version to `2.0.0-alpha.18`.
+
+### 2.0.0-alpha.19
+
+Status: current.
+
+- Audit v1 migration/schema/API/query/payload paths from repository source without connecting to or mutating a database.
+- Record the unbounded workorder list/summary contracts, row-level lateral aggregates, full material JSON summary, client-side full-array search, bulk-save N+1, and delete/reinsert collection writers as performance and integrity risks.
+- Add `12-v1-db-api-performance-audit.md` with table/API/JSON/index inventory and KEEP/CHANGE/REPLACE/UNKNOWN judgments.
+- Add `13-core-domain-schema-v2.md` with a revision-centered relational model, document-number/QR policy, state machines, list/detail/search contracts, index candidates, and immutable document snapshots.
+- Add `14-v2-schema-migration-and-performance-plan.md` with additive shadow migration phases, backfill/rollback, and future dev/test 500/5,000-row performance gates.
+- Keep existing company, partner, material master, material order/allocation, attachment lifecycle, and size-spec capabilities as migration inputs rather than deleting them.
+- Do not add or execute migration SQL, DB/schema mutation, API/repository implementation, seed/fixture, benchmark, R2/Worker/PDF change, or production mutation.
+- Keep root package files and dependencies unchanged; align app/mobile version metadata only.
+- Align app display version to `2.0.0-alpha.19`.
 
 ## Later integration phases
 

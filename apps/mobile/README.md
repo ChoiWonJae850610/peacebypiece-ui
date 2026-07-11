@@ -1,6 +1,6 @@
 # WAFL Mobile App Mock
 
-Version: `2.0.0-alpha.18`
+Version: `2.0.0-alpha.19`
 
 This Expo React Native app is the App-first WAFL v2 mobile/tablet mock surface.
 
@@ -33,6 +33,7 @@ Current visual foundation:
 - `2.0.0-alpha.16` corrects mobile/tablet section-tab centering, keeps tabs scrollable on phone widths, adds a compact 제작 카드 목록 search-field mock, shows subtle inline-edit affordance only on editable rows, removes editable affordance from locked/completed rows, and replaces bottom-nav `C/I/D/S` letters with Lucide icons plus Korean labels.
 - `2.0.0-alpha.17` redesigns inline-edit visual language so 원단/부자재 rows read as compact summary cards instead of repeated input boxes, keeps requested/completed rows locked/read-only, simplifies the production-flow rail area, and concentrates actual management into process-detail summary rows.
 - `2.0.0-alpha.18` applies 에이투지체 / A2Z as the bundled app mock UI font, stores the TTF assets under `assets/fonts/a2z`, records source/license details in `FONT-SOURCE.md`, and keeps PDF/Worker font embedding out of scope.
+- `2.0.0-alpha.19` adds a read-only v1 DB/API/performance audit and the v2 core domain/migration design under `docs/project/app-v2/12` through `14`. The mobile mock remains disconnected from real DB/API/save/search/PDF behavior.
 
 ## Font asset
 
@@ -62,7 +63,7 @@ The first screen contains a production-card list and a selected production card 
 
 The mock demonstrates a representative image placeholder, compact production summary, carousel-based image review, optional image titles with small fallback labels, allowed-extension attachment rows with upload time, compact fixed-width current-value size/color selectors, cm/inch switching, fabric/accessory quantity math, compact material summary rows, fixed-position status labels, amount-line status-based row actions, a local mock `작지 발주` confirmation CTA, Lucide-backed action icons, continuous production-flow progress rail, simplified rail guidance, process-detail summary rows, output document workbench, and delivery-request rows. Status-based material actions show only the actions allowed for the current status. All buttons are placeholders for product direction only.
 
-Further field feedback on the alpha.18 A2Z font application can continue in `2.0.0-alpha.19`; real camera/photo/file picker/upload/share/PDF/order/search/edit-save behavior remains deferred.
+The alpha.19 schema documents do not connect this app to real camera/photo/file picker/upload/share/PDF/order/search/edit-save behavior. Those integrations remain deferred.
 
 ## Commands
 

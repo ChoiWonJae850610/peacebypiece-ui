@@ -86,7 +86,13 @@ docs/project/app-v2/
   08-roadmap-2.0.md
   09-codex-working-rules.md
   10-public-landing-site.md
+  11-app-design-theme-v1.md
+  12-v1-db-api-performance-audit.md
+  13-core-domain-schema-v2.md
+  14-v2-schema-migration-and-performance-plan.md
 ```
+
+The alpha.19 documents are design and read-only audit authority. They do not authorize schema migration, API replacement, seed execution, DB/R2 mutation, or PDF Worker changes.
 
 ## Relationship to 0.30.x documents
 

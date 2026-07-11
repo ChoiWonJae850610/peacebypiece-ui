@@ -16,11 +16,14 @@
   12. `docs/project/app-v2/09-codex-working-rules.md`
   13. `docs/project/app-v2/10-public-landing-site.md`
   14. `docs/project/app-v2/11-app-design-theme-v1.md`
-  15. `docs/project/v2/00-start-here.md` through `docs/project/v2/14-operational-policy-absorption.md`
-  16. `docs/project/25-korean-unicode-encoding-standard.md`
-  17. `docs/project/32-product-completion-and-ui-evidence-standard.md`
-  18. `docs/project/26-final-policy-decisions-and-master-todo.md`
-  19. `docs/project/31-pre-codex-integrated-master-plan.md`
+  15. `docs/project/app-v2/12-v1-db-api-performance-audit.md`
+  16. `docs/project/app-v2/13-core-domain-schema-v2.md`
+  17. `docs/project/app-v2/14-v2-schema-migration-and-performance-plan.md`
+  18. `docs/project/v2/00-start-here.md` through `docs/project/v2/14-operational-policy-absorption.md`
+  19. `docs/project/25-korean-unicode-encoding-standard.md`
+  20. `docs/project/32-product-completion-and-ui-evidence-standard.md`
+  21. `docs/project/26-final-policy-decisions-and-master-todo.md`
+  22. `docs/project/31-pre-codex-integrated-master-plan.md`
 - `docs/project/app-v2/*` is the priority authority for the `2.0.x` App-first line.
 - Existing `docs/project/v2/*` documents are not deleted. They remain the `0.30.x` `/ui` design baseline and preserved policy reference for Product, Sheet/Card, Korean role labels, Neon/R2/Worker, PDF/share, mobile-web, and QA rules.
 - `www.wafl.co.kr` is the public marketing, download, pricing, examples, inquiry, trial-request, and waitlist landing site for the WAFL app.
@@ -29,6 +32,7 @@
 - `/ui` remains an implementation-baseline design showroom. It is not the customer-facing app target.
 - The customer-facing UI direction is Expo React Native first.
 - `docs/project/app-v2/11-app-design-theme-v1.md` defines the first app visual foundation: `동대문 제작 워크룸 / Dongdaemun Atelier Ops`.
+- `docs/project/app-v2/12-v1-db-api-performance-audit.md`, `13-core-domain-schema-v2.md`, and `14-v2-schema-migration-and-performance-plan.md` define the read-only v1 evidence, v2 core schema target, and migration/performance gates. They do not authorize migration execution.
 - Normal mobile production-card screens are portrait-first. Mobile landscape is not the default production-card target; the future sketch/drawing module may be the mobile-landscape exception.
 - Tablet app screens must support portrait and landscape without becoming a compressed desktop admin layout.
 - Next.js remains for system admin, customer admin advanced settings, operations, API, document, internal showroom, and test-console flows.

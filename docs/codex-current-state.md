@@ -1,3 +1,37 @@
+# 2.0.0-alpha.19 WAFL v2 App-first v1 DB/API Performance Audit and Core Schema Design
+
+- Current GPT checkpoint: `2.0.0-alpha.19`.
+- Baseline source before this patch: repository `APP_VERSION: 2.0.0-alpha.18`.
+- Baseline commit: `53869e0e8fa24adabbcf5feea57059cea3c163aa`.
+- This patch is a read-only repository audit and architecture design checkpoint. It does not connect to any DB or execute a benchmark.
+- `docs/project/app-v2/12-v1-db-api-performance-audit.md` inventories the actual v1 schema/API/query paths and classifies KEEP/CHANGE/REPLACE/DEPRECATE/UNKNOWN decisions.
+- Confirmed v1 list risks include unbounded workorder summary/full-list queries, row-by-row lateral aggregates, full material JSON aggregation, client-side full-array search, bulk-save detail N+1, and child collection delete/reinsert writes.
+- `docs/project/app-v2/13-core-domain-schema-v2.md` defines the v2 target around `work_orders`, immutable `work_order_revisions`, revision-scoped relational children, generated-document snapshots, opaque QR tokens, and company-scoped cursor queries.
+- The display document number uses a company-wide daily sequence in the company business timezone, keeps a stable base number, and changes only the `R0/R1/R2` suffix for revisions.
+- `docs/project/app-v2/14-v2-schema-migration-and-performance-plan.md` defines additive shadow schema, deterministic backfill, bounded dual-read/write cutover, rollback, and future 500/5,000-row dev/test performance gates.
+- Existing `companies`, `partners`, `materials`, material-order allocation, and size-spec patterns remain reusable with changes. `spec_sheets`, generated-PDF-as-attachment, and mixed current/snapshot responsibilities are replacement targets, not immediate deletion targets.
+- App display/package metadata is aligned to `2.0.0-alpha.19`; no dependency changed.
+
+Explicitly not changed or executed:
+
+```text
+- migration SQL or schema SQL
+- app/api implementation
+- DB repository/query implementation
+- dev/test or production DB connection/mutation
+- seed/fixture generation
+- benchmark or EXPLAIN execution
+- R2 object mutation
+- Cloudflare Worker or PDF Worker
+- mobile production-card UI
+- real save/search/upload/order/share/PDF integration
+- root package.json or root package-lock.json
+```
+
+Open decisions are limited to company/season/item code ownership, final document retention, inventory source-of-truth consolidation, completion correction state naming, and the future RLS/system-admin phase. Existing confirmed 30-day trash retention and tenant/session rules remain confirmed.
+
+---
+
 # 2.0.0-alpha.18 WAFL v2 App-first A2Z App Font Application
 
 - Current GPT checkpoint: `2.0.0-alpha.18`.
