@@ -1,4 +1,4 @@
-# WAFL v2 App-first Roadmap 2.0 - 2.0.0-alpha.19
+# WAFL v2 App-first Roadmap 2.0 - 2.0.0-alpha.20
 
 ## Purpose
 
@@ -279,7 +279,7 @@ Status: done.
 
 ### 2.0.0-alpha.19
 
-Status: current.
+Status: done.
 
 - Audit v1 migration/schema/API/query/payload paths from repository source without connecting to or mutating a database.
 - Record the unbounded workorder list/summary contracts, row-level lateral aggregates, full material JSON summary, client-side full-array search, bulk-save N+1, and delete/reinsert collection writers as performance and integrity risks.
@@ -290,6 +290,30 @@ Status: current.
 - Do not add or execute migration SQL, DB/schema mutation, API/repository implementation, seed/fixture, benchmark, R2/Worker/PDF change, or production mutation.
 - Keep root package files and dependencies unchanged; align app/mobile version metadata only.
 - Align app display version to `2.0.0-alpha.19`.
+
+### 2.0.0-alpha.20
+
+Status: done.
+
+- Confirm that `app/` and `apps/mobile/` are runtime boundaries rather than public-version folders; prohibit `app/v1`, `app/v2`, and equivalent mobile version roots.
+- Keep existing DB paths as the legacy/current baseline and add `db/v2` as a README-only future architecture workspace.
+- Confirm public app `1.0.0` can differ from internal architecture line `2.0.0-alpha.x` without source-folder renaming.
+- Resolve alpha.19 decisions for company/season/item code ownership, all issued revision retention, inventory lot/ledger authority, correction revisions, and phased RLS/system-admin policy.
+- Add `15-v2-source-db-boundary-and-release-policy.md`.
+- Add `16-workorder-api-command-read-model-contracts.md`.
+- Add `17-v2-api-contract-test-plan.md`.
+- Add neutral type-only contracts under `lib/domain/work-orders/contracts/` for primitives, enums, transitions, cursor pagination, read models, commands, readiness, errors, and authorization scope.
+- Add compile/static contract tests that forbid command-body company scope, unbounded list DTOs, storage keys/raw tokens, runtime API imports, and SQL under `db/v2`.
+- Keep list default/max at 30/50 and use opaque stable cursor pagination.
+- Require explicit entity versions and idempotency for issue/completion commands.
+- Define alpha.21 SQL/RLS draft and alpha.22 dev/test apply/500/5,000-row benchmark gates without creating or executing SQL now.
+- Do not change existing migrations/schema/API repositories/mobile runtime/R2/Worker/PDF behavior or production data.
+- Keep root package files and dependencies unchanged; align app/mobile version metadata only.
+- Align app display version to `2.0.0-alpha.20`.
+- Result: the README-only `db/v2` boundary, neutral WorkOrder type contracts, compile/static contract tests, and canonical documents 15 through 17 were added without runtime integration or SQL.
+- Verification: root/mobile TypeScript, Expo public config, document link/Mermaid checks, WorkOrder contract checks, Unicode, route guards, Next production build, and `automation-infrastructure` approved workflow PASS; mutation audit high-risk count is 0.
+- Git delivery: finalized by the approved version workflow; the matching commit/push identity is recorded in the generated repo-state artifact.
+- User confirmation: no visual or runtime behavior changed, so no manual product QA is required for this architecture-contract checkpoint.
 
 ## Later integration phases
 

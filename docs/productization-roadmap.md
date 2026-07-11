@@ -119,7 +119,7 @@ A later prompt must not be executed until the previous prompt has produced its c
 
 - Non-destructive internal/test/diagnostic features are permission-gated by active `system_admin`.
 - `/id-control` test account switching is allowed for active allowlisted system-admin users and remains unrelated to destructive Seed/Reset/Cleanup operations.
-- Destructive Reset, Seed, Cleanup, R2 mutation, DB migration, Purge, and production mutation guards remain unchanged.
+- Destructive Reset, Seed, Cleanup, R2 mutation, DB migration, and Purge guards remain unchanged; production mutation guards remain unchanged as well.
 - Regression contract: system-admin-internal-access.
 
 ## Active Sprint Sequence

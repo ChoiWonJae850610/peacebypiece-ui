@@ -40,11 +40,14 @@ Before any App-first file modification, read:
 15. `docs/project/app-v2/12-v1-db-api-performance-audit.md`
 16. `docs/project/app-v2/13-core-domain-schema-v2.md`
 17. `docs/project/app-v2/14-v2-schema-migration-and-performance-plan.md`
-18. `docs/project/v2/00-start-here.md` through `docs/project/v2/14-operational-policy-absorption.md`
-19. `docs/project/25-korean-unicode-encoding-standard.md`
-20. `docs/project/32-product-completion-and-ui-evidence-standard.md`
-21. `docs/project/26-final-policy-decisions-and-master-todo.md`
-22. `docs/project/31-pre-codex-integrated-master-plan.md`
+18. `docs/project/app-v2/15-v2-source-db-boundary-and-release-policy.md`
+19. `docs/project/app-v2/16-workorder-api-command-read-model-contracts.md`
+20. `docs/project/app-v2/17-v2-api-contract-test-plan.md`
+21. `docs/project/v2/00-start-here.md` through `docs/project/v2/14-operational-policy-absorption.md`
+22. `docs/project/25-korean-unicode-encoding-standard.md`
+23. `docs/project/32-product-completion-and-ui-evidence-standard.md`
+24. `docs/project/26-final-policy-decisions-and-master-todo.md`
+25. `docs/project/31-pre-codex-integrated-master-plan.md`
 
 ## 4. Newest rule
 
@@ -56,6 +59,17 @@ For `2.0.x` App-first pipeline handoff, keep only:
 - repo-state.
 
 Build logs and verification logs should be stored under `Logs/Repo_Status` and referenced from repo-state unless a future pipeline contract explicitly changes this.
+
+`approved-workflow.ps1 -Action Finish` success alone is not the completion signal. Before reporting a version complete, verify all of the following:
+
+- `4. Newest` contains exactly one final source ZIP and one matching repo-state for the current `HEAD` and `APP_VERSION`.
+- Neither artifact is missing, stale, or from a previous version.
+- Matching build-result and verification logs exist under `Logs/Repo_Status` and are referenced by repo-state.
+- Prior-version, duplicate, empty, or intermediate handoff artifacts are absent from `4. Newest`.
+- The source ZIP applies the full exclude contract, including `.env*` and `.env.example`.
+- `commit-meta.md` remains ignored local patch metadata and is never staged or committed.
+
+If any check fails, the version remains incomplete and the handoff must be repaired and revalidated before reporting completion.
 
 The source ZIP must exclude:
 
@@ -304,3 +318,16 @@ For the alpha.18 mobile/tablet mock:
 - Keep mutable draft data separate from finalized revision and generated-document snapshots.
 - Do not add or modify migration/schema SQL, API implementation, DB repository, seed/fixture, R2/Worker/PDF implementation, business data, or production data in alpha.19.
 - Do not run DB benchmarks in alpha.19. Define the 500/5,000-row measurement contract for a later dev/test-only phase.
+
+## 2.0.0-alpha.20 source/DB boundary and WorkOrder contract rule
+
+- Keep `app/` and `apps/mobile/` separated by runtime responsibility, not public version number. Do not create `app/v1`, `app/v2`, `apps/mobile/v1`, or `apps/mobile/v2`.
+- Keep the existing `db/schema`, `db/migrations`, `db/audits`, `db/seed`, and `db/test` paths in place as the legacy/current baseline.
+- `db/v2` is a README-only architecture workspace in alpha.20. Do not add migration SQL, full reset SQL, seed SQL, connection scripts, or destructive commands.
+- Use `lib/domain/work-orders/contracts/` for neutral type-only WorkOrder primitives, enums, read models, commands, errors, readiness, pagination, tenant scope, and transitions.
+- Do not import alpha.20 contracts from `app/api` or `apps/mobile` runtime code.
+- Command bodies must not trust client `companyId`; tenant scope comes from authenticated membership.
+- List DTOs must remain bounded and must not contain child collections, storage keys, document snapshots, or raw access tokens.
+- Completed/finalized revisions are immutable. Corrections create the next draft revision with a reason.
+- RLS is a required alpha.21 SQL draft and alpha.22 dev/test verification gate. Privileged system access stays separate and audited.
+- Do not add dependencies, DB/API/R2/Worker/PDF implementation, migration execution, seed mutation, or production mutation in alpha.20.

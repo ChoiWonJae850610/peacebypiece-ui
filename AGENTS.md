@@ -19,11 +19,14 @@
   15. `docs/project/app-v2/12-v1-db-api-performance-audit.md`
   16. `docs/project/app-v2/13-core-domain-schema-v2.md`
   17. `docs/project/app-v2/14-v2-schema-migration-and-performance-plan.md`
-  18. `docs/project/v2/00-start-here.md` through `docs/project/v2/14-operational-policy-absorption.md`
-  19. `docs/project/25-korean-unicode-encoding-standard.md`
-  20. `docs/project/32-product-completion-and-ui-evidence-standard.md`
-  21. `docs/project/26-final-policy-decisions-and-master-todo.md`
-  22. `docs/project/31-pre-codex-integrated-master-plan.md`
+  18. `docs/project/app-v2/15-v2-source-db-boundary-and-release-policy.md`
+  19. `docs/project/app-v2/16-workorder-api-command-read-model-contracts.md`
+  20. `docs/project/app-v2/17-v2-api-contract-test-plan.md`
+  21. `docs/project/v2/00-start-here.md` through `docs/project/v2/14-operational-policy-absorption.md`
+  22. `docs/project/25-korean-unicode-encoding-standard.md`
+  23. `docs/project/32-product-completion-and-ui-evidence-standard.md`
+  24. `docs/project/26-final-policy-decisions-and-master-todo.md`
+  25. `docs/project/31-pre-codex-integrated-master-plan.md`
 - `docs/project/app-v2/*` is the priority authority for the `2.0.x` App-first line.
 - Existing `docs/project/v2/*` documents are not deleted. They remain the `0.30.x` `/ui` design baseline and preserved policy reference for Product, Sheet/Card, Korean role labels, Neon/R2/Worker, PDF/share, mobile-web, and QA rules.
 - `www.wafl.co.kr` is the public marketing, download, pricing, examples, inquiry, trial-request, and waitlist landing site for the WAFL app.
@@ -33,6 +36,7 @@
 - The customer-facing UI direction is Expo React Native first.
 - `docs/project/app-v2/11-app-design-theme-v1.md` defines the first app visual foundation: `동대문 제작 워크룸 / Dongdaemun Atelier Ops`.
 - `docs/project/app-v2/12-v1-db-api-performance-audit.md`, `13-core-domain-schema-v2.md`, and `14-v2-schema-migration-and-performance-plan.md` define the read-only v1 evidence, v2 core schema target, and migration/performance gates. They do not authorize migration execution.
+- `docs/project/app-v2/15-v2-source-db-boundary-and-release-policy.md`, `16-workorder-api-command-read-model-contracts.md`, and `17-v2-api-contract-test-plan.md` define the source/DB workspace boundary, type-only WorkOrder contracts, and alpha.21~22 gates. `db/v2` contains no executable SQL in alpha.20.
 - Normal mobile production-card screens are portrait-first. Mobile landscape is not the default production-card target; the future sketch/drawing module may be the mobile-landscape exception.
 - Tablet app screens must support portrait and landscape without becoming a compressed desktop admin layout.
 - Next.js remains for system admin, customer admin advanced settings, operations, API, document, internal showroom, and test-console flows.
@@ -209,6 +213,10 @@
 - Do not hide failed or skipped tests. Report what ran, what did not run, and why.
 - Final reports should include: original version, result version, files changed, tests run, failures/skips, DB migration status, git status, and whether commit/push were performed.
 - For automatic version work, the normal `approved-workflow.ps1 -Action Finish` creates the latest ChatGPT handoff artifacts in `4. Newest` after commit/push unless `-SkipHandoff` is explicitly used. Report the ZIP, repo-state, and build-result filenames and whether APP_VERSION/HEAD match.
+- A version is not complete after `approved-workflow.ps1 -Action Finish` unless `4. Newest` contains exactly one final source ZIP and one matching repo-state for the current `HEAD` and `APP_VERSION`.
+- The matching build-result and verification log must remain under `Logs/Repo_Status`, and the repo-state must reference them.
+- Remove prior-version or duplicate handoff artifacts from `4. Newest`; source ZIPs must apply the complete exclude contract, including every `.env*` file.
+- `commit-meta.md` remains ignored local patch metadata and must not be staged or committed.
 - The canonical PowerShell entry point is `tools/pipeline/peacebypiece-auto-pipeline.ps1` and should be tracked in Git. Old version, patch, backup, temporary, and copied PowerShell variants remain ignored.
 - When Git is directly connected, full ZIP uploads, repo-state files, and separate PowerShell uploads are unnecessary operating overhead unless the user asks for them. A separate PowerShell upload is only useful when a newer external script copy exists or the task is explicitly script-only.
 

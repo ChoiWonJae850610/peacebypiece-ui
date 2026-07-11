@@ -1,3 +1,39 @@
+# 2.0.0-alpha.20 WAFL v2 Source/DB Boundary and WorkOrder Contract Baseline
+
+- Current GPT checkpoint: `2.0.0-alpha.20`.
+- Baseline source before this patch: repository `APP_VERSION: 2.0.0-alpha.19`.
+- Baseline commit: `420c362aee4d50bcafe3325b29cba97b18e107de`.
+- This patch defines architecture/type contracts only. It does not implement API routes, repositories, migrations, RLS SQL, DB access, or mobile runtime integration.
+- `app/` remains Next.js web/admin/API/internal tooling and `apps/mobile/` remains the Expo customer app. Version-number folders such as `app/v2` are prohibited.
+- Existing `db/schema`, `db/migrations`, `db/audits`, `db/seed`, and `db/test` stay in place. New `db/v2` contains README boundaries only and no SQL.
+- `docs/project/app-v2/15-v2-source-db-boundary-and-release-policy.md` separates internal architecture generation, public app release version, source roots, legacy DB paths, migration runner policy, and future Full Reset timing.
+- `docs/project/app-v2/16-workorder-api-command-read-model-contracts.md` defines branded primitives, state transitions, bounded list/detail/tab read models, granular commands, readiness, cursor, concurrency, errors, tenant/RLS, document number/revision/QR, and payload/query budgets.
+- `docs/project/app-v2/17-v2-api-contract-test-plan.md` defines alpha.20 static/compile evidence and alpha.21 SQL draft / alpha.22 dev-test migration and performance gates.
+- Type-only contracts live in `lib/domain/work-orders/contracts/` and are not imported by `app/api` or `apps/mobile` runtime code.
+- Commands omit `companyId`, use authenticated tenant context, and require explicit `expectedVersion` for major mutations. Issue/completion commands add idempotency keys.
+- WorkOrder list defaults to 30 and caps at 50 with opaque cursor pagination. Child arrays, storage keys, raw tokens, and document snapshots are forbidden in list DTOs.
+- Completed/finalized revisions are never reopened. A correction creates the next draft revision with a reason.
+- Company/season/item code ownership, issued-document retention, inventory lot/ledger authority, correction revision behavior, and phased RLS/system-admin policy are confirmed by the alpha.20 work order.
+- Non-destructive internal/test/diagnostic features are permission-gated by active `system_admin`; `/id-control` test account switching is allowed under the existing allowlist and audit contract. Destructive Reset, Seed, Cleanup, R2 mutation, DB migration, and Purge guards remain unchanged. Regression evidence remains `system-admin-internal-access`.
+- Alpha.20 completion now requires `4. Newest` to contain only the current HEAD/APP_VERSION source ZIP and matching repo-state, with matching build/verification logs under `Logs/Repo_Status`; stale or missing artifacts, incomplete `.env*` exclusion, or staged `commit-meta.md` block completion reporting.
+- App and mobile version metadata is aligned to `2.0.0-alpha.20`; no dependency changed.
+
+Explicitly not changed or executed:
+
+```text
+- existing db/schema or db/migrations
+- migration/full_reset/seed SQL
+- Neon or any DB connection/mutation
+- app/api or DB repository implementation
+- RLS SQL/application
+- mobile runtime API integration
+- R2/Worker/PDF implementation
+- business or production data
+- root package.json/root package-lock.json
+```
+
+---
+
 # 2.0.0-alpha.19 WAFL v2 App-first v1 DB/API Performance Audit and Core Schema Design
 
 - Current GPT checkpoint: `2.0.0-alpha.19`.

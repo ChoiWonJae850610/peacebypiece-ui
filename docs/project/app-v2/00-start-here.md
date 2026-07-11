@@ -90,9 +90,14 @@ docs/project/app-v2/
   12-v1-db-api-performance-audit.md
   13-core-domain-schema-v2.md
   14-v2-schema-migration-and-performance-plan.md
+  15-v2-source-db-boundary-and-release-policy.md
+  16-workorder-api-command-read-model-contracts.md
+  17-v2-api-contract-test-plan.md
 ```
 
 The alpha.19 documents are design and read-only audit authority. They do not authorize schema migration, API replacement, seed execution, DB/R2 mutation, or PDF Worker changes.
+
+The alpha.20 documents and `lib/domain/work-orders/contracts/` define source/DB boundaries and type-only API contracts. `db/v2/` is a README-only workspace in alpha.20; no migration, full reset, seed, API route, or runtime DB integration is authorized.
 
 ## Relationship to 0.30.x documents
 
