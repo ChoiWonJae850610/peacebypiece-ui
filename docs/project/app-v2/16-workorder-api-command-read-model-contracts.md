@@ -78,12 +78,12 @@ Rules:
 
 `WorkOrderListItem`은 목록 판단에 필요한 값만 반환한다.
 
-- ID, 제품명, 상태, 납기, 총수량.
-- current revision number와 display document number.
-- 대표 thumbnail 1개.
-- fabric/accessory/requested/completed count.
-- readiness count/detail summary.
-- updated timestamp와 entity version.
+- WorkOrder ID, 표시 문서번호, 제품명, 상태, 납기, 총수량.
+- 예상 금액 요약.
+- 대표 thumbnail metadata 1개. controlled thumbnail route가 아직 없거나 object가 없는 fixture는 URL을 `null`로 둔다.
+- 미완료 fabric/accessory count와 실제 process count.
+- 최신 generated document status.
+- updated timestamp.
 
 금지:
 
@@ -373,4 +373,6 @@ Actual p95 is confirmed in alpha.22 benchmark. `SELECT *`, full child JSON aggre
 
 ## 14. Runtime boundary
 
-No file under `app/api` or `apps/mobile` imports these contracts in alpha.20. Runtime adoption requires a separate implementation version with route/repository tests and migration readiness.
+Alpha.20에서는 어떤 runtime도 이 계약을 import하지 않았다. Alpha.23은 `GET /api/v2/work-orders` 목록 vertical slice만 이 계약을 채택한다. `apps/mobile`, command route, detail/tab route, PDF/QR route는 여전히 연결하지 않는다.
+
+Alpha.23 route는 기존 workspace session/permission guard, dev/test fingerprint gate, `NOBYPASSRLS` RLS role, read-only transaction을 사용한다. Production에서는 명시 feature/approval gate가 없어 route가 DB-backed guard보다 먼저 차단된다.

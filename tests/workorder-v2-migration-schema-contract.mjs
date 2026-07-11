@@ -13,6 +13,7 @@ const expectedFiles = [
   "004_v2_assets_revision_linkage.sql",
   "005_v2_documents_access_events.sql",
   "006_v2_deferred_constraints_indexes.sql",
+  "007_v2_work_order_list_material_lookup_index.sql",
 ];
 
 const actualFiles = fs
@@ -32,7 +33,11 @@ const executableSql = combined
   .replace(/^\s*--.*$/gm, "");
 
 for (const { file, source } of sources) {
-  assert.ok(source.includes("EXECUTION IS PROHIBITED IN ALPHA.21"), `${file} missing execution prohibition`);
+  if (file === "007_v2_work_order_list_material_lookup_index.sql") {
+    assert.ok(source.includes("EXECUTION IS PROHIBITED WITHOUT THE APPROVED ALPHA.23 DEV/TEST GATE"), `${file} missing alpha.23 execution prohibition`);
+  } else {
+    assert.ok(source.includes("EXECUTION IS PROHIBITED IN ALPHA.21"), `${file} missing execution prohibition`);
+  }
   assert.ok(source.includes("BEGIN;"), `${file} missing transaction start`);
   assert.ok(source.includes("COMMIT;"), `${file} missing transaction end`);
   assert.match(
@@ -163,12 +168,18 @@ for (const index of [
   "generated_documents_revision_type_recent_idx",
   "document_access_tokens_active_expiry_idx",
   "domain_events_entity_history_idx",
+  "work_order_material_lines_company_revision_cover_idx",
 ]) {
   assert.ok(combined.includes(index), `required query index missing ${index}`);
 }
+assert.match(
+  combined,
+  /work_order_material_lines_company_revision_cover_idx[\s\S]*ON work_order_material_lines \(company_id, revision_id\)[\s\S]*INCLUDE \(material_type, status\)/,
+  "alpha.23 list index must directly support tenant company plus revision lookup and cover aggregate fields",
+);
 
 function gitChanged(pathspec) {
-  const result = spawnSync("git", ["status", "--short", "--", pathspec], {
+  const result = spawnSync("git", ["status", "--short", "--untracked-files=all", "--", pathspec], {
     cwd: root,
     encoding: "utf8",
   });
@@ -176,10 +187,13 @@ function gitChanged(pathspec) {
   return result.stdout.trim();
 }
 
+for (const legacyMigration of expectedFiles.slice(0, 6)) {
+  assert.equal(gitChanged(`db/v2/migrations/${legacyMigration}`), "", `existing migration changed: ${legacyMigration}`);
+}
+
 for (const forbiddenPath of [
   "db/schema",
   "db/migrations",
-  "app/api",
   "cloudflare",
   "package.json",
   "package-lock.json",
@@ -187,6 +201,18 @@ for (const forbiddenPath of [
   "pnpm-workspace.yaml",
 ]) {
   assert.equal(gitChanged(forbiddenPath), "", `forbidden path changed: ${forbiddenPath}`);
+}
+
+const appVersion = fs.readFileSync(path.join(root, "lib/constants/version.ts"), "utf8");
+const apiChanges = gitChanged("app/api").split(/\r?\n/).filter(Boolean);
+if (appVersion.includes('APP_VERSION = "2.0.0-alpha.23"')) {
+  assert.deepEqual(
+    apiChanges,
+    ["?? app/api/v2/work-orders/route.ts"],
+    "alpha.23 may change only the exact WorkOrder list GET route under app/api",
+  );
+} else {
+  assert.deepEqual(apiChanges, [], "app/api must remain unchanged before alpha.23 runtime adoption");
 }
 
 console.log("workorder v2 alpha.21 migration schema contract: PASS");

@@ -377,6 +377,9 @@ if ($VerificationProfile -eq "automation-infrastructure" -and $ExpectedAppVersio
         "db/v2/migrations/006_v2_deferred_constraints_indexes.sql"
     )
 }
+if ($VerificationProfile -eq "automation-infrastructure" -and $ExpectedAppVersion -eq "2.0.0-alpha.23") {
+    $allowedMigrationChanges = @("db/v2/migrations/007_v2_work_order_list_material_lookup_index.sql")
+}
 $unexpectedMigrationChanges = @($migrationChanges | Where-Object { $allowedMigrationChanges -notcontains $_ })
 if ($unexpectedMigrationChanges.Count -gt 0) {
     throw "Unexpected DB migration/schema changes: $($unexpectedMigrationChanges -join ', ')"

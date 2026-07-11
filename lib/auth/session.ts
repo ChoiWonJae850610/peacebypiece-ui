@@ -30,7 +30,7 @@ function fromBase64Url(value: string): string {
   return Buffer.from(value, "base64url").toString("utf8");
 }
 
-function readSessionSecret(): string {
+export function getWaflSessionSigningSecret(): string {
   const explicit = process.env.WAFL_SESSION_SECRET?.trim();
   if (explicit) return explicit;
 
@@ -41,7 +41,7 @@ function readSessionSecret(): string {
 }
 
 function sign(value: string): string {
-  return createHmac("sha256", readSessionSecret()).update(value).digest("base64url");
+  return createHmac("sha256", getWaflSessionSigningSecret()).update(value).digest("base64url");
 }
 
 export function createWaflSessionCookieValue(payload: WaflSessionPayload): string {

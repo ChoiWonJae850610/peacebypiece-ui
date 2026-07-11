@@ -350,6 +350,67 @@ function InvokeWaflV2Alpha22EvidenceCheck {
     }
 }
 
+function InvokeWaflV2Alpha23EvidenceCheck {
+    $name = "WAFL v2 alpha.23 WorkOrder list API runtime evidence"
+    $commandLine = "Logs/DB_Audit alpha.23 authenticated read-only API evidence"
+    if ($CheckOnly) {
+        return [pscustomobject]@{ Name = $name; CommandLine = $commandLine; Passed = $true; Skipped = $true; ExitCode = 0; FindingCount = ""; HighRiskCount = ""; OutputSummary = "check-only" }
+    }
+
+    $dbAuditDir = Join-Path (Split-Path -Parent $RepoStatusDir) "DB_Audit"
+    function GetLatestAlpha23EvidenceText {
+        param([string]$Pattern)
+        $file = Get-ChildItem -LiteralPath $dbAuditDir -File -Filter $Pattern -ErrorAction SilentlyContinue |
+            Sort-Object LastWriteTime -Descending |
+            Select-Object -First 1
+        if ($null -eq $file) { return "" }
+        return Get-Content -LiteralPath $file.FullName -Raw -Encoding UTF8
+    }
+
+    $evidenceFile = Get-ChildItem -LiteralPath $dbAuditDir -File -Filter "OK_Wafl_V2_Alpha23_List_API_Verification_*.txt" -ErrorAction SilentlyContinue |
+        Sort-Object LastWriteTime -Descending |
+        Select-Object -First 1
+    if ($null -eq $evidenceFile) {
+        return [pscustomobject]@{ Name = $name; CommandLine = $commandLine; Passed = $false; Skipped = $false; ExitCode = 1; FindingCount = ""; HighRiskCount = ""; OutputSummary = "alpha.23 runtime evidence missing" }
+    }
+
+    $evidence = Get-Content -LiteralPath $evidenceFile.FullName -Raw -Encoding UTF8
+    $indexApplyText = GetLatestAlpha23EvidenceText -Pattern "OK_Apply_Wafl_V2_Alpha23_Material_Index_*.txt"
+    $checks = @(
+        ($indexApplyText -match 'Migration applied:\s*007_v2_work_order_list_material_lookup_index.sql' -and
+            $indexApplyText -match 'Migration ledger rows:\s*7' -and
+            $indexApplyText -match 'V1 baseline fingerprint unchanged:' -and
+            $indexApplyText -match 'work_order_material_lines_company_revision_cover_idx' -and
+            $indexApplyText -match 'DB schema mutation:\s*true; approved dev/test additive index 007 only' -and
+            $indexApplyText -match 'Result:\s*PASS'),
+        ($evidence -match 'Target guard:\s*PASS runtime=' -and $evidence -match 'Production target:\s*blocked'),
+        ($evidence -match 'Cursor 500:\s*\{.*"rows":500.*"pages":10.*"duplicateCount":0.*"missingCount":0'),
+        ($evidence -match 'Cursor 5000:\s*\{.*"rows":5000.*"pages":100.*"duplicateCount":0.*"missingCount":0'),
+        ($evidence -match 'Tenant isolation:\s*PASS'),
+        ($evidence -match 'Company C authenticated access policy:\s*FORBIDDEN \(approval_pending\)'),
+        ($evidence -match 'Typed errors: AUTH_REQUIRED/FORBIDDEN/CURSOR_INVALID/LIMIT_EXCEEDED/VALIDATION_ERROR PASS'),
+        ($evidence -match 'DB schema mutation:\s*false' -and $evidence -match 'Dev/Test seed mutation:\s*false'),
+        ($evidence -match 'Business data mutation:\s*false' -and $evidence -match 'R2 mutation:\s*false' -and $evidence -match 'Production mutation:\s*false'),
+        ($evidence -match 'Result:\s*PASS')
+    )
+    $passed = @($checks | Where-Object { -not $_ }).Count -eq 0
+    if ($passed) {
+        $cursor500 = [regex]::Match($evidence, 'Cursor 500:\s*(\{.*\})').Groups[1].Value
+        $cursor5000 = [regex]::Match($evidence, 'Cursor 5000:\s*(\{.*\})').Groups[1].Value
+        $defaultPayload = [regex]::Match($evidence, 'Default 30 payload bytes:\s*([0-9]+)').Groups[1].Value
+        $script:WaflV2Alpha23Evidence = [pscustomobject]@{
+            RuntimeLog = $evidenceFile.FullName
+            Cursor500 = $cursor500
+            Cursor5000 = $cursor5000
+            DefaultPayloadBytes = $defaultPayload
+        }
+        Write-Host "[PASS] $name"
+        return [pscustomobject]@{ Name = $name; CommandLine = $commandLine; Passed = $true; Skipped = $false; ExitCode = 0; FindingCount = ""; HighRiskCount = ""; OutputSummary = $evidenceFile.Name }
+    }
+
+    return [pscustomobject]@{ Name = $name; CommandLine = $commandLine; Passed = $false; Skipped = $false; ExitCode = 1; FindingCount = ""; HighRiskCount = ""; OutputSummary = "alpha.23 evidence contract mismatch" }
+}
+
 function InvokePackageScriptCheck {
     param(
         [string]$Name,
@@ -648,6 +709,7 @@ $profileCommands = @{
         @{ Name = "workorder v2 API contract"; Command = "node"; Arguments = @("tests/workorder-v2-api-contract.mjs") },
         @{ Name = "workorder v2 migration schema contract"; Command = "node"; Arguments = @("tests/workorder-v2-migration-schema-contract.mjs") },
         @{ Name = "workorder v2 alpha.22 dev/test runner contract"; Command = "node"; Arguments = @("tests/workorder-v2-alpha22-dev-test-runner-contract.mjs") },
+        @{ Name = "workorder v2 alpha.23 list API contract"; Command = "node"; Arguments = @("tests/workorder-v2-alpha23-list-api-contract.mjs") },
         @{ Name = "app-v2 document links and Mermaid contract"; Command = "node"; Arguments = @("tests/app-v2-document-links-contract.mjs") },
         @{ Name = "unicode encoding contract"; Command = "node"; Arguments = @("tests/unicode-encoding-contract.mjs") },
         @{ Name = "PowerShell encoding contract"; Command = "node"; Arguments = @("tests/pipeline-powershell-encoding-contract.mjs") },
@@ -1145,6 +1207,9 @@ if ($Profile -eq "automation-infrastructure" -and (GetProjectAppVersion) -in @("
         "db/v2/migrations/006_v2_deferred_constraints_indexes.sql"
     )
 }
+if ($Profile -eq "automation-infrastructure" -and (GetProjectAppVersion) -eq "2.0.0-alpha.23") {
+    $allowedMigrationChanges = @("db/v2/migrations/007_v2_work_order_list_material_lookup_index.sql")
+}
 $unexpectedMigrationChanges = @($migrationChanges | Where-Object { $allowedMigrationChanges -notcontains $_ })
 if ($unexpectedMigrationChanges.Count -gt 0) {
     Write-Host "[FAIL] unexpected DB migration/schema changes: $($migrationChanges -join ', ')" -ForegroundColor Red
@@ -1183,6 +1248,9 @@ foreach ($commandSpec in $profileCommands[$Profile]) {
 
 if ($Profile -eq "automation-infrastructure" -and (GetProjectAppVersion) -eq "2.0.0-alpha.22") {
     $results.Add((InvokeWaflV2Alpha22EvidenceCheck))
+}
+if ($Profile -eq "automation-infrastructure" -and (GetProjectAppVersion) -eq "2.0.0-alpha.23") {
+    $results.Add((InvokeWaflV2Alpha23EvidenceCheck))
 }
 
 $failedResults = @($results | Where-Object { -not $_.Passed })
@@ -1225,6 +1293,25 @@ if ($null -ne $script:WaflV2Alpha22Evidence) {
     $lines.Add("V2 Seed Profiles: a500=500; b5000=5000; c-multi=5400")
     $lines.Add("V2 Performance 500: $($script:WaflV2Alpha22Evidence.Performance500)")
     $lines.Add("V2 Performance 5000: $($script:WaflV2Alpha22Evidence.Performance5000)")
+}
+if ($null -ne $script:WaflV2Alpha23Evidence) {
+    $lines.Add("")
+    $lines.Add("DB Migration Apply Result: PASS - alpha.23 additive index 007 on approved dev/test only")
+    $lines.Add("Post-Apply Audit Result: PASS - ledger/index/v1 baseline and read-only runtime evidence")
+    $lines.Add("Schema Migration This Run: true; 007_v2_work_order_list_material_lookup_index.sql")
+    $lines.Add("Dev/Test DB Test-Data Mutation: false")
+    $lines.Add("Dev/Test Fixture Mutation: false")
+    $lines.Add("Business Data Mutation: false")
+    $lines.Add("Production Business Data Mutation: false")
+    $lines.Add("Dev/Test R2 Mutation: false")
+    $lines.Add("Production Mutation: false")
+    $lines.Add("E2E/Smoke Summary: PASS - authenticated tenant list API, cursor traversal, typed errors, payload and performance budgets")
+    $lines.Add("Manual QA Status: NOT_APPLICABLE - read-only API vertical slice")
+    $lines.Add("V2 Migration Ledger: 7/7 PASS; 001-006 reused, 007 added")
+    $lines.Add("V2 Alpha.23 Runtime Log: $($script:WaflV2Alpha23Evidence.RuntimeLog)")
+    $lines.Add("V2 Alpha.23 Cursor 500: $($script:WaflV2Alpha23Evidence.Cursor500)")
+    $lines.Add("V2 Alpha.23 Cursor 5000: $($script:WaflV2Alpha23Evidence.Cursor5000)")
+    $lines.Add("V2 Alpha.23 Default 30 Payload Bytes: $($script:WaflV2Alpha23Evidence.DefaultPayloadBytes)")
 }
 [System.IO.File]::WriteAllLines($resultPath, $lines, [System.Text.Encoding]::UTF8)
 

@@ -127,7 +127,29 @@ export type DbTransactionClient = {
   query: <TRow extends DbQueryResultRow = DbQueryResultRow>(text: string, params?: unknown[]) => Promise<DbQueryResult<TRow>>;
 };
 
+export const WAFL_V2_TENANT_READ_TRANSACTION_BEGIN =
+  "BEGIN READ ONLY; SET LOCAL ROLE wafl_v2_tenant_runtime";
+
 export async function withDbTransaction<TResult>(
+  operation: (client: DbTransactionClient) => Promise<TResult>,
+): Promise<TResult> {
+  return withDbTransactionStatement("BEGIN", operation);
+}
+
+export async function withDbReadOnlyTransaction<TResult>(
+  operation: (client: DbTransactionClient) => Promise<TResult>,
+): Promise<TResult> {
+  return withDbTransactionStatement("BEGIN READ ONLY", operation);
+}
+
+export async function withWaflV2TenantReadOnlyTransaction<TResult>(
+  operation: (client: DbTransactionClient) => Promise<TResult>,
+): Promise<TResult> {
+  return withDbTransactionStatement(WAFL_V2_TENANT_READ_TRANSACTION_BEGIN, operation);
+}
+
+async function withDbTransactionStatement<TResult>(
+  beginStatement: "BEGIN" | "BEGIN READ ONLY" | typeof WAFL_V2_TENANT_READ_TRANSACTION_BEGIN,
   operation: (client: DbTransactionClient) => Promise<TResult>,
 ): Promise<TResult> {
   const pool = await getDbPool();
@@ -150,7 +172,7 @@ export async function withDbTransaction<TResult>(
   };
 
   try {
-    await client.query("BEGIN");
+    await client.query(beginStatement);
     const result = await operation(transactionClient);
     await client.query("COMMIT");
     return result;

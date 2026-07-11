@@ -70,10 +70,12 @@ param(
     [switch]$RunProductUiRuntimeVerification,
     [switch]$RunWaflV2MigrationPreflight,
     [switch]$ApplyWaflV2Migrations,
+    [switch]$ApplyWaflV2Alpha23MaterialIndex,
     [switch]$RunWaflV2PostApplyValidation,
     [ValidateSet("", "a500", "b5000", "c-multi")]
     [string]$RunWaflV2SeedProfile = "",
     [switch]$RunWaflV2DevTestVerification,
+    [switch]$RunWaflV2Alpha23ListApiVerification,
     [string]$WaflV2Confirmation = "",
     [switch]$CreateWaflV2FailureHandoff,
     [string]$WaflV2FailureStage = "",
@@ -1786,8 +1788,16 @@ function NewWaflV2FailureHandoff {
     } else {
         "0"
     }
-    $schemaMutation = if ($failureText -match 'Migration applied:|DB schema mutation:\s*true' -or $applyText -match 'Result:\s*PASS') { "true; approved dev/test additive migration" } else { "false" }
-    $testDataMutation = if ($failureText -match 'Dev/Test DB (?:test-data|verification) mutation:\s*(?!false)' -or $successfulSeedLogs.Count -gt 0) { "true; deterministic wafl-fn seed" } else { "false" }
+    $isAlpha23ReadFailure = $FailureStage -eq "alpha23-list-api-runtime"
+    $isAlpha23IndexFailure = $FailureStage -eq "apply-index"
+    $schemaMutation = if ($isAlpha23ReadFailure) {
+        "false; alpha.22 applied baseline reused read-only"
+    } elseif ($failureText -match 'Alpha.23 material index present after failure:\s*True|Migration applied:|DB schema mutation:\s*true' -or $applyText -match 'Result:\s*PASS') {
+        "true; approved dev/test additive migration"
+    } else {
+        "false"
+    }
+    $testDataMutation = if ($isAlpha23ReadFailure -or $isAlpha23IndexFailure) { "false; existing alpha.22 synthetic seed reused without mutation" } elseif ($failureText -match 'Dev/Test DB (?:test-data|verification) mutation:\s*(?!false)' -or $successfulSeedLogs.Count -gt 0) { "true; deterministic wafl-fn seed" } else { "false" }
     $businessMutation = if ($failureText -match 'Business data mutation:\s*true') { "true" } else { "false" }
     $r2Mutation = if ($failureText -match 'R2 mutation:\s*true') { "true" } else { "false" }
     $productionMutation = if ($failureText -match 'Production mutation:\s*true') { "true" } else { "false" }
@@ -2762,7 +2772,7 @@ function InvokeApprovedDbMigrationCommand {
 
 function InvokeWaflV2Alpha22Command {
     param(
-        [ValidateSet("preflight", "apply", "validate", "seed", "verify")]
+        [ValidateSet("preflight", "apply", "apply-index", "validate", "seed", "verify")]
         [string]$Mode,
         [string]$SeedProfile = "",
         [string]$Confirmation = "",
@@ -2777,6 +2787,7 @@ function InvokeWaflV2Alpha22Command {
 
     $expectedConfirmation = switch ($Mode) {
         "apply" { "APPLY WAFL V2 ALPHA22 DEV TEST" }
+        "apply-index" { "APPLY WAFL V2 ALPHA23 MATERIAL INDEX" }
         "seed" {
             switch ($SeedProfile) {
                 "a500" { "SEED WAFL V2 A500" }
@@ -2790,7 +2801,8 @@ function InvokeWaflV2Alpha22Command {
     }
 
     Write-Host ""
-    Write-Host "WAFL v2 alpha.22 dev/test guard"
+    $guardLabel = if ($Mode -eq "apply-index") { "alpha.23 material index" } else { "alpha.22" }
+    Write-Host "WAFL v2 $guardLabel dev/test guard"
     Write-Host "- Mode: $Mode"
     if (-not [string]::IsNullOrWhiteSpace($SeedProfile)) { Write-Host "- Seed profile: $SeedProfile" }
     Write-Host "- Runtime: $($guard.Runtime)"
@@ -2824,7 +2836,7 @@ function InvokeWaflV2Alpha22Command {
         $env:WAFL_V2_TEST_PREFIX = $testPrefix
         $env:WAFL_V2_CONFIRMATION = $Confirmation
         $env:WAFL_V2_READ_APPROVED = if ($Mode -in @("preflight", "validate")) { "1" } else { "0" }
-        $env:WAFL_V2_MIGRATION_APPROVED = if ($Mode -eq "apply") { "1" } else { "0" }
+        $env:WAFL_V2_MIGRATION_APPROVED = if ($Mode -in @("apply", "apply-index")) { "1" } else { "0" }
         $env:WAFL_V2_SEED_APPROVED = if ($Mode -eq "seed") { "1" } else { "0" }
         $env:WAFL_V2_VERIFY_APPROVED = if ($Mode -eq "verify") { "1" } else { "0" }
 
@@ -2833,11 +2845,12 @@ function InvokeWaflV2Alpha22Command {
         $label = switch ($Mode) {
             "preflight" { "Wafl_V2_Alpha22_Preflight" }
             "apply" { "Apply_Wafl_V2_Alpha22_Migrations" }
+            "apply-index" { "Apply_Wafl_V2_Alpha23_Material_Index" }
             "validate" { "Wafl_V2_Alpha22_Post_Apply_Validation" }
             "seed" { "Wafl_V2_Alpha22_Seed_$($SeedProfile.ToUpperInvariant().Replace('-', '_'))" }
             "verify" { "Wafl_V2_Alpha22_Verification" }
         }
-        $title = "WAFL v2 alpha.22 $Mode"
+        $title = if ($Mode -eq "apply-index") { "WAFL v2 alpha.23 material index apply" } else { "WAFL v2 alpha.22 $Mode" }
         $dbAuditLogDir = Join-Path (Split-Path -Parent $LogDir) "DB_Audit"
         $result = InvokeProjectCommandWithResultFile -Title $title -Label $label -NpmCommand $command -LoadEnvLocal $false -PauseAfter $PauseAfter -ResultDirectory $dbAuditLogDir
         if ($null -ne $result -and [int]$result -ne 0) {
@@ -2864,6 +2877,80 @@ function InvokeWaflV2Alpha22Command {
         if ($null -eq $previousMigrationApproval) { Remove-Item Env:WAFL_V2_MIGRATION_APPROVED -ErrorAction SilentlyContinue } else { $env:WAFL_V2_MIGRATION_APPROVED = $previousMigrationApproval }
         if ($null -eq $previousSeedApproval) { Remove-Item Env:WAFL_V2_SEED_APPROVED -ErrorAction SilentlyContinue } else { $env:WAFL_V2_SEED_APPROVED = $previousSeedApproval }
         if ($null -eq $previousVerifyApproval) { Remove-Item Env:WAFL_V2_VERIFY_APPROVED -ErrorAction SilentlyContinue } else { $env:WAFL_V2_VERIFY_APPROVED = $previousVerifyApproval }
+    }
+}
+
+function InvokeWaflV2Alpha23ListApiVerification {
+    param(
+        [string]$Confirmation = "",
+        [bool]$PauseAfter = $true
+    )
+
+    if (-not (LoadEnvLocalForSmokeTest)) { if ($PauseAfter) { WaitForDeveloperToolsMenu }; return 1 }
+    $runtime = [string]$env:NEXT_PUBLIC_APP_RUNTIME_MODE
+    if ([string]::IsNullOrWhiteSpace($runtime)) { $runtime = [string]$env:NODE_ENV }
+    $guard = TestReadOnlyDbAuditGuard -Runtime $runtime -DatabaseUrl $env:DATABASE_URL
+    $testPrefix = ([string]$PipelineConfig.Simulator.TestPrefix).Trim()
+    $expectedConfirmation = "VERIFY WAFL V2 ALPHA23 READ API"
+
+    Write-Host ""
+    Write-Host "WAFL v2 alpha.23 WorkOrder list API read-only guard"
+    Write-Host "- Runtime: $($guard.Runtime)"
+    Write-Host "- Fingerprint: $($guard.Fingerprint)"
+    Write-Host "- Prefix: $testPrefix"
+    Write-Host "- Target result: $($guard.Reason)"
+    Write-Host "- Mutation: none; existing alpha.22 schema and synthetic seed are reused"
+
+    if (-not $guard.Passed -or $testPrefix -ne "wafl-fn") {
+        LogError "WAFL v2 alpha.23 read API 검증이 차단되었습니다. 승인된 dev/test DB와 wafl-fn prefix만 허용합니다."
+        if ($PauseAfter) { WaitForDeveloperToolsMenu }
+        return 2
+    }
+    if ($Confirmation -cne $expectedConfirmation) {
+        LogError "WAFL v2 alpha.23 read API confirmation이 일치하지 않아 검증이 차단되었습니다."
+        if ($PauseAfter) { WaitForDeveloperToolsMenu }
+        return 3
+    }
+
+    $previousRuntime = $env:WAFL_V2_RUNTIME
+    $previousFingerprint = $env:WAFL_V2_APPROVED_DB_FINGERPRINT
+    $previousPrefix = $env:WAFL_V2_TEST_PREFIX
+    $previousConfirmation = $env:WAFL_V2_CONFIRMATION
+    $previousReadApproval = $env:WAFL_V2_READ_APPROVED
+    $previousReadApiEnabled = $env:WAFL_V2_READ_API_ENABLED
+    try {
+        $env:WAFL_V2_RUNTIME = $guard.Runtime
+        $env:WAFL_V2_APPROVED_DB_FINGERPRINT = [string]$PipelineConfig.Simulator.ApprovedDbFingerprint
+        $env:WAFL_V2_TEST_PREFIX = $testPrefix
+        $env:WAFL_V2_CONFIRMATION = $Confirmation
+        $env:WAFL_V2_READ_APPROVED = "1"
+        $env:WAFL_V2_READ_API_ENABLED = "1"
+
+        $label = "Wafl_V2_Alpha23_List_API_Verification"
+        $dbAuditLogDir = Join-Path (Split-Path -Parent $LogDir) "DB_Audit"
+        $result = InvokeProjectCommandWithResultFile -Title "WAFL v2 alpha.23 WorkOrder list API read-only verification" -Label $label -NpmCommand "node scripts/run-wafl-v2-alpha23-list-api.mjs" -LoadEnvLocal $false -PauseAfter $PauseAfter -ResultDirectory $dbAuditLogDir
+        if ($null -ne $result -and [int]$result -ne 0) {
+            $failureLog = Get-ChildItem -LiteralPath $dbAuditLogDir -File -Filter "Failed_${label}_*.txt" -ErrorAction SilentlyContinue |
+                Sort-Object LastWriteTime -Descending |
+                Select-Object -First 1
+            if ($null -ne $failureLog) {
+                try {
+                    NewWaflV2FailureHandoff -FailureStage "alpha23-list-api-runtime" -FailureLogPath $failureLog.FullName | Out-Null
+                }
+                catch {
+                    LogError "WAFL v2 alpha.23 failure handoff 생성 실패: $($_.Exception.Message)"
+                }
+            }
+        }
+        return $result
+    }
+    finally {
+        if ($null -eq $previousRuntime) { Remove-Item Env:WAFL_V2_RUNTIME -ErrorAction SilentlyContinue } else { $env:WAFL_V2_RUNTIME = $previousRuntime }
+        if ($null -eq $previousFingerprint) { Remove-Item Env:WAFL_V2_APPROVED_DB_FINGERPRINT -ErrorAction SilentlyContinue } else { $env:WAFL_V2_APPROVED_DB_FINGERPRINT = $previousFingerprint }
+        if ($null -eq $previousPrefix) { Remove-Item Env:WAFL_V2_TEST_PREFIX -ErrorAction SilentlyContinue } else { $env:WAFL_V2_TEST_PREFIX = $previousPrefix }
+        if ($null -eq $previousConfirmation) { Remove-Item Env:WAFL_V2_CONFIRMATION -ErrorAction SilentlyContinue } else { $env:WAFL_V2_CONFIRMATION = $previousConfirmation }
+        if ($null -eq $previousReadApproval) { Remove-Item Env:WAFL_V2_READ_APPROVED -ErrorAction SilentlyContinue } else { $env:WAFL_V2_READ_APPROVED = $previousReadApproval }
+        if ($null -eq $previousReadApiEnabled) { Remove-Item Env:WAFL_V2_READ_API_ENABLED -ErrorAction SilentlyContinue } else { $env:WAFL_V2_READ_API_ENABLED = $previousReadApiEnabled }
     }
 }
 
@@ -3939,6 +4026,10 @@ elseif ($ApplyWaflV2Migrations) {
     $exitCode = InvokeWaflV2Alpha22Command -Mode "apply" -Confirmation $WaflV2Confirmation -PauseAfter $false
     if ($null -ne $exitCode) { exit ([int]$exitCode) }
 }
+elseif ($ApplyWaflV2Alpha23MaterialIndex) {
+    $exitCode = InvokeWaflV2Alpha22Command -Mode "apply-index" -Confirmation $WaflV2Confirmation -PauseAfter $false
+    if ($null -ne $exitCode) { exit ([int]$exitCode) }
+}
 elseif ($RunWaflV2PostApplyValidation) {
     $exitCode = InvokeWaflV2Alpha22Command -Mode "validate" -PauseAfter $false
     if ($null -ne $exitCode) { exit ([int]$exitCode) }
@@ -3949,6 +4040,10 @@ elseif (-not [string]::IsNullOrWhiteSpace($RunWaflV2SeedProfile)) {
 }
 elseif ($RunWaflV2DevTestVerification) {
     $exitCode = InvokeWaflV2Alpha22Command -Mode "verify" -Confirmation $WaflV2Confirmation -PauseAfter $false
+    if ($null -ne $exitCode) { exit ([int]$exitCode) }
+}
+elseif ($RunWaflV2Alpha23ListApiVerification) {
+    $exitCode = InvokeWaflV2Alpha23ListApiVerification -Confirmation $WaflV2Confirmation -PauseAfter $false
     if ($null -ne $exitCode) { exit ([int]$exitCode) }
 }
 elseif ($RunSignupConsentCompatibilityAudit) {

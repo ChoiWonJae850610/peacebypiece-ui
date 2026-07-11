@@ -1,3 +1,36 @@
+# 2.0.0-alpha.23 WAFL v2 WorkOrder List Read API Vertical Slice
+
+- Current GPT checkpoint: `2.0.0-alpha.23` implementation and approved dev/test read-only runtime verification complete; final Verify/Finish pending.
+- Baseline source before this patch: repository `APP_VERSION: 2.0.0-alpha.22`.
+- Baseline commit: `4cf851a72282d86f937c31da188237c208112ff7`.
+- The first v2 runtime read path is `GET /api/v2/work-orders`; no command, detail, tab, PDF, QR, or mobile API path is added.
+- The route checks dev/test runtime, read feature/approval flags, approved DB fingerprint, and `wafl-fn` prefix before the DB-backed workspace guard.
+- Existing workspace authentication and `workorder.read` permission supply company scope. Client `companyId`, `workOrderId`, and unsupported query parameters are rejected.
+- The canonical `WorkOrderListPage`, branded primitives, 30/50 limits, error codes, and signed cursor contract are reused rather than duplicated.
+- Cursor order is `(updated_at DESC, id DESC)`; cursor payload is HMAC-signed, versioned, expiring, and bound to tenant plus visibility scope.
+- The list-only tenant transaction helper sends the fixed `BEGIN READ ONLY; SET LOCAL ROLE wafl_v2_tenant_runtime` SQL in one protocol call, then the repository executes two bounded callback statements: local RLS claims and one page-first list SQL. `X-WAFL-List-Query-Count: 2` describes those repository callback statements, not all endpoint DB protocol round trips.
+- Response rows exclude storage keys, raw tokens, child lists, size/color matrices, document snapshots, and attachment metadata.
+- `scripts/run-wafl-v2-alpha23-list-api.mjs` and the canonical pipeline switch provide one read-only HTTP runtime verification against the existing alpha.22 dev/test schema and synthetic seed.
+- `docs/project/app-v2/20-workorder-list-read-api-evidence.md` is the canonical alpha.23 implementation/evidence record.
+- The Expo mobile mock remains disconnected from the API. Root package files and dependencies are unchanged.
+- Approved additive index `007_v2_work_order_list_material_lookup_index.sql` is present only on the approved dev/test target; migration ledger is 7/7 and the legacy v1 fingerprint is unchanged.
+- The final approved read-only runtime log is `OK_Wafl_V2_Alpha23_List_API_Verification_2.0.0-alpha.23-20260711-210852.txt`: Company A 30-sample DB p95 `86.17ms`, API p95 `463.29ms`, Company H 100-page API p95 `481.46ms`, query count `2`, 500/5,000 cursor traversal duplicate/missing `0/0`, and all tenant/error/payload budgets PASS.
+- The final runtime run changed no schema, seed, business data, R2, Worker, PDF, or production state. Earlier failure handoffs remain preserved; `4. Newest` remains unchanged until successful Finish.
+
+Required runtime evidence before Finish:
+
+```text
+- authenticated active company A/H/B list reads and approval-pending company C `FORBIDDEN`
+- company A cross-company row/ID/cursor isolation
+- 500 rows / 10 pages and 5,000 rows / 100 pages, duplicate 0, missing 0
+- typed auth/cursor/limit/unsupported-ID errors
+- query count, payload, DB and API p50/p95/max budgets
+- identical before/after schema fingerprint and v2 row counts
+- schema/seed/business/R2/production mutation: all false for alpha.23
+```
+
+---
+
 # 2.0.0-alpha.22 WAFL v2 Dev/Test Migration and Performance Evidence
 
 - Current GPT checkpoint: `2.0.0-alpha.22`.

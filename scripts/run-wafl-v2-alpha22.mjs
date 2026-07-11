@@ -18,7 +18,10 @@ const MIGRATIONS = [
   "004_v2_assets_revision_linkage.sql",
   "005_v2_documents_access_events.sql",
   "006_v2_deferred_constraints_indexes.sql",
+  "007_v2_work_order_list_material_lookup_index.sql",
 ];
+const ALPHA23_INDEX_MIGRATION = "007_v2_work_order_list_material_lookup_index.sql";
+const ALPHA23_INDEX_NAME = "work_order_material_lines_company_revision_cover_idx";
 
 const V2_TABLES = [
   "wafl_v2_migration_ledger",
@@ -123,8 +126,10 @@ function assertProcessGuard(mode, profile) {
 
   const confirmation = String(process.env.WAFL_V2_CONFIRMATION ?? "");
   if (mode === "apply") {
+    fail("alpha22-generic-apply-disabled-after-alpha23-index");
+  } else if (mode === "apply-index") {
     if (process.env.WAFL_V2_MIGRATION_APPROVED !== "1") fail("migration-approval-missing");
-    if (confirmation !== "APPLY WAFL V2 ALPHA22 DEV TEST") fail("migration-confirmation-mismatch");
+    if (confirmation !== "APPLY WAFL V2 ALPHA23 MATERIAL INDEX") fail("migration-confirmation-mismatch");
   } else if (mode === "seed") {
     const definition = PROFILE_DEFINITIONS[profile];
     if (!definition) fail("unknown-seed-profile");
@@ -399,6 +404,101 @@ async function applyMigrations(guard) {
     } catch {
       console.error("Migration ledger rows after failure: unknown");
       console.error("DB schema mutation: unknown");
+    }
+    throw error;
+  } finally {
+    await client.end();
+  }
+}
+
+async function applyAlpha23MaterialIndex(guard) {
+  const baseline = JSON.parse(await fs.readFile(BASELINE_PATH, "utf8"));
+  if (baseline.version !== VERSION || baseline.databaseFingerprint !== guard.fingerprint) fail("preflight-baseline-mismatch");
+  const migrations = await readMigrationSources();
+  const migration = migrations.find((entry) => entry.filename === ALPHA23_INDEX_MIGRATION);
+  if (!migration) fail("alpha23-index-migration-source-missing");
+
+  const client = createClient(guard.connectionString, 300_000);
+  await client.connect();
+  let transactionOpen = false;
+  try {
+    await assertConnectedTarget(client, guard);
+    const ledgerBefore = await readLedger(client);
+    if (ledgerBefore.length !== 6) fail(`alpha23-index-ledger-precondition:${ledgerBefore.length}/6`);
+    for (const entry of ledgerBefore) {
+      const expected = migrations.find((candidate) => candidate.filename === entry.filename);
+      if (!expected || expected.filename === ALPHA23_INDEX_MIGRATION) fail(`migration-ledger-order-invalid:${entry.filename}`);
+      if (expected.sha256 !== entry.migration_sha256 || entry.database_fingerprint !== guard.fingerprint) {
+        fail(`migration-ledger-mismatch:${entry.filename}`);
+      }
+    }
+
+    const v1Before = await captureV1Baseline(client);
+    if (v1Before.fingerprint !== baseline.v1Fingerprint) fail("v1-baseline-drift-before-alpha23-index");
+    const existingIndex = await client.query("SELECT to_regclass($1) AS relation", [`public.${ALPHA23_INDEX_NAME}`]);
+    if (existingIndex.rows[0]?.relation) fail("untracked-alpha23-material-index-detected");
+
+    console.log(`Ledger precondition: PASS rows=${ledgerBefore.length}; migrations 001-006 SHA/fingerprint matched`);
+    console.log(`V1 baseline fingerprint before 007: ${v1Before.fingerprint}`);
+    console.log(`007 source SHA-256: ${migration.sha256}`);
+
+    await client.query("BEGIN");
+    transactionOpen = true;
+    await client.query("SELECT set_config('wafl.runtime_environment', $1, true)", [guard.runtime === "test" ? "test" : "development"]);
+    await client.query("SELECT set_config('wafl.migration_execution_approved', '2.0.0-alpha.21-dev-test-reviewed', true)");
+    await client.query(migrationBody(migration.source));
+    await client.query(`
+      INSERT INTO wafl_v2_migration_ledger (
+        migration_id, filename, migration_sha256, runner_version,
+        database_fingerprint, v1_baseline_fingerprint
+      ) VALUES ($1, $2, $3, $4, $5, $6)
+    `, [7, migration.filename, migration.sha256, "2.0.0-alpha.23", guard.fingerprint, baseline.v1Fingerprint]);
+    await client.query("COMMIT");
+    transactionOpen = false;
+
+    const ledgerAfter = await readLedger(client);
+    if (ledgerAfter.length !== 7) fail(`alpha23-index-ledger-postcondition:${ledgerAfter.length}/7`);
+    const applied = ledgerAfter.find((entry) => entry.filename === ALPHA23_INDEX_MIGRATION);
+    if (!applied || applied.migration_sha256 !== migration.sha256 || applied.database_fingerprint !== guard.fingerprint) {
+      fail("alpha23-index-ledger-mismatch");
+    }
+
+    const indexResult = await client.query(`
+      SELECT indexdef, pg_relation_size(to_regclass($1))::bigint AS size_bytes
+      FROM pg_indexes
+      WHERE schemaname = 'public' AND indexname = $2
+    `, [`public.${ALPHA23_INDEX_NAME}`, ALPHA23_INDEX_NAME]);
+    const indexRow = indexResult.rows[0];
+    if (!indexRow) fail("alpha23-material-index-missing-after-apply");
+    if (!/\(company_id, revision_id\) INCLUDE \(material_type, status\)/i.test(indexRow.indexdef)) {
+      fail("alpha23-material-index-definition-mismatch");
+    }
+    const v1After = await captureV1Baseline(client);
+    if (v1After.fingerprint !== baseline.v1Fingerprint) fail("v1-baseline-drift-after-alpha23-index");
+
+    console.log(`Migration applied: ${migration.filename} hash=${migration.sha256}`);
+    console.log(`Migration ledger rows: ${ledgerAfter.length}`);
+    console.log(`V1 baseline fingerprint unchanged: ${v1After.fingerprint}`);
+    console.log(`Index name: ${ALPHA23_INDEX_NAME}`);
+    console.log(`Index definition: ${indexRow.indexdef}`);
+    console.log(`Index size bytes: ${indexRow.size_bytes}`);
+    console.log("DB schema mutation: true; approved dev/test additive index 007 only");
+    console.log("Dev/Test seed mutation: false");
+    console.log("Business data mutation: false");
+    console.log("R2 mutation: false");
+    console.log("Production mutation: false");
+    console.log("Result: PASS");
+  } catch (error) {
+    if (transactionOpen) {
+      try { await client.query("ROLLBACK"); } catch { /* apply transaction already closed */ }
+    }
+    try {
+      const ledger = await readLedger(client);
+      const index = await client.query("SELECT to_regclass($1) AS relation", [`public.${ALPHA23_INDEX_NAME}`]);
+      console.error(`Migration ledger rows after failure: ${ledger.length}`);
+      console.error(`Alpha.23 material index present after failure: ${Boolean(index.rows[0]?.relation)}`);
+    } catch {
+      console.error("Migration ledger/index state after failure: unknown");
     }
     throw error;
   } finally {
@@ -1085,7 +1185,7 @@ async function verifyRuntime(guard) {
 
 const mode = process.argv[2] ?? "";
 const profile = process.argv[3] ?? "";
-if (!new Set(["preflight", "apply", "validate", "seed", "verify"]).has(mode)) {
+if (!new Set(["preflight", "apply", "apply-index", "validate", "seed", "verify"]).has(mode)) {
   fail(`unknown-mode:${mode || "missing"}`);
 }
 
@@ -1097,6 +1197,7 @@ console.log(`Environment fingerprint: ${guard.fingerprint}`);
 try {
   if (mode === "preflight") await preflight(guard);
   if (mode === "apply") await applyMigrations(guard);
+  if (mode === "apply-index") await applyAlpha23MaterialIndex(guard);
   if (mode === "validate") await validateSchema(guard);
   if (mode === "seed") await seedProfile(guard, profile);
   if (mode === "verify") await verifyRuntime(guard);

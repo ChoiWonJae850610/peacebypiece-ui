@@ -92,6 +92,12 @@ Alpha.22 commands are fixed switches on the canonical pipeline. They never accep
 
 Every DB command checks runtime, approved host/database fingerprint, `wafl-fn` prefix, and operation-specific approval before execution. Failed/stopped runs create source ZIP, repo-state, and log evidence under `Logs/Repo_Status/Failure_Handoff/`; they never update `4. Newest` or count as completion.
 
+Alpha.23 adds one separate read-only API verification switch. It reuses the already applied alpha.22 schema and synthetic seed, starts the built Next server locally, exercises authenticated company-scoped `GET /api/v2/work-orders`, and records cursor, tenant, payload, query-count, and latency evidence. It does not run migration, seed, cleanup, reset, or rollback SQL.
+
+```powershell
+.\tools\pipeline\peacebypiece-auto-pipeline.ps1 -RunWaflV2Alpha23ListApiVerification -WaflV2Confirmation "VERIFY WAFL V2 ALPHA23 READ API"
+```
+
 완료 시 콘솔에 ZIP 전체 경로, repo-state 전체 경로, build-result 전체 경로, `4. Newest` 경로, ZIP 크기, APP_VERSION, Git clean 여부, ChatGPT에 업로드할 두 파일명과 build-result 보관 파일명을 출력합니다.
 
 `approved-workflow.ps1 -Action Finish`가 성공하면 기본적으로 이 handoff를 자동 실행합니다. 생성 시점은 Verify PASS, Plan PASS, Finish PASS, commit, `git push origin master`, ahead/behind 0/0, working tree clean 이후입니다. 특별히 생략해야 할 때만 `-SkipHandoff`를 사용합니다.

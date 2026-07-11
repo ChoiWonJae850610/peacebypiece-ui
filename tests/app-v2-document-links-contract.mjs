@@ -4,7 +4,7 @@ import fs from "node:fs";
 import path from "node:path";
 
 const root = process.cwd();
-const docs = Array.from({ length: 8 }, (_, index) => {
+const docs = Array.from({ length: 9 }, (_, index) => {
   const number = String(index + 12).padStart(2, "0");
   const match = fs.readdirSync(path.join(root, "docs/project/app-v2")).find((name) => name.startsWith(`${number}-`) && name.endsWith(".md"));
   assert.ok(match, `missing app-v2 document ${number}`);
@@ -30,10 +30,10 @@ for (const file of docs) {
 }
 
 for (const [file, token] of [
-  ["AGENTS.md", "19-v2-dev-test-migration-and-performance-evidence.md"],
-  ["docs/project/app-v2/00-start-here.md", "19-v2-dev-test-migration-and-performance-evidence.md"],
-  ["docs/project/app-v2/08-roadmap-2.0.md", "2.0.0-alpha.22"],
-  ["docs/codex-current-state.md", "# 2.0.0-alpha.22"],
+  ["AGENTS.md", "20-workorder-list-read-api-evidence.md"],
+  ["docs/project/app-v2/00-start-here.md", "20-workorder-list-read-api-evidence.md"],
+  ["docs/project/app-v2/08-roadmap-2.0.md", "2.0.0-alpha.23"],
+  ["docs/codex-current-state.md", "# 2.0.0-alpha.23"],
 ]) {
   assert.ok(fs.readFileSync(path.join(root, file), "utf8").includes(token), `${file} missing ${token}`);
 }

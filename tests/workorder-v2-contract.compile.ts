@@ -1,9 +1,7 @@
 import type {
   CreateWorkOrderDraftCommand,
   DecimalString,
-  EntityVersion,
   OpaqueCursor,
-  RevisionNumber,
   SetRepresentativeImageCommand,
   WorkOrderApiErrorCode,
   WorkOrderId,
@@ -23,28 +21,24 @@ type ListItemHasNoMaterials = Assert<Not<HasKey<WorkOrderListItem, "materials">>
 type ConflictCodeExists = Assert<"CONFLICT" extends WorkOrderApiErrorCode ? true : false>;
 
 const sampleListItem = {
-  id: "00000000-0000-4000-8000-000000000001" as WorkOrderId,
+  workOrderId: "00000000-0000-4000-8000-000000000001" as WorkOrderId,
+  displayDocumentNumber: null,
   productName: "테스트 재킷",
   status: "draft",
   dueDate: null,
   totalQuantity: 30,
-  currentRevisionNumber: 0 as RevisionNumber,
-  displayDocumentNumber: null,
+  estimatedAmountSummary: {
+    currency: "KRW" as WorkOrderListItem["estimatedAmountSummary"]["currency"],
+    estimatedTotal: "390000.00" as DecimalString,
+  },
   representativeThumbnail: null,
-  materialSummary: {
-    fabricCount: 1,
-    accessoryCount: 2,
-    requestedCount: 0,
-    completedCount: 0,
+  incompleteMaterialSummary: {
+    incompleteFabricCount: 1,
+    incompleteAccessoryCount: 2,
   },
-  readiness: {
-    canIssue: false,
-    hardBlockers: [],
-    warnings: [],
-    basedOnVersion: 1 as EntityVersion,
-  },
+  processCount: 3,
+  latestDocumentStatus: null,
   updatedAt: "2026-07-11T12:00:00+09:00" as WorkOrderListItem["updatedAt"],
-  entityVersion: 1 as EntityVersion,
 } satisfies WorkOrderListItem;
 
 const samplePage = {

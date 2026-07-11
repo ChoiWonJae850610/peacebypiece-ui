@@ -93,13 +93,18 @@ const requiredVerifyTokens = [
   'GetProjectAppVersion) -in @("2.0.0-alpha.21", "2.0.0-alpha.22")',
   "workorder v2 alpha.22 dev/test runner contract",
   "tests/workorder-v2-alpha22-dev-test-runner-contract.mjs",
+  "workorder v2 alpha.23 list API contract",
+  "tests/workorder-v2-alpha23-list-api-contract.mjs",
   "app-v2 document links and Mermaid contract",
   "tests/app-v2-document-links-contract.mjs",
   "mobile typecheck",
   "mobile Expo config",
   "WAFL v2 alpha.22 DB runtime evidence",
+  "WAFL v2 alpha.23 WorkOrder list API runtime evidence",
+  "function GetLatestAlpha23EvidenceText",
   "db/v2/migrations/001_v2_tenant_document_number_foundation.sql",
   "db/v2/migrations/006_v2_deferred_constraints_indexes.sql",
+  "db/v2/migrations/007_v2_work_order_list_material_lookup_index.sql",
 ];
 
 for (const token of requiredVerifyTokens) {
@@ -118,6 +123,8 @@ for (const token of [
   '$ExpectedAppVersion -in @("2.0.0-alpha.21", "2.0.0-alpha.22")',
   "db/v2/migrations/001_v2_tenant_document_number_foundation.sql",
   "db/v2/migrations/006_v2_deferred_constraints_indexes.sql",
+  '$ExpectedAppVersion -eq "2.0.0-alpha.23"',
+  "db/v2/migrations/007_v2_work_order_list_material_lookup_index.sql",
 ]) {
   if (!finish.includes(token)) {
     throw new Error(`Missing finish-version billing migration safety token: ${token}`);

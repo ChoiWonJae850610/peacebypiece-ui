@@ -31,6 +31,7 @@ export type WorkOrderFieldError = {
 };
 
 export type WorkOrderApiErrorEnvelope = {
+  readonly ok: false;
   readonly error: {
     readonly code: WorkOrderApiErrorCode;
     readonly message: string;

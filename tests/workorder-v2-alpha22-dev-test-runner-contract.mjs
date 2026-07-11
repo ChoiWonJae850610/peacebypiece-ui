@@ -13,12 +13,16 @@ const migration005 = fs.readFileSync(path.join(root, "db/v2/migrations/005_v2_do
 for (const token of [
   'const VERSION = "2.0.0-alpha.22"',
   'const PREFIX = "wafl-fn"',
-  '"preflight", "apply", "validate", "seed", "verify"',
+  '"preflight", "apply", "apply-index", "validate", "seed", "verify"',
   "runtime-not-dev-test",
   "db-fingerprint-mismatch",
   "fixture-prefix-mismatch",
   "superuser-connection-blocked",
-  "APPLY WAFL V2 ALPHA22 DEV TEST",
+  "alpha22-generic-apply-disabled-after-alpha23-index",
+  "APPLY WAFL V2 ALPHA23 MATERIAL INDEX",
+  "applyAlpha23MaterialIndex",
+  "alpha23-index-ledger-precondition",
+  "DB schema mutation: true; approved dev/test additive index 007 only",
   "SEED WAFL V2 A500",
   "SEED WAFL V2 B5000",
   "SEED WAFL V2 C-MULTI",
@@ -27,6 +31,7 @@ for (const token of [
   "empty-migration-body",
   "migration-ledger-mismatch",
   "Migration ledger rows after failure",
+  "Alpha.23 material index present after failure",
   "partial-seed-detected",
   "tenant-runtime-role-unsafe-or-missing",
   "tenant-isolation-failed",
@@ -50,6 +55,7 @@ for (const migration of [
   "004_v2_assets_revision_linkage.sql",
   "005_v2_documents_access_events.sql",
   "006_v2_deferred_constraints_indexes.sql",
+  "007_v2_work_order_list_material_lookup_index.sql",
 ]) {
   assert.ok(runner.includes(`"${migration}"`), `ordered migration missing ${migration}`);
 }
@@ -70,6 +76,7 @@ for (const forbidden of [
 for (const token of [
   "$RunWaflV2MigrationPreflight",
   "$ApplyWaflV2Migrations",
+  "$ApplyWaflV2Alpha23MaterialIndex",
   "$RunWaflV2PostApplyValidation",
   "$RunWaflV2SeedProfile",
   "$RunWaflV2DevTestVerification",
@@ -78,6 +85,7 @@ for (const token of [
   "ApprovedDbFingerprint",
   'TestPrefix).Trim()',
   "WAFL_V2_MIGRATION_APPROVED",
+  "Apply_Wafl_V2_Alpha23_Material_Index",
   "WAFL_V2_SEED_APPROVED",
   "WAFL_V2_VERIFY_APPROVED",
   "node scripts/run-wafl-v2-alpha22.mjs",
@@ -123,7 +131,7 @@ assert.notEqual(blocked.status, 0, "production runtime must be blocked before co
 assert.match(`${blocked.stdout}\n${blocked.stderr}`, /runtime-not-dev-test/);
 
 function gitChanged(pathspec) {
-  const result = spawnSync("git", ["status", "--short", "--", pathspec], { cwd: root, encoding: "utf8" });
+  const result = spawnSync("git", ["status", "--short", "--untracked-files=all", "--", pathspec], { cwd: root, encoding: "utf8" });
   assert.equal(result.status, 0, `git status failed for ${pathspec}`);
   return result.stdout.trim();
 }
@@ -131,7 +139,6 @@ function gitChanged(pathspec) {
 for (const forbiddenPath of [
   "db/schema",
   "db/migrations",
-  "app/api",
   "cloudflare",
   "package.json",
   "package-lock.json",
@@ -139,6 +146,14 @@ for (const forbiddenPath of [
   "pnpm-workspace.yaml",
 ]) {
   assert.equal(gitChanged(forbiddenPath), "", `forbidden path changed: ${forbiddenPath}`);
+}
+
+const appVersion = fs.readFileSync(path.join(root, "lib/constants/version.ts"), "utf8");
+const apiChanges = gitChanged("app/api").split(/\r?\n/).filter(Boolean);
+if (appVersion.includes('APP_VERSION = "2.0.0-alpha.23"')) {
+  assert.deepEqual(apiChanges, ["?? app/api/v2/work-orders/route.ts"], "alpha.23 may add only its exact GET route");
+} else {
+  assert.deepEqual(apiChanges, [], "app/api must remain unchanged through alpha.22");
 }
 
 console.log("workorder v2 alpha.22 dev/test runner contract: PASS");

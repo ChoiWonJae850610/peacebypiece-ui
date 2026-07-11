@@ -95,6 +95,7 @@ docs/project/app-v2/
   17-v2-api-contract-test-plan.md
   18-v2-additive-migration-draft-and-schema-contract.md
   19-v2-dev-test-migration-and-performance-evidence.md
+  20-workorder-list-read-api-evidence.md
 ```
 
 The alpha.19 documents are design and read-only audit authority. They do not authorize schema migration, API replacement, seed execution, DB/R2 mutation, or PDF Worker changes.
@@ -102,6 +103,8 @@ The alpha.19 documents are design and read-only audit authority. They do not aut
 The alpha.20 documents and `lib/domain/work-orders/contracts/` define source/DB boundaries and type-only API contracts. `db/v2/` is a README-only workspace in alpha.20; no migration, full reset, seed, API route, or runtime DB integration is authorized.
 
 The alpha.21 checkpoint adds ordered additive migration SQL drafts and a static schema contract under `db/v2/migrations/`. The drafts are not applied. Neon access, constraint validation, RLS runtime proof, seed, benchmark, API implementation, and production mutation remain forbidden until a separately approved alpha.22 work order.
+
+Alpha.22 applied the six reviewed migrations and synthetic performance fixtures only to the approved dev/test target. Alpha.23 adopts the first bounded runtime read path, `GET /api/v2/work-orders`, behind authenticated company scope, `workorder.read`, an expiring signed cursor, the `NOBYPASSRLS` tenant role, and a dev/test fingerprint guard. The mobile app remains disconnected, and production/API writes/schema mutation remain forbidden.
 
 ## Relationship to 0.30.x documents
 

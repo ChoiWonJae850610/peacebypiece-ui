@@ -356,3 +356,18 @@ For the alpha.18 mobile/tablet mock:
 - Only successful Finish may replace `4. Newest` with the current alpha.22 source ZIP and matching repo-state.
 - The source ZIP excludes every `.env*` file, including `.env.example`.
 - Production DB/R2/Worker/API bindings, business data, legacy v1 destructive changes, and dependency changes remain forbidden.
+
+## 2.0.0-alpha.23 WorkOrder list Read API rule
+
+- The only new runtime endpoint is `GET /api/v2/work-orders`. Do not add POST, PATCH, PUT, DELETE, detail, tab, PDF, QR, or mobile integration.
+- Run the dev/test runtime/fingerprint/prefix/read-approval guard before the DB-backed workspace guard so a disabled or production runtime cannot touch the database through this route.
+- Reuse `requireWorkspaceApiGuard({ permissionCode: "workorder.read" })`; never accept client `companyId` as tenant scope.
+- Bind signed cursors to the authenticated tenant and visibility scope, include expiry and version, and return `CURSOR_INVALID` for tampering, expiry, version mismatch, or cross-tenant reuse.
+- Respect canonical simulator company access policy during runtime evidence: active A/H/B may read their own lists, while approval-pending C must receive typed `FORBIDDEN` without an RLS or workspace-guard bypass.
+- Run customer queries through `wafl_v2_tenant_runtime` in a read-only transaction with local RLS claims. The migration owner must not be the customer read path.
+- Bound page IDs before child summaries and keep repository query count at three or fewer including role/claim setup.
+- Runtime verification is read-only. Reuse alpha.22 migrations and synthetic seed; do not run migration, seed, cleanup, reset, constraint validation, or rollback migration SQL.
+- For the owner-approved alpha.23 scope, Codex may run at most three diagnosis, minimal in-scope correction, static verification, and dev/test read-only runtime verification cycles without requesting approval for each retry.
+- The automatic loop requires the same approved dev/test fingerprint, read-only DB/API access, alpha.23-only file changes, no root package/lockfile/dependency change, and no DB/R2/Worker/PDF/production mutation. Static, build, and type errors may be corrected under the same boundary.
+- Preserve a canonical failure source ZIP, failure repo-state, and failure log under `Logs/Repo_Status/Failure_Handoff` for every failed cycle. Do not touch `4. Newest` before successful Finish.
+- Stop immediately when the same error repeats, three cycles do not resolve the failure, the target fingerprint changes or becomes unclear, or any unexpected write, tenant leak, RLS bypass, data-integrity mismatch, partial mutation, unclear ledger state, out-of-scope change, dependency change, migration, seed, cleanup, reset, rollback, schema validation, destructive SQL, or business/R2/Worker/PDF/production mutation is detected.

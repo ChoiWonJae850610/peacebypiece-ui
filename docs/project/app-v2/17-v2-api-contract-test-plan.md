@@ -261,3 +261,14 @@ Menu numbers are assigned only after collision review in alpha.21~22.
 - DB/API/route runtime: NOT_RUN by design.
 - migration/Neon/RLS execution: NOT_RUN by design.
 - performance benchmark: NOT_RUN by design.
+
+## 15. Alpha.23 list Read API gate
+
+- Static contract verifies exact GET-only route, canonical DTO reuse, 30/50 limits, signed/expiring tenant-bound cursor, typed errors, dev/test fingerprint guard, read-only transaction, RLS role/claims, page-first SQL, and forbidden list fields/query shapes.
+- Runtime uses the built local Next server and authenticated synthetic company sessions for A/H/B/C.
+- Company A must never observe H/B/C rows, IDs, or cursor position. Cross-company cursor reuse returns `CURSOR_INVALID`; unsupported company/workOrder ID query parameters return `VALIDATION_ERROR`.
+- 500 and 5,000 traversal must return 10 and 100 pages at limit 50, duplicate 0 and missing 0.
+- Repository query count must be at most 3. Payload budgets remain 150KB for default 30 and 200KB for 50.
+- DB and API p50/p95/max are recorded. DB p95 budgets remain 100ms at 500 and 200ms at 5,000; API server p95 remains 500ms excluding remote client network.
+- Before/after schema fingerprint and v2 row counts must be identical. Schema, seed, business, R2, Worker, PDF, and production mutation are all false for alpha.23.
+- Failure creates a failure handoff and stops; retry needs owner approval. Success evidence is recorded in document 20.

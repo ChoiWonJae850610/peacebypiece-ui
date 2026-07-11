@@ -103,7 +103,9 @@ function collectApiFiles(directory) {
 collectApiFiles(path.join(root, "app/api"));
 for (const file of apiFiles) {
   const source = fs.readFileSync(file, "utf8");
-  assert.doesNotMatch(source, /domain\/work-orders\/contracts/, `runtime API must not import alpha.20 contracts: ${path.relative(root, file)}`);
+  const relative = path.relative(root, file).replaceAll("\\", "/");
+  if (relative === "app/api/v2/work-orders/route.ts") continue;
+  assert.doesNotMatch(source, /domain\/work-orders\/contracts/, `runtime API outside the alpha.23 vertical slice must not import contracts: ${relative}`);
 }
 
 const dbV2Root = path.join(root, "db/v2");

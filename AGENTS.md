@@ -24,11 +24,12 @@
   20. `docs/project/app-v2/17-v2-api-contract-test-plan.md`
   21. `docs/project/app-v2/18-v2-additive-migration-draft-and-schema-contract.md`
   22. `docs/project/app-v2/19-v2-dev-test-migration-and-performance-evidence.md`
-  23. `docs/project/v2/00-start-here.md` through `docs/project/v2/14-operational-policy-absorption.md`
-  24. `docs/project/25-korean-unicode-encoding-standard.md`
-  25. `docs/project/32-product-completion-and-ui-evidence-standard.md`
-  26. `docs/project/26-final-policy-decisions-and-master-todo.md`
-  27. `docs/project/31-pre-codex-integrated-master-plan.md`
+  23. `docs/project/app-v2/20-workorder-list-read-api-evidence.md`
+  24. `docs/project/v2/00-start-here.md` through `docs/project/v2/14-operational-policy-absorption.md`
+  25. `docs/project/25-korean-unicode-encoding-standard.md`
+  26. `docs/project/32-product-completion-and-ui-evidence-standard.md`
+  27. `docs/project/26-final-policy-decisions-and-master-todo.md`
+  28. `docs/project/31-pre-codex-integrated-master-plan.md`
 - `docs/project/app-v2/*` is the priority authority for the `2.0.x` App-first line.
 - Existing `docs/project/v2/*` documents are not deleted. They remain the `0.30.x` `/ui` design baseline and preserved policy reference for Product, Sheet/Card, Korean role labels, Neon/R2/Worker, PDF/share, mobile-web, and QA rules.
 - `www.wafl.co.kr` is the public marketing, download, pricing, examples, inquiry, trial-request, and waitlist landing site for the WAFL app.
@@ -41,6 +42,7 @@
 - `docs/project/app-v2/15-v2-source-db-boundary-and-release-policy.md`, `16-workorder-api-command-read-model-contracts.md`, and `17-v2-api-contract-test-plan.md` define the source/DB workspace boundary, type-only WorkOrder contracts, and alpha.21~22 gates. `db/v2` contains no executable SQL in alpha.20.
 - `docs/project/app-v2/18-v2-additive-migration-draft-and-schema-contract.md` and `db/v2/migrations/001` through `006` define the alpha.21 additive SQL draft and static schema contract. They do not authorize SQL execution; apply, constraint validation, seed, RLS runtime proof, and benchmarks remain alpha.22 dev/test-only work requiring separate approval.
 - `docs/project/app-v2/19-v2-dev-test-migration-and-performance-evidence.md` records the explicitly approved alpha.22 dev/test apply, deterministic 500/5,000/multi-tenant seed, RLS/cursor/concurrency evidence, and measured budgets. It does not authorize production apply, cleanup, Full Reset, constraint validation, API writes, or future DB mutation.
+- `docs/project/app-v2/20-workorder-list-read-api-evidence.md` defines the alpha.23 dev/test-only `GET /api/v2/work-orders` vertical slice. It authorizes no write command, production DB access, mobile API connection, detailed/tab API, migration, seed, cleanup, R2, Worker, or PDF mutation.
 - Normal mobile production-card screens are portrait-first. Mobile landscape is not the default production-card target; the future sketch/drawing module may be the mobile-landscape exception.
 - Tablet app screens must support portrait and landscape without becoming a compressed desktop admin layout.
 - Next.js remains for system admin, customer admin advanced settings, operations, API, document, internal showroom, and test-console flows.
@@ -148,6 +150,14 @@
 - `tools/pipeline/approved-workflow.ps1 -Action Verify`, `tools/pipeline/approved-workflow.ps1 -Action Handoff`, and `tools/pipeline/approved-workflow.ps1 -Action Plan` are read/validation-only commands. They may still need Codex app OS approval when writing pipeline output files outside the workspace.
 - If a safe validation fails and the cause is inside the requested scope, fix it and rerun the same validation when reasonable.
 - Under the automatic version workflow, explicit-path staging, ordinary commit, `git push origin master`, and post-push Git state checks are allowed when all automatic Git conditions are satisfied.
+
+## Approved Read-Only Runtime Correction Loop
+- When the owner explicitly approves a bounded version scope, Codex may repeat diagnosis, a minimal in-scope fix, static verification, and dev/test read-only runtime verification without asking again for every retry.
+- The loop is allowed only while all changed files stay inside the approved version scope, the approved dev/test target fingerprint is unchanged, DB/API access is read-only, no DB/R2/Worker/PDF or production mutation occurs, and root package/lockfile/dependencies remain unchanged.
+- Preserve a failure source ZIP, failure repo-state, and failure log under `Logs/Repo_Status/Failure_Handoff` for every failed attempt. Do not place failure artifacts in `4. Newest`, and do not change `4. Newest` before successful Finish.
+- Unless the owner sets a different limit, stop after at most three diagnosis/fix/static/runtime cycles. Stop immediately when the same error repeats or the bounded loop does not resolve the failure.
+- Static, build, and type errors may be corrected inside the same bounded loop when the fix remains in scope.
+- Stop and request explicit owner approval before migration apply, seed, cleanup, reset, rollback, schema validation, destructive SQL, any DB/data/R2/Worker/PDF/production mutation, a target fingerprint change, an unclear dev/test target, an unexpected write, tenant leak, RLS bypass, data-integrity mismatch, partial mutation, unclear ledger state, an out-of-scope file change, or a dependency/root package/lockfile change.
 
 ## Actions Requiring Explicit Approval
 - Production DB, production R2, production APIs/bindings, secrets, tokens, account IDs, and production URLs require explicit approval before access or use.

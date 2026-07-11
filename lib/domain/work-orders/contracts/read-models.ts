@@ -37,30 +37,33 @@ import type { ReadinessReadModel } from "@/lib/domain/work-orders/contracts/read
 
 export type RepresentativeThumbnailReadModel = {
   readonly imageId: ImageId;
-  readonly thumbnailUrl: ControlledFileUrl;
+  readonly thumbnailUrl: ControlledFileUrl | null;
   readonly altText: string;
 };
 
 export type WorkOrderListMaterialSummary = {
-  readonly fabricCount: number;
-  readonly accessoryCount: number;
-  readonly requestedCount: number;
-  readonly completedCount: number;
+  readonly incompleteFabricCount: number;
+  readonly incompleteAccessoryCount: number;
+};
+
+export type WorkOrderListAmountSummary = {
+  readonly currency: CurrencyCode;
+  readonly estimatedTotal: DecimalString;
 };
 
 export type WorkOrderListItem = {
-  readonly id: WorkOrderId;
+  readonly workOrderId: WorkOrderId;
+  readonly displayDocumentNumber: DisplayDocumentNumber | null;
   readonly productName: string;
   readonly status: WorkOrderStatus;
   readonly dueDate: IsoDate | null;
   readonly totalQuantity: number;
-  readonly currentRevisionNumber: RevisionNumber;
-  readonly displayDocumentNumber: DisplayDocumentNumber | null;
+  readonly estimatedAmountSummary: WorkOrderListAmountSummary;
   readonly representativeThumbnail: RepresentativeThumbnailReadModel | null;
-  readonly materialSummary: WorkOrderListMaterialSummary;
-  readonly readiness: Pick<ReadinessReadModel, "canIssue" | "hardBlockers" | "warnings" | "basedOnVersion">;
+  readonly incompleteMaterialSummary: WorkOrderListMaterialSummary;
+  readonly processCount: number;
+  readonly latestDocumentStatus: GeneratedDocumentStatus | null;
   readonly updatedAt: IsoDateTime;
-  readonly entityVersion: EntityVersion;
 };
 
 export type WorkOrderListPage = CursorPage<WorkOrderListItem>;

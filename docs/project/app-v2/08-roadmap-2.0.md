@@ -1,4 +1,4 @@
-# WAFL v2 App-first Roadmap 2.0 - 2.0.0-alpha.21
+# WAFL v2 App-first Roadmap 2.0 - 2.0.0-alpha.23
 
 ## Purpose
 
@@ -352,6 +352,23 @@ Status: done.
 - Result: approved dev/test additive apply, 10,900 deterministic fixtures, RLS/cursor/concurrency verification, and performance evidence are complete. Production migration and API cutover remain blocked.
 - Verification: runtime evidence plus WorkOrder static contracts, root/mobile TypeScript, Expo config, Unicode, route guards, document links/Mermaid, PowerShell encoding, build, mutation audit, and approved workflow must pass before Finish.
 - User confirmation: no visual UI changed; no manual product QA is required for this DB architecture/runtime checkpoint.
+
+### 2.0.0-alpha.23
+
+Status: implementation and dev/test read-only runtime verification complete; final Verify/Finish pending.
+
+- Implement the first v2 runtime read path at `GET /api/v2/work-orders` without adding any command endpoint.
+- Reuse the canonical alpha.20 `WorkOrderListPage`, branded primitives, error codes, and cursor limits rather than creating a duplicate public DTO.
+- Require the existing workspace session guard and `workorder.read`; derive company scope only from the authenticated session and reject `companyId`, `workOrderId`, and other unsupported query parameters.
+- Keep the route disabled unless the dev/test runtime, approved DB fingerprint, `wafl-fn` prefix, read approval, and feature gate all match before any DB-backed auth guard runs.
+- Use an expiring HMAC-signed cursor bound to tenant and visibility scope with `(updated_at DESC, id DESC)` ordering.
+- Start the list-only tenant transaction with fixed `BEGIN READ ONLY; SET LOCAL ROLE wafl_v2_tenant_runtime` SQL in one protocol call, then use two bounded repository callback statements for local claims and the list SQL. The response query-count header describes these callback statements, not all endpoint protocol round trips.
+- Limit page IDs to at most 51 before batch material/process/document/image summaries; prohibit `SELECT *`, lateral row aggregation, child JSON aggregation, and storage/token/snapshot fields.
+- Add a static list API contract and a canonical read-only HTTP runtime runner for active company A/H/B reads, approval-pending company C denial, cross-company cursor isolation, cursor traversal, typed errors, query/payload/latency evidence, and before/after DB snapshot equality.
+- Keep the Expo mobile mock disconnected from the API. Do not add migration, seed, cleanup, reset, rollback migration, detail/tab API, R2/Worker/PDF, production access, root package, lockfile, or dependency changes.
+- Align app/mobile version metadata to `2.0.0-alpha.23`.
+- Result: approved dev/test index 007 keeps the page material aggregate bounded, and the final read-only runtime evidence records Company A DB/API p95 `86.17ms`/`463.29ms` and Company H API p95 `481.46ms`; 500/5,000 cursor traversal, tenant isolation, typed errors, payload, and query budgets pass.
+- Mutation accounting: index 007 was the only approved alpha.23 dev/test schema mutation. The final runtime verification itself changed no schema, seed, business data, R2/Worker/PDF, or production state.
 
 ## Later integration phases
 

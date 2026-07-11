@@ -1,6 +1,6 @@
 # WAFL Mobile App Mock
 
-Version: `2.0.0-alpha.22`
+Version: `2.0.0-alpha.23`
 
 This Expo React Native app is the App-first WAFL v2 mobile/tablet mock surface.
 
@@ -37,6 +37,7 @@ Current visual foundation:
 - `2.0.0-alpha.20` adds neutral type-only WorkOrder API contracts and the README-only `db/v2` workspace. The mobile mock does not import these contracts or connect to a real API in this version.
 - `2.0.0-alpha.21` adds guarded additive migration SQL drafts and a static schema contract under `db/v2/migrations`. No SQL is applied and the mobile mock remains disconnected from real API/DB behavior.
 - `2.0.0-alpha.22` applies those migrations only to the approved dev/test DB, records RLS/cursor/concurrency/performance evidence, and keeps this mobile mock disconnected from real API/DB behavior.
+- `2.0.0-alpha.23` adds the dev/test-only Next.js WorkOrder list Read API vertical slice. The Expo mobile mock remains disconnected and makes no real API request.
 
 ## Font asset
 
