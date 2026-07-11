@@ -93,11 +93,14 @@ docs/project/app-v2/
   15-v2-source-db-boundary-and-release-policy.md
   16-workorder-api-command-read-model-contracts.md
   17-v2-api-contract-test-plan.md
+  18-v2-additive-migration-draft-and-schema-contract.md
 ```
 
 The alpha.19 documents are design and read-only audit authority. They do not authorize schema migration, API replacement, seed execution, DB/R2 mutation, or PDF Worker changes.
 
 The alpha.20 documents and `lib/domain/work-orders/contracts/` define source/DB boundaries and type-only API contracts. `db/v2/` is a README-only workspace in alpha.20; no migration, full reset, seed, API route, or runtime DB integration is authorized.
+
+The alpha.21 checkpoint adds ordered additive migration SQL drafts and a static schema contract under `db/v2/migrations/`. The drafts are not applied. Neon access, constraint validation, RLS runtime proof, seed, benchmark, API implementation, and production mutation remain forbidden until a separately approved alpha.22 work order.
 
 ## Relationship to 0.30.x documents
 

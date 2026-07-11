@@ -1,7 +1,7 @@
 # WAFL v2 API Contract Test Plan
 
-Version: `2.0.0-alpha.20`
-Status: static/compile tests active; DB/API runtime tests planned
+Version: `2.0.0-alpha.21`
+Status: type/API and migration/schema static tests active; DB/API runtime tests planned
 
 ## 1. Purpose
 
@@ -211,6 +211,10 @@ Before SQL draft review completes:
 - no DB apply command runs.
 - compatibility/read-only audit draft exists.
 - rollback/feature flag stance documented.
+
+Active alpha.21 test: `tests/workorder-v2-migration-schema-contract.mjs`.
+
+It verifies exact migration order, execution gates, additive-only SQL, tenant company scope, RLS policy separation, immutable revision/document guards, atomic sequence allocation, hash-only access tokens, deferred tenant constraints, and required query indexes. It also rejects changes under legacy DB paths, `app/api`, Cloudflare, and root package/lock files.
 
 ## 12. Alpha.22 gate
 

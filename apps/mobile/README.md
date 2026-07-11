@@ -1,6 +1,6 @@
 # WAFL Mobile App Mock
 
-Version: `2.0.0-alpha.20`
+Version: `2.0.0-alpha.21`
 
 This Expo React Native app is the App-first WAFL v2 mobile/tablet mock surface.
 
@@ -35,6 +35,7 @@ Current visual foundation:
 - `2.0.0-alpha.18` applies 에이투지체 / A2Z as the bundled app mock UI font, stores the TTF assets under `assets/fonts/a2z`, records source/license details in `FONT-SOURCE.md`, and keeps PDF/Worker font embedding out of scope.
 - `2.0.0-alpha.19` adds a read-only v1 DB/API/performance audit and the v2 core domain/migration design under `docs/project/app-v2/12` through `14`. The mobile mock remains disconnected from real DB/API/save/search/PDF behavior.
 - `2.0.0-alpha.20` adds neutral type-only WorkOrder API contracts and the README-only `db/v2` workspace. The mobile mock does not import these contracts or connect to a real API in this version.
+- `2.0.0-alpha.21` adds guarded additive migration SQL drafts and a static schema contract under `db/v2/migrations`. No SQL is applied and the mobile mock remains disconnected from real API/DB behavior.
 
 ## Font asset
 

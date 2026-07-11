@@ -575,6 +575,8 @@ $profileCommands = @{
         @{ Name = "functions PDF contract"; Command = "node"; Arguments = @("tests/functions-pdf-contract.mjs") }
     );
     "automation-infrastructure" = @(
+        @{ Name = "workorder v2 API contract"; Command = "node"; Arguments = @("tests/workorder-v2-api-contract.mjs") },
+        @{ Name = "workorder v2 migration schema contract"; Command = "node"; Arguments = @("tests/workorder-v2-migration-schema-contract.mjs") },
         @{ Name = "approved workflow contract"; Command = "node"; Arguments = @("tests/approved-workflow-contract.mjs") },
         @{ Name = "pipeline repo state publication contract"; Command = "node"; Arguments = @("tests/pipeline-repo-state-publication-contract.mjs") }
     );
@@ -1056,6 +1058,16 @@ if ($Profile -eq "public-signup-e2e") {
 }
 if ($Profile -eq "workorder-size-pdf") {
     $allowedMigrationChanges = @("db/migrations/patch_0_24_34_workorder_size_spec_and_pdf.sql")
+}
+if ($Profile -eq "automation-infrastructure" -and (GetProjectAppVersion) -eq "2.0.0-alpha.21") {
+    $allowedMigrationChanges = @(
+        "db/v2/migrations/001_v2_tenant_document_number_foundation.sql",
+        "db/v2/migrations/002_v2_work_orders_revisions.sql",
+        "db/v2/migrations/003_v2_revision_content.sql",
+        "db/v2/migrations/004_v2_assets_revision_linkage.sql",
+        "db/v2/migrations/005_v2_documents_access_events.sql",
+        "db/v2/migrations/006_v2_deferred_constraints_indexes.sql"
+    )
 }
 $unexpectedMigrationChanges = @($migrationChanges | Where-Object { $allowedMigrationChanges -notcontains $_ })
 if ($unexpectedMigrationChanges.Count -gt 0) {

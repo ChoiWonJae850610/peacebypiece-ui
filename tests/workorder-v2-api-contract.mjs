@@ -117,14 +117,29 @@ function collectDbV2Files(directory) {
   }
 }
 collectDbV2Files(dbV2Root);
-assert.equal(dbV2Entries.some((file) => file.endsWith(".sql")), false, "alpha.20 db/v2 must not contain SQL");
-assert.equal(
-  dbV2Entries.every((file) => path.basename(file) === "README.md"),
-  true,
-  "alpha.20 db/v2 must remain README-only",
-);
+const appVersionSource = read("lib/constants/version.ts");
+const isAlpha20 = appVersionSource.includes('APP_VERSION = "2.0.0-alpha.20"');
+const dbV2SqlEntries = dbV2Entries.filter((file) => file.endsWith(".sql"));
+const dbV2ReadmeEntries = dbV2Entries.filter((file) => path.basename(file) === "README.md");
 
-for (const file of dbV2Entries) {
+if (isAlpha20) {
+  assert.equal(dbV2SqlEntries.length, 0, "alpha.20 db/v2 must not contain SQL");
+  assert.equal(dbV2Entries.length, dbV2ReadmeEntries.length, "alpha.20 db/v2 must remain README-only");
+} else {
+  assert.ok(dbV2SqlEntries.length > 0, "alpha.21+ must expose reviewed migration drafts");
+  assert.equal(
+    dbV2SqlEntries.every((file) => path.dirname(file) === path.join(dbV2Root, "migrations")),
+    true,
+    "v2 SQL must stay inside db/v2/migrations",
+  );
+  assert.equal(
+    dbV2Entries.every((file) => file.endsWith(".sql") || path.basename(file) === "README.md"),
+    true,
+    "db/v2 may contain only migration SQL and boundary README files at this stage",
+  );
+}
+
+for (const file of dbV2ReadmeEntries) {
   const source = fs.readFileSync(file, "utf8");
   const relative = path.relative(root, file);
   for (const token of ["Responsibility", "Allowed files", "Forbidden", "Current stage", "production", "Legacy", "alpha.21"]) {

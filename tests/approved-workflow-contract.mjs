@@ -86,6 +86,13 @@ const requiredVerifyTokens = [
   "approved workflow contract",
   "roadmap development contract",
   "tests/approved-workflow-contract.mjs",
+  "workorder v2 API contract",
+  "tests/workorder-v2-api-contract.mjs",
+  "workorder v2 migration schema contract",
+  "tests/workorder-v2-migration-schema-contract.mjs",
+  'GetProjectAppVersion) -eq "2.0.0-alpha.21"',
+  "db/v2/migrations/001_v2_tenant_document_number_foundation.sql",
+  "db/v2/migrations/006_v2_deferred_constraints_indexes.sql",
 ];
 
 for (const token of requiredVerifyTokens) {
@@ -101,6 +108,9 @@ for (const token of [
   "patch_0_24_33_public_signup_e2e.sql",
   "unexpectedMigrationChanges",
   "DB migration/schema changes allowed for profile",
+  '$ExpectedAppVersion -eq "2.0.0-alpha.21"',
+  "db/v2/migrations/001_v2_tenant_document_number_foundation.sql",
+  "db/v2/migrations/006_v2_deferred_constraints_indexes.sql",
 ]) {
   if (!finish.includes(token)) {
     throw new Error(`Missing finish-version billing migration safety token: ${token}`);

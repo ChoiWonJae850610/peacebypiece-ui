@@ -1,3 +1,37 @@
+# 2.0.0-alpha.21 WAFL v2 Additive Migration Draft and Schema Contract
+
+- Current GPT checkpoint: `2.0.0-alpha.21`.
+- Baseline source before this patch: repository `APP_VERSION: 2.0.0-alpha.20`.
+- Baseline commit: `0d68db472d41e8a8c03851b4396af056a69c5256`.
+- This checkpoint adds six ordered additive SQL drafts under `db/v2/migrations/`; none is connected to or applied against a database.
+- Every draft has an alpha.21 execution prohibition and requires future explicit development/test session gates.
+- The schema draft covers tenant/document sequence foundation, WorkOrder/revision identity, relational revision content, asset snapshots, generated documents, hash-only access tokens, domain events, deferred tenant constraints, and query indexes.
+- Tenant rows carry direct `company_id`; tenant-member RLS and audited privileged-system RLS are separate draft policies.
+- Finalized revisions and generated-document identity/snapshots have immutable guard triggers. Corrections create a new draft revision.
+- Document sequence allocation uses atomic `INSERT ... ON CONFLICT ... DO UPDATE ... RETURNING`; `max()+1` is prohibited.
+- Opaque QR/document access persists `token_hash`, expiry, revoke, and rotation metadata only. Raw tokens are not stored.
+- `tests/workorder-v2-migration-schema-contract.mjs` validates additive-only SQL, ordering, execution gates, RLS, immutability, token, constraints, indexes, and forbidden path stability without DB access.
+- The `automation-infrastructure` Verify/Finish safety gate allows only the exact alpha.21 `001` through `006` draft paths when `APP_VERSION`/expected version is exactly `2.0.0-alpha.21`; all other migration/schema changes remain blocked.
+- Static verification passes for WorkOrder API/type, migration schema, root/mobile TypeScript, Expo config, Unicode, route guards, document links/Mermaid, PowerShell encoding, Next build, and approved workflow; mutation audit remains 189 findings with 0 high-risk.
+- `docs/project/app-v2/18-v2-additive-migration-draft-and-schema-contract.md` maps alpha.20 API contracts to alpha.21 schema drafts and alpha.22 dev/test gates.
+- App/mobile version metadata is aligned to `2.0.0-alpha.21`; no dependency changed.
+
+Explicitly not changed or executed:
+
+```text
+- Neon or any database connection
+- migration apply or constraint validation
+- Full Reset, seed, backfill, benchmark, or EXPLAIN
+- existing db/schema or db/migrations
+- app/api or repository implementation
+- mobile runtime API integration
+- R2/Worker/PDF implementation
+- dev/test, business, or production mutation
+- root package.json/root package-lock.json
+```
+
+---
+
 # 2.0.0-alpha.20 WAFL v2 Source/DB Boundary and WorkOrder Contract Baseline
 
 - Current GPT checkpoint: `2.0.0-alpha.20`.

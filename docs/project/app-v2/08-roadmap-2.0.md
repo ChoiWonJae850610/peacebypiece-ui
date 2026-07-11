@@ -1,4 +1,4 @@
-# WAFL v2 App-first Roadmap 2.0 - 2.0.0-alpha.20
+# WAFL v2 App-first Roadmap 2.0 - 2.0.0-alpha.21
 
 ## Purpose
 
@@ -314,6 +314,24 @@ Status: done.
 - Verification: root/mobile TypeScript, Expo public config, document link/Mermaid checks, WorkOrder contract checks, Unicode, route guards, Next production build, and `automation-infrastructure` approved workflow PASS; mutation audit high-risk count is 0.
 - Git delivery: finalized by the approved version workflow; the matching commit/push identity is recorded in the generated repo-state artifact.
 - User confirmation: no visual or runtime behavior changed, so no manual product QA is required for this architecture-contract checkpoint.
+
+### 2.0.0-alpha.21
+
+Status: done.
+
+- Add six ordered additive migration SQL drafts under `db/v2/migrations/` without applying them.
+- Guard every draft against unapproved or production execution.
+- Define company scope, tenant RLS, separate audited privileged-system scope, immutable revisions/documents, atomic document sequence allocation, and hash-only QR access metadata.
+- Add revision-scoped material, color/size, size-spec, process, asset linkage, document, and domain-event relational tables.
+- Add tenant-consistent `NOT VALID` constraints and cursor/tab/document/history indexes for later validation.
+- Add `tests/workorder-v2-migration-schema-contract.mjs` and keep the alpha.20 WorkOrder API/type contract passing.
+- Add `18-v2-additive-migration-draft-and-schema-contract.md` linking API contracts to schema drafts and alpha.22 gates.
+- Keep legacy DB/schema/migration files, `app/api`, runtime repositories, R2/Worker/PDF, root package files, and dependencies unchanged.
+- Do not connect to Neon or execute migration, constraint validation, seed, Full Reset, benchmark, EXPLAIN, or any mutation.
+- Align app/mobile version metadata to `2.0.0-alpha.21`.
+- Result: six execution-guarded additive drafts, the schema contract test, and document 18 map alpha.20 API contracts to a relational/RLS migration boundary without DB access.
+- Verification: WorkOrder API/type contract, migration schema contract, root/mobile TypeScript, Expo public config, Unicode, route guards, document link/Mermaid, Next build, PowerShell encoding, and approved workflow PASS; mutation audit reports 189 findings and 0 high-risk.
+- User confirmation: no SQL was applied and no runtime/UI behavior changed, so manual product QA is not required for this static architecture checkpoint.
 
 ## Later integration phases
 

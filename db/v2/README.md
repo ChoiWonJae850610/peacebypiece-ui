@@ -1,6 +1,6 @@
 # WAFL v2 DB Architecture Workspace
 
-Status: `2.0.0-alpha.20` contract workspace only. No SQL exists here.
+Status: `2.0.0-alpha.21` static migration-draft workspace. SQL exists only under `migrations/` and is not applied.
 
 ## Responsibility
 
@@ -19,23 +19,24 @@ The existing paths remain the legacy v1 baseline and are not moved:
 ## Current stage
 
 - alpha.20: README boundaries and type/API contracts only.
-- alpha.21: reviewed migration SQL drafts and contract tests may begin.
+- alpha.21: six ordered, execution-guarded additive migration drafts and static schema contracts; no DB connection or apply.
 - alpha.22: approved dev/test Neon branch apply, post-apply audit, and performance validation.
 - production use: forbidden until all migration, RLS, rollback, performance, and owner approval gates pass.
 
 ## Allowed files
 
-- Boundary README files in alpha.20.
-- Reviewed schema, migration, audit, seed, and test artifacts only in the version and folder assigned below.
+- Boundary README files.
+- Reviewed migration drafts only under `migrations/` in alpha.21.
+- Schema, audit, seed, and DB-runtime test artifacts only in the later version and folder assigned below.
 
 ## Forbidden work
 
-- Do not place `full_reset.sql`, migration SQL, seed SQL, DB connection scripts, or destructive reset scripts here in alpha.20.
+- Do not place SQL outside `migrations/`; do not add `full_reset.sql`, seed SQL, DB connection scripts, or destructive reset scripts in alpha.21.
 - Do not execute SQL through Neon SQL Editor as the normal operating procedure.
 - Future applies use the approved migration runner and PowerShell safety guards.
 - Direct manual SQL is exceptional recovery only and needs explicit approval.
 - Production DB, production R2, and business data mutation are forbidden.
-- Next version: alpha.21 may add reviewed migration and read-only audit drafts; no SQL apply is allowed.
+- Next version: alpha.22 may apply only to an explicitly approved Neon dev/test branch and must run post-apply, RLS, cursor, concurrency, seed, and performance gates.
 
 ## Child folders
 

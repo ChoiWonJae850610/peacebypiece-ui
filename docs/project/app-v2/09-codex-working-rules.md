@@ -43,11 +43,12 @@ Before any App-first file modification, read:
 18. `docs/project/app-v2/15-v2-source-db-boundary-and-release-policy.md`
 19. `docs/project/app-v2/16-workorder-api-command-read-model-contracts.md`
 20. `docs/project/app-v2/17-v2-api-contract-test-plan.md`
-21. `docs/project/v2/00-start-here.md` through `docs/project/v2/14-operational-policy-absorption.md`
-22. `docs/project/25-korean-unicode-encoding-standard.md`
-23. `docs/project/32-product-completion-and-ui-evidence-standard.md`
-24. `docs/project/26-final-policy-decisions-and-master-todo.md`
-25. `docs/project/31-pre-codex-integrated-master-plan.md`
+21. `docs/project/app-v2/18-v2-additive-migration-draft-and-schema-contract.md`
+22. `docs/project/v2/00-start-here.md` through `docs/project/v2/14-operational-policy-absorption.md`
+23. `docs/project/25-korean-unicode-encoding-standard.md`
+24. `docs/project/32-product-completion-and-ui-evidence-standard.md`
+25. `docs/project/26-final-policy-decisions-and-master-todo.md`
+26. `docs/project/31-pre-codex-integrated-master-plan.md`
 
 ## 4. Newest rule
 
@@ -331,3 +332,15 @@ For the alpha.18 mobile/tablet mock:
 - Completed/finalized revisions are immutable. Corrections create the next draft revision with a reason.
 - RLS is a required alpha.21 SQL draft and alpha.22 dev/test verification gate. Privileged system access stays separate and audited.
 - Do not add dependencies, DB/API/R2/Worker/PDF implementation, migration execution, seed mutation, or production mutation in alpha.20.
+
+## 2.0.0-alpha.21 additive migration draft rule
+
+- SQL is allowed only under `db/v2/migrations/` and must remain additive, ordered, guarded, and unapplied.
+- Keep `db/schema`, `db/migrations`, legacy v1 migrations, `app/api`, repositories, Workers, root package files, and dependencies unchanged.
+- Every draft must reject execution unless a future separately approved dev/test runner supplies the exact environment and approval session gates.
+- Every tenant-owned v2 table must carry direct `company_id`, enable/force RLS, and separate tenant-member policy from audited privileged-system policy.
+- Use atomic sequence-row allocation; never use `max()+1` for document numbers.
+- Store only document access token hashes with expiry/revoke metadata; raw access tokens are forbidden in DB columns.
+- Keep finalized revisions and generated document identity/snapshots immutable.
+- Add tenant-consistent FKs as `NOT VALID`; do not validate constraints, backfill, seed, benchmark, or connect to Neon in alpha.21.
+- Existing alpha.20 type/static contracts and the alpha.21 migration schema contract must both pass.
