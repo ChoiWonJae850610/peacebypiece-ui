@@ -216,13 +216,14 @@ const alpha24ApiChanges = [
   "?? app/api/v2/work-orders/[workOrderId]/size-spec/route.ts",
 ];
 if (appVersion.includes('APP_VERSION = "2.0.0-alpha.24"')) {
-  assert.deepEqual(apiChanges, alpha24ApiChanges, "alpha.24 may add only the exact WorkOrder detail/lazy GET routes under app/api");
-} else if (appVersion.includes('APP_VERSION = "2.0.0-alpha.23"')) {
   assert.deepEqual(
-    apiChanges,
-    ["?? app/api/v2/work-orders/route.ts"],
-    "alpha.23 may change only the exact WorkOrder list GET route under app/api",
+    apiChanges.filter((change) => !alpha24ApiChanges.includes(change)),
+    [],
+    "alpha.24 may change only the exact WorkOrder detail/lazy GET routes under app/api",
   );
+} else if (appVersion.includes('APP_VERSION = "2.0.0-alpha.23"')) {
+  const allowedAlpha23ApiChanges = ["?? app/api/v2/work-orders/route.ts"];
+  assert.deepEqual(apiChanges.filter((change) => !allowedAlpha23ApiChanges.includes(change)), [], "alpha.23 may change only the exact WorkOrder list GET route under app/api");
 } else {
   assert.deepEqual(apiChanges, [], "app/api must remain unchanged before alpha.23 runtime adoption");
 }

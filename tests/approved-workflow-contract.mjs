@@ -104,6 +104,7 @@ const requiredVerifyTokens = [
   "WAFL v2 alpha.22 DB runtime evidence",
   "WAFL v2 alpha.23 WorkOrder list API runtime evidence",
   "WAFL v2 alpha.24 WorkOrder detail/lazy API runtime evidence",
+  '$null -ne $script:WaflV2Alpha23Evidence -and (GetProjectAppVersion) -eq "2.0.0-alpha.23"',
   "function GetLatestAlpha23EvidenceText",
   "db/v2/migrations/001_v2_tenant_document_number_foundation.sql",
   "db/v2/migrations/006_v2_deferred_constraints_indexes.sql",

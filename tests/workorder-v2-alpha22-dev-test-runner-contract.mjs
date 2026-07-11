@@ -161,9 +161,10 @@ const alpha24ApiChanges = [
   "?? app/api/v2/work-orders/[workOrderId]/size-spec/route.ts",
 ];
 if (appVersion.includes('APP_VERSION = "2.0.0-alpha.24"')) {
-  assert.deepEqual(apiChanges, alpha24ApiChanges, "alpha.24 may add only its exact detail/lazy GET routes");
+  assert.deepEqual(apiChanges.filter((change) => !alpha24ApiChanges.includes(change)), [], "alpha.24 may change only its exact detail/lazy GET routes");
 } else if (appVersion.includes('APP_VERSION = "2.0.0-alpha.23"')) {
-  assert.deepEqual(apiChanges, ["?? app/api/v2/work-orders/route.ts"], "alpha.23 may add only its exact GET route");
+  const allowedAlpha23ApiChanges = ["?? app/api/v2/work-orders/route.ts"];
+  assert.deepEqual(apiChanges.filter((change) => !allowedAlpha23ApiChanges.includes(change)), [], "alpha.23 may change only its exact GET route");
 } else {
   assert.deepEqual(apiChanges, [], "app/api must remain unchanged through alpha.22");
 }

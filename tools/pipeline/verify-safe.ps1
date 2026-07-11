@@ -1345,7 +1345,7 @@ if ($null -ne $script:WaflV2Alpha22Evidence) {
     $lines.Add("V2 Performance 500: $($script:WaflV2Alpha22Evidence.Performance500)")
     $lines.Add("V2 Performance 5000: $($script:WaflV2Alpha22Evidence.Performance5000)")
 }
-if ($null -ne $script:WaflV2Alpha23Evidence) {
+if ($null -ne $script:WaflV2Alpha23Evidence -and (GetProjectAppVersion) -eq "2.0.0-alpha.23") {
     $lines.Add("")
     $lines.Add("DB Migration Apply Result: PASS - alpha.23 additive index 007 on approved dev/test only")
     $lines.Add("Post-Apply Audit Result: PASS - ledger/index/v1 baseline and read-only runtime evidence")
