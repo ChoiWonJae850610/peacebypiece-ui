@@ -371,3 +371,15 @@ For the alpha.18 mobile/tablet mock:
 - The automatic loop requires the same approved dev/test fingerprint, read-only DB/API access, alpha.23-only file changes, no root package/lockfile/dependency change, and no DB/R2/Worker/PDF/production mutation. Static, build, and type errors may be corrected under the same boundary.
 - Preserve a canonical failure source ZIP, failure repo-state, and failure log under `Logs/Repo_Status/Failure_Handoff` for every failed cycle. Do not touch `4. Newest` before successful Finish.
 - Stop immediately when the same error repeats, three cycles do not resolve the failure, the target fingerprint changes or becomes unclear, or any unexpected write, tenant leak, RLS bypass, data-integrity mismatch, partial mutation, unclear ledger state, out-of-scope change, dependency change, migration, seed, cleanup, reset, rollback, schema validation, destructive SQL, or business/R2/Worker/PDF/production mutation is detected.
+
+## 2.0.0-alpha.24 WorkOrder detail and lazy Read API rule
+
+- Add only `GET /api/v2/work-orders/:workOrderId` and the materials, size-color, size-spec, processes, assets, documents, and history lazy Read endpoints.
+- Reuse the alpha.23 runtime guard, workspace permission, fixed tenant read-only transaction helper, RLS claims, typed errors, and PostgreSQL UUID textual validation.
+- Core detail must return only header/revision/amount/count summaries. Collection data belongs only to its tab endpoint.
+- Materials, assets, documents, and history use signed, expiring cursors bound to company, visibility, WorkOrder, and tab kind with default/max limits 30/50.
+- Cross-company or missing WorkOrder IDs return the same generic `NOT_FOUND`; approval-pending company C remains `FORBIDDEN` at the workspace guard.
+- The repository callback uses two bounded statements: claims and one core/tab SQL. This count is distinct from all endpoint protocol calls.
+- Asset/document/history responses must omit storage keys, snapshots, token hashes, raw/signed URLs, secrets, privileged metadata, and unnecessary actor identity.
+- Reuse ledger 7, index 007, and the alpha.22 synthetic seed. Do not run migration, index, schema validation, seed, cleanup, reset, rollback, or any write command.
+- Under the owner-approved alpha.24 scope, at most three same-target read-only diagnosis/minimal-fix/static/runtime cycles are allowed. Every failed cycle creates a failure handoff, and `4. Newest` remains unchanged until successful Finish.

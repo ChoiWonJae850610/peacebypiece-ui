@@ -2,7 +2,7 @@
   "expo": {
     "name": "WAFL",
     "slug": "wafl-mobile",
-    "version": "2.0.0-alpha.23",
+    "version": "2.0.0-alpha.24",
     "scheme": "wafl",
     "orientation": "default",
     "userInterfaceStyle": "light",
@@ -22,7 +22,7 @@
       }
     },
     "extra": {
-      "appVersion": "2.0.0-alpha.23",
+      "appVersion": "2.0.0-alpha.24",
       "mockOnly": true
     }
   }

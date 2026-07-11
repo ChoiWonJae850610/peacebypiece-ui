@@ -1,3 +1,33 @@
+# 2.0.0-alpha.24 WAFL v2 WorkOrder Detail and Lazy Read API Vertical Slice
+
+- Current GPT checkpoint: `2.0.0-alpha.24` implementation and approved dev/test read-only runtime verification complete. Final Git delivery identity is recorded in the matching repo-state artifact.
+- Baseline source: `2.0.0-alpha.23`, commit `33052fd305e131cedf47cd6f1d86987c96a4dd23`, synchronized clean `master`.
+- Core route: `GET /api/v2/work-orders/:workOrderId`.
+- Lazy routes: materials, size-color, size-spec, processes, assets, documents, and history.
+- The core response contains identity/revision/status/quantity/due-date/amount/representative/readiness/document/count summaries only. Child collections are not eager-loaded.
+- Materials, assets, documents, and history use signed 30/50 cursors bound to company, visibility, WorkOrder, and tab kind.
+- Missing/invalid/cross-company IDs share generic `NOT_FOUND`; company C remains `FORBIDDEN` through the existing workspace guard.
+- Every repository callback remains two bounded statements after the fixed read-only begin/tenant-role call: claims plus one core/tab SQL.
+- The mobile mock remains disconnected. Alpha.24 adds no command, migration/index, schema validation, seed, cleanup/reset/rollback, R2/Worker/PDF, business-data, or production path.
+- Canonical evidence: `docs/project/app-v2/21-workorder-detail-lazy-read-api-evidence.md`.
+- Final runtime log: `OK_Wafl_V2_Alpha24_Detail_API_Verification_2.0.0-alpha.24-20260711-213958.txt`.
+- Company A core DB/API p95 is `79.96ms`/`464.02ms`; tab DB p95 ranges `74.66~83.31ms`, tab API p95 ranges `446.89~476.41ms`; Company H core DB/API p95 is `81.75ms`/`455.84ms`. Every over-500ms API outlier count is 0.
+- Accessory 10 rows traverse 4 pages and assets 2 rows traverse 1 page with duplicate/missing `0/0`. A/H/B reads, C `FORBIDDEN`, cross-company `NOT_FOUND`, typed errors, forbidden fields, and pre/post DB snapshot equality PASS.
+- Two earlier read-only failures are preserved under `Failure_Handoff`; they exposed and removed an unauthorized legacy `partners` join without schema/grant mutation. `4. Newest` remains alpha.23 until successful Finish.
+
+Required before Finish:
+
+```text
+- alpha.23 list regression and alpha.24 static contract PASS
+- A/H/B read, C FORBIDDEN, cross-company core/tab NOT_FOUND
+- lazy cursor duplicate/missing 0 and forbidden-field scanner PASS
+- core/tab DB p95 <= 250ms; API p50/p95/max/outlier recorded
+- before/after schema and row counts identical; all alpha.24 mutations false
+- Verify -> Plan -> Finish, push synchronization, and matching handoff
+```
+
+---
+
 # 2.0.0-alpha.23 WAFL v2 WorkOrder List Read API Vertical Slice
 
 - Current GPT checkpoint: `2.0.0-alpha.23` implementation and approved dev/test read-only runtime verification complete; final Verify/Finish pending.

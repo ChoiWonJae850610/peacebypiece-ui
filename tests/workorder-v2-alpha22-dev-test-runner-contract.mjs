@@ -150,7 +150,19 @@ for (const forbiddenPath of [
 
 const appVersion = fs.readFileSync(path.join(root, "lib/constants/version.ts"), "utf8");
 const apiChanges = gitChanged("app/api").split(/\r?\n/).filter(Boolean);
-if (appVersion.includes('APP_VERSION = "2.0.0-alpha.23"')) {
+const alpha24ApiChanges = [
+  "?? app/api/v2/work-orders/[workOrderId]/assets/route.ts",
+  "?? app/api/v2/work-orders/[workOrderId]/documents/route.ts",
+  "?? app/api/v2/work-orders/[workOrderId]/history/route.ts",
+  "?? app/api/v2/work-orders/[workOrderId]/materials/route.ts",
+  "?? app/api/v2/work-orders/[workOrderId]/processes/route.ts",
+  "?? app/api/v2/work-orders/[workOrderId]/route.ts",
+  "?? app/api/v2/work-orders/[workOrderId]/size-color/route.ts",
+  "?? app/api/v2/work-orders/[workOrderId]/size-spec/route.ts",
+];
+if (appVersion.includes('APP_VERSION = "2.0.0-alpha.24"')) {
+  assert.deepEqual(apiChanges, alpha24ApiChanges, "alpha.24 may add only its exact detail/lazy GET routes");
+} else if (appVersion.includes('APP_VERSION = "2.0.0-alpha.23"')) {
   assert.deepEqual(apiChanges, ["?? app/api/v2/work-orders/route.ts"], "alpha.23 may add only its exact GET route");
 } else {
   assert.deepEqual(apiChanges, [], "app/api must remain unchanged through alpha.22");

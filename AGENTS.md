@@ -25,11 +25,12 @@
   21. `docs/project/app-v2/18-v2-additive-migration-draft-and-schema-contract.md`
   22. `docs/project/app-v2/19-v2-dev-test-migration-and-performance-evidence.md`
   23. `docs/project/app-v2/20-workorder-list-read-api-evidence.md`
-  24. `docs/project/v2/00-start-here.md` through `docs/project/v2/14-operational-policy-absorption.md`
-  25. `docs/project/25-korean-unicode-encoding-standard.md`
-  26. `docs/project/32-product-completion-and-ui-evidence-standard.md`
-  27. `docs/project/26-final-policy-decisions-and-master-todo.md`
-  28. `docs/project/31-pre-codex-integrated-master-plan.md`
+  24. `docs/project/app-v2/21-workorder-detail-lazy-read-api-evidence.md`
+  25. `docs/project/v2/00-start-here.md` through `docs/project/v2/14-operational-policy-absorption.md`
+  26. `docs/project/25-korean-unicode-encoding-standard.md`
+  27. `docs/project/32-product-completion-and-ui-evidence-standard.md`
+  28. `docs/project/26-final-policy-decisions-and-master-todo.md`
+  29. `docs/project/31-pre-codex-integrated-master-plan.md`
 - `docs/project/app-v2/*` is the priority authority for the `2.0.x` App-first line.
 - Existing `docs/project/v2/*` documents are not deleted. They remain the `0.30.x` `/ui` design baseline and preserved policy reference for Product, Sheet/Card, Korean role labels, Neon/R2/Worker, PDF/share, mobile-web, and QA rules.
 - `www.wafl.co.kr` is the public marketing, download, pricing, examples, inquiry, trial-request, and waitlist landing site for the WAFL app.
@@ -43,6 +44,7 @@
 - `docs/project/app-v2/18-v2-additive-migration-draft-and-schema-contract.md` and `db/v2/migrations/001` through `006` define the alpha.21 additive SQL draft and static schema contract. They do not authorize SQL execution; apply, constraint validation, seed, RLS runtime proof, and benchmarks remain alpha.22 dev/test-only work requiring separate approval.
 - `docs/project/app-v2/19-v2-dev-test-migration-and-performance-evidence.md` records the explicitly approved alpha.22 dev/test apply, deterministic 500/5,000/multi-tenant seed, RLS/cursor/concurrency evidence, and measured budgets. It does not authorize production apply, cleanup, Full Reset, constraint validation, API writes, or future DB mutation.
 - `docs/project/app-v2/20-workorder-list-read-api-evidence.md` defines the alpha.23 dev/test-only `GET /api/v2/work-orders` vertical slice. It authorizes no write command, production DB access, mobile API connection, detailed/tab API, migration, seed, cleanup, R2, Worker, or PDF mutation.
+- `docs/project/app-v2/21-workorder-detail-lazy-read-api-evidence.md` defines the alpha.24 dev/test-only core detail and tab-specific lazy Read API slice. It authorizes no command, mobile API connection, migration, seed, schema validation, R2/Worker/PDF integration, or production access.
 - Normal mobile production-card screens are portrait-first. Mobile landscape is not the default production-card target; the future sketch/drawing module may be the mobile-landscape exception.
 - Tablet app screens must support portrait and landscape without becoming a compressed desktop admin layout.
 - Next.js remains for system admin, customer admin advanced settings, operations, API, document, internal showroom, and test-console flows.

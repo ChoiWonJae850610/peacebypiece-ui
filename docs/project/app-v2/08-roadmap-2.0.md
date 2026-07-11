@@ -370,6 +370,24 @@ Status: implementation and dev/test read-only runtime verification complete; fin
 - Result: approved dev/test index 007 keeps the page material aggregate bounded, and the final read-only runtime evidence records Company A DB/API p95 `86.17ms`/`463.29ms` and Company H API p95 `481.46ms`; 500/5,000 cursor traversal, tenant isolation, typed errors, payload, and query budgets pass.
 - Mutation accounting: index 007 was the only approved alpha.23 dev/test schema mutation. The final runtime verification itself changed no schema, seed, business data, R2/Worker/PDF, or production state.
 
+### 2.0.0-alpha.24
+
+Status: done. Final Git delivery identity is recorded in the matching repo-state artifact.
+
+- Add `GET /api/v2/work-orders/:workOrderId` for compact core identity, current revision, status, quantities, due date, amounts, representative metadata, readiness, document summary, and tab counts.
+- Add tab-specific lazy GET routes for materials, size-color, size-spec, processes, assets, documents, and history without connecting the Expo app.
+- Keep materials/assets/documents/history bounded by signed 30/50 cursors bound to company, visibility, WorkOrder, and tab kind.
+- Reuse the alpha.23 runtime guard, workspace permission, fixed tenant read-only transaction helper, RLS claims, typed error envelope, and PostgreSQL UUID textual validation.
+- Return generic `NOT_FOUND` for invalid/missing/cross-company IDs and retain company C `FORBIDDEN` policy.
+- Keep repository callback statements at two: claims plus one core/tab SQL. Document this separately from all endpoint protocol calls.
+- Omit storage keys, signed/raw URLs, document snapshots, token hashes/raw tokens, event metadata, privileged context, and unnecessary actor identity.
+- Reuse migration ledger 7, index 007, and the alpha.22 synthetic seed without migration, schema validation, seed, cleanup/reset/rollback, business-data, R2/Worker/PDF, or production mutation.
+- Require core/tab DB p95 <= 250ms, API p50/p95/max/outlier evidence before assertions, cursor duplicate/missing zero, forbidden-field scanning, and pre/post DB snapshot equality.
+- Align app/mobile version metadata to `2.0.0-alpha.24`.
+- Runtime result: Company A core DB/API p95 `79.96ms`/`464.02ms`; tab DB p95 `74.66~83.31ms`; tab API p95 `446.89~476.41ms`; Company H core DB/API p95 `81.75ms`/`455.84ms`. API over-500ms outliers are 0.
+- Runtime correctness: A/H/B reads, C `FORBIDDEN`, generic cross-company `NOT_FOUND`, typed errors, accessory/assets cursor duplicate/missing 0, forbidden-field scanner, payload budgets, and pre/post DB snapshot equality PASS.
+- Runtime mutation accounting: schema, seed, business data, R2/Worker/PDF, and production mutation are all false. Two failed read-only cycles remain preserved as failure handoffs and do not enter `4. Newest`.
+
 ## Later integration phases
 
 API, DB, R2, PDF, Worker, native auth, and production deployment integration must be separate phases after mock app structure is stable.

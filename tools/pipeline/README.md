@@ -98,6 +98,12 @@ Alpha.23 adds one separate read-only API verification switch. It reuses the alre
 .\tools\pipeline\peacebypiece-auto-pipeline.ps1 -RunWaflV2Alpha23ListApiVerification -WaflV2Confirmation "VERIFY WAFL V2 ALPHA23 READ API"
 ```
 
+Alpha.24 adds a separate read-only detail/lazy API verification switch. It reuses migration ledger 7, index 007, and the existing alpha.22 synthetic seed, starts its own built Next server, and never runs migration, seed, schema validation, cleanup, reset, rollback, or business/R2/production mutation.
+
+```powershell
+.\tools\pipeline\peacebypiece-auto-pipeline.ps1 -RunWaflV2Alpha24DetailApiVerification -WaflV2Confirmation "VERIFY WAFL V2 ALPHA24 DETAIL API"
+```
+
 완료 시 콘솔에 ZIP 전체 경로, repo-state 전체 경로, build-result 전체 경로, `4. Newest` 경로, ZIP 크기, APP_VERSION, Git clean 여부, ChatGPT에 업로드할 두 파일명과 build-result 보관 파일명을 출력합니다.
 
 `approved-workflow.ps1 -Action Finish`가 성공하면 기본적으로 이 handoff를 자동 실행합니다. 생성 시점은 Verify PASS, Plan PASS, Finish PASS, commit, `git push origin master`, ahead/behind 0/0, working tree clean 이후입니다. 특별히 생략해야 할 때만 `-SkipHandoff`를 사용합니다.

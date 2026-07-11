@@ -272,3 +272,14 @@ Menu numbers are assigned only after collision review in alpha.21~22.
 - DB and API p50/p95/max are recorded. DB p95 budgets remain 100ms at 500 and 200ms at 5,000; API server p95 remains 500ms excluding remote client network.
 - Before/after schema fingerprint and v2 row counts must be identical. Schema, seed, business, R2, Worker, PDF, and production mutation are all false for alpha.23.
 - Failure creates a failure handoff and stops; retry needs owner approval. Success evidence is recorded in document 20.
+
+## 16. Alpha.24 detail and lazy Read API gate
+
+- Core detail returns only header, current revision, amounts, representative metadata, tab counts, readiness, document summary, and version.
+- Materials/assets/documents/history use default/max 30/50 signed cursors bound to company, visibility, WorkOrder, and tab kind.
+- Size-color, size-spec, processes, assets, documents, and history each read only their own tab data; core does not eager-load child collections.
+- Missing and cross-company IDs return identical `NOT_FOUND`; company C remains `FORBIDDEN`; unauthenticated access remains `AUTH_REQUIRED`.
+- Repository callback statement count is 2 and is documented separately from endpoint protocol calls.
+- Every core/tab DB p95 remains <= 250ms. API p50/p95/max and over-500ms outliers are logged before assertions.
+- Before/after schema fingerprint and row counts remain identical. Schema, seed, business, R2/Worker/PDF, and production mutation are false.
+- Runtime success evidence is recorded in document 21. Failure preserves a handoff and never changes `4. Newest`.

@@ -94,6 +94,33 @@ export type WorkOrderDetailHeader = {
   readonly updatedAt: IsoDateTime;
 };
 
+export type WorkOrderDetailCoreReadModel = {
+  readonly header: WorkOrderDetailHeader;
+  readonly revision: {
+    readonly status: WorkOrderRevisionStatus;
+    readonly finalizedAt: IsoDateTime | null;
+  };
+  readonly amounts: {
+    readonly currency: CurrencyCode;
+    readonly unitPrice: DecimalString;
+    readonly fabricTotal: DecimalString;
+    readonly accessoryTotal: DecimalString;
+    readonly processTotal: DecimalString;
+    readonly estimatedTotal: DecimalString;
+  };
+  readonly tabCounts: {
+    readonly fabric: number;
+    readonly accessory: number;
+    readonly colors: number;
+    readonly sizes: number;
+    readonly processes: number;
+    readonly images: number;
+    readonly attachments: number;
+    readonly documents: number;
+    readonly history: number;
+  };
+};
+
 export type ParticipatingPartnerSummary = {
   readonly partnerId: PartnerId | null;
   readonly role: "fabric_supplier" | "accessory_supplier" | "factory" | "process_partner";
@@ -238,6 +265,43 @@ export type WorkOrderMaterialsReadModel = {
   readonly entityVersion: EntityVersion;
 };
 
+export type WorkOrderMaterialPage = {
+  readonly workOrderId: WorkOrderId;
+  readonly revisionId: WorkOrderRevisionId;
+  readonly materialType: MaterialType;
+  readonly items: readonly WorkOrderMaterialLineReadModel[];
+  readonly nextCursor: import("@/lib/domain/work-orders/contracts/primitives").OpaqueCursor | null;
+  readonly hasMore: boolean;
+  readonly limit: number;
+  readonly entityVersion: EntityVersion;
+};
+
+export type WorkOrderSizeColorMatrixReadModel = {
+  readonly workOrderId: WorkOrderId;
+  readonly revisionId: WorkOrderRevisionId;
+  readonly sizes: readonly WorkOrderSizeRowReadModel[];
+  readonly colors: readonly WorkOrderColorReadModel[];
+  readonly quantityCells: readonly ColorSizeQuantityCellReadModel[];
+  readonly matrixTotal: DecimalString;
+  readonly expectedTotal: DecimalString;
+  readonly totalsMatch: boolean;
+  readonly memoFallback: string | null;
+  readonly entityVersion: EntityVersion;
+};
+
+export type WorkOrderSizeSpecReadModel = {
+  readonly workOrderId: WorkOrderId;
+  readonly revisionId: WorkOrderRevisionId;
+  readonly genderCode: string | null;
+  readonly categoryCode: string | null;
+  readonly measurementUnit: MeasurementUnit;
+  readonly templateId: SizeTemplateId | null;
+  readonly sizes: readonly WorkOrderSizeRowReadModel[];
+  readonly pomColumns: readonly WorkOrderPomColumnReadModel[];
+  readonly cells: readonly SizeSpecCellReadModel[];
+  readonly entityVersion: EntityVersion;
+};
+
 export type WorkOrderProcessReadModel = {
   readonly id: ProcessId;
   readonly processTypeCode: string;
@@ -265,6 +329,31 @@ export type WorkOrderProcessesReadModel = {
     readonly status: ProcessStatus;
   }[];
   readonly processes: readonly WorkOrderProcessReadModel[];
+  readonly entityVersion: EntityVersion;
+};
+
+export type WorkOrderAssetReadModel = {
+  readonly assetType: "image" | "attachment";
+  readonly id: ImageId | AttachmentId;
+  readonly filename: string;
+  readonly optionalTitle: string | null;
+  readonly mimeType: string;
+  readonly sizeBytes: number;
+  readonly displayOrder: number;
+  readonly isRepresentative: boolean;
+  readonly includeInDocument: boolean;
+  readonly state: ImageAssetState;
+  readonly viewUrl: ControlledFileUrl | null;
+  readonly uploadedAt: IsoDateTime;
+};
+
+export type WorkOrderAssetPage = {
+  readonly workOrderId: WorkOrderId;
+  readonly revisionId: WorkOrderRevisionId;
+  readonly items: readonly WorkOrderAssetReadModel[];
+  readonly nextCursor: import("@/lib/domain/work-orders/contracts/primitives").OpaqueCursor | null;
+  readonly hasMore: boolean;
+  readonly limit: number;
   readonly entityVersion: EntityVersion;
 };
 
@@ -303,5 +392,32 @@ export type WorkOrderDocumentsReadModel = {
     readonly attachmentCount: number;
   };
   readonly previewReady: boolean;
+  readonly entityVersion: EntityVersion;
+};
+
+export type WorkOrderDocumentPage = {
+  readonly workOrderId: WorkOrderId;
+  readonly currentRevisionId: WorkOrderRevisionId;
+  readonly items: readonly GeneratedDocumentReadModel[];
+  readonly nextCursor: import("@/lib/domain/work-orders/contracts/primitives").OpaqueCursor | null;
+  readonly hasMore: boolean;
+  readonly limit: number;
+  readonly entityVersion: EntityVersion;
+};
+
+export type WorkOrderHistoryEventReadModel = {
+  readonly id: string;
+  readonly commandCode: string;
+  readonly changeSummary: string | null;
+  readonly occurredAt: IsoDateTime;
+};
+
+export type WorkOrderHistoryPage = {
+  readonly workOrderId: WorkOrderId;
+  readonly revisionId: WorkOrderRevisionId;
+  readonly items: readonly WorkOrderHistoryEventReadModel[];
+  readonly nextCursor: import("@/lib/domain/work-orders/contracts/primitives").OpaqueCursor | null;
+  readonly hasMore: boolean;
+  readonly limit: number;
   readonly entityVersion: EntityVersion;
 };

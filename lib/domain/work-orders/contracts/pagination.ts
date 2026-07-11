@@ -3,6 +3,8 @@ import type { TrashScope, WorkOrderStatus } from "@/lib/domain/work-orders/contr
 
 export const WORK_ORDER_LIST_DEFAULT_LIMIT = 30;
 export const WORK_ORDER_LIST_MAX_LIMIT = 50;
+export const WORK_ORDER_TAB_DEFAULT_LIMIT = 30;
+export const WORK_ORDER_TAB_MAX_LIMIT = 50;
 
 export type WorkOrderListSort = "updated_desc" | "due_date_asc";
 

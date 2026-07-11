@@ -411,6 +411,52 @@ function InvokeWaflV2Alpha23EvidenceCheck {
     return [pscustomobject]@{ Name = $name; CommandLine = $commandLine; Passed = $false; Skipped = $false; ExitCode = 1; FindingCount = ""; HighRiskCount = ""; OutputSummary = "alpha.23 evidence contract mismatch" }
 }
 
+function InvokeWaflV2Alpha24EvidenceCheck {
+    $name = "WAFL v2 alpha.24 WorkOrder detail/lazy API runtime evidence"
+    $commandLine = "Logs/DB_Audit alpha.24 authenticated read-only detail API evidence"
+    if ($CheckOnly) {
+        return [pscustomobject]@{ Name = $name; CommandLine = $commandLine; Passed = $true; Skipped = $true; ExitCode = 0; FindingCount = ""; HighRiskCount = ""; OutputSummary = "check-only" }
+    }
+
+    $dbAuditDir = Join-Path (Split-Path -Parent $RepoStatusDir) "DB_Audit"
+    $evidenceFile = Get-ChildItem -LiteralPath $dbAuditDir -File -Filter "OK_Wafl_V2_Alpha24_Detail_API_Verification_*.txt" -ErrorAction SilentlyContinue |
+        Sort-Object LastWriteTime -Descending |
+        Select-Object -First 1
+    if ($null -eq $evidenceFile) {
+        return [pscustomobject]@{ Name = $name; CommandLine = $commandLine; Passed = $false; Skipped = $false; ExitCode = 1; FindingCount = ""; HighRiskCount = ""; OutputSummary = "alpha.24 runtime evidence missing" }
+    }
+
+    $evidence = Get-Content -LiteralPath $evidenceFile.FullName -Raw -Encoding UTF8
+    $routeMetricCount = [regex]::Matches($evidence, 'Route metrics \(sanitized\):\s*\{').Count
+    $checks = @(
+        ($evidence -match 'Target guard:\s*PASS runtime=' -and $evidence -match 'Production target:\s*blocked'),
+        ($routeMetricCount -ge 10),
+        ($evidence -match 'Accessory cursor:\s*\{"rows":10,"pages":4,"duplicateCount":0,"missingCount":0\}'),
+        ($evidence -match 'Asset cursor:\s*\{"rows":2,"pages":1,"duplicateCount":0,"missingCount":0\}'),
+        ($evidence -match 'Company A/H/B authenticated detail read:\s*PASS'),
+        ($evidence -match 'Company C authenticated access policy:\s*FORBIDDEN \(approval_pending\)'),
+        ($evidence -match 'Cross-company core/tab IDs:\s*NOT_FOUND'),
+        ($evidence -match 'Lazy endpoint isolation and forbidden field scanner:\s*PASS'),
+        ($evidence -match 'Typed errors: AUTH_REQUIRED/FORBIDDEN/NOT_FOUND/CURSOR_INVALID/LIMIT_EXCEEDED/VALIDATION_ERROR PASS'),
+        ($evidence -match 'DB schema mutation:\s*false' -and $evidence -match 'Dev/Test seed mutation:\s*false'),
+        ($evidence -match 'Business data mutation:\s*false' -and $evidence -match 'R2 mutation:\s*false' -and $evidence -match 'Production mutation:\s*false'),
+        ($evidence -match 'Result:\s*PASS')
+    )
+    $passed = @($checks | Where-Object { -not $_ }).Count -eq 0
+    if ($passed) {
+        $script:WaflV2Alpha24Evidence = [pscustomobject]@{
+            RuntimeLog = $evidenceFile.FullName
+            RouteMetricCount = $routeMetricCount
+            AccessoryCursor = [regex]::Match($evidence, 'Accessory cursor:\s*(\{.*\})').Groups[1].Value
+            AssetCursor = [regex]::Match($evidence, 'Asset cursor:\s*(\{.*\})').Groups[1].Value
+        }
+        Write-Host "[PASS] $name"
+        return [pscustomobject]@{ Name = $name; CommandLine = $commandLine; Passed = $true; Skipped = $false; ExitCode = 0; FindingCount = ""; HighRiskCount = ""; OutputSummary = $evidenceFile.Name }
+    }
+
+    return [pscustomobject]@{ Name = $name; CommandLine = $commandLine; Passed = $false; Skipped = $false; ExitCode = 1; FindingCount = ""; HighRiskCount = ""; OutputSummary = "alpha.24 evidence contract mismatch" }
+}
+
 function InvokePackageScriptCheck {
     param(
         [string]$Name,
@@ -710,6 +756,7 @@ $profileCommands = @{
         @{ Name = "workorder v2 migration schema contract"; Command = "node"; Arguments = @("tests/workorder-v2-migration-schema-contract.mjs") },
         @{ Name = "workorder v2 alpha.22 dev/test runner contract"; Command = "node"; Arguments = @("tests/workorder-v2-alpha22-dev-test-runner-contract.mjs") },
         @{ Name = "workorder v2 alpha.23 list API contract"; Command = "node"; Arguments = @("tests/workorder-v2-alpha23-list-api-contract.mjs") },
+        @{ Name = "workorder v2 alpha.24 detail/lazy API contract"; Command = "node"; Arguments = @("tests/workorder-v2-alpha24-detail-api-contract.mjs") },
         @{ Name = "app-v2 document links and Mermaid contract"; Command = "node"; Arguments = @("tests/app-v2-document-links-contract.mjs") },
         @{ Name = "unicode encoding contract"; Command = "node"; Arguments = @("tests/unicode-encoding-contract.mjs") },
         @{ Name = "PowerShell encoding contract"; Command = "node"; Arguments = @("tests/pipeline-powershell-encoding-contract.mjs") },
@@ -1252,6 +1299,10 @@ if ($Profile -eq "automation-infrastructure" -and (GetProjectAppVersion) -eq "2.
 if ($Profile -eq "automation-infrastructure" -and (GetProjectAppVersion) -eq "2.0.0-alpha.23") {
     $results.Add((InvokeWaflV2Alpha23EvidenceCheck))
 }
+if ($Profile -eq "automation-infrastructure" -and (GetProjectAppVersion) -eq "2.0.0-alpha.24") {
+    $results.Add((InvokeWaflV2Alpha23EvidenceCheck))
+    $results.Add((InvokeWaflV2Alpha24EvidenceCheck))
+}
 
 $failedResults = @($results | Where-Object { -not $_.Passed })
 $status = if ($CheckOnly) { "CHECK_ONLY" } elseif ($failedResults.Count -eq 0) { "PASS" } else { "FAIL" }
@@ -1312,6 +1363,25 @@ if ($null -ne $script:WaflV2Alpha23Evidence) {
     $lines.Add("V2 Alpha.23 Cursor 500: $($script:WaflV2Alpha23Evidence.Cursor500)")
     $lines.Add("V2 Alpha.23 Cursor 5000: $($script:WaflV2Alpha23Evidence.Cursor5000)")
     $lines.Add("V2 Alpha.23 Default 30 Payload Bytes: $($script:WaflV2Alpha23Evidence.DefaultPayloadBytes)")
+}
+if ($null -ne $script:WaflV2Alpha24Evidence) {
+    $lines.Add("")
+    $lines.Add("DB Migration Apply Result: NOT_APPLIED - alpha.24 reused ledger 7 and index 007")
+    $lines.Add("Post-Apply Audit Result: NOT_APPLICABLE - read-only detail/lazy API verification")
+    $lines.Add("Schema Migration This Run: false")
+    $lines.Add("Dev/Test DB Test-Data Mutation: false")
+    $lines.Add("Dev/Test Fixture Mutation: false")
+    $lines.Add("Business Data Mutation: false")
+    $lines.Add("Production Business Data Mutation: false")
+    $lines.Add("Dev/Test R2 Mutation: false")
+    $lines.Add("Production Mutation: false")
+    $lines.Add("E2E/Smoke Summary: PASS - authenticated tenant core/detail lazy reads, cursor, typed errors, payload and performance budgets")
+    $lines.Add("Manual QA Status: NOT_APPLICABLE - read-only API vertical slice")
+    $lines.Add("V2 Migration Ledger: 7/7 PASS; reused without alpha.24 mutation")
+    $lines.Add("V2 Alpha.24 Runtime Log: $($script:WaflV2Alpha24Evidence.RuntimeLog)")
+    $lines.Add("V2 Alpha.24 Route Metric Count: $($script:WaflV2Alpha24Evidence.RouteMetricCount)")
+    $lines.Add("V2 Alpha.24 Accessory Cursor: $($script:WaflV2Alpha24Evidence.AccessoryCursor)")
+    $lines.Add("V2 Alpha.24 Asset Cursor: $($script:WaflV2Alpha24Evidence.AssetCursor)")
 }
 [System.IO.File]::WriteAllLines($resultPath, $lines, [System.Text.Encoding]::UTF8)
 

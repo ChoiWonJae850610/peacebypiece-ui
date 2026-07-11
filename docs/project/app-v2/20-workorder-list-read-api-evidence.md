@@ -1,7 +1,7 @@
 # WAFL v2 WorkOrder List Read API Evidence
 
 Version: `2.0.0-alpha.23`
-Status: implementation, static contract, and approved dev/test read-only runtime verification complete; final Verify/Finish pending
+Status: completed, committed, and pushed on `master`
 Predecessors: `16-workorder-api-command-read-model-contracts.md`, `17-v2-api-contract-test-plan.md`, `19-v2-dev-test-migration-and-performance-evidence.md`
 
 ## 1. Boundary
@@ -92,4 +92,4 @@ The completed Company A correctness traversal is the warm-up for three additiona
 
 ## 8. Next gate
 
-Alpha.24 may add WorkOrder detail header and tab-specific lazy reads only after alpha.23 runtime evidence and Finish pass. It must not broaden alpha.23 into commands or mobile write integration.
+Alpha.23 completed at commit `33052fd305e131cedf47cd6f1d86987c96a4dd23`, pushed with master/origin synchronized and a matching final source ZIP/repo-state handoff. Alpha.24 may add WorkOrder detail header and tab-specific lazy reads, but must not add commands or mobile integration.
