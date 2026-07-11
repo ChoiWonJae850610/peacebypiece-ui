@@ -25,8 +25,8 @@ This folder is reserved for deterministic, repeatable v2 dev/test fixtures and t
 
 - alpha.20: no seed SQL or scripts.
 - alpha.21: seed contract/manifest planning may begin.
-- alpha.22: approved dev/test seed execution after migration post-apply PASS.
+- alpha.22: approved profiles complete: 500, 5,000, and multi-tenant 5,400 WorkOrders; 10,900 total synthetic rows at WorkOrder level.
 - production use: forbidden.
-- next version: alpha.21 may define manifests only; execution remains deferred to alpha.22.
+- next version: alpha.23 reuses existing alpha.22 fixtures for bounded Read API evidence and does not reseed by default.
 
 Legacy seed files remain under `db/seed/` and are not moved.

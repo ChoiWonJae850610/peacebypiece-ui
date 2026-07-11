@@ -27,9 +27,9 @@ This folder contains the ordered, additive, reviewed v2 migration SQL drafts int
 
 - alpha.20: no SQL files.
 - alpha.21: six SQL drafts and static contract validation only; no connection, apply, constraint validation, seed, or benchmark.
-- alpha.22: approved dev/test apply, post-apply audit, and 500/5,000-row validation.
+- alpha.22: approved dev/test apply PASS; ledger 6/6, v1 baseline unchanged, RLS/reconciliation and 500/5,000/multi-tenant evidence PASS.
 - production use: forbidden until the production migration gate is explicitly approved.
-- next version: alpha.22 may apply the reviewed sequence to an explicitly approved dev/test branch only.
+- next version: alpha.23 consumes the measured schema through a bounded Read API only; no migration rerun is implied.
 
 The existing `db/migrations/` path remains the legacy/current executable baseline. Its files are not moved or rewritten for v2.
 

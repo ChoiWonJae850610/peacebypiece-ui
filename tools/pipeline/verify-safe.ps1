@@ -283,6 +283,73 @@ function InvokePowerShellParseCheck {
     return [pscustomobject]@{ Name = "PowerShell parse check"; Passed = $true; Skipped = $false; ExitCode = 0 }
 }
 
+function InvokeWaflV2Alpha22EvidenceCheck {
+    $name = "WAFL v2 alpha.22 DB runtime evidence"
+    $commandLine = "Logs/DB_Audit alpha.22 apply/validate/seed/verify evidence"
+    if ($CheckOnly) {
+        return [pscustomobject]@{ Name = $name; CommandLine = $commandLine; Passed = $true; Skipped = $true; ExitCode = 0; FindingCount = ""; HighRiskCount = ""; OutputSummary = "check-only" }
+    }
+
+    $dbAuditDir = Join-Path (Split-Path -Parent $RepoStatusDir) "DB_Audit"
+    if (-not (Test-Path -LiteralPath $dbAuditDir -PathType Container)) {
+        return [pscustomobject]@{ Name = $name; CommandLine = $commandLine; Passed = $false; Skipped = $false; ExitCode = 1; FindingCount = ""; HighRiskCount = ""; OutputSummary = "DB_Audit directory missing" }
+    }
+
+    function GetLatestEvidenceText {
+        param([string]$Pattern)
+        $file = Get-ChildItem -LiteralPath $dbAuditDir -File -Filter $Pattern -ErrorAction SilentlyContinue |
+            Sort-Object LastWriteTime -Descending |
+            Select-Object -First 1
+        if ($null -eq $file) { return "" }
+        return Get-Content -LiteralPath $file.FullName -Raw -Encoding UTF8
+    }
+
+    $applyText = GetLatestEvidenceText -Pattern "OK_Apply_Wafl_V2_Alpha22_Migrations_*.txt"
+    $validateText = GetLatestEvidenceText -Pattern "OK_Wafl_V2_Alpha22_Post_Apply_Validation_*.txt"
+    $seedA = GetLatestEvidenceText -Pattern "OK_Wafl_V2_Alpha22_Seed_A500_*.txt"
+    $seedB = GetLatestEvidenceText -Pattern "OK_Wafl_V2_Alpha22_Seed_B5000_*.txt"
+    $seedC = GetLatestEvidenceText -Pattern "OK_Wafl_V2_Alpha22_Seed_C_MULTI_*.txt"
+    $verifyText = GetLatestEvidenceText -Pattern "OK_Wafl_V2_Alpha22_Verification_*.txt"
+    $checks = @(
+        ($applyText -match 'Migration ledger rows:\s*6' -and $applyText -match 'Result:\s*PASS'),
+        ($validateText -match 'V1 baseline fingerprint unchanged:' -and $validateText -match 'Post-apply critical mismatch:\s*0' -and $validateText -match 'Result:\s*PASS'),
+        ($seedA -match 'Seed result:\s*profile=a500 workOrders=500' -and $seedA -match 'Result:\s*PASS'),
+        ($seedB -match 'Seed result:\s*profile=b5000 workOrders=5000' -and $seedB -match 'Result:\s*PASS'),
+        ($seedC -match 'Seed result:\s*profile=c-multi workOrders=5400' -and $seedC -match 'Result:\s*PASS'),
+        ($verifyText -match '"tenantIsolation":"PASS"' -and
+            $verifyText -match '"privilegedAudit":"PASS"' -and
+            $verifyText -match '"optimisticConcurrency":"PASS"' -and
+            $verifyText -match '"idempotency":"PASS"' -and
+            $verifyText -match 'Cursor 500:\s*\{"rows":500' -and
+            $verifyText -match 'Cursor 5000:\s*\{"rows":5000' -and
+            $verifyText -match 'Document number concurrency:\s*\{"attempts":12,"unique":12' -and
+            $verifyText -match 'Result:\s*PASS'),
+        ($verifyText -match 'Performance 500:' -and $verifyText -match 'Performance 5000:'),
+        ($verifyText -match 'Business data mutation:\s*false' -and
+            $verifyText -match 'R2 mutation:\s*false' -and
+            $verifyText -match 'Production mutation:\s*false')
+    )
+    $passed = @($checks | Where-Object { -not $_ }).Count -eq 0
+    if ($passed) {
+        $performance500 = [regex]::Match($verifyText, 'Performance 500:\s*(\{.*\})').Groups[1].Value
+        $performance5000 = [regex]::Match($verifyText, 'Performance 5000:\s*(\{.*\})').Groups[1].Value
+        $script:WaflV2Alpha22Evidence = [pscustomobject]@{
+            Performance500 = $performance500
+            Performance5000 = $performance5000
+        }
+    }
+    return [pscustomobject]@{
+        Name = $name
+        CommandLine = $commandLine
+        Passed = $passed
+        Skipped = $false
+        ExitCode = if ($passed) { 0 } else { 1 }
+        FindingCount = ""
+        HighRiskCount = ""
+        OutputSummary = if ($passed) { "ledger=6; seeds=500+5000+5400; runtime/performance PASS" } else { "required alpha.22 evidence missing or failed" }
+    }
+}
+
 function InvokePackageScriptCheck {
     param(
         [string]$Name,
@@ -575,8 +642,17 @@ $profileCommands = @{
         @{ Name = "functions PDF contract"; Command = "node"; Arguments = @("tests/functions-pdf-contract.mjs") }
     );
     "automation-infrastructure" = @(
+        @{ Name = "tsc --noEmit"; Command = "node"; Arguments = @("node_modules/typescript/bin/tsc", "--noEmit") },
+        @{ Name = "mobile typecheck"; Command = "npm"; Arguments = @("--prefix", "apps/mobile", "run", "typecheck") },
+        @{ Name = "mobile Expo config"; Command = "npm"; Arguments = @("--prefix", "apps/mobile", "run", "expo:config") },
         @{ Name = "workorder v2 API contract"; Command = "node"; Arguments = @("tests/workorder-v2-api-contract.mjs") },
         @{ Name = "workorder v2 migration schema contract"; Command = "node"; Arguments = @("tests/workorder-v2-migration-schema-contract.mjs") },
+        @{ Name = "workorder v2 alpha.22 dev/test runner contract"; Command = "node"; Arguments = @("tests/workorder-v2-alpha22-dev-test-runner-contract.mjs") },
+        @{ Name = "app-v2 document links and Mermaid contract"; Command = "node"; Arguments = @("tests/app-v2-document-links-contract.mjs") },
+        @{ Name = "unicode encoding contract"; Command = "node"; Arguments = @("tests/unicode-encoding-contract.mjs") },
+        @{ Name = "PowerShell encoding contract"; Command = "node"; Arguments = @("tests/pipeline-powershell-encoding-contract.mjs") },
+        @{ Name = "internal system routes contract"; Command = "node"; Arguments = @("tests/internal-system-routes-contract.mjs") },
+        @{ Name = "system-admin internal access contract"; Command = "node"; Arguments = @("tests/system-admin-internal-access-contract.mjs") },
         @{ Name = "approved workflow contract"; Command = "node"; Arguments = @("tests/approved-workflow-contract.mjs") },
         @{ Name = "pipeline repo state publication contract"; Command = "node"; Arguments = @("tests/pipeline-repo-state-publication-contract.mjs") }
     );
@@ -1059,7 +1135,7 @@ if ($Profile -eq "public-signup-e2e") {
 if ($Profile -eq "workorder-size-pdf") {
     $allowedMigrationChanges = @("db/migrations/patch_0_24_34_workorder_size_spec_and_pdf.sql")
 }
-if ($Profile -eq "automation-infrastructure" -and (GetProjectAppVersion) -eq "2.0.0-alpha.21") {
+if ($Profile -eq "automation-infrastructure" -and (GetProjectAppVersion) -in @("2.0.0-alpha.21", "2.0.0-alpha.22")) {
     $allowedMigrationChanges = @(
         "db/v2/migrations/001_v2_tenant_document_number_foundation.sql",
         "db/v2/migrations/002_v2_work_orders_revisions.sql",
@@ -1105,6 +1181,10 @@ foreach ($commandSpec in $profileCommands[$Profile]) {
     $results.Add((InvokeCheck -Name $commandSpec.Name -Command $commandSpec.Command -Arguments $commandSpec.Arguments))
 }
 
+if ($Profile -eq "automation-infrastructure" -and (GetProjectAppVersion) -eq "2.0.0-alpha.22") {
+    $results.Add((InvokeWaflV2Alpha22EvidenceCheck))
+}
+
 $failedResults = @($results | Where-Object { -not $_.Passed })
 $status = if ($CheckOnly) { "CHECK_ONLY" } elseif ($failedResults.Count -eq 0) { "PASS" } else { "FAIL" }
 
@@ -1127,6 +1207,24 @@ $lines.Add("")
 $lines.Add("Results:")
 foreach ($result in $results) {
     $lines.Add(("{0}: Passed={1}; Skipped={2}; ExitCode={3}; Command={4}; FindingCount={5}; HighRiskCount={6}; Summary={7}" -f $result.Name, $result.Passed, $result.Skipped, $result.ExitCode, $result.CommandLine, $result.FindingCount, $result.HighRiskCount, $result.OutputSummary))
+}
+if ($null -ne $script:WaflV2Alpha22Evidence) {
+    $lines.Add("")
+    $lines.Add("DB Migration Apply Result: PASS")
+    $lines.Add("Post-Apply Audit Result: PASS")
+    $lines.Add("Schema Migration This Run: true; db/v2 migrations 001-006 on approved dev/test only")
+    $lines.Add("Dev/Test DB Test-Data Mutation: true; deterministic wafl-fn profiles 500+5000+5400")
+    $lines.Add("Dev/Test Fixture Mutation: true; deterministic synthetic fixtures only")
+    $lines.Add("Business Data Mutation: false")
+    $lines.Add("Production Business Data Mutation: false")
+    $lines.Add("Dev/Test R2 Mutation: false")
+    $lines.Add("Production Mutation: false")
+    $lines.Add("E2E/Smoke Summary: PASS - RLS/cursor/concurrency/idempotency/revision/readiness/document sequence")
+    $lines.Add("Manual QA Status: NOT_APPLICABLE - DB architecture/runtime evidence only")
+    $lines.Add("V2 Migration Ledger: 6/6 PASS")
+    $lines.Add("V2 Seed Profiles: a500=500; b5000=5000; c-multi=5400")
+    $lines.Add("V2 Performance 500: $($script:WaflV2Alpha22Evidence.Performance500)")
+    $lines.Add("V2 Performance 5000: $($script:WaflV2Alpha22Evidence.Performance5000)")
 }
 [System.IO.File]::WriteAllLines($resultPath, $lines, [System.Text.Encoding]::UTF8)
 

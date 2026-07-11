@@ -344,3 +344,15 @@ For the alpha.18 mobile/tablet mock:
 - Keep finalized revisions and generated document identity/snapshots immutable.
 - Add tenant-consistent FKs as `NOT VALID`; do not validate constraints, backfill, seed, benchmark, or connect to Neon in alpha.21.
 - Existing alpha.20 type/static contracts and the alpha.21 migration schema contract must both pass.
+
+## 2.0.0-alpha.22 dev/test migration and evidence rule
+
+- DB mutation is allowed only for an explicitly approved development/test target whose runtime, connection fingerprint, and `wafl-fn` prefix all match canonical pipeline configuration.
+- Apply only ordered `db/v2/migrations/001` through `006`; never use Neon SQL Editor, raw `psql`, a bypass runner, Full Reset, cleanup, automatic rollback SQL, or automatic retry.
+- Record every migration filename and SHA-256 in the migration ledger. Hash/order mismatch or untracked v2 objects stop execution.
+- Run customer-path seed and verification through the dedicated `NOLOGIN`, `NOBYPASSRLS` runtime role. The migration owner role is not tenant-isolation evidence.
+- Seed profiles require exact confirmation and are idempotent only as complete profiles. Partial profile detection stops execution without cleanup.
+- A failed or stopped run creates a failure source ZIP, failure repo-state, and failure log under `Logs/Repo_Status/Failure_Handoff`. Failure artifacts never enter `4. Newest` or count as completion.
+- Only successful Finish may replace `4. Newest` with the current alpha.22 source ZIP and matching repo-state.
+- The source ZIP excludes every `.env*` file, including `.env.example`.
+- Production DB/R2/Worker/API bindings, business data, legacy v1 destructive changes, and dependency changes remain forbidden.

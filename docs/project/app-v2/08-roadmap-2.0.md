@@ -333,6 +333,26 @@ Status: done.
 - Verification: WorkOrder API/type contract, migration schema contract, root/mobile TypeScript, Expo public config, Unicode, route guards, document link/Mermaid, Next build, PowerShell encoding, and approved workflow PASS; mutation audit reports 189 findings and 0 high-risk.
 - User confirmation: no SQL was applied and no runtime/UI behavior changed, so manual product QA is not required for this static architecture checkpoint.
 
+### 2.0.0-alpha.22
+
+Status: done.
+
+- Add canonical dev/test-only preflight, migration apply, read-only validation, deterministic seed, runtime verification, and failure handoff commands.
+- Require development/test runtime, approved connection fingerprint, canonical `wafl-fn` prefix, exact operation confirmation, and production blocking before connection mutation.
+- Apply only `db/v2/migrations/001` through `006` and record filename/SHA-256/baseline identity in a six-row migration ledger.
+- Preserve the v1 baseline and verify tenant table, RLS policy, FK/index, orphan, tenant mismatch, revision-child, and document-number contracts.
+- Use a dedicated `NOLOGIN`, `NOBYPASSRLS` runtime role so tenant tests do not rely on the migration owner's RLS-bypass role.
+- Seed deterministic profiles of 500, 5,000, and multi-tenant 5,400 WorkOrders, totaling 10,900 synthetic rows at the WorkOrder level.
+- Verify tenant/privileged audit, cursor, expectedVersion conflict, idempotency, immutable revision, stale readiness, and atomic document sequence behavior.
+- Record list/detail/search p50/p95/max, query counts, and 30/50 payload sizes. All alpha.22 budgets pass.
+- Keep 44 tenant FKs `NOT VALID` after proving zero validation-precondition issues; actual `VALIDATE CONSTRAINT` remains a later explicit schema gate.
+- Preserve failed-run source/repo-state/log sets under `Logs/Repo_Status/Failure_Handoff`; never publish them to `4. Newest`.
+- Keep legacy DB source, `app/api`, mobile runtime integration, R2/Worker/PDF, production data, root package files, and dependencies unchanged.
+- Align app/mobile version metadata to `2.0.0-alpha.22`.
+- Result: approved dev/test additive apply, 10,900 deterministic fixtures, RLS/cursor/concurrency verification, and performance evidence are complete. Production migration and API cutover remain blocked.
+- Verification: runtime evidence plus WorkOrder static contracts, root/mobile TypeScript, Expo config, Unicode, route guards, document links/Mermaid, PowerShell encoding, build, mutation audit, and approved workflow must pass before Finish.
+- User confirmation: no visual UI changed; no manual product QA is required for this DB architecture/runtime checkpoint.
+
 ## Later integration phases
 
 API, DB, R2, PDF, Worker, native auth, and production deployment integration must be separate phases after mock app structure is stable.

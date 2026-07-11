@@ -68,6 +68,16 @@ param(
     [switch]$RunCustomerProductUxCleanupVerification,
     [switch]$RunWorkorderPdfLiveIntegrationVerification,
     [switch]$RunProductUiRuntimeVerification,
+    [switch]$RunWaflV2MigrationPreflight,
+    [switch]$ApplyWaflV2Migrations,
+    [switch]$RunWaflV2PostApplyValidation,
+    [ValidateSet("", "a500", "b5000", "c-multi")]
+    [string]$RunWaflV2SeedProfile = "",
+    [switch]$RunWaflV2DevTestVerification,
+    [string]$WaflV2Confirmation = "",
+    [switch]$CreateWaflV2FailureHandoff,
+    [string]$WaflV2FailureStage = "",
+    [string]$WaflV2FailureLogPath = "",
     [string]$VerificationResultPath = "",
     [string]$VerificationProfile = ""
 )
@@ -440,10 +450,6 @@ function TestLocalRepoExportExcludedPath {
     $lowerSegments = @($segments | ForEach-Object { $_.ToLowerInvariant() })
     $leaf = [System.IO.Path]::GetFileName($entryName).ToLowerInvariant()
 
-    if ($leaf -eq ".env.example") {
-        return $false
-    }
-
     $excludedSegments = @(
         ".git",
         "node_modules",
@@ -524,7 +530,7 @@ function GetLocalRepoExportExcludeSummary {
         "*.tsbuildinfo",
         "storageState*.json",
         "*.har and *.webm Playwright artifacts",
-        ".env, .env.* except .env.example",
+        ".env* including .env.example",
         "generated ZIP files",
         "repo-state-*.txt",
         "build-result-*.txt",
@@ -1478,7 +1484,7 @@ function TestLocalRepoExportZipContract {
             }
 
             $leaf = [System.IO.Path]::GetFileName($entryName).ToLowerInvariant()
-            if ($leaf -ne ".env.example" -and ($leaf -eq ".env" -or $leaf.StartsWith(".env."))) {
+            if ($leaf -eq ".env" -or $leaf.StartsWith(".env.")) {
                 throw "ZIP contract 실패: env 파일 포함($entryName)"
             }
 
@@ -1493,10 +1499,6 @@ function TestLocalRepoExportZipContract {
             ) {
                 throw "ZIP contract 실패: 생성물/QA evidence 포함($entryName)"
             }
-        }
-
-        if ($lowerEntryNames -notcontains ".env.example") {
-            throw "ZIP contract 실패: .env.example 누락"
         }
 
         foreach ($expectedEntry in $ExpectedEntries) {
@@ -1703,6 +1705,125 @@ function NewLocalRepositoryHandoff {
     finally {
         $ErrorActionPreference = $previousErrorActionPreference
     }
+}
+
+function NewWaflV2FailureHandoff {
+    param(
+        [string]$FailureStage,
+        [string]$FailureLogPath
+    )
+
+    $dbAuditDir = [System.IO.Path]::GetFullPath((Join-Path (Split-Path -Parent $LogDir) "DB_Audit")).TrimEnd('\') + '\'
+    $resolvedLogPath = [System.IO.Path]::GetFullPath($FailureLogPath)
+    if (-not $resolvedLogPath.StartsWith($dbAuditDir, [System.StringComparison]::OrdinalIgnoreCase)) {
+        throw "failure log는 canonical DB_Audit 경로 안에 있어야 합니다."
+    }
+    if (-not (Test-Path -LiteralPath $resolvedLogPath -PathType Leaf) -or [System.IO.Path]::GetFileName($resolvedLogPath) -notlike "Failed_*.txt") {
+        throw "canonical failed log를 찾을 수 없습니다: $resolvedLogPath"
+    }
+
+    $failureDir = Join-Path $RepoStatusDir "Failure_Handoff"
+    EnsureDirectory -Path $failureDir
+    $timestamp = GetTimestamp
+    $version = SanitizeResultFileNamePart -Value (GetProjectAppVersionForTestResult)
+    $zipPath = Join-Path $failureDir "failure-source-$version-$timestamp.zip"
+    $repoStatePath = Join-Path $failureDir "failure-repo-state-$version-$timestamp.txt"
+    $copiedLogPath = Join-Path $failureDir "failure-log-$version-$timestamp.txt"
+    $candidateFiles = @(GetLocalRepoExportCandidateFiles)
+    $exportFiles = New-Object System.Collections.Generic.List[object]
+    $suspiciousSecretPaths = New-Object System.Collections.Generic.List[string]
+
+    foreach ($file in $candidateFiles) {
+        $entryName = ConvertToZipEntryName -RelativePath $file.EntryName
+        if (TestLocalRepoExportExcludedPath -RelativePath $entryName) { continue }
+        if (TestSuspiciousSecretExportCandidate -RelativePath $entryName) {
+            $suspiciousSecretPaths.Add($entryName)
+            continue
+        }
+        if (TestSuspiciousSecretContent -Path $file.FullName -RelativePath $entryName) {
+            $suspiciousSecretPaths.Add($entryName)
+            continue
+        }
+        $exportFiles.Add([pscustomobject]@{ FullName = $file.FullName; EntryName = $entryName })
+    }
+    if ($suspiciousSecretPaths.Count -gt 0) {
+        throw "failure source ZIP secret scan blocked: $($suspiciousSecretPaths -join ', ')"
+    }
+
+    Add-Type -AssemblyName System.IO.Compression
+    Add-Type -AssemblyName System.IO.Compression.FileSystem
+    $zipStream = [System.IO.File]::Open($zipPath, [System.IO.FileMode]::CreateNew, [System.IO.FileAccess]::ReadWrite, [System.IO.FileShare]::None)
+    $archive = New-Object System.IO.Compression.ZipArchive($zipStream, [System.IO.Compression.ZipArchiveMode]::Create)
+    try {
+        foreach ($file in $exportFiles) {
+            [System.IO.Compression.ZipFileExtensions]::CreateEntryFromFile(
+                $archive,
+                $file.FullName,
+                $file.EntryName,
+                [System.IO.Compression.CompressionLevel]::Optimal
+            ) | Out-Null
+        }
+    }
+    finally {
+        $archive.Dispose()
+        $zipStream.Dispose()
+    }
+
+    $requiredEntries = @("AGENTS.md", "lib/constants/version.ts", "docs/codex-current-state.md", "tools/pipeline/peacebypiece-auto-pipeline.ps1")
+    TestLocalRepoExportZip -ZipPath $zipPath -ExpectedEntries $requiredEntries | Out-Null
+    TestLocalRepoExportZipContract -ZipPath $zipPath -ExpectedEntries $requiredEntries | Out-Null
+    Copy-Item -LiteralPath $resolvedLogPath -Destination $copiedLogPath -Force
+
+    $failureText = Get-Content -LiteralPath $resolvedLogPath -Raw -Encoding UTF8
+    $dbAuditFiles = @(Get-ChildItem -LiteralPath $dbAuditDir -File -ErrorAction SilentlyContinue)
+    $successfulApplyLog = $dbAuditFiles | Where-Object { $_.Name -like "OK_Apply_Wafl_V2_Alpha22_Migrations_*.txt" } | Sort-Object LastWriteTime -Descending | Select-Object -First 1
+    $successfulSeedLogs = @($dbAuditFiles | Where-Object { $_.Name -like "OK_Wafl_V2_Alpha22_Seed_*.txt" })
+    $applyText = if ($null -ne $successfulApplyLog) { Get-Content -LiteralPath $successfulApplyLog.FullName -Raw -Encoding UTF8 } else { "" }
+    $ledgerCount = if ($failureText -match 'Migration ledger rows(?: after failure)?:\s*([0-9]+)') {
+        $matches[1]
+    } elseif ($applyText -match 'Migration ledger rows:\s*([0-9]+)') {
+        $matches[1]
+    } else {
+        "0"
+    }
+    $schemaMutation = if ($failureText -match 'Migration applied:|DB schema mutation:\s*true' -or $applyText -match 'Result:\s*PASS') { "true; approved dev/test additive migration" } else { "false" }
+    $testDataMutation = if ($failureText -match 'Dev/Test DB (?:test-data|verification) mutation:\s*(?!false)' -or $successfulSeedLogs.Count -gt 0) { "true; deterministic wafl-fn seed" } else { "false" }
+    $businessMutation = if ($failureText -match 'Business data mutation:\s*true') { "true" } else { "false" }
+    $r2Mutation = if ($failureText -match 'R2 mutation:\s*true') { "true" } else { "false" }
+    $productionMutation = if ($failureText -match 'Production mutation:\s*true') { "true" } else { "false" }
+    $headHash = [string](InvokeLocalRepoGitOutput -Arguments @("rev-parse", "HEAD") | Select-Object -First 1)
+    $branch = [string](InvokeLocalRepoGitOutput -Arguments @("branch", "--show-current") | Select-Object -First 1)
+    $statusLines = @(InvokeLocalRepoGitOutput -Arguments @("status", "--short"))
+    $changedPaths = @($statusLines | ForEach-Object { ([string]$_).Substring(3).Trim() })
+    $zipSize = (Get-Item -LiteralPath $zipPath).Length
+    $lines = New-Object System.Collections.Generic.List[string]
+    AddRepoStateSection -Lines $lines -Title "Result:" -Values @("FAILED")
+    AddRepoStateSection -Lines $lines -Title "Generated At:" -Values @((Get-Date -Format "yyyy-MM-dd HH:mm:ss"))
+    AddRepoStateSection -Lines $lines -Title "APP_VERSION:" -Values @($version)
+    AddRepoStateSection -Lines $lines -Title "Baseline HEAD:" -Values @($headHash)
+    AddRepoStateSection -Lines $lines -Title "Branch:" -Values @($branch)
+    AddRepoStateSection -Lines $lines -Title "Working Tree Clean:" -Values @([string]($statusLines.Count -eq 0).ToString().ToLowerInvariant())
+    AddRepoStateSection -Lines $lines -Title "Changed Paths:" -Values $changedPaths
+    AddRepoStateSection -Lines $lines -Title "Failure Stage:" -Values @($FailureStage)
+    AddRepoStateSection -Lines $lines -Title "Failure Log:" -Values @($copiedLogPath)
+    AddRepoStateSection -Lines $lines -Title "Source ZIP:" -Values @($zipPath)
+    AddRepoStateSection -Lines $lines -Title "ZIP Size Bytes:" -Values @([string]$zipSize)
+    AddRepoStateSection -Lines $lines -Title "Migration Ledger Count:" -Values @([string]$ledgerCount)
+    AddRepoStateSection -Lines $lines -Title "Successful Seed Profiles Before Failure:" -Values @($successfulSeedLogs | ForEach-Object { $_.BaseName })
+    AddRepoStateSection -Lines $lines -Title "DB Schema Mutation:" -Values @($schemaMutation)
+    AddRepoStateSection -Lines $lines -Title "Dev/Test DB Test-Data Mutation:" -Values @($testDataMutation)
+    AddRepoStateSection -Lines $lines -Title "Business Data Mutation:" -Values @($businessMutation)
+    AddRepoStateSection -Lines $lines -Title "R2 Mutation:" -Values @($r2Mutation)
+    AddRepoStateSection -Lines $lines -Title "Production Mutation:" -Values @($productionMutation)
+    AddRepoStateSection -Lines $lines -Title "Completion Artifact:" -Values @("false; never publish to 4. Newest")
+    AddRepoStateSection -Lines $lines -Title "Exclude Rule Summary:" -Values (GetLocalRepoExportExcludeSummary)
+    [System.IO.File]::WriteAllLines($repoStatePath, $lines, [System.Text.Encoding]::UTF8)
+
+    Write-Host "Failure handoff source ZIP: $zipPath"
+    Write-Host "Failure handoff repo-state: $repoStatePath"
+    Write-Host "Failure handoff log: $copiedLogPath"
+    Write-Host "4. Newest mutation: false"
+    return [pscustomobject]@{ ZipPath = $zipPath; RepoStatePath = $repoStatePath; LogPath = $copiedLogPath }
 }
 
 function GetProjectAppVersionForTestResult {
@@ -2636,6 +2757,113 @@ function InvokeApprovedDbMigrationCommand {
     }
     finally {
         if ($null -eq $previous) { Remove-Item Env:WAFL_DB_MIGRATION_APPROVED -ErrorAction SilentlyContinue } else { $env:WAFL_DB_MIGRATION_APPROVED = $previous }
+    }
+}
+
+function InvokeWaflV2Alpha22Command {
+    param(
+        [ValidateSet("preflight", "apply", "validate", "seed", "verify")]
+        [string]$Mode,
+        [string]$SeedProfile = "",
+        [string]$Confirmation = "",
+        [bool]$PauseAfter = $true
+    )
+
+    if (-not (LoadEnvLocalForSmokeTest)) { if ($PauseAfter) { WaitForDeveloperToolsMenu }; return 1 }
+    $runtime = [string]$env:NEXT_PUBLIC_APP_RUNTIME_MODE
+    if ([string]::IsNullOrWhiteSpace($runtime)) { $runtime = [string]$env:NODE_ENV }
+    $guard = TestReadOnlyDbAuditGuard -Runtime $runtime -DatabaseUrl $env:DATABASE_URL
+    $testPrefix = ([string]$PipelineConfig.Simulator.TestPrefix).Trim()
+
+    $expectedConfirmation = switch ($Mode) {
+        "apply" { "APPLY WAFL V2 ALPHA22 DEV TEST" }
+        "seed" {
+            switch ($SeedProfile) {
+                "a500" { "SEED WAFL V2 A500" }
+                "b5000" { "SEED WAFL V2 B5000" }
+                "c-multi" { "SEED WAFL V2 C-MULTI" }
+                default { "INVALID" }
+            }
+        }
+        "verify" { "VERIFY WAFL V2 ALPHA22 DEV TEST" }
+        default { "" }
+    }
+
+    Write-Host ""
+    Write-Host "WAFL v2 alpha.22 dev/test guard"
+    Write-Host "- Mode: $Mode"
+    if (-not [string]::IsNullOrWhiteSpace($SeedProfile)) { Write-Host "- Seed profile: $SeedProfile" }
+    Write-Host "- Runtime: $($guard.Runtime)"
+    Write-Host "- Fingerprint: $($guard.Fingerprint)"
+    Write-Host "- Prefix: $testPrefix"
+    Write-Host "- Target result: $($guard.Reason)"
+
+    if (-not $guard.Passed -or $testPrefix -ne "wafl-fn") {
+        LogError "WAFL v2 alpha.22 작업이 차단되었습니다. 승인된 dev/test DB와 wafl-fn prefix만 허용합니다."
+        if ($PauseAfter) { WaitForDeveloperToolsMenu }
+        return 2
+    }
+    if (-not [string]::IsNullOrWhiteSpace($expectedConfirmation) -and $Confirmation -cne $expectedConfirmation) {
+        LogError "WAFL v2 alpha.22 confirmation이 일치하지 않아 작업이 차단되었습니다."
+        if ($PauseAfter) { WaitForDeveloperToolsMenu }
+        return 3
+    }
+
+    $previousRuntime = $env:WAFL_V2_RUNTIME
+    $previousFingerprint = $env:WAFL_V2_APPROVED_DB_FINGERPRINT
+    $previousPrefix = $env:WAFL_V2_TEST_PREFIX
+    $previousConfirmation = $env:WAFL_V2_CONFIRMATION
+    $previousReadApproval = $env:WAFL_V2_READ_APPROVED
+    $previousMigrationApproval = $env:WAFL_V2_MIGRATION_APPROVED
+    $previousSeedApproval = $env:WAFL_V2_SEED_APPROVED
+    $previousVerifyApproval = $env:WAFL_V2_VERIFY_APPROVED
+
+    try {
+        $env:WAFL_V2_RUNTIME = $guard.Runtime
+        $env:WAFL_V2_APPROVED_DB_FINGERPRINT = [string]$PipelineConfig.Simulator.ApprovedDbFingerprint
+        $env:WAFL_V2_TEST_PREFIX = $testPrefix
+        $env:WAFL_V2_CONFIRMATION = $Confirmation
+        $env:WAFL_V2_READ_APPROVED = if ($Mode -in @("preflight", "validate")) { "1" } else { "0" }
+        $env:WAFL_V2_MIGRATION_APPROVED = if ($Mode -eq "apply") { "1" } else { "0" }
+        $env:WAFL_V2_SEED_APPROVED = if ($Mode -eq "seed") { "1" } else { "0" }
+        $env:WAFL_V2_VERIFY_APPROVED = if ($Mode -eq "verify") { "1" } else { "0" }
+
+        $command = "node scripts/run-wafl-v2-alpha22.mjs $Mode"
+        if ($Mode -eq "seed") { $command += " $SeedProfile" }
+        $label = switch ($Mode) {
+            "preflight" { "Wafl_V2_Alpha22_Preflight" }
+            "apply" { "Apply_Wafl_V2_Alpha22_Migrations" }
+            "validate" { "Wafl_V2_Alpha22_Post_Apply_Validation" }
+            "seed" { "Wafl_V2_Alpha22_Seed_$($SeedProfile.ToUpperInvariant().Replace('-', '_'))" }
+            "verify" { "Wafl_V2_Alpha22_Verification" }
+        }
+        $title = "WAFL v2 alpha.22 $Mode"
+        $dbAuditLogDir = Join-Path (Split-Path -Parent $LogDir) "DB_Audit"
+        $result = InvokeProjectCommandWithResultFile -Title $title -Label $label -NpmCommand $command -LoadEnvLocal $false -PauseAfter $PauseAfter -ResultDirectory $dbAuditLogDir
+        if ($null -ne $result -and [int]$result -ne 0) {
+            $failureLog = Get-ChildItem -LiteralPath $dbAuditLogDir -File -Filter "Failed_${label}_*.txt" -ErrorAction SilentlyContinue |
+                Sort-Object LastWriteTime -Descending |
+                Select-Object -First 1
+            if ($null -ne $failureLog) {
+                try {
+                    NewWaflV2FailureHandoff -FailureStage $Mode -FailureLogPath $failureLog.FullName | Out-Null
+                }
+                catch {
+                    LogError "WAFL v2 failure handoff 생성 실패: $($_.Exception.Message)"
+                }
+            }
+        }
+        return $result
+    }
+    finally {
+        if ($null -eq $previousRuntime) { Remove-Item Env:WAFL_V2_RUNTIME -ErrorAction SilentlyContinue } else { $env:WAFL_V2_RUNTIME = $previousRuntime }
+        if ($null -eq $previousFingerprint) { Remove-Item Env:WAFL_V2_APPROVED_DB_FINGERPRINT -ErrorAction SilentlyContinue } else { $env:WAFL_V2_APPROVED_DB_FINGERPRINT = $previousFingerprint }
+        if ($null -eq $previousPrefix) { Remove-Item Env:WAFL_V2_TEST_PREFIX -ErrorAction SilentlyContinue } else { $env:WAFL_V2_TEST_PREFIX = $previousPrefix }
+        if ($null -eq $previousConfirmation) { Remove-Item Env:WAFL_V2_CONFIRMATION -ErrorAction SilentlyContinue } else { $env:WAFL_V2_CONFIRMATION = $previousConfirmation }
+        if ($null -eq $previousReadApproval) { Remove-Item Env:WAFL_V2_READ_APPROVED -ErrorAction SilentlyContinue } else { $env:WAFL_V2_READ_APPROVED = $previousReadApproval }
+        if ($null -eq $previousMigrationApproval) { Remove-Item Env:WAFL_V2_MIGRATION_APPROVED -ErrorAction SilentlyContinue } else { $env:WAFL_V2_MIGRATION_APPROVED = $previousMigrationApproval }
+        if ($null -eq $previousSeedApproval) { Remove-Item Env:WAFL_V2_SEED_APPROVED -ErrorAction SilentlyContinue } else { $env:WAFL_V2_SEED_APPROVED = $previousSeedApproval }
+        if ($null -eq $previousVerifyApproval) { Remove-Item Env:WAFL_V2_VERIFY_APPROVED -ErrorAction SilentlyContinue } else { $env:WAFL_V2_VERIFY_APPROVED = $previousVerifyApproval }
     }
 }
 
@@ -3694,8 +3922,34 @@ function MainLoop {
 # ==========================================
 
 InitializePipeline
-if ($CreateLocalRepoHandoff) {
+if ($CreateWaflV2FailureHandoff) {
+    if ([string]::IsNullOrWhiteSpace($WaflV2FailureStage) -or [string]::IsNullOrWhiteSpace($WaflV2FailureLogPath)) {
+        throw "-CreateWaflV2FailureHandoff에는 stage와 canonical failure log path가 필요합니다."
+    }
+    NewWaflV2FailureHandoff -FailureStage $WaflV2FailureStage -FailureLogPath $WaflV2FailureLogPath | Out-Null
+}
+elseif ($CreateLocalRepoHandoff) {
     NewLocalRepositoryHandoff | Out-Null
+}
+elseif ($RunWaflV2MigrationPreflight) {
+    $exitCode = InvokeWaflV2Alpha22Command -Mode "preflight" -PauseAfter $false
+    if ($null -ne $exitCode) { exit ([int]$exitCode) }
+}
+elseif ($ApplyWaflV2Migrations) {
+    $exitCode = InvokeWaflV2Alpha22Command -Mode "apply" -Confirmation $WaflV2Confirmation -PauseAfter $false
+    if ($null -ne $exitCode) { exit ([int]$exitCode) }
+}
+elseif ($RunWaflV2PostApplyValidation) {
+    $exitCode = InvokeWaflV2Alpha22Command -Mode "validate" -PauseAfter $false
+    if ($null -ne $exitCode) { exit ([int]$exitCode) }
+}
+elseif (-not [string]::IsNullOrWhiteSpace($RunWaflV2SeedProfile)) {
+    $exitCode = InvokeWaflV2Alpha22Command -Mode "seed" -SeedProfile $RunWaflV2SeedProfile -Confirmation $WaflV2Confirmation -PauseAfter $false
+    if ($null -ne $exitCode) { exit ([int]$exitCode) }
+}
+elseif ($RunWaflV2DevTestVerification) {
+    $exitCode = InvokeWaflV2Alpha22Command -Mode "verify" -Confirmation $WaflV2Confirmation -PauseAfter $false
+    if ($null -ne $exitCode) { exit ([int]$exitCode) }
 }
 elseif ($RunSignupConsentCompatibilityAudit) {
     $exitCode = RunSignupConsentMigrationCompatibilityAudit -PauseAfter $false

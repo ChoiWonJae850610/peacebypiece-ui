@@ -336,6 +336,10 @@ CREATE INDEX IF NOT EXISTS work_orders_company_due_idx
   ON work_orders (company_id, due_date, id)
   WHERE deleted_at IS NULL;
 
+CREATE INDEX IF NOT EXISTS work_orders_company_product_name_idx
+  ON work_orders (company_id, product_name, id)
+  WHERE deleted_at IS NULL;
+
 CREATE INDEX IF NOT EXISTS work_orders_company_trash_idx
   ON work_orders (company_id, deleted_at DESC, id)
   WHERE deleted_at IS NOT NULL;
@@ -403,6 +407,38 @@ CREATE INDEX IF NOT EXISTS document_access_tokens_active_expiry_idx
 
 CREATE INDEX IF NOT EXISTS domain_events_entity_history_idx
   ON domain_events (company_id, entity_type, entity_id, occurred_at DESC, id);
+
+GRANT USAGE ON SCHEMA public TO wafl_v2_tenant_runtime;
+
+GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE
+  document_number_sequences,
+  work_orders,
+  work_order_revisions,
+  work_order_command_receipts,
+  work_order_material_lines,
+  work_order_colors,
+  work_order_sizes,
+  color_size_quantities,
+  work_order_size_specs,
+  work_order_size_spec_sizes,
+  work_order_size_spec_poms,
+  work_order_size_spec_values,
+  work_order_processes,
+  work_order_images,
+  work_order_attachments,
+  work_order_revision_images,
+  work_order_revision_attachments,
+  generated_documents,
+  document_access_tokens,
+  domain_events
+TO wafl_v2_tenant_runtime;
+
+GRANT EXECUTE ON FUNCTION
+  wafl_v2_request_company_id(),
+  wafl_v2_privileged_context_ready(text),
+  wafl_v2_privileged_scope_ready(text),
+  allocate_work_order_document_sequence(text, date)
+TO wafl_v2_tenant_runtime;
 
 -- Alpha.22 validation order after approved dev/test apply and read-only reconciliation:
 -- 1. Validate parent company/work-order/revision constraints.

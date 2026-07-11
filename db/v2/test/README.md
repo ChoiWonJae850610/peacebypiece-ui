@@ -26,8 +26,8 @@ This folder is reserved for v2 schema contracts, migration validation, post-appl
 
 - alpha.20: repository-level type/static API contract tests only; no DB test files.
 - alpha.21: `tests/workorder-v2-migration-schema-contract.mjs` validates migration/schema safety without a DB connection.
-- alpha.22: approved dev/test DB tests and performance evidence.
+- alpha.22: tenant/privileged RLS, cursor, concurrency, idempotency, immutable revision, readiness, document sequence, payload, and performance evidence PASS.
 - production use: destructive tests forbidden; read-only checks require an explicit production gate.
-- next version: alpha.22 adds approved dev/test DB apply, tenant isolation, cursor, concurrency, and performance evidence.
+- next version: alpha.23 adds the first bounded list Read API vertical slice against this evidence baseline.
 
 Legacy DB tests remain under `db/test/` and are not moved.

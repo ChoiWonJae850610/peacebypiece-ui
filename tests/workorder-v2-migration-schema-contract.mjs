@@ -116,11 +116,13 @@ for (const table of tenantTables) {
 
 for (const token of [
   "wafl_v2_request_company_id",
+  "wafl_v2_privileged_context_ready",
   "wafl_v2_privileged_scope_ready",
   "privileged_system",
   "wafl.system_actor_id",
   "wafl.privileged_reason",
   "wafl.correlation_id",
+  "wafl.privileged_audit_event_id",
   "ENABLE ROW LEVEL SECURITY",
   "FORCE ROW LEVEL SECURITY",
 ]) {
@@ -142,6 +144,11 @@ for (const token of [
   "expires_at timestamptz",
   "revoked_at timestamptz",
   "NOT VALID",
+  "wafl_v2_migration_ledger",
+  "migration_sha256",
+  "v1_baseline_fingerprint",
+  "wafl_v2_tenant_runtime",
+  "NOBYPASSRLS",
 ]) {
   assert.ok(combined.includes(token), `core schema contract missing ${token}`);
 }
@@ -150,6 +157,7 @@ for (const index of [
   "work_orders_company_recent_idx",
   "work_orders_company_status_recent_idx",
   "work_orders_company_due_idx",
+  "work_orders_company_product_name_idx",
   "work_order_material_lines_revision_type_order_idx",
   "work_order_processes_revision_order_idx",
   "generated_documents_revision_type_recent_idx",

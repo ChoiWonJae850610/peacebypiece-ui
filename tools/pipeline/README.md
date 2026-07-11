@@ -68,13 +68,29 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\pipeline\peacebypiec
 ZIP 제외 규칙:
 
 - 경로 세그먼트가 `.git`, `node_modules`, `.next`, `.wrangler`, `artifacts`, `.tmp`, `test-results`, `playwright-report`인 모든 중첩 디렉터리
-- `.env`, `.env.*` (`.env.example`은 포함)
+- `.env*` 전체 (`.env.example` 포함)
 - 생성된 ZIP, 기존 `repo-state-*.txt`, `build-result-*.txt`
 - backup/temp/copy 파일과 OS 임시 파일
 
 ZIP에는 source, docs, tests, tools, canonical PowerShell, `package.json`/lockfiles, public assets, Cloudflare Worker source와 공개 example 설정을 포함합니다. ZIP 후보에 실제 secret/token 파일명 또는 내용이 의심되면 ZIP 생성을 중단하고 경로만 보고합니다. secret 값 자체는 출력하지 않습니다.
 
-생성 후에는 ZIP 내부 contract 검증도 실행합니다. 이 검증은 생성 시 제외 함수와 별도로 중첩 `node_modules`, `.next`, `.wrangler`, `.env.local`, `.git`, 생성 ZIP, 기존 repo-state 제외와 `.env.example` 및 필수 파일 포함을 확인합니다.
+생성 후에는 ZIP 내부 contract 검증도 실행합니다. 이 검증은 생성 시 제외 함수와 별도로 중첩 `node_modules`, `.next`, `.wrangler`, 모든 `.env*`, `.git`, 생성 ZIP, 기존 repo-state 제외와 필수 파일 포함을 확인합니다.
+
+## WAFL v2 alpha.22 dev/test DB evidence
+
+Alpha.22 commands are fixed switches on the canonical pipeline. They never accept arbitrary SQL paths.
+
+```powershell
+.\tools\pipeline\peacebypiece-auto-pipeline.ps1 -RunWaflV2MigrationPreflight
+.\tools\pipeline\peacebypiece-auto-pipeline.ps1 -ApplyWaflV2Migrations -WaflV2Confirmation "APPLY WAFL V2 ALPHA22 DEV TEST"
+.\tools\pipeline\peacebypiece-auto-pipeline.ps1 -RunWaflV2PostApplyValidation
+.\tools\pipeline\peacebypiece-auto-pipeline.ps1 -RunWaflV2SeedProfile a500 -WaflV2Confirmation "SEED WAFL V2 A500"
+.\tools\pipeline\peacebypiece-auto-pipeline.ps1 -RunWaflV2SeedProfile b5000 -WaflV2Confirmation "SEED WAFL V2 B5000"
+.\tools\pipeline\peacebypiece-auto-pipeline.ps1 -RunWaflV2SeedProfile c-multi -WaflV2Confirmation "SEED WAFL V2 C-MULTI"
+.\tools\pipeline\peacebypiece-auto-pipeline.ps1 -RunWaflV2DevTestVerification -WaflV2Confirmation "VERIFY WAFL V2 ALPHA22 DEV TEST"
+```
+
+Every DB command checks runtime, approved host/database fingerprint, `wafl-fn` prefix, and operation-specific approval before execution. Failed/stopped runs create source ZIP, repo-state, and log evidence under `Logs/Repo_Status/Failure_Handoff/`; they never update `4. Newest` or count as completion.
 
 완료 시 콘솔에 ZIP 전체 경로, repo-state 전체 경로, build-result 전체 경로, `4. Newest` 경로, ZIP 크기, APP_VERSION, Git clean 여부, ChatGPT에 업로드할 두 파일명과 build-result 보관 파일명을 출력합니다.
 

@@ -174,7 +174,7 @@ CREATE POLICY domain_events_privileged_system_insert
   ON domain_events
   FOR INSERT
   WITH CHECK (
-    wafl_v2_privileged_scope_ready(company_id)
+    wafl_v2_privileged_context_ready(company_id)
     AND system_actor_id = current_setting('wafl.system_actor_id', true)
     AND privileged_reason = current_setting('wafl.privileged_reason', true)
     AND correlation_id = current_setting('wafl.correlation_id', true)

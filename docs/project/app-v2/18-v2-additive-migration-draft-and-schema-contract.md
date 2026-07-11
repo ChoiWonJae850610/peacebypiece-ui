@@ -132,3 +132,9 @@ Alpha.22 may begin only with a separate explicit work order and owner approval. 
 - query count, payload, p50/p95, and index-plan evidence.
 
 Production migration, production data, Full Reset, R2/PDF mutation, and API cutover remain forbidden.
+
+## 10. Alpha.22 result
+
+The separately approved alpha.22 work applied this exact six-file sequence to fingerprint `01e5dcc7fea3` in development mode. The migration ledger contains six matching hashes, the v1 baseline is unchanged, RLS and reconciliation pass, and deterministic 500/5,000/multi-tenant performance evidence is recorded in `19-v2-dev-test-migration-and-performance-evidence.md`.
+
+The 44 tenant FKs remain `NOT VALID` with zero validation-precondition issues. This result does not authorize production apply, destructive cleanup, Full Reset, or API cutover.

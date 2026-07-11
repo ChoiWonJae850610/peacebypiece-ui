@@ -94,6 +94,7 @@ docs/project/app-v2/
   16-workorder-api-command-read-model-contracts.md
   17-v2-api-contract-test-plan.md
   18-v2-additive-migration-draft-and-schema-contract.md
+  19-v2-dev-test-migration-and-performance-evidence.md
 ```
 
 The alpha.19 documents are design and read-only audit authority. They do not authorize schema migration, API replacement, seed execution, DB/R2 mutation, or PDF Worker changes.

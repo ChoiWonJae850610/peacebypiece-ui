@@ -36,7 +36,7 @@ AS $function$
   SELECT nullif(current_setting('wafl.company_id', true), '')
 $function$;
 
-CREATE OR REPLACE FUNCTION wafl_v2_privileged_scope_ready(p_company_id text)
+CREATE OR REPLACE FUNCTION wafl_v2_privileged_context_ready(p_company_id text)
 RETURNS boolean
 LANGUAGE sql
 STABLE
@@ -48,6 +48,54 @@ AS $function$
     AND nullif(current_setting('wafl.privileged_reason', true), '') IS NOT NULL
     AND nullif(current_setting('wafl.correlation_id', true), '') IS NOT NULL
 $function$;
+
+CREATE OR REPLACE FUNCTION wafl_v2_privileged_scope_ready(p_company_id text)
+RETURNS boolean
+LANGUAGE sql
+STABLE
+AS $function$
+  SELECT
+    wafl_v2_privileged_context_ready(p_company_id)
+    AND nullif(current_setting('wafl.privileged_audit_event_id', true), '') IS NOT NULL
+$function$;
+
+CREATE TABLE IF NOT EXISTS wafl_v2_migration_ledger (
+  migration_id integer PRIMARY KEY,
+  filename text NOT NULL UNIQUE,
+  migration_sha256 char(64) NOT NULL,
+  runner_version text NOT NULL,
+  database_fingerprint char(12) NOT NULL,
+  v1_baseline_fingerprint char(64) NOT NULL,
+  applied_at timestamptz NOT NULL DEFAULT now(),
+  CONSTRAINT wafl_v2_migration_ledger_id_check CHECK (migration_id BETWEEN 1 AND 999),
+  CONSTRAINT wafl_v2_migration_ledger_hash_check CHECK (
+    migration_sha256 ~ '^[0-9a-f]{64}$'
+    AND v1_baseline_fingerprint ~ '^[0-9a-f]{64}$'
+  ),
+  CONSTRAINT wafl_v2_migration_ledger_fingerprint_check CHECK (
+    database_fingerprint ~ '^[0-9a-f]{12}$'
+  )
+);
+
+DO $runtime_role$
+DECLARE
+  existing_role record;
+BEGIN
+  SELECT rolname, rolsuper, rolbypassrls, rolcanlogin
+  INTO existing_role
+  FROM pg_roles
+  WHERE rolname = 'wafl_v2_tenant_runtime';
+
+  IF existing_role.rolname IS NULL THEN
+    CREATE ROLE wafl_v2_tenant_runtime
+      NOLOGIN NOSUPERUSER NOCREATEDB NOCREATEROLE NOINHERIT NOREPLICATION NOBYPASSRLS;
+  ELSIF existing_role.rolsuper OR existing_role.rolbypassrls OR existing_role.rolcanlogin THEN
+    RAISE EXCEPTION 'existing wafl_v2_tenant_runtime role has unsafe attributes';
+  END IF;
+
+  EXECUTE format('GRANT wafl_v2_tenant_runtime TO %I', current_user);
+END
+$runtime_role$;
 
 ALTER TABLE company_settings
   ADD COLUMN IF NOT EXISTS company_code varchar(16),

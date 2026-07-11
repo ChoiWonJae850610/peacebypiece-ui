@@ -1,3 +1,36 @@
+# 2.0.0-alpha.22 WAFL v2 Dev/Test Migration and Performance Evidence
+
+- Current GPT checkpoint: `2.0.0-alpha.22`.
+- Baseline source before this patch: repository `APP_VERSION: 2.0.0-alpha.21`.
+- Baseline commit: `6cdcaddef92f6fb02edcf0ef10dd75dd60b62c1c`.
+- The canonical runner confirmed runtime `development`, approved DB fingerprint `01e5dcc7fea3`, canonical `wafl-fn` prefix, non-superuser migration owner, and a dedicated `NOLOGIN`/`NOBYPASSRLS` tenant runtime role.
+- Additive migrations `001` through `006` were applied once to the approved dev/test Neon target and recorded as six matching migration-ledger rows.
+- The v1 baseline fingerprint remained `e9429ac90ff17afd08843c21221bf1f1b1e2dcca574108665615ac4ece292fcc`; legacy `db/schema` and `db/migrations` source files were not changed.
+- Post-apply validation found 20/20 tenant RLS tables, 44 deferred `NOT VALID` tenant FKs with zero precondition issues, and zero tenant/orphan/revision/document collisions.
+- Deterministic synthetic profiles created 500, 5,000, and multi-tenant 5,400 WorkOrders, totaling 10,900 across existing `wafl-fn` companies. No R2 object was created.
+- Runtime verification passed tenant isolation, audited privileged access, cursor traversal, optimistic concurrency, idempotency, finalized-revision immutability, stale readiness blocking, and 12/12 unique atomic document sequence allocations.
+- Cursor traversal returned 500 rows over 10 pages and 5,000 rows over 100 pages with no duplicate or missing ID.
+- List DB p95 measured 81.56ms at 500 rows and 78.88ms at 5,000 rows. Detail plus selected tab measured at most 148.74ms; indexed search p95 measured at most 79.01ms.
+- List payloads measured 13,921/23,201 bytes for 30/50 at 500 rows and 13,981/23,311 bytes at 5,000 rows.
+- Two runner failures were non-destructive, preserved under `Logs/Repo_Status/Failure_Handoff`, and retried only after explicit owner approval. Failure artifacts were never published to `4. Newest`.
+- `docs/project/app-v2/19-v2-dev-test-migration-and-performance-evidence.md` is the canonical alpha.22 evidence record.
+- App/mobile version metadata is aligned to `2.0.0-alpha.22`; no dependency changed.
+
+Explicit mutation status:
+
+```text
+- dev/test DB schema mutation: true; additive v2 migrations 001-006 only
+- dev/test synthetic test-data mutation: true; deterministic wafl-fn fixtures
+- legacy v1 destructive mutation: false
+- business data mutation: false
+- R2/Worker/PDF mutation: false
+- production mutation: false
+- app/api and mobile runtime API integration: unchanged/not implemented
+- root package.json/root package-lock.json: unchanged
+```
+
+---
+
 # 2.0.0-alpha.21 WAFL v2 Additive Migration Draft and Schema Contract
 
 - Current GPT checkpoint: `2.0.0-alpha.21`.

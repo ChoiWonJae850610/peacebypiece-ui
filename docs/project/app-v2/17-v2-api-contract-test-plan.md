@@ -1,7 +1,7 @@
 # WAFL v2 API Contract Test Plan
 
 Version: `2.0.0-alpha.21`
-Status: type/API and migration/schema static tests active; DB/API runtime tests planned
+Status: alpha.20/21 static contracts and alpha.22 approved dev/test DB runtime evidence active
 
 ## 1. Purpose
 
@@ -228,6 +228,16 @@ Before any production proposal:
 - cursor, conflict, idempotency, readiness, document number tests PASS.
 - DB/R2 cleanup and rollback rehearsal evidence.
 - no production data or production mutation.
+
+Alpha.22 actual result:
+
+- migration ledger 6/6 and v1 baseline unchanged.
+- RLS 20/20, deferred FK precondition issues 0, critical mismatch 0.
+- deterministic WorkOrders: 500 + 5,000 + 5,400 multi-tenant.
+- cursor duplicate/missing 0; concurrency, idempotency, readiness, revision, privileged audit, and document sequence PASS.
+- list p95 81.56ms at 500 and 78.88ms at 5,000; detail/tab max 148.74ms; indexed search p95 max 79.01ms.
+- list 30/50 payload max 13,981/23,311 bytes.
+- cleanup and rollback rehearsal were not run because the explicit alpha.22 owner instruction prohibited cleanup, reset, and rollback SQL. Persistent data is synthetic `wafl-fn` dev/test evidence only.
 
 ## 13. PowerShell follow-up
 

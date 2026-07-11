@@ -367,7 +367,7 @@ if ($VerificationProfile -eq "public-signup-e2e") {
 if ($VerificationProfile -eq "workorder-size-pdf") {
     $allowedMigrationChanges = @("db/migrations/patch_0_24_34_workorder_size_spec_and_pdf.sql")
 }
-if ($VerificationProfile -eq "automation-infrastructure" -and $ExpectedAppVersion -eq "2.0.0-alpha.21") {
+if ($VerificationProfile -eq "automation-infrastructure" -and $ExpectedAppVersion -in @("2.0.0-alpha.21", "2.0.0-alpha.22")) {
     $allowedMigrationChanges = @(
         "db/v2/migrations/001_v2_tenant_document_number_foundation.sql",
         "db/v2/migrations/002_v2_work_orders_revisions.sql",
