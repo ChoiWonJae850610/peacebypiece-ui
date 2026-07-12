@@ -24,9 +24,9 @@ import {
   WorkOrderCommandValidationError,
 } from "@/lib/domain/work-orders/command/validation";
 
-const COMMAND_BODY_MAX_BYTES = 16 * 1024;
+export const COMMAND_BODY_MAX_BYTES = 16 * 1024;
 
-function createErrorResponse(input: {
+export function createCommandErrorResponse(input: {
   readonly code: WorkOrderApiErrorCode;
   readonly message: string;
   readonly status: number;
@@ -48,7 +48,7 @@ function createErrorResponse(input: {
   }, { status: input.status, headers: { "Cache-Control": "no-store" } });
 }
 
-function mapGuardFailureStatus(status: number): {
+export function mapCommandGuardFailureStatus(status: number): {
   readonly code: WorkOrderApiErrorCode;
   readonly message: string;
   readonly status: number;
@@ -62,7 +62,7 @@ function mapGuardFailureStatus(status: number): {
   };
 }
 
-async function readBoundedJson(request: Request): Promise<unknown> {
+export async function readBoundedCommandJson(request: Request): Promise<unknown> {
   const text = await request.text();
   if (new TextEncoder().encode(text).byteLength > COMMAND_BODY_MAX_BYTES) {
     throw new WorkOrderCommandValidationError([
@@ -104,7 +104,7 @@ async function handleCommand(input: {
   const correlationId = randomUUID() as CorrelationId;
   const runtimeGuard = getWorkOrderV2CommandRuntimeGuard();
   if (!runtimeGuard.ok) {
-    return createErrorResponse({
+    return createCommandErrorResponse({
       code: "FORBIDDEN",
       message: "v2 제작 카드 Command API는 승인된 dev/test runtime에서만 사용할 수 있습니다.",
       status: 403,
@@ -115,11 +115,11 @@ async function handleCommand(input: {
   const permissionCode = input.kind === "create" ? "workorder.create" : "workorder.update";
   const guard = await requireWorkspaceApiGuard({ permissionCode });
   if (!guard.ok) {
-    return createErrorResponse({ ...mapGuardFailureStatus(guard.response.status), correlationId });
+    return createCommandErrorResponse({ ...mapCommandGuardFailureStatus(guard.response.status), correlationId });
   }
 
   try {
-    const body = await readBoundedJson(input.request);
+    const body = await readBoundedCommandJson(input.request);
     if (input.kind === "create") {
       const command = validateCreateWorkOrderDraft({
         body,
@@ -145,7 +145,7 @@ async function handleCommand(input: {
     return commandSuccessResponse(result, correlationId, 200);
   } catch (error) {
     if (error instanceof WorkOrderCommandValidationError) {
-      return createErrorResponse({
+      return createCommandErrorResponse({
         code: "VALIDATION_ERROR",
         message: error.message,
         status: 400,
@@ -154,7 +154,7 @@ async function handleCommand(input: {
       });
     }
     if (error instanceof WorkOrderCommandRequestError) {
-      return createErrorResponse({
+      return createCommandErrorResponse({
         code: error.code,
         message: error.message,
         status: error.status,
@@ -173,7 +173,7 @@ async function handleCommand(input: {
         ? String(error.code)
         : "UNKNOWN",
     });
-    return createErrorResponse({
+    return createCommandErrorResponse({
       code: "INTERNAL_ERROR",
       message: "제작 카드 변경을 처리하지 못했습니다.",
       status: 500,

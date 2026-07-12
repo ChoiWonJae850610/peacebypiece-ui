@@ -404,6 +404,22 @@ Status: implemented and approved dev/test Command runtime verified.
 - Runtime performance evidence: create/replay/update DB `715.57ms`/`453.82ms`/`529.44ms`; API `1381.97ms`/`606.16ms`/`687.03ms`. These are one-shot Command evidence values, not a production performance baseline.
 - Runtime mutation accounting: approved dev/test synthetic test data only. Migration/schema/index, seed, cleanup/reset/rollback, business data, R2/Worker/PDF, and production mutation are false.
 
+### 2.0.0-alpha.26
+
+Status: implementation, approved bounded dev/test mutation, read-only audit, and GET-only completion evidence complete; final delivery verification in progress.
+
+- Add one shared material Command boundary for fabric/accessory create and current-draft scalar PATCH.
+- Add line-level order request, request-cancel, and complete routes with `editing -> requested -> cancelled|completed` enforcement.
+- Reuse authenticated scope, canonical permissions, fixed tenant write transaction, hashed receipts, optimistic concurrency, and append-only WorkOrder events.
+- Derive amount server-side, hide cross-tenant material/supplier identity behind generic `NOT_FOUND`, and keep finalized/non-current revisions locked.
+- Do not implement material DELETE because the applied schema has no soft-delete/deactivation lifecycle.
+- Preflight result: fingerprint `01e5dcc7fea3`, ledger 7/7 unchanged, no valid material mutation, Company C/finalized/read regressions PASS, and all DB/business/storage/production mutation categories false.
+- The approved runtime committed fabric/accessory `2/1`, receipts `9`, events `11`, and version transitions `3 -> 14`; its finalized-fixture assertion failed because the expected code was wrong, not because the Command transaction failed.
+- The bounded audit proved `NO_PARTIAL_MUTATION`, material version sum `11`, incomplete receipt `0`, supplier mismatch `0`, and cleanup unnecessary.
+- Ledger-column and source-regex mistakes in two temporary completion runners remain preserved as failures. The final GET-only completion passed with GET `14/0`, direct DB query `0`, mutation route `0`, B/H `NOT_FOUND`, C `FORBIDDEN`, and alpha.23~25 Read regressions PASS.
+- Finalized `LOCKED` uses existing accepted runtime plus repository/service source evidence; no mutation PATCH was replayed.
+- APP_VERSION/mobile metadata are `2.0.0-alpha.26`. Migration/schema/index, seed, cleanup/reset/rollback, business data, R2/Worker/PDF, production, mobile API connection, root package, lockfile, and dependency changes remain out of scope.
+
 ## Later integration phases
 
 API, DB, R2, PDF, Worker, native auth, and production deployment integration must be separate phases after mock app structure is stable.

@@ -503,6 +503,61 @@ function InvokeWaflV2Alpha25EvidenceCheck {
     return [pscustomobject]@{ Name = $name; CommandLine = $commandLine; Passed = $false; Skipped = $false; ExitCode = 1; FindingCount = ""; HighRiskCount = ""; OutputSummary = "alpha.25 evidence contract mismatch" }
 }
 
+function InvokeWaflV2Alpha26CompletionEvidenceCheck {
+    $name = "WAFL v2 alpha.26 material Command completion evidence"
+    $commandLine = "Approval_Handoff GET-only completion plus Failure_Handoff bounded read-only audit"
+    if ($CheckOnly) {
+        return [pscustomobject]@{ Name = $name; CommandLine = $commandLine; Passed = $true; Skipped = $true; ExitCode = 0; FindingCount = ""; HighRiskCount = ""; OutputSummary = "check-only" }
+    }
+
+    $approvalDir = Join-Path $RepoStatusDir "Approval_Handoff"
+    $failureDir = Join-Path $RepoStatusDir "Failure_Handoff"
+    $completionFile = Get-ChildItem -LiteralPath $approvalDir -File -Filter "readonly-completion-alpha26-material-command-*.txt" -ErrorAction SilentlyContinue |
+        Sort-Object LastWriteTime -Descending |
+        Where-Object { (Get-Content -LiteralPath $_.FullName -Raw -Encoding UTF8) -match 'Status:\s*READ_ONLY_COMPLETION_PASS' } |
+        Select-Object -First 1
+    $auditFile = Get-ChildItem -LiteralPath $failureDir -File -Filter "readonly-audit-alpha26-material-command-*.txt" -ErrorAction SilentlyContinue |
+        Sort-Object LastWriteTime -Descending |
+        Select-Object -First 1
+    if ($null -eq $completionFile -or $null -eq $auditFile) {
+        return [pscustomobject]@{ Name = $name; CommandLine = $commandLine; Passed = $false; Skipped = $false; ExitCode = 1; FindingCount = ""; HighRiskCount = ""; OutputSummary = "alpha.26 completion or audit evidence missing" }
+    }
+
+    $completion = Get-Content -LiteralPath $completionFile.FullName -Raw -Encoding UTF8
+    $audit = Get-Content -LiteralPath $auditFile.FullName -Raw -Encoding UTF8
+    $checks = @(
+        ($completion -match 'Status:\s*READ_ONLY_COMPLETION_PASS' -and $completion -match 'Result:\s*READ_ONLY_COMPLETION_PASS'),
+        ($completion -match 'Target fingerprint guard:\s*01e5dcc7fea3'),
+        ($completion -match 'GET requests:\s*successful=14; failed=0'),
+        ($completion -match 'Direct DB client/query/SQL:\s*0' -and $completion -match 'Mutation route/method calls:\s*0'),
+        ($completion -match 'Alpha\.23 list and alpha\.25 target list/detail consistency:\s*PASS'),
+        ($completion -match 'Alpha\.24 detail/material/history/lazy Read regression:\s*PASS'),
+        ($completion -match 'fabric=2 cancelled=2; accessory=1 completed=1; parentVersion=14 PASS'),
+        ($completion -match 'Company B/H=NOT_FOUND; Company C=FORBIDDEN'),
+        ($completion -match 'Finalized LOCKED:\s*PASS_BY_EXISTING_RUNTIME_AND_SOURCE_EVIDENCE'),
+        ($completion -match 'DB/schema/business/R2/Worker/PDF/production mutation:\s*false'),
+        ($audit -match 'Migration Ledger:\s*7/7'),
+        ($audit -match 'Material Count:\s*total=3; fabric=2; accessory=1'),
+        ($audit -match 'Versions:\s*workOrder=14 \(delta 11\); revision=14 \(delta 11\); materialVersionSum=11'),
+        ($audit -match 'Receipts:\s*total=9; complete=9; incomplete=0'),
+        ($audit -match 'Events:\s*total=11'),
+        ($audit -match 'supplierMismatchCount":0'),
+        ($audit -match 'Final Result:\s*NO_PARTIAL_MUTATION')
+    )
+    $passed = @($checks | Where-Object { -not $_ }).Count -eq 0
+    if (-not $passed) {
+        return [pscustomobject]@{ Name = $name; CommandLine = $commandLine; Passed = $false; Skipped = $false; ExitCode = 1; FindingCount = ""; HighRiskCount = ""; OutputSummary = "alpha.26 completion evidence contract mismatch" }
+    }
+
+    $script:WaflV2Alpha26Evidence = [pscustomobject]@{
+        CompletionLog = $completionFile.FullName
+        AuditLog = $auditFile.FullName
+        GetSummary = "successful 14, failed 0, direct DB query 0, mutation route 0"
+    }
+    Write-Host "[PASS] $name"
+    return [pscustomobject]@{ Name = $name; CommandLine = $commandLine; Passed = $true; Skipped = $false; ExitCode = 0; FindingCount = ""; HighRiskCount = ""; OutputSummary = $completionFile.Name }
+}
+
 function InvokePackageScriptCheck {
     param(
         [string]$Name,
@@ -796,6 +851,32 @@ $profileCommands = @{
     );
     "automation-infrastructure" = @(
         @{ Name = "tsc --noEmit"; Command = "node"; Arguments = @("node_modules/typescript/bin/tsc", "--noEmit") },
+        @{
+            Name = "targeted ESLint"
+            Command = "node"
+            Arguments = @(
+                "node_modules/eslint/bin/eslint.js",
+                "app/api/v2/work-orders/[workOrderId]/materials/route.ts",
+                "app/api/v2/work-orders/[workOrderId]/materials/[materialLineId]/route.ts",
+                "app/api/v2/work-orders/[workOrderId]/materials/[materialLineId]/order-request/route.ts",
+                "app/api/v2/work-orders/[workOrderId]/materials/[materialLineId]/order-cancel/route.ts",
+                "app/api/v2/work-orders/[workOrderId]/materials/[materialLineId]/order-complete/route.ts",
+                "lib/domain/work-orders/command/commandRepository.ts",
+                "lib/domain/work-orders/command/commandRoute.ts",
+                "lib/domain/work-orders/command/commandService.ts",
+                "lib/domain/work-orders/command/runtimeGuard.ts",
+                "lib/domain/work-orders/command/validation.ts",
+                "lib/domain/work-orders/command/materialCommandRepository.ts",
+                "lib/domain/work-orders/command/materialCommandRoute.ts",
+                "lib/domain/work-orders/command/materialCommandService.ts",
+                "lib/domain/work-orders/command/materialValidation.ts",
+                "lib/domain/work-orders/contracts/commands.ts",
+                "scripts/run-wafl-v2-alpha26-material-command-preflight.mjs",
+                "scripts/run-wafl-v2-alpha26-material-command-runtime.mjs",
+                "tests/workorder-v2-alpha22-dev-test-runner-contract.mjs",
+                "tests/workorder-v2-alpha26-material-command-api-contract.mjs"
+            )
+        },
         @{ Name = "mobile typecheck"; Command = "npm"; Arguments = @("--prefix", "apps/mobile", "run", "typecheck") },
         @{ Name = "mobile Expo config"; Command = "npm"; Arguments = @("--prefix", "apps/mobile", "run", "expo:config") },
         @{ Name = "workorder v2 API contract"; Command = "node"; Arguments = @("tests/workorder-v2-api-contract.mjs") },
@@ -804,6 +885,7 @@ $profileCommands = @{
         @{ Name = "workorder v2 alpha.23 list API contract"; Command = "node"; Arguments = @("tests/workorder-v2-alpha23-list-api-contract.mjs") },
         @{ Name = "workorder v2 alpha.24 detail/lazy API contract"; Command = "node"; Arguments = @("tests/workorder-v2-alpha24-detail-api-contract.mjs") },
         @{ Name = "workorder v2 alpha.25 command API static contract"; Command = "node"; Arguments = @("tests/workorder-v2-alpha25-command-api-contract.mjs") },
+        @{ Name = "workorder v2 alpha.26 material command API static contract"; Command = "node"; Arguments = @("tests/workorder-v2-alpha26-material-command-api-contract.mjs") },
         @{ Name = "app-v2 document links and Mermaid contract"; Command = "node"; Arguments = @("tests/app-v2-document-links-contract.mjs") },
         @{ Name = "unicode encoding contract"; Command = "node"; Arguments = @("tests/unicode-encoding-contract.mjs") },
         @{ Name = "PowerShell encoding contract"; Command = "node"; Arguments = @("tests/pipeline-powershell-encoding-contract.mjs") },
@@ -1355,6 +1437,12 @@ if ($Profile -eq "automation-infrastructure" -and (GetProjectAppVersion) -eq "2.
     $results.Add((InvokeWaflV2Alpha24EvidenceCheck))
     $results.Add((InvokeWaflV2Alpha25EvidenceCheck))
 }
+if ($Profile -eq "automation-infrastructure" -and (GetProjectAppVersion) -eq "2.0.0-alpha.26") {
+    $results.Add((InvokeWaflV2Alpha23EvidenceCheck))
+    $results.Add((InvokeWaflV2Alpha24EvidenceCheck))
+    $results.Add((InvokeWaflV2Alpha25EvidenceCheck))
+    $results.Add((InvokeWaflV2Alpha26CompletionEvidenceCheck))
+}
 
 $failedResults = @($results | Where-Object { -not $_.Passed })
 $status = if ($CheckOnly) { "CHECK_ONLY" } elseif ($failedResults.Count -eq 0) { "PASS" } else { "FAIL" }
@@ -1451,6 +1539,24 @@ if ($null -ne $script:WaflV2Alpha25Evidence -and (GetProjectAppVersion) -eq "2.0
     $lines.Add("V2 Migration Ledger: 7/7 PASS; reused without alpha.25 schema mutation")
     $lines.Add("V2 Alpha.25 Runtime Log: $($script:WaflV2Alpha25Evidence.RuntimeLog)")
     $lines.Add("V2 Alpha.25 Command Metrics: $($script:WaflV2Alpha25Evidence.CommandMetrics)")
+}
+if ($null -ne $script:WaflV2Alpha26Evidence -and (GetProjectAppVersion) -eq "2.0.0-alpha.26") {
+    $lines.Add("")
+    $lines.Add("DB Migration Apply Result: NOT_APPLIED - alpha.26 reused ledger 7 and index 007")
+    $lines.Add("Post-Apply Audit Result: PASS - NO_PARTIAL_MUTATION and GET-only completion evidence")
+    $lines.Add("Schema Migration This Run: false")
+    $lines.Add("Dev/Test DB Test-Data Mutation: true; approved retained alpha.26 synthetic fabric 2, accessory 1, receipts 9, events 11, version transitions 11")
+    $lines.Add("Dev/Test Fixture Mutation: true; approved bounded synthetic material Command fixture only")
+    $lines.Add("Business Data Mutation: false")
+    $lines.Add("Production Business Data Mutation: false")
+    $lines.Add("Dev/Test R2 Mutation: false")
+    $lines.Add("Production Mutation: false")
+    $lines.Add("E2E/Smoke Summary: PASS - material commands, idempotency, concurrency, tenant isolation, LOCKED evidence, audit and alpha.23-25 reads")
+    $lines.Add("Manual QA Status: NOT_APPLICABLE - API Command vertical slice")
+    $lines.Add("V2 Migration Ledger: 7/7 PASS; reused without alpha.26 schema mutation")
+    $lines.Add("V2 Alpha.26 Completion Log: $($script:WaflV2Alpha26Evidence.CompletionLog)")
+    $lines.Add("V2 Alpha.26 Read-Only Audit Log: $($script:WaflV2Alpha26Evidence.AuditLog)")
+    $lines.Add("V2 Alpha.26 GET Summary: $($script:WaflV2Alpha26Evidence.GetSummary)")
 }
 [System.IO.File]::WriteAllLines($resultPath, $lines, [System.Text.Encoding]::UTF8)
 

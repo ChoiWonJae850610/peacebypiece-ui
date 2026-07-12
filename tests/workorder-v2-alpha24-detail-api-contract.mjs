@@ -5,6 +5,7 @@ import path from "node:path";
 
 const root = process.cwd();
 const read = (relativePath) => fs.readFileSync(path.join(root, relativePath), "utf8");
+const alpha26ContractExists = fs.existsSync(path.join(root, "tests/workorder-v2-alpha26-material-command-api-contract.mjs"));
 
 const routePaths = [
   "app/api/v2/work-orders/[workOrderId]/route.ts",
@@ -23,6 +24,9 @@ for (const routePath of routePaths) {
   if (routePath === "app/api/v2/work-orders/[workOrderId]/route.ts") {
     assert.doesNotMatch(route, /export async function (POST|PUT|DELETE)/, `${routePath} may add only alpha.25 PATCH beside GET`);
     assert.match(route, /handlePatchWorkOrderBasicInfoV2/, `${routePath} must use the bounded alpha.25 PATCH handler`);
+  } else if (routePath === "app/api/v2/work-orders/[workOrderId]/materials/route.ts" && alpha26ContractExists) {
+    assert.doesNotMatch(route, /export async function (PATCH|PUT|DELETE)/, `${routePath} may add only alpha.26 POST beside GET`);
+    assert.match(route, /handleAddMaterialLineV2/, `${routePath} must use the bounded alpha.26 POST handler`);
   } else {
     assert.doesNotMatch(route, /export async function (POST|PATCH|PUT|DELETE)/, `${routePath} must remain read-only`);
   }

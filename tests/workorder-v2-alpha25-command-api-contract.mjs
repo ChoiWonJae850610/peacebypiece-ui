@@ -47,7 +47,7 @@ assert.match(runtimeGuard, /getWorkOrderV2ReadRuntimeGuard\(\)/, "command guard 
 assert.match(runtimeGuard, /WAFL_V2_COMMAND_API_ENABLED/, "command feature gate required");
 assert.match(runtimeGuard, /WAFL_V2_COMMAND_MUTATION_APPROVED/, "separate mutation approval gate required");
 assert.match(runtimeGuard, /2\.0\.0-alpha\.25-dev-test-command-runtime/, "exact alpha.25 mutation approval value required");
-assert.match(service, /requireMutationApproval\(\)/, "service must recheck approval immediately before repository mutation");
+assert.match(service, /requireCommandMutationApproval\(\)/, "service must recheck approval immediately before repository mutation");
 
 assert.match(routeHandler, /permissionCode = input\.kind === "create" \? "workorder\.create" : "workorder\.update"/, "create/update permissions must remain action-code based");
 assert.match(routeHandler, /COMMAND_BODY_MAX_BYTES = 16 \* 1024/, "command payload must be bounded");

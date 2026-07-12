@@ -284,7 +284,11 @@ Menu numbers are assigned only after collision review in alpha.21~22.
 - Before/after schema fingerprint and row counts remain identical. Schema, seed, business, R2/Worker/PDF, and production mutation are false.
 - Runtime success evidence is recorded in document 21. Failure preserves a handoff and never changes `4. Newest`.
 
-## 17. Alpha.25 create/basic update Command gate
+## 17. Alpha.25 and alpha.26 Command gates
+
+Alpha.26 adds a static material/order gate: shared fabric/accessory DTOs, bounded decimals, final derived-amount overflow validation, tenant-safe material/supplier references, exact permissions, fixed tenant transaction, hashed receipts, expectedVersion, append-only events, and no hard DELETE. It permits only `editing -> requested` and `requested -> cancelled|completed`; direct status PATCH and completed rollback are rejected. Its read-only preflight must prove target fingerprint, ledger 7/7, invalid/auth/Company C denial, alpha.23~25 read regression, and identical snapshots without valid mutation. Separately approved synthetic runtime and APP_VERSION alpha.26 remain blocked until that preflight passes.
+
+### Alpha.25 create/basic update
 
 - Static contract verifies the exact POST/PATCH routes, bounded scalar DTO, unknown company/member/revision field rejection, required Idempotency-Key/expectedVersion, fixed tenant write role, receipt hashing, one transaction, current-draft lock, typed conflict, append-only safe event, and no document/material/process command expansion.
 - Owner approval 전 preflight는 valid create/PATCH를 보내지 않는다. Auth, malformed/unsupported fields, missing key/version, Company C pre-mutation denial, alpha.23/24 GET regression, and identical before/after ledger/schema/row counts만 확인한다.

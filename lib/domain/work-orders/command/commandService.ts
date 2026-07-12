@@ -70,11 +70,11 @@ function isUuid(value: string): boolean {
   return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(value);
 }
 
-function createTenantScope(input: {
+export function createCommandTenantScope(input: {
   readonly scope: WorkspaceApiCompanyScope;
   readonly companyMemberId: string | null;
   readonly correlationId: CorrelationId;
-  readonly permissionCode: "workorder.create" | "workorder.update";
+  readonly permissionCode: string;
 }): TenantMemberScope {
   const companyMemberId = input.companyMemberId?.trim();
   if (!companyMemberId) {
@@ -93,8 +93,11 @@ function createTenantScope(input: {
   };
 }
 
-function requireMutationApproval() {
-  const guard = getWorkOrderV2CommandRuntimeGuard({ requireMutationApproval: true });
+export function requireCommandMutationApproval(requiredMutationApproval?: string) {
+  const guard = getWorkOrderV2CommandRuntimeGuard({
+    requireMutationApproval: true,
+    requiredMutationApproval,
+  });
   if (!guard.ok) {
     throw new WorkOrderCommandRequestError({
       code: "FORBIDDEN",
@@ -162,13 +165,13 @@ export async function createWorkOrderDraft(input: {
   readonly companyMemberId: string | null;
   readonly correlationId: CorrelationId;
 }): Promise<WorkOrderCommandServiceResult> {
-  const tenantScope = createTenantScope({
+  const tenantScope = createCommandTenantScope({
     scope: input.scope,
     companyMemberId: input.companyMemberId,
     correlationId: input.correlationId,
     permissionCode: "workorder.create",
   });
-  requireMutationApproval();
+  requireCommandMutationApproval();
 
   const scopedIdempotencyKeyHash = sha256([
     WORK_ORDER_CREATE_COMMAND_CODE,
@@ -209,13 +212,13 @@ export async function patchWorkOrderBasicInfo(input: {
   if (!isUuid(input.workOrderId)) {
     throw new WorkOrderCommandRequestError({ code: "NOT_FOUND", status: 404, message: "제작 카드를 찾을 수 없습니다." });
   }
-  const tenantScope = createTenantScope({
+  const tenantScope = createCommandTenantScope({
     scope: input.scope,
     companyMemberId: input.companyMemberId,
     correlationId: input.correlationId,
     permissionCode: "workorder.update",
   });
-  requireMutationApproval();
+  requireCommandMutationApproval();
 
   try {
     return toServiceResult(await patchWorkOrderBasicInfoV2({

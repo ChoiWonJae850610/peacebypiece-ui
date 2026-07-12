@@ -373,6 +373,8 @@ Actual p95 is confirmed in alpha.22 benchmark. `SELECT *`, full child JSON aggre
 
 ## 14. Runtime boundary
 
+Alpha.26 specializes the material contract against the applied schema. Fabric/accessory share `work_order_material_lines`; create and request/cancel/complete use actor-scoped hashed receipts, while scalar PATCH uses WorkOrder `expectedVersion`. WorkOrder, current draft revision, and line versions advance atomically. Only `editing -> requested` and `requested -> cancelled|completed` are allowed. Amount is server-derived, cross-tenant material/supplier references are generic `NOT_FOUND`, and no DELETE is exposed because no soft-delete lifecycle exists.
+
 Alpha.20에서는 어떤 runtime도 이 계약을 import하지 않았다. Alpha.23은 `GET /api/v2/work-orders` 목록 vertical slice를 채택했고, alpha.24는 core detail과 일곱 tab-specific lazy Read endpoint만 추가한다. `apps/mobile`, command route, PDF/QR route는 여전히 연결하지 않는다.
 
 Alpha.23 route는 기존 workspace session/permission guard, dev/test fingerprint gate, `NOBYPASSRLS` RLS role, read-only transaction을 사용한다. Production에서는 명시 feature/approval gate가 없어 route가 DB-backed guard보다 먼저 차단된다.

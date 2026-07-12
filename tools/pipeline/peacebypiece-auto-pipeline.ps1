@@ -79,6 +79,8 @@ param(
     [switch]$RunWaflV2Alpha24DetailApiVerification,
     [switch]$RunWaflV2Alpha25CommandPreflight,
     [switch]$RunWaflV2Alpha25CommandRuntimeVerification,
+    [switch]$RunWaflV2Alpha26MaterialCommandPreflight,
+    [switch]$RunWaflV2Alpha26MaterialCommandRuntimeVerification,
     [string]$WaflV2Confirmation = "",
     [switch]$CreateWaflV2FailureHandoff,
     [string]$WaflV2FailureStage = "",
@@ -1787,25 +1789,28 @@ function NewWaflV2FailureHandoff {
     $dbAuditFiles = @(Get-ChildItem -LiteralPath $dbAuditDir -File -ErrorAction SilentlyContinue)
     $successfulApplyLog = $dbAuditFiles | Where-Object { $_.Name -like "OK_Apply_Wafl_V2_Alpha22_Migrations_*.txt" } | Sort-Object LastWriteTime -Descending | Select-Object -First 1
     $successfulSeedLogs = @($dbAuditFiles | Where-Object { $_.Name -like "OK_Wafl_V2_Alpha22_Seed_*.txt" })
-    $applyText = if ($null -ne $successfulApplyLog) { Get-Content -LiteralPath $successfulApplyLog.FullName -Raw -Encoding UTF8 } else { "" }
-    $ledgerCount = if ($failureText -match 'Migration ledger rows(?: after failure)?:\s*([0-9]+)') {
-        $matches[1]
-    } elseif ($applyText -match 'Migration ledger rows:\s*([0-9]+)') {
+    $ledgerCount = if ($failureText -match 'Current migration ledger count:\s*(unknown|[0-9]+)') {
+        $matches[1].ToLowerInvariant()
+    } elseif ($failureText -match 'Migration ledger rows(?: after failure)?:\s*([0-9]+)') {
         $matches[1]
     } else {
-        "0"
+        "unknown"
     }
     $isAlpha23ReadFailure = $FailureStage -eq "alpha23-list-api-runtime"
     $isAlpha24ReadFailure = $FailureStage -eq "alpha24-detail-api-runtime"
     $isAlpha23IndexFailure = $FailureStage -eq "apply-index"
-    $schemaMutation = if ($isAlpha23ReadFailure -or $isAlpha24ReadFailure) {
+    $schemaMutation = if ($failureText -match 'Schema mutation this run:\s*(true|false|unknown)') {
+        $matches[1].ToLowerInvariant()
+    } elseif ($isAlpha23ReadFailure -or $isAlpha24ReadFailure) {
         "false; alpha.22 applied baseline reused read-only"
-    } elseif ($failureText -match 'Alpha.23 material index present after failure:\s*True|Migration applied:|DB schema mutation:\s*true' -or $applyText -match 'Result:\s*PASS') {
+    } elseif ($failureText -match 'Alpha.23 material index present after failure:\s*True|Migration applied:|DB schema mutation:\s*true') {
         "true; approved dev/test additive migration"
     } else {
-        "false"
+        "unknown"
     }
-    $testDataMutation = if ($isAlpha23ReadFailure -or $isAlpha24ReadFailure -or $isAlpha23IndexFailure) { "false; existing alpha.22 synthetic seed reused without mutation" } elseif ($failureText -match 'Dev/Test DB (?:test-data|verification) mutation:\s*(?!false)' -or $successfulSeedLogs.Count -gt 0) { "true; deterministic wafl-fn seed" } else { "false" }
+    $historicalMigration = if ($null -ne $successfulApplyLog) { "true; approved dev/test apply evidence $($successfulApplyLog.BaseName)" } else { "unknown" }
+    $testDataMutation = if ($failureText -match 'Dev/Test DB test-data mutation this run:\s*(true|false|unknown)') { $matches[1].ToLowerInvariant() } elseif ($isAlpha23ReadFailure -or $isAlpha24ReadFailure -or $isAlpha23IndexFailure) { "false; existing alpha.22 synthetic seed reused without mutation" } else { "unknown" }
+    $historicalSeedEvidence = if ($successfulSeedLogs.Count -gt 0) { "present; $($successfulSeedLogs.Count) approved dev/test seed log(s)" } else { "unknown" }
     $businessMutation = if ($failureText -match 'Business data mutation:\s*true') { "true" } else { "false" }
     $r2Mutation = if ($failureText -match 'R2 mutation:\s*true') { "true" } else { "false" }
     $productionMutation = if ($failureText -match 'Production mutation:\s*true') { "true" } else { "false" }
@@ -1826,10 +1831,15 @@ function NewWaflV2FailureHandoff {
     AddRepoStateSection -Lines $lines -Title "Failure Log:" -Values @($copiedLogPath)
     AddRepoStateSection -Lines $lines -Title "Source ZIP:" -Values @($zipPath)
     AddRepoStateSection -Lines $lines -Title "ZIP Size Bytes:" -Values @([string]$zipSize)
-    AddRepoStateSection -Lines $lines -Title "Migration Ledger Count:" -Values @([string]$ledgerCount)
+    AddRepoStateSection -Lines $lines -Title "Current Migration Ledger Count:" -Values @([string]$ledgerCount)
+    AddRepoStateSection -Lines $lines -Title "Current Migration Ledger Evidence:" -Values @($(if ($ledgerCount -eq "unknown") { "unknown; not measured by this failure run" } else { "failure log" }))
     AddRepoStateSection -Lines $lines -Title "Successful Seed Profiles Before Failure:" -Values @($successfulSeedLogs | ForEach-Object { $_.BaseName })
     AddRepoStateSection -Lines $lines -Title "DB Schema Mutation:" -Values @($schemaMutation)
+    AddRepoStateSection -Lines $lines -Title "This Run DB Schema Mutation:" -Values @($schemaMutation)
+    AddRepoStateSection -Lines $lines -Title "Historical Dev/Test Migration Applied:" -Values @($historicalMigration)
     AddRepoStateSection -Lines $lines -Title "Dev/Test DB Test-Data Mutation:" -Values @($testDataMutation)
+    AddRepoStateSection -Lines $lines -Title "This Run Dev/Test DB Test-Data Mutation:" -Values @($testDataMutation)
+    AddRepoStateSection -Lines $lines -Title "Historical Synthetic Seed Evidence:" -Values @($historicalSeedEvidence)
     AddRepoStateSection -Lines $lines -Title "Business Data Mutation:" -Values @($businessMutation)
     AddRepoStateSection -Lines $lines -Title "R2 Mutation:" -Values @($r2Mutation)
     AddRepoStateSection -Lines $lines -Title "Production Mutation:" -Values @($productionMutation)
@@ -3196,6 +3206,105 @@ function InvokeWaflV2Alpha25CommandRuntimeVerification {
     }
 }
 
+function InvokeWaflV2Alpha26MaterialCommandVerification {
+    param(
+        [ValidateSet("preflight", "runtime")]
+        [string]$Mode,
+        [string]$Confirmation = "",
+        [bool]$PauseAfter = $true
+    )
+
+    if (-not (LoadEnvLocalForSmokeTest)) { if ($PauseAfter) { WaitForDeveloperToolsMenu }; return 1 }
+    $runtime = [string]$env:NEXT_PUBLIC_APP_RUNTIME_MODE
+    if ([string]::IsNullOrWhiteSpace($runtime)) { $runtime = [string]$env:NODE_ENV }
+    $guard = TestReadOnlyDbAuditGuard -Runtime $runtime -DatabaseUrl $env:DATABASE_URL
+    $testPrefix = ([string]$PipelineConfig.Simulator.TestPrefix).Trim()
+    $isRuntime = $Mode -eq "runtime"
+    $expectedConfirmation = if ($isRuntime) {
+        "EXECUTE WAFL V2 ALPHA26 MATERIAL COMMAND RUNTIME"
+    } else {
+        "VERIFY WAFL V2 ALPHA26 MATERIAL COMMAND PREFLIGHT"
+    }
+    $label = if ($isRuntime) { "Wafl_V2_Alpha26_Material_Command_Runtime" } else { "Wafl_V2_Alpha26_Material_Command_Preflight" }
+    $runner = if ($isRuntime) { "run-wafl-v2-alpha26-material-command-runtime.mjs" } else { "run-wafl-v2-alpha26-material-command-preflight.mjs" }
+    $failureStage = if ($isRuntime) { "alpha26-material-command-runtime" } else { "alpha26-material-command-preflight" }
+
+    Write-Host ""
+    Write-Host "WAFL v2 alpha.26 Material Command $Mode guard"
+    Write-Host "- Runtime: $($guard.Runtime)"
+    Write-Host "- Fingerprint: $($guard.Fingerprint)"
+    Write-Host "- Prefix: $testPrefix"
+    Write-Host "- Target result: $($guard.Reason)"
+    Write-Host $(if ($isRuntime) {
+        "- Mutation: reuse one Company A alpha.25 draft; fabric +2, accessory +1, receipts +9, events +11; no cleanup"
+    } else {
+        "- Mutation: none; valid material create/PATCH/order transition and mutation approval are prohibited"
+    })
+
+    if (-not $guard.Passed -or $testPrefix -ne "wafl-fn") {
+        LogError "WAFL v2 alpha.26 Material Command $Mode 검증이 차단되었습니다. 승인된 dev/test DB와 wafl-fn prefix만 허용합니다."
+        if ($PauseAfter) { WaitForDeveloperToolsMenu }
+        return 2
+    }
+    if ($Confirmation -cne $expectedConfirmation) {
+        LogError "WAFL v2 alpha.26 Material Command $Mode confirmation이 일치하지 않아 검증이 차단되었습니다."
+        if ($PauseAfter) { WaitForDeveloperToolsMenu }
+        return 3
+    }
+
+    $previousRuntime = $env:WAFL_V2_RUNTIME
+    $previousFingerprint = $env:WAFL_V2_APPROVED_DB_FINGERPRINT
+    $previousPrefix = $env:WAFL_V2_TEST_PREFIX
+    $previousConfirmation = $env:WAFL_V2_CONFIRMATION
+    $previousReadApproval = $env:WAFL_V2_READ_APPROVED
+    $previousReadApiEnabled = $env:WAFL_V2_READ_API_ENABLED
+    $previousCommandApiEnabled = $env:WAFL_V2_COMMAND_API_ENABLED
+    $previousMutationApproval = $env:WAFL_V2_COMMAND_MUTATION_APPROVED
+    try {
+        $env:WAFL_V2_RUNTIME = $guard.Runtime
+        $env:WAFL_V2_APPROVED_DB_FINGERPRINT = [string]$PipelineConfig.Simulator.ApprovedDbFingerprint
+        $env:WAFL_V2_TEST_PREFIX = $testPrefix
+        $env:WAFL_V2_CONFIRMATION = $Confirmation
+        $env:WAFL_V2_READ_APPROVED = "1"
+        $env:WAFL_V2_READ_API_ENABLED = "1"
+        $env:WAFL_V2_COMMAND_API_ENABLED = "1"
+        if ($isRuntime) {
+            $env:WAFL_V2_COMMAND_MUTATION_APPROVED = "2.0.0-alpha.26-dev-test-material-command-runtime"
+        }
+        else {
+            Remove-Item Env:WAFL_V2_COMMAND_MUTATION_APPROVED -ErrorAction SilentlyContinue
+        }
+
+        $dbAuditLogDir = Join-Path (Split-Path -Parent $LogDir) "DB_Audit"
+        $title = if ($isRuntime) { "WAFL v2 alpha.26 Material Command approved dev/test runtime" } else { "WAFL v2 alpha.26 Material Command read-only preflight" }
+        $result = InvokeProjectCommandWithResultFile -Title $title -Label $label -NpmCommand "node scripts/$runner" -LoadEnvLocal $false -PauseAfter $PauseAfter -ResultDirectory $dbAuditLogDir
+        if ($null -ne $result -and [int]$result -ne 0) {
+            $failureLog = Get-ChildItem -LiteralPath $dbAuditLogDir -File -Filter "Failed_${label}_*.txt" -ErrorAction SilentlyContinue |
+                Sort-Object LastWriteTime -Descending |
+                Select-Object -First 1
+            if ($null -ne $failureLog) {
+                try {
+                    NewWaflV2FailureHandoff -FailureStage $failureStage -FailureLogPath $failureLog.FullName | Out-Null
+                }
+                catch {
+                    LogError "WAFL v2 alpha.26 $Mode failure handoff 생성 실패: $($_.Exception.Message)"
+                }
+            }
+        }
+        return $result
+    }
+    finally {
+        if ($null -eq $previousRuntime) { Remove-Item Env:WAFL_V2_RUNTIME -ErrorAction SilentlyContinue } else { $env:WAFL_V2_RUNTIME = $previousRuntime }
+        if ($null -eq $previousFingerprint) { Remove-Item Env:WAFL_V2_APPROVED_DB_FINGERPRINT -ErrorAction SilentlyContinue } else { $env:WAFL_V2_APPROVED_DB_FINGERPRINT = $previousFingerprint }
+        if ($null -eq $previousPrefix) { Remove-Item Env:WAFL_V2_TEST_PREFIX -ErrorAction SilentlyContinue } else { $env:WAFL_V2_TEST_PREFIX = $previousPrefix }
+        if ($null -eq $previousConfirmation) { Remove-Item Env:WAFL_V2_CONFIRMATION -ErrorAction SilentlyContinue } else { $env:WAFL_V2_CONFIRMATION = $previousConfirmation }
+        if ($null -eq $previousReadApproval) { Remove-Item Env:WAFL_V2_READ_APPROVED -ErrorAction SilentlyContinue } else { $env:WAFL_V2_READ_APPROVED = $previousReadApproval }
+        if ($null -eq $previousReadApiEnabled) { Remove-Item Env:WAFL_V2_READ_API_ENABLED -ErrorAction SilentlyContinue } else { $env:WAFL_V2_READ_API_ENABLED = $previousReadApiEnabled }
+        if ($null -eq $previousCommandApiEnabled) { Remove-Item Env:WAFL_V2_COMMAND_API_ENABLED -ErrorAction SilentlyContinue } else { $env:WAFL_V2_COMMAND_API_ENABLED = $previousCommandApiEnabled }
+        if ($null -eq $previousMutationApproval) { Remove-Item Env:WAFL_V2_COMMAND_MUTATION_APPROVED -ErrorAction SilentlyContinue } else { $env:WAFL_V2_COMMAND_MUTATION_APPROVED = $previousMutationApproval }
+    }
+}
+
 function InvokeApprovedDbSmokeCommand {
     param([string]$Command, [string]$Title, [string]$Label, [bool]$PauseAfter = $true)
 
@@ -4298,6 +4407,14 @@ elseif ($RunWaflV2Alpha25CommandPreflight) {
 }
 elseif ($RunWaflV2Alpha25CommandRuntimeVerification) {
     $exitCode = InvokeWaflV2Alpha25CommandRuntimeVerification -Confirmation $WaflV2Confirmation -PauseAfter $false
+    if ($null -ne $exitCode) { exit ([int]$exitCode) }
+}
+elseif ($RunWaflV2Alpha26MaterialCommandPreflight) {
+    $exitCode = InvokeWaflV2Alpha26MaterialCommandVerification -Mode "preflight" -Confirmation $WaflV2Confirmation -PauseAfter $false
+    if ($null -ne $exitCode) { exit ([int]$exitCode) }
+}
+elseif ($RunWaflV2Alpha26MaterialCommandRuntimeVerification) {
+    $exitCode = InvokeWaflV2Alpha26MaterialCommandVerification -Mode "runtime" -Confirmation $WaflV2Confirmation -PauseAfter $false
     if ($null -ne $exitCode) { exit ([int]$exitCode) }
 }
 elseif ($RunSignupConsentCompatibilityAudit) {

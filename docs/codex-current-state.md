@@ -1,3 +1,22 @@
+# 2.0.0-alpha.26 WAFL v2 Material and Order Command Vertical Slice
+
+- Baseline: `2.0.0-alpha.25`, commit `da4d05839cfd7dbc67787f45373cbb5ab9af42fb`, synchronized clean `master` before this work. APP_VERSION and mobile mirrors are now `2.0.0-alpha.26`.
+- Fabric/accessory use shared create, scalar PATCH, order request, request-cancel, and order-complete routes.
+- Create/request/cancel/complete use actor-scoped hashed receipts; PATCH and transitions require WorkOrder `expectedVersion` and atomically advance WorkOrder, current draft revision, and line versions.
+- Status changes are dedicated commands only: `editing -> requested`, `requested -> cancelled|completed`. Completed lines and finalized/non-current revisions are locked.
+- Server derives amount from order quantity and unit price. Cross-tenant material/supplier references are opaque `NOT_FOUND`.
+- No DELETE route is implemented because the applied schema has no soft-delete/deactivation lifecycle. Hard delete is forbidden.
+- No migration/schema/index, seed, cleanup/reset/rollback, mobile API connection, business data, R2/Worker/PDF, or production access/change occurred.
+- Read-only preflight PASS at fingerprint `01e5dcc7fea3`: ledger 7/7 unchanged, valid material mutation sent false, Company C `FORBIDDEN`, finalized fixture and alpha.23~25 regressions PASS, and every mutation category false. Log: `OK_Wafl_V2_Alpha26_Material_Command_Preflight_2.0.0-alpha.25-20260712-101213.txt`.
+- The separately approved one-shot runtime committed exactly fabric `2`, accessory `1`, receipts `9`, events `11`, and WorkOrder/revision transitions `3 -> 14`. Its runner then failed only because the finalized fixture expected `REVISION_MISMATCH` instead of canonical `LOCKED`.
+- Bounded read-only audit returned `NO_PARTIAL_MUTATION`: material version sum `11`, incomplete receipt `0`, supplier mismatch `0`, ledger `7/7`, and no cleanup requirement.
+- Two temporary completion attempts are preserved as failures: the first used non-canonical ledger column `migration_name`; the second used a switch-case source regex while the service uses `if (error.reason === "locked")`. Neither performed mutation or API GET.
+- Final GET-only completion `READ_ONLY_COMPLETION_PASS`: GET success/failure `14/0`, direct DB client/query/SQL `0`, mutation route/method `0`, B/H `NOT_FOUND`, C `FORBIDDEN`, alpha.23~25 regressions PASS, and material Read reflects fabric `2` cancelled `2`, accessory `1` completed `1`, parent version `14`.
+- Finalized `LOCKED` is `PASS_BY_EXISTING_RUNTIME_AND_SOURCE_EVIDENCE`; the prohibited mutation PATCH was not replayed. Completion log: `readonly-completion-alpha26-material-command-20260712-152459.txt`.
+- Canonical evidence: `docs/project/app-v2/23-workorder-material-order-command-evidence.md`.
+
+---
+
 # 2.0.0-alpha.25 WAFL v2 WorkOrder Create and Basic Update Command Vertical Slice
 
 - Current source checkpoint: Command implementation and the explicitly approved dev/test runtime matrix are complete. Final Git delivery identity is recorded in the matching repo-state artifact.

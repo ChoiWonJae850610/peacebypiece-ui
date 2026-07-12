@@ -98,6 +98,7 @@ docs/project/app-v2/
   20-workorder-list-read-api-evidence.md
   21-workorder-detail-lazy-read-api-evidence.md
   22-workorder-create-basic-update-command-evidence.md
+  23-workorder-material-order-command-evidence.md
 ```
 
 The alpha.19 documents are design and read-only audit authority. They do not authorize schema migration, API replacement, seed execution, DB/R2 mutation, or PDF Worker changes.
@@ -111,6 +112,8 @@ Alpha.22 applied the six reviewed migrations and synthetic performance fixtures 
 Alpha.24 adds only the WorkOrder core detail and seven tab-specific lazy Read endpoints on the same approved dev/test target. It reuses ledger 7, index 007, and the alpha.22 synthetic seed without schema/data mutation; the mobile app remains disconnected.
 
 Alpha.25 introduces the source and static/read-only preflight boundary for draft WorkOrder create and basic-info update Commands. Valid POST/PATCH dev/test mutation remains blocked until a separate explicit owner approval; production, mobile, migration/schema, material/process, document, R2, Worker, and PDF paths remain disconnected.
+
+Alpha.26 extends the same guarded Command architecture to fabric/accessory line create and patch plus order request, cancel, and completion. Valid material/order mutation remains separately approval-gated; no migration, delete lifecycle, mobile connection, R2/Worker/PDF, business-data, or production path is added.
 
 ## Relationship to 0.30.x documents
 

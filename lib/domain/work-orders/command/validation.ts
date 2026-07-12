@@ -12,7 +12,7 @@ const CLIENT_REQUEST_ID_PATTERN = /^[A-Za-z0-9._:-]{1,128}$/;
 const IDEMPOTENCY_KEY_PATTERN = /^[A-Za-z0-9._:-]{8,128}$/;
 const ISO_DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
 
-type JsonObject = Record<string, unknown>;
+export type JsonObject = Record<string, unknown>;
 
 export class WorkOrderCommandValidationError extends Error {
   readonly fieldErrors: readonly WorkOrderFieldError[];
@@ -24,15 +24,15 @@ export class WorkOrderCommandValidationError extends Error {
   }
 }
 
-function isJsonObject(value: unknown): value is JsonObject {
+export function isJsonObject(value: unknown): value is JsonObject {
   return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
-function fieldError(field: string, code: string, message: string): WorkOrderFieldError {
+export function fieldError(field: string, code: string, message: string): WorkOrderFieldError {
   return { field, code, message };
 }
 
-function assertAllowedKeys(value: JsonObject, allowedKeys: ReadonlySet<string>, prefix = "") {
+export function assertAllowedKeys(value: JsonObject, allowedKeys: ReadonlySet<string>, prefix = "") {
   const unsupported = Object.keys(value).filter((key) => !allowedKeys.has(key));
   if (unsupported.length > 0) {
     throw new WorkOrderCommandValidationError(
@@ -41,7 +41,7 @@ function assertAllowedKeys(value: JsonObject, allowedKeys: ReadonlySet<string>, 
   }
 }
 
-function parseClientRequestId(value: unknown): ClientRequestId {
+export function parseClientRequestId(value: unknown): ClientRequestId {
   if (typeof value !== "string" || !CLIENT_REQUEST_ID_PATTERN.test(value)) {
     throw new WorkOrderCommandValidationError([
       fieldError("clientRequestId", "INVALID_FORMAT", "clientRequestId 형식이 올바르지 않습니다."),
@@ -50,7 +50,7 @@ function parseClientRequestId(value: unknown): ClientRequestId {
   return value as ClientRequestId;
 }
 
-function parseIdempotencyKey(value: string | null): IdempotencyKey {
+export function parseIdempotencyKey(value: string | null): IdempotencyKey {
   if (!value || !IDEMPOTENCY_KEY_PATTERN.test(value)) {
     throw new WorkOrderCommandValidationError([
       fieldError("Idempotency-Key", "REQUIRED", "생성 요청에는 Idempotency-Key 헤더가 필요합니다."),
@@ -59,7 +59,7 @@ function parseIdempotencyKey(value: string | null): IdempotencyKey {
   return value as IdempotencyKey;
 }
 
-function parseRequiredText(value: unknown, field: string, maxLength: number): string {
+export function parseRequiredText(value: unknown, field: string, maxLength: number): string {
   if (typeof value !== "string" || value.trim().length === 0 || value.trim().length > maxLength) {
     throw new WorkOrderCommandValidationError([
       fieldError(field, "INVALID_LENGTH", `${field}은 1자 이상 ${maxLength}자 이하여야 합니다.`),
@@ -68,7 +68,7 @@ function parseRequiredText(value: unknown, field: string, maxLength: number): st
   return value.trim();
 }
 
-function parseOptionalText(
+export function parseOptionalText(
   value: unknown,
   field: string,
   maxLength: number,
@@ -112,7 +112,7 @@ function parseOptionalQuantity(value: unknown, field: string, present: boolean):
   return Number(value);
 }
 
-function hasOwn(value: JsonObject, key: string): boolean {
+export function hasOwn(value: JsonObject, key: string): boolean {
   return Object.prototype.hasOwnProperty.call(value, key);
 }
 

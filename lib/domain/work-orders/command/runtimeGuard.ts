@@ -4,6 +4,13 @@ import { getWorkOrderV2ReadRuntimeGuard } from "@/lib/domain/work-orders/read/ru
 
 export const WAFL_V2_ALPHA25_MUTATION_APPROVAL =
   "2.0.0-alpha.25-dev-test-command-runtime";
+export const WAFL_V2_ALPHA26_MUTATION_APPROVAL =
+  "2.0.0-alpha.26-dev-test-material-command-runtime";
+
+const SUPPORTED_MUTATION_APPROVALS = new Set([
+  WAFL_V2_ALPHA25_MUTATION_APPROVAL,
+  WAFL_V2_ALPHA26_MUTATION_APPROVAL,
+]);
 
 export type WorkOrderV2CommandRuntimeGuard =
   | {
@@ -15,6 +22,7 @@ export type WorkOrderV2CommandRuntimeGuard =
 
 export function getWorkOrderV2CommandRuntimeGuard(input?: {
   readonly requireMutationApproval?: boolean;
+  readonly requiredMutationApproval?: string;
 }): WorkOrderV2CommandRuntimeGuard {
   if (process.env.WAFL_V2_COMMAND_API_ENABLED !== "1") {
     return { ok: false, reason: "command-api-disabled" };
@@ -23,9 +31,10 @@ export function getWorkOrderV2CommandRuntimeGuard(input?: {
   const readGuard = getWorkOrderV2ReadRuntimeGuard();
   if (!readGuard.ok) return readGuard;
 
-  const mutationApproved =
-    process.env.WAFL_V2_COMMAND_MUTATION_APPROVED ===
-    WAFL_V2_ALPHA25_MUTATION_APPROVAL;
+  const configuredApproval = process.env.WAFL_V2_COMMAND_MUTATION_APPROVED ?? "";
+  const mutationApproved = input?.requiredMutationApproval
+    ? configuredApproval === input.requiredMutationApproval
+    : SUPPORTED_MUTATION_APPROVALS.has(configuredApproval);
   if (input?.requireMutationApproval && !mutationApproved) {
     return { ok: false, reason: "command-mutation-approval-missing" };
   }

@@ -11,7 +11,6 @@ import type {
   IsoDate,
   MaterialId,
   MaterialLineId,
-  MaterialOrderId,
   PartnerId,
   PomColumnId,
   ProcessId,
@@ -104,13 +103,20 @@ export type ToggleAttachmentPdfIncludeCommand = VersionedWorkOrderCommand & {
   readonly includeInDocument: boolean;
 };
 
-export type AddMaterialLineCommand = VersionedWorkOrderCommand & {
+export type AddMaterialLineCommand = IdempotentWorkOrderCommand & {
   readonly materialType: MaterialType;
   readonly materialId?: MaterialId | null;
   readonly name: string;
   readonly partnerId?: PartnerId | null;
   readonly colorOption?: string | null;
+  readonly requiredQuantity: DecimalString;
+  readonly allowanceQuantity: DecimalString;
+  readonly inventoryUsageQuantity: DecimalString;
+  readonly orderQuantity: DecimalString;
   readonly unitCode: string;
+  readonly unitPrice: DecimalString;
+  readonly memo?: string | null;
+  readonly displayOrder?: number;
 };
 
 export type MaterialLinePatch = {
@@ -142,17 +148,26 @@ export type RemoveMaterialLineCommand = VersionedWorkOrderCommand & {
 };
 
 export type RequestMaterialOrderCommand = IdempotentWorkOrderCommand & {
-  readonly materialLineIds: readonly MaterialLineId[];
+  readonly materialLineId: MaterialLineId;
 };
 
-export type CancelMaterialOrderRequestCommand = VersionedWorkOrderCommand & {
+export type CancelMaterialOrderRequestCommand = IdempotentWorkOrderCommand & {
   readonly materialLineId: MaterialLineId;
   readonly reason: string;
 };
 
 export type CompleteMaterialOrderCommand = IdempotentWorkOrderCommand & {
-  readonly materialOrderId: MaterialOrderId;
-  readonly materialLineIds: readonly MaterialLineId[];
+  readonly materialLineId: MaterialLineId;
+};
+
+export type MaterialLineCommandResult = {
+  readonly workOrderId: WorkOrderId;
+  readonly revisionId: WorkOrderRevisionId;
+  readonly materialLineId: MaterialLineId;
+  readonly materialType: MaterialType;
+  readonly status: "editing" | "requested" | "completed" | "cancelled";
+  readonly nextVersion: EntityVersion;
+  readonly lineVersion: EntityVersion;
 };
 
 export type PatchSizeSpecCellCommand = VersionedWorkOrderCommand & {

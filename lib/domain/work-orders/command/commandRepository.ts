@@ -113,7 +113,7 @@ function mapCommandRow(row: WorkOrderCommandRow): WorkOrderDraftCommandResult {
   };
 }
 
-async function installTenantClaims(
+export async function installTenantClaims(
   client: DbTransactionClient,
   scope: TenantMemberScope,
 ) {

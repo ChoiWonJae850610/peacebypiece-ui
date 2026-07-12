@@ -98,6 +98,12 @@ for (const token of [
   "failure-repo-state-$version-$timestamp.txt",
   "failure-log-$version-$timestamp.txt",
   "Successful Seed Profiles Before Failure:",
+  "Current Migration Ledger Count:",
+  "Current Migration Ledger Evidence:",
+  "This Run DB Schema Mutation:",
+  "Historical Dev/Test Migration Applied:",
+  "This Run Dev/Test DB Test-Data Mutation:",
+  "Historical Synthetic Seed Evidence:",
   "OK_Apply_Wafl_V2_Alpha22_Migrations_*.txt",
   "OK_Wafl_V2_Alpha22_Seed_*.txt",
   ".env* including .env.example",
@@ -165,7 +171,17 @@ const alpha25ApiPaths = [
   "app/api/v2/work-orders/route.ts",
 ];
 const alpha25ContractExists = fs.existsSync(path.join(root, "tests/workorder-v2-alpha25-command-api-contract.mjs"));
-if (appVersion.includes('APP_VERSION = "2.0.0-alpha.25"') || (appVersion.includes('APP_VERSION = "2.0.0-alpha.24"') && alpha25ContractExists)) {
+const alpha26ApiPaths = [
+  "app/api/v2/work-orders/[workOrderId]/materials/route.ts",
+  "app/api/v2/work-orders/[workOrderId]/materials/[materialLineId]/route.ts",
+  "app/api/v2/work-orders/[workOrderId]/materials/[materialLineId]/order-request/route.ts",
+  "app/api/v2/work-orders/[workOrderId]/materials/[materialLineId]/order-cancel/route.ts",
+  "app/api/v2/work-orders/[workOrderId]/materials/[materialLineId]/order-complete/route.ts",
+];
+const alpha26ContractExists = fs.existsSync(path.join(root, "tests/workorder-v2-alpha26-material-command-api-contract.mjs"));
+if (alpha26ContractExists && (appVersion.includes('APP_VERSION = "2.0.0-alpha.25"') || appVersion.includes('APP_VERSION = "2.0.0-alpha.26"'))) {
+  assert.deepEqual(apiChanges.filter((change) => !alpha26ApiPaths.some((allowedPath) => change.endsWith(allowedPath))), [], "alpha.26 may modify only exact material Command routes");
+} else if (appVersion.includes('APP_VERSION = "2.0.0-alpha.25"') || (appVersion.includes('APP_VERSION = "2.0.0-alpha.24"') && alpha25ContractExists)) {
   assert.deepEqual(apiChanges.filter((change) => !alpha25ApiPaths.some((allowedPath) => change.endsWith(allowedPath))), [], "alpha.25 may modify only the existing WorkOrder collection/detail routes for POST/PATCH");
 } else if (appVersion.includes('APP_VERSION = "2.0.0-alpha.24"')) {
   assert.deepEqual(apiChanges.filter((change) => !alpha24ApiChanges.includes(change)), [], "alpha.24 may change only its exact detail/lazy GET routes");

@@ -48,11 +48,12 @@ Before any App-first file modification, read:
 23. `docs/project/app-v2/20-workorder-list-read-api-evidence.md`
 24. `docs/project/app-v2/21-workorder-detail-lazy-read-api-evidence.md`
 25. `docs/project/app-v2/22-workorder-create-basic-update-command-evidence.md`
-26. `docs/project/v2/00-start-here.md` through `docs/project/v2/14-operational-policy-absorption.md`
-27. `docs/project/25-korean-unicode-encoding-standard.md`
-28. `docs/project/32-product-completion-and-ui-evidence-standard.md`
-29. `docs/project/26-final-policy-decisions-and-master-todo.md`
-30. `docs/project/31-pre-codex-integrated-master-plan.md`
+26. `docs/project/app-v2/23-workorder-material-order-command-evidence.md`
+27. `docs/project/v2/00-start-here.md` through `docs/project/v2/14-operational-policy-absorption.md`
+28. `docs/project/25-korean-unicode-encoding-standard.md`
+29. `docs/project/32-product-completion-and-ui-evidence-standard.md`
+30. `docs/project/26-final-policy-decisions-and-master-todo.md`
+31. `docs/project/31-pre-codex-integrated-master-plan.md`
 
 ## 4. Newest rule
 
@@ -397,3 +398,17 @@ For the alpha.18 mobile/tablet mock:
 - WorkOrder/revision/receipt/domain event writes must share one fixed tenant-role transaction. Audit failure rolls back the main mutation.
 - Source implementation, static verification, invalid-request/auth preflight, and existing GET regression may proceed without DB write. Valid create/PATCH mutation requires a separate explicit owner approval and exact command-mutation runtime gate.
 - Before that approval, keep APP_VERSION at alpha.24, do not commit/push/Finish, do not touch `4. Newest`, and do not run migration, seed, cleanup, reset, rollback, schema validation, or production access.
+
+## 2.0.0-alpha.26 material and order Command rule
+
+- Fabric and accessory share `work_order_material_lines`; use one typed material route family rather than duplicate resources.
+- Create and scalar PATCH are current-draft only. Status changes are allowed only through dedicated request, cancel, and complete commands.
+- Allowed transitions are `editing -> requested` and `requested -> cancelled|completed`. Completed lines remain locked, and cancelled-line reopen is deferred.
+- Create/request/cancel/complete require actor-scoped hashed idempotency receipts. PATCH uses the WorkOrder `expectedVersion` and advances WorkOrder, revision, and line versions atomically.
+- Server code derives amount from order quantity and unit price. Tenant-inconsistent material/supplier references return generic `NOT_FOUND`.
+- The existing schema has no material-line soft-delete lifecycle. Do not expose hard DELETE or invent deactivation fields; record deletion as deferred schema/policy work.
+- Source, static verification, invalid/auth requests, and read-only preflight may proceed without valid mutation. Material mutation requires a separate exact owner approval and runtime gate.
+- Before runtime approval, keep APP_VERSION at alpha.25, do not commit/push/Finish, and do not change `4. Newest`. Migration, schema/index, seed, cleanup/reset/rollback, business data, R2/Worker/PDF, and production access remain forbidden.
+- The approved alpha.26 mutation is fully committed and the bounded audit verdict is `NO_PARTIAL_MUTATION`: fabric `2`, accessory `1`, completed receipts `9`, events `11`, and WorkOrder/revision version `3 -> 14`.
+- The finalized issued fixture's canonical typed error is `LOCKED`; do not change repository/service lock-check order to fit a runner expectation.
+- Do not rerun the full alpha.26 mutation runner. The accepted completion chain is the committed bounded runtime, `NO_PARTIAL_MUTATION` audit, preserved temporary runner failures, and final GET-only `READ_ONLY_COMPLETION_PASS` evidence.

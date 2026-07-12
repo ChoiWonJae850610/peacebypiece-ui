@@ -10,6 +10,16 @@ const workflow = fs.readFileSync(workflowPath, "utf8");
 const verify = fs.readFileSync(verifyPath, "utf8");
 const finish = fs.readFileSync(finishPath, "utf8");
 
+for (const token of [
+  "InvokeWaflV2Alpha26CompletionEvidenceCheck",
+  "READ_ONLY_COMPLETION_PASS",
+  "NO_PARTIAL_MUTATION",
+  "V2 Alpha.26 Completion Log:",
+  "approved retained alpha.26 synthetic fabric 2, accessory 1, receipts 9, events 11, version transitions 11",
+]) {
+  if (!verify.includes(token)) throw new Error(`alpha.26 verification evidence contract missing ${token}`);
+}
+
 const requiredWorkflowTokens = [
   '[ValidateSet("Verify", "Handoff", "Plan", "Finish")]',
   '"system-admin-storage"',
@@ -98,6 +108,7 @@ const requiredVerifyTokens = [
   "workorder v2 alpha.24 detail/lazy API contract",
   "tests/workorder-v2-alpha24-detail-api-contract.mjs",
   "tests/workorder-v2-alpha25-command-api-contract.mjs",
+  "tests/workorder-v2-alpha26-material-command-api-contract.mjs",
   "app-v2 document links and Mermaid contract",
   "tests/app-v2-document-links-contract.mjs",
   "mobile typecheck",
