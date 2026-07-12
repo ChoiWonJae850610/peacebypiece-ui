@@ -1489,6 +1489,18 @@ function NewLocalRepoStateFile {
         AddRepoStateSection -Lines $lines -Title "Manual QA Status:" -Values @("PENDING_USER_QA - iPhone/iPad/Android system-browser, login, return, popup policy")
         AddRepoStateSection -Lines $lines -Title "DB/R2/Worker/PDF/Production Mutation:" -Values @("false")
     }
+    if ($Version -eq "2.0.0-alpha.30") {
+        AddRepoStateSection -Lines $lines -Title "Alpha.30 Completion Status:" -Values @("ALPHA30_COMMAND_RUNTIME_AND_COMPLETION_PASS")
+        AddRepoStateSection -Lines $lines -Title "Alpha.30 Migration Ledger:" -Values @("9/9; migration 009 applied once in approved dev/test")
+        AddRepoStateSection -Lines $lines -Title "Alpha.30 Synthetic Rows:" -Values @("WorkOrder +1; revision +1; fabric +1; accessory +1; process fixture +1")
+        AddRepoStateSection -Lines $lines -Title "Alpha.30 Receipt / Event:" -Values @("4/7; incomplete receipt 0; NO_PARTIAL_MUTATION")
+        AddRepoStateSection -Lines $lines -Title "Alpha.30 Final Versions:" -Values @("WorkOrder/revision/fabric/accessory/process 7/7/2/1/2")
+        AddRepoStateSection -Lines $lines -Title "Alpha.30 Document State:" -Values @("document number +1; generated document 0; next draft 0")
+        AddRepoStateSection -Lines $lines -Title "Alpha.30 Preview Result:" -Values @("PASS - factory memo, fabric/accessory usage area, process application fields, deterministic issued Preview")
+        AddRepoStateSection -Lines $lines -Title "Alpha.30 Immutable Result:" -Values @("PASS - WorkOrder memo, fabric/accessory usage area, and process fields returned LOCKED")
+        AddRepoStateSection -Lines $lines -Title "Alpha.30 Finalization DB Schema Mutation:" -Values @("false")
+        AddRepoStateSection -Lines $lines -Title "Alpha.30 Business / R2 / Worker / PDF / Production Mutation:" -Values @("false")
+    }
     AddRepoStateSection -Lines $lines -Title "DB Migration Apply Result:" -Values @([string]$VerificationSummary.DbMigrationApplyResult)
     AddRepoStateSection -Lines $lines -Title "Post-Apply Audit Result:" -Values @([string]$VerificationSummary.PostApplyAuditResult)
     AddRepoStateSection -Lines $lines -Title "Rollback Smoke Result:" -Values @([string]$VerificationSummary.RollbackSmokeResult)
