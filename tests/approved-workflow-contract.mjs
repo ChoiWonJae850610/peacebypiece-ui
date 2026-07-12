@@ -141,6 +141,8 @@ for (const token of [
   "db/v2/migrations/006_v2_deferred_constraints_indexes.sql",
   '$ExpectedAppVersion -eq "2.0.0-alpha.23"',
   "db/v2/migrations/007_v2_work_order_list_material_lookup_index.sql",
+  '$ExpectedAppVersion -in @("2.0.0-alpha.26", "2.0.0-alpha.27")',
+  "db/v2/migrations/008_v2_tenant_document_number_settings_function.sql",
 ]) {
   if (!finish.includes(token)) {
     throw new Error(`Missing finish-version billing migration safety token: ${token}`);

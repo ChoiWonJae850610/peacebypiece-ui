@@ -18,6 +18,7 @@ const baseValidation = read("lib/domain/work-orders/command/validation.ts");
 const service = read("lib/domain/work-orders/command/materialCommandService.ts");
 const repository = read("lib/domain/work-orders/command/materialCommandRepository.ts");
 const routeHandler = read("lib/domain/work-orders/command/materialCommandRoute.ts");
+const dbClient = read("lib/db/client.ts");
 const migration003 = read("db/v2/migrations/003_v2_revision_content.sql");
 const migration006 = read("db/v2/migrations/006_v2_deferred_constraints_indexes.sql");
 const preflight = read("scripts/run-wafl-v2-alpha26-material-command-preflight.mjs");
@@ -32,6 +33,7 @@ assert.doesNotMatch(lineRoute, /export async function (GET|POST|PUT|DELETE)/, "m
 for (const route of [requestRoute, cancelRoute, completeRoute]) {
   assert.match(route, /export async function POST\(/, "order transition route must expose POST");
   assert.doesNotMatch(route, /export async function (GET|PUT|PATCH|DELETE)/, "order transition route must expose only POST");
+  assert.match(route, /handleMaterialOrderTransitionV2/, "all order transitions must share the canonical route boundary");
 }
 
 for (const token of [
@@ -93,6 +95,30 @@ for (const token of [
 assert.match(repository, /request:[\s\S]*from: "editing"[\s\S]*to: "requested"/, "editing to requested transition required");
 assert.match(repository, /cancel:[\s\S]*from: "requested"[\s\S]*to: "cancelled"/, "requested to cancelled transition required");
 assert.match(repository, /complete:[\s\S]*from: "requested"[\s\S]*to: "completed"/, "requested to completed transition required");
+const draftGuard = repository.match(/function assertCurrentDraft[\s\S]*?\n}/)?.[0] ?? "";
+assert.ok(draftGuard, "current draft guard must exist");
+assert.ok(
+  draftGuard.indexOf('target.work_order_status !== "draft"') < draftGuard.indexOf('target.revision_status !== "draft"'),
+  "WorkOrder issued lock must be checked before revision status",
+);
+const transitionBoundary = repository.slice(repository.indexOf("export async function transitionMaterialOrderV2"));
+const transitionOrder = [
+  "withWaflV2TenantWriteTransaction",
+  "reserveReceipt",
+  "lockMaterialTarget",
+  "assertCurrentDraft(target, input.expectedVersion)",
+  "target.material_status !== config.from",
+  "UPDATE work_order_material_lines",
+  "appendMaterialEvent",
+];
+let previousTransitionIndex = -1;
+for (const token of transitionOrder) {
+  const nextIndex = transitionBoundary.indexOf(token);
+  assert.ok(nextIndex > previousTransitionIndex, `material order lock/mutation order invalid at ${token}`);
+  previousTransitionIndex = nextIndex;
+}
+assert.match(service, /if \(error\.reason === "locked"\)[\s\S]*code: "LOCKED", status: 409/, "issued lock must map to typed LOCKED");
+assert.match(dbClient, /catch \(error\) \{[\s\S]*await client\.query\("ROLLBACK"\)[\s\S]*throw error/, "failed material transition must roll back provisional receipt and all writes");
 assert.doesNotMatch(repository, /DELETE\s+FROM\s+work_order_material_lines/i, "hard delete is forbidden without canonical lifecycle");
 assert.doesNotMatch(repository, /input\.command\.idempotencyKey/, "repository must not receive raw idempotency keys");
 assert.match(repository, /assertAmountWithinDatabaseRange/, "partial PATCH must validate the final derived amount against the DB numeric range");

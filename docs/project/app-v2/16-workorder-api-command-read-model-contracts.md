@@ -240,6 +240,8 @@ Color-size cell batch maximum은 250이다. 일반 최대 12x12 matrix를 한 �
 - cancel draft revision.
 - revoke generated document.
 
+Alpha.27 narrows `issue work order` to the applied-schema vertical slice: current draft identity plus WorkOrder/revision expected versions, required idempotency, server-owned document number and issue time, one finalized revision, no automatic next draft, and no generated document/PDF/QR/R2 effect. The existing `workorder.update` permission is reused because the active catalog has no separate issue code.
+
 Issue transaction:
 
 ```mermaid

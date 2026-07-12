@@ -1,4 +1,4 @@
-import type { MaterialType, MeasurementUnit, WorkOrderDocumentType } from "@/lib/domain/work-orders/contracts/enums";
+import type { MaterialType, MeasurementUnit } from "@/lib/domain/work-orders/contracts/enums";
 import type {
   AttachmentId,
   ClientRequestId,
@@ -257,7 +257,21 @@ export type CreateRevisionDraftCommand = VersionedWorkOrderCommand & {
 
 export type IssueWorkOrderCommand = IdempotentWorkOrderCommand & {
   readonly revisionId: WorkOrderRevisionId;
-  readonly requestedDocumentTypes: readonly WorkOrderDocumentType[];
+  readonly expectedRevisionVersion: EntityVersion;
+  readonly issueNote?: string | null;
+};
+
+export type IssueWorkOrderCommandResult = {
+  readonly workOrderId: WorkOrderId;
+  readonly issuedRevisionId: WorkOrderRevisionId;
+  readonly revisionNumber: RevisionNumber;
+  readonly status: "issued";
+  readonly revisionStatus: "finalized";
+  readonly displayDocumentNumber: string;
+  readonly issuedAt: string;
+  readonly nextVersion: EntityVersion;
+  readonly nextRevisionVersion: EntityVersion;
+  readonly nextDraftCreated: false;
 };
 
 export type CancelDraftRevisionCommand = VersionedWorkOrderCommand & {

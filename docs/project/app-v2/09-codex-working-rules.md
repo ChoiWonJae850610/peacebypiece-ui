@@ -392,6 +392,19 @@ For the alpha.18 mobile/tablet mock:
 ## 2.0.0-alpha.25 WorkOrder create/basic update Command rule
 
 - Add only draft WorkOrder create and current-draft scalar basic-info PATCH. Material/process/order/revision issue/document/PDF/QR/R2/Worker/mobile commands remain out of scope.
+
+## Alpha.27 revision issue completion rule
+
+- Reuse applied migrations `001` through `008`, canonical `workorder.update`, the tenant write transaction, hashed receipt, and append-only event patterns.
+- Do not send a valid issue before read-only preflight, approval checkpoint, and explicit owner approval.
+- Atomically allocate the document base, finalize the current revision, update the WorkOrder and both versions, complete one receipt, and append one event.
+- Do not auto-create a next draft; post-issue correction remains a separate Command.
+- Do not add PDF, QR, R2, Preview, migration/schema/index, seed, cleanup/reset/rollback, production, or business-data work.
+- A failed runtime never authorizes mutation replay. Continue only with bounded read-only audit or GET-only completion unless separately approved.
+- Alpha.27a migration 008 preparation does not authorize apply. The only permitted boundary is a zero-argument tenant/member-validated SECURITY DEFINER function, fixed search_path, PUBLIC revoke, runtime EXECUTE grant, and no direct `company_settings` SELECT grant. Apply and rollback each require separate approval.
+- Approved dev/test migration 008 and the Company A/B/H synthetic settings fixture are complete at ledger 8/8. Do not reapply migration/fixture or infer production authorization.
+- The accepted one-shot issue effect is immutable and must never be replayed: document `WAFN-26FWA-A25CMD-260711-001-R0`, WorkOrder/revision 15/15 issued/finalized, receipt/event +1/+1, new revision/next draft/generated document 0/0/0, and `NO_PARTIAL_MUTATION`.
+- Immutable completion combines WorkOrder scalar runtime `LOCKED`, material scalar runtime `LOCKED`, and `MATERIAL_ORDER_LOCKED_PASS_BY_SHARED_RUNTIME_GUARD_AND_STATIC_CONTRACT`. No terminal-line order request is required or authorized for this acceptance.
 - Derive company and actor only from authenticated membership; reject client company/member/revision scope and use generic `NOT_FOUND` for cross-company opaque IDs.
 - Create requires an Idempotency-Key. Persist only an actor-scoped hash and request hash in the existing receipt table; never store or log the raw key.
 - PATCH requires `expectedVersion`, locks the current WorkOrder/revision, and permits one successful version transition. Finalized/non-current revisions remain immutable.

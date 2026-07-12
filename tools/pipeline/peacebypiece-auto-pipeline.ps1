@@ -81,6 +81,11 @@ param(
     [switch]$RunWaflV2Alpha25CommandRuntimeVerification,
     [switch]$RunWaflV2Alpha26MaterialCommandPreflight,
     [switch]$RunWaflV2Alpha26MaterialCommandRuntimeVerification,
+    [switch]$RunWaflV2Alpha27RevisionIssuePreflight,
+    [switch]$RunWaflV2Alpha27RevisionIssueRuntimeVerification,
+    [switch]$RunWaflV2Alpha27aNumberSettingsPreflight,
+    [switch]$ApplyWaflV2Alpha27aNumberSettingsMigration,
+    [switch]$ApplyWaflV2Alpha27aSettingsFixture,
     [string]$WaflV2Confirmation = "",
     [switch]$CreateWaflV2FailureHandoff,
     [string]$WaflV2FailureStage = "",
@@ -1280,6 +1285,18 @@ function NewLocalRepoBuildResultFile {
     AddCustomerProductUxCleanupRepoStateSections -Lines $lines -VerificationSummary $VerificationSummary
     AddWorkorderPdfLiveIntegrationRepoStateSections -Lines $lines -VerificationSummary $VerificationSummary
     AddProductUiRuntimeVerificationRepoStateSections -Lines $lines -VerificationSummary $VerificationSummary
+    if ($Version -eq "2.0.0-alpha.27") {
+        AddRepoStateSection -Lines $lines -Title "Alpha.27 Completion Status:" -Values @("ALPHA27_ISSUE_RUNTIME_AND_COMPLETION_PASS")
+        AddRepoStateSection -Lines $lines -Title "Alpha.27 Issued Document Number:" -Values @("WAFN-26FWA-A25CMD-260711-001-R0")
+        AddRepoStateSection -Lines $lines -Title "Alpha.27 WorkOrder / Revision:" -Values @("issued/finalized; versions 15/15")
+        AddRepoStateSection -Lines $lines -Title "Alpha.27 Receipt / Event:" -Values @("1/1; incomplete receipt 0; NO_PARTIAL_MUTATION")
+        AddRepoStateSection -Lines $lines -Title "WorkOrder Scalar Immutable Runtime:" -Values @("PASS - 409 LOCKED")
+        AddRepoStateSection -Lines $lines -Title "Material Scalar Immutable Runtime:" -Values @("PASS - 409 LOCKED")
+        AddRepoStateSection -Lines $lines -Title "Material Order Runtime Call:" -Values @("NOT_RUN - owner declined terminal-line order request; no eligible editing line existed")
+        AddRepoStateSection -Lines $lines -Title "Material Order Immutable Verdict:" -Values @("MATERIAL_ORDER_LOCKED_PASS_BY_SHARED_RUNTIME_GUARD_AND_STATIC_CONTRACT")
+        AddRepoStateSection -Lines $lines -Title "Material Order Static Basis:" -Values @("shared request/cancel/complete transition; issued lock before status/UPDATE/event; thrown lock rolls back provisional receipt transaction")
+        AddRepoStateSection -Lines $lines -Title "Alpha.27 Additional DB Mutation During Finalization:" -Values @("false")
+    }
     AddRepoStateSection -Lines $lines -Title "DB Migration Apply Result:" -Values @([string]$VerificationSummary.DbMigrationApplyResult)
     AddRepoStateSection -Lines $lines -Title "Post-Apply Audit Result:" -Values @([string]$VerificationSummary.PostApplyAuditResult)
     AddRepoStateSection -Lines $lines -Title "Rollback Smoke Result:" -Values @([string]$VerificationSummary.RollbackSmokeResult)
@@ -3305,6 +3322,201 @@ function InvokeWaflV2Alpha26MaterialCommandVerification {
     }
 }
 
+function InvokeWaflV2Alpha27RevisionIssueVerification {
+    param(
+        [ValidateSet("preflight", "runtime")]
+        [string]$Mode,
+        [string]$Confirmation = "",
+        [bool]$PauseAfter = $true
+    )
+
+    if (-not (LoadEnvLocalForSmokeTest)) { if ($PauseAfter) { WaitForDeveloperToolsMenu }; return 1 }
+    $runtime = [string]$env:NEXT_PUBLIC_APP_RUNTIME_MODE
+    if ([string]::IsNullOrWhiteSpace($runtime)) { $runtime = [string]$env:NODE_ENV }
+    $guard = TestReadOnlyDbAuditGuard -Runtime $runtime -DatabaseUrl $env:DATABASE_URL
+    $testPrefix = ([string]$PipelineConfig.Simulator.TestPrefix).Trim()
+    $isRuntime = $Mode -eq "runtime"
+    $expectedConfirmation = if ($isRuntime) { "EXECUTE WAFL V2 ALPHA27 REVISION ISSUE RUNTIME" } else { "VERIFY WAFL V2 ALPHA27 REVISION ISSUE PREFLIGHT" }
+    $label = if ($isRuntime) { "Wafl_V2_Alpha27_Revision_Issue_Runtime" } else { "Wafl_V2_Alpha27_Revision_Issue_Preflight" }
+    $runner = if ($isRuntime) { "run-wafl-v2-alpha27-revision-issue-runtime.mjs" } else { "run-wafl-v2-alpha27-revision-issue-preflight.mjs" }
+    $failureStage = if ($isRuntime) { "alpha27-revision-issue-runtime" } else { "alpha27-revision-issue-preflight" }
+
+    Write-Host ""
+    Write-Host "WAFL v2 alpha.27 Revision Issue $Mode guard"
+    Write-Host "- Runtime: $($guard.Runtime)"
+    Write-Host "- Fingerprint: $($guard.Fingerprint)"
+    Write-Host "- Prefix: $testPrefix"
+    Write-Host $(if ($isRuntime) { "- Mutation: one Company A synthetic revision issue effect; no cleanup" } else { "- Mutation: none; valid issue Command and mutation approval are prohibited" })
+    if (-not $guard.Passed -or $testPrefix -ne "wafl-fn") {
+        LogError "WAFL v2 alpha.27 Revision Issue $Mode 검증이 승인된 dev/test 경계를 통과하지 못했습니다."
+        if ($PauseAfter) { WaitForDeveloperToolsMenu }
+        return 2
+    }
+    if ($Confirmation -cne $expectedConfirmation) {
+        LogError "WAFL v2 alpha.27 Revision Issue $Mode confirmation이 일치하지 않습니다."
+        if ($PauseAfter) { WaitForDeveloperToolsMenu }
+        return 3
+    }
+
+    $previous = @{
+        Runtime = $env:WAFL_V2_RUNTIME; Fingerprint = $env:WAFL_V2_APPROVED_DB_FINGERPRINT
+        Prefix = $env:WAFL_V2_TEST_PREFIX; Confirmation = $env:WAFL_V2_CONFIRMATION
+        ReadApproved = $env:WAFL_V2_READ_APPROVED; ReadEnabled = $env:WAFL_V2_READ_API_ENABLED
+        CommandEnabled = $env:WAFL_V2_COMMAND_API_ENABLED; MutationApproved = $env:WAFL_V2_COMMAND_MUTATION_APPROVED
+    }
+    try {
+        $env:WAFL_V2_RUNTIME = $guard.Runtime
+        $env:WAFL_V2_APPROVED_DB_FINGERPRINT = [string]$PipelineConfig.Simulator.ApprovedDbFingerprint
+        $env:WAFL_V2_TEST_PREFIX = $testPrefix
+        $env:WAFL_V2_CONFIRMATION = $Confirmation
+        $env:WAFL_V2_READ_APPROVED = "1"
+        $env:WAFL_V2_READ_API_ENABLED = "1"
+        $env:WAFL_V2_COMMAND_API_ENABLED = "1"
+        if ($isRuntime) { $env:WAFL_V2_COMMAND_MUTATION_APPROVED = "2.0.0-alpha.27-dev-test-revision-issue-runtime" }
+        else { Remove-Item Env:WAFL_V2_COMMAND_MUTATION_APPROVED -ErrorAction SilentlyContinue }
+        $dbAuditLogDir = Join-Path (Split-Path -Parent $LogDir) "DB_Audit"
+        $title = if ($isRuntime) { "WAFL v2 alpha.27 Revision Issue approved dev/test runtime" } else { "WAFL v2 alpha.27 Revision Issue read-only preflight" }
+        $result = InvokeProjectCommandWithResultFile -Title $title -Label $label -NpmCommand "node scripts/$runner" -LoadEnvLocal $false -PauseAfter $PauseAfter -ResultDirectory $dbAuditLogDir
+        if ($null -ne $result -and [int]$result -ne 0) {
+            $failureLog = Get-ChildItem -LiteralPath $dbAuditLogDir -File -Filter "Failed_${label}_*.txt" -ErrorAction SilentlyContinue | Sort-Object LastWriteTime -Descending | Select-Object -First 1
+            if ($null -ne $failureLog) { NewWaflV2FailureHandoff -FailureStage $failureStage -FailureLogPath $failureLog.FullName | Out-Null }
+        }
+        return $result
+    }
+    finally {
+        $restore = @{
+            WAFL_V2_RUNTIME = $previous.Runtime; WAFL_V2_APPROVED_DB_FINGERPRINT = $previous.Fingerprint
+            WAFL_V2_TEST_PREFIX = $previous.Prefix; WAFL_V2_CONFIRMATION = $previous.Confirmation
+            WAFL_V2_READ_APPROVED = $previous.ReadApproved; WAFL_V2_READ_API_ENABLED = $previous.ReadEnabled
+            WAFL_V2_COMMAND_API_ENABLED = $previous.CommandEnabled; WAFL_V2_COMMAND_MUTATION_APPROVED = $previous.MutationApproved
+        }
+        foreach ($name in $restore.Keys) {
+            if ($null -eq $restore[$name]) { Remove-Item "Env:$name" -ErrorAction SilentlyContinue }
+            else { Set-Item "Env:$name" $restore[$name] }
+        }
+    }
+}
+
+function InvokeWaflV2Alpha27aNumberSettingsMigration {
+    param(
+        [ValidateSet("preflight", "apply")]
+        [string]$Mode,
+        [string]$Confirmation = "",
+        [bool]$PauseAfter = $true
+    )
+
+    if (-not (LoadEnvLocalForSmokeTest)) { if ($PauseAfter) { WaitForDeveloperToolsMenu }; return 1 }
+    $runtime = [string]$env:NEXT_PUBLIC_APP_RUNTIME_MODE
+    if ([string]::IsNullOrWhiteSpace($runtime)) { $runtime = [string]$env:NODE_ENV }
+    $guard = TestReadOnlyDbAuditGuard -Runtime $runtime -DatabaseUrl $env:DATABASE_URL
+    $testPrefix = ([string]$PipelineConfig.Simulator.TestPrefix).Trim()
+    $isApply = $Mode -eq "apply"
+    $expectedConfirmation = if ($isApply) { "APPLY WAFL V2 ALPHA27A NUMBER SETTINGS" } else { "VERIFY WAFL V2 ALPHA27A NUMBER SETTINGS PREFLIGHT" }
+    $label = if ($isApply) { "Wafl_V2_Alpha27a_Number_Settings_Apply" } else { "Wafl_V2_Alpha27a_Number_Settings_Preflight" }
+    $failureStage = if ($isApply) { "alpha27a-number-settings-apply" } else { "alpha27a-number-settings-preflight" }
+
+    Write-Host ""
+    Write-Host "WAFL v2 alpha.27a Number Settings $Mode guard"
+    Write-Host "- Runtime: $($guard.Runtime)"
+    Write-Host "- Fingerprint: $($guard.Fingerprint)"
+    Write-Host "- Prefix: $testPrefix"
+    Write-Host $(if ($isApply) { "- Mutation: migration 008 function/ACL and ledger row only" } else { "- Mutation: none; ledger/hash/object/privilege read-only inspection" })
+    if (-not $guard.Passed -or $testPrefix -ne "wafl-fn") {
+        LogError "WAFL v2 alpha.27a Number Settings $Mode 검증이 승인된 dev/test 경계를 통과하지 못했습니다."
+        if ($PauseAfter) { WaitForDeveloperToolsMenu }
+        return 2
+    }
+    if ($Confirmation -cne $expectedConfirmation) {
+        LogError "WAFL v2 alpha.27a Number Settings $Mode confirmation이 일치하지 않습니다."
+        if ($PauseAfter) { WaitForDeveloperToolsMenu }
+        return 3
+    }
+
+    $previousRuntime = $env:WAFL_V2_RUNTIME
+    $previousFingerprint = $env:WAFL_V2_APPROVED_DB_FINGERPRINT
+    $previousPrefix = $env:WAFL_V2_TEST_PREFIX
+    $previousConfirmation = $env:WAFL_V2_CONFIRMATION
+    $previousMigrationApproval = $env:WAFL_V2_MIGRATION_APPROVED
+    try {
+        $env:WAFL_V2_RUNTIME = $guard.Runtime
+        $env:WAFL_V2_APPROVED_DB_FINGERPRINT = [string]$PipelineConfig.Simulator.ApprovedDbFingerprint
+        $env:WAFL_V2_TEST_PREFIX = $testPrefix
+        $env:WAFL_V2_CONFIRMATION = $Confirmation
+        if ($isApply) { $env:WAFL_V2_MIGRATION_APPROVED = "1" }
+        else { Remove-Item Env:WAFL_V2_MIGRATION_APPROVED -ErrorAction SilentlyContinue }
+
+        $dbAuditLogDir = Join-Path (Split-Path -Parent $LogDir) "DB_Audit"
+        $title = if ($isApply) { "WAFL v2 alpha.27a Number Settings approved dev/test apply" } else { "WAFL v2 alpha.27a Number Settings read-only preflight" }
+        $result = InvokeProjectCommandWithResultFile -Title $title -Label $label -NpmCommand "node scripts/run-wafl-v2-alpha27a-number-settings-migration.mjs $Mode" -LoadEnvLocal $false -PauseAfter $PauseAfter -ResultDirectory $dbAuditLogDir
+        if ($null -ne $result -and [int]$result -ne 0) {
+            $failureLog = Get-ChildItem -LiteralPath $dbAuditLogDir -File -Filter "Failed_${label}_*.txt" -ErrorAction SilentlyContinue | Sort-Object LastWriteTime -Descending | Select-Object -First 1
+            if ($null -ne $failureLog) { NewWaflV2FailureHandoff -FailureStage $failureStage -FailureLogPath $failureLog.FullName | Out-Null }
+        }
+        return $result
+    }
+    finally {
+        if ($null -eq $previousRuntime) { Remove-Item Env:WAFL_V2_RUNTIME -ErrorAction SilentlyContinue } else { $env:WAFL_V2_RUNTIME = $previousRuntime }
+        if ($null -eq $previousFingerprint) { Remove-Item Env:WAFL_V2_APPROVED_DB_FINGERPRINT -ErrorAction SilentlyContinue } else { $env:WAFL_V2_APPROVED_DB_FINGERPRINT = $previousFingerprint }
+        if ($null -eq $previousPrefix) { Remove-Item Env:WAFL_V2_TEST_PREFIX -ErrorAction SilentlyContinue } else { $env:WAFL_V2_TEST_PREFIX = $previousPrefix }
+        if ($null -eq $previousConfirmation) { Remove-Item Env:WAFL_V2_CONFIRMATION -ErrorAction SilentlyContinue } else { $env:WAFL_V2_CONFIRMATION = $previousConfirmation }
+        if ($null -eq $previousMigrationApproval) { Remove-Item Env:WAFL_V2_MIGRATION_APPROVED -ErrorAction SilentlyContinue } else { $env:WAFL_V2_MIGRATION_APPROVED = $previousMigrationApproval }
+    }
+}
+
+function InvokeWaflV2Alpha27aSettingsFixture {
+    param([string]$Confirmation = "", [bool]$PauseAfter = $true)
+
+    if (-not (LoadEnvLocalForSmokeTest)) { if ($PauseAfter) { WaitForDeveloperToolsMenu }; return 1 }
+    $runtime = [string]$env:NEXT_PUBLIC_APP_RUNTIME_MODE
+    if ([string]::IsNullOrWhiteSpace($runtime)) { $runtime = [string]$env:NODE_ENV }
+    $guard = TestReadOnlyDbAuditGuard -Runtime $runtime -DatabaseUrl $env:DATABASE_URL
+    $testPrefix = ([string]$PipelineConfig.Simulator.TestPrefix).Trim()
+    $expectedConfirmation = "APPLY WAFL V2 ALPHA27A SETTINGS FIXTURE"
+    Write-Host ""
+    Write-Host "WAFL v2 alpha.27a Settings Fixture guard"
+    Write-Host "- Runtime: $($guard.Runtime)"
+    Write-Host "- Fingerprint: $($guard.Fingerprint)"
+    Write-Host "- Prefix: $testPrefix"
+    Write-Host "- Mutation: exactly three synthetic company_settings rows for A/B/H"
+    if (-not $guard.Passed -or $testPrefix -ne "wafl-fn") {
+        LogError "WAFL v2 alpha.27a Settings Fixture가 승인된 dev/test 경계를 통과하지 못했습니다."
+        if ($PauseAfter) { WaitForDeveloperToolsMenu }
+        return 2
+    }
+    if ($Confirmation -cne $expectedConfirmation) {
+        LogError "WAFL v2 alpha.27a Settings Fixture confirmation이 일치하지 않습니다."
+        if ($PauseAfter) { WaitForDeveloperToolsMenu }
+        return 3
+    }
+
+    $previousRuntime = $env:WAFL_V2_RUNTIME
+    $previousFingerprint = $env:WAFL_V2_APPROVED_DB_FINGERPRINT
+    $previousPrefix = $env:WAFL_V2_TEST_PREFIX
+    $previousConfirmation = $env:WAFL_V2_CONFIRMATION
+    $previousFixtureApproval = $env:WAFL_V2_SETTINGS_FIXTURE_APPROVED
+    try {
+        $env:WAFL_V2_RUNTIME = $guard.Runtime
+        $env:WAFL_V2_APPROVED_DB_FINGERPRINT = [string]$PipelineConfig.Simulator.ApprovedDbFingerprint
+        $env:WAFL_V2_TEST_PREFIX = $testPrefix
+        $env:WAFL_V2_CONFIRMATION = $Confirmation
+        $env:WAFL_V2_SETTINGS_FIXTURE_APPROVED = "1"
+        $dbAuditLogDir = Join-Path (Split-Path -Parent $LogDir) "DB_Audit"
+        $result = InvokeProjectCommandWithResultFile -Title "WAFL v2 alpha.27a approved synthetic settings fixture" -Label "Wafl_V2_Alpha27a_Settings_Fixture" -NpmCommand "node scripts/run-wafl-v2-alpha27a-settings-fixture.mjs" -LoadEnvLocal $false -PauseAfter $PauseAfter -ResultDirectory $dbAuditLogDir
+        if ($null -ne $result -and [int]$result -ne 0) {
+            $failureLog = Get-ChildItem -LiteralPath $dbAuditLogDir -File -Filter "Failed_Wafl_V2_Alpha27a_Settings_Fixture_*.txt" -ErrorAction SilentlyContinue | Sort-Object LastWriteTime -Descending | Select-Object -First 1
+            if ($null -ne $failureLog) { NewWaflV2FailureHandoff -FailureStage "alpha27a-settings-fixture" -FailureLogPath $failureLog.FullName | Out-Null }
+        }
+        return $result
+    }
+    finally {
+        if ($null -eq $previousRuntime) { Remove-Item Env:WAFL_V2_RUNTIME -ErrorAction SilentlyContinue } else { $env:WAFL_V2_RUNTIME = $previousRuntime }
+        if ($null -eq $previousFingerprint) { Remove-Item Env:WAFL_V2_APPROVED_DB_FINGERPRINT -ErrorAction SilentlyContinue } else { $env:WAFL_V2_APPROVED_DB_FINGERPRINT = $previousFingerprint }
+        if ($null -eq $previousPrefix) { Remove-Item Env:WAFL_V2_TEST_PREFIX -ErrorAction SilentlyContinue } else { $env:WAFL_V2_TEST_PREFIX = $previousPrefix }
+        if ($null -eq $previousConfirmation) { Remove-Item Env:WAFL_V2_CONFIRMATION -ErrorAction SilentlyContinue } else { $env:WAFL_V2_CONFIRMATION = $previousConfirmation }
+        if ($null -eq $previousFixtureApproval) { Remove-Item Env:WAFL_V2_SETTINGS_FIXTURE_APPROVED -ErrorAction SilentlyContinue } else { $env:WAFL_V2_SETTINGS_FIXTURE_APPROVED = $previousFixtureApproval }
+    }
+}
+
 function InvokeApprovedDbSmokeCommand {
     param([string]$Command, [string]$Title, [string]$Label, [bool]$PauseAfter = $true)
 
@@ -4415,6 +4627,26 @@ elseif ($RunWaflV2Alpha26MaterialCommandPreflight) {
 }
 elseif ($RunWaflV2Alpha26MaterialCommandRuntimeVerification) {
     $exitCode = InvokeWaflV2Alpha26MaterialCommandVerification -Mode "runtime" -Confirmation $WaflV2Confirmation -PauseAfter $false
+    if ($null -ne $exitCode) { exit ([int]$exitCode) }
+}
+elseif ($RunWaflV2Alpha27RevisionIssuePreflight) {
+    $exitCode = InvokeWaflV2Alpha27RevisionIssueVerification -Mode "preflight" -Confirmation $WaflV2Confirmation -PauseAfter $false
+    if ($null -ne $exitCode) { exit ([int]$exitCode) }
+}
+elseif ($RunWaflV2Alpha27RevisionIssueRuntimeVerification) {
+    $exitCode = InvokeWaflV2Alpha27RevisionIssueVerification -Mode "runtime" -Confirmation $WaflV2Confirmation -PauseAfter $false
+    if ($null -ne $exitCode) { exit ([int]$exitCode) }
+}
+elseif ($RunWaflV2Alpha27aNumberSettingsPreflight) {
+    $exitCode = InvokeWaflV2Alpha27aNumberSettingsMigration -Mode "preflight" -Confirmation $WaflV2Confirmation -PauseAfter $false
+    if ($null -ne $exitCode) { exit ([int]$exitCode) }
+}
+elseif ($ApplyWaflV2Alpha27aNumberSettingsMigration) {
+    $exitCode = InvokeWaflV2Alpha27aNumberSettingsMigration -Mode "apply" -Confirmation $WaflV2Confirmation -PauseAfter $false
+    if ($null -ne $exitCode) { exit ([int]$exitCode) }
+}
+elseif ($ApplyWaflV2Alpha27aSettingsFixture) {
+    $exitCode = InvokeWaflV2Alpha27aSettingsFixture -Confirmation $WaflV2Confirmation -PauseAfter $false
     if ($null -ne $exitCode) { exit ([int]$exitCode) }
 }
 elseif ($RunSignupConsentCompatibilityAudit) {

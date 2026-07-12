@@ -28,6 +28,8 @@ This folder contains the ordered, additive, reviewed v2 migration SQL drafts int
 - alpha.20: no SQL files.
 - alpha.21: six SQL drafts and static contract validation only; no connection, apply, constraint validation, seed, or benchmark.
 - alpha.22: approved dev/test apply PASS; ledger 6/6, v1 baseline unchanged, RLS/reconciliation and 500/5,000/multi-tenant evidence PASS.
+- alpha.23: approved dev/test additive index `007` apply PASS; ledger 7/7.
+- alpha.27a: approved dev/test migration `008` apply PASS; ledger 8/8. The tenant-safe document-number settings function/ACL and Company A/B/H synthetic settings isolation are verified; production remains untouched.
 - production use: forbidden until the production migration gate is explicitly approved.
 - next version: alpha.23 consumes the measured schema through a bounded Read API only; no migration rerun is implied.
 
@@ -41,5 +43,7 @@ The existing `db/migrations/` path remains the legacy/current executable baselin
 4. `004_v2_assets_revision_linkage.sql`
 5. `005_v2_documents_access_events.sql`
 6. `006_v2_deferred_constraints_indexes.sql`
+7. `007_v2_work_order_list_material_lookup_index.sql`
+8. `008_v2_tenant_document_number_settings_function.sql`
 
 The order is a static contract. No file is applied, validated, backfilled, seeded, or benchmarked in alpha.21.

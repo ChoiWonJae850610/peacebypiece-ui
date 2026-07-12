@@ -420,6 +420,22 @@ Status: implementation, approved bounded dev/test mutation, read-only audit, and
 - Finalized `LOCKED` uses existing accepted runtime plus repository/service source evidence; no mutation PATCH was replayed.
 - APP_VERSION/mobile metadata are `2.0.0-alpha.26`. Migration/schema/index, seed, cleanup/reset/rollback, business data, R2/Worker/PDF, production, mobile API connection, root package, lockfile, and dependency changes remain out of scope.
 
+### 2.0.0-alpha.27
+
+Status: implementation, approved dev/test migration/fixture, one-shot issue effect, immutable verification, and bounded completion evidence complete; final delivery verification in progress.
+
+- Add the dev/test-only current revision issue Command at `POST /api/v2/work-orders/:workOrderId/revisions/issue`.
+- Reuse `workorder.update`, fixed tenant RLS, hashed receipts, append-only events, and migrations `001` through `007`; add no permission, migration, schema, index, package, or dependency change.
+- Allocate the tenant/day document base only during issue, finalize the current revision, and keep its scalar and revision-child data immutable.
+- Do not auto-create a next draft. Correction/new revision remains a separate future Command.
+- Before owner approval, complete static verification and read-only preflight only. Keep APP_VERSION at alpha.26 until the one-shot synthetic runtime and completion pass.
+- PDF, QR, R2, Preview, mobile API connection, production, and actual business data remain excluded.
+- Read-only preflight finding: the fixed tenant runtime cannot read legacy `company_settings`, and that table has no v2 tenant RLS boundary. Runtime is blocked pending a separately approved additive tenant-safe numbering-settings migration; no issue mutation was sent.
+- Alpha.27a prepares additive migration 008 and its guarded preflight/apply runner without changing APP_VERSION. Apply, ledger 8/8, post-apply audit, and alpha.27 preflight rerun require separate approval; issue runtime remains separately gated after that.
+- Approved dev/test result: migration ledger 8/8; Company A/B/H synthetic settings isolation PASS; issue number `WAFN-26FWA-A25CMD-260711-001-R0`; WorkOrder/revision `issued/finalized` at 15/15; receipt/event `+1/+1`; new revision/next draft/generated document `0/0/0`; no partial mutation.
+- Immutable result: WorkOrder and material scalar runtime `LOCKED` PASS. Material order is `MATERIAL_ORDER_LOCKED_PASS_BY_SHARED_RUNTIME_GUARD_AND_STATIC_CONTRACT`; no terminal-line order request was called, and the contract proves lock-before-status/UPDATE/event with transaction rollback.
+- APP_VERSION/mobile metadata are `2.0.0-alpha.27`. Production/business/R2/Worker/PDF and mobile API connection remain unchanged.
+
 ## Later integration phases
 
 API, DB, R2, PDF, Worker, native auth, and production deployment integration must be separate phases after mock app structure is stable.

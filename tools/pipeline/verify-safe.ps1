@@ -870,11 +870,22 @@ $profileCommands = @{
                 "lib/domain/work-orders/command/materialCommandRoute.ts",
                 "lib/domain/work-orders/command/materialCommandService.ts",
                 "lib/domain/work-orders/command/materialValidation.ts",
+                "app/api/v2/work-orders/[workOrderId]/revisions/issue/route.ts",
+                "lib/domain/work-orders/command/issueRepository.ts",
+                "lib/domain/work-orders/command/issueRoute.ts",
+                "lib/domain/work-orders/command/issueService.ts",
+                "lib/domain/work-orders/command/issueValidation.ts",
                 "lib/domain/work-orders/contracts/commands.ts",
                 "scripts/run-wafl-v2-alpha26-material-command-preflight.mjs",
                 "scripts/run-wafl-v2-alpha26-material-command-runtime.mjs",
                 "tests/workorder-v2-alpha22-dev-test-runner-contract.mjs",
-                "tests/workorder-v2-alpha26-material-command-api-contract.mjs"
+                "tests/workorder-v2-alpha26-material-command-api-contract.mjs",
+                "scripts/run-wafl-v2-alpha27-revision-issue-preflight.mjs",
+                "scripts/run-wafl-v2-alpha27-revision-issue-runtime.mjs",
+                "tests/workorder-v2-alpha27-revision-issue-command-contract.mjs",
+                "scripts/run-wafl-v2-alpha27a-number-settings-migration.mjs",
+                "scripts/run-wafl-v2-alpha27a-settings-fixture.mjs",
+                "tests/workorder-v2-alpha27a-number-settings-migration-contract.mjs"
             )
         },
         @{ Name = "mobile typecheck"; Command = "npm"; Arguments = @("--prefix", "apps/mobile", "run", "typecheck") },
@@ -886,6 +897,8 @@ $profileCommands = @{
         @{ Name = "workorder v2 alpha.24 detail/lazy API contract"; Command = "node"; Arguments = @("tests/workorder-v2-alpha24-detail-api-contract.mjs") },
         @{ Name = "workorder v2 alpha.25 command API static contract"; Command = "node"; Arguments = @("tests/workorder-v2-alpha25-command-api-contract.mjs") },
         @{ Name = "workorder v2 alpha.26 material command API static contract"; Command = "node"; Arguments = @("tests/workorder-v2-alpha26-material-command-api-contract.mjs") },
+        @{ Name = "workorder v2 alpha.27 revision issue command static contract"; Command = "node"; Arguments = @("tests/workorder-v2-alpha27-revision-issue-command-contract.mjs") },
+        @{ Name = "workorder v2 alpha.27a numbering settings migration static contract"; Command = "node"; Arguments = @("tests/workorder-v2-alpha27a-number-settings-migration-contract.mjs") },
         @{ Name = "app-v2 document links and Mermaid contract"; Command = "node"; Arguments = @("tests/app-v2-document-links-contract.mjs") },
         @{ Name = "unicode encoding contract"; Command = "node"; Arguments = @("tests/unicode-encoding-contract.mjs") },
         @{ Name = "PowerShell encoding contract"; Command = "node"; Arguments = @("tests/pipeline-powershell-encoding-contract.mjs") },
@@ -1386,6 +1399,9 @@ if ($Profile -eq "automation-infrastructure" -and (GetProjectAppVersion) -in @("
 if ($Profile -eq "automation-infrastructure" -and (GetProjectAppVersion) -eq "2.0.0-alpha.23") {
     $allowedMigrationChanges = @("db/v2/migrations/007_v2_work_order_list_material_lookup_index.sql")
 }
+if ($Profile -eq "automation-infrastructure" -and (GetProjectAppVersion) -in @("2.0.0-alpha.26", "2.0.0-alpha.27") -and (Test-Path (Join-Path $ProjectDir "tests/workorder-v2-alpha27a-number-settings-migration-contract.mjs"))) {
+    $allowedMigrationChanges = @("db/v2/migrations/008_v2_tenant_document_number_settings_function.sql")
+}
 $unexpectedMigrationChanges = @($migrationChanges | Where-Object { $allowedMigrationChanges -notcontains $_ })
 if ($unexpectedMigrationChanges.Count -gt 0) {
     Write-Host "[FAIL] unexpected DB migration/schema changes: $($migrationChanges -join ', ')" -ForegroundColor Red
@@ -1438,6 +1454,12 @@ if ($Profile -eq "automation-infrastructure" -and (GetProjectAppVersion) -eq "2.
     $results.Add((InvokeWaflV2Alpha25EvidenceCheck))
 }
 if ($Profile -eq "automation-infrastructure" -and (GetProjectAppVersion) -eq "2.0.0-alpha.26") {
+    $results.Add((InvokeWaflV2Alpha23EvidenceCheck))
+    $results.Add((InvokeWaflV2Alpha24EvidenceCheck))
+    $results.Add((InvokeWaflV2Alpha25EvidenceCheck))
+    $results.Add((InvokeWaflV2Alpha26CompletionEvidenceCheck))
+}
+if ($Profile -eq "automation-infrastructure" -and (GetProjectAppVersion) -eq "2.0.0-alpha.27") {
     $results.Add((InvokeWaflV2Alpha23EvidenceCheck))
     $results.Add((InvokeWaflV2Alpha24EvidenceCheck))
     $results.Add((InvokeWaflV2Alpha25EvidenceCheck))
@@ -1540,7 +1562,7 @@ if ($null -ne $script:WaflV2Alpha25Evidence -and (GetProjectAppVersion) -eq "2.0
     $lines.Add("V2 Alpha.25 Runtime Log: $($script:WaflV2Alpha25Evidence.RuntimeLog)")
     $lines.Add("V2 Alpha.25 Command Metrics: $($script:WaflV2Alpha25Evidence.CommandMetrics)")
 }
-if ($null -ne $script:WaflV2Alpha26Evidence -and (GetProjectAppVersion) -eq "2.0.0-alpha.26") {
+if ($null -ne $script:WaflV2Alpha26Evidence -and (GetProjectAppVersion) -in @("2.0.0-alpha.26", "2.0.0-alpha.27")) {
     $lines.Add("")
     $lines.Add("DB Migration Apply Result: NOT_APPLIED - alpha.26 reused ledger 7 and index 007")
     $lines.Add("Post-Apply Audit Result: PASS - NO_PARTIAL_MUTATION and GET-only completion evidence")

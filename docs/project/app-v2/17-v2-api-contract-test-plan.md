@@ -288,6 +288,13 @@ Menu numbers are assigned only after collision review in alpha.21~22.
 
 Alpha.26 adds a static material/order gate: shared fabric/accessory DTOs, bounded decimals, final derived-amount overflow validation, tenant-safe material/supplier references, exact permissions, fixed tenant transaction, hashed receipts, expectedVersion, append-only events, and no hard DELETE. It permits only `editing -> requested` and `requested -> cancelled|completed`; direct status PATCH and completed rollback are rejected. Its read-only preflight must prove target fingerprint, ledger 7/7, invalid/auth/Company C denial, alpha.23~25 read regression, and identical snapshots without valid mutation. Separately approved synthetic runtime and APP_VERSION alpha.26 remain blocked until that preflight passes.
 
+## 18. Alpha.27 revision issue gate
+
+- Static: POST-only route, bounded DTO, forbidden client-owned fields, exact approval, fixed tenant role/RLS, atomic allocator, unique base, dual expected versions, receipt/event, immutable revision/children, and no next draft/document/PDF/QR/R2.
+- Preflight: exact fingerprint, ledger `7/7`, schema privileges, issuable synthetic target, required fields/materials, document number absent, Company B/H `NOT_FOUND`, Company C `FORBIDDEN`, alpha.23-26 Read regression, and unchanged counts.
+- Approved runtime: one issue effect under concurrent requests, one base number, one receipt/event, no new revision row, WorkOrder/revision `+1/+1`, replay same result, payload conflict, tenant isolation, immutable scalar/material Commands, and bounded completion ledger.
+- Failure never authorizes automatic write replay, cleanup/reset/rollback, migration, or another index/number attempt.
+
 ### Alpha.25 create/basic update
 
 - Static contract verifies the exact POST/PATCH routes, bounded scalar DTO, unknown company/member/revision field rejection, required Idempotency-Key/expectedVersion, fixed tenant write role, receipt hashing, one transaction, current-draft lock, typed conflict, append-only safe event, and no document/material/process command expansion.

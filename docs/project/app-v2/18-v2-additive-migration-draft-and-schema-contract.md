@@ -138,3 +138,9 @@ Production migration, production data, Full Reset, R2/PDF mutation, and API cuto
 The separately approved alpha.22 work applied this exact six-file sequence to fingerprint `01e5dcc7fea3` in development mode. The migration ledger contains six matching hashes, the v1 baseline is unchanged, RLS and reconciliation pass, and deterministic 500/5,000/multi-tenant performance evidence is recorded in `19-v2-dev-test-migration-and-performance-evidence.md`.
 
 The 44 tenant FKs remain `NOT VALID` with zero validation-precondition issues. This result does not authorize production apply, destructive cleanup, Full Reset, or API cutover.
+
+## 11. Alpha.27a additive extension
+
+`008_v2_tenant_document_number_settings_function.sql` is a separately approval-gated additive extension. It creates only the zero-argument `public.wafl_v2_document_number_settings()` SECURITY DEFINER boundary, revokes PUBLIC EXECUTE, and grants EXECUTE to `wafl_v2_tenant_runtime`. The function validates tenant/member claims against an approved membership and returns only document code and business timezone from at most one `company_settings` row.
+
+Migration 008 does not grant direct table SELECT, modify company settings data, validate constraints, or authorize issue runtime. Its apply runner must prove ledger 7/7 and source SHA before one transaction, record ledger 8 atomically with function creation, then verify owner, fixed search path, ACL, tenant isolation, and unchanged settings rows. Apply and rollback each require separate owner approval.

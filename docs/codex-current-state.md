@@ -1,3 +1,14 @@
+# 2.0.0-alpha.27 Revision Issue Command Complete
+
+- Baseline was committed `2.0.0-alpha.26` at `1910dcb69deadecfc2c2d1c7923a8246cb229a78`; APP_VERSION and mobile mirrors are now `2.0.0-alpha.27`.
+- Alpha.27 adds the dev/test-only current-revision issue Command, server-owned document-number allocation, immutable finalization, WorkOrder/revision dual-version concurrency, tenant/actor-scoped idempotency, and one append-only issue event.
+- Approved dev/test migration 008 added the tenant-safe numbering-settings function and ACL; ledger is 8/8. Approved synthetic `company_settings` rows exist only for Company A/B/H (`WAFN`, `Asia/Seoul`), with no direct runtime table SELECT and no production/business data use.
+- The one-shot synthetic issue allocated `WAFN-26FWA-A25CMD-260711-001-R0`, moved WorkOrder/revision `draft/draft -> issued/finalized`, advanced versions `14/14 -> 15/15`, completed one receipt, appended one event, and created no revision, next draft, generated document, R2 object, or PDF.
+- Idempotency replay, changed-payload conflict, optimistic concurrency single winner, Company B/H `NOT_FOUND`, Company C `FORBIDDEN`, and bounded Read regressions passed. Completion audits found incomplete receipts 0 and `NO_PARTIAL_MUTATION`.
+- Immutable acceptance combines WorkOrder scalar runtime `LOCKED`, material scalar runtime `LOCKED`, and `MATERIAL_ORDER_LOCKED_PASS_BY_SHARED_RUNTIME_GUARD_AND_STATIC_CONTRACT`. The shared order repository checks issued/draft lock before material-state transition and durable UPDATE/event work; a thrown lock rolls back the provisional receipt transaction. No terminal-line order request was executed.
+- Automatic next draft, correction/reissue, PDF, QR, R2, Preview, mobile API connection, production, and actual business data remain excluded.
+- Evidence: `docs/project/app-v2/24-workorder-revision-issue-command-evidence.md`.
+
 # 2.0.0-alpha.26 WAFL v2 Material and Order Command Vertical Slice
 
 - Baseline: `2.0.0-alpha.25`, commit `da4d05839cfd7dbc67787f45373cbb5ab9af42fb`, synchronized clean `master` before this work. APP_VERSION and mobile mirrors are now `2.0.0-alpha.26`.

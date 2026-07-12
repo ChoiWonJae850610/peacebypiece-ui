@@ -6,10 +6,13 @@ export const WAFL_V2_ALPHA25_MUTATION_APPROVAL =
   "2.0.0-alpha.25-dev-test-command-runtime";
 export const WAFL_V2_ALPHA26_MUTATION_APPROVAL =
   "2.0.0-alpha.26-dev-test-material-command-runtime";
+export const WAFL_V2_ALPHA27_MUTATION_APPROVAL =
+  "2.0.0-alpha.27-dev-test-revision-issue-runtime";
 
 const SUPPORTED_MUTATION_APPROVALS = new Set([
   WAFL_V2_ALPHA25_MUTATION_APPROVAL,
   WAFL_V2_ALPHA26_MUTATION_APPROVAL,
+  WAFL_V2_ALPHA27_MUTATION_APPROVAL,
 ]);
 
 export type WorkOrderV2CommandRuntimeGuard =
