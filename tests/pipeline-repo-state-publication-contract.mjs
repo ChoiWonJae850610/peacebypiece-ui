@@ -35,6 +35,7 @@ const required = [
   "Mutation Audit Finding Count:",
   "DB Migration Applied:",
   "DB Migration Apply Result:",
+  "PASS|FAIL|NOT_APPLIED|NOT_APPLICABLE",
   "Post-Apply Audit Result:",
   "Rollback Smoke Result:",
   "Certificate Integration Result:",
@@ -107,6 +108,10 @@ for (const token of required) {
 
 if (/R2 Mutation:" -Values @\("false"\)/.test(source)) {
   throw new Error("R2 Mutation must not be hardcoded false after actual R2 integration");
+}
+
+if (!localHandoffSource.includes("-match 'NOT_APPLIED|NOT_APPLICABLE'")) {
+  throw new Error("DB Migration Applied must report false for explicit non-apply evidence");
 }
 
 if (/Split\(":\"\)\[0\]/.test(source)) {

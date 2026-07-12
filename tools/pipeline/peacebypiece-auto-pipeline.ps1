@@ -931,6 +931,10 @@ function GetDbMigrationAppliedDisplayValue {
         return "true; approved dev/test only"
     }
 
+    if ([string]$VerificationSummary.DbMigrationApplyResult -match 'NOT_APPLIED|NOT_APPLICABLE') {
+        return "false"
+    }
+
     return [string]$VerificationSummary.DbMigrationApplyResult
 }
 
@@ -1055,12 +1059,12 @@ function GetLocalRepoVerificationSummary {
         VercelReadiness = if ([string]::IsNullOrWhiteSpace($vercelReadiness)) { if ($productUxCleanupProfile) { "NOT_RUN - deployment smoke outside 0.24.34.2 static cleanup" } elseif ($workorderPdfLiveProfile) { "NOT_RUN - no deployment smoke in 0.24.34.3" } elseif ($productUiRuntimeProfile) { "NOT_RUN - localhost evidence only in 0.24.34.5 checkpoint" } else { "not provided" } } else { $vercelReadiness }
         ManualQaStatus = if ([string]::IsNullOrWhiteSpace($manualQaStatus)) { if ($productUxCleanupProfile) { "PENDING_USER_QA - PDF visual/browser matrix" } elseif ($workorderPdfLiveProfile) { "PENDING_USER_QA - rendered PDF visual/browser/device confirmation" } elseif ($productUiRuntimeProfile) { "PRODUCT_QA_INCOMPLETE - user PDF/screen review and same-Google OAuth return remain" } else { "not provided" } } else { $manualQaStatus }
         DbMigrationApplyResult = if ($productUxCleanupProfile) { "NOT_APPLICABLE - no migration in 0.24.34.2" } elseif ($workorderPdfLiveProfile) { "NOT_APPLICABLE - no migration in 0.24.34.3" } elseif ($productUiRuntimeProfile) { "NOT_APPLICABLE - no migration in 0.24.34.5" } elseif ($null -ne $workorderEvidence -and $workorderEvidence.DbMigrationApplyResult -ne "not provided") { $workorderEvidence.DbMigrationApplyResult } elseif ($null -ne $billingEvidence -and $billingEvidence.DbMigrationApplyResult -ne "not provided") { $billingEvidence.DbMigrationApplyResult } else { GetLocalRepoVerificationEvidenceLine -Lines $lines -Patterns @(
-            'DB Migration Apply Result:\s*(PASS|FAIL)',
+            'DB Migration Apply Result:\s*(PASS|FAIL|NOT_APPLIED|NOT_APPLICABLE)',
             'Migration apply:\s*(PASS|FAIL)',
             'Consent migration apply:\s*(PASS|FAIL)'
         ) }
         PostApplyAuditResult = if ($productUxCleanupProfile) { "NOT_APPLICABLE - no migration in 0.24.34.2" } elseif ($workorderPdfLiveProfile) { "NOT_APPLICABLE - no migration in 0.24.34.3" } elseif ($productUiRuntimeProfile) { "NOT_APPLICABLE - no migration in 0.24.34.5" } elseif ($null -ne $workorderEvidence -and $workorderEvidence.PostApplyAuditResult -ne "not provided") { $workorderEvidence.PostApplyAuditResult } elseif ($null -ne $billingEvidence -and $billingEvidence.PostApplyAuditResult -ne "not provided") { $billingEvidence.PostApplyAuditResult } else { GetLocalRepoVerificationEvidenceLine -Lines $lines -Patterns @(
-            'Post-Apply Audit Result:\s*(PASS|FAIL)',
+            'Post-Apply Audit Result:\s*(PASS|FAIL|NOT_APPLICABLE)',
             'Post-apply .*audit:\s*(PASS|FAIL)',
             'post-apply .*findings\s+0'
         ) }
