@@ -1,4 +1,10 @@
-# WAFL v2 App-first Roadmap 2.0 - 2.0.0-alpha.23
+# WAFL v2 App-first Roadmap 2.0 - 2.0.0-alpha.28
+
+## 2.0.0-alpha.28 result
+
+- Issued revision scoped 작업지시서 Preview API and workspace A4/print page implemented.
+- Read-only runtime PASS: Company A 200, B/H NOT_FOUND, C FORBIDDEN, fabric/accessory 2/1, deterministic repeat GET, payload 2,983 bytes, mutation false.
+- PDF, QR, R2, generated-document lifecycle, and browser visual approval remain alpha.29/manual QA.
 
 ## Purpose
 

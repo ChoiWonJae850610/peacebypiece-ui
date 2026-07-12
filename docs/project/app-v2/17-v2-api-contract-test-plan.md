@@ -1,5 +1,9 @@
 # WAFL v2 API Contract Test Plan
 
+## Alpha.28 Preview gate
+
+Validate contiguous SQL placeholders, company/revision scope, no `SELECT *`, typed draft/cross-tenant errors, deterministic repeated GET, bounded statement/payload metrics, safe asset metadata, A4/print rules, and pre/post mutation count equality.
+
 Version: `2.0.0-alpha.21`
 Status: alpha.20/21 static contracts and alpha.22 approved dev/test DB runtime evidence active
 

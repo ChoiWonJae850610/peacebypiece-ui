@@ -1,6 +1,6 @@
 # WAFL Mobile App Mock
 
-Version: `2.0.0-alpha.27`
+Version: `2.0.0-alpha.28`
 
 This Expo React Native app is the App-first WAFL v2 mobile/tablet mock surface.
 

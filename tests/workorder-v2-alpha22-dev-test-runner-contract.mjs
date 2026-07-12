@@ -180,8 +180,12 @@ const alpha26ApiPaths = [
 ];
 const alpha26ContractExists = fs.existsSync(path.join(root, "tests/workorder-v2-alpha26-material-command-api-contract.mjs"));
 const alpha27ApiPaths = ["app/api/v2/work-orders/[workOrderId]/revisions/issue/route.ts"];
+const alpha28ApiPaths = ["app/api/v2/work-orders/[workOrderId]/revisions/[revisionId]/preview/route.ts"];
 const alpha27ContractExists = fs.existsSync(path.join(root, "tests/workorder-v2-alpha27-revision-issue-command-contract.mjs"));
-if (alpha27ContractExists && (appVersion.includes('APP_VERSION = "2.0.0-alpha.26"') || appVersion.includes('APP_VERSION = "2.0.0-alpha.27"'))) {
+const alpha28ContractExists = fs.existsSync(path.join(root, "tests/workorder-v2-alpha28-issued-preview-contract.mjs"));
+if (alpha28ContractExists && (appVersion.includes('APP_VERSION = "2.0.0-alpha.27"') || appVersion.includes('APP_VERSION = "2.0.0-alpha.28"'))) {
+  assert.deepEqual(apiChanges.filter((change) => ![...alpha26ApiPaths, ...alpha27ApiPaths, ...alpha28ApiPaths].some((allowedPath) => change.endsWith(allowedPath))), [], "alpha.28 may add only the exact issued Preview GET route beside existing material and issue routes");
+} else if (alpha27ContractExists && (appVersion.includes('APP_VERSION = "2.0.0-alpha.26"') || appVersion.includes('APP_VERSION = "2.0.0-alpha.27"'))) {
   assert.deepEqual(apiChanges.filter((change) => ![...alpha26ApiPaths, ...alpha27ApiPaths].some((allowedPath) => change.endsWith(allowedPath))), [], "alpha.27 may modify only exact material and revision issue Command routes");
 } else if (alpha26ContractExists && (appVersion.includes('APP_VERSION = "2.0.0-alpha.25"') || appVersion.includes('APP_VERSION = "2.0.0-alpha.26"'))) {
   assert.deepEqual(apiChanges.filter((change) => !alpha26ApiPaths.some((allowedPath) => change.endsWith(allowedPath))), [], "alpha.26 may modify only exact material Command routes");

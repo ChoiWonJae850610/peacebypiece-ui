@@ -1,4 +1,11 @@
-# WAFL v2 App-first Codex Working Rules - 2.0.0-alpha.1
+# WAFL v2 App-first Codex Working Rules - 2.0.0-alpha.28
+
+## Alpha.28 Preview boundary
+
+- Issued Preview uses an explicit WorkOrder/revision pair and revision-scoped immutable rows.
+- Missing snapshot fields are not supplemented from mutable WorkOrder, partner, member, or asset masters.
+- Preview omits storage keys, signed URLs, raw snapshots, tokens, secrets, and internal actor identifiers.
+- Child SQL placeholders and parameter arrays require query-by-query continuity contracts.
 
 ## Purpose
 

@@ -1352,6 +1352,16 @@ function NewLocalRepoStateFile {
     $safeVersion = SanitizeResultFileNamePart -Value $Version
     $timestamp = GetTimestamp
     $repoStatePath = GetUniqueOutputPath -Directory $RepoStatusDir -FileNameWithoutExtension "repo-state-$safeVersion-$timestamp" -Extension ".txt"
+    $zipSha256 = (Get-FileHash -LiteralPath $ZipPath -Algorithm SHA256).Hash.ToLowerInvariant()
+    Add-Type -AssemblyName System.IO.Compression.FileSystem
+    $zipArchive = [System.IO.Compression.ZipFile]::OpenRead($ZipPath)
+    try {
+        $zipEntryCount = $zipArchive.Entries.Count
+        $zipExcludeViolationCount = @($zipArchive.Entries | Where-Object { TestLocalRepoExportExcludedPath -RelativePath $_.FullName }).Count
+    }
+    finally {
+        $zipArchive.Dispose()
+    }
 
     $statusShort = @(InvokeLocalRepoGitOutput -Arguments @("status", "--short"))
     $staged = @($statusShort | Where-Object {
@@ -1394,7 +1404,10 @@ function NewLocalRepoStateFile {
     AddRepoStateSection -Lines $lines -Title "package.json Version:" -Values @((GetPackageJsonVersionForLocalRepoExport))
     AddRepoStateSection -Lines $lines -Title "Canonical PowerShell Tracked State:" -Values @((GetCanonicalPowerShellTrackedState))
     AddRepoStateSection -Lines $lines -Title "Generated ZIP:" -Values @($ZipPath)
+    AddRepoStateSection -Lines $lines -Title "ZIP SHA-256:" -Values @($zipSha256)
     AddRepoStateSection -Lines $lines -Title "ZIP Size Bytes:" -Values @([string]$ZipSizeBytes)
+    AddRepoStateSection -Lines $lines -Title "ZIP Entry Count:" -Values @([string]$zipEntryCount)
+    AddRepoStateSection -Lines $lines -Title "Exclude Violation Count:" -Values @([string]$zipExcludeViolationCount)
     AddRepoStateSection -Lines $lines -Title "Verification Result Path:" -Values @([string]$VerificationSummary.Path)
     AddRepoStateSection -Lines $lines -Title "Verification Profile:" -Values @([string]$VerificationSummary.Profile)
     AddRepoStateSection -Lines $lines -Title "Verification Result:" -Values @([string]$VerificationSummary.Result)
@@ -1427,6 +1440,19 @@ function NewLocalRepoStateFile {
         AddRepoStateSection -Lines $lines -Title "Material Order Immutable Verdict:" -Values @("MATERIAL_ORDER_LOCKED_PASS_BY_SHARED_RUNTIME_GUARD_AND_STATIC_CONTRACT")
         AddRepoStateSection -Lines $lines -Title "Material Order Static Basis:" -Values @("shared request/cancel/complete transition; issued lock before status/UPDATE/event; thrown lock rolls back provisional receipt transaction")
         AddRepoStateSection -Lines $lines -Title "Alpha.27 Additional DB Mutation During Finalization:" -Values @("false")
+    }
+    if ($Version -eq "2.0.0-alpha.28") {
+        AddRepoStateSection -Lines $lines -Title "Preview API Runtime Summary:" -Values @("PASS - Company A 200; B/H NOT_FOUND; C FORBIDDEN; deterministic repeat GET")
+        AddRepoStateSection -Lines $lines -Title "Preview UI Contract Summary:" -Values @("PASS - workspace route build; A4 responsive and print static contract; visual review manual")
+        AddRepoStateSection -Lines $lines -Title "Tenant Isolation Result:" -Values @("PASS")
+        AddRepoStateSection -Lines $lines -Title "Issued Revision Source Result:" -Values @("PASS - explicit issued/finalized revision 15/15; no mutable fallback")
+        AddRepoStateSection -Lines $lines -Title "Immutable Preview Result:" -Values @("PASS - repeated GET deterministic; pre/post counts unchanged")
+        AddRepoStateSection -Lines $lines -Title "Preview Query Count:" -Values @("9 including tenant claims")
+        AddRepoStateSection -Lines $lines -Title "Preview Payload Size:" -Values @("2983 bytes")
+        AddRepoStateSection -Lines $lines -Title "Preview DB / API Duration:" -Values @("715.83ms / 1614.74ms; cold local server and remote connection included")
+        AddRepoStateSection -Lines $lines -Title "Alpha.28 DB Migration / Schema / Index Mutation:" -Values @("false")
+        AddRepoStateSection -Lines $lines -Title "Alpha.28 Dev/Test DB Test-Data Mutation:" -Values @("false")
+        AddRepoStateSection -Lines $lines -Title "Alpha.28 Business / R2 / Worker / PDF / Production Mutation:" -Values @("false")
     }
     AddRepoStateSection -Lines $lines -Title "DB Migration Apply Result:" -Values @([string]$VerificationSummary.DbMigrationApplyResult)
     AddRepoStateSection -Lines $lines -Title "Post-Apply Audit Result:" -Values @([string]$VerificationSummary.PostApplyAuditResult)

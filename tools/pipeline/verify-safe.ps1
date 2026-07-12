@@ -885,7 +885,16 @@ $profileCommands = @{
                 "tests/workorder-v2-alpha27-revision-issue-command-contract.mjs",
                 "scripts/run-wafl-v2-alpha27a-number-settings-migration.mjs",
                 "scripts/run-wafl-v2-alpha27a-settings-fixture.mjs",
-                "tests/workorder-v2-alpha27a-number-settings-migration-contract.mjs"
+                "tests/workorder-v2-alpha27a-number-settings-migration-contract.mjs",
+                "app/api/v2/work-orders/[workOrderId]/revisions/[revisionId]/preview/route.ts",
+                "lib/domain/work-orders/read/previewRepository.ts",
+                "lib/domain/work-orders/read/previewRoute.ts",
+                "lib/domain/work-orders/read/previewService.ts",
+                "lib/domain/work-orders/contracts/read-models.ts",
+                "components/workorder/preview/IssuedWorkOrderPreview.tsx",
+                "app/(workspace)/workspace/workorders/[workOrderId]/revisions/[revisionId]/preview/page.tsx",
+                "scripts/run-wafl-v2-alpha28-issued-preview.mjs",
+                "tests/workorder-v2-alpha28-issued-preview-contract.mjs"
             )
         },
         @{ Name = "mobile typecheck"; Command = "npm"; Arguments = @("--prefix", "apps/mobile", "run", "typecheck") },
@@ -899,6 +908,7 @@ $profileCommands = @{
         @{ Name = "workorder v2 alpha.26 material command API static contract"; Command = "node"; Arguments = @("tests/workorder-v2-alpha26-material-command-api-contract.mjs") },
         @{ Name = "workorder v2 alpha.27 revision issue command static contract"; Command = "node"; Arguments = @("tests/workorder-v2-alpha27-revision-issue-command-contract.mjs") },
         @{ Name = "workorder v2 alpha.27a numbering settings migration static contract"; Command = "node"; Arguments = @("tests/workorder-v2-alpha27a-number-settings-migration-contract.mjs") },
+        @{ Name = "workorder v2 alpha.28 issued Preview static contract"; Command = "node"; Arguments = @("tests/workorder-v2-alpha28-issued-preview-contract.mjs") },
         @{ Name = "app-v2 document links and Mermaid contract"; Command = "node"; Arguments = @("tests/app-v2-document-links-contract.mjs") },
         @{ Name = "unicode encoding contract"; Command = "node"; Arguments = @("tests/unicode-encoding-contract.mjs") },
         @{ Name = "PowerShell encoding contract"; Command = "node"; Arguments = @("tests/pipeline-powershell-encoding-contract.mjs") },

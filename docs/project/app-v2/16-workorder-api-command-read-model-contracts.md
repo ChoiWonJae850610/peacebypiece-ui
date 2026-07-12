@@ -1,5 +1,9 @@
 # WAFL v2 WorkOrder API, Command, and Read Model Contracts
 
+## Issued revision Preview
+
+`GET /api/v2/work-orders/:workOrderId/revisions/:revisionId/preview` returns `WorkOrderIssuedPreviewReadModel` only for an explicitly matched finalized/superseded revision under the authenticated tenant. It does not infer `current_revision_id`, return raw snapshots, or expose storage/token fields.
+
 Version: `2.0.0-alpha.20`
 Status: canonical type/API contract; no route or DB implementation
 

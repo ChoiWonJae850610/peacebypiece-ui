@@ -1,4 +1,11 @@
-# 2.0.0-alpha.27 Revision Issue Command Complete
+# 2.0.0-alpha.28 Issued Revision Preview Complete
+
+- Issued/finalized revision based 작업지시서 Preview API and workspace A4/print UI implemented.
+- Approved dev/test read-only runtime PASS on `01e5dcc7fea3`: ledger 8/8, Company A 200, B/H NOT_FOUND, C FORBIDDEN, fabric/accessory 2/1, deterministic repeat GET, query count 9, payload 2,983 bytes.
+- First measured DB/API durations were 715.83ms/1,614.74ms and include cold server/remote connection; no new performance gate was introduced.
+- DB migration/schema/index/test-data/business/R2/Worker/PDF/production mutation false. Alpha.29 remains PDF/QR/R2 document lifecycle.
+
+## 2.0.0-alpha.27 Revision Issue Command Complete
 
 - Baseline was committed `2.0.0-alpha.26` at `1910dcb69deadecfc2c2d1c7923a8246cb229a78`; APP_VERSION and mobile mirrors are now `2.0.0-alpha.27`.
 - Alpha.27 adds the dev/test-only current-revision issue Command, server-owned document-number allocation, immutable finalization, WorkOrder/revision dual-version concurrency, tenant/actor-scoped idempotency, and one append-only issue event.

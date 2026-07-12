@@ -421,3 +421,55 @@ export type WorkOrderHistoryPage = {
   readonly limit: number;
   readonly entityVersion: EntityVersion;
 };
+
+export type WorkOrderIssuedPreviewReadModel = {
+  readonly document: {
+    readonly title: "작업지시서";
+    readonly displayDocumentNumber: DisplayDocumentNumber;
+    readonly revisionNumber: RevisionNumber;
+    readonly issuedAt: IsoDateTime;
+  };
+  readonly header: {
+    readonly workOrderId: WorkOrderId;
+    readonly revisionId: WorkOrderRevisionId;
+    readonly productName: string;
+    readonly productTypeCode: string | null;
+    readonly seasonCode: string | null;
+    readonly itemCode: string | null;
+    readonly dueDate: IsoDate | null;
+    readonly totalQuantity: number;
+    readonly memo: string | null;
+  };
+  readonly amounts: {
+    readonly currency: CurrencyCode;
+    readonly unitPrice: DecimalString;
+    readonly fabricTotal: DecimalString;
+    readonly accessoryTotal: DecimalString;
+    readonly processTotal: DecimalString;
+    readonly estimatedTotal: DecimalString;
+  };
+  readonly materials: {
+    readonly fabrics: readonly WorkOrderMaterialLineReadModel[];
+    readonly accessories: readonly WorkOrderMaterialLineReadModel[];
+  };
+  readonly sizeColors: WorkOrderSizeColorMatrixReadModel;
+  readonly sizeSpecifications: WorkOrderSizeSpecReadModel;
+  readonly processes: readonly WorkOrderProcessReadModel[];
+  readonly assets: readonly {
+    readonly assetType: "image" | "attachment";
+    readonly filename: string;
+    readonly mimeType: string;
+    readonly displayOrder: number;
+    readonly isRepresentative: boolean;
+    readonly includeInDocument: boolean;
+  }[];
+  readonly issue: {
+    readonly workOrderStatus: "issued" | "revised" | "completed";
+    readonly revisionStatus: "finalized" | "superseded";
+  };
+  readonly layoutMetadata: {
+    readonly schemaVersion: 1;
+    readonly sectionOrder: readonly ["basic", "assets", "fabrics", "accessories", "sizeColor", "sizeSpec", "processes", "memo", "issue"];
+    readonly businessTimezone: "Asia/Seoul";
+  };
+};
