@@ -5,7 +5,7 @@
 This document starts the WAFL v2 App-first line.
 
 Previous baseline: `0.30.0-alpha.27`.
-Current baseline: `2.0.0-alpha.28`.
+Current baseline: `2.0.0-alpha.29`.
 
 The customer-facing product direction moves from a Next.js-first web showroom implementation path to an Expo React Native mobile/tablet app-first path.
 

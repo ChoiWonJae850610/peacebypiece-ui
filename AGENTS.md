@@ -30,11 +30,12 @@
   26. `docs/project/app-v2/23-workorder-material-order-command-evidence.md`
   27. `docs/project/app-v2/24-workorder-revision-issue-command-evidence.md`
   28. `docs/project/app-v2/25-workorder-issued-revision-preview-evidence.md`
-  29. `docs/project/v2/00-start-here.md` through `docs/project/v2/14-operational-policy-absorption.md`
-  30. `docs/project/25-korean-unicode-encoding-standard.md`
-  31. `docs/project/32-product-completion-and-ui-evidence-standard.md`
-  32. `docs/project/26-final-policy-decisions-and-master-todo.md`
-  33. `docs/project/31-pre-codex-integrated-master-plan.md`
+  29. `docs/project/app-v2/26-mobile-issued-preview-entry-evidence.md`
+  30. `docs/project/v2/00-start-here.md` through `docs/project/v2/14-operational-policy-absorption.md`
+  31. `docs/project/25-korean-unicode-encoding-standard.md`
+  32. `docs/project/32-product-completion-and-ui-evidence-standard.md`
+  33. `docs/project/26-final-policy-decisions-and-master-todo.md`
+  34. `docs/project/31-pre-codex-integrated-master-plan.md`
 - `docs/project/app-v2/*` is the priority authority for the `2.0.x` App-first line.
 - Existing `docs/project/v2/*` documents are not deleted. They remain the `0.30.x` `/ui` design baseline and preserved policy reference for Product, Sheet/Card, Korean role labels, Neon/R2/Worker, PDF/share, mobile-web, and QA rules.
 - `www.wafl.co.kr` is the public marketing, download, pricing, examples, inquiry, trial-request, and waitlist landing site for the WAFL app.

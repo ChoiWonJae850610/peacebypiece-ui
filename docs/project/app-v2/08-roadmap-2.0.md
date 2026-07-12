@@ -1,10 +1,18 @@
-# WAFL v2 App-first Roadmap 2.0 - 2.0.0-alpha.28
+# WAFL v2 App-first Roadmap 2.0 - 2.0.0-alpha.29
+
+## 2.0.0-alpha.29 result
+
+- Expo mobile 제작 카드의 상단 `작지 보기`, 발주 전 확인 sheet, 제작 문서 행, 눈 아이콘을 하나의 Preview opener에 연결했다.
+- 발행 문서번호를 tenant-safe resolver로 WorkOrder/revision identity에 해석한 뒤 기존 alpha.28 Preview를 재사용한다. UUID, token, companyId는 모바일 URL에 넣지 않는다.
+- dev/test read-only runtime PASS: Company A resolver/Preview 200, B/H NOT_FOUND, C FORBIDDEN, ledger 8/8, 모든 mutation false.
+- Expo Web에서 상단·문서 행·눈 아이콘이 동일 Preview 경로를 열고, draft sheet Preview가 비활성 이유를 표시함을 확인했다. 웹 인증 세션이 없으면 기존 로그인 경계로 이동한다.
+- iPhone/iPad/Android 시스템 브라우저 이동은 static contract PASS이며 실제 기기 QA가 남아 있다. PDF, QR, R2 lifecycle은 alpha.30 범위다.
 
 ## 2.0.0-alpha.28 result
 
 - Issued revision scoped 작업지시서 Preview API and workspace A4/print page implemented.
 - Read-only runtime PASS: Company A 200, B/H NOT_FOUND, C FORBIDDEN, fabric/accessory 2/1, deterministic repeat GET, payload 2,983 bytes, mutation false.
-- PDF, QR, R2, generated-document lifecycle, and browser visual approval remain alpha.29/manual QA.
+- PDF, QR, R2, and generated-document lifecycle remain alpha.30 work.
 
 ## Purpose
 

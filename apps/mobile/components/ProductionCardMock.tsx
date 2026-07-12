@@ -41,6 +41,7 @@ import {
 
 import { WAFL_FONTS } from "@/constants/fonts";
 import { MOBILE_APP_VERSION } from "@/constants/version";
+import { openIssuedPreview, type PreviewIdentity } from "@/utils/previewLink";
 import {
   PRODUCTION_TABS,
   accessoryRows,
@@ -108,8 +109,9 @@ const workOrderChecks = [
 export default function ProductionCardMock() {
   const [activeTab, setActiveTab] = useState<ProductionTabId>("overview");
   const [selectedCardId, setSelectedCardId] = useState(productionCards[0].id);
-  const [workOrderIssued, setWorkOrderIssued] = useState(false);
+  const [workOrderIssued, setWorkOrderIssued] = useState(true);
   const [orderConfirmOpen, setOrderConfirmOpen] = useState(false);
+  const [previewMessage, setPreviewMessage] = useState<string | null>(null);
   const { width, height } = useWindowDimensions();
   const isTablet = width >= 760;
   const isWideTablet = isTablet && width > height;
@@ -117,6 +119,16 @@ export default function ProductionCardMock() {
     () => Math.min(Math.max(width - 24, 320), isTablet ? maxTabletWidth : maxPhoneWidth),
     [isTablet, width]
   );
+  const selectedWorkOrderIssued = workOrderIssued && selectedCardId === productionCards[0].id;
+  const previewIdentity: PreviewIdentity = {
+    issued: selectedWorkOrderIssued,
+    issuedDocumentNumber: selectedCardId === productionCards[0].id ? productionCardMock.issuedDocumentNumber : null
+  };
+  const openPreview = async () => {
+    setPreviewMessage(null);
+    const result = await openIssuedPreview(previewIdentity);
+    if (!result.ok) setPreviewMessage(result.message);
+  };
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -131,9 +143,11 @@ export default function ProductionCardMock() {
           <View style={styles.detailPane}>
             <ProductionHeader
               isTablet={isTablet}
-              workOrderState={workOrderIssued ? "issued" : "ready"}
+              workOrderState={selectedWorkOrderIssued ? "issued" : "ready"}
               onOpenOrderConfirm={() => setOrderConfirmOpen(true)}
+              onOpenPreview={openPreview}
             />
+            {previewMessage ? <Text accessibilityLiveRegion="polite" style={styles.previewMessage}>{previewMessage}</Text> : null}
             {orderConfirmOpen ? (
               <WorkOrderConfirmPanel
                 onClose={() => setOrderConfirmOpen(false)}
@@ -141,12 +155,14 @@ export default function ProductionCardMock() {
                   setWorkOrderIssued(true);
                   setOrderConfirmOpen(false);
                 }}
+                onPreview={openPreview}
+                previewAvailable={previewIdentity.issued && Boolean(previewIdentity.issuedDocumentNumber)}
               />
             ) : null}
             <TabRail activeTab={activeTab} setActiveTab={setActiveTab} isTablet={isTablet} />
             <View style={styles.section}>
               <NextCheckPanel activeTab={activeTab} />
-              {renderActiveTab(activeTab, isTablet, workOrderIssued)}
+              {renderActiveTab(activeTab, isTablet, selectedWorkOrderIssued, openPreview, previewIdentity.issued)}
             </View>
           </View>
         </View>
@@ -250,11 +266,13 @@ function ProductionListCard({
 function ProductionHeader({
   isTablet,
   workOrderState,
-  onOpenOrderConfirm
+  onOpenOrderConfirm,
+  onOpenPreview
 }: {
   isTablet: boolean;
   workOrderState: WorkOrderState;
   onOpenOrderConfirm: () => void;
+  onOpenPreview: () => void;
 }) {
   return (
     <View style={[styles.header, isTablet && styles.headerTablet]}>
@@ -271,7 +289,10 @@ function ProductionHeader({
         <View style={styles.headerStats}>
           <MiniStat label="한벌" value={productionCardMock.unitCost} />
           <MiniStat label="총 예상" value={productionCardMock.totalEstimate} />
-          <WorkOrderStatusCard state={workOrderState} onPress={onOpenOrderConfirm} />
+          <WorkOrderStatusCard
+            state={workOrderState}
+            onPress={workOrderState === "issued" ? onOpenPreview : onOpenOrderConfirm}
+          />
         </View>
       </View>
     </View>
@@ -299,7 +320,8 @@ function WorkOrderStatusCard({
       </Text>
       <Pressable
         accessibilityRole="button"
-        accessibilityLabel={issued ? "작지 보기 mock 동작" : "작지 발주 확인 mock 열기"}
+        accessibilityLabel={issued ? "발행된 작업지시서 미리보기" : "작업지시서 발주 확인 열기"}
+        accessibilityHint={issued ? "웹 작업지시서 미리보기를 엽니다" : undefined}
         onPress={onPress}
         style={[styles.workOrderButton, issued && styles.workOrderButtonIssued]}
       >
@@ -314,10 +336,14 @@ function WorkOrderStatusCard({
 
 function WorkOrderConfirmPanel({
   onClose,
-  onComplete
+  onComplete,
+  onPreview,
+  previewAvailable
 }: {
   onClose: () => void;
   onComplete: () => void;
+  onPreview: () => void;
+  previewAvailable: boolean;
 }) {
   return (
     <View style={styles.workOrderConfirmPanel}>
@@ -343,7 +369,15 @@ function WorkOrderConfirmPanel({
         <Text style={styles.infoValue}>주요 제작 정보는 잠금 예정입니다. 수정이 필요하면 발주 취소, 정정, 재발주 흐름으로 이어지는 방향만 mock으로 표시합니다.</Text>
       </View>
       <View style={styles.confirmActionRow}>
-        <Pressable accessibilityRole="button" accessibilityLabel="작지 미리보기 mock" style={styles.secondaryConfirmButton}>
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel="발행된 작업지시서 미리보기"
+          accessibilityHint={previewAvailable ? "웹 작업지시서 미리보기를 엽니다" : "발행 후 사용할 수 있습니다"}
+          accessibilityState={{ disabled: !previewAvailable }}
+          disabled={!previewAvailable}
+          onPress={onPreview}
+          style={[styles.secondaryConfirmButton, !previewAvailable && styles.disabledAction]}
+        >
           <IconMark icon="eye" />
           <Text style={styles.secondaryConfirmButtonText}>미리보기</Text>
         </Pressable>
@@ -352,6 +386,7 @@ function WorkOrderConfirmPanel({
           <Text style={styles.primaryConfirmButtonText}>작지 출력 및 발주 완료</Text>
         </Pressable>
       </View>
+      {!previewAvailable ? <Text style={styles.disabledReason}>발행된 작업지시서에서 미리보기를 사용할 수 있습니다.</Text> : null}
     </View>
   );
 }
@@ -487,7 +522,13 @@ function NextCheckPanel({ activeTab }: { activeTab: ProductionTabId }) {
   );
 }
 
-function renderActiveTab(activeTab: ProductionTabId, isTablet: boolean, workOrderIssued: boolean) {
+function renderActiveTab(
+  activeTab: ProductionTabId,
+  isTablet: boolean,
+  workOrderIssued: boolean,
+  onOpenPreview: () => void,
+  previewAvailable: boolean
+) {
   switch (activeTab) {
     case "overview":
       return <OverviewTab isTablet={isTablet} />;
@@ -502,7 +543,7 @@ function renderActiveTab(activeTab: ProductionTabId, isTablet: boolean, workOrde
     case "flow":
       return <FlowTab workOrderIssued={workOrderIssued} />;
     case "output":
-      return <OutputTab />;
+      return <OutputTab onOpenPreview={onOpenPreview} previewAvailable={previewAvailable} />;
     default:
       return null;
   }
@@ -819,7 +860,15 @@ function FlowTab({ workOrderIssued }: { workOrderIssued: boolean }) {
   );
 }
 
-function DocumentWorkbench({ included }: { included: typeof attachmentRows }) {
+function DocumentWorkbench({
+  included,
+  onOpenPreview,
+  previewAvailable
+}: {
+  included: typeof attachmentRows;
+  onOpenPreview: () => void;
+  previewAvailable: boolean;
+}) {
   const selectedDocument = outputRows[0];
   const primaryDelivery = deliveryRows[0];
 
@@ -827,10 +876,18 @@ function DocumentWorkbench({ included }: { included: typeof attachmentRows }) {
     <View style={styles.documentWorkbench}>
       <View style={styles.documentList}>
         {outputRows.map((row, index) => (
-          <View key={row.title} style={[styles.documentListRow, index === 0 && styles.documentListRowSelected]}>
+          <Pressable
+            key={row.title}
+            accessibilityRole={index === 0 ? "button" : undefined}
+            accessibilityLabel={index === 0 ? "작업지시서 미리보기" : undefined}
+            accessibilityState={index === 0 ? { disabled: !previewAvailable } : undefined}
+            disabled={index !== 0 || !previewAvailable}
+            onPress={index === 0 ? onOpenPreview : undefined}
+            style={[styles.documentListRow, index === 0 && styles.documentListRowSelected, index === 0 && !previewAvailable && styles.disabledAction]}
+          >
             <Text style={styles.rowTitle}>{row.title}</Text>
             <Text style={styles.smallText}>{row.state}</Text>
-          </View>
+          </Pressable>
         ))}
       </View>
       <View style={styles.documentPreviewSheet}>
@@ -872,17 +929,18 @@ function DocumentWorkbench({ included }: { included: typeof attachmentRows }) {
           <Text style={styles.smallText}>전달 메모 · {primaryDelivery.memo}</Text>
         </View>
         <View style={styles.documentActionBar}>
-          <IconButton label="보기" icon="eye" />
-          <IconButton label="공유" icon="share" />
-          <IconButton label="인쇄" icon="printer" />
-          <IconButton label="저장" icon="save" />
+          <IconButton label="보기" icon="eye" onPress={onOpenPreview} disabled={!previewAvailable} mock={false} />
+          <IconButton label="공유" icon="share" disabled />
+          <IconButton label="인쇄" icon="printer" disabled />
+          <IconButton label="저장" icon="save" disabled />
         </View>
+        {!previewAvailable ? <Text style={styles.disabledReason}>발행된 문서에서 보기 기능을 사용할 수 있습니다.</Text> : null}
       </View>
     </View>
   );
 }
 
-function OutputTab() {
+function OutputTab({ onOpenPreview, previewAvailable }: { onOpenPreview: () => void; previewAvailable: boolean }) {
   const included = attachmentRows.filter((item) => item.included);
 
   return (
@@ -891,7 +949,7 @@ function OutputTab() {
         title="제작 문서"
         caption="문서 선택, 포함 항목, 공유 설정을 한 곳에서 확인합니다. 실제 PDF 생성과 공유는 연결하지 않습니다."
       />
-      <DocumentWorkbench included={included} />
+      <DocumentWorkbench included={included} onOpenPreview={onOpenPreview} previewAvailable={previewAvailable} />
       <Text style={styles.subsectionTitle}>문서 설정</Text>
       {outputRows.map((row) => (
         <View key={row.title} style={styles.outputRow}>
@@ -1160,7 +1218,10 @@ function IconButton({
   danger = false,
   emphasized = false,
   caption,
-  action = false
+  action = false,
+  onPress,
+  disabled = false,
+  mock = true
 }: {
   label: string;
   symbol?: string;
@@ -1169,11 +1230,17 @@ function IconButton({
   emphasized?: boolean;
   caption?: string;
   action?: boolean;
+  onPress?: () => void;
+  disabled?: boolean;
+  mock?: boolean;
 }) {
   return (
     <Pressable
       accessibilityRole="button"
-      accessibilityLabel={`${label} mock 동작`}
+      accessibilityLabel={mock ? `${label} mock 동작` : label}
+      accessibilityState={{ disabled }}
+      disabled={disabled}
+      onPress={onPress}
       style={[
         styles.iconButton,
         caption && styles.iconButtonCaption,
@@ -1181,7 +1248,8 @@ function IconButton({
         emphasized && styles.iconEmphasized,
         action && emphasized && styles.iconActionEmphasized,
         danger && styles.iconDanger,
-        action && danger && styles.iconActionDanger
+        action && danger && styles.iconActionDanger,
+        disabled && styles.disabledAction
       ]}
     >
       {icon ? (
@@ -1503,6 +1571,24 @@ const styles = StyleSheet.create({
   },
   iconEmphasized: {
     backgroundColor: "#23375a"
+  },
+  disabledAction: {
+    opacity: 0.46
+  },
+  disabledReason: {
+    color: "#756b62",
+    fontSize: 11,
+    marginTop: 6
+  },
+  previewMessage: {
+    backgroundColor: "#fff4df",
+    borderColor: "#d99a39",
+    borderRadius: 8,
+    borderWidth: 1,
+    color: "#6c4513",
+    fontSize: 12,
+    paddingHorizontal: 10,
+    paddingVertical: 8
   },
   iconText: {
     color: "#17263d",

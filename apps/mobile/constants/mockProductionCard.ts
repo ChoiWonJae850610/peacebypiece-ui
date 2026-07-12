@@ -201,7 +201,8 @@ export const productionCardMock = {
   nextAction: "공장 전달 전 안감 거래처, 색상별 수량, 포함 첨부를 확인합니다.",
   outputState: "제작 문서 검토 가능",
   tradingSummary: "서울패브릭 / 버튼하우스 / 한강 봉제",
-  memo: "허리끈 위치와 단추 간격을 검품 때 우선 확인합니다."
+  memo: "허리끈 위치와 단추 간격을 검품 때 우선 확인합니다.",
+  issuedDocumentNumber: "WAFN-26FWA-A25CMD-260711-001-R0"
 };
 
 export const summaryMetrics: SummaryMetric[] = [

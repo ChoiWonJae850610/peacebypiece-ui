@@ -1,4 +1,13 @@
-# 2.0.0-alpha.28 Issued Revision Preview Complete
+# 2.0.0-alpha.29 Mobile Issued Preview Entry Complete
+
+- Expo 제작 카드의 네 Preview 진입점은 공통 platform opener를 사용하며, 발행 문서번호 `WAFN-26FWA-A25CMD-260711-001-R0`은 mock metadata 한 곳에서만 관리한다.
+- `/workspace/documents/:documentNumber/preview`가 인증된 tenant scope에서 issued/finalized revision을 찾고 기존 alpha.28 ID Preview로 이동한다. B/H는 generic `NOT_FOUND`, C는 `FORBIDDEN`이다.
+- Approved dev/test read-only runtime PASS on `01e5dcc7fea3`: ledger 8/8, resolver/Preview parity PASS, snapshot 불변, 모든 mutation false.
+- Expo Web QA: 상단·문서 행·눈 아이콘은 동일 Next Preview 경로를 열고, draft 발주 전 sheet Preview는 비활성 이유를 표시했다. 인증 세션이 없는 브라우저는 기존 로그인 경계로 이동했다. 콘솔 warning/error 0.
+- Native Linking/static contract PASS. iPhone/iPad/Android 실제 시스템 브라우저와 앱 복귀는 사용자 수동 QA 대상이다.
+- Evidence: `docs/project/app-v2/26-mobile-issued-preview-entry-evidence.md`. Alpha.30 is PDF/QR/R2 document lifecycle.
+
+## 2.0.0-alpha.28 Issued Revision Preview Complete
 
 - Issued/finalized revision based 작업지시서 Preview API and workspace A4/print UI implemented.
 - Approved dev/test read-only runtime PASS on `01e5dcc7fea3`: ledger 8/8, Company A 200, B/H NOT_FOUND, C FORBIDDEN, fabric/accessory 2/1, deterministic repeat GET, query count 9, payload 2,983 bytes.

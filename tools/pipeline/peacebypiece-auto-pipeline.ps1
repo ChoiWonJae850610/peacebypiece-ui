@@ -1297,6 +1297,17 @@ function NewLocalRepoBuildResultFile {
         AddRepoStateSection -Lines $lines -Title "Material Order Static Basis:" -Values @("shared request/cancel/complete transition; issued lock before status/UPDATE/event; thrown lock rolls back provisional receipt transaction")
         AddRepoStateSection -Lines $lines -Title "Alpha.27 Additional DB Mutation During Finalization:" -Values @("false")
     }
+    if ($Version -eq "2.0.0-alpha.29") {
+        AddRepoStateSection -Lines $lines -Title "Preview Entry Result:" -Values @("PASS - four mobile entry contracts share the issued Preview opener")
+        AddRepoStateSection -Lines $lines -Title "Expo Web Result:" -Values @("PASS - top/document-row/eye open the document route; draft sheet disabled reason; console warning/error 0")
+        AddRepoStateSection -Lines $lines -Title "Native Linking Contract:" -Values @("PASS - canOpenURL/openURL system browser; physical-device QA pending")
+        AddRepoStateSection -Lines $lines -Title "Preview Base URL Policy:" -Values @("PASS - EXPO_PUBLIC_WAFL_WEB_BASE_URL; localhost:3000 development web only; no production fallback")
+        AddRepoStateSection -Lines $lines -Title "Document Number Resolver Result:" -Values @("PASS - issued/finalized tenant-scoped lookup reuses alpha.28 Preview")
+        AddRepoStateSection -Lines $lines -Title "Tenant Isolation Result:" -Values @("PASS - Company A 200; B/H NOT_FOUND; C FORBIDDEN")
+        AddRepoStateSection -Lines $lines -Title "DB/API Read-only Result:" -Values @("PASS - ledger 8/8 and before/after snapshots unchanged")
+        AddRepoStateSection -Lines $lines -Title "Manual QA Status:" -Values @("PENDING_USER_QA - iPhone/iPad/Android system-browser, login, return, popup policy")
+        AddRepoStateSection -Lines $lines -Title "DB/R2/Worker/PDF/Production Mutation:" -Values @("false")
+    }
     AddRepoStateSection -Lines $lines -Title "DB Migration Apply Result:" -Values @([string]$VerificationSummary.DbMigrationApplyResult)
     AddRepoStateSection -Lines $lines -Title "Post-Apply Audit Result:" -Values @([string]$VerificationSummary.PostApplyAuditResult)
     AddRepoStateSection -Lines $lines -Title "Rollback Smoke Result:" -Values @([string]$VerificationSummary.RollbackSmokeResult)
@@ -1453,6 +1464,17 @@ function NewLocalRepoStateFile {
         AddRepoStateSection -Lines $lines -Title "Alpha.28 DB Migration / Schema / Index Mutation:" -Values @("false")
         AddRepoStateSection -Lines $lines -Title "Alpha.28 Dev/Test DB Test-Data Mutation:" -Values @("false")
         AddRepoStateSection -Lines $lines -Title "Alpha.28 Business / R2 / Worker / PDF / Production Mutation:" -Values @("false")
+    }
+    if ($Version -eq "2.0.0-alpha.29") {
+        AddRepoStateSection -Lines $lines -Title "Preview Entry Result:" -Values @("PASS - four mobile entry contracts share the issued Preview opener")
+        AddRepoStateSection -Lines $lines -Title "Expo Web Result:" -Values @("PASS - top/document-row/eye open the document route; draft sheet disabled reason; console warning/error 0")
+        AddRepoStateSection -Lines $lines -Title "Native Linking Contract:" -Values @("PASS - canOpenURL/openURL system browser; physical-device QA pending")
+        AddRepoStateSection -Lines $lines -Title "Preview Base URL Policy:" -Values @("PASS - EXPO_PUBLIC_WAFL_WEB_BASE_URL; localhost:3000 development web only; no production fallback")
+        AddRepoStateSection -Lines $lines -Title "Document Number Resolver Result:" -Values @("PASS - issued/finalized tenant-scoped lookup reuses alpha.28 Preview")
+        AddRepoStateSection -Lines $lines -Title "Tenant Isolation Result:" -Values @("PASS - Company A 200; B/H NOT_FOUND; C FORBIDDEN")
+        AddRepoStateSection -Lines $lines -Title "DB/API Read-only Result:" -Values @("PASS - ledger 8/8 and before/after snapshots unchanged")
+        AddRepoStateSection -Lines $lines -Title "Manual QA Status:" -Values @("PENDING_USER_QA - iPhone/iPad/Android system-browser, login, return, popup policy")
+        AddRepoStateSection -Lines $lines -Title "DB/R2/Worker/PDF/Production Mutation:" -Values @("false")
     }
     AddRepoStateSection -Lines $lines -Title "DB Migration Apply Result:" -Values @([string]$VerificationSummary.DbMigrationApplyResult)
     AddRepoStateSection -Lines $lines -Title "Post-Apply Audit Result:" -Values @([string]$VerificationSummary.PostApplyAuditResult)

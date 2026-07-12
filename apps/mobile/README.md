@@ -1,6 +1,8 @@
 # WAFL Mobile App Mock
 
-Version: `2.0.0-alpha.28`
+Version: `2.0.0-alpha.29`
+
+Alpha.29 connects issued production-card Preview actions to the authenticated Next workspace through `EXPO_PUBLIC_WAFL_WEB_BASE_URL`. Expo Web may use the localhost Next server fallback only in development; native opens the system browser and may require the normal web login. PDF, QR, R2, WebView, and mobile-to-web SSO are not part of this version.
 
 This Expo React Native app is the App-first WAFL v2 mobile/tablet mock surface.
 

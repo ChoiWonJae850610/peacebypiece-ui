@@ -1,6 +1,6 @@
 {
   "name": "@wafl/mobile",
-  "version": "2.0.0-alpha.28",
+  "version": "2.0.0-alpha.29",
   "private": true,
   "main": "expo-router/entry",
   "scripts": {

@@ -1,4 +1,11 @@
-# WAFL v2 App-first Codex Working Rules - 2.0.0-alpha.28
+# WAFL v2 App-first Codex Working Rules - 2.0.0-alpha.29
+
+## Alpha.29 mobile Preview entry boundary
+
+- Mobile Preview entry uses issued document metadata and a tenant-safe Next resolver; raw WorkOrder/revision UUIDs are not embedded in mobile UI source.
+- `EXPO_PUBLIC_WAFL_WEB_BASE_URL` is the production configuration boundary. Localhost fallback is Expo Web development-only and must never activate in production.
+- Web opens Preview with `noopener,noreferrer`; native uses the system browser through `Linking`. Tokens, company scope, session claims, and storage keys are never URL parameters.
+- The resolver and runtime verification are GET/read-only. Mobile-to-web SSO, anonymous sharing, WebView, PDF, QR, R2, and document lifecycle remain excluded.
 
 ## Alpha.28 Preview boundary
 
