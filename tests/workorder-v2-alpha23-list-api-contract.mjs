@@ -33,7 +33,8 @@ const runner = read("scripts/run-wafl-v2-alpha23-list-api.mjs");
 const listItemBlock = readModels.match(/export type WorkOrderListItem = \{([\s\S]*?)\n\};/)?.[1] ?? "";
 
 assert.match(route, /export async function GET\(request: Request\)/, "v2 list route must expose GET");
-assert.doesNotMatch(route, /export async function (POST|PATCH|PUT|DELETE)/, "alpha.23 route must remain read-only");
+assert.match(route, /handleCreateWorkOrderDraftV2/, "alpha.25 may add only the bounded create handler beside alpha.23 GET");
+assert.doesNotMatch(route, /export async function (PATCH|PUT|DELETE)/, "collection route must not add unsupported mutations");
 assert.match(routeHandler, /requireWorkspaceApiGuard\(\{ permissionCode: "workorder\.read" \}\)/, "existing auth/permission guard required");
 assert.match(routeHandler, /getWorkOrderV2ReadRuntimeGuard\(\)/, "dev/test runtime guard required before API access");
 assert.match(routeHandler, /WorkOrderApiErrorEnvelope/, "alpha.20 typed error envelope must be reused");

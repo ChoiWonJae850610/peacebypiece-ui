@@ -283,3 +283,11 @@ Menu numbers are assigned only after collision review in alpha.21~22.
 - Every core/tab DB p95 remains <= 250ms. API p50/p95/max and over-500ms outliers are logged before assertions.
 - Before/after schema fingerprint and row counts remain identical. Schema, seed, business, R2/Worker/PDF, and production mutation are false.
 - Runtime success evidence is recorded in document 21. Failure preserves a handoff and never changes `4. Newest`.
+
+## 17. Alpha.25 create/basic update Command gate
+
+- Static contract verifies the exact POST/PATCH routes, bounded scalar DTO, unknown company/member/revision field rejection, required Idempotency-Key/expectedVersion, fixed tenant write role, receipt hashing, one transaction, current-draft lock, typed conflict, append-only safe event, and no document/material/process command expansion.
+- Owner approval 전 preflight는 valid create/PATCH를 보내지 않는다. Auth, malformed/unsupported fields, missing key/version, Company C pre-mutation denial, alpha.23/24 GET regression, and identical before/after ledger/schema/row counts만 확인한다.
+- Owner approval 후에만 Company A synthetic draft 1개 create/update, same-key replay/different-payload conflict, competing PATCH single winner, finalized/cross-tenant denial, history/read-model reflection, and performance/mutation ledger를 검증한다.
+- Cleanup/reset/rollback은 실행하지 않는다. Schema/index/migration, business data, R2/Worker/PDF, production mutation은 모두 false여야 한다.
+- Runtime success evidence is recorded in document 22. Approval 전에는 APP_VERSION alpha.25 확정, commit/push/Finish, `4. Newest` 변경을 하지 않는다.

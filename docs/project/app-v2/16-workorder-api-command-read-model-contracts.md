@@ -378,3 +378,5 @@ Alpha.20에서는 어떤 runtime도 이 계약을 import하지 않았다. Alpha.
 Alpha.23 route는 기존 workspace session/permission guard, dev/test fingerprint gate, `NOBYPASSRLS` RLS role, read-only transaction을 사용한다. Production에서는 명시 feature/approval gate가 없어 route가 DB-backed guard보다 먼저 차단된다.
 
 Alpha.24 collection cursor는 company/visibility/WorkOrder/tab kind에 서명으로 결합된다. Core와 각 탭 repository callback은 claims와 한 bounded SQL, 두 statement로 유지하며 endpoint 전체 protocol call 수와 구분한다.
+
+Alpha.25는 `CreateWorkOrderDraftCommand`를 실제 적용 schema에 맞춰 actor-scoped idempotency, nullable `productTypeCode`/season/item/due date, quantity, memo로 좁히고 `PatchWorkOrderBasicInfoCommand`를 current draft scalar update에만 연결한다. Valid mutation은 별도 owner approval 전 실행하지 않으며, create/R0/event/receipt와 patch/current-revision/event는 각각 한 tenant-role transaction을 사용한다.

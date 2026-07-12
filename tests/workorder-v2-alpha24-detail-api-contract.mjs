@@ -20,7 +20,12 @@ for (const routePath of routePaths) {
   assert.ok(fs.existsSync(path.join(root, routePath)), `missing alpha.24 route: ${routePath}`);
   const route = read(routePath);
   assert.match(route, /export async function GET\(/, `${routePath} must expose GET`);
-  assert.doesNotMatch(route, /export async function (POST|PATCH|PUT|DELETE)/, `${routePath} must remain read-only`);
+  if (routePath === "app/api/v2/work-orders/[workOrderId]/route.ts") {
+    assert.doesNotMatch(route, /export async function (POST|PUT|DELETE)/, `${routePath} may add only alpha.25 PATCH beside GET`);
+    assert.match(route, /handlePatchWorkOrderBasicInfoV2/, `${routePath} must use the bounded alpha.25 PATCH handler`);
+  } else {
+    assert.doesNotMatch(route, /export async function (POST|PATCH|PUT|DELETE)/, `${routePath} must remain read-only`);
+  }
 }
 
 const repository = read("lib/domain/work-orders/read/detailRepository.ts");

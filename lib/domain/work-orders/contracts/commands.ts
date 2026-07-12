@@ -15,6 +15,7 @@ import type {
   PartnerId,
   PomColumnId,
   ProcessId,
+  RevisionNumber,
   SizeRowId,
   SizeTemplateId,
   WorkOrderId,
@@ -38,25 +39,42 @@ export type IdempotentWorkOrderCommand = VersionedWorkOrderCommand & {
 };
 
 export type CreateWorkOrderDraftCommand = CommandRequest & {
+  readonly idempotencyKey: IdempotencyKey;
   readonly productName: string;
-  readonly seasonCode: string;
-  readonly itemCode: string;
-  readonly categoryCode: string;
-  readonly productTypeAlias?: string | null;
+  readonly productTypeCode?: string | null;
+  readonly seasonCode?: string | null;
+  readonly itemCode?: string | null;
   readonly dueDate?: IsoDate | null;
   readonly totalQuantity?: number | null;
+  readonly memo?: string | null;
 };
 
 export type PatchWorkOrderBasicInfoCommand = VersionedWorkOrderCommand & {
   readonly patch: {
     readonly productName?: string;
-    readonly seasonCode?: string;
-    readonly itemCode?: string;
-    readonly categoryCode?: string;
-    readonly productTypeAlias?: string | null;
+    readonly productTypeCode?: string | null;
+    readonly seasonCode?: string | null;
+    readonly itemCode?: string | null;
     readonly dueDate?: IsoDate | null;
     readonly totalQuantity?: number | null;
+    readonly memo?: string | null;
   };
+};
+
+export type WorkOrderDraftCommandResult = {
+  readonly workOrderId: WorkOrderId;
+  readonly revisionId: WorkOrderRevisionId;
+  readonly revisionNumber: RevisionNumber;
+  readonly status: "draft";
+  readonly revisionStatus: "draft";
+  readonly displayDocumentNumber: null;
+  readonly productName: string;
+  readonly productTypeCode: string | null;
+  readonly seasonCode: string | null;
+  readonly itemCode: string | null;
+  readonly dueDate: IsoDate | null;
+  readonly totalQuantity: number;
+  readonly memo: string | null;
 };
 
 export type AddWorkOrderImageCommand = VersionedWorkOrderCommand & {

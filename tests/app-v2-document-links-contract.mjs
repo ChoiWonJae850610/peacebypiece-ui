@@ -4,7 +4,7 @@ import fs from "node:fs";
 import path from "node:path";
 
 const root = process.cwd();
-const docs = Array.from({ length: 10 }, (_, index) => {
+const docs = Array.from({ length: 11 }, (_, index) => {
   const number = String(index + 12).padStart(2, "0");
   const match = fs.readdirSync(path.join(root, "docs/project/app-v2")).find((name) => name.startsWith(`${number}-`) && name.endsWith(".md"));
   assert.ok(match, `missing app-v2 document ${number}`);
@@ -32,8 +32,10 @@ for (const file of docs) {
 for (const [file, token] of [
   ["AGENTS.md", "20-workorder-list-read-api-evidence.md"],
   ["AGENTS.md", "21-workorder-detail-lazy-read-api-evidence.md"],
+  ["AGENTS.md", "22-workorder-create-basic-update-command-evidence.md"],
   ["docs/project/app-v2/00-start-here.md", "20-workorder-list-read-api-evidence.md"],
   ["docs/project/app-v2/00-start-here.md", "21-workorder-detail-lazy-read-api-evidence.md"],
+  ["docs/project/app-v2/00-start-here.md", "22-workorder-create-basic-update-command-evidence.md"],
   ["docs/project/app-v2/08-roadmap-2.0.md", "2.0.0-alpha.23"],
   ["docs/codex-current-state.md", "# 2.0.0-alpha.23"],
   ["docs/codex-current-state.md", "# 2.0.0-alpha.24"],

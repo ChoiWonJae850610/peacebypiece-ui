@@ -1,3 +1,23 @@
+# 2.0.0-alpha.25 WAFL v2 WorkOrder Create and Basic Update Command Vertical Slice
+
+- Current source checkpoint: Command implementation and the explicitly approved dev/test runtime matrix are complete. Final Git delivery identity is recorded in the matching repo-state artifact.
+- Baseline source remains `2.0.0-alpha.24`, commit `e0ea9b51d8a846fc6f6eb243c0e3a1642096c367`, synchronized clean `master` before this work.
+- Routes: `POST /api/v2/work-orders` and `PATCH /api/v2/work-orders/:workOrderId`; alpha.23 list and alpha.24 detail/lazy GET handlers remain mounted.
+- Create is draft/R0 only, does not allocate a display document number, and requires an actor-scoped hashed idempotency receipt.
+- PATCH accepts bounded scalar basic information, requires `expectedVersion`, locks only the current draft revision, and returns typed 409 conflict/lock/revision errors.
+- Create/revision/event/receipt and WorkOrder/revision/event updates share one fixed `wafl_v2_tenant_runtime` transaction. Raw idempotency/auth tokens, DB URL, storage keys, signed URLs, document snapshots, and session claims are not persisted or logged.
+- Static/build checkpoint before the approved runtime: targeted ESLint, alpha.20~25 contracts, root/mobile TypeScript, Expo config, Next build, route guards, docs/Mermaid, Unicode/PowerShell, and mutation audit PASS; mutation audit remains 189 findings with 0 high-risk.
+- Read-only preflight fingerprint `01e5dcc7fea3`: valid create/PATCH sent false, Company C pre-mutation `FORBIDDEN`, alpha.23/24 GET regression, ledger 7/7, and before/after schema/row snapshot equality PASS.
+- Preflight log: `OK_Wafl_V2_Alpha25_Command_Preflight_2.0.0-alpha.24-20260712-085501.txt`.
+- Approved Command runtime fingerprint `01e5dcc7fea3`: Company A synthetic WorkOrder/R0/hashed receipt `+1/+1/+1`, audit event `+3`, and exactly two successful PATCH version transitions PASS.
+- Idempotent replay and same-key/different-payload conflict, optimistic concurrency single winner, Company B/H cross-company denial, Company C `FORBIDDEN`, finalized revision `LOCKED`, and alpha.23/24 Read API regression PASS.
+- Runtime log: `OK_Wafl_V2_Alpha25_Command_Runtime_2.0.0-alpha.24-20260712-090516.txt`; create/update DB time `715.57ms`/`529.44ms`, API time `1381.97ms`/`687.03ms` in the one-shot evidence run.
+- APP_VERSION and mobile metadata are `2.0.0-alpha.25` after runtime PASS.
+- Dev/test synthetic test-data mutation occurred only in the approved retained scope. No migration/index/schema validation, seed, cleanup/reset/rollback, business data, R2/Worker/PDF, production access, or production mutation occurred.
+- Canonical alpha.25 evidence: `docs/project/app-v2/22-workorder-create-basic-update-command-evidence.md`.
+
+---
+
 # 2.0.0-alpha.24 WAFL v2 WorkOrder Detail and Lazy Read API Vertical Slice
 
 - Current GPT checkpoint: `2.0.0-alpha.24` implementation and approved dev/test read-only runtime verification complete. Final Git delivery identity is recorded in the matching repo-state artifact.

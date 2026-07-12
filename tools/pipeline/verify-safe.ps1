@@ -457,6 +457,52 @@ function InvokeWaflV2Alpha24EvidenceCheck {
     return [pscustomobject]@{ Name = $name; CommandLine = $commandLine; Passed = $false; Skipped = $false; ExitCode = 1; FindingCount = ""; HighRiskCount = ""; OutputSummary = "alpha.24 evidence contract mismatch" }
 }
 
+function InvokeWaflV2Alpha25EvidenceCheck {
+    $name = "WAFL v2 alpha.25 WorkOrder Command runtime evidence"
+    $commandLine = "Logs/DB_Audit alpha.25 approved dev/test Command evidence"
+    if ($CheckOnly) {
+        return [pscustomobject]@{ Name = $name; CommandLine = $commandLine; Passed = $true; Skipped = $true; ExitCode = 0; FindingCount = ""; HighRiskCount = ""; OutputSummary = "check-only" }
+    }
+
+    $dbAuditDir = Join-Path (Split-Path -Parent $RepoStatusDir) "DB_Audit"
+    $evidenceFile = Get-ChildItem -LiteralPath $dbAuditDir -File -Filter "OK_Wafl_V2_Alpha25_Command_Runtime_*.txt" -ErrorAction SilentlyContinue |
+        Sort-Object LastWriteTime -Descending |
+        Select-Object -First 1
+    if ($null -eq $evidenceFile) {
+        return [pscustomobject]@{ Name = $name; CommandLine = $commandLine; Passed = $false; Skipped = $false; ExitCode = 1; FindingCount = ""; HighRiskCount = ""; OutputSummary = "alpha.25 runtime evidence missing" }
+    }
+
+    $evidence = Get-Content -LiteralPath $evidenceFile.FullName -Raw -Encoding UTF8
+    $checks = @(
+        ($evidence -match 'version=2\.0\.0-alpha\.25'),
+        ($evidence -match 'Dev/test target fingerprint:\s*01e5dcc7fea3'),
+        ($evidence -match 'Created synthetic WorkOrders:\s*1'),
+        ($evidence -match 'Updated synthetic WorkOrders:\s*1 unique row; 2 successful version transitions'),
+        ($evidence -match 'Idempotency single effect/different payload conflict:\s*PASS'),
+        ($evidence -match 'Optimistic concurrency single winner:\s*PASS'),
+        ($evidence -match 'Tenant isolation and Company C FORBIDDEN:\s*PASS'),
+        ($evidence -match 'Revision immutability:\s*PASS'),
+        ($evidence -match 'Audit/history events:\s*3 PASS'),
+        ($evidence -match 'Alpha\.23/24 Read API regression:\s*PASS'),
+        ($evidence -match 'DB migration/schema/index mutation:\s*false'),
+        ($evidence -match 'Dev/Test DB test-data mutation:\s*true; one retained alpha\.25 synthetic WorkOrder/R0/receipt and three events'),
+        ($evidence -match 'Business/R2/Worker/PDF mutation:\s*false'),
+        ($evidence -match 'Production access/mutation:\s*false'),
+        ($evidence -match 'Result:\s*PASS')
+    )
+    $passed = @($checks | Where-Object { -not $_ }).Count -eq 0
+    if ($passed) {
+        $script:WaflV2Alpha25Evidence = [pscustomobject]@{
+            RuntimeLog = $evidenceFile.FullName
+            CommandMetrics = [regex]::Match($evidence, 'Command metrics \(sanitized\):\s*(\{.*\})').Groups[1].Value
+        }
+        Write-Host "[PASS] $name"
+        return [pscustomobject]@{ Name = $name; CommandLine = $commandLine; Passed = $true; Skipped = $false; ExitCode = 0; FindingCount = ""; HighRiskCount = ""; OutputSummary = $evidenceFile.Name }
+    }
+
+    return [pscustomobject]@{ Name = $name; CommandLine = $commandLine; Passed = $false; Skipped = $false; ExitCode = 1; FindingCount = ""; HighRiskCount = ""; OutputSummary = "alpha.25 evidence contract mismatch" }
+}
+
 function InvokePackageScriptCheck {
     param(
         [string]$Name,
@@ -757,6 +803,7 @@ $profileCommands = @{
         @{ Name = "workorder v2 alpha.22 dev/test runner contract"; Command = "node"; Arguments = @("tests/workorder-v2-alpha22-dev-test-runner-contract.mjs") },
         @{ Name = "workorder v2 alpha.23 list API contract"; Command = "node"; Arguments = @("tests/workorder-v2-alpha23-list-api-contract.mjs") },
         @{ Name = "workorder v2 alpha.24 detail/lazy API contract"; Command = "node"; Arguments = @("tests/workorder-v2-alpha24-detail-api-contract.mjs") },
+        @{ Name = "workorder v2 alpha.25 command API static contract"; Command = "node"; Arguments = @("tests/workorder-v2-alpha25-command-api-contract.mjs") },
         @{ Name = "app-v2 document links and Mermaid contract"; Command = "node"; Arguments = @("tests/app-v2-document-links-contract.mjs") },
         @{ Name = "unicode encoding contract"; Command = "node"; Arguments = @("tests/unicode-encoding-contract.mjs") },
         @{ Name = "PowerShell encoding contract"; Command = "node"; Arguments = @("tests/pipeline-powershell-encoding-contract.mjs") },
@@ -1303,6 +1350,11 @@ if ($Profile -eq "automation-infrastructure" -and (GetProjectAppVersion) -eq "2.
     $results.Add((InvokeWaflV2Alpha23EvidenceCheck))
     $results.Add((InvokeWaflV2Alpha24EvidenceCheck))
 }
+if ($Profile -eq "automation-infrastructure" -and (GetProjectAppVersion) -eq "2.0.0-alpha.25") {
+    $results.Add((InvokeWaflV2Alpha23EvidenceCheck))
+    $results.Add((InvokeWaflV2Alpha24EvidenceCheck))
+    $results.Add((InvokeWaflV2Alpha25EvidenceCheck))
+}
 
 $failedResults = @($results | Where-Object { -not $_.Passed })
 $status = if ($CheckOnly) { "CHECK_ONLY" } elseif ($failedResults.Count -eq 0) { "PASS" } else { "FAIL" }
@@ -1364,7 +1416,7 @@ if ($null -ne $script:WaflV2Alpha23Evidence -and (GetProjectAppVersion) -eq "2.0
     $lines.Add("V2 Alpha.23 Cursor 5000: $($script:WaflV2Alpha23Evidence.Cursor5000)")
     $lines.Add("V2 Alpha.23 Default 30 Payload Bytes: $($script:WaflV2Alpha23Evidence.DefaultPayloadBytes)")
 }
-if ($null -ne $script:WaflV2Alpha24Evidence) {
+if ($null -ne $script:WaflV2Alpha24Evidence -and (GetProjectAppVersion) -eq "2.0.0-alpha.24") {
     $lines.Add("")
     $lines.Add("DB Migration Apply Result: NOT_APPLIED - alpha.24 reused ledger 7 and index 007")
     $lines.Add("Post-Apply Audit Result: NOT_APPLICABLE - read-only detail/lazy API verification")
@@ -1382,6 +1434,23 @@ if ($null -ne $script:WaflV2Alpha24Evidence) {
     $lines.Add("V2 Alpha.24 Route Metric Count: $($script:WaflV2Alpha24Evidence.RouteMetricCount)")
     $lines.Add("V2 Alpha.24 Accessory Cursor: $($script:WaflV2Alpha24Evidence.AccessoryCursor)")
     $lines.Add("V2 Alpha.24 Asset Cursor: $($script:WaflV2Alpha24Evidence.AssetCursor)")
+}
+if ($null -ne $script:WaflV2Alpha25Evidence -and (GetProjectAppVersion) -eq "2.0.0-alpha.25") {
+    $lines.Add("")
+    $lines.Add("DB Migration Apply Result: NOT_APPLIED - alpha.25 reused ledger 7 and index 007")
+    $lines.Add("Post-Apply Audit Result: NOT_APPLICABLE - approved Command runtime without schema mutation")
+    $lines.Add("Schema Migration This Run: false")
+    $lines.Add("Dev/Test DB Test-Data Mutation: true; one retained alpha.25 synthetic WorkOrder/R0/receipt and three events")
+    $lines.Add("Dev/Test Fixture Mutation: true; approved deterministic synthetic Command fixture only")
+    $lines.Add("Business Data Mutation: false")
+    $lines.Add("Production Business Data Mutation: false")
+    $lines.Add("Dev/Test R2 Mutation: false")
+    $lines.Add("Production Mutation: false")
+    $lines.Add("E2E/Smoke Summary: PASS - create, idempotency, basic update, optimistic concurrency, tenant isolation, revision lock, audit and alpha.23/24 reads")
+    $lines.Add("Manual QA Status: NOT_APPLICABLE - API Command vertical slice")
+    $lines.Add("V2 Migration Ledger: 7/7 PASS; reused without alpha.25 schema mutation")
+    $lines.Add("V2 Alpha.25 Runtime Log: $($script:WaflV2Alpha25Evidence.RuntimeLog)")
+    $lines.Add("V2 Alpha.25 Command Metrics: $($script:WaflV2Alpha25Evidence.CommandMetrics)")
 }
 [System.IO.File]::WriteAllLines($resultPath, $lines, [System.Text.Encoding]::UTF8)
 

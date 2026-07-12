@@ -77,6 +77,8 @@ param(
     [switch]$RunWaflV2DevTestVerification,
     [switch]$RunWaflV2Alpha23ListApiVerification,
     [switch]$RunWaflV2Alpha24DetailApiVerification,
+    [switch]$RunWaflV2Alpha25CommandPreflight,
+    [switch]$RunWaflV2Alpha25CommandRuntimeVerification,
     [string]$WaflV2Confirmation = "",
     [switch]$CreateWaflV2FailureHandoff,
     [string]$WaflV2FailureStage = "",
@@ -3030,6 +3032,166 @@ function InvokeWaflV2Alpha24DetailApiVerification {
     }
 }
 
+function InvokeWaflV2Alpha25CommandPreflight {
+    param(
+        [string]$Confirmation = "",
+        [bool]$PauseAfter = $true
+    )
+
+    if (-not (LoadEnvLocalForSmokeTest)) { if ($PauseAfter) { WaitForDeveloperToolsMenu }; return 1 }
+    $runtime = [string]$env:NEXT_PUBLIC_APP_RUNTIME_MODE
+    if ([string]::IsNullOrWhiteSpace($runtime)) { $runtime = [string]$env:NODE_ENV }
+    $guard = TestReadOnlyDbAuditGuard -Runtime $runtime -DatabaseUrl $env:DATABASE_URL
+    $testPrefix = ([string]$PipelineConfig.Simulator.TestPrefix).Trim()
+    $expectedConfirmation = "VERIFY WAFL V2 ALPHA25 COMMAND PREFLIGHT"
+
+    Write-Host ""
+    Write-Host "WAFL v2 alpha.25 WorkOrder Command read-only preflight guard"
+    Write-Host "- Runtime: $($guard.Runtime)"
+    Write-Host "- Fingerprint: $($guard.Fingerprint)"
+    Write-Host "- Prefix: $testPrefix"
+    Write-Host "- Target result: $($guard.Reason)"
+    Write-Host "- Mutation: none; valid POST/PATCH and mutation approval are prohibited"
+
+    if (-not $guard.Passed -or $testPrefix -ne "wafl-fn") {
+        LogError "WAFL v2 alpha.25 Command preflight가 차단되었습니다. 승인된 dev/test DB와 wafl-fn prefix만 허용합니다."
+        if ($PauseAfter) { WaitForDeveloperToolsMenu }
+        return 2
+    }
+    if ($Confirmation -cne $expectedConfirmation) {
+        LogError "WAFL v2 alpha.25 Command preflight confirmation이 일치하지 않아 검증이 차단되었습니다."
+        if ($PauseAfter) { WaitForDeveloperToolsMenu }
+        return 3
+    }
+
+    $previousRuntime = $env:WAFL_V2_RUNTIME
+    $previousFingerprint = $env:WAFL_V2_APPROVED_DB_FINGERPRINT
+    $previousPrefix = $env:WAFL_V2_TEST_PREFIX
+    $previousConfirmation = $env:WAFL_V2_CONFIRMATION
+    $previousReadApproval = $env:WAFL_V2_READ_APPROVED
+    $previousReadApiEnabled = $env:WAFL_V2_READ_API_ENABLED
+    $previousCommandApiEnabled = $env:WAFL_V2_COMMAND_API_ENABLED
+    $previousMutationApproval = $env:WAFL_V2_COMMAND_MUTATION_APPROVED
+    try {
+        $env:WAFL_V2_RUNTIME = $guard.Runtime
+        $env:WAFL_V2_APPROVED_DB_FINGERPRINT = [string]$PipelineConfig.Simulator.ApprovedDbFingerprint
+        $env:WAFL_V2_TEST_PREFIX = $testPrefix
+        $env:WAFL_V2_CONFIRMATION = $Confirmation
+        $env:WAFL_V2_READ_APPROVED = "1"
+        $env:WAFL_V2_READ_API_ENABLED = "1"
+        $env:WAFL_V2_COMMAND_API_ENABLED = "1"
+        Remove-Item Env:WAFL_V2_COMMAND_MUTATION_APPROVED -ErrorAction SilentlyContinue
+
+        $label = "Wafl_V2_Alpha25_Command_Preflight"
+        $dbAuditLogDir = Join-Path (Split-Path -Parent $LogDir) "DB_Audit"
+        $result = InvokeProjectCommandWithResultFile -Title "WAFL v2 alpha.25 WorkOrder Command read-only preflight" -Label $label -NpmCommand "node scripts/run-wafl-v2-alpha25-command-preflight.mjs" -LoadEnvLocal $false -PauseAfter $PauseAfter -ResultDirectory $dbAuditLogDir
+        if ($null -ne $result -and [int]$result -ne 0) {
+            $failureLog = Get-ChildItem -LiteralPath $dbAuditLogDir -File -Filter "Failed_${label}_*.txt" -ErrorAction SilentlyContinue |
+                Sort-Object LastWriteTime -Descending |
+                Select-Object -First 1
+            if ($null -ne $failureLog) {
+                try {
+                    NewWaflV2FailureHandoff -FailureStage "alpha25-command-preflight" -FailureLogPath $failureLog.FullName | Out-Null
+                }
+                catch {
+                    LogError "WAFL v2 alpha.25 preflight failure handoff 생성 실패: $($_.Exception.Message)"
+                }
+            }
+        }
+        return $result
+    }
+    finally {
+        if ($null -eq $previousRuntime) { Remove-Item Env:WAFL_V2_RUNTIME -ErrorAction SilentlyContinue } else { $env:WAFL_V2_RUNTIME = $previousRuntime }
+        if ($null -eq $previousFingerprint) { Remove-Item Env:WAFL_V2_APPROVED_DB_FINGERPRINT -ErrorAction SilentlyContinue } else { $env:WAFL_V2_APPROVED_DB_FINGERPRINT = $previousFingerprint }
+        if ($null -eq $previousPrefix) { Remove-Item Env:WAFL_V2_TEST_PREFIX -ErrorAction SilentlyContinue } else { $env:WAFL_V2_TEST_PREFIX = $previousPrefix }
+        if ($null -eq $previousConfirmation) { Remove-Item Env:WAFL_V2_CONFIRMATION -ErrorAction SilentlyContinue } else { $env:WAFL_V2_CONFIRMATION = $previousConfirmation }
+        if ($null -eq $previousReadApproval) { Remove-Item Env:WAFL_V2_READ_APPROVED -ErrorAction SilentlyContinue } else { $env:WAFL_V2_READ_APPROVED = $previousReadApproval }
+        if ($null -eq $previousReadApiEnabled) { Remove-Item Env:WAFL_V2_READ_API_ENABLED -ErrorAction SilentlyContinue } else { $env:WAFL_V2_READ_API_ENABLED = $previousReadApiEnabled }
+        if ($null -eq $previousCommandApiEnabled) { Remove-Item Env:WAFL_V2_COMMAND_API_ENABLED -ErrorAction SilentlyContinue } else { $env:WAFL_V2_COMMAND_API_ENABLED = $previousCommandApiEnabled }
+        if ($null -eq $previousMutationApproval) { Remove-Item Env:WAFL_V2_COMMAND_MUTATION_APPROVED -ErrorAction SilentlyContinue } else { $env:WAFL_V2_COMMAND_MUTATION_APPROVED = $previousMutationApproval }
+    }
+}
+
+function InvokeWaflV2Alpha25CommandRuntimeVerification {
+    param(
+        [string]$Confirmation = "",
+        [bool]$PauseAfter = $true
+    )
+
+    if (-not (LoadEnvLocalForSmokeTest)) { if ($PauseAfter) { WaitForDeveloperToolsMenu }; return 1 }
+    $runtime = [string]$env:NEXT_PUBLIC_APP_RUNTIME_MODE
+    if ([string]::IsNullOrWhiteSpace($runtime)) { $runtime = [string]$env:NODE_ENV }
+    $guard = TestReadOnlyDbAuditGuard -Runtime $runtime -DatabaseUrl $env:DATABASE_URL
+    $testPrefix = ([string]$PipelineConfig.Simulator.TestPrefix).Trim()
+    $expectedConfirmation = "EXECUTE WAFL V2 ALPHA25 COMMAND RUNTIME"
+
+    Write-Host ""
+    Write-Host "WAFL v2 alpha.25 WorkOrder Command mutation guard"
+    Write-Host "- Runtime: $($guard.Runtime)"
+    Write-Host "- Fingerprint: $($guard.Fingerprint)"
+    Write-Host "- Prefix: $testPrefix"
+    Write-Host "- Target result: $($guard.Reason)"
+    Write-Host "- Mutation: Company A synthetic WorkOrder 1, R0 1, receipt 1, events 3; no cleanup"
+
+    if (-not $guard.Passed -or $testPrefix -ne "wafl-fn") {
+        LogError "WAFL v2 alpha.25 Command runtime이 차단되었습니다. 승인된 dev/test DB와 wafl-fn prefix만 허용합니다."
+        if ($PauseAfter) { WaitForDeveloperToolsMenu }
+        return 2
+    }
+    if ($Confirmation -cne $expectedConfirmation) {
+        LogError "WAFL v2 alpha.25 Command runtime confirmation이 일치하지 않아 mutation이 차단되었습니다."
+        if ($PauseAfter) { WaitForDeveloperToolsMenu }
+        return 3
+    }
+
+    $previousRuntime = $env:WAFL_V2_RUNTIME
+    $previousFingerprint = $env:WAFL_V2_APPROVED_DB_FINGERPRINT
+    $previousPrefix = $env:WAFL_V2_TEST_PREFIX
+    $previousConfirmation = $env:WAFL_V2_CONFIRMATION
+    $previousReadApproval = $env:WAFL_V2_READ_APPROVED
+    $previousReadApiEnabled = $env:WAFL_V2_READ_API_ENABLED
+    $previousCommandApiEnabled = $env:WAFL_V2_COMMAND_API_ENABLED
+    $previousMutationApproval = $env:WAFL_V2_COMMAND_MUTATION_APPROVED
+    try {
+        $env:WAFL_V2_RUNTIME = $guard.Runtime
+        $env:WAFL_V2_APPROVED_DB_FINGERPRINT = [string]$PipelineConfig.Simulator.ApprovedDbFingerprint
+        $env:WAFL_V2_TEST_PREFIX = $testPrefix
+        $env:WAFL_V2_CONFIRMATION = $Confirmation
+        $env:WAFL_V2_READ_APPROVED = "1"
+        $env:WAFL_V2_READ_API_ENABLED = "1"
+        $env:WAFL_V2_COMMAND_API_ENABLED = "1"
+        $env:WAFL_V2_COMMAND_MUTATION_APPROVED = "2.0.0-alpha.25-dev-test-command-runtime"
+
+        $label = "Wafl_V2_Alpha25_Command_Runtime"
+        $dbAuditLogDir = Join-Path (Split-Path -Parent $LogDir) "DB_Audit"
+        $result = InvokeProjectCommandWithResultFile -Title "WAFL v2 alpha.25 WorkOrder Command approved dev/test runtime" -Label $label -NpmCommand "node scripts/run-wafl-v2-alpha25-command-runtime.mjs" -LoadEnvLocal $false -PauseAfter $PauseAfter -ResultDirectory $dbAuditLogDir
+        if ($null -ne $result -and [int]$result -ne 0) {
+            $failureLog = Get-ChildItem -LiteralPath $dbAuditLogDir -File -Filter "Failed_${label}_*.txt" -ErrorAction SilentlyContinue |
+                Sort-Object LastWriteTime -Descending |
+                Select-Object -First 1
+            if ($null -ne $failureLog) {
+                try {
+                    NewWaflV2FailureHandoff -FailureStage "alpha25-command-runtime" -FailureLogPath $failureLog.FullName | Out-Null
+                }
+                catch {
+                    LogError "WAFL v2 alpha.25 runtime failure handoff 생성 실패: $($_.Exception.Message)"
+                }
+            }
+        }
+        return $result
+    }
+    finally {
+        if ($null -eq $previousRuntime) { Remove-Item Env:WAFL_V2_RUNTIME -ErrorAction SilentlyContinue } else { $env:WAFL_V2_RUNTIME = $previousRuntime }
+        if ($null -eq $previousFingerprint) { Remove-Item Env:WAFL_V2_APPROVED_DB_FINGERPRINT -ErrorAction SilentlyContinue } else { $env:WAFL_V2_APPROVED_DB_FINGERPRINT = $previousFingerprint }
+        if ($null -eq $previousPrefix) { Remove-Item Env:WAFL_V2_TEST_PREFIX -ErrorAction SilentlyContinue } else { $env:WAFL_V2_TEST_PREFIX = $previousPrefix }
+        if ($null -eq $previousConfirmation) { Remove-Item Env:WAFL_V2_CONFIRMATION -ErrorAction SilentlyContinue } else { $env:WAFL_V2_CONFIRMATION = $previousConfirmation }
+        if ($null -eq $previousReadApproval) { Remove-Item Env:WAFL_V2_READ_APPROVED -ErrorAction SilentlyContinue } else { $env:WAFL_V2_READ_APPROVED = $previousReadApproval }
+        if ($null -eq $previousReadApiEnabled) { Remove-Item Env:WAFL_V2_READ_API_ENABLED -ErrorAction SilentlyContinue } else { $env:WAFL_V2_READ_API_ENABLED = $previousReadApiEnabled }
+        if ($null -eq $previousCommandApiEnabled) { Remove-Item Env:WAFL_V2_COMMAND_API_ENABLED -ErrorAction SilentlyContinue } else { $env:WAFL_V2_COMMAND_API_ENABLED = $previousCommandApiEnabled }
+        if ($null -eq $previousMutationApproval) { Remove-Item Env:WAFL_V2_COMMAND_MUTATION_APPROVED -ErrorAction SilentlyContinue } else { $env:WAFL_V2_COMMAND_MUTATION_APPROVED = $previousMutationApproval }
+    }
+}
+
 function InvokeApprovedDbSmokeCommand {
     param([string]$Command, [string]$Title, [string]$Label, [bool]$PauseAfter = $true)
 
@@ -4124,6 +4286,14 @@ elseif ($RunWaflV2Alpha23ListApiVerification) {
 }
 elseif ($RunWaflV2Alpha24DetailApiVerification) {
     $exitCode = InvokeWaflV2Alpha24DetailApiVerification -Confirmation $WaflV2Confirmation -PauseAfter $false
+    if ($null -ne $exitCode) { exit ([int]$exitCode) }
+}
+elseif ($RunWaflV2Alpha25CommandPreflight) {
+    $exitCode = InvokeWaflV2Alpha25CommandPreflight -Confirmation $WaflV2Confirmation -PauseAfter $false
+    if ($null -ne $exitCode) { exit ([int]$exitCode) }
+}
+elseif ($RunWaflV2Alpha25CommandRuntimeVerification) {
+    $exitCode = InvokeWaflV2Alpha25CommandRuntimeVerification -Confirmation $WaflV2Confirmation -PauseAfter $false
     if ($null -ne $exitCode) { exit ([int]$exitCode) }
 }
 elseif ($RunSignupConsentCompatibilityAudit) {

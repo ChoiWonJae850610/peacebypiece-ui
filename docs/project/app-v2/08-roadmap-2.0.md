@@ -388,6 +388,22 @@ Status: done. Final Git delivery identity is recorded in the matching repo-state
 - Runtime correctness: A/H/B reads, C `FORBIDDEN`, generic cross-company `NOT_FOUND`, typed errors, accessory/assets cursor duplicate/missing 0, forbidden-field scanner, payload budgets, and pre/post DB snapshot equality PASS.
 - Runtime mutation accounting: schema, seed, business data, R2/Worker/PDF, and production mutation are all false. Two failed read-only cycles remain preserved as failure handoffs and do not enter `4. Newest`.
 
+### 2.0.0-alpha.25
+
+Status: implemented and approved dev/test Command runtime verified.
+
+- Add only `POST /api/v2/work-orders` and `PATCH /api/v2/work-orders/:workOrderId` for draft create and current-draft scalar basic-info update.
+- Reuse authenticated company/member scope, `workorder.create`/`workorder.update`, the fixed `NOBYPASSRLS` tenant role, migration ledger 7, and the existing command receipt/domain event schema.
+- Require a create Idempotency-Key, actor-scoped hashed receipt key, one-effect replay, and typed conflict for same-key/different-payload reuse.
+- Require `expectedVersion` and a single-winner compare-and-set update of the current draft revision only.
+- Keep create/revision/event/receipt and WorkOrder/revision/event updates inside one transaction; partial mutation is forbidden.
+- Do not issue a display document number or connect materials, processes, revision issue, PDF/QR/R2/Worker, mobile, business data, or production.
+- Before explicit owner approval, run only static checks and invalid/auth/read-regression preflight requests with identical before/after DB snapshots. Keep APP_VERSION at alpha.24 and do not commit/push/Finish.
+- Preflight result: approved fingerprint `01e5dcc7fea3`, ledger 7/7, Company C pre-mutation denial, alpha.23/24 GET regression, and identical before/after schema/row snapshots PASS. No valid POST/PATCH or mutation was executed.
+- Approved runtime result: Company A synthetic WorkOrder/R0/hashed receipt `+1/+1/+1`, audit event `+3`, and two successful version transitions; idempotency, optimistic concurrency, tenant isolation, Company C `FORBIDDEN`, finalized revision `LOCKED`, and alpha.23/24 Read regression PASS.
+- Runtime performance evidence: create/replay/update DB `715.57ms`/`453.82ms`/`529.44ms`; API `1381.97ms`/`606.16ms`/`687.03ms`. These are one-shot Command evidence values, not a production performance baseline.
+- Runtime mutation accounting: approved dev/test synthetic test data only. Migration/schema/index, seed, cleanup/reset/rollback, business data, R2/Worker/PDF, and production mutation are false.
+
 ## Later integration phases
 
 API, DB, R2, PDF, Worker, native auth, and production deployment integration must be separate phases after mock app structure is stable.

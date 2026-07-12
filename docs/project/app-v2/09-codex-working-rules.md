@@ -44,11 +44,15 @@ Before any App-first file modification, read:
 19. `docs/project/app-v2/16-workorder-api-command-read-model-contracts.md`
 20. `docs/project/app-v2/17-v2-api-contract-test-plan.md`
 21. `docs/project/app-v2/18-v2-additive-migration-draft-and-schema-contract.md`
-22. `docs/project/v2/00-start-here.md` through `docs/project/v2/14-operational-policy-absorption.md`
-23. `docs/project/25-korean-unicode-encoding-standard.md`
-24. `docs/project/32-product-completion-and-ui-evidence-standard.md`
-25. `docs/project/26-final-policy-decisions-and-master-todo.md`
-26. `docs/project/31-pre-codex-integrated-master-plan.md`
+22. `docs/project/app-v2/19-v2-dev-test-migration-and-performance-evidence.md`
+23. `docs/project/app-v2/20-workorder-list-read-api-evidence.md`
+24. `docs/project/app-v2/21-workorder-detail-lazy-read-api-evidence.md`
+25. `docs/project/app-v2/22-workorder-create-basic-update-command-evidence.md`
+26. `docs/project/v2/00-start-here.md` through `docs/project/v2/14-operational-policy-absorption.md`
+27. `docs/project/25-korean-unicode-encoding-standard.md`
+28. `docs/project/32-product-completion-and-ui-evidence-standard.md`
+29. `docs/project/26-final-policy-decisions-and-master-todo.md`
+30. `docs/project/31-pre-codex-integrated-master-plan.md`
 
 ## 4. Newest rule
 
@@ -383,3 +387,13 @@ For the alpha.18 mobile/tablet mock:
 - Asset/document/history responses must omit storage keys, snapshots, token hashes, raw/signed URLs, secrets, privileged metadata, and unnecessary actor identity.
 - Reuse ledger 7, index 007, and the alpha.22 synthetic seed. Do not run migration, index, schema validation, seed, cleanup, reset, rollback, or any write command.
 - Under the owner-approved alpha.24 scope, at most three same-target read-only diagnosis/minimal-fix/static/runtime cycles are allowed. Every failed cycle creates a failure handoff, and `4. Newest` remains unchanged until successful Finish.
+
+## 2.0.0-alpha.25 WorkOrder create/basic update Command rule
+
+- Add only draft WorkOrder create and current-draft scalar basic-info PATCH. Material/process/order/revision issue/document/PDF/QR/R2/Worker/mobile commands remain out of scope.
+- Derive company and actor only from authenticated membership; reject client company/member/revision scope and use generic `NOT_FOUND` for cross-company opaque IDs.
+- Create requires an Idempotency-Key. Persist only an actor-scoped hash and request hash in the existing receipt table; never store or log the raw key.
+- PATCH requires `expectedVersion`, locks the current WorkOrder/revision, and permits one successful version transition. Finalized/non-current revisions remain immutable.
+- WorkOrder/revision/receipt/domain event writes must share one fixed tenant-role transaction. Audit failure rolls back the main mutation.
+- Source implementation, static verification, invalid-request/auth preflight, and existing GET regression may proceed without DB write. Valid create/PATCH mutation requires a separate explicit owner approval and exact command-mutation runtime gate.
+- Before that approval, keep APP_VERSION at alpha.24, do not commit/push/Finish, do not touch `4. Newest`, and do not run migration, seed, cleanup, reset, rollback, schema validation, or production access.
