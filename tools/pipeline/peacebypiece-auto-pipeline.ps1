@@ -1416,6 +1416,18 @@ function NewLocalRepoStateFile {
     AddCustomerProductUxCleanupRepoStateSections -Lines $lines -VerificationSummary $VerificationSummary
     AddWorkorderPdfLiveIntegrationRepoStateSections -Lines $lines -VerificationSummary $VerificationSummary
     AddProductUiRuntimeVerificationRepoStateSections -Lines $lines -VerificationSummary $VerificationSummary
+    if ($Version -eq "2.0.0-alpha.27") {
+        AddRepoStateSection -Lines $lines -Title "Alpha.27 Completion Status:" -Values @("ALPHA27_ISSUE_RUNTIME_AND_COMPLETION_PASS")
+        AddRepoStateSection -Lines $lines -Title "Alpha.27 Issued Document Number:" -Values @("WAFN-26FWA-A25CMD-260711-001-R0")
+        AddRepoStateSection -Lines $lines -Title "Alpha.27 WorkOrder / Revision:" -Values @("issued/finalized; versions 15/15")
+        AddRepoStateSection -Lines $lines -Title "Alpha.27 Receipt / Event:" -Values @("1/1; incomplete receipt 0; NO_PARTIAL_MUTATION")
+        AddRepoStateSection -Lines $lines -Title "WorkOrder Scalar Immutable Runtime:" -Values @("PASS - 409 LOCKED")
+        AddRepoStateSection -Lines $lines -Title "Material Scalar Immutable Runtime:" -Values @("PASS - 409 LOCKED")
+        AddRepoStateSection -Lines $lines -Title "Material Order Runtime Call:" -Values @("NOT_RUN - owner declined terminal-line order request; no eligible editing line existed")
+        AddRepoStateSection -Lines $lines -Title "Material Order Immutable Verdict:" -Values @("MATERIAL_ORDER_LOCKED_PASS_BY_SHARED_RUNTIME_GUARD_AND_STATIC_CONTRACT")
+        AddRepoStateSection -Lines $lines -Title "Material Order Static Basis:" -Values @("shared request/cancel/complete transition; issued lock before status/UPDATE/event; thrown lock rolls back provisional receipt transaction")
+        AddRepoStateSection -Lines $lines -Title "Alpha.27 Additional DB Mutation During Finalization:" -Values @("false")
+    }
     AddRepoStateSection -Lines $lines -Title "DB Migration Apply Result:" -Values @([string]$VerificationSummary.DbMigrationApplyResult)
     AddRepoStateSection -Lines $lines -Title "Post-Apply Audit Result:" -Values @([string]$VerificationSummary.PostApplyAuditResult)
     AddRepoStateSection -Lines $lines -Title "Rollback Smoke Result:" -Values @([string]$VerificationSummary.RollbackSmokeResult)
