@@ -1,0 +1,40 @@
+#!/usr/bin/env node
+import assert from "node:assert/strict";
+import fs from "node:fs";
+import path from "node:path";
+
+const root=process.cwd();const read=file=>fs.readFileSync(path.join(root,file),"utf8");
+const migration=read("db/v2/migrations/009_v2_workorder_factory_instruction_fields.sql");
+const commands=read("lib/domain/work-orders/contracts/commands.ts");const models=read("lib/domain/work-orders/contracts/read-models.ts");
+const materialValidation=read("lib/domain/work-orders/command/materialValidation.ts");const materialRepository=read("lib/domain/work-orders/command/materialCommandRepository.ts");
+const processValidation=read("lib/domain/work-orders/command/processValidation.ts");const processRepository=read("lib/domain/work-orders/command/processCommandRepository.ts");const processRoute=read("app/api/v2/work-orders/[workOrderId]/processes/[processId]/route.ts");
+const previewRepository=read("lib/domain/work-orders/read/previewRepository.ts");const preview=read("components/workorder/preview/IssuedWorkOrderPreview.tsx");const css=read("components/workorder/preview/IssuedWorkOrderPreview.module.css");const mobile=read("apps/mobile/components/ProductionCardMock.tsx");
+const runner=read("scripts/run-wafl-v2-alpha30-factory-instruction-migration.mjs");
+const preflight=read("scripts/run-wafl-v2-alpha30-factory-instruction-preflight.mjs");
+const runtime=read("scripts/run-wafl-v2-alpha30-factory-instruction-runtime.mjs");
+const continuation=read("scripts/run-wafl-v2-alpha30-issue-only-continuation.mjs");
+const evidence=read("docs/project/app-v2/27-factory-workorder-input-and-preview-evidence.md");
+
+assert.match(migration,/EXECUTION IS PROHIBITED WITHOUT THE APPROVED ALPHA\.30 DEV\/TEST GATE/);
+for(const contract of [/work_order_material_lines[\s\S]*usage_area text/,/work_order_processes[\s\S]*application_area text/,/work_order_processes[\s\S]*application_color_target text/,/work_order_revisions[\s\S]*factory_delivery_memo text/])assert.match(migration,contract);
+assert.doesNotMatch(migration,/\b(DROP|TRUNCATE|DELETE|RENAME)\b/i);assert.doesNotMatch(migration,/CREATE\s+INDEX/i);assert.doesNotMatch(migration,/\bUPDATE\b|\bINSERT\b/i);
+for(const field of ["usageArea","applicationArea","applicationColorTarget","factoryDeliveryMemo"])assert.match(`${commands}\n${models}`,new RegExp(field));
+for(const forbidden of ["sendAt","handoffAt","nextProcess","factoryDeliveryQuantity","separateRemark"])assert.doesNotMatch(`${commands}\n${models}\n${migration}`,new RegExp(forbidden,"i"));
+assert.match(materialValidation,/usageArea[\s\S]*1_000/);assert.match(materialRepository,/usage_area/);assert.match(materialRepository,/"usageArea"/);
+assert.match(processValidation,/applicationArea/);assert.match(processValidation,/applicationColorTarget/);assert.match(processRoute,/export async function PATCH/);assert.doesNotMatch(processRoute,/POST|PUT|DELETE/);
+assert.match(processRepository,/expectedVersion/);assert.match(processRepository,/work_order_status!=="draft"/);assert.match(processRepository,/revision_status!=="draft"/);assert.match(processRepository,/work_order\.process\.patch/);assert.doesNotMatch(processRepository,/const changed=\[[^\]]*"status"/);
+assert.match(previewRepository,/factory_delivery_memo/);assert.match(previewRepository,/usage_area/);assert.match(previewRepository,/application_area/);assert.match(previewRepository,/application_color_target/);
+for(const text of ["작업지시서","개정차수","제품 스케치·디자인 자료","공장 전달 메모","사용 부위","색상·사이즈 수량","사이즈 스펙","제작 공정·추가 공정"])assert.ok(preview.includes(text),`Preview missing: ${text}`);
+for(const forbidden of ["재고","발주수량</th>","단가","금액","Revision","보내는 시점","QR"])assert.doesNotMatch(preview,new RegExp(forbidden));
+assert.match(css,/@page\s*\{\s*size:\s*A4/);assert.match(css,/break-after:\s*page/);assert.match(css,/thead\s*\{\s*display:\s*table-header-group/);assert.match(css,/@media print/);
+for(const placeholder of ["앞판·뒷판 몸판","앞판 중앙, 소매 끝단, 완제품 전체","NAVY·BLACK, IVORY 제외, 전 색상 공통"])assert.ok(mobile.includes(placeholder));assert.match(mobile,/fontSize: 16/);assert.doesNotMatch(mobile,/보내는 시점|공장 전달수량|별도 비고/);
+assert.match(runner,/REQUIRED_FINGERPRINT="01e5dcc7fea3"/);assert.match(runner,/ledger-must-be-8-before-009/);assert.match(runner,/WAFL_V2_MIGRATION_APPROVED/);assert.match(runner,/BEGIN READ ONLY/);assert.match(runner,/business-row-count-mutated/);assert.doesNotMatch(runner,/\b(DROP|TRUNCATE|DELETE)\b/i);
+assert.match(preflight,/BEGIN READ ONLY/);assert.match(preflight,/ledger-must-be-9/);assert.match(preflight,/alpha30-synthetic-target-already-exists/);assert.match(preflight,/command-approval-must-be-absent/);assert.doesNotMatch(preflight,/\b(INSERT\s+INTO|UPDATE\s+[a-z_]|DELETE\s+FROM|TRUNCATE\s+TABLE|DROP\s+(TABLE|INDEX|FUNCTION))\b/i);
+for(const token of ["APPROVALS.material","APPROVALS.alpha30","APPROVALS.issue","SET LOCAL ROLE wafl_v2_tenant_runtime","alpha30-factory-instruction-process-fixture","'ready',0,1,NULL,NULL","entity_version","BEGIN READ ONLY","expectedVersion:2","expectedVersion:3","expectedVersion:4","expectedWorkOrderVersion:5","expectedRevisionVersion:5"])assert.ok(runtime.includes(token),`runtime contract missing: ${token}`);
+assert.match(runtime,/external-command-approval-must-be-absent/);assert.match(runtime,/processes\),Number\(before\.counts\.processes\)\+1/);assert.match(runtime,/receipts\),Number\(before\.counts\.receipts\)\+3/);assert.match(runtime,/events\),Number\(before\.counts\.events\)\+6/);assert.match(runtime,/documents\),Number\(before\.counts\.documents\)/);
+assert.match(runtime,/materials\?type=fabric&limit=10/);assert.doesNotMatch(runtime,/processes\?limit=/);
+assert.doesNotMatch(runtime,/\b(DROP|TRUNCATE|DELETE)\b/i);assert.doesNotMatch(runtime,/\b(cleanup|reset)\s*\(/i);
+for(const token of ["A30FACT","materialType:\"accessory\"","expectedVersion:5","assertAfterAccessory","expectedWorkOrderVersion:6","expectedRevisionVersion:6","expectedVersion:7","COMMAND_APPROVAL.issue","COMMAND_APPROVAL.material","COMMAND_APPROVAL.process","preview-not-deterministic","Receipts/events: 4/7","Versions workOrder/revision/fabric/accessory/process: 7/7/2/1/2"])assert.ok(continuation.includes(token),`continuation contract missing: ${token}`);
+assert.doesNotMatch(continuation,/INSERT INTO|process-fixture|create_draft|cleanup|reset/i);assert.equal((continuation.match(/revisions\/issue/g)??[]).length,1,"continuation must contain exactly one issue route");assert.equal((continuation.match(/materialType:\"accessory\"/g)??[]).length,1,"continuation must contain exactly one accessory create payload");assert.match(continuation,/fixture-approval-must-be-absent/);
+for(const token of ["ALPHA30_COMMAND_RUNTIME_AND_COMPLETION_PASS","WorkOrder/revision 7/7","fabric/accessory/process versions 2/1/2","receipts/events 4/7","incomplete receipt 0","one document number","no next draft","no generated document"])assert.ok(evidence.includes(token),`evidence missing: ${token}`);
+console.log("workorder v2 alpha.30 factory instruction contract: PASS");

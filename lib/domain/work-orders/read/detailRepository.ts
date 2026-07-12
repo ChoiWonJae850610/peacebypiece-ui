@@ -120,7 +120,7 @@ export const WORK_ORDER_V2_DETAIL_CORE_SQL = `
 export const WORK_ORDER_V2_MATERIALS_SQL = `
   WITH target AS MATERIALIZED (${TARGET_SQL})
   SELECT t.id AS work_order_id, t.current_revision_id, t.entity_version,
-         m.id, m.material_id, m.material_type, m.name, m.color_option,
+         m.id, m.material_id, m.material_type, m.name, m.color_option, m.usage_area,
          m.supplier_partner_id, NULL::text AS partner_name, m.required_quantity,
          m.allowance_quantity, m.inventory_usage_quantity, m.order_quantity,
          m.unit_code, m.unit_price, m.amount, m.memo, m.status, m.display_order
@@ -199,7 +199,7 @@ export const WORK_ORDER_V2_PROCESSES_SQL = `
   SELECT t.id AS work_order_id, t.current_revision_id, t.entity_version,
          p.id, p.process_type_code, p.process_name_snapshot, p.partner_id,
          p.partner_name_snapshot, p.quantity, p.due_date, p.unit_code,
-         p.unit_price, p.amount, p.memo, p.status, p.display_order
+         p.unit_price, p.amount, p.memo, p.application_area, p.application_color_target, p.status, p.display_order
   FROM target t
   LEFT JOIN work_order_processes p
     ON p.company_id = $1 AND p.revision_id = t.current_revision_id
@@ -440,13 +440,15 @@ export async function getWorkOrderMaterialsV2(input: CommonCollectionInput & { r
       materialType: String(row.material_type) as MaterialType,
       name: String(row.name),
       colorOption: row.color_option === null ? null : String(row.color_option),
+      usageArea: row.usage_area === null ? null : String(row.usage_area),
       partnerId: row.supplier_partner_id ? String(row.supplier_partner_id) as PartnerId : null,
       partnerName: row.partner_name === null ? null : String(row.partner_name),
       requiredQuantity: asDecimal(row.required_quantity), allowanceQuantity: asDecimal(row.allowance_quantity),
       inventoryUsageQuantity: asDecimal(row.inventory_usage_quantity), orderQuantity: asDecimal(row.order_quantity),
       unitCode: String(row.unit_code), currency: "KRW" as CurrencyCode,
       unitPrice: asDecimal(row.unit_price), amount: asDecimal(row.amount),
-      memo: row.memo === null ? null : String(row.memo), status, displayOrder: asCount(row.display_order),
+      memo: row.memo === null ? null : String(row.memo),
+      status, displayOrder: asCount(row.display_order),
       editable: status === "editing", locked: status === "completed",
     };
   });
@@ -536,7 +538,10 @@ export async function getWorkOrderProcessesV2(input: Omit<CommonCollectionInput,
       partnerName: row.partner_name_snapshot === null ? null : String(row.partner_name_snapshot),
       quantity: asDecimal(row.quantity), dueDate: asIsoDate(row.due_date), unitCode: String(row.unit_code),
       currency: "KRW" as CurrencyCode, unitPrice: asDecimal(row.unit_price), amount: asDecimal(row.amount),
-      memo: row.memo === null ? null : String(row.memo), status, displayOrder: asCount(row.display_order),
+      memo: row.memo === null ? null : String(row.memo),
+      applicationArea: row.application_area === null ? null : String(row.application_area),
+      applicationColorTarget: row.application_color_target === null ? null : String(row.application_color_target),
+      status, displayOrder: asCount(row.display_order),
       editable: status !== "completed", locked: status === "completed",
     };
   });

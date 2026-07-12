@@ -182,9 +182,13 @@ const alpha26ContractExists = fs.existsSync(path.join(root, "tests/workorder-v2-
 const alpha27ApiPaths = ["app/api/v2/work-orders/[workOrderId]/revisions/issue/route.ts"];
 const alpha28ApiPaths = ["app/api/v2/work-orders/[workOrderId]/revisions/[revisionId]/preview/route.ts"];
 const alpha29ApiPaths = ["app/api/v2/work-orders/documents/[documentNumber]/preview-target/route.ts"];
+const alpha30ApiPaths = ["app/api/v2/work-orders/[workOrderId]/processes/[processId]/route.ts"];
+const alpha30ContractExists = fs.existsSync(path.join(root, "tests/workorder-v2-alpha30-factory-instruction-contract.mjs"));
 const alpha27ContractExists = fs.existsSync(path.join(root, "tests/workorder-v2-alpha27-revision-issue-command-contract.mjs"));
 const alpha28ContractExists = fs.existsSync(path.join(root, "tests/workorder-v2-alpha28-issued-preview-contract.mjs"));
-if (appVersion.includes('APP_VERSION = "2.0.0-alpha.29"')) {
+if (alpha30ContractExists && (appVersion.includes('APP_VERSION = "2.0.0-alpha.29"') || appVersion.includes('APP_VERSION = "2.0.0-alpha.30"'))) {
+  assert.deepEqual(apiChanges.filter((change) => ![...alpha26ApiPaths, ...alpha27ApiPaths, ...alpha28ApiPaths, ...alpha29ApiPaths, ...alpha30ApiPaths].some((allowedPath) => change.endsWith(allowedPath))), [], "alpha.30 preparation may add only the process PATCH route beside existing APIs");
+} else if (appVersion.includes('APP_VERSION = "2.0.0-alpha.29"')) {
   assert.deepEqual(apiChanges.filter((change) => ![...alpha26ApiPaths, ...alpha27ApiPaths, ...alpha28ApiPaths, ...alpha29ApiPaths].some((allowedPath) => change.endsWith(allowedPath))), [], "alpha.29 may add only the document-number Preview resolver route beside existing APIs");
 } else if (alpha28ContractExists && (appVersion.includes('APP_VERSION = "2.0.0-alpha.27"') || appVersion.includes('APP_VERSION = "2.0.0-alpha.28"'))) {
   assert.deepEqual(apiChanges.filter((change) => ![...alpha26ApiPaths, ...alpha27ApiPaths, ...alpha28ApiPaths].some((allowedPath) => change.endsWith(allowedPath))), [], "alpha.28 may add only the exact issued Preview GET route beside existing material and issue routes");

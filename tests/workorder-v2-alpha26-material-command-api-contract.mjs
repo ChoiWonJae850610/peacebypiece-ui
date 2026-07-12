@@ -88,10 +88,10 @@ for (const token of [
   "statusTransition",
   "versionTransition",
   "lineVersionTransition",
-  "round($12::numeric * $14::numeric, 2)",
 ]) {
   assert.ok(repository.includes(token), `repository contract missing ${token}`);
 }
+assert.match(repository, /round\(\$\d+::numeric \* \$\d+::numeric, 2\)/, "create amount must remain server-derived");
 assert.match(repository, /request:[\s\S]*from: "editing"[\s\S]*to: "requested"/, "editing to requested transition required");
 assert.match(repository, /cancel:[\s\S]*from: "requested"[\s\S]*to: "cancelled"/, "requested to cancelled transition required");
 assert.match(repository, /complete:[\s\S]*from: "requested"[\s\S]*to: "completed"/, "requested to completed transition required");

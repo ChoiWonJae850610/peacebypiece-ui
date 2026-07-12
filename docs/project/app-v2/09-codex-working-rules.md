@@ -1,5 +1,11 @@
 # WAFL v2 App-first Codex Working Rules - 2.0.0-alpha.29
 
+## Alpha.30 preparation gate
+
+- Migration 009 apply and bounded draft Command runtime require two separate approvals.
+- Factory-facing values remain revision-scoped and immutable after issue; Preview must not supplement missing issued values from mutable data.
+- Factory Preview excludes inventory, order quantity, unit price, amount, and internal state while operational APIs retain them.
+
 ## Alpha.29 mobile Preview entry boundary
 
 - Mobile Preview entry uses issued document metadata and a tenant-safe Next resolver; raw WorkOrder/revision UUIDs are not embedded in mobile UI source.

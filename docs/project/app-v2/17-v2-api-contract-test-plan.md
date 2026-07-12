@@ -1,5 +1,11 @@
 # WAFL v2 API Contract Test Plan
 
+## Alpha.30 additions
+
+- Check additive nullable migration fields, matching limits, no backfill/index/destructive SQL, and dev/test apply gate.
+- Check material usageArea, process PATCH expectedVersion/tenant/audit/LOCKED without status transition, and revision factory memo.
+- Check Korean factory labels, revision-only Preview data, hidden internal fields, print pagination, and no PDF/QR/R2 path.
+
 ## Alpha.28 Preview gate
 
 Validate contiguous SQL placeholders, company/revision scope, no `SELECT *`, typed draft/cross-tenant errors, deterministic repeated GET, bounded statement/payload metrics, safe asset metadata, A4/print rules, and pre/post mutation count equality.

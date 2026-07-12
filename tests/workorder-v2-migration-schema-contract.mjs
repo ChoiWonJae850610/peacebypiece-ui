@@ -15,6 +15,7 @@ const expectedFiles = [
   "006_v2_deferred_constraints_indexes.sql",
   "007_v2_work_order_list_material_lookup_index.sql",
   "008_v2_tenant_document_number_settings_function.sql",
+  "009_v2_workorder_factory_instruction_fields.sql",
 ];
 
 const actualFiles = fs
@@ -34,7 +35,9 @@ const executableSql = combined
   .replace(/^\s*--.*$/gm, "");
 
 for (const { file, source } of sources) {
-  if (file === "008_v2_tenant_document_number_settings_function.sql") {
+  if (file === "009_v2_workorder_factory_instruction_fields.sql") {
+    assert.ok(source.includes("EXECUTION IS PROHIBITED WITHOUT THE APPROVED ALPHA.30 DEV/TEST GATE"), `${file} missing alpha.30 execution prohibition`);
+  } else if (file === "008_v2_tenant_document_number_settings_function.sql") {
     assert.ok(source.includes("EXECUTION IS PROHIBITED WITHOUT THE APPROVED ALPHA.27A DEV/TEST GATE"), `${file} missing alpha.27a execution prohibition`);
   } else if (file === "007_v2_work_order_list_material_lookup_index.sql") {
     assert.ok(source.includes("EXECUTION IS PROHIBITED WITHOUT THE APPROVED ALPHA.23 DEV/TEST GATE"), `${file} missing alpha.23 execution prohibition`);
@@ -232,11 +235,19 @@ const alpha26ApiPaths = [
 const alpha27ApiPaths = ["app/api/v2/work-orders/[workOrderId]/revisions/issue/route.ts"];
 const alpha28ApiPaths = ["app/api/v2/work-orders/[workOrderId]/revisions/[revisionId]/preview/route.ts"];
 const alpha29ApiPaths = ["app/api/v2/work-orders/documents/[documentNumber]/preview-target/route.ts"];
+const alpha30ApiPaths = ["app/api/v2/work-orders/[workOrderId]/processes/[processId]/route.ts"];
+const alpha30ContractExists = fs.existsSync(path.join(root, "tests/workorder-v2-alpha30-factory-instruction-contract.mjs"));
 const alpha25ContractExists = fs.existsSync(path.join(root, "tests/workorder-v2-alpha25-command-api-contract.mjs"));
 const alpha26ContractExists = fs.existsSync(path.join(root, "tests/workorder-v2-alpha26-material-command-api-contract.mjs"));
 const alpha27ContractExists = fs.existsSync(path.join(root, "tests/workorder-v2-alpha27-revision-issue-command-contract.mjs"));
 const alpha28ContractExists = fs.existsSync(path.join(root, "tests/workorder-v2-alpha28-issued-preview-contract.mjs"));
-if (appVersion.includes('APP_VERSION = "2.0.0-alpha.29"')) {
+if (alpha30ContractExists && (appVersion.includes('APP_VERSION = "2.0.0-alpha.29"') || appVersion.includes('APP_VERSION = "2.0.0-alpha.30"'))) {
+  assert.deepEqual(
+    apiChanges.filter((change) => ![...alpha25ApiPaths, ...alpha26ApiPaths, ...alpha27ApiPaths, ...alpha28ApiPaths, ...alpha29ApiPaths, ...alpha30ApiPaths].some((allowedPath) => change.endsWith(allowedPath))),
+    [],
+    "alpha.30 preparation may add only the exact process PATCH route",
+  );
+} else if (appVersion.includes('APP_VERSION = "2.0.0-alpha.29"')) {
   assert.deepEqual(
     apiChanges.filter((change) => ![...alpha25ApiPaths, ...alpha26ApiPaths, ...alpha27ApiPaths, ...alpha28ApiPaths, ...alpha29ApiPaths].some((allowedPath) => change.endsWith(allowedPath))),
     [],

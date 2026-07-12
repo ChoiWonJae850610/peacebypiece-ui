@@ -187,6 +187,7 @@ export async function createWorkOrderDraft(input: {
     dueDate: input.command.dueDate ?? null,
     totalQuantity: input.command.totalQuantity ?? 0,
     memo: input.command.memo ?? null,
+    factoryDeliveryMemo: input.command.factoryDeliveryMemo ?? null,
   }));
 
   try {

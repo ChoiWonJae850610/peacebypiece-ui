@@ -135,6 +135,7 @@ export function validateCreateWorkOrderDraft(input: {
     "dueDate",
     "totalQuantity",
     "memo",
+    "factoryDeliveryMemo",
   ]));
 
   return {
@@ -147,6 +148,7 @@ export function validateCreateWorkOrderDraft(input: {
     dueDate: parseOptionalDate(input.body.dueDate, "dueDate", hasOwn(input.body, "dueDate")) ?? null,
     totalQuantity: parseOptionalQuantity(input.body.totalQuantity, "totalQuantity", hasOwn(input.body, "totalQuantity")) ?? 0,
     memo: parseOptionalText(input.body.memo, "memo", 5_000, hasOwn(input.body, "memo")) ?? null,
+    factoryDeliveryMemo: parseOptionalText(input.body.factoryDeliveryMemo, "factoryDeliveryMemo", 5_000, hasOwn(input.body, "factoryDeliveryMemo")) ?? null,
   };
 }
 
@@ -181,6 +183,7 @@ export function validatePatchWorkOrderBasicInfo(body: unknown): ValidatedPatchWo
     "dueDate",
     "totalQuantity",
     "memo",
+    "factoryDeliveryMemo",
   ]), "patch.");
   if (Object.keys(body.patch).length === 0) {
     throw new WorkOrderCommandValidationError([
@@ -209,6 +212,9 @@ export function validatePatchWorkOrderBasicInfo(body: unknown): ValidatedPatchWo
       : {}),
     ...(hasOwn(body.patch, "memo")
       ? { memo: parseOptionalText(body.patch.memo, "patch.memo", 5_000, true) }
+      : {}),
+    ...(hasOwn(body.patch, "factoryDeliveryMemo")
+      ? { factoryDeliveryMemo: parseOptionalText(body.patch.factoryDeliveryMemo, "patch.factoryDeliveryMemo", 5_000, true) }
       : {}),
   };
 

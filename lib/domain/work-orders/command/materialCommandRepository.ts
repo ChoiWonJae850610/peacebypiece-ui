@@ -69,6 +69,7 @@ type MaterialTargetRow = WorkOrderTargetRow & {
   readonly material_id: string | null;
   readonly name: string;
   readonly color_option: string | null;
+  readonly usage_area: string | null;
   readonly supplier_partner_id: string | null;
   readonly required_quantity: string | number;
   readonly allowance_quantity: string | number;
@@ -264,7 +265,7 @@ async function lockMaterialTarget(input: {
            w.status AS work_order_status, r.revision_status,
            w.entity_version AS work_order_version,
            m.id AS material_line_id, m.material_type, m.status AS material_status,
-           m.entity_version AS line_version, m.material_id, m.name, m.color_option,
+           m.entity_version AS line_version, m.material_id, m.name, m.color_option, m.usage_area,
            m.supplier_partner_id, m.required_quantity, m.allowance_quantity,
            m.inventory_usage_quantity, m.order_quantity, m.unit_code,
            m.unit_price, m.memo, m.requested_at
@@ -385,7 +386,7 @@ async function readReplayMaterial(input: {
            w.status AS work_order_status, r.revision_status,
            $5::integer AS work_order_version,
            m.id AS material_line_id, m.material_type, m.status AS material_status,
-           m.entity_version AS line_version, m.material_id, m.name, m.color_option,
+           m.entity_version AS line_version, m.material_id, m.name, m.color_option, m.usage_area,
            m.supplier_partner_id, m.required_quantity, m.allowance_quantity,
            m.inventory_usage_quantity, m.order_quantity, m.unit_code,
            m.unit_price, m.memo, m.requested_at
@@ -457,32 +458,32 @@ export async function addMaterialLineV2(input: {
 
       const inserted = await client.query<MaterialTargetRow>(`
         INSERT INTO work_order_material_lines (
-          id, company_id, revision_id, material_id, material_type, name, color_option,
+          id, company_id, revision_id, material_id, material_type, name, color_option, usage_area,
           supplier_partner_id, required_quantity, allowance_quantity,
           inventory_usage_quantity, order_quantity, unit_code, unit_price, amount,
           status, memo, display_order, entity_version
         ) VALUES (
-          $2::uuid, $1, $3::uuid, $4, $5, $6, $7, $8,
-          $9::numeric, $10::numeric, $11::numeric, $12::numeric,
-          $13, $14::numeric, round($12::numeric * $14::numeric, 2),
-          'editing', $15,
-          COALESCE($16::integer, (
+          $2::uuid, $1, $3::uuid, $4, $5, $6, $7, $8, $9,
+          $10::numeric, $11::numeric, $12::numeric, $13::numeric,
+          $14, $15::numeric, round($13::numeric * $15::numeric, 2),
+          'editing', $16,
+          COALESCE($17::integer, (
             SELECT COALESCE(max(display_order), -1) + 1
             FROM work_order_material_lines
             WHERE company_id = $1 AND revision_id = $3::uuid AND material_type = $5
           )), 1
         )
-        RETURNING $17::uuid AS work_order_id, revision_id, $18::integer AS revision_no,
+        RETURNING $18::uuid AS work_order_id, revision_id, $19::integer AS revision_no,
                   'draft'::text AS work_order_status, 'draft'::text AS revision_status,
-                  $19::integer AS work_order_version,
+                  $20::integer AS work_order_version,
                   id AS material_line_id, material_type, status AS material_status,
-                  entity_version AS line_version, material_id, name, color_option,
+                  entity_version AS line_version, material_id, name, color_option, usage_area,
                   supplier_partner_id, required_quantity, allowance_quantity,
                   inventory_usage_quantity, order_quantity, unit_code, unit_price, memo, requested_at
       `, [
         input.scope.companyId, input.materialLineId, target.revision_id,
         input.command.materialId ?? null, input.command.materialType, input.command.name,
-        input.command.colorOption ?? null, input.command.partnerId ?? null,
+        input.command.colorOption ?? null, input.command.usageArea ?? null, input.command.partnerId ?? null,
         input.command.requiredQuantity, input.command.allowanceQuantity,
         input.command.inventoryUsageQuantity, input.command.orderQuantity,
         input.command.unitCode, input.command.unitPrice, input.command.memo ?? null,
@@ -504,7 +505,7 @@ export async function addMaterialLineV2(input: {
         summary: materialType === "fabric" ? "원단 line 생성" : "부자재 line 생성",
         metadata: {
           clientRequestId: input.command.clientRequestId,
-          changedFields: ["materialType", "materialId", "name", "partnerId", "colorOption", "requiredQuantity", "allowanceQuantity", "inventoryUsageQuantity", "orderQuantity", "unitCode", "unitPrice", "memo", "displayOrder"],
+          changedFields: ["materialType", "materialId", "name", "partnerId", "colorOption", "usageArea", "requiredQuantity", "allowanceQuantity", "inventoryUsageQuantity", "orderQuantity", "unitCode", "unitPrice", "memo", "displayOrder"],
           statusTransition: { from: null, to: "editing" },
           versionTransition: { from: Number(target.work_order_version), to: nextVersion },
           lineVersionTransition: { from: null, to: 1 },
@@ -562,6 +563,7 @@ export async function patchMaterialLineV2(input: {
         hasOwn(patch, "materialId") && (patch.materialId ?? null) !== target.material_id ? "materialId" : null,
         hasOwn(patch, "partnerId") && (patch.partnerId ?? null) !== target.supplier_partner_id ? "partnerId" : null,
         hasOwn(patch, "colorOption") && (patch.colorOption ?? null) !== target.color_option ? "colorOption" : null,
+        hasOwn(patch, "usageArea") && (patch.usageArea ?? null) !== target.usage_area ? "usageArea" : null,
         hasOwn(patch, "requiredQuantity") && !sameDecimal(target.required_quantity, patch.requiredQuantity) ? "requiredQuantity" : null,
         hasOwn(patch, "allowanceQuantity") && !sameDecimal(target.allowance_quantity, patch.allowanceQuantity) ? "allowanceQuantity" : null,
         hasOwn(patch, "inventoryUsageQuantity") && !sameDecimal(target.inventory_usage_quantity, patch.inventoryUsageQuantity) ? "inventoryUsageQuantity" : null,
@@ -581,26 +583,27 @@ export async function patchMaterialLineV2(input: {
             material_id = CASE WHEN $6 THEN $7 ELSE material_id END,
             supplier_partner_id = CASE WHEN $8 THEN $9 ELSE supplier_partner_id END,
             color_option = CASE WHEN $10 THEN $11 ELSE color_option END,
-            required_quantity = CASE WHEN $12 THEN $13::numeric ELSE required_quantity END,
-            allowance_quantity = CASE WHEN $14 THEN $15::numeric ELSE allowance_quantity END,
-            inventory_usage_quantity = CASE WHEN $16 THEN $17::numeric ELSE inventory_usage_quantity END,
-            order_quantity = CASE WHEN $18 THEN $19::numeric ELSE order_quantity END,
-            unit_code = CASE WHEN $20 THEN $21 ELSE unit_code END,
-            unit_price = CASE WHEN $22 THEN $23::numeric ELSE unit_price END,
+            usage_area = CASE WHEN $12 THEN $13 ELSE usage_area END,
+            required_quantity = CASE WHEN $14 THEN $15::numeric ELSE required_quantity END,
+            allowance_quantity = CASE WHEN $16 THEN $17::numeric ELSE allowance_quantity END,
+            inventory_usage_quantity = CASE WHEN $18 THEN $19::numeric ELSE inventory_usage_quantity END,
+            order_quantity = CASE WHEN $20 THEN $21::numeric ELSE order_quantity END,
+            unit_code = CASE WHEN $22 THEN $23 ELSE unit_code END,
+            unit_price = CASE WHEN $24 THEN $25::numeric ELSE unit_price END,
             amount = round(
-              (CASE WHEN $18 THEN $19::numeric ELSE order_quantity END)
-              * (CASE WHEN $22 THEN $23::numeric ELSE unit_price END), 2
+              (CASE WHEN $20 THEN $21::numeric ELSE order_quantity END)
+              * (CASE WHEN $24 THEN $25::numeric ELSE unit_price END), 2
             ),
-            memo = CASE WHEN $24 THEN $25 ELSE memo END,
+            memo = CASE WHEN $26 THEN $27 ELSE memo END,
             entity_version = entity_version + 1,
             updated_at = now()
         WHERE company_id = $1 AND id = $2::uuid AND revision_id = $3::uuid
-          AND status = 'editing' AND entity_version = $26
-        RETURNING $27::uuid AS work_order_id, revision_id, $28::integer AS revision_no,
+          AND status = 'editing' AND entity_version = $28
+        RETURNING $29::uuid AS work_order_id, revision_id, $30::integer AS revision_no,
                   'draft'::text AS work_order_status, 'draft'::text AS revision_status,
-                  $29::integer AS work_order_version,
+                  $31::integer AS work_order_version,
                   id AS material_line_id, material_type, status AS material_status,
-                  entity_version AS line_version, material_id, name, color_option,
+                  entity_version AS line_version, material_id, name, color_option, usage_area,
                   supplier_partner_id, required_quantity, allowance_quantity,
                   inventory_usage_quantity, order_quantity, unit_code, unit_price, memo, requested_at
       `, [
@@ -609,6 +612,7 @@ export async function patchMaterialLineV2(input: {
         hasOwn(patch, "materialId"), patch.materialId ?? null,
         hasOwn(patch, "partnerId"), patch.partnerId ?? null,
         hasOwn(patch, "colorOption"), patch.colorOption ?? null,
+        hasOwn(patch, "usageArea"), patch.usageArea ?? null,
         hasOwn(patch, "requiredQuantity"), patch.requiredQuantity ?? null,
         hasOwn(patch, "allowanceQuantity"), patch.allowanceQuantity ?? null,
         hasOwn(patch, "inventoryUsageQuantity"), patch.inventoryUsageQuantity ?? null,
@@ -728,7 +732,7 @@ export async function transitionMaterialOrderV2(input: {
                 'draft'::text AS work_order_status, 'draft'::text AS revision_status,
                 $9::integer AS work_order_version,
                 id AS material_line_id, material_type, status AS material_status,
-                entity_version AS line_version, material_id, name, color_option,
+                entity_version AS line_version, material_id, name, color_option, usage_area,
                 supplier_partner_id, required_quantity, allowance_quantity,
                 inventory_usage_quantity, order_quantity, unit_code, unit_price, memo, requested_at
     `, [

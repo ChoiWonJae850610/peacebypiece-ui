@@ -903,7 +903,14 @@ $profileCommands = @{
                 "apps/mobile/components/ProductionCardMock.tsx",
                 "apps/mobile/utils/previewLink.ts",
                 "scripts/run-wafl-v2-alpha29-mobile-preview-entry.mjs",
-                "tests/workorder-v2-alpha29-mobile-preview-entry-contract.mjs"
+                "tests/workorder-v2-alpha29-mobile-preview-entry-contract.mjs",
+                "app/api/v2/work-orders/[workOrderId]/processes/[processId]/route.ts",
+                "lib/domain/work-orders/command/processCommandRepository.ts",
+                "lib/domain/work-orders/command/processCommandRoute.ts",
+                "lib/domain/work-orders/command/processCommandService.ts",
+                "lib/domain/work-orders/command/processValidation.ts",
+                "scripts/run-wafl-v2-alpha30-factory-instruction-migration.mjs",
+                "tests/workorder-v2-alpha30-factory-instruction-contract.mjs"
             )
         },
         @{ Name = "mobile typecheck"; Command = "npm"; Arguments = @("--prefix", "apps/mobile", "run", "typecheck") },
@@ -919,6 +926,7 @@ $profileCommands = @{
         @{ Name = "workorder v2 alpha.27a numbering settings migration static contract"; Command = "node"; Arguments = @("tests/workorder-v2-alpha27a-number-settings-migration-contract.mjs") },
         @{ Name = "workorder v2 alpha.28 issued Preview static contract"; Command = "node"; Arguments = @("tests/workorder-v2-alpha28-issued-preview-contract.mjs") },
         @{ Name = "workorder v2 alpha.29 mobile Preview entry static contract"; Command = "node"; Arguments = @("tests/workorder-v2-alpha29-mobile-preview-entry-contract.mjs") },
+        @{ Name = "workorder v2 alpha.30 factory instruction static contract"; Command = "node"; Arguments = @("tests/workorder-v2-alpha30-factory-instruction-contract.mjs") },
         @{ Name = "app-v2 document links and Mermaid contract"; Command = "node"; Arguments = @("tests/app-v2-document-links-contract.mjs") },
         @{ Name = "unicode encoding contract"; Command = "node"; Arguments = @("tests/unicode-encoding-contract.mjs") },
         @{ Name = "PowerShell encoding contract"; Command = "node"; Arguments = @("tests/pipeline-powershell-encoding-contract.mjs") },
@@ -1421,6 +1429,9 @@ if ($Profile -eq "automation-infrastructure" -and (GetProjectAppVersion) -eq "2.
 }
 if ($Profile -eq "automation-infrastructure" -and (GetProjectAppVersion) -in @("2.0.0-alpha.26", "2.0.0-alpha.27") -and (Test-Path (Join-Path $ProjectDir "tests/workorder-v2-alpha27a-number-settings-migration-contract.mjs"))) {
     $allowedMigrationChanges = @("db/v2/migrations/008_v2_tenant_document_number_settings_function.sql")
+}
+if ($Profile -eq "automation-infrastructure" -and (GetProjectAppVersion) -in @("2.0.0-alpha.29", "2.0.0-alpha.30") -and (Test-Path (Join-Path $ProjectDir "tests/workorder-v2-alpha30-factory-instruction-contract.mjs"))) {
+    $allowedMigrationChanges = @("db/v2/migrations/009_v2_workorder_factory_instruction_fields.sql")
 }
 $unexpectedMigrationChanges = @($migrationChanges | Where-Object { $allowedMigrationChanges -notcontains $_ })
 if ($unexpectedMigrationChanges.Count -gt 0) {

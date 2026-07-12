@@ -240,6 +240,7 @@ export type WorkOrderMaterialLineReadModel = {
   readonly materialType: MaterialType;
   readonly name: string;
   readonly colorOption: string | null;
+  readonly usageArea: string | null;
   readonly partnerId: PartnerId | null;
   readonly partnerName: string | null;
   readonly requiredQuantity: DecimalString;
@@ -315,6 +316,8 @@ export type WorkOrderProcessReadModel = {
   readonly unitPrice: DecimalString;
   readonly amount: DecimalString;
   readonly memo: string | null;
+  readonly applicationArea: string | null;
+  readonly applicationColorTarget: string | null;
   readonly status: ProcessStatus;
   readonly displayOrder: number;
   readonly editable: boolean;
@@ -439,6 +442,7 @@ export type WorkOrderIssuedPreviewReadModel = {
     readonly dueDate: IsoDate | null;
     readonly totalQuantity: number;
     readonly memo: string | null;
+    readonly factoryDeliveryMemo: string | null;
   };
   readonly amounts: {
     readonly currency: CurrencyCode;

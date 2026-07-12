@@ -175,6 +175,7 @@ export async function addMaterialLine(input: {
     name: command.name,
     partnerId: command.partnerId ?? null,
     colorOption: command.colorOption ?? null,
+    usageArea: command.usageArea ?? null,
     requiredQuantity: command.requiredQuantity,
     allowanceQuantity: command.allowanceQuantity,
     inventoryUsageQuantity: command.inventoryUsageQuantity,

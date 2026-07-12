@@ -106,7 +106,7 @@ export function validateAddMaterialLine(input: {
   assertAllowedKeys(input.body, new Set([
     "clientRequestId", "expectedVersion", "materialType", "materialId", "name", "partnerId",
     "colorOption", "requiredQuantity", "allowanceQuantity", "inventoryUsageQuantity",
-    "orderQuantity", "unitCode", "unitPrice", "memo", "displayOrder",
+    "orderQuantity", "unitCode", "unitPrice", "memo", "usageArea", "displayOrder",
   ]));
 
   const orderQuantity = parseQuantity(input.body.orderQuantity, "orderQuantity");
@@ -129,6 +129,7 @@ export function validateAddMaterialLine(input: {
     unitCode: parseRequiredText(input.body.unitCode, "unitCode", 32),
     unitPrice,
     memo: parseOptionalText(input.body.memo, "memo", 2_000, hasOwn(input.body, "memo")) ?? null,
+    usageArea: parseOptionalText(input.body.usageArea, "usageArea", 1_000, hasOwn(input.body, "usageArea")) ?? null,
     displayOrder: parseDisplayOrder(input.body.displayOrder),
   };
 }
@@ -145,7 +146,7 @@ export function validatePatchMaterialLine(body: unknown): ValidatedPatchMaterial
   }
   assertAllowedKeys(body.patch, new Set([
     "name", "materialId", "partnerId", "colorOption", "requiredQuantity", "allowanceQuantity",
-    "inventoryUsageQuantity", "orderQuantity", "unitCode", "unitPrice", "memo",
+    "inventoryUsageQuantity", "orderQuantity", "unitCode", "unitPrice", "memo", "usageArea",
   ]), "patch.");
   if (Object.keys(body.patch).length === 0) {
     throw new WorkOrderCommandValidationError([fieldError("patch", "EMPTY_PATCH", "변경할 자재 정보를 하나 이상 입력해 주세요.")]);
@@ -163,6 +164,7 @@ export function validatePatchMaterialLine(body: unknown): ValidatedPatchMaterial
     ...(hasOwn(body.patch, "unitCode") ? { unitCode: parseRequiredText(body.patch.unitCode, "patch.unitCode", 32) } : {}),
     ...(hasOwn(body.patch, "unitPrice") ? { unitPrice: parsePrice(body.patch.unitPrice, "patch.unitPrice") } : {}),
     ...(hasOwn(body.patch, "memo") ? { memo: parseOptionalText(body.patch.memo, "patch.memo", 2_000, true) } : {}),
+    ...(hasOwn(body.patch, "usageArea") ? { usageArea: parseOptionalText(body.patch.usageArea, "patch.usageArea", 1_000, true) } : {}),
   };
 
   assertAmountWithinRange(

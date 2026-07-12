@@ -1,4 +1,15 @@
-# WAFL v2 App-first Roadmap 2.0 - 2.0.0-alpha.29
+# WAFL v2 App-first Roadmap 2.0 - 2.0.0-alpha.30
+
+## 2.0.0-alpha.30 result
+
+Status: `ALPHA30_COMMAND_RUNTIME_AND_COMPLETION_PASS`.
+
+- Prepare migration 009 for material usage area, process application area/color target, and revision factory-delivery memo.
+- Extend material create/PATCH and add only existing-row process scalar PATCH while preserving tenant, concurrency, audit, and issued lock boundaries.
+- Align mobile free-text inputs and rebuild Preview as a factory-facing multi-page A4 document without internal inventory/order/cost/status fields.
+- Approved dev/test migration 009 apply and post-apply audit PASS: ledger 9/9, four nullable fields and four `NOT VALID` checks present, existing row values/counts and RLS/ACL unchanged, business/R2/Worker/PDF/production mutation false.
+- Approved synthetic completion retained WorkOrder/revision `+1/+1`, fabric/accessory `1/1`, process fixture `+1`, receipts/events `+4/+7`, document number `+1`, and final versions 7/7/2/1/2. Incomplete receipt, next draft, and generated document are all 0.
+- Issued Preview new fields, deterministic repeat GET, tenant isolation, and immutable LOCKED checks passed. Actual PDF/QR/R2/Worker lifecycle remains excluded and moves to alpha.31.
 
 ## 2.0.0-alpha.29 result
 

@@ -383,6 +383,9 @@ if ($VerificationProfile -eq "automation-infrastructure" -and $ExpectedAppVersio
 if ($VerificationProfile -eq "automation-infrastructure" -and $ExpectedAppVersion -in @("2.0.0-alpha.26", "2.0.0-alpha.27")) {
     $allowedMigrationChanges = @("db/v2/migrations/008_v2_tenant_document_number_settings_function.sql")
 }
+if ($VerificationProfile -eq "automation-infrastructure" -and $ExpectedAppVersion -eq "2.0.0-alpha.30") {
+    $allowedMigrationChanges = @("db/v2/migrations/009_v2_workorder_factory_instruction_fields.sql")
+}
 $unexpectedMigrationChanges = @($migrationChanges | Where-Object { $allowedMigrationChanges -notcontains $_ })
 if ($unexpectedMigrationChanges.Count -gt 0) {
     throw "Unexpected DB migration/schema changes: $($unexpectedMigrationChanges -join ', ')"

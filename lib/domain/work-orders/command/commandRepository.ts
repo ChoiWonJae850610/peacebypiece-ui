@@ -57,6 +57,7 @@ type WorkOrderCommandRow = DbQueryResultRow & {
   readonly due_date: string | Date | null;
   readonly total_quantity: number | string;
   readonly memo: string | null;
+  readonly factory_delivery_memo: string | null;
 };
 
 type CommandReceiptRow = DbQueryResultRow & {
@@ -110,6 +111,7 @@ function mapCommandRow(row: WorkOrderCommandRow): WorkOrderDraftCommandResult {
     dueDate: toIsoDate(row.due_date),
     totalQuantity: toInteger(row.total_quantity),
     memo: row.memo,
+    factoryDeliveryMemo: row.factory_delivery_memo,
   };
 }
 
@@ -176,7 +178,7 @@ export async function createWorkOrderDraftV2(input: {
         SELECT w.id AS work_order_id, r.id AS revision_id, r.revision_no,
                w.status AS work_order_status, r.revision_status,
                w.entity_version, w.product_name, w.product_type_code,
-               w.season_code, w.item_code, w.due_date, w.total_quantity, r.memo
+               w.season_code, w.item_code, w.due_date, w.total_quantity, r.memo, r.factory_delivery_memo
         FROM work_orders w
         JOIN work_order_revisions r
           ON r.company_id = w.company_id AND r.id = w.current_revision_id
@@ -217,8 +219,8 @@ export async function createWorkOrderDraftV2(input: {
         company_id, work_order_id, revision_no, revision_status,
         product_name_snapshot, product_type_code_snapshot, season_code_snapshot,
         item_code_snapshot, due_date_snapshot, total_quantity_snapshot,
-        memo, author_member_id, entity_version
-      ) VALUES ($1, $2::uuid, 0, 'draft', $3, $4, $5, $6, $7::date, $8, $9, $10, 1)
+        memo, factory_delivery_memo, author_member_id, entity_version
+      ) VALUES ($1, $2::uuid, 0, 'draft', $3, $4, $5, $6, $7::date, $8, $9, $10, $11, 1)
       RETURNING id
     `, [
       input.scope.companyId,
@@ -230,6 +232,7 @@ export async function createWorkOrderDraftV2(input: {
       input.command.dueDate ?? null,
       input.command.totalQuantity ?? 0,
       input.command.memo ?? null,
+      input.command.factoryDeliveryMemo ?? null,
       input.scope.companyMemberId,
     ]);
     statementCount += 1;
@@ -243,8 +246,8 @@ export async function createWorkOrderDraftV2(input: {
       RETURNING id AS work_order_id, $3::uuid AS revision_id, 0 AS revision_no,
                 status AS work_order_status, 'draft'::text AS revision_status,
                 entity_version, product_name, product_type_code, season_code,
-                item_code, due_date, total_quantity, $4::text AS memo
-    `, [input.scope.companyId, workOrderId, revisionId, input.command.memo ?? null]);
+                item_code, due_date, total_quantity, $4::text AS memo, $5::text AS factory_delivery_memo
+    `, [input.scope.companyId, workOrderId, revisionId, input.command.memo ?? null, input.command.factoryDeliveryMemo ?? null]);
     statementCount += 1;
     if (!linked.rows[0]) throw new Error("WORK_ORDER_CURRENT_REVISION_LINK_FAILED");
 
@@ -262,7 +265,7 @@ export async function createWorkOrderDraftV2(input: {
       "draft WorkOrder와 R0 revision 생성",
       JSON.stringify({
         clientRequestId: input.command.clientRequestId,
-        changedFields: ["productName", "productTypeCode", "seasonCode", "itemCode", "dueDate", "totalQuantity", "memo"],
+        changedFields: ["productName", "productTypeCode", "seasonCode", "itemCode", "dueDate", "totalQuantity", "memo", "factoryDeliveryMemo"],
         versionTransition: { from: null, to: 1 },
         revisionNumber: 0,
       }),
@@ -286,7 +289,7 @@ export async function createWorkOrderDraftV2(input: {
       result: mapCommandRow(linked.rows[0]),
       nextVersion: 1 as EntityVersion,
       idempotentReplay: false,
-      changedFields: ["productName", "productTypeCode", "seasonCode", "itemCode", "dueDate", "totalQuantity", "memo"],
+      changedFields: ["productName", "productTypeCode", "seasonCode", "itemCode", "dueDate", "totalQuantity", "memo", "factoryDeliveryMemo"],
     };
   });
 
@@ -321,7 +324,7 @@ export async function patchWorkOrderBasicInfoV2(input: {
       SELECT w.id AS work_order_id, r.id AS revision_id, r.revision_no,
              w.status AS work_order_status, r.revision_status,
              w.entity_version, w.product_name, w.product_type_code,
-             w.season_code, w.item_code, w.due_date, w.total_quantity, r.memo
+             w.season_code, w.item_code, w.due_date, w.total_quantity, r.memo, r.factory_delivery_memo
       FROM work_orders w
       JOIN work_order_revisions r
         ON r.company_id = w.company_id AND r.id = w.current_revision_id
@@ -354,6 +357,7 @@ export async function patchWorkOrderBasicInfoV2(input: {
       hasOwn(patch, "dueDate") && !datesEqual(current.due_date, patch.dueDate) ? "dueDate" : null,
       hasOwn(patch, "totalQuantity") && nextQuantity !== toInteger(current.total_quantity) ? "totalQuantity" : null,
       hasOwn(patch, "memo") && (patch.memo ?? null) !== current.memo ? "memo" : null,
+      hasOwn(patch, "factoryDeliveryMemo") && (patch.factoryDeliveryMemo ?? null) !== current.factory_delivery_memo ? "factoryDeliveryMemo" : null,
     ].filter((field): field is string => field !== null);
 
     if (changedFields.length === 0) {
@@ -405,15 +409,16 @@ export async function patchWorkOrderBasicInfoV2(input: {
           due_date_snapshot = CASE WHEN $12 THEN $13::date ELSE due_date_snapshot END,
           total_quantity_snapshot = CASE WHEN $14 THEN $15 ELSE total_quantity_snapshot END,
           memo = CASE WHEN $16 THEN $17 ELSE memo END,
+          factory_delivery_memo = CASE WHEN $18 THEN $19 ELSE factory_delivery_memo END,
           entity_version = entity_version + 1,
           updated_at = now()
       WHERE company_id = $1 AND id = $2::uuid AND revision_status = 'draft'
       RETURNING $3::uuid AS work_order_id, id AS revision_id, revision_no,
                 'draft'::text AS work_order_status, revision_status,
-                $18::integer AS entity_version, product_name_snapshot AS product_name,
+                $20::integer AS entity_version, product_name_snapshot AS product_name,
                 product_type_code_snapshot AS product_type_code,
                 season_code_snapshot AS season_code, item_code_snapshot AS item_code,
-                due_date_snapshot AS due_date, total_quantity_snapshot AS total_quantity, memo
+                due_date_snapshot AS due_date, total_quantity_snapshot AS total_quantity, memo, factory_delivery_memo
     `, [
       input.scope.companyId,
       current.revision_id,
@@ -425,6 +430,7 @@ export async function patchWorkOrderBasicInfoV2(input: {
       hasOwn(patch, "dueDate"), patch.dueDate ?? null,
       hasOwn(patch, "totalQuantity"), nextQuantity,
       hasOwn(patch, "memo"), patch.memo ?? null,
+      hasOwn(patch, "factoryDeliveryMemo"), patch.factoryDeliveryMemo ?? null,
       nextVersion,
     ]);
     statementCount += 1;

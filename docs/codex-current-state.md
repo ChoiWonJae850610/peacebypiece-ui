@@ -1,4 +1,13 @@
-# 2.0.0-alpha.29 Mobile Issued Preview Entry Complete
+# 2.0.0-alpha.30 Factory Workorder Input and Preview Complete
+
+- Migration 009 was applied exactly once to approved dev/test fingerprint `01e5dcc7fea3`; ledger is 9/9 and the four new nullable fields, four `NOT VALID` checks, existing-row null state, row-count invariants, RLS/ACL invariants, and filename/SHA contract passed post-apply audit.
+- APP_VERSION and mobile mirrors are `2.0.0-alpha.30`. Approved Company A synthetic runtime retained WorkOrder/revision `+1/+1`, materials `+2` (fabric/accessory 1/1), process fixture `+1`, receipts/events `+4/+7`, and one document number.
+- Final target is issued/finalized at WorkOrder/revision 7/7, fabric/accessory/process versions 2/1/2, incomplete receipt 0, revision count 1, next draft 0, and generated document 0.
+- Preview new-field mapping, deterministic repeat GET, B/H `NOT_FOUND`, C `FORBIDDEN`, and immutable `LOCKED` for factory memo, both material usage areas, and process application fields passed. Earlier runner GET and accessory-precondition failures are preserved in Failure_Handoff; neither caused inconsistent or extra mutation.
+- No send-time, factory delivery quantity, next-process, or separate remark field is added.
+- Evidence: `docs/project/app-v2/27-factory-workorder-input-and-preview-evidence.md`.
+
+## 2.0.0-alpha.29 Mobile Issued Preview Entry Complete
 
 - Expo 제작 카드의 네 Preview 진입점은 공통 platform opener를 사용하며, 발행 문서번호 `WAFN-26FWA-A25CMD-260711-001-R0`은 mock metadata 한 곳에서만 관리한다.
 - `/workspace/documents/:documentNumber/preview`가 인증된 tenant scope에서 issued/finalized revision을 찾고 기존 alpha.28 ID Preview로 이동한다. B/H는 generic `NOT_FOUND`, C는 `FORBIDDEN`이다.

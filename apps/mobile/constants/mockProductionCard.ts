@@ -84,6 +84,7 @@ export type MaterialRow = {
   supplier: string;
   category?: string;
   colorOrOption: string;
+  usageArea?: string;
   required: string;
   allowance: string;
   stockUse: string;
@@ -108,6 +109,8 @@ export type ProcessRow = {
   dueDate: string;
   status: string;
   memo: string;
+  applicationArea?: string;
+  applicationColorTarget?: string;
 };
 
 export type ProgressStep = {
@@ -309,6 +312,7 @@ export const fabricRows: MaterialRow[] = [
     name: "리넨 코튼 20수",
     supplier: "서울패브릭",
     colorOrOption: "내추럴 베이지",
+    usageArea: "앞판·뒷판 몸판과 소매 겉면",
     required: "420 yd",
     allowance: "42 yd",
     stockUse: "80 yd",
@@ -381,6 +385,7 @@ export const accessoryRows: MaterialRow[] = [
     supplier: "버튼하우스",
     category: "단추",
     colorOrOption: "18mm / 아이보리",
+    usageArea: "앞여밈과 소매 커프스",
     required: "2,160개",
     allowance: "216개",
     stockUse: "300개",
@@ -460,6 +465,8 @@ export const processRows: ProcessRow[] = [
     amount: "3,528,000원",
     dueDate: "08/12",
     status: "준비",
+    applicationArea: "완제품 전체",
+    applicationColorTarget: "전 색상 공통",
     memo: "대표 제작 공장입니다. 봉제와 마감 지시서를 전달하기 전 원단/부자재 준비 상태를 확인합니다."
   },
   {
@@ -471,6 +478,8 @@ export const processRows: ProcessRow[] = [
     amount: "792,000원",
     dueDate: "08/15",
     status: "작업중",
+    applicationArea: "앞판 중앙",
+    applicationColorTarget: "NAVY·BLACK",
     memo: "워싱 강도와 촉감 기준을 공장 전달 작업지시서에 남겨야 합니다."
   },
   {
@@ -482,6 +491,8 @@ export const processRows: ProcessRow[] = [
     amount: "576,000원",
     dueDate: "08/18",
     status: "준비",
+    applicationArea: "완제품 전체",
+    applicationColorTarget: "전 색상 공통",
     memo: "검품 기준은 단추 간격과 허리끈 길이입니다. 검품 납기와 단가를 다시 확인합니다."
   }
 ];

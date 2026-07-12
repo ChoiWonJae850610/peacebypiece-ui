@@ -1,5 +1,11 @@
 # Final Policy Decisions and Master TODO
 
+## WAFL v2 alpha.30 confirmed factory document fields
+
+- Material usage area and process application area/color target are free text; factory delivery memo is revision-scoped.
+- Do not add send-time, next-process, factory delivery quantity, or separate remark fields.
+- Factory Preview excludes operational inventory, order quantity, price, amount, and internal status. PDF/QR/R2 lifecycle remains alpha.31.
+
 Version: 0.24.21.16  
 Status: Canonical product-policy decision log and consolidated implementation backlog  
 Scope: all product, billing, export, PDF, deletion, signup, catalog, operational, legal-review, and Codex implementation decisions confirmed through 2026-06-24
@@ -388,4 +394,3 @@ Canonical follow-up audits:
 - `docs/audits/0.24.34.7-source-zip-packaging-audit.md`
 - `docs/audits/0.24.34.7-project-structure-and-cleanup-audit.md`
 - `docs/audits/0.24.34.7-refactor-candidates-audit.md`
-

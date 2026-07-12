@@ -46,6 +46,7 @@ export type CreateWorkOrderDraftCommand = CommandRequest & {
   readonly dueDate?: IsoDate | null;
   readonly totalQuantity?: number | null;
   readonly memo?: string | null;
+  readonly factoryDeliveryMemo?: string | null;
 };
 
 export type PatchWorkOrderBasicInfoCommand = VersionedWorkOrderCommand & {
@@ -57,6 +58,7 @@ export type PatchWorkOrderBasicInfoCommand = VersionedWorkOrderCommand & {
     readonly dueDate?: IsoDate | null;
     readonly totalQuantity?: number | null;
     readonly memo?: string | null;
+    readonly factoryDeliveryMemo?: string | null;
   };
 };
 
@@ -74,6 +76,7 @@ export type WorkOrderDraftCommandResult = {
   readonly dueDate: IsoDate | null;
   readonly totalQuantity: number;
   readonly memo: string | null;
+  readonly factoryDeliveryMemo: string | null;
 };
 
 export type AddWorkOrderImageCommand = VersionedWorkOrderCommand & {
@@ -109,6 +112,7 @@ export type AddMaterialLineCommand = IdempotentWorkOrderCommand & {
   readonly name: string;
   readonly partnerId?: PartnerId | null;
   readonly colorOption?: string | null;
+  readonly usageArea?: string | null;
   readonly requiredQuantity: DecimalString;
   readonly allowanceQuantity: DecimalString;
   readonly inventoryUsageQuantity: DecimalString;
@@ -124,6 +128,7 @@ export type MaterialLinePatch = {
   readonly materialId?: MaterialId | null;
   readonly partnerId?: PartnerId | null;
   readonly colorOption?: string | null;
+  readonly usageArea?: string | null;
   readonly requiredQuantity?: DecimalString;
   readonly allowanceQuantity?: DecimalString;
   readonly inventoryUsageQuantity?: DecimalString;
@@ -235,6 +240,8 @@ export type ProcessPatch = {
   readonly unitCode?: string;
   readonly unitPrice?: DecimalString;
   readonly memo?: string | null;
+  readonly applicationArea?: string | null;
+  readonly applicationColorTarget?: string | null;
 };
 
 export type PatchProcessCommand = VersionedWorkOrderCommand & {

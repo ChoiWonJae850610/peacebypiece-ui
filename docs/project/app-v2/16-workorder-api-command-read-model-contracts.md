@@ -1,5 +1,11 @@
 # WAFL v2 WorkOrder API, Command, and Read Model Contracts
 
+## Alpha.30 factory instruction extension
+
+- `usageArea`, `applicationArea`, `applicationColorTarget`, and `factoryDeliveryMemo` are nullable trimmed text with limits 1,000/1,000/1,000/5,000.
+- Process write is limited to PATCH of an existing process in the current draft revision. No create/delete/status/reorder contract is activated.
+- Issued Preview reads these fields from the explicit issued revision and omits operational inventory/order/cost/status fields from factory presentation.
+
 ## Issued revision Preview
 
 `GET /api/v2/work-orders/:workOrderId/revisions/:revisionId/preview` returns `WorkOrderIssuedPreviewReadModel` only for an explicitly matched finalized/superseded revision under the authenticated tenant. It does not infer `current_revision_id`, return raw snapshots, or expose storage/token fields.
