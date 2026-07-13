@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 900" role="img" aria-labelledby="title desc">
+  <title id="title">리넨 라운드 원피스 제품 스케치</title>
+  <desc id="desc">라운드 넥, 짧은 소매, 긴 플레어 실루엣을 가진 원피스의 앞면과 뒷면 선화</desc>
+  <rect width="760" height="900" fill="#faf9f6"/>
+  <g fill="none" stroke="#24344d" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M145 166c28-14 52-37 67-68 26 20 54 20 80 0 15 31 39 54 67 68l47 113-64 27-22-63 12 472c-76 45-164 45-240 0l12-472-22 63-64-27 47-113z" stroke-width="5"/>
+    <path d="M212 98c4 58 76 58 80 0M112 715c70-24 140-24 210 0M124 243c42 18 84 22 126 11 35 10 70 7 105-11" stroke-width="3"/>
+    <path d="M485 166c28-14 52-37 67-68 26 20 54 20 80 0 15 31 39 54 67 68l42 108-60 28-23-59 14 472c-76 45-164 45-240 0l14-472-23 59-60-28 42-108z" stroke-width="5"/>
+    <path d="M552 98c4 58 76 58 80 0M452 715c70-24 140-24 210 0M468 211c44 16 88 16 132 0" stroke-width="3"/>
+    <path d="M592 106v54M575 134h34" stroke="#a9472a" stroke-width="3"/>
+  </g>
+  <g fill="#596273" font-family="Arial, sans-serif" font-size="18">
+    <text x="205" y="790">FRONT</text>
+    <text x="552" y="790">BACK</text>
+  </g>
+</svg>

@@ -892,6 +892,9 @@ $profileCommands = @{
                 "lib/domain/work-orders/read/previewService.ts",
                 "lib/domain/work-orders/contracts/read-models.ts",
                 "components/workorder/preview/IssuedWorkOrderPreview.tsx",
+                "components/workorder/preview/IssuedWorkOrderDocument.tsx",
+                "components/workorder/preview/SampleIssuedWorkOrderPreview.tsx",
+                "app/dev/workorder-preview-sample/page.tsx",
                 "app/(workspace)/workspace/workorders/[workOrderId]/revisions/[revisionId]/preview/page.tsx",
                 "scripts/run-wafl-v2-alpha28-issued-preview.mjs",
                 "tests/workorder-v2-alpha28-issued-preview-contract.mjs",
@@ -901,6 +904,7 @@ $profileCommands = @{
                 "components/workorder/preview/DocumentNumberPreviewResolver.tsx",
                 "app/(workspace)/workspace/documents/[documentNumber]/preview/page.tsx",
                 "apps/mobile/components/ProductionCardMock.tsx",
+                "apps/mobile/components/InlineEditableFields.tsx",
                 "apps/mobile/utils/previewLink.ts",
                 "scripts/run-wafl-v2-alpha29-mobile-preview-entry.mjs",
                 "tests/workorder-v2-alpha29-mobile-preview-entry-contract.mjs",
@@ -910,7 +914,8 @@ $profileCommands = @{
                 "lib/domain/work-orders/command/processCommandService.ts",
                 "lib/domain/work-orders/command/processValidation.ts",
                 "scripts/run-wafl-v2-alpha30-factory-instruction-migration.mjs",
-                "tests/workorder-v2-alpha30-factory-instruction-contract.mjs"
+                "tests/workorder-v2-alpha30-factory-instruction-contract.mjs",
+                "tests/workorder-v2-alpha31-inline-preview-layout-contract.mjs"
             )
         },
         @{ Name = "mobile typecheck"; Command = "npm"; Arguments = @("--prefix", "apps/mobile", "run", "typecheck") },
@@ -927,6 +932,7 @@ $profileCommands = @{
         @{ Name = "workorder v2 alpha.28 issued Preview static contract"; Command = "node"; Arguments = @("tests/workorder-v2-alpha28-issued-preview-contract.mjs") },
         @{ Name = "workorder v2 alpha.29 mobile Preview entry static contract"; Command = "node"; Arguments = @("tests/workorder-v2-alpha29-mobile-preview-entry-contract.mjs") },
         @{ Name = "workorder v2 alpha.30 factory instruction static contract"; Command = "node"; Arguments = @("tests/workorder-v2-alpha30-factory-instruction-contract.mjs") },
+        @{ Name = "workorder v2 alpha.31 inline Preview layout static contract"; Command = "node"; Arguments = @("tests/workorder-v2-alpha31-inline-preview-layout-contract.mjs") },
         @{ Name = "app-v2 document links and Mermaid contract"; Command = "node"; Arguments = @("tests/app-v2-document-links-contract.mjs") },
         @{ Name = "unicode encoding contract"; Command = "node"; Arguments = @("tests/unicode-encoding-contract.mjs") },
         @{ Name = "PowerShell encoding contract"; Command = "node"; Arguments = @("tests/pipeline-powershell-encoding-contract.mjs") },

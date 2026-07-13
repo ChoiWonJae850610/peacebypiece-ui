@@ -33,7 +33,6 @@ import {
   ScrollView,
   StyleSheet,
   Text as NativeText,
-  TextInput,
   type TextProps,
   type TextStyle,
   View,
@@ -43,6 +42,7 @@ import {
 import { WAFL_FONTS } from "@/constants/fonts";
 import { MOBILE_APP_VERSION } from "@/constants/version";
 import { openIssuedPreview, type PreviewIdentity } from "@/utils/previewLink";
+import { ExpandableInlineNote, InlineEditableValue } from "@/components/InlineEditableFields";
 import {
   PRODUCTION_TABS,
   accessoryRows,
@@ -676,17 +676,12 @@ function ImagesTab({ isTablet }: { isTablet: boolean }) {
           </View>
         ))}
       </View>
-      <View style={styles.memoFieldMock}>
-        <Text style={styles.infoLabel}>공장 전달 메모</Text>
-        <Text style={styles.infoValue}>워싱 강도와 라벨 위치는 공장 전달 전에 여기에서 수정합니다.</Text>
-        <Text style={styles.smallText}>완료 전 수정 가능 · 완료 후 잠금 예정 · 관리자 알림은 이후 구현</Text>
-      </View>
-      <TextInput
+      <ExpandableInlineNote
         accessibilityLabel="공장 전달 메모"
-        defaultValue={productionCardMock.memo}
-        multiline
-        placeholder="공장에 전달할 핵심 작업 지시와 주의사항"
-        style={styles.factoryInstructionInput}
+        editable
+        label="공장 전달 메모"
+        placeholder="공장에 전달할 핵심 작업 지시를 입력"
+        value={productionCardMock.memo}
       />
     </View>
   );
@@ -1055,8 +1050,20 @@ function MaterialRow({ row }: { row: MaterialRowData }) {
       <Text style={[styles.materialNote, editable && styles.materialNoteEditable]}>
         {row.leftover} · {row.warning}
       </Text>
-      {row.usageArea ? <Text style={styles.instructionSummary}>사용 부위 · {row.usageArea}</Text> : null}
-      {editable ? <TextInput accessibilityLabel={`${row.name} 사용 부위`} defaultValue={row.usageArea} multiline placeholder="예: 앞판·뒷판 몸판, 소매 안쪽, 칼라 겉면" style={styles.compactInstructionInput} /> : null}
+      <InlineEditableValue
+        accessibilityLabel={`${row.name} 사용 부위`}
+        editable={editable}
+        label="사용 부위"
+        placeholder="입력"
+        value={row.usageArea}
+      />
+      <ExpandableInlineNote
+        accessibilityLabel={`${row.name} 메모`}
+        editable={editable}
+        label="메모"
+        placeholder="메모 입력"
+        value={row.memo}
+      />
     </View>
   );
 }
@@ -1102,11 +1109,27 @@ function ProcessDetailRow({ row, index }: { row: (typeof processRows)[number]; i
           <SummaryToken label="단가" value={row.unitPrice} editable={editable} compact />
           <SummaryToken label="단위" value={row.unit} editable={editable} compact />
         </View>
-        <Text style={styles.processMemo}>{row.memo}</Text>
-        {row.applicationArea ? <Text style={styles.instructionSummary}>적용 부위 · {row.applicationArea}</Text> : null}
-        {row.applicationColorTarget ? <Text style={styles.instructionSummary}>적용 색상·대상 · {row.applicationColorTarget}</Text> : null}
-        {editable ? <TextInput accessibilityLabel={`${row.process} 적용 부위`} defaultValue={row.applicationArea} multiline placeholder="예: 앞판 중앙, 소매 끝단, 완제품 전체" style={styles.compactInstructionInput} /> : null}
-        {editable ? <TextInput accessibilityLabel={`${row.process} 적용 색상 대상`} defaultValue={row.applicationColorTarget} multiline placeholder="예: NAVY·BLACK, IVORY 제외, 전 색상 공통" style={styles.compactInstructionInput} /> : null}
+        <InlineEditableValue
+          accessibilityLabel={`${row.process} 적용 부위`}
+          editable={editable}
+          label="적용 부위"
+          placeholder="입력"
+          value={row.applicationArea}
+        />
+        <InlineEditableValue
+          accessibilityLabel={`${row.process} 적용 색상 대상`}
+          editable={editable}
+          label="적용 색상·대상"
+          placeholder="입력"
+          value={row.applicationColorTarget}
+        />
+        <ExpandableInlineNote
+          accessibilityLabel={`${row.process} 작업 메모`}
+          editable={editable}
+          label="작업 메모"
+          placeholder="메모 입력"
+          value={row.memo}
+        />
         <Text style={styles.rowMeta}>금액 {row.amount}</Text>
       </View>
     </View>
@@ -1603,38 +1626,6 @@ const styles = StyleSheet.create({
     fontSize: 12,
     paddingHorizontal: 10,
     paddingVertical: 8
-  },
-  factoryInstructionInput: {
-    backgroundColor: "#ffffff",
-    borderColor: "#cfc6b8",
-    borderRadius: 8,
-    borderWidth: 1,
-    color: "#17263d",
-    fontSize: 16,
-    lineHeight: 22,
-    minHeight: 88,
-    padding: 10,
-    textAlignVertical: "top"
-  },
-  compactInstructionInput: {
-    backgroundColor: "#fffdf9",
-    borderColor: "#d8d0c3",
-    borderRadius: 6,
-    borderWidth: 1,
-    color: "#17263d",
-    fontSize: 16,
-    lineHeight: 21,
-    marginTop: 6,
-    minHeight: 58,
-    paddingHorizontal: 9,
-    paddingVertical: 7,
-    textAlignVertical: "top"
-  },
-  instructionSummary: {
-    color: "#403a34",
-    fontSize: 12,
-    lineHeight: 18,
-    marginTop: 5
   },
   iconText: {
     color: "#17263d",

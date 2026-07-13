@@ -11,6 +11,7 @@ const files = [
   "lib/domain/work-orders/read/previewService.ts",
   "lib/domain/work-orders/read/previewRoute.ts",
   "components/workorder/preview/IssuedWorkOrderPreview.tsx",
+  "components/workorder/preview/IssuedWorkOrderDocument.tsx",
   "components/workorder/preview/IssuedWorkOrderPreview.module.css",
   "app/(workspace)/workspace/workorders/[workOrderId]/revisions/[revisionId]/preview/page.tsx",
 ];
@@ -18,8 +19,8 @@ for (const file of files) assert.ok(fs.existsSync(path.join(root, file)), `missi
 const repository = read(files[1]);
 const service = read(files[2]);
 const route = read(files[3]);
-const component = read(files[4]);
-const css = read(files[5]);
+const component = `${read(files[4])}\n${read(files[5])}`;
+const css = read(files[6]);
 const models = read("lib/domain/work-orders/contracts/read-models.ts");
 const runner = read("scripts/run-wafl-v2-alpha28-issued-preview.mjs");
 
@@ -55,7 +56,8 @@ assert.match(component, /data-testid="issued-workorder-preview-a4"/);
 assert.match(component, /window\.print\(\)/);
 assert.match(component, /작업지시서/);
 assert.doesNotMatch(component, /mock|QR|PDF 다운로드|storage/i);
-assert.match(css, /@page\s*\{\s*size:\s*A4/);
+assert.match(css, /@page\s+cover\s*\{\s*size:\s*A4 landscape/);
+assert.match(css, /@page\s+content\s*\{\s*size:\s*A4 portrait/);
 assert.match(css, /@media print/);
 assert.match(css, /@media\s*\(max-width:\s*760px\)/);
 assert.match(runner, /BEGIN READ ONLY/);

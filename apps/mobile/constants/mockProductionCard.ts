@@ -85,6 +85,7 @@ export type MaterialRow = {
   category?: string;
   colorOrOption: string;
   usageArea?: string;
+  memo?: string;
   required: string;
   allowance: string;
   stockUse: string;
@@ -313,6 +314,7 @@ export const fabricRows: MaterialRow[] = [
     supplier: "서울패브릭",
     colorOrOption: "내추럴 베이지",
     usageArea: "앞판·뒷판 몸판과 소매 겉면",
+    memo: "결 방향을 맞추고 재단 전 수축률을 다시 확인합니다.",
     required: "420 yd",
     allowance: "42 yd",
     stockUse: "80 yd",
@@ -386,6 +388,7 @@ export const accessoryRows: MaterialRow[] = [
     category: "단추",
     colorOrOption: "18mm / 아이보리",
     usageArea: "앞여밈과 소매 커프스",
+    memo: "여분 단추는 완제품 포장에 한 개씩 동봉합니다.",
     required: "2,160개",
     allowance: "216개",
     stockUse: "300개",

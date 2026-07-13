@@ -1,4 +1,12 @@
-# WAFL v2 App-first Codex Working Rules - 2.0.0-alpha.29
+# WAFL v2 App-first Codex Working Rules - 2.0.0-alpha.31
+
+## Alpha.31 inline and Preview boundary
+
+- Short factory-facing fields edit in the same visual position; do not render a summary value and a second boxed input for the same field.
+- Long notes collapse to one or two lines and expand in place. Issued/finalized, completed, locked, or unauthorized values use the same read-only component without dotted edit affordance.
+- Issued Preview loading stays separate from the pure document renderer. Actual Preview remains revision-scoped and immutable; deterministic localhost samples use the same renderer without tenant API or business data.
+- The cover is A4 landscape and continuation pages are A4 portrait. Pack sections according to content, repeat table headers, and keep rows intact instead of forcing one section onto every page.
+- PDF binary generation, QR, R2, Worker, regeneration/revoke/trash, and generated-document lifecycle remain alpha.32 scope.
 
 ## Alpha.30 preparation gate
 
@@ -69,11 +77,16 @@ Before any App-first file modification, read:
 24. `docs/project/app-v2/21-workorder-detail-lazy-read-api-evidence.md`
 25. `docs/project/app-v2/22-workorder-create-basic-update-command-evidence.md`
 26. `docs/project/app-v2/23-workorder-material-order-command-evidence.md`
-27. `docs/project/v2/00-start-here.md` through `docs/project/v2/14-operational-policy-absorption.md`
-28. `docs/project/25-korean-unicode-encoding-standard.md`
-29. `docs/project/32-product-completion-and-ui-evidence-standard.md`
-30. `docs/project/26-final-policy-decisions-and-master-todo.md`
-31. `docs/project/31-pre-codex-integrated-master-plan.md`
+27. `docs/project/app-v2/24-workorder-revision-issue-command-evidence.md`
+28. `docs/project/app-v2/25-workorder-issued-revision-preview-evidence.md`
+29. `docs/project/app-v2/26-mobile-issued-preview-entry-evidence.md`
+30. `docs/project/app-v2/27-factory-workorder-input-and-preview-evidence.md`
+31. `docs/project/app-v2/28-inline-input-and-preview-layout-evidence.md`
+32. `docs/project/v2/00-start-here.md` through `docs/project/v2/14-operational-policy-absorption.md`
+33. `docs/project/25-korean-unicode-encoding-standard.md`
+34. `docs/project/32-product-completion-and-ui-evidence-standard.md`
+35. `docs/project/26-final-policy-decisions-and-master-todo.md`
+36. `docs/project/31-pre-codex-integrated-master-plan.md`
 
 ## 4. Newest rule
 

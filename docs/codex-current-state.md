@@ -1,4 +1,14 @@
-# 2.0.0-alpha.30 Factory Workorder Input and Preview Complete
+# 2.0.0-alpha.31 Inline Input and Preview Layout Complete
+
+- APP_VERSION and mobile mirrors are `2.0.0-alpha.31`.
+- Mobile fabric/accessory/process factory fields use shared inline edit/read-only components. Editable values occupy their display position with a dotted underline; long notes expand in place; issued/completed values render as plain text without a duplicate input box.
+- Issued Preview fetch and rendering are separated. The pure renderer uses one A4 landscape cover with a 58/42 product-sketch/information split, then packs revision-scoped sections into A4 portrait content pages without forcing one section per page.
+- Factory delivery memo and the existing general memo are preserved in one factory memo area. Revision labels use Korean ordinal form (`0차`, `1차`) while the immutable display document number keeps its `R0` suffix.
+- `/dev/workorder-preview-sample` is localhost-only, deterministic, and uses the same renderer with repository-owned SVG and fixed sample data. It makes no tenant API call and is production-blocked by the canonical local-only host guard.
+- No DB migration/write, API mutation, R2, Worker, PDF binary, QR, generated-document lifecycle, production access, or external asset download occurred.
+- Evidence: `docs/project/app-v2/28-inline-input-and-preview-layout-evidence.md`.
+
+## 2.0.0-alpha.30 Factory Workorder Input and Preview Complete
 
 - Migration 009 was applied exactly once to approved dev/test fingerprint `01e5dcc7fea3`; ledger is 9/9 and the four new nullable fields, four `NOT VALID` checks, existing-row null state, row-count invariants, RLS/ACL invariants, and filename/SHA contract passed post-apply audit.
 - APP_VERSION and mobile mirrors are `2.0.0-alpha.30`. Approved Company A synthetic runtime retained WorkOrder/revision `+1/+1`, materials `+2` (fabric/accessory 1/1), process fixture `+1`, receipts/events `+4/+7`, and one document number.

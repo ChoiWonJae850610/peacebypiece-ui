@@ -1,4 +1,14 @@
-# WAFL v2 App-first Roadmap 2.0 - 2.0.0-alpha.30
+# WAFL v2 App-first Roadmap 2.0 - 2.0.0-alpha.31
+
+## 2.0.0-alpha.31 result
+
+Status: `LEVEL_4_PRODUCT_VERIFIED` after localhost desktop/tablet/mobile/print evidence is recorded in the alpha.31 evidence document.
+
+- Replace duplicated factory-field summary plus textbox layouts with shared inline editable, expandable-note, and read-only value components in the mobile mock.
+- Keep edits local/mock-only while making issued/completed values visually read-only.
+- Split issued Preview data loading from a pure renderer shared by the actual immutable Preview and a deterministic localhost-only sample.
+- Use an A4 landscape cover and packed A4 portrait continuation pages with repeated headers and non-splitting rows.
+- Defer PDF binary, QR, R2, Worker, and generated-document lifecycle to alpha.32.
 
 ## 2.0.0-alpha.30 result
 
@@ -9,7 +19,7 @@ Status: `ALPHA30_COMMAND_RUNTIME_AND_COMPLETION_PASS`.
 - Align mobile free-text inputs and rebuild Preview as a factory-facing multi-page A4 document without internal inventory/order/cost/status fields.
 - Approved dev/test migration 009 apply and post-apply audit PASS: ledger 9/9, four nullable fields and four `NOT VALID` checks present, existing row values/counts and RLS/ACL unchanged, business/R2/Worker/PDF/production mutation false.
 - Approved synthetic completion retained WorkOrder/revision `+1/+1`, fabric/accessory `1/1`, process fixture `+1`, receipts/events `+4/+7`, document number `+1`, and final versions 7/7/2/1/2. Incomplete receipt, next draft, and generated document are all 0.
-- Issued Preview new fields, deterministic repeat GET, tenant isolation, and immutable LOCKED checks passed. Actual PDF/QR/R2/Worker lifecycle remains excluded and moves to alpha.31.
+- Issued Preview new fields, deterministic repeat GET, tenant isolation, and immutable LOCKED checks passed. Actual PDF/QR/R2/Worker lifecycle remains excluded and moves to alpha.32.
 
 ## 2.0.0-alpha.29 result
 
