@@ -52,7 +52,7 @@ export const issuedWorkOrderPreviewSample = {
     dueDate: "2026-08-15",
     totalQuantity: 144,
     memo: "봉제선은 1cm 기준으로 정리하고 완성 후 실밥과 초크 자국을 제거합니다.",
-    factoryDeliveryMemo: "· 완성 후 전체 소프트 워싱 진행\n· 앞여밈 단추 간격을 균일하게 확인\n· 허리 스트링 좌우 길이를 동일하게 마감\n· IVORY는 비침 방지를 위해 안감 위치 확인\n· 초도 3장 먼저 완성 후 봉제 상태 확인",
+    factoryDeliveryMemo: "· 완성 후 전 색상 소프트 워싱을 진행합니다.\n· 앞여밈 단추 간격을 일정하게 맞춥니다.\n· 소매 커프스 좌우 폭과 단추 위치를 동일하게 맞춥니다.\n· 허리 스트링 좌우 노출 길이를 동일하게 마감합니다.\n· IVORY는 오염과 비침 여부를 별도 확인합니다.\n· 초도 3장을 먼저 완성하여 봉제 상태 확인 후 본 생산합니다.",
   },
   amounts: { currency: "KRW", unitPrice: "0", fabricTotal: "0", accessoryTotal: "0", processTotal: "0", estimatedTotal: "0" },
   materials: {
@@ -104,10 +104,10 @@ export const issuedWorkOrderPreviewSample = {
     entityVersion: 1,
   },
   processes: [
-    ["재단", "성수 어패럴", "몸판·소매·칼라", "전 색상", "결 방향을 유지하고 IVORY 재단 시 오염 방지 비닐을 사용합니다.", "2026-08-03"],
-    ["봉제", "성수 어패럴", "앞여밈·소매 커프스", "IVORY / NAVY / BLACK", "앞여밈 단추 간격을 균일하게 확인하고 소매 커프스 좌우를 대칭으로 마감합니다.", "2026-08-08"],
-    ["워싱", "광진 워싱", "완제품 전체", "전 색상", "전 색상 소프트 워싱을 진행하고 IVORY는 이염 방지를 위해 분리 작업합니다.", "2026-08-11"],
-    ["검품·포장", "성동 검품센터", "완제품 전체", "색상·사이즈별", "실밥·단추·오염을 검수한 뒤 색상·사이즈별로 분류 포장합니다.", "2026-08-14"],
+    ["재단", "성수 재단실", "몸판·소매·칼라", "전 색상", "결 방향을 통일하고 IVORY 재단 시 오염 방지 비닐을 사용합니다.", "2026-08-03"],
+    ["봉제", "한강 봉제", "앞여밈·소매 커프스", "IVORY / NAVY / BLACK", "앞여밈 단추 간격과 소매 커프스 좌우 대칭을 확인합니다.", "2026-08-08"],
+    ["워싱", "성수 워싱", "완제품 전체", "전 색상", "전 색상 소프트 워싱을 진행하고 IVORY는 이염 방지를 위해 분리 작업합니다.", "2026-08-11"],
+    ["검품·포장", "본사 검품팀", "완제품 전체", "색상·사이즈별", "실밥·단추·오염을 확인한 뒤 색상·사이즈별로 분류 포장합니다.", "2026-08-14"],
   ].map(([processName, partnerName, applicationArea, applicationColorTarget, memo, dueDate], index) => ({ id: `70000000-0000-0000-0000-00000000000${index + 1}`, processTypeCode: `STEP_${index + 1}`, processName, partnerId: null, partnerName, quantity: "144", dueDate, unitCode: "장", currency: "KRW", unitPrice: "0", amount: "0", memo, applicationArea, applicationColorTarget, status: "ready", displayOrder: index, editable: false, locked: true })),
   assets: [{ assetType: "image", filename: "linen-round-dress-sketch.svg", mimeType: "image/svg+xml", displayOrder: 0, isRepresentative: true, includeInDocument: true }],
   issue: { workOrderStatus: "issued", revisionStatus: "finalized" },

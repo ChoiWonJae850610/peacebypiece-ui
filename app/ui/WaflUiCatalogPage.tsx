@@ -2834,6 +2834,17 @@ export default function WaflUiCatalogPage({
                   ? " 개발/테스트 전용 예시 실행이 가능한 환경입니다."
                   : ` 실행형 데모는 ${allowedRuntimeModes.join(" / ")} 환경에서만 사용할 수 있습니다.`}
               </p>
+              <div className="mt-3">
+                <WaflLinkButton
+                  href="/dev/workorder-preview-sample"
+                  rel="noreferrer"
+                  size="sm"
+                  target="_blank"
+                  variant="secondary"
+                >
+                  실무 샘플 보기
+                </WaflLinkButton>
+              </div>
             </WaflInfoBox>
           </div>
         </WaflPageHero>

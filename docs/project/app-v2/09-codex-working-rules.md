@@ -1,4 +1,13 @@
-# WAFL v2 App-first Codex Working Rules - 2.0.0-alpha.32
+# WAFL v2 App-first Codex Working Rules - 2.0.0-alpha.33
+
+## Alpha.33 actual/sample and material-card boundary
+
+- Actual issued Preview displays only its tenant-scoped immutable revision data. Never add realistic-sample fallback for a missing image, matrix, memo, material, or process.
+- The realistic sample route and entry are localhost-only, visibly labeled as a sample, and absent on production hosts.
+- Stable internal category codes may use a display-only Korean label mapping. Do not rewrite product names, memos, persisted data, or unknown values.
+- Fabric/accessory cards read in this order: header, basic information, usage area/memo, order summary, warning/reference, footer actions. No input, warning, or information follows the action footer.
+- Keep alpha.32's 22px single-line inline edit and double-completion guards unchanged.
+- Browser print-to-PDF remains excluded QA evidence. Actual PDF binary, QR, R2, Worker, generated-document lifecycle, and production storage remain alpha.34 scope.
 
 ## Alpha.32 inline density and sample boundary
 
@@ -6,7 +15,7 @@
 - Escape cancels without a following blur commit. Enter or blur commits a changed value once; unchanged normalized values do not commit.
 - Mobile and Preview omit separate process application-area and application-color UI. Existing DB/API fields remain compatible and are merged into work memo for display only, never written back.
 - The localhost sample uses deterministic source data and repository-owned assets only. It must not call tenant APIs, read business data, or use external image URLs.
-- Browser print-to-PDF is a disposable QA artifact, not generated-document/PDF lifecycle execution. PDF/QR/R2/Worker lifecycle remains alpha.33 scope.
+- Browser print-to-PDF is a disposable QA artifact, not generated-document/PDF lifecycle execution. PDF/QR/R2/Worker lifecycle remains alpha.34 scope.
 
 ## Alpha.31 inline and Preview boundary
 
@@ -14,7 +23,7 @@
 - Long notes collapse to one or two lines and expand in place. Issued/finalized, completed, locked, or unauthorized values use the same read-only component without dotted edit affordance.
 - Issued Preview loading stays separate from the pure document renderer. Actual Preview remains revision-scoped and immutable; deterministic localhost samples use the same renderer without tenant API or business data.
 - The cover is A4 landscape and continuation pages are A4 portrait. Pack sections according to content, repeat table headers, and keep rows intact instead of forcing one section onto every page.
-- PDF binary generation, QR, R2, Worker, regeneration/revoke/trash, and generated-document lifecycle remain alpha.33 scope.
+- PDF binary generation, QR, R2, Worker, regeneration/revoke/trash, and generated-document lifecycle remain alpha.34 scope.
 
 ## Alpha.30 preparation gate
 

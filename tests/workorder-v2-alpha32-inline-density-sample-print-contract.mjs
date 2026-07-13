@@ -24,9 +24,9 @@ const commands = read("lib/domain/work-orders/contracts/commands.ts");
 const models = read("lib/domain/work-orders/contracts/read-models.ts");
 const previewRepository = read("lib/domain/work-orders/read/previewRepository.ts");
 
-assert.match(read("lib/constants/version.ts"), /2\.0\.0-alpha\.32/);
-assert.match(read("apps/mobile/constants/version.ts"), /2\.0\.0-alpha\.32/);
-assert.equal(JSON.parse(read("apps/mobile/app.json")).expo.version, "2.0.0-alpha.32");
+assert.match(read("lib/constants/version.ts"), /2\.0\.0-alpha\.33/);
+assert.match(read("apps/mobile/constants/version.ts"), /2\.0\.0-alpha\.33/);
+assert.equal(JSON.parse(read("apps/mobile/app.json")).expo.version, "2.0.0-alpha.33");
 
 for (const name of ["COMPACT_FIELD_LABEL_TEXT", "COMPACT_FIELD_VALUE_TEXT", "COMPACT_FIELD_ROW_HEIGHT"]) {
   assert.match(typography, new RegExp(`export const ${name}`));
@@ -104,7 +104,8 @@ for (const triplet of ["[0, 0, 8]", "[0, 1, 16]", "[0, 2, 8]", "[1, 0, 12]", "[1
 assert.match(sample, /matrixTotal: "144"/);
 assert.match(sample, /expectedTotal: "144"/);
 assert.match(sample, /totalsMatch: true/);
-for (const token of ["FRONT", "BACK", "IVORY", "NAVY", "BLACK", "DEV SAMPLE PRODUCT BOARD", "앞여밈", "허리 스트링", "소매 커프스"]) assert.ok(svg.includes(token), `sample SVG missing ${token}`);
+for (const token of ["앞면", "뒷면", "IVORY", "NAVY", "BLACK", "실무형 제품 도식", "앞여밈", "허리 스트링", "소매 커프스"]) assert.ok(svg.includes(token), `sample SVG missing ${token}`);
+assert.doesNotMatch(svg, /DEV SAMPLE|A4 PREVIEW SAMPLE/);
 assert.doesNotMatch(svg, /(?:href|src)=["']https?:\/\//i);
 assert.match(samplePage, /assertLocalOnlyRouteHost\(\)/);
 assert.doesNotMatch(`${sample}\n${samplePage}\n${sampleComponent}`, /fetch\(|\/api\/v2|DATABASE_URL|storageObjectKey|tokenHash|rawToken/);

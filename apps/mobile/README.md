@@ -1,8 +1,8 @@
 # WAFL Mobile App Mock
 
-Version: `2.0.0-alpha.32`
+Version: `2.0.0-alpha.33`
 
-Alpha.32 uses one compact single-line grammar for usage areas and memos, keeps edits inside the existing summary-row height, and merges legacy process application fields into the displayed work memo without writing them back. The deterministic localhost Preview sample now uses realistic Korean production data and a repository-owned garment board. PDF/QR/R2/Worker document lifecycle remains disconnected.
+Alpha.33 keeps the alpha.32 compact inline grammar and reorders fabric/accessory cards so usage area and memo precede the order summary, warnings, and final footer actions. The deterministic localhost Preview sample is now explicitly discoverable from the internal `/ui` catalog while actual issued Preview remains free of sample fallback. PDF/QR/R2/Worker document lifecycle remains disconnected.
 
 Alpha.29 connects issued production-card Preview actions to the authenticated Next workspace through `EXPO_PUBLIC_WAFL_WEB_BASE_URL`. Expo Web may use the localhost Next server fallback only in development; native opens the system browser and may require the normal web login. PDF, QR, R2, WebView, and mobile-to-web SSO are not part of this version.
 
@@ -45,6 +45,7 @@ Current visual foundation:
 - `2.0.0-alpha.24` adds dev/test-only WorkOrder core detail and tab-specific lazy Read APIs in Next.js. The Expo mobile mock remains disconnected and makes no real API request.
 - `2.0.0-alpha.31` unifies factory-facing inline field interactions and removes duplicate boxed inputs. The mobile mock still does not save these edits to the v2 API.
 - `2.0.0-alpha.32` removes expandable note rows, prevents cancel/blur and Enter/blur double completion, removes separate process application rows, and aligns the mobile mock with the compact realistic Preview sample. These edits remain local mock state only.
+- `2.0.0-alpha.33` moves fabric/accessory actions to the final card block, keeps factory-facing inline fields above order summaries and warnings, and clarifies the localhost realistic-sample entry without changing actual issued data.
 
 ## Font asset
 
@@ -72,7 +73,7 @@ The first screen contains a production-card list and a selected production card 
 - 제작 플로우
 - 출력·공유
 
-The mock demonstrates a representative image placeholder, compact production summary, carousel-based image review, optional image titles with small fallback labels, allowed-extension attachment rows with upload time, compact fixed-width current-value size/color selectors, cm/inch switching, fabric/accessory quantity math, compact material summary rows, fixed-position status labels, amount-line status-based row actions, a local mock `작지 발주` confirmation CTA, Lucide-backed action icons, continuous production-flow progress rail, simplified rail guidance, process-detail summary rows, output document workbench, and delivery-request rows. Status-based material actions show only the actions allowed for the current status. All buttons are placeholders for product direction only.
+The mock demonstrates a representative image placeholder, compact production summary, carousel-based image review, optional image titles with small fallback labels, allowed-extension attachment rows with upload time, compact fixed-width current-value size/color selectors, cm/inch switching, fabric/accessory quantity math, compact material summary rows, fixed-position status labels, final-footer status-based row actions, a local mock `작지 발주` confirmation CTA, Lucide-backed action icons, continuous production-flow progress rail, simplified rail guidance, process-detail summary rows, output document workbench, and delivery-request rows. Status-based material actions show only the actions allowed for the current status. All buttons are placeholders for product direction only.
 
 The alpha.20 contracts do not connect this app to real camera/photo/file picker/upload/share/PDF/order/search/edit-save behavior. Those integrations remain deferred.
 

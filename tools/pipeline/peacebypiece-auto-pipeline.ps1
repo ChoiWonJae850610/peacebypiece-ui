@@ -1302,6 +1302,17 @@ function NewLocalRepoBuildResultFile {
         AddRepoStateSection -Lines $lines -Title "Alpha.32 Print Verification:" -Values @("PASS - Chromium PDF; A4 landscape cover; A4 portrait continuation; no blank page")
         AddRepoStateSection -Lines $lines -Title "Alpha.32 DB / API / R2 / Worker / PDF Lifecycle / Production Mutation:" -Values @("false")
     }
+    if ($Version -eq "2.0.0-alpha.33") {
+        AddRepoStateSection -Lines $lines -Title "Alpha.33 Product Verification:" -Values @("LEVEL_4_PRODUCT_VERIFIED - mobile/tablet/actual/sample/Chromium print evidence")
+        AddRepoStateSection -Lines $lines -Title "Alpha.33 Actual / Sample Preview Boundary:" -Values @("PASS - immutable actual data only; deterministic localhost sample; no fallback")
+        AddRepoStateSection -Lines $lines -Title "Alpha.33 Sample Route / Entry Guard:" -Values @("PASS - /ui entry and sample route localhost only; production host 404")
+        AddRepoStateSection -Lines $lines -Title "Alpha.33 Product Board / Color / Matrix:" -Values @("PASS - visible front/back; IVORY/NAVY/BLACK; exact total 144")
+        AddRepoStateSection -Lines $lines -Title "Alpha.33 Realistic Korean Data:" -Values @("PASS - 2 fabrics; 4 accessories; 5 size rows; 4 processes; practical factory memo")
+        AddRepoStateSection -Lines $lines -Title "Alpha.33 Material Card Flow:" -Values @("PASS - header/basic/factory fields/order summary/warning/action; action is last")
+        AddRepoStateSection -Lines $lines -Title "Alpha.33 Inline UX Verification:" -Values @("PASS - 22px single-line; stable edit height; double-completion guards; locked affordance 0")
+        AddRepoStateSection -Lines $lines -Title "Alpha.33 Chromium PDF Verification:" -Values @("PASS - A4 landscape cover; portrait continuations; no blank/clipping/image/table loss")
+        AddRepoStateSection -Lines $lines -Title "Alpha.33 DB / API / R2 / Worker / PDF Lifecycle / Production Mutation:" -Values @("false")
+    }
     if ($Version -eq "2.0.0-alpha.27") {
         AddRepoStateSection -Lines $lines -Title "Alpha.27 Completion Status:" -Values @("ALPHA27_ISSUE_RUNTIME_AND_COMPLETION_PASS")
         AddRepoStateSection -Lines $lines -Title "Alpha.27 Issued Document Number:" -Values @("WAFN-26FWA-A25CMD-260711-001-R0")
@@ -1496,6 +1507,24 @@ function NewLocalRepoStateFile {
         AddRepoStateSection -Lines $lines -Title "Alpha.32 PDF Artifact Classification:" -Values @("local excluded QA artifact only; generated-document lifecycle/R2/Worker/QR NOT_RUN")
         AddRepoStateSection -Lines $lines -Title "Alpha.32 DB Migration Applied:" -Values @("false")
         AddRepoStateSection -Lines $lines -Title "Alpha.32 DB / API / R2 / Worker / PDF Lifecycle / Production Mutation:" -Values @("false")
+    }
+    if ($Version -eq "2.0.0-alpha.33") {
+        $alpha33FeatureCommit = [string](InvokeLocalRepoGitOutput -Arguments @("log", "-1", "--format=%H", "-S", "2.0.0-alpha.33", "--", "lib/constants/version.ts") | Select-Object -First 1)
+        $alpha33BaselineCommit = [string](InvokeLocalRepoGitOutput -Arguments @("rev-parse", "$alpha33FeatureCommit^" ) | Select-Object -First 1)
+        $alpha33ChangedPaths = @(InvokeLocalRepoGitOutput -Arguments @("diff", "--name-only", "$alpha33BaselineCommit..HEAD") | Where-Object { -not [string]::IsNullOrWhiteSpace([string]$_) })
+        AddRepoStateSection -Lines $lines -Title "Alpha.33 Changed Paths:" -Values $alpha33ChangedPaths
+        AddRepoStateSection -Lines $lines -Title "Alpha.33 Product Verification:" -Values @("LEVEL_4_PRODUCT_VERIFIED - mobile/tablet/actual/sample/Chromium print evidence")
+        AddRepoStateSection -Lines $lines -Title "Alpha.33 Actual / Sample Preview Boundary:" -Values @("PASS - immutable actual data only; deterministic localhost sample; no fallback")
+        AddRepoStateSection -Lines $lines -Title "Alpha.33 Sample Route / Entry Guard:" -Values @("PASS - /ui entry and sample route localhost only; production host 404")
+        AddRepoStateSection -Lines $lines -Title "Alpha.33 Product Board / Color / Matrix:" -Values @("PASS - visible front/back; IVORY/NAVY/BLACK; exact total 144")
+        AddRepoStateSection -Lines $lines -Title "Alpha.33 Realistic Korean Data:" -Values @("PASS - 2 fabrics; 4 accessories; 5 size rows; 4 processes; practical factory memo")
+        AddRepoStateSection -Lines $lines -Title "Alpha.33 Actual Preview Fallback:" -Values @("none")
+        AddRepoStateSection -Lines $lines -Title "Alpha.33 Material Card Flow:" -Values @("PASS - header/basic/factory fields/order summary/warning/action; action is last")
+        AddRepoStateSection -Lines $lines -Title "Alpha.33 Inline UX Verification:" -Values @("PASS - 22px single-line; stable edit height; double-completion guards; locked affordance 0")
+        AddRepoStateSection -Lines $lines -Title "Alpha.33 Chromium PDF Verification:" -Values @("PASS - A4 landscape cover; portrait continuations; no blank/clipping/image/table loss")
+        AddRepoStateSection -Lines $lines -Title "Alpha.33 PDF Artifact Classification:" -Values @("local excluded QA artifact only; generated-document lifecycle/R2/Worker/QR NOT_RUN")
+        AddRepoStateSection -Lines $lines -Title "Alpha.33 DB Migration Applied:" -Values @("false")
+        AddRepoStateSection -Lines $lines -Title "Alpha.33 DB / API / R2 / Worker / PDF Lifecycle / Production Mutation:" -Values @("false")
     }
     if ($Version -eq "2.0.0-alpha.27") {
         AddRepoStateSection -Lines $lines -Title "Alpha.27 Completion Status:" -Values @("ALPHA27_ISSUE_RUNTIME_AND_COMPLETION_PASS")

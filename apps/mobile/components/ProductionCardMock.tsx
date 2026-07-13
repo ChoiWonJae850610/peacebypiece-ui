@@ -1029,43 +1029,46 @@ function MaterialRow({ row }: { row: MaterialRowData }) {
         <SummaryToken label="재고" value={row.stockUse} editable={editable} />
         <SummaryToken label="단위" value={row.unit} editable={editable} compact />
       </View>
-      <View style={styles.materialMetaLine}>
+      <View style={styles.materialFactoryFields}>
+        <InlineEditableValue
+          accessibilityLabel={`${row.name} 사용 부위`}
+          editable={editable}
+          label="사용 부위"
+          placeholder="입력"
+          value={row.usageArea}
+        />
+        <InlineEditableValue
+          accessibilityLabel={`${row.name} 메모`}
+          editable={editable}
+          label="메모"
+          placeholder="메모 입력"
+          value={row.memo}
+        />
+      </View>
+      <View style={styles.materialOrderSummary}>
         <Text style={styles.rowMeta}>
           발주 {row.orderQuantity} · 단가 {row.unitPrice} · 금액 {row.amount}
         </Text>
-        {actions.length ? (
-          <View style={styles.materialActionInline}>
-            {actions.map((action) => (
-              <IconButton
-                key={action.caption}
-                label={`${action.label} mock`}
-                icon={action.icon}
-                caption={action.caption}
-                emphasized={action.emphasized}
-                danger={action.danger}
-                action
-              />
-            ))}
-          </View>
-        ) : null}
       </View>
-      <Text style={[styles.materialNote, editable && styles.materialNoteEditable]}>
-        {row.leftover} · {row.warning}
-      </Text>
-      <InlineEditableValue
-        accessibilityLabel={`${row.name} 사용 부위`}
-        editable={editable}
-        label="사용 부위"
-        placeholder="입력"
-        value={row.usageArea}
-      />
-      <InlineEditableValue
-        accessibilityLabel={`${row.name} 메모`}
-        editable={editable}
-        label="메모"
-        placeholder="메모 입력"
-        value={row.memo}
-      />
+      <View style={styles.materialStatusMessages}>
+        <Text style={styles.materialReference}>{row.leftover}</Text>
+        <Text style={[styles.materialWarning, editable && styles.materialWarningActive]}>{row.warning}</Text>
+      </View>
+      {actions.length ? (
+        <View style={styles.materialActionFooter}>
+          {actions.map((action) => (
+            <IconButton
+              key={action.caption}
+              label={`${action.label} mock`}
+              icon={action.icon}
+              caption={action.caption}
+              emphasized={action.emphasized}
+              danger={action.danger}
+              action
+            />
+          ))}
+        </View>
+      ) : null}
     </View>
   );
 }
@@ -3171,26 +3174,25 @@ const styles = StyleSheet.create({
     minWidth: 70,
     textAlign: "center"
   },
-  materialActionRow: {
+  materialFactoryFields: {
+    gap: 3
+  },
+  materialOrderSummary: {
+    marginTop: 3
+  },
+  materialStatusMessages: {
+    gap: 1
+  },
+  materialActionFooter: {
     alignItems: "center",
+    borderTopColor: "#eee3d5",
+    borderTopWidth: 1,
     flexDirection: "row",
     flexWrap: "wrap",
     gap: 6,
-    justifyContent: "flex-end"
-  },
-  materialMetaLine: {
-    alignItems: "center",
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 8,
-    justifyContent: "space-between"
-  },
-  materialActionInline: {
-    alignItems: "center",
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 6,
-    justifyContent: "flex-end"
+    justifyContent: "flex-end",
+    marginTop: 3,
+    paddingTop: 8
   },
   materialSummaryStrip: {
     alignItems: "center",
@@ -3225,13 +3227,19 @@ const styles = StyleSheet.create({
     borderStyle: "dotted",
     color: "#17263d"
   },
-  materialNote: {
+  materialReference: {
     color: "#6d6257",
     fontSize: 11,
     fontWeight: "800",
     lineHeight: 16
   },
-  materialNoteEditable: {
+  materialWarning: {
+    color: "#6d6257",
+    fontSize: 11,
+    fontWeight: "800",
+    lineHeight: 16
+  },
+  materialWarningActive: {
     color: "#7b4b32"
   },
   doneText: {

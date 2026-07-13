@@ -1,3 +1,13 @@
+# 2.0.0-alpha.33 Realistic Preview Entry and Material Card Flow
+
+- APP_VERSION and mobile mirrors are `2.0.0-alpha.33`.
+- Actual issued Preview remains tenant/revision scoped and never receives sample fallback. Known stable product category codes use a display-only Korean formatter; unknown values remain unchanged.
+- The localhost-only `/ui` catalog links to `/dev/workorder-preview-sample` as `실무 샘플 보기`. Both routes retain the canonical local-host boundary, so production hosts expose neither the entry nor sample route.
+- The deterministic sample uses a Korean front/back product board, IVORY/NAVY/BLACK chips, exact 144 color-size matrix, two fabrics, four accessories, five size measurements, four processes, and practical Korean factory instructions.
+- Mobile fabric/accessory cards now follow `header -> basic information -> usage area/memo -> order summary -> status/warning -> footer actions`. Actions are the final block and alpha.32's 22px single-line edit contract remains unchanged.
+- No DB migration/write, API mutation, R2, Worker, generated-document lifecycle, production access, root package/lockfile, or dependency change occurs.
+- Evidence: `docs/project/app-v2/30-realistic-preview-entry-and-material-card-flow-evidence.md`.
+
 # 2.0.0-alpha.32 Inline Density and Realistic Sample
 
 - APP_VERSION and mobile mirrors are `2.0.0-alpha.32`.

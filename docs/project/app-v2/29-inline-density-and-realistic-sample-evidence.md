@@ -96,4 +96,4 @@ Status: `LEVEL_4_PRODUCT_VERIFIED`.
 
 ## Next action
 
-Alpha.33 may begin PDF/QR/R2 generated-document lifecycle only under a separate explicit work order and mutation approval.
+Alpha.33 owns sample discoverability and material-card action order. Actual PDF/QR/R2 generated-document lifecycle moves to alpha.34 and still requires a separate explicit work order and mutation approval.

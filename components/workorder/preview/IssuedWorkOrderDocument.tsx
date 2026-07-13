@@ -26,6 +26,20 @@ type DocumentBlock = {
 const number = new Intl.NumberFormat("ko-KR");
 const value = (input: string | null | undefined) => input?.trim() || "-";
 const unitValue = (quantity: string, unit: string) => `${quantity} ${unit}`;
+const PRODUCT_TYPE_LABELS: Readonly<Record<string, string>> = {
+  "apparel.top": "상의",
+  "apparel.bottom": "하의",
+  "apparel.outer": "아우터",
+  "apparel.onepiece_set": "원피스·세트",
+  "underwear.innerwear": "언더웨어·이너웨어",
+  "underwear.sleepwear": "슬립웨어",
+};
+
+export function formatProductTypeLabel(input: string | null | undefined): string | null {
+  const code = input?.trim();
+  if (!code) return null;
+  return PRODUCT_TYPE_LABELS[code] ?? code;
+}
 
 export function formatRevisionLabel(revisionNumber: number): string {
   return `${revisionNumber}차`;
@@ -141,6 +155,7 @@ export default function IssuedWorkOrderDocument({ data, representativeImageSrc, 
   const contentPages = packBlocks(buildBlocks(data));
   const memos = [data.header.factoryDeliveryMemo, data.header.memo].map((memo) => memo?.trim()).filter(Boolean) as string[];
   const quantity = quantityUnit ? `${number.format(data.header.totalQuantity)}${quantityUnit}` : number.format(data.header.totalQuantity);
+  const productTypeLabel = coverFacts?.productTypeLabel ?? formatProductTypeLabel(data.header.productTypeCode);
 
   return (
     <article data-testid="issued-workorder-preview-a4" className={styles.document}>
@@ -157,7 +172,7 @@ export default function IssuedWorkOrderDocument({ data, representativeImageSrc, 
             <div><dt>발행일</dt><dd>{formatDate(data.document.issuedAt, timeZone)}</dd></div>
             <div><dt>납기일</dt><dd>{formatDate(data.header.dueDate, timeZone)}</dd></div>
             <div><dt>발주수량</dt><dd>{quantity}</dd></div>
-            {(coverFacts?.productTypeLabel || data.header.productTypeCode) ? <div><dt>제품 구분</dt><dd>{coverFacts?.productTypeLabel || data.header.productTypeCode}</dd></div> : null}
+            {productTypeLabel ? <div><dt>제품 구분</dt><dd>{productTypeLabel}</dd></div> : null}
             {coverFacts?.factoryName ? <div><dt>제작공장</dt><dd>{coverFacts.factoryName}</dd></div> : null}
             {coverFacts?.managerName ? <div><dt>담당자</dt><dd>{coverFacts.managerName}</dd></div> : null}
           </dl>

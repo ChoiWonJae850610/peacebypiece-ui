@@ -34,11 +34,12 @@
   30. `docs/project/app-v2/27-factory-workorder-input-and-preview-evidence.md`
   31. `docs/project/app-v2/28-inline-input-and-preview-layout-evidence.md`
   32. `docs/project/app-v2/29-inline-density-and-realistic-sample-evidence.md`
-  33. `docs/project/v2/00-start-here.md` through `docs/project/v2/14-operational-policy-absorption.md`
-  34. `docs/project/25-korean-unicode-encoding-standard.md`
-  35. `docs/project/32-product-completion-and-ui-evidence-standard.md`
-  36. `docs/project/26-final-policy-decisions-and-master-todo.md`
-  37. `docs/project/31-pre-codex-integrated-master-plan.md`
+  33. `docs/project/app-v2/30-realistic-preview-entry-and-material-card-flow-evidence.md`
+  34. `docs/project/v2/00-start-here.md` through `docs/project/v2/14-operational-policy-absorption.md`
+  35. `docs/project/25-korean-unicode-encoding-standard.md`
+  36. `docs/project/32-product-completion-and-ui-evidence-standard.md`
+  37. `docs/project/26-final-policy-decisions-and-master-todo.md`
+  38. `docs/project/31-pre-codex-integrated-master-plan.md`
 - `docs/project/app-v2/*` is the priority authority for the `2.0.x` App-first line.
 - Existing `docs/project/v2/*` documents are not deleted. They remain the `0.30.x` `/ui` design baseline and preserved policy reference for Product, Sheet/Card, Korean role labels, Neon/R2/Worker, PDF/share, mobile-web, and QA rules.
 - `www.wafl.co.kr` is the public marketing, download, pricing, examples, inquiry, trial-request, and waitlist landing site for the WAFL app.
@@ -56,7 +57,8 @@
 - `docs/project/app-v2/22-workorder-create-basic-update-command-evidence.md` defines the alpha.25 draft WorkOrder create/basic-update Command boundary. Source and read-only preflight do not authorize valid POST/PATCH mutation; the bounded synthetic dev/test Command runtime requires a separate explicit owner approval.
 - `docs/project/app-v2/23-workorder-material-order-command-evidence.md` defines the completed alpha.26 fabric/accessory create, patch, order-request, cancel, and complete boundary, including its approved bounded synthetic mutation, `NO_PARTIAL_MUTATION` audit, preserved runner failures, and final GET-only completion evidence. It authorizes no further mutation replay, cleanup, production access, or mobile API connection.
 - `docs/project/app-v2/24-workorder-revision-issue-command-evidence.md` records the completed alpha.27 current-revision issue, document-number allocation, immutable finalization, idempotency/concurrency runtime, bounded completion, and material-order shared lock/rollback contract. It authorizes no replay, correction/reissue, production access, R2/Worker/PDF integration, or further synthetic mutation.
-- `docs/project/app-v2/29-inline-density-and-realistic-sample-evidence.md` records the alpha.32 compact single-line editing grammar, display-only process-instruction merge, realistic deterministic localhost sample, and Chromium print evidence. It authorizes no tenant API read, DB/API mutation, generated-document row, QR, R2, Worker, or production lifecycle; those remain alpha.33 work.
+- `docs/project/app-v2/29-inline-density-and-realistic-sample-evidence.md` records the alpha.32 compact single-line editing grammar, display-only process-instruction merge, realistic deterministic localhost sample, and Chromium print evidence.
+- `docs/project/app-v2/30-realistic-preview-entry-and-material-card-flow-evidence.md` records the alpha.33 actual/sample Preview boundary, localhost sample entry, realistic Korean print evidence, and action-last material card flow. It authorizes no DB/API mutation, generated-document row, QR, R2, Worker, or production lifecycle; those remain alpha.34 work.
 - Normal mobile production-card screens are portrait-first. Mobile landscape is not the default production-card target; the future sketch/drawing module may be the mobile-landscape exception.
 - Tablet app screens must support portrait and landscape without becoming a compressed desktop admin layout.
 - Next.js remains for system admin, customer admin advanced settings, operations, API, document, internal showroom, and test-console flows.
