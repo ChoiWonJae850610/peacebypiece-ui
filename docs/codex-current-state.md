@@ -1,3 +1,15 @@
+# 2.0.0-alpha.35 Material Compact Input and Order Action Density
+
+- APP_VERSION and mobile mirrors are `2.0.0-alpha.35`.
+- Fabric/accessory cards use exactly two three-field core rows: supplier, color/option, unit price, required, allowance, and stock. Unit remains directly below the material name.
+- Editable `입력중` rows use same-position 22px inline controls. Requested/completed rows are plain read-only values without edit underlines.
+- The local view model recalculates `max(required + allowance - stock, 0)` and amount from unit price; unit suffix changes do not convert the numeric value.
+- Reference/warning prose is removed from the card face. Missing required values use only a muted field label/underline state, while the three canonical status badges remain.
+- The last card block is one `order summary + nowrap actions` row. Preview routes, sample data, renderer, API, DB, R2, Worker, and PDF lifecycle are unchanged.
+- Product QA PASS at 390x844, 768x1024, and 1024x768: representative cards are `214px` versus alpha.34 `275px`, every core row is `22px` with three fields, edit height is stable, horizontal/footer overflow is 0, and locked edit controls are absent.
+- Unit and quantity interaction produced `382m / 4,889,600원` then `392m / 5,017,600원`. Preview/print regression retained three pages, exact 144 total, production-host 404, and console/failed-request 0.
+- Evidence: `docs/project/app-v2/32-mobile-material-compact-input-evidence.md`.
+
 # 2.0.0-alpha.34 Mobile Sample Preview and Material Footer Alignment
 
 - APP_VERSION and mobile mirrors are `2.0.0-alpha.34`.

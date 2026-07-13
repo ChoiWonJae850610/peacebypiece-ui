@@ -16,10 +16,10 @@ const sample = read("lib/internal/samples/issuedWorkOrderPreviewSample.ts");
 const svg = read("public/dev-samples/linen-round-dress-sketch.svg");
 const css = read("components/workorder/preview/IssuedWorkOrderPreview.module.css");
 
-assert.match(read("lib/constants/version.ts"), /2\.0\.0-alpha\.34/);
-assert.match(read("apps/mobile/constants/version.ts"), /2\.0\.0-alpha\.34/);
-assert.equal(JSON.parse(read("apps/mobile/app.json")).expo.version, "2.0.0-alpha.34");
-assert.equal(JSON.parse(read("apps/mobile/package.json")).version, "2.0.0-alpha.34");
+assert.match(read("lib/constants/version.ts"), /2\.0\.0-alpha\.35/);
+assert.match(read("apps/mobile/constants/version.ts"), /2\.0\.0-alpha\.35/);
+assert.equal(JSON.parse(read("apps/mobile/app.json")).expo.version, "2.0.0-alpha.35");
+assert.equal(JSON.parse(read("apps/mobile/package.json")).version, "2.0.0-alpha.35");
 
 assert.match(samplePage, /assertLocalOnlyRouteHost\(\)/);
 assert.match(uiCatalog, /href="\/dev\/workorder-preview-sample"/);
@@ -68,15 +68,14 @@ assert.doesNotMatch(processHeader, /적용 부위|적용 색상|적용 대상/);
 assert.match(css, /@page cover \{ size: A4 landscape/);
 assert.match(css, /@page content \{ size: A4 portrait/);
 
-const materialRow = mobile.match(/function MaterialRow\([\s\S]*?\n\}\n\nfunction SummaryToken/)?.[0] ?? "";
+const materialRow = mobile.match(/function MaterialRow\([\s\S]*?\n\}\n\ntype MaterialEditValues/)?.[0] ?? "";
 const orderedMarkers = [
   "styles.rowHead",
-  "styles.materialSummaryStrip",
+  "styles.materialCoreRow",
   "styles.materialFactoryFields",
   'label="사용 부위"',
   'label="메모"',
-  "styles.materialOrderSummary",
-  "styles.materialFooterBand",
+  "styles.materialOrderActionRow",
 ];
 let previous = -1;
 for (const marker of orderedMarkers) {
@@ -84,10 +83,10 @@ for (const marker of orderedMarkers) {
   assert.ok(index > previous, `material card order failed at ${marker}`);
   previous = index;
 }
-const afterFooter = materialRow.slice(materialRow.indexOf("styles.materialFooterBand"));
-assert.doesNotMatch(afterFooter, /InlineEditableValue|materialOrderSummary/);
+const afterFooter = materialRow.slice(materialRow.indexOf("styles.materialOrderActionRow"));
+assert.doesNotMatch(afterFooter, /InlineEditableValue|materialCoreRow/);
 assert.doesNotMatch(materialRow, /materialActionInline|materialMetaLine|position:\s*["']absolute/);
-assert.match(mobile, /materialFooterBand:[\s\S]*?borderTopWidth: 1/);
+assert.match(mobile, /materialOrderActionRow:[\s\S]*?borderTopWidth: 1/);
 assert.match(inline, /height: COMPACT_FIELD_ROW_HEIGHT/);
 assert.match(inline, /multiline=\{false\}/);
 assert.match(inline, /if \(cancelledRef\.current \|\| completedRef\.current\) return/);

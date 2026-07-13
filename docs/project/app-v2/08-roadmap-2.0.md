@@ -1,4 +1,13 @@
-# WAFL v2 App-first Roadmap 2.0 - 2.0.0-alpha.34
+# WAFL v2 App-first Roadmap 2.0 - 2.0.0-alpha.35
+
+## 2.0.0-alpha.35 result
+
+- Compress fabric/accessory cards into two horizontal core-input rows with three fields each and keep unit directly below the material name.
+- Use local same-position editing for supplier, color/option, unit price, required, allowance, stock, and unit. Recalculate order quantity and amount without connecting mobile persistence.
+- Replace warning/reference prose and split footer blocks with field-only missing states and one final order-summary/action row.
+- Preserve the alpha.34 sample entry and frozen Preview renderer/print contract. Defer immutable PDF binary, generated-document metadata, QR, R2, and Worker lifecycle to alpha.36.
+- `LEVEL_4_PRODUCT_VERIFIED`: 390/768/1024 overflow 0, card height `275px -> 214px`, edit height stable, local unit/quantity/amount recalculation PASS, locked affordance 0, and three-page Preview print regression PASS.
+- Evidence: `32-mobile-material-compact-input-evidence.md`.
 
 ## 2.0.0-alpha.34 result
 
@@ -8,7 +17,7 @@ Status: `LEVEL_4_PRODUCT_VERIFIED`; implementation and evidence are tracked in d
 - Keep the sample unavailable in production and restrict development sample hosts to localhost loopback values.
 - Merge material reference/warning messages and available actions into one final footer band with one separator, left/right alignment, no action wrapping, and no empty placeholder.
 - Verify the two mobile user paths, 390x844 phone, 768x1024 tablet portrait, 1024x768 tablet landscape, and a three-page Chromium print artifact with console warning/error 0 and horizontal overflow 0.
-- Defer actual immutable PDF binary, generated-document metadata, QR, R2, Worker, and production lifecycle to alpha.35.
+- Defer actual immutable PDF binary, generated-document metadata, QR, R2, Worker, and production lifecycle to alpha.36.
 
 ## 2.0.0-alpha.33 result
 
@@ -50,7 +59,7 @@ Status: `ALPHA30_COMMAND_RUNTIME_AND_COMPLETION_PASS`.
 - Align mobile free-text inputs and rebuild Preview as a factory-facing multi-page A4 document without internal inventory/order/cost/status fields.
 - Approved dev/test migration 009 apply and post-apply audit PASS: ledger 9/9, four nullable fields and four `NOT VALID` checks present, existing row values/counts and RLS/ACL unchanged, business/R2/Worker/PDF/production mutation false.
 - Approved synthetic completion retained WorkOrder/revision `+1/+1`, fabric/accessory `1/1`, process fixture `+1`, receipts/events `+4/+7`, document number `+1`, and final versions 7/7/2/1/2. Incomplete receipt, next draft, and generated document are all 0.
-- Issued Preview new fields, deterministic repeat GET, tenant isolation, and immutable LOCKED checks passed. Actual PDF/QR/R2/Worker lifecycle remains excluded and moves to alpha.35.
+- Issued Preview new fields, deterministic repeat GET, tenant isolation, and immutable LOCKED checks passed. Actual PDF/QR/R2/Worker lifecycle remains excluded and moves to alpha.36.
 
 ## 2.0.0-alpha.29 result
 

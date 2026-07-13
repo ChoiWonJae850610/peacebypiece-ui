@@ -13,11 +13,11 @@ const actualRenderer = read("components/workorder/preview/IssuedWorkOrderDocumen
 const samplePage = read("app/dev/workorder-preview-sample/page.tsx");
 const localGuard = read("lib/internal/localOnlyRouteGuard.ts");
 
-assert.match(read("lib/constants/version.ts"), /2\.0\.0-alpha\.34/);
-assert.match(read("apps/mobile/constants/version.ts"), /2\.0\.0-alpha\.34/);
-assert.equal(JSON.parse(read("apps/mobile/app.json")).expo.version, "2.0.0-alpha.34");
-assert.equal(JSON.parse(read("apps/mobile/package.json")).version, "2.0.0-alpha.34");
-assert.equal(JSON.parse(read("apps/mobile/package-lock.json")).version, "2.0.0-alpha.34");
+assert.match(read("lib/constants/version.ts"), /2\.0\.0-alpha\.35/);
+assert.match(read("apps/mobile/constants/version.ts"), /2\.0\.0-alpha\.35/);
+assert.equal(JSON.parse(read("apps/mobile/app.json")).expo.version, "2.0.0-alpha.35");
+assert.equal(JSON.parse(read("apps/mobile/package.json")).version, "2.0.0-alpha.35");
+assert.equal(JSON.parse(read("apps/mobile/package-lock.json")).version, "2.0.0-alpha.35");
 
 for (const token of ['kind: "issued-document"', 'kind: "dev-realistic-sample"']) assert.match(helper, new RegExp(token));
 assert.match(helper, /\/workspace\/documents\/\$\{encodeURIComponent\(identity\.issuedDocumentNumber\)\}\/preview/);
@@ -40,17 +40,15 @@ assert.match(samplePage, /assertLocalOnlyRouteHost\(\)/);
 assert.match(localGuard, /LOCAL_HOST_NAMES/);
 assert.doesNotMatch(`${actualPreview}\n${actualRenderer}`, /issuedWorkOrderPreviewSample|SampleIssuedWorkOrderPreview|dev-samples/);
 
-const materialRow = mobile.match(/function MaterialRow\([\s\S]*?\n\}\n\nfunction SummaryToken/)?.[0] ?? "";
+const materialRow = mobile.match(/function MaterialRow\([\s\S]*?\n\}\n\ntype MaterialEditValues/)?.[0] ?? "";
 const ordered = [
   "styles.rowHead",
-  "styles.materialSummaryStrip",
+  "styles.materialCoreRow",
   "styles.materialFactoryFields",
   'label="사용 부위"',
   'label="메모"',
-  "styles.materialOrderSummary",
-  "styles.materialFooterBand",
-  "styles.materialFooterMessages",
-  "styles.materialFooterActions",
+  "styles.materialOrderActionRow",
+  "styles.materialOrderActions",
 ];
 let previous = -1;
 for (const marker of ordered) {
@@ -58,20 +56,17 @@ for (const marker of ordered) {
   assert.ok(index > previous, `material footer order failed at ${marker}`);
   previous = index;
 }
-const afterFooter = materialRow.slice(materialRow.indexOf("styles.materialFooterBand"));
-assert.doesNotMatch(afterFooter, /InlineEditableValue|materialOrderSummary/);
-assert.doesNotMatch(mobile, /materialStatusMessages|materialActionFooter/);
-assert.match(mobile, /materialFooterBand:[\s\S]*?alignItems: "flex-end"/);
-assert.match(mobile, /materialFooterBand:[\s\S]*?borderTopWidth: 1/);
-assert.match(mobile, /materialFooterBand:[\s\S]*?flexDirection: "row"/);
-assert.match(mobile, /materialFooterBand:[\s\S]*?justifyContent: "space-between"/);
-assert.match(mobile, /materialFooterBand:[\s\S]*?width: "100%"/);
-assert.match(mobile, /materialFooterMessages:[\s\S]*?flex: 1[\s\S]*?minWidth: 0/);
-assert.match(mobile, /materialFooterActions:[\s\S]*?flexShrink: 0[\s\S]*?flexWrap: "nowrap"/);
+const afterFooter = materialRow.slice(materialRow.indexOf("styles.materialOrderActionRow"));
+assert.doesNotMatch(afterFooter, /InlineEditableValue|materialCoreRow/);
+assert.doesNotMatch(mobile, /materialStatusMessages|materialActionFooter|materialFooterMessages/);
+assert.match(mobile, /materialOrderActionRow:[\s\S]*?borderTopWidth: 1/);
+assert.match(mobile, /materialOrderActionRow:[\s\S]*?flexDirection: "row"/);
+assert.match(mobile, /materialOrderActionRow:[\s\S]*?justifyContent: "space-between"/);
+assert.match(mobile, /materialOrderActionRow:[\s\S]*?width: "100%"/);
+assert.match(mobile, /materialOrderActions:[\s\S]*?flexShrink: 0[\s\S]*?flexWrap: "nowrap"/);
 assert.match(materialRow, /testID="material-card"/);
-assert.match(materialRow, /testID="material-footer-band"/);
-assert.match(materialRow, /\{hasMessages \? \([\s\S]*styles\.materialFooterMessages/);
-assert.match(materialRow, /\{actions\.length \? \([\s\S]*styles\.materialFooterActions/);
+assert.match(materialRow, /testID="material-order-action-row"/);
+assert.match(materialRow, /\{actions\.length \? \([\s\S]*styles\.materialOrderActions/);
 assert.doesNotMatch(materialRow, /position:\s*["']absolute|materialFooterSpacer/);
 
 assert.match(inline, /height: COMPACT_FIELD_ROW_HEIGHT/);

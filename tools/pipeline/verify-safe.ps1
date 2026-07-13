@@ -923,7 +923,8 @@ $profileCommands = @{
                 "tests/workorder-v2-alpha31-inline-preview-layout-contract.mjs",
                 "tests/workorder-v2-alpha32-inline-density-sample-print-contract.mjs",
                 "tests/workorder-v2-alpha33-realistic-preview-card-flow-contract.mjs",
-                "tests/workorder-v2-alpha34-mobile-preview-footer-contract.mjs"
+                "tests/workorder-v2-alpha34-mobile-preview-footer-contract.mjs",
+                "tests/workorder-v2-alpha35-material-compact-input-contract.mjs"
             )
         },
         @{ Name = "mobile typecheck"; Command = "npm"; Arguments = @("--prefix", "apps/mobile", "run", "typecheck") },
@@ -944,6 +945,7 @@ $profileCommands = @{
         @{ Name = "workorder v2 alpha.32 inline density and sample print static contract"; Command = "node"; Arguments = @("tests/workorder-v2-alpha32-inline-density-sample-print-contract.mjs") },
         @{ Name = "workorder v2 alpha.33 realistic Preview and material card flow static contract"; Command = "node"; Arguments = @("tests/workorder-v2-alpha33-realistic-preview-card-flow-contract.mjs") },
         @{ Name = "workorder v2 alpha.34 mobile Preview and material footer static contract"; Command = "node"; Arguments = @("tests/workorder-v2-alpha34-mobile-preview-footer-contract.mjs") },
+        @{ Name = "workorder v2 alpha.35 material compact input static contract"; Command = "node"; Arguments = @("tests/workorder-v2-alpha35-material-compact-input-contract.mjs") },
         @{ Name = "app-v2 document links and Mermaid contract"; Command = "node"; Arguments = @("tests/app-v2-document-links-contract.mjs") },
         @{ Name = "unicode encoding contract"; Command = "node"; Arguments = @("tests/unicode-encoding-contract.mjs") },
         @{ Name = "PowerShell encoding contract"; Command = "node"; Arguments = @("tests/pipeline-powershell-encoding-contract.mjs") },

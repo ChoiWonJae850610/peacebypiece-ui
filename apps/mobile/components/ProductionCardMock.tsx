@@ -44,7 +44,7 @@ import { COMPACT_FIELD_LABEL_TEXT, COMPACT_FIELD_VALUE_TEXT } from "@/constants/
 import { MOBILE_APP_VERSION } from "@/constants/version";
 import { buildPreviewUrl, openPreviewTarget, type PreviewTarget } from "@/utils/previewLink";
 import { formatProcessInstruction } from "@/utils/processInstruction";
-import { InlineEditableValue } from "@/components/InlineEditableFields";
+import { CompactInlineEditableField, InlineEditableValue } from "@/components/InlineEditableFields";
 import {
   PRODUCTION_TABS,
   accessoryRows,
@@ -1005,81 +1005,185 @@ function InfoRow({ label, value }: { label: string; value: string }) {
 }
 
 function MaterialRow({ row }: { row: MaterialRowData }) {
+  const { width } = useWindowDimensions();
   const actions = getMaterialActions(row);
   const locked = row.status !== "입력중";
   const editable = row.status === "입력중";
-  const hasReference = Boolean(row.leftover.trim());
-  const hasWarning = Boolean(row.warning.trim());
-  const hasMessages = hasReference || hasWarning;
+  const compactActions = width < maxPhoneWidth;
+  const [values, setValues] = useState(() => createMaterialEditValues(row));
+  const updateValue = (key: keyof MaterialEditValues) => (value: string) => {
+    setValues((current) => ({ ...current, [key]: value }));
+  };
+  const unit = values.unit.trim();
+  const orderQuantity = Math.max(
+    parseMaterialNumber(values.required) + parseMaterialNumber(values.allowance) - parseMaterialNumber(values.stockUse),
+    0
+  );
+  const amount = orderQuantity * parseMaterialNumber(values.unitPrice);
 
   return (
-    <View testID="material-card" style={[styles.dataRow, materialRowStateStyle(row.status), locked && styles.lockedRow, row.status === "완료" && styles.completedRow]}>
+    <View testID="material-card" style={[styles.dataRow, styles.materialDataRow, materialRowStateStyle(row.status), locked && styles.lockedRow, row.status === "완료" && styles.completedRow]}>
       <View style={styles.rowHead}>
         <SwatchVisual tone={getMaterialTone(row)} label={row.category} />
         <View style={styles.flex}>
           <Text style={styles.rowTitle}>{row.name}</Text>
-          <Text style={styles.rowDetail}>{row.category ? `${row.category} · ` : ""}{editable ? "거래처·수량 확인" : "발주 정보 고정"}</Text>
+          <View style={styles.materialHeaderUnit}>
+            <CompactInlineEditableField
+              accessibilityLabel={`${row.name} 단위`}
+              editable={editable}
+              invalid={!unit}
+              label="단위"
+              onChange={updateValue("unit")}
+              placeholder="입력"
+              value={values.unit}
+            />
+          </View>
         </View>
         <Text style={[styles.rowBadge, styles.materialStatusBadge, statusBadgeStyle(row.status)]}>{row.status}</Text>
       </View>
-      <View style={styles.materialSummaryStrip}>
-        <SummaryToken label="거래처" value={row.supplier} editable={editable} />
-        <SummaryToken label="색상/옵션" value={row.colorOrOption} editable={editable} />
-        <SummaryToken label="필요" value={row.required} editable={editable} />
-        <SummaryToken label="로스/여유" value={row.allowance} editable={editable} />
-        <SummaryToken label="재고" value={row.stockUse} editable={editable} />
-        <SummaryToken label="단위" value={row.unit} editable={editable} compact />
+      <View testID="material-core-row" style={styles.materialCoreRow}>
+        <CompactInlineEditableField
+          accessibilityLabel={`${row.name} 거래처`}
+          editable={editable}
+          invalid={!values.supplier.trim()}
+          label="거래처"
+          onChange={updateValue("supplier")}
+          placeholder="미입력"
+          value={values.supplier}
+        />
+        <CompactInlineEditableField
+          accessibilityLabel={`${row.name} 색상 옵션`}
+          editable={editable}
+          invalid={!values.colorOrOption.trim()}
+          label="색상·옵션"
+          onChange={updateValue("colorOrOption")}
+          placeholder="미입력"
+          value={values.colorOrOption}
+        />
+        <CompactInlineEditableField
+          accessibilityLabel={`${row.name} 단가`}
+          displayValue={formatMaterialCurrency(values.unitPrice)}
+          editable={editable}
+          invalid={parseMaterialNumber(values.unitPrice) <= 0}
+          keyboardType="numeric"
+          label="단가"
+          onChange={updateValue("unitPrice")}
+          placeholder="미입력"
+          value={values.unitPrice}
+        />
+      </View>
+      <View testID="material-core-row" style={styles.materialCoreRow}>
+        <CompactInlineEditableField
+          accessibilityLabel={`${row.name} 필요 수량`}
+          displayValue={formatMaterialQuantity(values.required, unit)}
+          editable={editable}
+          invalid={parseMaterialNumber(values.required) <= 0}
+          keyboardType="numeric"
+          label="필요"
+          onChange={updateValue("required")}
+          placeholder="0"
+          value={values.required}
+        />
+        <CompactInlineEditableField
+          accessibilityLabel={`${row.name} 로스 여유 수량`}
+          displayValue={formatMaterialQuantity(values.allowance, unit)}
+          editable={editable}
+          keyboardType="numeric"
+          label="로스·여유"
+          onChange={updateValue("allowance")}
+          placeholder="0"
+          value={values.allowance}
+        />
+        <CompactInlineEditableField
+          accessibilityLabel={`${row.name} 재고 수량`}
+          displayValue={formatMaterialQuantity(values.stockUse, unit)}
+          editable={editable}
+          keyboardType="numeric"
+          label="재고"
+          onChange={updateValue("stockUse")}
+          placeholder="0"
+          value={values.stockUse}
+        />
       </View>
       <View style={styles.materialFactoryFields}>
         <InlineEditableValue
           accessibilityLabel={`${row.name} 사용 부위`}
           editable={editable}
           label="사용 부위"
-          placeholder="입력"
+          placeholder="사용 부위를 알려주세요"
           value={row.usageArea}
         />
         <InlineEditableValue
           accessibilityLabel={`${row.name} 메모`}
           editable={editable}
           label="메모"
-          placeholder="메모 입력"
+          placeholder="메모를 입력하세요"
           value={row.memo}
         />
       </View>
-      <View style={styles.materialOrderSummary}>
-        <Text style={styles.rowMeta}>
-          발주 {row.orderQuantity} · 단가 {row.unitPrice} · 금액 {row.amount}
+      <View testID="material-order-action-row" style={styles.materialOrderActionRow}>
+        <Text testID="material-order-summary" numberOfLines={1} style={styles.materialOrderActionSummary}>
+          발주 {formatMaterialQuantity(String(orderQuantity), unit)} · {formatMaterialCurrency(String(amount))}
         </Text>
+        {actions.length ? (
+          <View testID="material-order-actions" style={styles.materialOrderActions}>
+            {actions.map((action) => (
+              <IconButton
+                key={action.caption}
+                label={`${action.label} mock`}
+                icon={action.icon}
+                caption={compactActions ? undefined : action.caption}
+                emphasized={action.emphasized}
+                danger={action.danger}
+                action
+              />
+            ))}
+          </View>
+        ) : null}
       </View>
-      {hasMessages || actions.length ? (
-        <View testID="material-footer-band" style={styles.materialFooterBand}>
-          {hasMessages ? (
-            <View testID="material-footer-messages" style={styles.materialFooterMessages}>
-              {hasReference ? <Text numberOfLines={1} style={styles.materialReference}>{row.leftover}</Text> : null}
-              {hasWarning ? (
-                <Text numberOfLines={1} style={[styles.materialWarning, editable && styles.materialWarningActive]}>{row.warning}</Text>
-              ) : null}
-            </View>
-          ) : null}
-          {actions.length ? (
-            <View testID="material-footer-actions" style={styles.materialFooterActions}>
-              {actions.map((action) => (
-                <IconButton
-                  key={action.caption}
-                  label={`${action.label} mock`}
-                  icon={action.icon}
-                  caption={action.caption}
-                  emphasized={action.emphasized}
-                  danger={action.danger}
-                  action
-                />
-              ))}
-            </View>
-          ) : null}
-        </View>
-      ) : null}
     </View>
   );
+}
+
+type MaterialEditValues = {
+  supplier: string;
+  colorOrOption: string;
+  unitPrice: string;
+  required: string;
+  allowance: string;
+  stockUse: string;
+  unit: string;
+};
+
+function createMaterialEditValues(row: MaterialRowData): MaterialEditValues {
+  return {
+    supplier: row.supplier.includes("확인 필요") ? "" : row.supplier,
+    colorOrOption: row.colorOrOption,
+    unitPrice: String(parseMaterialNumber(row.unitPrice) || ""),
+    required: String(parseMaterialNumber(row.required)),
+    allowance: String(parseMaterialNumber(row.allowance)),
+    stockUse: String(parseMaterialNumber(row.stockUse)),
+    unit: row.unit,
+  };
+}
+
+function parseMaterialNumber(value: string) {
+  const parsed = Number(value.replace(/[^0-9.-]/g, ""));
+  return Number.isFinite(parsed) ? Math.max(parsed, 0) : 0;
+}
+
+function formatMaterialNumber(value: number) {
+  return new Intl.NumberFormat("ko-KR", { maximumFractionDigits: 2 }).format(value);
+}
+
+function formatMaterialQuantity(value: string, unit: string) {
+  if (!value.trim()) return "";
+  return `${formatMaterialNumber(parseMaterialNumber(value))}${unit}`;
+}
+
+function formatMaterialCurrency(value: string) {
+  if (!value.trim()) return "";
+  return `${formatMaterialNumber(parseMaterialNumber(value))}원`;
 }
 
 function SummaryToken({
@@ -3095,6 +3199,10 @@ const styles = StyleSheet.create({
     paddingLeft: 10,
     paddingVertical: 11
   },
+  materialDataRow: {
+    gap: 5,
+    paddingVertical: 9
+  },
   materialDraftRow: {
     borderLeftColor: "#a89d90"
   },
@@ -3184,42 +3292,45 @@ const styles = StyleSheet.create({
     textAlign: "center"
   },
   materialFactoryFields: {
-    gap: 3
+    gap: 2
   },
-  materialOrderSummary: {
-    marginTop: 3
+  materialHeaderUnit: {
+    maxWidth: 110,
+    width: "100%"
   },
-  materialFooterBand: {
-    alignItems: "flex-end",
+  materialCoreRow: {
+    alignItems: "center",
+    flexDirection: "row",
+    gap: 5,
+    height: 22,
+    width: "100%"
+  },
+  materialOrderActionRow: {
+    alignItems: "center",
     borderTopColor: "#eee3d5",
     borderTopWidth: 1,
     flexDirection: "row",
-    gap: 8,
+    gap: 6,
     justifyContent: "space-between",
-    marginTop: 3,
-    paddingTop: 8,
+    marginTop: 2,
+    minHeight: 34,
+    paddingTop: 4,
     width: "100%"
   },
-  materialFooterMessages: {
+  materialOrderActionSummary: {
+    color: "#7b4b32",
     flex: 1,
-    gap: 1,
+    fontSize: 11,
+    fontWeight: "800",
+    lineHeight: 16,
     minWidth: 0
   },
-  materialFooterActions: {
-    alignSelf: "flex-end",
+  materialOrderActions: {
     flexDirection: "row",
     flexShrink: 0,
     flexWrap: "nowrap",
-    gap: 6,
-    justifyContent: "flex-end",
+    gap: 4,
     marginLeft: "auto"
-  },
-  materialSummaryStrip: {
-    alignItems: "center",
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 5,
-    rowGap: 4
   },
   summaryToken: {
     alignItems: "baseline",
@@ -3246,21 +3357,6 @@ const styles = StyleSheet.create({
     borderBottomColor: "#b98c5a",
     borderStyle: "dotted",
     color: "#17263d"
-  },
-  materialReference: {
-    color: "#6d6257",
-    fontSize: 11,
-    fontWeight: "800",
-    lineHeight: 16
-  },
-  materialWarning: {
-    color: "#6d6257",
-    fontSize: 11,
-    fontWeight: "800",
-    lineHeight: 16
-  },
-  materialWarningActive: {
-    color: "#7b4b32"
   },
   doneText: {
     color: "#4d6a3a",

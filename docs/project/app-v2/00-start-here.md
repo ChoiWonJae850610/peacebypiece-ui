@@ -5,7 +5,9 @@
 This document starts the WAFL v2 App-first line.
 
 Previous baseline: `0.30.0-alpha.27`.
-Current baseline: `2.0.0-alpha.34`.
+Current baseline: `2.0.0-alpha.35`.
+
+Alpha.35 keeps the Expo surface mock-only and compresses fabric/accessory cards into two same-line core input rows plus one final order/action row. Preview rendering and generated-document/PDF/R2 lifecycle are unchanged and remain a separate alpha.36 boundary.
 
 The customer-facing product direction moves from a Next.js-first web showroom implementation path to an Expo React Native mobile/tablet app-first path.
 

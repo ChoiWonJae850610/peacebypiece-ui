@@ -1,10 +1,17 @@
 # Final Policy Decisions and Master TODO
 
+## WAFL v2 alpha.35 confirmed material-card input density
+
+- Fabric/accessory cards show core inputs as exactly two compact rows with three same-line label/value fields each; unit stays under the material name.
+- Order quantity is `max(required + allowance - stock, 0)` and amount is order quantity multiplied by unit price. Changing unit changes suffix only and never converts the number.
+- Missing required values use field-only emphasis. Reference and warning prose do not occupy a separate card band.
+- One final row combines the order summary and state-allowed actions. Actual Preview/PDF layout and generated-document lifecycle remain unchanged; lifecycle work moves to alpha.36.
+
 ## WAFL v2 alpha.30 confirmed factory document fields
 
 - Material usage area and process application area/color target are free text; factory delivery memo is revision-scoped.
 - Do not add send-time, next-process, factory delivery quantity, or separate remark fields.
-- Factory Preview excludes operational inventory, order quantity, price, amount, and internal status. Actual Preview never receives sample fallback; the realistic sample remains localhost-only. Alpha.34 connects every Expo mock Preview entry to that local sample and uses one final material footer band; PDF/QR/R2 lifecycle remains alpha.35.
+- Factory Preview excludes operational inventory, order quantity, price, amount, and internal status. Actual Preview never receives sample fallback; the realistic sample remains localhost-only. Alpha.34 connects every Expo mock Preview entry to that local sample. Alpha.35 compresses the mock material input card without changing Preview; PDF/QR/R2 lifecycle remains alpha.36.
 
 Version: 0.24.21.16  
 Status: Canonical product-policy decision log and consolidated implementation backlog  
