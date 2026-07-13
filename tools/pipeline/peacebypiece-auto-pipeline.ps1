@@ -1462,7 +1462,9 @@ function NewLocalRepoStateFile {
     AddWorkorderPdfLiveIntegrationRepoStateSections -Lines $lines -VerificationSummary $VerificationSummary
     AddProductUiRuntimeVerificationRepoStateSections -Lines $lines -VerificationSummary $VerificationSummary
     if ($Version -eq "2.0.0-alpha.31") {
-        $alpha31ChangedPaths = @(InvokeLocalRepoGitOutput -Arguments @("show", "--pretty=format:", "--name-only", "HEAD") | Where-Object { -not [string]::IsNullOrWhiteSpace([string]$_) })
+        $alpha31FeatureCommit = [string](InvokeLocalRepoGitOutput -Arguments @("log", "-1", "--format=%H", "-S", "2.0.0-alpha.31", "--", "lib/constants/version.ts") | Select-Object -First 1)
+        $alpha31BaselineCommit = [string](InvokeLocalRepoGitOutput -Arguments @("rev-parse", "$alpha31FeatureCommit^" ) | Select-Object -First 1)
+        $alpha31ChangedPaths = @(InvokeLocalRepoGitOutput -Arguments @("diff", "--name-only", "$alpha31BaselineCommit..HEAD") | Where-Object { -not [string]::IsNullOrWhiteSpace([string]$_) })
         AddRepoStateSection -Lines $lines -Title "Alpha.31 Changed Paths:" -Values $alpha31ChangedPaths
         AddRepoStateSection -Lines $lines -Title "Alpha.31 Product Verification:" -Values @("LEVEL_4_PRODUCT_VERIFIED - desktop/tablet/mobile/inline interaction evidence")
         AddRepoStateSection -Lines $lines -Title "Alpha.31 Sample Route Guard:" -Values @("PASS - localhost 200; Host www.wafl.co.kr 404")
