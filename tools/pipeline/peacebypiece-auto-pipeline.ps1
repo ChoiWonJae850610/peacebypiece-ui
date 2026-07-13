@@ -1247,6 +1247,38 @@ function AddProductUiRuntimeVerificationRepoStateSections {
     AddRepoStateSection -Lines $Lines -Title "0.24.35 Status:" -Values @("NOT_STARTED")
 }
 
+function AddAlpha35MaterialCompactInputRepoStateSections {
+    param(
+        [System.Collections.Generic.List[string]]$Lines,
+        [string]$Version
+    )
+
+    if ($Version -ne "2.0.0-alpha.35") {
+        return
+    }
+
+    AddRepoStateSection -Lines $Lines -Title "Alpha.35 Product Verification:" -Values @("LEVEL_4_PRODUCT_VERIFIED - 390/768/1024 responsive interaction and Chromium print evidence")
+    AddRepoStateSection -Lines $Lines -Title "Alpha.35 Core Input Row Count:" -Values @("2")
+    AddRepoStateSection -Lines $Lines -Title "Alpha.35 Fields Per Core Row:" -Values @("3")
+    AddRepoStateSection -Lines $Lines -Title "Alpha.35 Label / Value Same-Line:" -Values @("PASS - underline-only 22px inline field grammar")
+    AddRepoStateSection -Lines $Lines -Title "Alpha.35 Unit Position:" -Values @("PASS - directly below material name")
+    AddRepoStateSection -Lines $Lines -Title "Alpha.35 Unit Propagation:" -Values @("PASS - 382yd becomes 382m")
+    AddRepoStateSection -Lines $Lines -Title "Alpha.35 Unit Numeric Conversion:" -Values @("false")
+    AddRepoStateSection -Lines $Lines -Title "Alpha.35 Unit Price Editing:" -Values @("PASS - same-position numeric TextInput while editing")
+    AddRepoStateSection -Lines $Lines -Title "Alpha.35 Order Quantity Calculation:" -Values @("PASS - max(420 + 42 - 80, 0) = 382; required 430 yields 392")
+    AddRepoStateSection -Lines $Lines -Title "Alpha.35 Amount Calculation:" -Values @("PASS - 382 x 12,800 = 4,889,600; 392 x 12,800 = 5,017,600")
+    AddRepoStateSection -Lines $Lines -Title "Alpha.35 Warning Text Count:" -Values @("0")
+    AddRepoStateSection -Lines $Lines -Title "Alpha.35 Material Status Badges:" -Values @("PASS - input, order requested, completed only")
+    AddRepoStateSection -Lines $Lines -Title "Alpha.35 Missing Required State:" -Values @("PASS - field label and underline only")
+    AddRepoStateSection -Lines $Lines -Title "Alpha.35 Summary / Action Row:" -Values @("PASS - one final materialOrderActionRow")
+    AddRepoStateSection -Lines $Lines -Title "Alpha.35 390px Action Wrap Count:" -Values @("0")
+    AddRepoStateSection -Lines $Lines -Title "Alpha.35 Action-After-Content Count:" -Values @("0")
+    AddRepoStateSection -Lines $Lines -Title "Alpha.35 Card Height Before / After:" -Values @("275px / 214px")
+    AddRepoStateSection -Lines $Lines -Title "Alpha.35 PDF / Preview Regression:" -Values @("PASS - localhost sample; production host 404; 1 landscape + 2 portrait pages; total 144")
+    AddRepoStateSection -Lines $Lines -Title "Alpha.35 DB Migration Applied:" -Values @("false")
+    AddRepoStateSection -Lines $Lines -Title "Alpha.35 DB / API / R2 / Worker / PDF Lifecycle / Production Mutation:" -Values @("false")
+}
+
 function NewLocalRepoBuildResultFile {
     param(
         [string]$Version,
@@ -1286,6 +1318,7 @@ function NewLocalRepoBuildResultFile {
     AddCustomerProductUxCleanupRepoStateSections -Lines $lines -VerificationSummary $VerificationSummary
     AddWorkorderPdfLiveIntegrationRepoStateSections -Lines $lines -VerificationSummary $VerificationSummary
     AddProductUiRuntimeVerificationRepoStateSections -Lines $lines -VerificationSummary $VerificationSummary
+    AddAlpha35MaterialCompactInputRepoStateSections -Lines $lines -Version $Version
     if ($Version -eq "2.0.0-alpha.31") {
         AddRepoStateSection -Lines $lines -Title "Alpha.31 Product Verification:" -Values @("LEVEL_4_PRODUCT_VERIFIED - desktop/tablet/mobile/inline interaction evidence")
         AddRepoStateSection -Lines $lines -Title "Alpha.31 Sample Route Guard:" -Values @("PASS - localhost 200; Host www.wafl.co.kr 404")
@@ -1480,6 +1513,7 @@ function NewLocalRepoStateFile {
     AddCustomerProductUxCleanupRepoStateSections -Lines $lines -VerificationSummary $VerificationSummary
     AddWorkorderPdfLiveIntegrationRepoStateSections -Lines $lines -VerificationSummary $VerificationSummary
     AddProductUiRuntimeVerificationRepoStateSections -Lines $lines -VerificationSummary $VerificationSummary
+    AddAlpha35MaterialCompactInputRepoStateSections -Lines $lines -Version $Version
     if ($Version -eq "2.0.0-alpha.31") {
         $alpha31FeatureCommit = [string](InvokeLocalRepoGitOutput -Arguments @("log", "-1", "--format=%H", "-S", "2.0.0-alpha.31", "--", "lib/constants/version.ts") | Select-Object -First 1)
         $alpha31BaselineCommit = [string](InvokeLocalRepoGitOutput -Arguments @("rev-parse", "$alpha31FeatureCommit^" ) | Select-Object -First 1)

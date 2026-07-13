@@ -12,6 +12,7 @@ const mock = read("apps/mobile/constants/mockProductionCard.ts");
 const preview = read("components/workorder/preview/IssuedWorkOrderPreview.tsx");
 const renderer = read("components/workorder/preview/IssuedWorkOrderDocument.tsx");
 const samplePage = read("app/dev/workorder-preview-sample/page.tsx");
+const pipeline = read("tools/pipeline/peacebypiece-auto-pipeline.ps1");
 
 assert.match(read("lib/constants/version.ts"), /2\.0\.0-alpha\.35/);
 assert.match(read("apps/mobile/constants/version.ts"), /2\.0\.0-alpha\.35/);
@@ -80,6 +81,23 @@ assert.match(samplePage, /assertLocalOnlyRouteHost\(\)/);
 assert.doesNotMatch(`${preview}\n${renderer}`, /issuedWorkOrderPreviewSample|dev-samples/);
 for (const forbidden of ["fetch(", "POST", "PATCH", "PUT", "DELETE", "DATABASE_URL", "storageObjectKey", "tokenHash"]) {
   assert.ok(!`${mobile}\n${inline}`.includes(forbidden), `mobile mock contains forbidden ${forbidden}`);
+}
+
+assert.match(pipeline, /function AddAlpha35MaterialCompactInputRepoStateSections/);
+assert.equal((pipeline.match(/AddAlpha35MaterialCompactInputRepoStateSections -Lines \$lines -Version \$Version/g) ?? []).length, 2);
+for (const field of [
+  "Alpha.35 Product Verification:",
+  "Alpha.35 Core Input Row Count:",
+  "Alpha.35 Fields Per Core Row:",
+  "Alpha.35 Unit Propagation:",
+  "Alpha.35 Order Quantity Calculation:",
+  "Alpha.35 Warning Text Count:",
+  "Alpha.35 Summary / Action Row:",
+  "Alpha.35 Card Height Before / After:",
+  "Alpha.35 PDF / Preview Regression:",
+  "Alpha.35 DB / API / R2 / Worker / PDF Lifecycle / Production Mutation:",
+]) {
+  assert.ok(pipeline.includes(field), `alpha.35 repo-state field missing: ${field}`);
 }
 
 console.log("workorder v2 alpha.35 material compact input contract: PASS");
