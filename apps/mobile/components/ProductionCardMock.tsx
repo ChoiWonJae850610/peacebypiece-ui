@@ -40,9 +40,11 @@ import {
 } from "react-native";
 
 import { WAFL_FONTS } from "@/constants/fonts";
+import { COMPACT_FIELD_LABEL_TEXT, COMPACT_FIELD_VALUE_TEXT } from "@/constants/compactFieldTypography";
 import { MOBILE_APP_VERSION } from "@/constants/version";
 import { openIssuedPreview, type PreviewIdentity } from "@/utils/previewLink";
-import { ExpandableInlineNote, InlineEditableValue } from "@/components/InlineEditableFields";
+import { formatProcessInstruction } from "@/utils/processInstruction";
+import { InlineEditableValue } from "@/components/InlineEditableFields";
 import {
   PRODUCTION_TABS,
   accessoryRows,
@@ -676,7 +678,7 @@ function ImagesTab({ isTablet }: { isTablet: boolean }) {
           </View>
         ))}
       </View>
-      <ExpandableInlineNote
+      <InlineEditableValue
         accessibilityLabel="공장 전달 메모"
         editable
         label="공장 전달 메모"
@@ -1057,7 +1059,7 @@ function MaterialRow({ row }: { row: MaterialRowData }) {
         placeholder="입력"
         value={row.usageArea}
       />
-      <ExpandableInlineNote
+      <InlineEditableValue
         accessibilityLabel={`${row.name} 메모`}
         editable={editable}
         label="메모"
@@ -1110,25 +1112,11 @@ function ProcessDetailRow({ row, index }: { row: (typeof processRows)[number]; i
           <SummaryToken label="단위" value={row.unit} editable={editable} compact />
         </View>
         <InlineEditableValue
-          accessibilityLabel={`${row.process} 적용 부위`}
-          editable={editable}
-          label="적용 부위"
-          placeholder="입력"
-          value={row.applicationArea}
-        />
-        <InlineEditableValue
-          accessibilityLabel={`${row.process} 적용 색상 대상`}
-          editable={editable}
-          label="적용 색상·대상"
-          placeholder="입력"
-          value={row.applicationColorTarget}
-        />
-        <ExpandableInlineNote
           accessibilityLabel={`${row.process} 작업 메모`}
           editable={editable}
           label="작업 메모"
           placeholder="메모 입력"
-          value={row.memo}
+          value={formatProcessInstruction(row)}
         />
         <Text style={styles.rowMeta}>금액 {row.amount}</Text>
       </View>
@@ -3223,17 +3211,12 @@ const styles = StyleSheet.create({
     minWidth: 74
   },
   summaryTokenLabel: {
-    color: "#7a6c5c",
-    fontSize: 9,
-    fontWeight: "900"
+    ...COMPACT_FIELD_LABEL_TEXT
   },
   summaryTokenValue: {
     borderBottomColor: "transparent",
     borderBottomWidth: 1,
-    color: "#4f463f",
-    fontSize: 12,
-    fontWeight: "800",
-    lineHeight: 17,
+    ...COMPACT_FIELD_VALUE_TEXT,
     maxWidth: 180,
     paddingBottom: 1
   },

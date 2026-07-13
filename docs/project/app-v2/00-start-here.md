@@ -5,9 +5,7 @@
 This document starts the WAFL v2 App-first line.
 
 Previous baseline: `0.30.0-alpha.27`.
-Current baseline: `2.0.0-alpha.29`.
-
-Alpha.30 source remains pending approved migration 009 apply and bounded Command runtime. The baseline version does not advance before both gates pass.
+Current baseline: `2.0.0-alpha.32`.
 
 The customer-facing product direction moves from a Next.js-first web showroom implementation path to an Expo React Native mobile/tablet app-first path.
 
@@ -102,6 +100,11 @@ docs/project/app-v2/
   22-workorder-create-basic-update-command-evidence.md
   23-workorder-material-order-command-evidence.md
   24-workorder-revision-issue-command-evidence.md
+  25-workorder-issued-revision-preview-evidence.md
+  26-mobile-issued-preview-entry-evidence.md
+  27-factory-workorder-input-and-preview-evidence.md
+  28-inline-input-and-preview-layout-evidence.md
+  29-inline-density-and-realistic-sample-evidence.md
 ```
 
 The alpha.19 documents are design and read-only audit authority. They do not authorize schema migration, API replacement, seed execution, DB/R2 mutation, or PDF Worker changes.

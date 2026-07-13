@@ -1,8 +1,8 @@
 # WAFL Mobile App Mock
 
-Version: `2.0.0-alpha.31`
+Version: `2.0.0-alpha.32`
 
-Alpha.31 replaces duplicated factory-field summary/input pairs with shared inline edit, expandable-note, and read-only value components. These interactions remain local mock state only. The issued Preview renderer is shared with a deterministic localhost sample; PDF binary, QR, R2, Worker, and document lifecycle remain disconnected.
+Alpha.32 uses one compact single-line grammar for usage areas and memos, keeps edits inside the existing summary-row height, and merges legacy process application fields into the displayed work memo without writing them back. The deterministic localhost Preview sample now uses realistic Korean production data and a repository-owned garment board. PDF/QR/R2/Worker document lifecycle remains disconnected.
 
 Alpha.29 connects issued production-card Preview actions to the authenticated Next workspace through `EXPO_PUBLIC_WAFL_WEB_BASE_URL`. Expo Web may use the localhost Next server fallback only in development; native opens the system browser and may require the normal web login. PDF, QR, R2, WebView, and mobile-to-web SSO are not part of this version.
 
@@ -44,6 +44,7 @@ Current visual foundation:
 - `2.0.0-alpha.23` adds the dev/test-only Next.js WorkOrder list Read API vertical slice. The Expo mobile mock remains disconnected and makes no real API request.
 - `2.0.0-alpha.24` adds dev/test-only WorkOrder core detail and tab-specific lazy Read APIs in Next.js. The Expo mobile mock remains disconnected and makes no real API request.
 - `2.0.0-alpha.31` unifies factory-facing inline field interactions and removes duplicate boxed inputs. The mobile mock still does not save these edits to the v2 API.
+- `2.0.0-alpha.32` removes expandable note rows, prevents cancel/blur and Enter/blur double completion, removes separate process application rows, and aligns the mobile mock with the compact realistic Preview sample. These edits remain local mock state only.
 
 ## Font asset
 

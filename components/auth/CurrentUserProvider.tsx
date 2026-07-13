@@ -1,6 +1,7 @@
 "use client";
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import { usePathname } from "next/navigation";
 import type { WaflCurrentUser, WaflCurrentUserResponse } from "@/lib/auth/currentUser";
 
 type CurrentUserContextValue = {
@@ -12,6 +13,7 @@ type CurrentUserContextValue = {
 };
 
 const CurrentUserContext = createContext<CurrentUserContextValue | null>(null);
+const CURRENT_USER_FETCH_DISABLED_PATHS = new Set(["/dev/workorder-preview-sample"]);
 
 type CurrentUserFetchResult =
   | { status: "authenticated"; user: WaflCurrentUser }
@@ -38,8 +40,10 @@ async function fetchCurrentUser(): Promise<CurrentUserFetchResult> {
 }
 
 export function CurrentUserProvider({ children }: { children: ReactNode }) {
+  const pathname = usePathname();
+  const currentUserFetchDisabled = CURRENT_USER_FETCH_DISABLED_PATHS.has(pathname);
   const [user, setUser] = useState<WaflCurrentUser | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(!currentUserFetchDisabled);
   const refreshInFlightRef = useRef<Promise<WaflCurrentUser | null> | null>(null);
   const userRef = useRef<WaflCurrentUser | null>(null);
 
@@ -48,6 +52,9 @@ export function CurrentUserProvider({ children }: { children: ReactNode }) {
   }, [user]);
 
   const refreshCurrentUser = useCallback(async () => {
+    if (currentUserFetchDisabled) {
+      return null;
+    }
     if (refreshInFlightRef.current) return refreshInFlightRef.current;
 
     setIsLoading(true);
@@ -72,7 +79,7 @@ export function CurrentUserProvider({ children }: { children: ReactNode }) {
 
     refreshInFlightRef.current = nextRefresh;
     return nextRefresh;
-  }, []);
+  }, [currentUserFetchDisabled]);
 
   const clearCurrentUser = useCallback(() => {
     setUser(null);

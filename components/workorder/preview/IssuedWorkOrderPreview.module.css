@@ -21,9 +21,14 @@
 .documentMeta div { display: grid; grid-template-columns: 74px minmax(0,1fr); border-bottom: 1px solid #e3e0da; padding: 7px 0; font-size: 12px; }
 .documentMeta dt { color: #687080; }
 .documentMeta dd { margin: 0; font-weight: 700; overflow-wrap: anywhere; }
-.deliveryMemo { margin-top: 16px; min-height: 0; }
+.colorSummary { display: grid; grid-template-columns: 74px minmax(0,1fr); gap: 8px; align-items: center; margin-top: 10px; font-size: 11px; }
+.colorSummary > span { color: #687080; }
+.colorSummary > div { display: flex; flex-wrap: wrap; gap: 8px; }
+.colorChip { display: inline-flex; align-items: center; gap: 4px; color: #344054; font-weight: 700; }
+.colorChip i { width: 14px; height: 14px; border: 1px solid #aeb4bd; border-radius: 2px; }
+.deliveryMemo { margin-top: 12px; min-height: 0; }
 .deliveryMemo h2, .documentSection h2 { margin: 0 0 8px; border-left: 4px solid #a9472a; background: #f5f3ef; padding: 6px 8px; color: #172c4c; font-size: 14px; }
-.deliveryMemo p { margin: 0; padding: 8px 0; border-bottom: 1px solid #e3e0da; white-space: pre-wrap; overflow-wrap: anywhere; font-size: 12px; line-height: 1.65; }
+.deliveryMemo p { margin: 0; padding: 6px 0; border-bottom: 1px solid #e3e0da; white-space: pre-wrap; overflow-wrap: anywhere; font-size: 11px; line-height: 1.55; }
 .contentPage { page: content; width: min(100%, 210mm); min-height: 297mm; padding: 12mm; }
 .repeatedHeading { display: grid; grid-template-columns: 1fr auto; gap: 4px 16px; align-items: end; border-top: 4px solid #172c4c; border-bottom: 1px solid #172c4c; margin-bottom: 12px; padding: 8px 0; }
 .repeatedHeading strong { font-size: 18px; }
@@ -36,6 +41,12 @@
 .page th, .page td { border: 1px solid #cfd3d8; padding: 5px; text-align: left; vertical-align: top; overflow-wrap: anywhere; white-space: pre-wrap; }
 .page th { background: #eef0f2; color: #344054; }
 .page tr { break-inside: avoid; }
+.processTable col:nth-child(1) { width: 7%; }
+.processTable col:nth-child(2) { width: 13%; }
+.processTable col:nth-child(3) { width: 16%; }
+.processTable col:nth-child(4) { width: 12%; }
+.processTable col:nth-child(5) { width: 15%; }
+.processTable col:nth-child(6) { width: 37%; }
 .numeric { text-align: right; font-variant-numeric: tabular-nums; }
 .tableWrap { max-width: 100%; overflow-x: auto; }
 .validationOk, .validationWarning { margin: 5px 0 0; font-size: 10px; text-align: right; }
@@ -59,6 +70,9 @@
 @page cover { size: A4 landscape; margin: 0; }
 @page content { size: A4 portrait; margin: 0; }
 @media print {
+  :global(body > section[aria-label="Notifications alt+T"]),
+  :global(#wafl-modal-portal-root),
+  :global(next-route-announcer) { display: none !important; }
   .shell { background: #fff; padding: 0; }
   .toolbar { display: none; }
   .page { margin: 0; box-shadow: none; break-after: page; }

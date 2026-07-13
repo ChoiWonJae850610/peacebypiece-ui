@@ -1,4 +1,17 @@
-# 2.0.0-alpha.31 Inline Input and Preview Layout Complete
+# 2.0.0-alpha.32 Inline Density and Realistic Sample
+
+- APP_VERSION and mobile mirrors are `2.0.0-alpha.32`.
+- Mobile material usage area/memo, process memo, and factory memo use one compact single-line field grammar with shared summary typography and stable card height.
+- Escape cancels without blur recommit; Enter/blur complete once; unchanged normalized values do not invoke the optional commit callback.
+- Separate process application-area/color rows and Preview columns are removed. Existing DB/API fields remain unchanged and are merged into work memo for display only.
+- `/dev/workorder-preview-sample` uses realistic deterministic Korean production data, an exact 144 color-size matrix, and a repository-owned front/back garment board with no tenant API or external asset.
+- The A4 landscape cover and portrait continuations remain. Chromium print evidence is local QA only, not generated-document/PDF/R2 lifecycle execution.
+- Product QA PASS: mobile view/edit typography `12px/17px/800`, row `22px`, fabric/accessory cards `265px`, process card `128px`, tablet overflow 0, locked affordance 0, separate process application rows 0, and console/error response 0.
+- Final Chromium PDF PASS: three nonblank pages, 841.92x594.96pt landscape cover plus two 594.96x841.92pt portrait pages, boundary violations 0. A trailing blank page found during QA was removed with a print-only root support-node exclusion.
+- No DB migration/write, API mutation, R2, Worker, QR, generated-document lifecycle, production access, root package/lockfile, or dependency change occurred.
+- Evidence: `docs/project/app-v2/29-inline-density-and-realistic-sample-evidence.md`.
+
+## 2.0.0-alpha.31 Inline Input and Preview Layout Complete
 
 - APP_VERSION and mobile mirrors are `2.0.0-alpha.31`.
 - Mobile fabric/accessory/process factory fields use shared inline edit/read-only components. Editable values occupy their display position with a dotted underline; long notes expand in place; issued/completed values render as plain text without a duplicate input box.

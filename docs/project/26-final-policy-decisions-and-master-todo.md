@@ -4,7 +4,7 @@
 
 - Material usage area and process application area/color target are free text; factory delivery memo is revision-scoped.
 - Do not add send-time, next-process, factory delivery quantity, or separate remark fields.
-- Factory Preview excludes operational inventory, order quantity, price, amount, and internal status. PDF/QR/R2 lifecycle remains alpha.31.
+- Factory Preview excludes operational inventory, order quantity, price, amount, and internal status. Alpha.32 refines display density and print evidence only; PDF/QR/R2 lifecycle remains alpha.33.
 
 Version: 0.24.21.16  
 Status: Canonical product-policy decision log and consolidated implementation backlog  

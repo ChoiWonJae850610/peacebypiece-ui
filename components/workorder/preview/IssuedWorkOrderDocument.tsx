@@ -1,12 +1,20 @@
 import type { ReactNode } from "react";
 
 import type { WorkOrderIssuedPreviewReadModel } from "@/lib/domain/work-orders/contracts";
+import { formatProcessInstruction } from "./processInstruction";
 import styles from "./IssuedWorkOrderPreview.module.css";
+
+export type WorkOrderPreviewCoverFacts = {
+  readonly productTypeLabel?: string;
+  readonly factoryName?: string;
+  readonly managerName?: string;
+};
 
 type PreviewProps = {
   readonly data: WorkOrderIssuedPreviewReadModel;
   readonly representativeImageSrc?: string;
   readonly quantityUnit?: string;
+  readonly coverFacts?: WorkOrderPreviewCoverFacts;
 };
 
 type DocumentBlock = {
@@ -62,8 +70,8 @@ function MaterialSection({ title, rows, continued }: { readonly title: string; r
     <section className={styles.documentSection}>
       <SectionHeading title={title} continued={continued} />
       <table>
-        <thead><tr><th>품명</th><th>색상·옵션·규격</th><th>사용 부위</th><th>필요수량</th><th>여유수량</th><th>메모</th></tr></thead>
-        <tbody>{rows.map((row) => <tr key={row.id}><td>{row.name}</td><td>{value(row.colorOption)}</td><td>{value(row.usageArea)}</td><td className={styles.numeric}>{unitValue(row.requiredQuantity, row.unitCode)}</td><td className={styles.numeric}>{unitValue(row.allowanceQuantity, row.unitCode)}</td><td>{value(row.memo)}</td></tr>)}</tbody>
+        <thead><tr><th>품명</th><th>거래처</th><th>색상·옵션·규격</th><th>사용 부위</th><th>필요수량</th><th>여유수량</th><th>메모</th></tr></thead>
+        <tbody>{rows.map((row) => <tr key={row.id}><td>{row.name}</td><td>{value(row.partnerName)}</td><td>{value(row.colorOption)}</td><td>{value(row.usageArea)}</td><td className={styles.numeric}>{unitValue(row.requiredQuantity, row.unitCode)}</td><td className={styles.numeric}>{unitValue(row.allowanceQuantity, row.unitCode)}</td><td>{value(row.memo)}</td></tr>)}</tbody>
       </table>
     </section>
   );
@@ -104,8 +112,8 @@ function ProcessSection({ data, rows, continued }: { readonly data: WorkOrderIss
   return (
     <section className={styles.documentSection}>
       <SectionHeading title="제작 공정·추가 공정" continued={continued} />
-      <table><thead><tr><th>순서</th><th>공정명</th><th>업체</th><th>적용 부위</th><th>적용 색상·대상</th><th>수량</th><th>납기</th><th>작업 메모</th></tr></thead><tbody>
-        {rows.map((process) => <tr key={process.id}><td>{process.displayOrder + 1}</td><td>{process.processName}</td><td>{value(process.partnerName)}</td><td>{value(process.applicationArea)}</td><td>{value(process.applicationColorTarget)}</td><td className={styles.numeric}>{unitValue(process.quantity, process.unitCode)}</td><td>{formatDate(process.dueDate, timeZone)}</td><td>{value(process.memo)}</td></tr>)}
+      <table className={styles.processTable}><colgroup><col /><col /><col /><col /><col /><col /></colgroup><thead><tr><th>순서</th><th>공정명</th><th>업체</th><th>수량</th><th>납기</th><th>작업 메모</th></tr></thead><tbody>
+        {rows.map((process) => <tr key={process.id}><td>{process.displayOrder + 1}</td><td>{process.processName}</td><td>{value(process.partnerName)}</td><td className={styles.numeric}>{unitValue(process.quantity, process.unitCode)}</td><td>{formatDate(process.dueDate, timeZone)}</td><td>{value(formatProcessInstruction(process))}</td></tr>)}
       </tbody></table>
     </section>
   );
@@ -120,7 +128,7 @@ function buildBlocks(data: WorkOrderIssuedPreviewReadModel): readonly DocumentBl
   addMaterials("accessory", "부자재", data.materials.accessories);
   if (data.sizeColors.colors.length && data.sizeColors.sizes.length) blocks.push({ key: "size-color", weight: 4 + data.sizeColors.colors.length * 2, content: <SizeColorSection data={data} /> });
   chunk(data.sizeSpecifications.pomColumns, 7).forEach((rows, index) => blocks.push({ key: `size-spec-${index}`, weight: 4 + rows.length * 2, content: <SizeSpecSection data={data} rows={rows} continued={index > 0} /> }));
-  chunk(data.processes, 6).forEach((rows, index) => blocks.push({ key: `process-${index}`, weight: 4 + rows.length * 2, content: <ProcessSection data={data} rows={rows} continued={index > 0} /> }));
+  chunk(data.processes, 6).forEach((rows, index) => blocks.push({ key: `process-${index}`, weight: 4 + rows.length * 3, content: <ProcessSection data={data} rows={rows} continued={index > 0} /> }));
   return blocks;
 }
 
@@ -128,7 +136,7 @@ function RepeatedHeading({ data, pageNumber }: { readonly data: WorkOrderIssuedP
   return <header className={styles.repeatedHeading}><strong>{data.header.productName}</strong><span>작업지시서</span><small>{data.document.displayDocumentNumber} · {pageNumber}</small></header>;
 }
 
-export default function IssuedWorkOrderDocument({ data, representativeImageSrc, quantityUnit }: PreviewProps) {
+export default function IssuedWorkOrderDocument({ data, representativeImageSrc, quantityUnit, coverFacts }: PreviewProps) {
   const timeZone = data.layoutMetadata.businessTimezone;
   const contentPages = packBlocks(buildBlocks(data));
   const memos = [data.header.factoryDeliveryMemo, data.header.memo].map((memo) => memo?.trim()).filter(Boolean) as string[];
@@ -149,7 +157,11 @@ export default function IssuedWorkOrderDocument({ data, representativeImageSrc, 
             <div><dt>발행일</dt><dd>{formatDate(data.document.issuedAt, timeZone)}</dd></div>
             <div><dt>납기일</dt><dd>{formatDate(data.header.dueDate, timeZone)}</dd></div>
             <div><dt>발주수량</dt><dd>{quantity}</dd></div>
+            {(coverFacts?.productTypeLabel || data.header.productTypeCode) ? <div><dt>제품 구분</dt><dd>{coverFacts?.productTypeLabel || data.header.productTypeCode}</dd></div> : null}
+            {coverFacts?.factoryName ? <div><dt>제작공장</dt><dd>{coverFacts.factoryName}</dd></div> : null}
+            {coverFacts?.managerName ? <div><dt>담당자</dt><dd>{coverFacts.managerName}</dd></div> : null}
           </dl>
+          {data.sizeColors.colors.length ? <section aria-label="제품 색상" className={styles.colorSummary}><span>색상</span><div>{data.sizeColors.colors.map((color) => <span className={styles.colorChip} key={color.id}><i style={{ backgroundColor: color.hexValue ?? "#d8d3ca" }} />{color.displayName}</span>)}</div></section> : null}
           <section className={styles.deliveryMemo}><h2>공장 전달 메모</h2>{memos.length ? memos.map((memo, index) => <p key={`${index}-${memo.slice(0, 12)}`}>{memo}</p>) : <p>-</p>}</section>
         </div>
       </section>

@@ -1,16 +1,37 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 900" role="img" aria-labelledby="title desc">
-  <title id="title">리넨 라운드 원피스 제품 스케치</title>
-  <desc id="desc">라운드 넥, 짧은 소매, 긴 플레어 실루엣을 가진 원피스의 앞면과 뒷면 선화</desc>
-  <rect width="760" height="900" fill="#faf9f6"/>
-  <g fill="none" stroke="#24344d" stroke-linecap="round" stroke-linejoin="round">
-    <path d="M145 166c28-14 52-37 67-68 26 20 54 20 80 0 15 31 39 54 67 68l47 113-64 27-22-63 12 472c-76 45-164 45-240 0l12-472-22 63-64-27 47-113z" stroke-width="5"/>
-    <path d="M212 98c4 58 76 58 80 0M112 715c70-24 140-24 210 0M124 243c42 18 84 22 126 11 35 10 70 7 105-11" stroke-width="3"/>
-    <path d="M485 166c28-14 52-37 67-68 26 20 54 20 80 0 15 31 39 54 67 68l42 108-60 28-23-59 14 472c-76 45-164 45-240 0l14-472-23 59-60-28 42-108z" stroke-width="5"/>
-    <path d="M552 98c4 58 76 58 80 0M452 715c70-24 140-24 210 0M468 211c44 16 88 16 132 0" stroke-width="3"/>
-    <path d="M592 106v54M575 134h34" stroke="#a9472a" stroke-width="3"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 920 920" role="img" aria-labelledby="title desc">
+  <title id="title">리넨 라운드 셔츠 원피스 개발 샘플 제품 보드</title>
+  <desc id="desc">아이보리 셔츠 원피스의 앞면과 뒷면 도식, 칼라, 앞여밈 단추, 허리 스트링, 소매 커프스, 봉제선과 색상칩</desc>
+  <rect width="920" height="920" fill="#f8f6f0"/>
+  <rect x="24" y="24" width="872" height="872" rx="8" fill="#fffdf8" stroke="#d7d0c3" stroke-width="2"/>
+  <g font-family="Arial, sans-serif" fill="#24344d">
+    <text x="52" y="70" font-size="22" font-weight="700">LINEN ROUND SHIRT DRESS</text>
+    <text x="52" y="96" font-size="14" fill="#766d63">DEV SAMPLE PRODUCT BOARD · FRONT / BACK</text>
   </g>
-  <g fill="#596273" font-family="Arial, sans-serif" font-size="18">
-    <text x="205" y="790">FRONT</text>
-    <text x="552" y="790">BACK</text>
+  <g transform="translate(38 118)">
+    <g transform="translate(36 0)">
+      <path d="M165 72c25 0 43-12 54-34 11 22 29 34 54 34l73 48 58 138-58 25-31-78 18 470c-69 35-159 35-228 0l18-470-31 78-58-25 58-138 73-48z" fill="#eee8d9" stroke="#263a58" stroke-width="4" stroke-linejoin="round"/>
+      <path d="M165 72c10 42 98 42 108 0M219 38v94M166 76l53 56 54-56" fill="none" stroke="#263a58" stroke-width="3"/>
+      <path d="M219 132v458M128 252h182M116 612c70-18 136-18 206 0M123 205l-23 73M315 205l23 73" fill="none" stroke="#7f8792" stroke-width="2" stroke-dasharray="7 6"/>
+      <g fill="#c3b99e" stroke="#263a58" stroke-width="1.5">
+        <circle cx="219" cy="178" r="5"/><circle cx="219" cy="226" r="5"/><circle cx="219" cy="274" r="5"/><circle cx="219" cy="322" r="5"/><circle cx="219" cy="370" r="5"/><circle cx="219" cy="418" r="5"/>
+      </g>
+      <path d="M137 252c35 35 129 35 164 0M138 255l54 42M300 255l-54 42" fill="none" stroke="#a04c32" stroke-width="3"/>
+      <path d="M92 283h53M293 283h53" stroke="#263a58" stroke-width="4"/>
+      <text x="185" y="735" font-family="Arial, sans-serif" font-size="18" font-weight="700" fill="#24344d">FRONT</text>
+    </g>
+    <g transform="translate(462 0)">
+      <path d="M165 72c25 0 43-12 54-34 11 22 29 34 54 34l73 48 58 138-58 25-31-78 18 470c-69 35-159 35-228 0l18-470-31 78-58-25 58-138 73-48z" fill="#eee8d9" stroke="#263a58" stroke-width="4" stroke-linejoin="round"/>
+      <path d="M165 72c10 42 98 42 108 0M166 76l53 56 54-56M219 132v92" fill="none" stroke="#263a58" stroke-width="3"/>
+      <path d="M128 252h182M116 612c70-18 136-18 206 0M123 205l-23 73M315 205l23 73M219 224v366" fill="none" stroke="#7f8792" stroke-width="2" stroke-dasharray="7 6"/>
+      <path d="M137 252c35 35 129 35 164 0M138 255l54 42M300 255l-54 42" fill="none" stroke="#a04c32" stroke-width="3"/>
+      <path d="M92 283h53M293 283h53" stroke="#263a58" stroke-width="4"/>
+      <text x="188" y="735" font-family="Arial, sans-serif" font-size="18" font-weight="700" fill="#24344d">BACK</text>
+    </g>
+  </g>
+  <g transform="translate(68 836)" font-family="Arial, sans-serif" font-size="14" fill="#24344d">
+    <g transform="translate(0 0)"><rect width="68" height="28" rx="3" fill="#eee8d9" stroke="#a9a294"/><text x="82" y="20">IVORY</text></g>
+    <g transform="translate(220 0)"><rect width="68" height="28" rx="3" fill="#182b4b" stroke="#182b4b"/><text x="82" y="20">NAVY</text></g>
+    <g transform="translate(420 0)"><rect width="68" height="28" rx="3" fill="#242424" stroke="#242424"/><text x="82" y="20">BLACK</text></g>
+    <text x="664" y="20" font-weight="700" fill="#a04c32">A4 PREVIEW SAMPLE</text>
   </g>
 </svg>

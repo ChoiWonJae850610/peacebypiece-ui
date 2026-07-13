@@ -1294,6 +1294,14 @@ function NewLocalRepoBuildResultFile {
         AddRepoStateSection -Lines $lines -Title "Alpha.31 DB Migration Applied:" -Values @("false")
         AddRepoStateSection -Lines $lines -Title "Alpha.31 DB / R2 / Worker / PDF / Production Mutation:" -Values @("false")
     }
+    if ($Version -eq "2.0.0-alpha.32") {
+        AddRepoStateSection -Lines $lines -Title "Alpha.32 Product Verification:" -Values @("LEVEL_4_PRODUCT_VERIFIED - mobile/tablet/desktop inline and Chromium print evidence")
+        AddRepoStateSection -Lines $lines -Title "Alpha.32 Inline UX Verification:" -Values @("PASS - compact single-line row; stable card height; Escape/blur and Enter/blur guards; locked affordance 0")
+        AddRepoStateSection -Lines $lines -Title "Alpha.32 Process Display Contract:" -Values @("PASS - application area/target merged into work memo for display only; legacy DB/API fields retained")
+        AddRepoStateSection -Lines $lines -Title "Alpha.32 Sample Route Guard:" -Values @("PASS - localhost only; realistic deterministic 144-unit sample; repository-owned asset")
+        AddRepoStateSection -Lines $lines -Title "Alpha.32 Print Verification:" -Values @("PASS - Chromium PDF; A4 landscape cover; A4 portrait continuation; no blank page")
+        AddRepoStateSection -Lines $lines -Title "Alpha.32 DB / API / R2 / Worker / PDF Lifecycle / Production Mutation:" -Values @("false")
+    }
     if ($Version -eq "2.0.0-alpha.27") {
         AddRepoStateSection -Lines $lines -Title "Alpha.27 Completion Status:" -Values @("ALPHA27_ISSUE_RUNTIME_AND_COMPLETION_PASS")
         AddRepoStateSection -Lines $lines -Title "Alpha.27 Issued Document Number:" -Values @("WAFN-26FWA-A25CMD-260711-001-R0")
@@ -1474,6 +1482,20 @@ function NewLocalRepoStateFile {
         AddRepoStateSection -Lines $lines -Title "Alpha.31 Actual Preview Contract:" -Values @("unchanged tenant/RLS issued-revision loader; pure renderer split; no mutable fallback")
         AddRepoStateSection -Lines $lines -Title "Alpha.31 DB Migration Applied:" -Values @("false")
         AddRepoStateSection -Lines $lines -Title "Alpha.31 DB / R2 / Worker / PDF / Production Mutation:" -Values @("false")
+    }
+    if ($Version -eq "2.0.0-alpha.32") {
+        $alpha32FeatureCommit = [string](InvokeLocalRepoGitOutput -Arguments @("log", "-1", "--format=%H", "-S", "2.0.0-alpha.32", "--", "lib/constants/version.ts") | Select-Object -First 1)
+        $alpha32BaselineCommit = [string](InvokeLocalRepoGitOutput -Arguments @("rev-parse", "$alpha32FeatureCommit^" ) | Select-Object -First 1)
+        $alpha32ChangedPaths = @(InvokeLocalRepoGitOutput -Arguments @("diff", "--name-only", "$alpha32BaselineCommit..HEAD") | Where-Object { -not [string]::IsNullOrWhiteSpace([string]$_) })
+        AddRepoStateSection -Lines $lines -Title "Alpha.32 Changed Paths:" -Values $alpha32ChangedPaths
+        AddRepoStateSection -Lines $lines -Title "Alpha.32 Product Verification:" -Values @("LEVEL_4_PRODUCT_VERIFIED - mobile/tablet/desktop inline and Chromium print evidence")
+        AddRepoStateSection -Lines $lines -Title "Alpha.32 Inline UX Verification:" -Values @("PASS - compact single-line row; stable card height; Escape/blur and Enter/blur guards; locked affordance 0")
+        AddRepoStateSection -Lines $lines -Title "Alpha.32 Process Display Contract:" -Values @("PASS - application area/target merged into work memo for display only; legacy DB/API fields retained")
+        AddRepoStateSection -Lines $lines -Title "Alpha.32 Sample Contract:" -Values @("PASS - realistic deterministic Korean data; 144 total; no tenant API; no external asset")
+        AddRepoStateSection -Lines $lines -Title "Alpha.32 Print Verification:" -Values @("PASS - actual Chromium PDF; A4 landscape cover; A4 portrait continuation; no blank page")
+        AddRepoStateSection -Lines $lines -Title "Alpha.32 PDF Artifact Classification:" -Values @("local excluded QA artifact only; generated-document lifecycle/R2/Worker/QR NOT_RUN")
+        AddRepoStateSection -Lines $lines -Title "Alpha.32 DB Migration Applied:" -Values @("false")
+        AddRepoStateSection -Lines $lines -Title "Alpha.32 DB / API / R2 / Worker / PDF Lifecycle / Production Mutation:" -Values @("false")
     }
     if ($Version -eq "2.0.0-alpha.27") {
         AddRepoStateSection -Lines $lines -Title "Alpha.27 Completion Status:" -Values @("ALPHA27_ISSUE_RUNTIME_AND_COMPLETION_PASS")

@@ -91,4 +91,4 @@ Excluded QA artifacts:
 
 ## Next action
 
-Alpha.32 may begin generated-document/PDF/QR/R2 lifecycle only under a separate explicit work order and mutation approval.
+Alpha.32 supersedes the expandable-note interaction with compact single-line editing and realistic print evidence. Generated-document/PDF/QR/R2 lifecycle moves to alpha.33 under a separate explicit work order and mutation approval.
