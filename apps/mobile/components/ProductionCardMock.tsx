@@ -42,7 +42,7 @@ import {
 import { WAFL_FONTS } from "@/constants/fonts";
 import { COMPACT_FIELD_LABEL_TEXT, COMPACT_FIELD_VALUE_TEXT } from "@/constants/compactFieldTypography";
 import { MOBILE_APP_VERSION } from "@/constants/version";
-import { openIssuedPreview, type PreviewIdentity } from "@/utils/previewLink";
+import { buildPreviewUrl, openPreviewTarget, type PreviewTarget } from "@/utils/previewLink";
 import { formatProcessInstruction } from "@/utils/processInstruction";
 import { InlineEditableValue } from "@/components/InlineEditableFields";
 import {
@@ -123,13 +123,11 @@ export default function ProductionCardMock() {
     [isTablet, width]
   );
   const selectedWorkOrderIssued = workOrderIssued && selectedCardId === productionCards[0].id;
-  const previewIdentity: PreviewIdentity = {
-    issued: selectedWorkOrderIssued,
-    issuedDocumentNumber: selectedCardId === productionCards[0].id ? productionCardMock.issuedDocumentNumber : null
-  };
+  const previewTarget: PreviewTarget = { kind: "dev-realistic-sample" };
+  const previewAvailable = buildPreviewUrl(previewTarget).ok;
   const openPreview = async () => {
     setPreviewMessage(null);
-    const result = await openIssuedPreview(previewIdentity);
+    const result = await openPreviewTarget(previewTarget);
     if (!result.ok) setPreviewMessage(result.message);
   };
 
@@ -159,13 +157,13 @@ export default function ProductionCardMock() {
                   setOrderConfirmOpen(false);
                 }}
                 onPreview={openPreview}
-                previewAvailable={previewIdentity.issued && Boolean(previewIdentity.issuedDocumentNumber)}
+                previewAvailable={previewAvailable}
               />
             ) : null}
             <TabRail activeTab={activeTab} setActiveTab={setActiveTab} isTablet={isTablet} />
             <View style={styles.section}>
               <NextCheckPanel activeTab={activeTab} />
-              {renderActiveTab(activeTab, isTablet, selectedWorkOrderIssued, openPreview, previewIdentity.issued)}
+              {renderActiveTab(activeTab, isTablet, selectedWorkOrderIssued, openPreview, previewAvailable)}
             </View>
           </View>
         </View>
@@ -1010,9 +1008,12 @@ function MaterialRow({ row }: { row: MaterialRowData }) {
   const actions = getMaterialActions(row);
   const locked = row.status !== "입력중";
   const editable = row.status === "입력중";
+  const hasReference = Boolean(row.leftover.trim());
+  const hasWarning = Boolean(row.warning.trim());
+  const hasMessages = hasReference || hasWarning;
 
   return (
-    <View style={[styles.dataRow, materialRowStateStyle(row.status), locked && styles.lockedRow, row.status === "완료" && styles.completedRow]}>
+    <View testID="material-card" style={[styles.dataRow, materialRowStateStyle(row.status), locked && styles.lockedRow, row.status === "완료" && styles.completedRow]}>
       <View style={styles.rowHead}>
         <SwatchVisual tone={getMaterialTone(row)} label={row.category} />
         <View style={styles.flex}>
@@ -1050,23 +1051,31 @@ function MaterialRow({ row }: { row: MaterialRowData }) {
           발주 {row.orderQuantity} · 단가 {row.unitPrice} · 금액 {row.amount}
         </Text>
       </View>
-      <View style={styles.materialStatusMessages}>
-        <Text style={styles.materialReference}>{row.leftover}</Text>
-        <Text style={[styles.materialWarning, editable && styles.materialWarningActive]}>{row.warning}</Text>
-      </View>
-      {actions.length ? (
-        <View style={styles.materialActionFooter}>
-          {actions.map((action) => (
-            <IconButton
-              key={action.caption}
-              label={`${action.label} mock`}
-              icon={action.icon}
-              caption={action.caption}
-              emphasized={action.emphasized}
-              danger={action.danger}
-              action
-            />
-          ))}
+      {hasMessages || actions.length ? (
+        <View testID="material-footer-band" style={styles.materialFooterBand}>
+          {hasMessages ? (
+            <View testID="material-footer-messages" style={styles.materialFooterMessages}>
+              {hasReference ? <Text numberOfLines={1} style={styles.materialReference}>{row.leftover}</Text> : null}
+              {hasWarning ? (
+                <Text numberOfLines={1} style={[styles.materialWarning, editable && styles.materialWarningActive]}>{row.warning}</Text>
+              ) : null}
+            </View>
+          ) : null}
+          {actions.length ? (
+            <View testID="material-footer-actions" style={styles.materialFooterActions}>
+              {actions.map((action) => (
+                <IconButton
+                  key={action.caption}
+                  label={`${action.label} mock`}
+                  icon={action.icon}
+                  caption={action.caption}
+                  emphasized={action.emphasized}
+                  danger={action.danger}
+                  action
+                />
+              ))}
+            </View>
+          ) : null}
         </View>
       ) : null}
     </View>
@@ -3180,19 +3189,30 @@ const styles = StyleSheet.create({
   materialOrderSummary: {
     marginTop: 3
   },
-  materialStatusMessages: {
-    gap: 1
-  },
-  materialActionFooter: {
-    alignItems: "center",
+  materialFooterBand: {
+    alignItems: "flex-end",
     borderTopColor: "#eee3d5",
     borderTopWidth: 1,
     flexDirection: "row",
-    flexWrap: "wrap",
+    gap: 8,
+    justifyContent: "space-between",
+    marginTop: 3,
+    paddingTop: 8,
+    width: "100%"
+  },
+  materialFooterMessages: {
+    flex: 1,
+    gap: 1,
+    minWidth: 0
+  },
+  materialFooterActions: {
+    alignSelf: "flex-end",
+    flexDirection: "row",
+    flexShrink: 0,
+    flexWrap: "nowrap",
     gap: 6,
     justifyContent: "flex-end",
-    marginTop: 3,
-    paddingTop: 8
+    marginLeft: "auto"
   },
   materialSummaryStrip: {
     alignItems: "center",

@@ -4,7 +4,7 @@
 
 - Material usage area and process application area/color target are free text; factory delivery memo is revision-scoped.
 - Do not add send-time, next-process, factory delivery quantity, or separate remark fields.
-- Factory Preview excludes operational inventory, order quantity, price, amount, and internal status. Actual Preview never receives sample fallback; the realistic sample remains localhost-only. Alpha.33 refines sample entry and material-card action order only; PDF/QR/R2 lifecycle remains alpha.34.
+- Factory Preview excludes operational inventory, order quantity, price, amount, and internal status. Actual Preview never receives sample fallback; the realistic sample remains localhost-only. Alpha.34 connects every Expo mock Preview entry to that local sample and uses one final material footer band; PDF/QR/R2 lifecycle remains alpha.35.
 
 Version: 0.24.21.16  
 Status: Canonical product-policy decision log and consolidated implementation backlog  

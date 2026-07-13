@@ -1,8 +1,8 @@
 # WAFL Mobile App Mock
 
-Version: `2.0.0-alpha.33`
+Version: `2.0.0-alpha.34`
 
-Alpha.33 keeps the alpha.32 compact inline grammar and reorders fabric/accessory cards so usage area and memo precede the order summary, warnings, and final footer actions. The deterministic localhost Preview sample is now explicitly discoverable from the internal `/ui` catalog while actual issued Preview remains free of sample fallback. PDF/QR/R2/Worker document lifecycle remains disconnected.
+Alpha.34 routes every Preview affordance in the disconnected Expo mock to the localhost-only realistic sample while keeping actual issued-document Preview as a distinct no-fallback target. Fabric/accessory messages and actions now share one final footer band with non-wrapping right actions. PDF/QR/R2/Worker document lifecycle remains disconnected.
 
 Alpha.29 connects issued production-card Preview actions to the authenticated Next workspace through `EXPO_PUBLIC_WAFL_WEB_BASE_URL`. Expo Web may use the localhost Next server fallback only in development; native opens the system browser and may require the normal web login. PDF, QR, R2, WebView, and mobile-to-web SSO are not part of this version.
 
@@ -46,6 +46,7 @@ Current visual foundation:
 - `2.0.0-alpha.31` unifies factory-facing inline field interactions and removes duplicate boxed inputs. The mobile mock still does not save these edits to the v2 API.
 - `2.0.0-alpha.32` removes expandable note rows, prevents cancel/blur and Enter/blur double completion, removes separate process application rows, and aligns the mobile mock with the compact realistic Preview sample. These edits remain local mock state only.
 - `2.0.0-alpha.33` moves fabric/accessory actions to the final card block, keeps factory-facing inline fields above order summaries and warnings, and clarifies the localhost realistic-sample entry without changing actual issued data.
+- `2.0.0-alpha.34` connects all mock Preview entry points to the local realistic sample, keeps actual issued Preview separate, and aligns material messages/actions in one responsive footer band.
 
 ## Font asset
 

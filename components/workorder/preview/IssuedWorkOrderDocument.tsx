@@ -13,6 +13,7 @@ export type WorkOrderPreviewCoverFacts = {
 type PreviewProps = {
   readonly data: WorkOrderIssuedPreviewReadModel;
   readonly representativeImageSrc?: string;
+  readonly representativeImageLabel?: string;
   readonly quantityUnit?: string;
   readonly coverFacts?: WorkOrderPreviewCoverFacts;
 };
@@ -150,7 +151,7 @@ function RepeatedHeading({ data, pageNumber }: { readonly data: WorkOrderIssuedP
   return <header className={styles.repeatedHeading}><strong>{data.header.productName}</strong><span>작업지시서</span><small>{data.document.displayDocumentNumber} · {pageNumber}</small></header>;
 }
 
-export default function IssuedWorkOrderDocument({ data, representativeImageSrc, quantityUnit, coverFacts }: PreviewProps) {
+export default function IssuedWorkOrderDocument({ data, representativeImageSrc, representativeImageLabel, quantityUnit, coverFacts }: PreviewProps) {
   const timeZone = data.layoutMetadata.businessTimezone;
   const contentPages = packBlocks(buildBlocks(data));
   const memos = [data.header.factoryDeliveryMemo, data.header.memo].map((memo) => memo?.trim()).filter(Boolean) as string[];
@@ -162,7 +163,7 @@ export default function IssuedWorkOrderDocument({ data, representativeImageSrc, 
       <section className={`${styles.page} ${styles.coverPage}`} data-page-orientation="landscape">
         <div className={styles.coverSketch}>
           <div className={styles.coverSectionLabel}>제품 스케치</div>
-          {representativeImageSrc ? <div aria-label={`${data.header.productName} 제품 스케치`} className={styles.representativeImage} role="img" style={{ backgroundImage: `url(${representativeImageSrc})` }} /> : <div className={styles.sketchPlaceholder}><span>제품 스케치·대표 이미지</span><small>첨부 자료 {data.assets.filter((asset) => asset.includeInDocument).length}건</small></div>}
+          {representativeImageSrc ? <div aria-label={representativeImageLabel ?? `${data.header.productName} 제품 스케치`} className={styles.representativeImage} role="img" style={{ backgroundImage: `url(${representativeImageSrc})` }} /> : <div className={styles.sketchPlaceholder}><span>제품 스케치·대표 이미지</span><small>첨부 자료 {data.assets.filter((asset) => asset.includeInDocument).length}건</small></div>}
         </div>
         <div className={styles.coverInfo}>
           <header className={styles.documentHeader}><p>작업지시서</p><h1>{data.header.productName}</h1><small>{[data.header.seasonCode, data.header.itemCode].filter(Boolean).join(" · ")}</small></header>

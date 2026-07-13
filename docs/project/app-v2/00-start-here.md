@@ -5,7 +5,7 @@
 This document starts the WAFL v2 App-first line.
 
 Previous baseline: `0.30.0-alpha.27`.
-Current baseline: `2.0.0-alpha.33`.
+Current baseline: `2.0.0-alpha.34`.
 
 The customer-facing product direction moves from a Next.js-first web showroom implementation path to an Expo React Native mobile/tablet app-first path.
 
@@ -106,6 +106,7 @@ docs/project/app-v2/
   28-inline-input-and-preview-layout-evidence.md
   29-inline-density-and-realistic-sample-evidence.md
   30-realistic-preview-entry-and-material-card-flow-evidence.md
+  31-mobile-preview-sample-and-material-footer-evidence.md
 ```
 
 The alpha.19 documents are design and read-only audit authority. They do not authorize schema migration, API replacement, seed execution, DB/R2 mutation, or PDF Worker changes.

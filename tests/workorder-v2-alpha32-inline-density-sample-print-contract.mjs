@@ -24,9 +24,9 @@ const commands = read("lib/domain/work-orders/contracts/commands.ts");
 const models = read("lib/domain/work-orders/contracts/read-models.ts");
 const previewRepository = read("lib/domain/work-orders/read/previewRepository.ts");
 
-assert.match(read("lib/constants/version.ts"), /2\.0\.0-alpha\.33/);
-assert.match(read("apps/mobile/constants/version.ts"), /2\.0\.0-alpha\.33/);
-assert.equal(JSON.parse(read("apps/mobile/app.json")).expo.version, "2.0.0-alpha.33");
+assert.match(read("lib/constants/version.ts"), /2\.0\.0-alpha\.34/);
+assert.match(read("apps/mobile/constants/version.ts"), /2\.0\.0-alpha\.34/);
+assert.equal(JSON.parse(read("apps/mobile/app.json")).expo.version, "2.0.0-alpha.34");
 
 for (const name of ["COMPACT_FIELD_LABEL_TEXT", "COMPACT_FIELD_VALUE_TEXT", "COMPACT_FIELD_ROW_HEIGHT"]) {
   assert.match(typography, new RegExp(`export const ${name}`));

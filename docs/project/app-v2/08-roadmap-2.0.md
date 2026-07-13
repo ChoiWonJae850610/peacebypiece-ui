@@ -1,4 +1,14 @@
-# WAFL v2 App-first Roadmap 2.0 - 2.0.0-alpha.33
+# WAFL v2 App-first Roadmap 2.0 - 2.0.0-alpha.34
+
+## 2.0.0-alpha.34 result
+
+Status: `LEVEL_4_PRODUCT_VERIFIED`; implementation and evidence are tracked in document 31.
+
+- Route every Expo mock Preview entry to the localhost-only realistic sample while preserving the separate actual issued-document target and its no-fallback contract.
+- Keep the sample unavailable in production and restrict development sample hosts to localhost loopback values.
+- Merge material reference/warning messages and available actions into one final footer band with one separator, left/right alignment, no action wrapping, and no empty placeholder.
+- Verify the two mobile user paths, 390x844 phone, 768x1024 tablet portrait, 1024x768 tablet landscape, and a three-page Chromium print artifact with console warning/error 0 and horizontal overflow 0.
+- Defer actual immutable PDF binary, generated-document metadata, QR, R2, Worker, and production lifecycle to alpha.35.
 
 ## 2.0.0-alpha.33 result
 
@@ -8,7 +18,7 @@ Status: implementation and product evidence are tracked in document 30.
 - Expose the deterministic realistic sample from the localhost-only `/ui` catalog with a clear `실무 샘플 보기` label; production hosts keep the route at 404.
 - Keep the visible front/back product board, three color chips, exact 144 matrix, and practical Korean material/process/factory content.
 - Reorder fabric/accessory cards to basic information, factory-facing inputs, order summary, warning, then footer actions; preserve the 22px single-line editing contract.
-- Defer actual PDF binary, generated-document metadata, QR, R2, Worker, and production lifecycle to alpha.34.
+- Defer actual PDF binary, generated-document metadata, QR, R2, Worker, and production lifecycle to alpha.35.
 
 ## 2.0.0-alpha.32 result
 
@@ -19,7 +29,7 @@ Status: `LEVEL_4_PRODUCT_VERIFIED` with localhost mobile/tablet/desktop interact
 - Remove separate process application-area and application-color rows/Preview columns while preserving their DB/API fields and merging them into work memo for display only.
 - Replace the minimal localhost sample with a repository-owned garment board and deterministic Korean production data totaling exactly 144 units.
 - Keep one A4 landscape cover and packed A4 portrait continuations, and verify the actual browser print output without creating a generated document or R2 object.
-- Defer PDF/QR/R2/Worker/generated-document lifecycle to alpha.34.
+- Defer PDF/QR/R2/Worker/generated-document lifecycle to alpha.35.
 
 ## 2.0.0-alpha.31 result
 
@@ -29,7 +39,7 @@ Status: `LEVEL_4_PRODUCT_VERIFIED` after localhost desktop/tablet/mobile/print e
 - Keep edits local/mock-only while making issued/completed values visually read-only.
 - Split issued Preview data loading from a pure renderer shared by the actual immutable Preview and a deterministic localhost-only sample.
 - Use an A4 landscape cover and packed A4 portrait continuation pages with repeated headers and non-splitting rows.
-- Defer PDF binary, QR, R2, Worker, and generated-document lifecycle to alpha.34.
+- Defer PDF binary, QR, R2, Worker, and generated-document lifecycle to alpha.35.
 
 ## 2.0.0-alpha.30 result
 
@@ -40,7 +50,7 @@ Status: `ALPHA30_COMMAND_RUNTIME_AND_COMPLETION_PASS`.
 - Align mobile free-text inputs and rebuild Preview as a factory-facing multi-page A4 document without internal inventory/order/cost/status fields.
 - Approved dev/test migration 009 apply and post-apply audit PASS: ledger 9/9, four nullable fields and four `NOT VALID` checks present, existing row values/counts and RLS/ACL unchanged, business/R2/Worker/PDF/production mutation false.
 - Approved synthetic completion retained WorkOrder/revision `+1/+1`, fabric/accessory `1/1`, process fixture `+1`, receipts/events `+4/+7`, document number `+1`, and final versions 7/7/2/1/2. Incomplete receipt, next draft, and generated document are all 0.
-- Issued Preview new fields, deterministic repeat GET, tenant isolation, and immutable LOCKED checks passed. Actual PDF/QR/R2/Worker lifecycle remains excluded and moves to alpha.34.
+- Issued Preview new fields, deterministic repeat GET, tenant isolation, and immutable LOCKED checks passed. Actual PDF/QR/R2/Worker lifecycle remains excluded and moves to alpha.35.
 
 ## 2.0.0-alpha.29 result
 

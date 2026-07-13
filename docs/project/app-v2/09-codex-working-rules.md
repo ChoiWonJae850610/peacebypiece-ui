@@ -1,4 +1,12 @@
-# WAFL v2 App-first Codex Working Rules - 2.0.0-alpha.33
+# WAFL v2 App-first Codex Working Rules - 2.0.0-alpha.34
+
+## Alpha.34 mobile sample entry and material footer boundary
+
+- Treat Preview destinations as explicit targets: `issued-document` for immutable tenant data and `dev-realistic-sample` for the localhost-only deterministic sample. Never infer one from the other or fall back from actual data to sample data.
+- Every Preview affordance in the disconnected Expo production-card mock uses the sample target. Native still requires the configured approved web base; development sample URLs must resolve to localhost loopback and must be rejected in production.
+- Fabric/accessory status/reference messages and available actions share one final footer band. Messages stay left, actions stay right and `nowrap`, and the band is omitted when neither side exists.
+- Preserve alpha.32's 22px single-line field grammar, cancel/commit guards, card stability, locked affordance rules, and display-only process memo merge.
+- Browser print-to-PDF remains disposable QA evidence. Actual generated-document metadata, immutable PDF binary, QR, R2, Worker, revoke/regenerate/trash, and production lifecycle remain alpha.35 scope.
 
 ## Alpha.33 actual/sample and material-card boundary
 
@@ -7,7 +15,7 @@
 - Stable internal category codes may use a display-only Korean label mapping. Do not rewrite product names, memos, persisted data, or unknown values.
 - Fabric/accessory cards read in this order: header, basic information, usage area/memo, order summary, warning/reference, footer actions. No input, warning, or information follows the action footer.
 - Keep alpha.32's 22px single-line inline edit and double-completion guards unchanged.
-- Browser print-to-PDF remains excluded QA evidence. Actual PDF binary, QR, R2, Worker, generated-document lifecycle, and production storage remain alpha.34 scope.
+- Browser print-to-PDF remains excluded QA evidence. Actual PDF binary, QR, R2, Worker, generated-document lifecycle, and production storage remain alpha.35 scope.
 
 ## Alpha.32 inline density and sample boundary
 
@@ -15,7 +23,7 @@
 - Escape cancels without a following blur commit. Enter or blur commits a changed value once; unchanged normalized values do not commit.
 - Mobile and Preview omit separate process application-area and application-color UI. Existing DB/API fields remain compatible and are merged into work memo for display only, never written back.
 - The localhost sample uses deterministic source data and repository-owned assets only. It must not call tenant APIs, read business data, or use external image URLs.
-- Browser print-to-PDF is a disposable QA artifact, not generated-document/PDF lifecycle execution. PDF/QR/R2/Worker lifecycle remains alpha.34 scope.
+- Browser print-to-PDF is a disposable QA artifact, not generated-document/PDF lifecycle execution. PDF/QR/R2/Worker lifecycle remains alpha.35 scope.
 
 ## Alpha.31 inline and Preview boundary
 
@@ -23,7 +31,7 @@
 - Long notes collapse to one or two lines and expand in place. Issued/finalized, completed, locked, or unauthorized values use the same read-only component without dotted edit affordance.
 - Issued Preview loading stays separate from the pure document renderer. Actual Preview remains revision-scoped and immutable; deterministic localhost samples use the same renderer without tenant API or business data.
 - The cover is A4 landscape and continuation pages are A4 portrait. Pack sections according to content, repeat table headers, and keep rows intact instead of forcing one section onto every page.
-- PDF binary generation, QR, R2, Worker, regeneration/revoke/trash, and generated-document lifecycle remain alpha.34 scope.
+- PDF binary generation, QR, R2, Worker, regeneration/revoke/trash, and generated-document lifecycle remain alpha.35 scope.
 
 ## Alpha.30 preparation gate
 
@@ -100,11 +108,13 @@ Before any App-first file modification, read:
 30. `docs/project/app-v2/27-factory-workorder-input-and-preview-evidence.md`
 31. `docs/project/app-v2/28-inline-input-and-preview-layout-evidence.md`
 32. `docs/project/app-v2/29-inline-density-and-realistic-sample-evidence.md`
-33. `docs/project/v2/00-start-here.md` through `docs/project/v2/14-operational-policy-absorption.md`
-34. `docs/project/25-korean-unicode-encoding-standard.md`
-35. `docs/project/32-product-completion-and-ui-evidence-standard.md`
-36. `docs/project/26-final-policy-decisions-and-master-todo.md`
-37. `docs/project/31-pre-codex-integrated-master-plan.md`
+33. `docs/project/app-v2/30-realistic-preview-entry-and-material-card-flow-evidence.md`
+34. `docs/project/app-v2/31-mobile-preview-sample-and-material-footer-evidence.md`
+35. `docs/project/v2/00-start-here.md` through `docs/project/v2/14-operational-policy-absorption.md`
+36. `docs/project/25-korean-unicode-encoding-standard.md`
+37. `docs/project/32-product-completion-and-ui-evidence-standard.md`
+38. `docs/project/26-final-policy-decisions-and-master-todo.md`
+39. `docs/project/31-pre-codex-integrated-master-plan.md`
 
 ## 4. Newest rule
 

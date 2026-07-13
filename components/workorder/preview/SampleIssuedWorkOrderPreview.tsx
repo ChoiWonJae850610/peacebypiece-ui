@@ -20,7 +20,7 @@ export default function SampleIssuedWorkOrderPreview({ data }: { readonly data: 
         <div><span>실무형 샘플 작업지시서</span><strong>{data.document.displayDocumentNumber}</strong></div>
         <button type="button" onClick={() => window.print()} title="인쇄"><Printer aria-hidden="true" /><span>인쇄</span></button>
       </nav>
-      <IssuedWorkOrderDocument coverFacts={sampleCoverFacts} data={data} quantityUnit="장" representativeImageSrc="/dev-samples/linen-round-dress-sketch.svg" />
+      <IssuedWorkOrderDocument coverFacts={sampleCoverFacts} data={data} quantityUnit="장" representativeImageLabel="리넨 라운드 셔츠 원피스 앞면·뒷면 제품 스케치" representativeImageSrc="/dev-samples/linen-round-dress-sketch.svg" />
     </main>
   );
 }

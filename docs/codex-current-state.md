@@ -1,3 +1,14 @@
+# 2.0.0-alpha.34 Mobile Sample Preview and Material Footer Alignment
+
+- APP_VERSION and mobile mirrors are `2.0.0-alpha.34`.
+- Every Expo mock `작지 보기` entry opens the development-only `/dev/workorder-preview-sample` target. The actual issued-document target remains `/workspace/documents/:documentNumber/preview` and has no sample fallback.
+- The development sample opener accepts only localhost loopback hosts outside production. Native continues to use the configured approved web base; no token, company scope, storage key, or secret is added to the URL.
+- Fabric/accessory cards use one final footer band: reference/warning messages align left, available actions align right, the action group never wraps, and no empty footer renders when both sides are absent.
+- Localhost product QA PASS: top `작지 보기` and `출력·공유 > 보기` both reached the realistic sample; mobile 390x844, tablet portrait 768x1024, and tablet landscape 1024x768 had horizontal overflow 0, one 1px footer separator, and `nowrap` actions. Browser console warning/error count was 0.
+- Chromium print QA generated a local-only three-page PDF and visual inspection found no clipping, overlap, broken table, or unreadable glyph. It is not a generated-document/PDF/R2 lifecycle execution.
+- No DB migration/write, API mutation, R2, Worker, generated-document lifecycle, production access, root package/lockfile, or dependency change occurs.
+- Evidence: `docs/project/app-v2/31-mobile-preview-sample-and-material-footer-evidence.md`.
+
 # 2.0.0-alpha.33 Realistic Preview Entry and Material Card Flow
 
 - APP_VERSION and mobile mirrors are `2.0.0-alpha.33`.
