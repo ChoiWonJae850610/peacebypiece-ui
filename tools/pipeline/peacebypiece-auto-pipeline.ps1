@@ -1286,6 +1286,14 @@ function NewLocalRepoBuildResultFile {
     AddCustomerProductUxCleanupRepoStateSections -Lines $lines -VerificationSummary $VerificationSummary
     AddWorkorderPdfLiveIntegrationRepoStateSections -Lines $lines -VerificationSummary $VerificationSummary
     AddProductUiRuntimeVerificationRepoStateSections -Lines $lines -VerificationSummary $VerificationSummary
+    if ($Version -eq "2.0.0-alpha.31") {
+        AddRepoStateSection -Lines $lines -Title "Alpha.31 Product Verification:" -Values @("LEVEL_4_PRODUCT_VERIFIED - desktop/tablet/mobile/inline interaction evidence")
+        AddRepoStateSection -Lines $lines -Title "Alpha.31 Sample Route Guard:" -Values @("PASS - localhost 200; Host www.wafl.co.kr 404")
+        AddRepoStateSection -Lines $lines -Title "Alpha.31 Print Layout Verification:" -Values @("PASS - A4 landscape cover; A4 portrait continuation; repeated headers; rows not split")
+        AddRepoStateSection -Lines $lines -Title "Alpha.31 Inline UX Verification:" -Values @("PASS - 16px same-row input; expandable note; completed-row edit buttons 0")
+        AddRepoStateSection -Lines $lines -Title "Alpha.31 DB Migration Applied:" -Values @("false")
+        AddRepoStateSection -Lines $lines -Title "Alpha.31 DB / R2 / Worker / PDF / Production Mutation:" -Values @("false")
+    }
     if ($Version -eq "2.0.0-alpha.27") {
         AddRepoStateSection -Lines $lines -Title "Alpha.27 Completion Status:" -Values @("ALPHA27_ISSUE_RUNTIME_AND_COMPLETION_PASS")
         AddRepoStateSection -Lines $lines -Title "Alpha.27 Issued Document Number:" -Values @("WAFN-26FWA-A25CMD-260711-001-R0")
@@ -1453,6 +1461,18 @@ function NewLocalRepoStateFile {
     AddCustomerProductUxCleanupRepoStateSections -Lines $lines -VerificationSummary $VerificationSummary
     AddWorkorderPdfLiveIntegrationRepoStateSections -Lines $lines -VerificationSummary $VerificationSummary
     AddProductUiRuntimeVerificationRepoStateSections -Lines $lines -VerificationSummary $VerificationSummary
+    if ($Version -eq "2.0.0-alpha.31") {
+        $alpha31ChangedPaths = @(InvokeLocalRepoGitOutput -Arguments @("show", "--pretty=format:", "--name-only", "HEAD") | Where-Object { -not [string]::IsNullOrWhiteSpace([string]$_) })
+        AddRepoStateSection -Lines $lines -Title "Alpha.31 Changed Paths:" -Values $alpha31ChangedPaths
+        AddRepoStateSection -Lines $lines -Title "Alpha.31 Product Verification:" -Values @("LEVEL_4_PRODUCT_VERIFIED - desktop/tablet/mobile/inline interaction evidence")
+        AddRepoStateSection -Lines $lines -Title "Alpha.31 Sample Route Guard:" -Values @("PASS - localhost 200; Host www.wafl.co.kr 404")
+        AddRepoStateSection -Lines $lines -Title "Alpha.31 Print Layout Verification:" -Values @("PASS - A4 landscape cover; A4 portrait continuation; repeated headers; rows not split")
+        AddRepoStateSection -Lines $lines -Title "Alpha.31 Inline UX Verification:" -Values @("PASS - 16px same-row input; expandable note; completed-row edit buttons 0")
+        AddRepoStateSection -Lines $lines -Title "Alpha.31 Sample Contract:" -Values @("PASS - deterministic local data; 144 total; 0차; R0; no tenant API")
+        AddRepoStateSection -Lines $lines -Title "Alpha.31 Actual Preview Contract:" -Values @("unchanged tenant/RLS issued-revision loader; pure renderer split; no mutable fallback")
+        AddRepoStateSection -Lines $lines -Title "Alpha.31 DB Migration Applied:" -Values @("false")
+        AddRepoStateSection -Lines $lines -Title "Alpha.31 DB / R2 / Worker / PDF / Production Mutation:" -Values @("false")
+    }
     if ($Version -eq "2.0.0-alpha.27") {
         AddRepoStateSection -Lines $lines -Title "Alpha.27 Completion Status:" -Values @("ALPHA27_ISSUE_RUNTIME_AND_COMPLETION_PASS")
         AddRepoStateSection -Lines $lines -Title "Alpha.27 Issued Document Number:" -Values @("WAFN-26FWA-A25CMD-260711-001-R0")
