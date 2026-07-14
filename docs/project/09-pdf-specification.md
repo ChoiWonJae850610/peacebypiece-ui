@@ -3,6 +3,10 @@
 Version: 0.24.21.15  
 Status: Canonical PDF product policy and implementation contract
 
+## WAFL v2 alpha.40 implementation note
+
+Official issued Preview output uses controlled generated-document view/download/share and no longer calls browser print. The canonical React document uses a real HTML image element with explicit load readiness and inline SVG color chips for print fidelity. A localhost-only sample download reuses the same immutable sample snapshot and Chromium renderer; it does not create DB metadata or an R2 object.
+
 ## WAFL v2 alpha.39 preparation note
 
 The controlled viewer serves the retained immutable alpha.38 PDF through a signed short viewer session and server-side R2 GET. It never redirects a client to a signed R2 URL and never exposes document UUIDs or storage keys. Alpha.39 does not rewrite or overwrite the PDF; QR insertion into a new PDF generation remains alpha.40.

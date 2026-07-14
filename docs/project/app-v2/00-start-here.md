@@ -5,7 +5,9 @@
 This document starts the WAFL v2 App-first line.
 
 Previous baseline: `0.30.0-alpha.27`.
-Current baseline: `2.0.0-alpha.39`.
+Current baseline: `2.0.0-alpha.40`.
+
+Alpha.40 tightens mobile material action density, removes duplicate sample color swatches, uses a real HTML image plus print-safe SVG color chips in the canonical document, and replaces browser print with controlled generated-PDF view/download plus a localhost-only sample PDF download. Generated-document metadata and R2 are read-only; migration ledger remains 11/11 and all DB/R2/Worker/production mutation is zero. See `37-preview-output-and-action-density-evidence.md`.
 
 Alpha.38 applies the approved native-UUID receipt link to dev/test, persists one immutable generated-document lifecycle, uploads and verifies one actual issued PDF in R2, and proves duplicate no-op plus tenant isolation. The retained DB/R2 result is dev/test evidence only; QR/viewer/access-token work remains alpha.39.
 

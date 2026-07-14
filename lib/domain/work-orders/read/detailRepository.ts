@@ -236,8 +236,9 @@ export const WORK_ORDER_V2_ASSETS_SQL = `
 export const WORK_ORDER_V2_DOCUMENTS_SQL = `
   WITH target AS MATERIALIZED (${TARGET_SQL})
   SELECT t.id AS work_order_id, t.current_revision_id, t.entity_version,
-         d.id, d.work_order_revision_id, d.document_type, d.display_document_number,
-         d.status, d.renderer_version, d.dto_schema_version, d.generated_at,
+         d.id, d.work_order_revision_id, d.document_type, d.generation_no,
+         d.display_document_number, d.status, d.renderer_version, d.dto_schema_version,
+         d.file_size_bytes, d.generated_at,
          d.revoked_at, d.created_at,
          EXISTS (
            SELECT 1 FROM document_access_tokens token
@@ -606,16 +607,24 @@ export async function getWorkOrderDocumentsV2(input: CommonCollectionInput): Pro
   if (!meta) return { data: null, ...timing(result) };
   const available = result.rows.filter((row) => row.id !== null);
   const rows = available.slice(0, input.limit);
-  const items = rows.map((row) => ({
-    id: String(row.id) as GeneratedDocumentId,
+  const items = rows.map((row) => {
+    const id = String(row.id) as GeneratedDocumentId;
+    const available = row.status === "generated" && row.revoked_at === null;
+    const fileRoute = `/api/v2/work-orders/documents/${encodeURIComponent(id)}/file`;
+    return {
+    id,
     revisionId: String(row.work_order_revision_id) as WorkOrderRevisionId,
     documentType: asEnum(row.document_type, WORK_ORDER_DOCUMENT_TYPES, "WORK_ORDER_DOCUMENT_INVALID_TYPE") as WorkOrderDocumentType,
+    generationNumber: asCount(row.generation_no),
     displayDocumentNumber: String(row.display_document_number) as DisplayDocumentNumber,
     status: asEnum(row.status, GENERATED_DOCUMENT_STATUSES, "WORK_ORDER_DOCUMENT_INVALID_STATUS") as GeneratedDocumentStatus,
     rendererVersion: String(row.renderer_version), documentSchemaVersion: asCount(row.dto_schema_version),
+    fileSizeBytes: row.file_size_bytes === null ? null : asCount(row.file_size_bytes),
     generatedAt: asIsoDateTime(row.generated_at), revokedAt: asIsoDateTime(row.revoked_at),
     accessTokenAvailable: Boolean(row.access_token_available), previewUrl: null as ControlledFileUrl | null,
-  }));
+    inlineUrl: available ? `${fileRoute}?disposition=inline` as ControlledFileUrl : null,
+    downloadUrl: available ? `${fileRoute}?disposition=attachment` as ControlledFileUrl : null,
+  };});
   const hasMore = available.length > input.limit;
   const last = rows.at(-1);
   return {

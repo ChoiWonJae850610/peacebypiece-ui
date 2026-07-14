@@ -1009,7 +1009,7 @@ function MaterialRow({ row }: { row: MaterialRowData }) {
   const actions = getMaterialActions(row);
   const locked = row.status !== "입력중";
   const editable = row.status === "입력중";
-  const compactActions = width < maxPhoneWidth;
+  const compactActions = width <= 390;
   const [values, setValues] = useState(() => createMaterialEditValues(row));
   const updateValue = (key: keyof MaterialEditValues) => (value: string) => {
     setValues((current) => ({ ...current, [key]: value }));
@@ -1131,7 +1131,7 @@ function MaterialRow({ row }: { row: MaterialRowData }) {
         />
       </View>
       <View testID="material-order-action-row" style={styles.materialOrderActionRow}>
-        <Text testID="material-order-summary" numberOfLines={1} style={styles.materialOrderActionSummary}>
+        <Text testID="material-order-summary" numberOfLines={width < 360 ? 2 : 1} style={styles.materialOrderActionSummary}>
           발주 {orderQuantitySummary} · 단가 {unitPriceSummary} · 금액 {amountSummary}
         </Text>
         {actions.length ? (
@@ -1145,6 +1145,7 @@ function MaterialRow({ row }: { row: MaterialRowData }) {
                 emphasized={action.emphasized}
                 danger={action.danger}
                 action
+                compactAction={compactActions}
               />
             ))}
           </View>
@@ -1369,6 +1370,7 @@ function IconButton({
   emphasized = false,
   caption,
   action = false,
+  compactAction = false,
   onPress,
   disabled = false,
   mock = true
@@ -1380,6 +1382,7 @@ function IconButton({
   emphasized?: boolean;
   caption?: string;
   action?: boolean;
+  compactAction?: boolean;
   onPress?: () => void;
   disabled?: boolean;
   mock?: boolean;
@@ -1390,11 +1393,13 @@ function IconButton({
       accessibilityLabel={mock ? `${label} mock 동작` : label}
       accessibilityState={{ disabled }}
       disabled={disabled}
+      hitSlop={action ? { top: 6, bottom: 6, left: 3, right: 3 } : undefined}
       onPress={onPress}
       style={[
         styles.iconButton,
         caption && styles.iconButtonCaption,
         action && styles.iconActionButton,
+        action && compactAction && styles.iconActionButtonCompact,
         emphasized && styles.iconEmphasized,
         action && emphasized && styles.iconActionEmphasized,
         danger && styles.iconDanger,
@@ -1707,6 +1712,13 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     borderWidth: 1,
     minWidth: 58
+  },
+  iconActionButtonCompact: {
+    borderRadius: 7,
+    height: 30,
+    minWidth: 36,
+    paddingHorizontal: 4,
+    width: 36
   },
   iconActionEmphasized: {
     backgroundColor: "#23375a",
@@ -3210,9 +3222,12 @@ const styles = StyleSheet.create({
   },
   materialDataRow: {
     backgroundColor: "#fffdf8",
+    borderColor: "#e7ded1",
+    borderLeftWidth: 4,
     borderRadius: 8,
+    borderWidth: 1,
     gap: 5,
-    marginBottom: 8,
+    marginBottom: 10,
     paddingHorizontal: 10,
     paddingVertical: 9
   },
@@ -3342,7 +3357,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     flexShrink: 0,
     flexWrap: "nowrap",
-    gap: 4,
+    gap: 3,
     marginLeft: "auto"
   },
   summaryToken: {

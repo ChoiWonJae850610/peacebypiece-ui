@@ -1,5 +1,14 @@
 # Final Policy Decisions and Master TODO
 
+## WAFL v2 alpha.40 confirmed Preview output contract
+
+- Mobile material actions may use compact icon-only visuals at 320-390px only when labels, state, and at least a 42px effective touch target remain available to assistive technology.
+- Expo Web Preview opens one new tab and keeps the production-card tab in place. A blocked/noopener popup must not trigger current-tab navigation.
+- The canonical work-instruction renderer uses an actual HTML image element and print-safe inline SVG color chips. The product sketch does not duplicate the separate document color summary.
+- Official Preview does not call browser print. It uses the latest tenant-scoped generated-document metadata for controlled inline view, download, and share; absence is a neutral state, never a fake file.
+- Authenticated PDF delivery requires `workorder.read`, session-derived tenant scope, generated/non-revoked/non-deleted metadata, server-side R2 GET, and size/SHA/PDF-header verification. Object keys and signed URLs remain server-only.
+- The realistic sample may generate a local-only PDF through the canonical Chromium renderer. Alpha.40 adds no DB migration or data write, token mutation, generated-document mutation, R2 PUT/DELETE, Worker execution, or production access.
+
 ## WAFL v2 alpha.39 confirmed controlled-viewer security contract
 
 - External links use a 256-bit HMAC-derived opaque base64url token. The raw token exists only in server memory, the first/idempotent response, the URL fragment, clipboard/QR rendering, and the bounded exchange body; only a lowercase SHA-256 hash is stored.

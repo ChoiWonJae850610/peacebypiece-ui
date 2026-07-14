@@ -1,6 +1,6 @@
 "use client";
 
-import { Printer } from "lucide-react";
+import { Download } from "lucide-react";
 
 import type { WorkOrderIssuedPreviewReadModel } from "@/lib/domain/work-orders/contracts";
 import IssuedWorkOrderDocument, { type WorkOrderPreviewCoverFacts } from "./IssuedWorkOrderDocument";
@@ -50,7 +50,7 @@ export default function SampleIssuedWorkOrderPreview({
       <nav className={styles.toolbar} aria-label="샘플 작업지시서 도구">
         <div />
         <div><span>실무형 샘플 작업지시서</span><strong>{data.document.displayDocumentNumber}</strong></div>
-        <button type="button" onClick={() => window.print()} title="인쇄"><Printer aria-hidden="true" /><span>인쇄</span></button>
+        <a className={styles.toolbarActionLink} href="/dev/workorder-preview-sample/pdf" title="샘플 PDF 다운로드"><Download aria-hidden="true" /><span>샘플 PDF 다운로드</span></a>
       </nav>
       <IssuedWorkOrderDocument coverFacts={sampleCoverFacts} data={data} quantityUnit="장" representativeImageLabel="리넨 라운드 셔츠 원피스 앞면·뒷면 제품 스케치" representativeImageSrc={representativeImageSrc} />
     </main>

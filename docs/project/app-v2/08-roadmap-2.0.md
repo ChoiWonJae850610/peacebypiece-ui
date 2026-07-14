@@ -1,4 +1,14 @@
-# WAFL v2 App-first Roadmap 2.0 - 2.0.0-alpha.39 result
+# WAFL v2 App-first Roadmap 2.0 - 2.0.0-alpha.40 result
+
+## 2.0.0-alpha.40 result
+
+- Reduce 320-390px material action visuals to 36x30px while preserving a 42px touch target, one-line 390px summary, and two-line maximum at 320-359px.
+- Keep the Expo Web source tab in place and open one Preview popup with a bounded duplicate-click guard; retain native system-browser behavior.
+- Replace CSS background representative media with a native HTML image, use inline SVG color chips, and remove the duplicate color legend from the repository sample sketch.
+- Replace browser print actions with authenticated generated-PDF view/download/share and a localhost-only Chromium sample PDF download.
+- Add generation number/file size/status/timestamps and controlled inline/download URLs to the documents Read Model without exposing storage identity.
+- Preserve ledger `11/11`, the retained alpha.38 PDF, and alpha.39 tokens/events. DB/schema/token/generated-document/R2 write/delete/Worker/production mutation remains zero.
+- Evidence: `37-preview-output-and-action-density-evidence.md`.
 
 ## 2.0.0-alpha.39 result
 

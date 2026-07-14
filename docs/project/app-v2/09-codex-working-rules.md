@@ -1,4 +1,13 @@
-# WAFL v2 App-first Codex Working Rules - 2.0.0-alpha.39
+# WAFL v2 App-first Codex Working Rules - 2.0.0-alpha.40
+
+## Alpha.40 output and action-density boundary
+
+- Compact mobile material action visuals must retain accessible labels/state and at least a 42px effective hit target. Do not remove summary values, add horizontal scrolling, or split actions into a separate row.
+- Web Preview uses one popup only. Never fall back to `window.location.assign` or otherwise navigate the source production-card tab.
+- The work-instruction document uses an HTML image element and explicit image readiness; CSS background-image is not accepted for representative PDF media.
+- Official Preview actions use controlled generated-document view/download/share. `window.print()` is not an official output path.
+- Internal generated-PDF delivery is authenticated, tenant-scoped, read-only, and server-side. It validates generated status, revoke/delete state, MIME, size, SHA, and PDF header before returning bytes.
+- The realistic sample PDF route remains localhost-only and may create only excluded local Chromium artifacts. DB writes, token changes, generated-document changes, R2 PUT/DELETE, Worker execution, migration, and production access are forbidden.
 
 ## Alpha.39 approval boundaries
 

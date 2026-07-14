@@ -53,9 +53,11 @@ const diagnostic = route.match(/console\.error\("\[WORK_ORDER_V2_PREVIEW_READ_FA
 assert.ok(diagnostic);
 assert.doesNotMatch(diagnostic, /error\.message|storage|token|secret|query/i);
 assert.match(component, /data-testid="issued-workorder-preview-a4"/);
-assert.match(component, /window\.print\(\)/);
+assert.doesNotMatch(component, /window\.print\(\)/);
 assert.match(component, /작업지시서/);
-assert.doesNotMatch(component, /mock|QR|PDF 다운로드|storage/i);
+assert.match(component, /PDF 보기/);
+assert.match(component, /다운로드/);
+assert.doesNotMatch(component, /mock|QR|storage_object_key|signedUrl/i);
 assert.match(css, /@page\s+cover\s*\{\s*size:\s*A4 landscape/);
 assert.match(css, /@page\s+content\s*\{\s*size:\s*A4 portrait/);
 assert.match(css, /@media print/);

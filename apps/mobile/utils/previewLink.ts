@@ -7,6 +7,8 @@ export type PreviewTarget =
 export type PreviewOpenResult = { readonly ok: true; readonly url: string } | { readonly ok: false; readonly message: string };
 
 const LOCAL_SAMPLE_HOSTS = new Set(["localhost", "127.0.0.1", "::1"]);
+const WEB_PREVIEW_OPEN_GUARD_MS = 750;
+let webPreviewOpenPending = false;
 
 function configuredBaseUrl(): string | null {
   const value = process.env.EXPO_PUBLIC_WAFL_WEB_BASE_URL?.trim();
@@ -45,8 +47,12 @@ export async function openPreviewTarget(previewTarget: PreviewTarget): Promise<P
   const target = buildPreviewUrl(previewTarget);
   if (!target.ok) return target;
   if (Platform.OS === "web") {
-    const opened = window.open(target.url, "_blank", "noopener,noreferrer");
-    if (!opened) window.location.assign(target.url);
+    if (webPreviewOpenPending) return target;
+    webPreviewOpenPending = true;
+    window.open(target.url, "_blank", "noopener,noreferrer");
+    window.setTimeout(() => {
+      webPreviewOpenPending = false;
+    }, WEB_PREVIEW_OPEN_GUARD_MS);
     return target;
   }
   if (!(await Linking.canOpenURL(target.url))) return { ok: false, message: "Preview 정보를 불러올 수 없습니다." };

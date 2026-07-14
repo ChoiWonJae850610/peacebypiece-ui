@@ -1,5 +1,7 @@
 import type { ReactNode } from "react";
 
+/* eslint-disable @next/next/no-img-element -- PDF readiness requires the native HTMLImageElement contract. */
+
 import type { WorkOrderIssuedPreviewReadModel } from "@/lib/domain/work-orders/contracts";
 import { formatProcessInstruction } from "./processInstruction";
 import styles from "./IssuedWorkOrderPreview.module.css";
@@ -163,7 +165,7 @@ export default function IssuedWorkOrderDocument({ data, representativeImageSrc, 
       <section className={`${styles.page} ${styles.coverPage}`} data-page-orientation="landscape">
         <div className={styles.coverSketch}>
           <div className={styles.coverSectionLabel}>제품 스케치</div>
-          {representativeImageSrc ? <div aria-label={representativeImageLabel ?? `${data.header.productName} 제품 스케치`} className={styles.representativeImage} role="img" style={{ backgroundImage: `url(${representativeImageSrc})` }} /> : <div className={styles.sketchPlaceholder}><span>제품 스케치·대표 이미지</span><small>첨부 자료 {data.assets.filter((asset) => asset.includeInDocument).length}건</small></div>}
+          {representativeImageSrc ? <img alt={representativeImageLabel ?? `${data.header.productName} 제품 스케치`} className={styles.representativeImage} data-wafl-representative-image="true" src={representativeImageSrc} /> : <div className={styles.sketchPlaceholder}><span>제품 스케치·대표 이미지</span><small>첨부 자료 {data.assets.filter((asset) => asset.includeInDocument).length}건</small></div>}
         </div>
         <div className={styles.coverInfo}>
           <header className={styles.documentHeader}><p>작업지시서</p><h1>{data.header.productName}</h1><small>{[data.header.seasonCode, data.header.itemCode].filter(Boolean).join(" · ")}</small></header>
@@ -177,7 +179,7 @@ export default function IssuedWorkOrderDocument({ data, representativeImageSrc, 
             {coverFacts?.factoryName ? <div><dt>제작공장</dt><dd>{coverFacts.factoryName}</dd></div> : null}
             {coverFacts?.managerName ? <div><dt>담당자</dt><dd>{coverFacts.managerName}</dd></div> : null}
           </dl>
-          {data.sizeColors.colors.length ? <section aria-label="제품 색상" className={styles.colorSummary}><span>색상</span><div>{data.sizeColors.colors.map((color) => <span className={styles.colorChip} key={color.id}><i style={{ backgroundColor: color.hexValue ?? "#d8d3ca" }} />{color.displayName}</span>)}</div></section> : null}
+          {data.sizeColors.colors.length ? <section aria-label="제품 색상" className={styles.colorSummary}><span>색상</span><div>{data.sizeColors.colors.map((color) => <span className={styles.colorChip} key={color.id}><svg aria-hidden="true" viewBox="0 0 14 14"><rect x="0.5" y="0.5" width="13" height="13" rx="2" fill={color.hexValue ?? "#d8d3ca"} /></svg>{color.displayName}</span>)}</div></section> : null}
           <section className={styles.deliveryMemo}><h2>공장 전달 메모</h2>{memos.length ? memos.map((memo, index) => <p key={`${index}-${memo.slice(0, 12)}`}>{memo}</p>) : <p>-</p>}</section>
         </div>
       </section>

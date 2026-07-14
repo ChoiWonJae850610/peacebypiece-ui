@@ -1,16 +1,18 @@
 .shell { min-height: 100vh; background: #e8e7e3; padding: 24px; color: #172033; }
 .toolbar { max-width: 1120px; margin: 0 auto 16px; display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 16px; }
-.toolbar button { display: inline-flex; align-items: center; gap: 8px; border: 1px solid #c8cbd0; background: #fff; padding: 10px 12px; border-radius: 6px; }
+.toolbar button, .toolbarActionLink { display: inline-flex; align-items: center; gap: 8px; border: 1px solid #c8cbd0; background: #fff; color: #172033; padding: 10px 12px; border-radius: 6px; text-decoration: none; }
 .toolbar button svg { width: 18px; }
+.toolbarActionLink svg { width: 18px; }
 .toolbarActions { display: flex; align-items: center; gap: 8px; }
 .toolbar > div span { display: block; font-size: 12px; color: #687080; }
 .toolbar > div strong { display: block; overflow-wrap: anywhere; }
+.toolbarDocumentState small { display: block; margin-top: 2px; color: #687080; font-size: 11px; }
 .document { container-type: inline-size; }
 .page { box-sizing: border-box; margin: 0 auto 18px; background: #fff; box-shadow: 0 3px 16px rgba(22,32,51,.12); break-after: page; }
 .coverPage { page: cover; width: min(100%, 297mm); min-height: 210mm; padding: 12mm; display: grid; grid-template-columns: minmax(0,58fr) minmax(300px,42fr); gap: 12mm; }
 .coverSketch { display: grid; grid-template-rows: auto 1fr; min-width: 0; }
 .coverSectionLabel { border-top: 5px solid #172c4c; padding: 10px 0 8px; color: #172c4c; font-size: 13px; font-weight: 800; }
-.representativeImage { min-height: 156mm; background-position: center; background-repeat: no-repeat; background-size: contain; border: 1px solid #d8d3ca; }
+.representativeImage { display: block; width: 100%; height: 100%; min-height: 156mm; border: 1px solid #d8d3ca; object-fit: contain; }
 .sketchPlaceholder { min-height: 156mm; display: grid; place-content: center; gap: 8px; border: 1px dashed #aeb4bd; color: #687080; text-align: center; }
 .sketchPlaceholder span { color: #344054; font-weight: 800; }
 .coverInfo { display: flex; flex-direction: column; min-width: 0; }
@@ -26,7 +28,8 @@
 .colorSummary > span { color: #687080; }
 .colorSummary > div { display: flex; flex-wrap: wrap; gap: 8px; }
 .colorChip { display: inline-flex; align-items: center; gap: 4px; color: #344054; font-weight: 700; }
-.colorChip i { width: 14px; height: 14px; border: 1px solid #aeb4bd; border-radius: 2px; }
+.colorChip svg { width: 14px; height: 14px; flex: 0 0 14px; overflow: visible; }
+.colorChip rect { stroke: #aeb4bd; stroke-width: 1px; print-color-adjust: exact; -webkit-print-color-adjust: exact; }
 .deliveryMemo { margin-top: 12px; min-height: 0; }
 .deliveryMemo h2, .documentSection h2 { margin: 0 0 8px; border-left: 4px solid #a9472a; background: #f5f3ef; padding: 6px 8px; color: #172c4c; font-size: 14px; }
 .deliveryMemo p { margin: 0; padding: 6px 0; border-bottom: 1px solid #e3e0da; white-space: pre-wrap; overflow-wrap: anywhere; font-size: 11px; line-height: 1.55; }
@@ -59,7 +62,7 @@
 @media (max-width: 760px) {
   .shell { padding: 12px 0; }
   .toolbar { padding: 0 12px; grid-template-columns: auto 1fr auto; }
-  .toolbar > button span, .toolbarActions > button span, .toolbarActions > div > button span { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0,0,0,0); }
+  .toolbar > button span, .toolbarActions > button span, .toolbarActions > div > button span, .toolbarActions > a span { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0,0,0,0); }
   .page { width: 100%; min-height: 0; padding: 18px 12px; box-shadow: none; }
   .coverPage { grid-template-columns: 1fr; gap: 16px; }
   .representativeImage, .sketchPlaceholder { min-height: 360px; }

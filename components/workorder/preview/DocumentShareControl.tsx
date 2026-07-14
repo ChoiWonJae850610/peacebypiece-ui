@@ -5,7 +5,6 @@ import { Copy, Link2Off, QrCode, RefreshCw, Share2 } from "lucide-react";
 
 import styles from "./DocumentShareControl.module.css";
 
-type DocumentItem = { readonly id: string; readonly revisionId: string; readonly status: string };
 type TokenItem = {
   readonly tokenId: string;
   readonly expiresAt: string;
@@ -15,25 +14,19 @@ type TokenItem = {
 };
 type CreatedToken = TokenItem & { readonly viewerUrl: string; readonly qrSvg: string };
 
-export default function DocumentShareControl({ workOrderId, revisionId }: { readonly workOrderId: string; readonly revisionId: string }) {
+export default function DocumentShareControl({ generatedDocumentId }: { readonly generatedDocumentId: string }) {
   const [open, setOpen] = useState(false);
-  const [documentId, setDocumentId] = useState<string | null>(null);
   const [items, setItems] = useState<readonly TokenItem[]>([]);
   const [created, setCreated] = useState<CreatedToken | null>(null);
   const [message, setMessage] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
   const load = useCallback(async () => {
-    const documentsResponse = await fetch(`/api/v2/work-orders/${encodeURIComponent(workOrderId)}/documents?limit=50`, { cache: "no-store" });
-    const documentsBody = await documentsResponse.json() as { ok?: boolean; data?: { items?: readonly DocumentItem[] } };
-    const document = documentsBody.data?.items?.find((item) => item.revisionId === revisionId && item.status === "generated");
-    if (!documentsResponse.ok || !document) throw new Error("GENERATED_DOCUMENT_NOT_FOUND");
-    setDocumentId(document.id);
-    const tokensResponse = await fetch(`/api/v2/work-orders/documents/${encodeURIComponent(document.id)}/access-tokens`, { cache: "no-store" });
+    const tokensResponse = await fetch(`/api/v2/work-orders/documents/${encodeURIComponent(generatedDocumentId)}/access-tokens`, { cache: "no-store" });
     const tokensBody = await tokensResponse.json() as { ok?: boolean; data?: { items?: readonly TokenItem[] } };
     if (!tokensResponse.ok || !tokensBody.ok) throw new Error("TOKEN_LIST_FAILED");
     setItems(tokensBody.data?.items ?? []);
-  }, [revisionId, workOrderId]);
+  }, [generatedDocumentId]);
 
   const toggle = () => {
     const next = !open;
@@ -43,11 +36,10 @@ export default function DocumentShareControl({ workOrderId, revisionId }: { read
   };
 
   const create = async () => {
-    if (!documentId) return;
     setBusy(true);
     setMessage(null);
     try {
-      const response = await fetch(`/api/v2/work-orders/documents/${encodeURIComponent(documentId)}/access-tokens`, {
+      const response = await fetch(`/api/v2/work-orders/documents/${encodeURIComponent(generatedDocumentId)}/access-tokens`, {
         method: "POST",
         headers: { "Content-Type": "application/json", "Idempotency-Key": crypto.randomUUID() },
         body: JSON.stringify({ expiresInDays: 7 }),
@@ -64,10 +56,9 @@ export default function DocumentShareControl({ workOrderId, revisionId }: { read
   };
 
   const revoke = async (tokenId: string) => {
-    if (!documentId) return;
     setBusy(true);
     try {
-      const response = await fetch(`/api/v2/work-orders/documents/${encodeURIComponent(documentId)}/access-tokens/${encodeURIComponent(tokenId)}/revoke`, { method: "POST" });
+      const response = await fetch(`/api/v2/work-orders/documents/${encodeURIComponent(generatedDocumentId)}/access-tokens/${encodeURIComponent(tokenId)}/revoke`, { method: "POST" });
       if (!response.ok) throw new Error("TOKEN_REVOKE_FAILED");
       if (created?.tokenId === tokenId) setCreated(null);
       await load();
@@ -79,10 +70,9 @@ export default function DocumentShareControl({ workOrderId, revisionId }: { read
   };
 
   const rotate = async (tokenId: string) => {
-    if (!documentId) return;
     setBusy(true);
     try {
-      const response = await fetch(`/api/v2/work-orders/documents/${encodeURIComponent(documentId)}/access-tokens/${encodeURIComponent(tokenId)}/rotate`, {
+      const response = await fetch(`/api/v2/work-orders/documents/${encodeURIComponent(generatedDocumentId)}/access-tokens/${encodeURIComponent(tokenId)}/rotate`, {
         method: "POST",
         headers: { "Content-Type": "application/json", "Idempotency-Key": crypto.randomUUID() },
         body: JSON.stringify({ expiresInDays: 7 }),
@@ -104,7 +94,7 @@ export default function DocumentShareControl({ workOrderId, revisionId }: { read
         <Share2 aria-hidden="true"/><span>공유</span>
       </button>
       {open && <section className={styles.panel} aria-label="문서 공유">
-        <header><div><strong>문서 공유</strong><span>기본 만료 7일</span></div><button type="button" onClick={create} disabled={!documentId || busy}>링크 만들기</button></header>
+        <header><div><strong>문서 공유</strong><span>기본 만료 7일</span></div><button type="button" onClick={create} disabled={busy}>링크 만들기</button></header>
         {message && <p className={styles.message}>{message}</p>}
         {created && <div className={styles.created}>
           <div className={styles.qr} dangerouslySetInnerHTML={{ __html: created.qrSvg }}/>

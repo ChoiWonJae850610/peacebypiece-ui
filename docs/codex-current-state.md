@@ -1,3 +1,16 @@
+# 2.0.0-alpha.40 Preview Output and Material Action Density
+
+- APP_VERSION and mobile mirrors are `2.0.0-alpha.40`.
+- Alpha.40 keeps the existing material summary in one row at 390px and at most two rows at 320-359px while reducing mobile action visuals to 36x30px with a 42px effective touch target.
+- Expo Web Preview opens exactly one popup and never navigates the current tab as a popup fallback; native `Linking` behavior is unchanged.
+- The canonical work-instruction renderer now uses a real HTML image element and inline SVG color chips. The sample sketch no longer duplicates the right-side IVORY/NAVY/BLACK legend.
+- Official Preview actions use generated-document metadata for PDF view, download, and share. Browser `window.print()` is removed; missing generated output is shown as `생성된 PDF 없음`.
+- The authenticated generated-document file route performs tenant-scoped read-only metadata lookup and server-side R2 GET integrity verification. The localhost sample route reuses the alpha.37 Chromium renderer and never writes DB/R2 state.
+- Local Chromium generated a 195,114-byte three-page sample PDF (landscape/portrait/portrait), and rendered inspection passed Korean/image/matrix-144/blank-page/clipping checks. Expo product QA passed at 320, 390, and 768px with no horizontal overflow or console warning/error; both Preview entries preserve the source tab and the rapid-click guard opens one popup.
+- Approved dev/test read-only delivery verification passed at fingerprint `01e5dcc7fea3`: ledger `11/11`, Company A inline/download 200, 130,332-byte retained PDF SHA match, B/H `NOT_FOUND`, C approval-pending block, R2 GET 2, and all DB/R2 write/Worker/production mutation zero.
+- Migration ledger remains `11/11`. DB/schema/token/generated-document/R2 PUT/R2 DELETE/Worker/production mutation is false.
+- Evidence: `docs/project/app-v2/37-preview-output-and-action-density-evidence.md`.
+
 # 2.0.0-alpha.39 Controlled Document Viewer Security
 
 - APP_VERSION and mobile mirrors are `2.0.0-alpha.39`.

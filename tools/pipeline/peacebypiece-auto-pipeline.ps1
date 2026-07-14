@@ -1463,6 +1463,34 @@ function AddAlpha39DocumentViewerRepoStateSections {
     AddRepoStateSection -Lines $Lines -Title "Alpha.38 Historical Repo-State Correction:" -Values @("approved dev/test migration 010 applied once, ledger 10/10, additive UUID/FK schema mutation true, R2 PUT 1 and retained object 1; production mutation false")
 }
 
+function AddAlpha40PreviewOutputRepoStateSections {
+    param(
+        [System.Collections.Generic.List[string]]$Lines,
+        [string]$Version
+    )
+
+    if ($Version -ne "2.0.0-alpha.40") { return }
+
+    $runtimeManifest = $null
+    $runtimeManifestPath = Join-Path $ProjectDir ".tmp\wafl-v2-alpha40\internal-pdf-readonly-manifest.json"
+    if (Test-Path -LiteralPath $runtimeManifestPath -PathType Leaf) {
+        try { $runtimeManifest = Get-Content -LiteralPath $runtimeManifestPath -Raw -Encoding UTF8 | ConvertFrom-Json } catch { $runtimeManifest = $null }
+    }
+    $runtimePass = $null -ne $runtimeManifest -and [string]$runtimeManifest.result -eq "ALPHA40_INTERNAL_PDF_READ_ONLY_PASS"
+
+    AddRepoStateSection -Lines $Lines -Title "Alpha.40 Completion Status:" -Values @($(if ($runtimePass) { "LEVEL_4_PRODUCT_VERIFIED" } else { "MISSING_OR_INVALID_READ_ONLY_MANIFEST" }))
+    AddRepoStateSection -Lines $Lines -Title "Alpha.40 Mobile Action Density:" -Values @("PASS - 320px summary 2 lines; 390px summary 1 line; 36x30 action visuals; 42px effective touch target; horizontal overflow 0")
+    AddRepoStateSection -Lines $Lines -Title "Alpha.40 Preview Popup Contract:" -Values @("PASS - one noopener/noreferrer popup; source tab unchanged; rapid duplicate click suppressed")
+    AddRepoStateSection -Lines $Lines -Title "Alpha.40 Local Sample PDF:" -Values @("195114 bytes; SHA-256 8f0a02f07365d2d7737353713b658aebf6c08da521cf2fa8ad4dc73cf13445e9; 3 pages; landscape/portrait/portrait; blank/clipping 0")
+    AddRepoStateSection -Lines $Lines -Title "Alpha.40 Actual PDF Inline / Download:" -Values @($(if ($runtimePass) { "PASS - 200/200; $($runtimeManifest.inline.bytes) bytes; SHA-256 $($runtimeManifest.inline.sha256)" } else { "unknown" }))
+    AddRepoStateSection -Lines $Lines -Title "Alpha.40 Tenant / Auth Isolation:" -Values @($(if ($runtimePass) { "PASS - Company B/H NOT_FOUND; Company C COMPANY_APPROVAL_PENDING; unauthenticated API_SESSION_REQUIRED; invalid UUID NOT_FOUND" } else { "unknown" }))
+    AddRepoStateSection -Lines $Lines -Title "Alpha.40 Migration / Ledger:" -Values @($(if ($runtimePass) { "no migration this run; ledger $($runtimeManifest.migrationLedger)" } else { "no migration this run; ledger unknown" }))
+    AddRepoStateSection -Lines $Lines -Title "Alpha.40 R2 GET / PUT / DELETE:" -Values @($(if ($runtimePass) { "$($runtimeManifest.r2GetCount) / $($runtimeManifest.r2PutCount) / $($runtimeManifest.r2DeleteCount)" } else { "unknown / 0 / 0" }))
+    AddRepoStateSection -Lines $Lines -Title "Alpha.40 DB / Token / Generated Document Mutation:" -Values @($(if ($runtimePass) { "false / false / $($runtimeManifest.generatedDocumentMutation)" } else { "false / false / unknown" }))
+    AddRepoStateSection -Lines $Lines -Title "Alpha.40 Worker / Production Mutation:" -Values @($(if ($runtimePass) { "$($runtimeManifest.workerMutation) / $($runtimeManifest.productionMutation)" } else { "false / false" }))
+    AddRepoStateSection -Lines $Lines -Title "Alpha.40 Read-only Runner Corrections:" -Values @("two preserved Failure Handoffs: PostgreSQL UUID/text cast and canonical auth envelope assertion; both mutation 0")
+}
+
 function NewLocalRepoBuildResultFile {
     param(
         [string]$Version,
@@ -1507,6 +1535,7 @@ function NewLocalRepoBuildResultFile {
     AddAlpha37PdfFoundationRepoStateSections -Lines $lines -Version $Version
     AddAlpha38PdfDbR2RuntimeRepoStateSections -Lines $lines -Version $Version
     AddAlpha39DocumentViewerRepoStateSections -Lines $lines -Version $Version
+    AddAlpha40PreviewOutputRepoStateSections -Lines $lines -Version $Version
     if ($Version -eq "2.0.0-alpha.31") {
         AddRepoStateSection -Lines $lines -Title "Alpha.31 Product Verification:" -Values @("LEVEL_4_PRODUCT_VERIFIED - desktop/tablet/mobile/inline interaction evidence")
         AddRepoStateSection -Lines $lines -Title "Alpha.31 Sample Route Guard:" -Values @("PASS - localhost 200; Host www.wafl.co.kr 404")
@@ -1706,6 +1735,7 @@ function NewLocalRepoStateFile {
     AddAlpha37PdfFoundationRepoStateSections -Lines $lines -Version $Version
     AddAlpha38PdfDbR2RuntimeRepoStateSections -Lines $lines -Version $Version
     AddAlpha39DocumentViewerRepoStateSections -Lines $lines -Version $Version
+    AddAlpha40PreviewOutputRepoStateSections -Lines $lines -Version $Version
     if ($Version -eq "2.0.0-alpha.31") {
         $alpha31FeatureCommit = [string](InvokeLocalRepoGitOutput -Arguments @("log", "-1", "--format=%H", "-S", "2.0.0-alpha.31", "--", "lib/constants/version.ts") | Select-Object -First 1)
         $alpha31BaselineCommit = [string](InvokeLocalRepoGitOutput -Arguments @("rev-parse", "$alpha31FeatureCommit^" ) | Select-Object -First 1)

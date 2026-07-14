@@ -13,7 +13,7 @@ const samplePage = read("app/dev/workorder-preview-sample/page.tsx");
 const pipeline = read("tools/pipeline/peacebypiece-auto-pipeline.ps1");
 
 const currentVersion = read("lib/constants/version.ts").match(/APP_VERSION\s*=\s*"([^"]+)"/)?.[1];
-assert.ok(["2.0.0-alpha.38", "2.0.0-alpha.39"].includes(currentVersion));
+assert.ok(["2.0.0-alpha.38", "2.0.0-alpha.39", "2.0.0-alpha.40"].includes(currentVersion));
 assert.match(read("apps/mobile/constants/version.ts"), new RegExp(currentVersion.replaceAll(".", "\\.")));
 const appConfig = JSON.parse(read("apps/mobile/app.json"));
 assert.equal(appConfig.expo.version, currentVersion);
@@ -48,7 +48,7 @@ assert.doesNotMatch(inline, /compactCell:[\s\S]*?backgroundColor|compactCell:[\s
 const cardStyle = mobile.match(/materialDataRow: \{[\s\S]*?\n  \},\n  materialDraftRow:/)?.[0] ?? "";
 assert.match(cardStyle, /backgroundColor: "#fffdf8"/);
 assert.match(cardStyle, /borderRadius: 8/);
-assert.match(cardStyle, /marginBottom: 8/);
+assert.match(cardStyle, /marginBottom: 10/);
 assert.match(cardStyle, /paddingVertical: 9/);
 assert.doesNotMatch(cardStyle, /shadow|elevation|borderWidth: [2-9]/);
 assert.match(mobile, /materialDraftRow:[\s\S]*?borderLeftColor/);

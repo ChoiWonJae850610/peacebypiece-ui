@@ -1,8 +1,10 @@
 import { createHash } from "node:crypto";
+import path from "node:path";
 import { performance } from "node:perf_hooks";
+import { pathToFileURL } from "node:url";
 
 import { chromium } from "@playwright/test";
-import { getDocument } from "pdfjs-dist/legacy/build/pdf.mjs";
+import { getDocument, GlobalWorkerOptions } from "pdfjs-dist/legacy/build/pdf.mjs";
 
 import type {
   IssuedWorkOrderPdfRenderer,
@@ -30,6 +32,14 @@ function assertLocalRenderUrl(value: string): URL {
 }
 
 async function inspectPdf(pdf: Buffer) {
+  GlobalWorkerOptions.workerSrc = pathToFileURL(path.join(
+    process.cwd(),
+    "node_modules",
+    "pdfjs-dist",
+    "legacy",
+    "build",
+    "pdf.worker.mjs",
+  )).href;
   const loadingTask = getDocument({
     data: new Uint8Array(pdf),
     useSystemFonts: true,
@@ -128,13 +138,15 @@ export class LocalChromiumIssuedWorkOrderPdfRenderer implements IssuedWorkOrderP
         const clippingViolationCount = pages.filter((pdfPage) =>
           pdfPage.scrollWidth > pdfPage.clientWidth + 2
           || pdfPage.scrollHeight > pdfPage.clientHeight + 2).length;
-        const representativeImage = document.querySelector<HTMLElement>("[role='img']");
+        const representativeImage = document.querySelector<HTMLImageElement>('img[data-wafl-representative-image="true"]');
         return {
           clippingViolationCount,
           representativeImageVisible: Boolean(representativeImage
+            && representativeImage.complete
+            && representativeImage.naturalWidth > 0
+            && representativeImage.naturalHeight > 0
             && representativeImage.getBoundingClientRect().width > 0
-            && representativeImage.getBoundingClientRect().height > 0
-            && getComputedStyle(representativeImage).backgroundImage !== "none"),
+            && representativeImage.getBoundingClientRect().height > 0),
         };
       });
 

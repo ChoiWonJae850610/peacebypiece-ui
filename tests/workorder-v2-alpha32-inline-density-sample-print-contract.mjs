@@ -25,7 +25,7 @@ const models = read("lib/domain/work-orders/contracts/read-models.ts");
 const previewRepository = read("lib/domain/work-orders/read/previewRepository.ts");
 
 const currentVersion = read("lib/constants/version.ts").match(/APP_VERSION\s*=\s*"([^"]+)"/)?.[1];
-assert.ok(["2.0.0-alpha.38", "2.0.0-alpha.39"].includes(currentVersion));
+assert.ok(["2.0.0-alpha.38", "2.0.0-alpha.39", "2.0.0-alpha.40"].includes(currentVersion));
 assert.match(read("apps/mobile/constants/version.ts"), new RegExp(currentVersion.replaceAll(".", "\\.")));
 assert.equal(JSON.parse(read("apps/mobile/app.json")).expo.version, currentVersion);
 
@@ -105,7 +105,8 @@ for (const triplet of ["[0, 0, 8]", "[0, 1, 16]", "[0, 2, 8]", "[1, 0, 12]", "[1
 assert.match(sample, /matrixTotal: "144"/);
 assert.match(sample, /expectedTotal: "144"/);
 assert.match(sample, /totalsMatch: true/);
-for (const token of ["앞면", "뒷면", "IVORY", "NAVY", "BLACK", "실무형 제품 도식", "앞여밈", "허리 스트링", "소매 커프스"]) assert.ok(svg.includes(token), `sample SVG missing ${token}`);
+for (const token of ["앞면", "뒷면", "실무형 제품 도식", "앞여밈", "허리 스트링", "소매 커프스"]) assert.ok(svg.includes(token), `sample SVG missing ${token}`);
+assert.doesNotMatch(svg, />IVORY<|>NAVY<|>BLACK<|색상 기준/);
 assert.doesNotMatch(svg, /DEV SAMPLE|A4 PREVIEW SAMPLE/);
 assert.doesNotMatch(svg, /(?:href|src)=["']https?:\/\//i);
 assert.match(samplePage, /assertLocalOnlyRouteHost\(\)/);

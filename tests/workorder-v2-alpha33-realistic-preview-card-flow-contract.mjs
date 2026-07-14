@@ -17,7 +17,7 @@ const svg = read("public/dev-samples/linen-round-dress-sketch.svg");
 const css = read("components/workorder/preview/IssuedWorkOrderPreview.module.css");
 
 const currentVersion = read("lib/constants/version.ts").match(/APP_VERSION\s*=\s*"([^"]+)"/)?.[1];
-assert.ok(["2.0.0-alpha.38", "2.0.0-alpha.39"].includes(currentVersion));
+assert.ok(["2.0.0-alpha.38", "2.0.0-alpha.39", "2.0.0-alpha.40"].includes(currentVersion));
 assert.match(read("apps/mobile/constants/version.ts"), new RegExp(currentVersion.replaceAll(".", "\\.")));
 assert.equal(JSON.parse(read("apps/mobile/app.json")).expo.version, currentVersion);
 assert.equal(JSON.parse(read("apps/mobile/package.json")).version, currentVersion);
@@ -51,7 +51,8 @@ for (const token of [
 for (const forbidden of ["alpha.25", "alpha.26", "Command runtime", "synthetic", "approved dev/test", "apparel.top"]) {
   assert.ok(!`${sample}\n${sampleComponent}\n${svg}`.includes(forbidden), `user-facing sample contains ${forbidden}`);
 }
-for (const token of ["앞면", "뒷면", "IVORY", "NAVY", "BLACK", "실무형 제품 도식"]) assert.ok(svg.includes(token), `product board missing ${token}`);
+for (const token of ["앞면", "뒷면", "실무형 제품 도식"]) assert.ok(svg.includes(token), `product board missing ${token}`);
+assert.doesNotMatch(svg, />IVORY<|>NAVY<|>BLACK<|색상 기준/);
 assert.doesNotMatch(svg, /(?:href|src)=["']https?:\/\//i);
 assert.doesNotMatch(svg, /DEV SAMPLE|A4 PREVIEW SAMPLE/);
 for (const triplet of ["[0, 0, 8]", "[0, 1, 16]", "[0, 2, 8]", "[1, 0, 12]", "[1, 1, 24]", "[1, 2, 12]", "[2, 0, 16]", "[2, 1, 32]", "[2, 2, 16]"]) assert.ok(sample.includes(triplet));

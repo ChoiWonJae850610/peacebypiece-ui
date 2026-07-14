@@ -372,14 +372,18 @@ export type GeneratedDocumentReadModel = {
   readonly id: GeneratedDocumentId;
   readonly revisionId: WorkOrderRevisionId;
   readonly documentType: WorkOrderDocumentType;
+  readonly generationNumber: number;
   readonly displayDocumentNumber: DisplayDocumentNumber;
   readonly status: GeneratedDocumentStatus;
   readonly rendererVersion: string;
   readonly documentSchemaVersion: number;
+  readonly fileSizeBytes: number | null;
   readonly generatedAt: IsoDateTime | null;
   readonly revokedAt: IsoDateTime | null;
   readonly accessTokenAvailable: boolean;
   readonly previewUrl: ControlledFileUrl | null;
+  readonly inlineUrl: ControlledFileUrl | null;
+  readonly downloadUrl: ControlledFileUrl | null;
 };
 
 export type WorkOrderDocumentsReadModel = {

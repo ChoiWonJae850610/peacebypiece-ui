@@ -1,5 +1,9 @@
 # PeaceByPiece R2 Storage Policy
 
+## WAFL v2 alpha.40 implementation note
+
+Authenticated internal PDF delivery resolves generated-document metadata under the session tenant and `workorder.read`, then performs a server-side GET with MIME, byte length, SHA-256, and PDF-header checks. The client receives PDF bytes only; object key and signed URL remain hidden. Alpha.40 performs no PUT, DELETE, overwrite, generated-document mutation, or production access.
+
 ## WAFL v2 alpha.39 preparation note
 
 The external viewer revalidates its signed session and active access-token row, then retrieves the retained alpha.38 PDF server-side and verifies MIME, size, SHA, and PDF header. Client redirects, public bucket access, object-key responses, PUT, DELETE, overwrite, and production access are forbidden in alpha.39.

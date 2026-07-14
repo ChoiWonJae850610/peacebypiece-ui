@@ -252,13 +252,21 @@ const alpha39ApiPaths = [
   "app/api/v2/work-orders/documents/[documentRef]/access-tokens/[tokenId]/revoke/route.ts",
   "app/api/v2/work-orders/documents/[documentRef]/access-tokens/[tokenId]/rotate/route.ts",
 ];
+const alpha40ApiPaths = ["app/api/v2/work-orders/documents/[documentRef]/file/route.ts"];
 const alpha39ContractExists = fs.existsSync(path.join(root, "tests/workorder-v2-alpha39-document-viewer-security-contract.mjs"));
+const alpha40ContractExists = fs.existsSync(path.join(root, "tests/workorder-v2-alpha40-preview-output-and-action-density-contract.mjs"));
 const alpha30ContractExists = fs.existsSync(path.join(root, "tests/workorder-v2-alpha30-factory-instruction-contract.mjs"));
 const alpha25ContractExists = fs.existsSync(path.join(root, "tests/workorder-v2-alpha25-command-api-contract.mjs"));
 const alpha26ContractExists = fs.existsSync(path.join(root, "tests/workorder-v2-alpha26-material-command-api-contract.mjs"));
 const alpha27ContractExists = fs.existsSync(path.join(root, "tests/workorder-v2-alpha27-revision-issue-command-contract.mjs"));
 const alpha28ContractExists = fs.existsSync(path.join(root, "tests/workorder-v2-alpha28-issued-preview-contract.mjs"));
-if (alpha39ContractExists && (appVersion.includes('APP_VERSION = "2.0.0-alpha.38"') || appVersion.includes('APP_VERSION = "2.0.0-alpha.39"'))) {
+if (alpha40ContractExists && appVersion.includes('APP_VERSION = "2.0.0-alpha.40"')) {
+  assert.deepEqual(
+    apiChanges.filter((change) => !alpha40ApiPaths.some((allowedPath) => change.endsWith(allowedPath))),
+    [],
+    "alpha.40 may add only the authenticated generated-document file route under app/api",
+  );
+} else if (alpha39ContractExists && (appVersion.includes('APP_VERSION = "2.0.0-alpha.38"') || appVersion.includes('APP_VERSION = "2.0.0-alpha.39"'))) {
   assert.deepEqual(
     apiChanges.filter((change) => !alpha39ApiPaths.some((allowedPath) => change.endsWith(allowedPath))),
     [],

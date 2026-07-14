@@ -1,5 +1,12 @@
 # Pending Tests — 0.24.21.19
 
+## WAFL v2 alpha.40 completed automation and remaining user QA
+
+- Automated PASS: 320/390/768 material action density and overflow, two Expo Web popup entry points, rapid-click popup suppression, sample Preview image/color de-duplication, three-page sample PDF inspection, authenticated actual PDF inline/download integrity, tenant blocking, and browser console warning/error zero.
+- Automated PASS: actual retained PDF inline/download size and SHA match, R2 GET 2, DB/R2 write 0, generated-document/token mutation 0, and production access 0.
+- User QA retained: physical iPhone/iPad/Galaxy touch comfort, downloaded PDF opening in native viewers, and visual judgment of the compact action spacing.
+- Production PDF delivery, production R2, actual customer documents, new PDF generation, embedded QR generation, and mobile API persistence remain NOT_RUN.
+
 ## WAFL v2 alpha.39 completed automation and remaining manual QA
 
 - Automated PASS: migration 011 ledger 11/11 and function ACL, two hash-only token rows, three bounded updates, five events, three R2 GETs, inline/download integrity, immediate revoke/rotation, generic NOT_FOUND, access accounting, tenant isolation, and generated-document/R2/production mutation 0.
