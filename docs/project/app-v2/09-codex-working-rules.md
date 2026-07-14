@@ -1,4 +1,14 @@
-# WAFL v2 App-first Codex Working Rules - 2.0.0-alpha.36
+# WAFL v2 App-first Codex Working Rules - 2.0.0-alpha.37
+
+## Alpha.37 immutable PDF foundation boundary
+
+- The only canonical v2 work-instruction PDF source is an issued/finalized `WorkOrderIssuedPreviewReadModel` rendered by `IssuedWorkOrderDocument`; do not substitute the legacy work-order or order-request PDF pipelines.
+- Snapshot JSON uses deterministic object-key sorting, domain array order, ISO dates, and SHA-256. Never persist signed URLs, secrets, credentials, temporary paths, or binary buffers in the snapshot.
+- Local Chromium and excluded local object-store evidence are allowed. A generated-document DB write, R2 read/write, Worker execution, QR/access-token creation, or production access is forbidden until separately approved alpha.38 work.
+- Generation keys are immutable and tenant/work-order scoped. Reusing a key for a different generation is forbidden.
+- Generation-number allocation must hold a revision/document-type concurrency lock; `MAX + 1` without that lock is forbidden.
+- Render/upload/finalize partial states require bounded reconciliation. Never auto-delete an uncertain R2 object.
+- Report this checkpoint as `LEVEL_4_FOUNDATION_VERIFIED`, not persisted PDF/R2 lifecycle completion.
 
 ## Alpha.36 material summary and card-separation boundary
 
@@ -130,11 +140,12 @@ Before any App-first file modification, read:
 34. `docs/project/app-v2/31-mobile-preview-sample-and-material-footer-evidence.md`
 35. `docs/project/app-v2/32-mobile-material-compact-input-evidence.md`
 36. `docs/project/app-v2/33-mobile-material-card-separation-and-summary-evidence.md`
-37. `docs/project/v2/00-start-here.md` through `docs/project/v2/14-operational-policy-absorption.md`
-38. `docs/project/25-korean-unicode-encoding-standard.md`
-39. `docs/project/32-product-completion-and-ui-evidence-standard.md`
-40. `docs/project/26-final-policy-decisions-and-master-todo.md`
-41. `docs/project/31-pre-codex-integrated-master-plan.md`
+37. `docs/project/app-v2/34-issued-revision-pdf-generation-foundation-evidence.md`
+38. `docs/project/v2/00-start-here.md` through `docs/project/v2/14-operational-policy-absorption.md`
+39. `docs/project/25-korean-unicode-encoding-standard.md`
+40. `docs/project/32-product-completion-and-ui-evidence-standard.md`
+41. `docs/project/26-final-policy-decisions-and-master-todo.md`
+42. `docs/project/31-pre-codex-integrated-master-plan.md`
 
 ## 4. Newest rule
 

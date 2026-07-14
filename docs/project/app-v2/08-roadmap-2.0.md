@@ -1,4 +1,14 @@
-# WAFL v2 App-first Roadmap 2.0 - 2.0.0-alpha.36
+# WAFL v2 App-first Roadmap 2.0 - 2.0.0-alpha.37
+
+## 2.0.0-alpha.37 result
+
+- Use the issued/finalized `WorkOrderIssuedPreviewReadModel` and existing `IssuedWorkOrderDocument` as the single canonical PDF source.
+- Add stable snapshot serialization/SHA, revision asset manifest/resolver, local Chromium renderer, PDF inspection, local object store, deterministic R2 key plan, and a write-disabled generated-document repository/lifecycle SQL contract.
+- Local runtime PASS: 197,751 bytes, three pages, landscape + portrait + portrait, Korean text/image/matrix 144, blank/clipping/console/network error 0, stable snapshot SHA and repeat structure.
+- Keep actual issued DB rendering explicit as `SKIPPED_WITH_REASON`; accepted issued Preview evidence is retained without loading credentials or inventing sample fallback.
+- Reuse migrations 004/005 with no migration 010. DB data/R2/Worker/production mutation remains false; alpha.38 actual metadata/upload requires separate approval.
+- Verification level: `LEVEL_4_FOUNDATION_VERIFIED`.
+- Evidence: `34-issued-revision-pdf-generation-foundation-evidence.md`.
 
 ## 2.0.0-alpha.36 result
 

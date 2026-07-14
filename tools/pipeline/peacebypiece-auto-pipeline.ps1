@@ -1301,6 +1301,57 @@ function AddAlpha36MaterialCardSeparationRepoStateSections {
     AddRepoStateSection -Lines $Lines -Title "Alpha.36 DB / API / R2 / Worker / PDF Lifecycle / Production Mutation:" -Values @("false")
 }
 
+function AddAlpha37PdfFoundationRepoStateSections {
+    param(
+        [System.Collections.Generic.List[string]]$Lines,
+        [string]$Version
+    )
+
+    if ($Version -ne "2.0.0-alpha.37") {
+        return
+    }
+
+    $manifest = $null
+    $manifestPath = Get-ChildItem -LiteralPath (Join-Path $ProjectDir ".tmp\wafl-v2-alpha37") -File -Filter "manifest.json" -Recurse -ErrorAction SilentlyContinue |
+        Sort-Object LastWriteTime -Descending |
+        Select-Object -First 1
+    if ($null -ne $manifestPath) {
+        try {
+            $manifest = Get-Content -LiteralPath $manifestPath.FullName -Raw -Encoding UTF8 | ConvertFrom-Json
+        }
+        catch {
+            $manifest = $null
+        }
+    }
+
+    $alpha37FeatureCommit = [string](InvokeLocalRepoGitOutput -Arguments @("log", "-1", "--format=%H", "-S", "2.0.0-alpha.37", "--", "lib/constants/version.ts") | Select-Object -First 1)
+    if (-not [string]::IsNullOrWhiteSpace($alpha37FeatureCommit)) {
+        $alpha37BaselineCommit = [string](InvokeLocalRepoGitOutput -Arguments @("rev-parse", "$alpha37FeatureCommit^" ) | Select-Object -First 1)
+        $alpha37ChangedPaths = @(InvokeLocalRepoGitOutput -Arguments @("diff", "--name-only", "$alpha37BaselineCommit..HEAD") | Where-Object { -not [string]::IsNullOrWhiteSpace([string]$_) })
+        AddRepoStateSection -Lines $Lines -Title "Alpha.37 Changed Paths:" -Values $alpha37ChangedPaths
+    }
+
+    $approvalDirectory = Join-Path $RepoStatusDir "Approval_Handoff"
+    AddRepoStateSection -Lines $Lines -Title "Alpha.37 Foundation Verification:" -Values @($(if ($null -ne $manifest -and $manifest.result -eq "PASS") { "LEVEL_4_FOUNDATION_VERIFIED" } else { "MISSING_OR_INVALID_RUNTIME_MANIFEST" }))
+    AddRepoStateSection -Lines $Lines -Title "Alpha.37 Runtime Manifest:" -Values @($(if ($null -ne $manifestPath) { $manifestPath.FullName } else { "missing" }))
+    AddRepoStateSection -Lines $Lines -Title "Alpha.37 Snapshot Schema Version:" -Values @($(if ($null -ne $manifest) { [string]$manifest.dtoSchemaVersion } else { "unknown" }))
+    AddRepoStateSection -Lines $Lines -Title "Alpha.37 Renderer Version:" -Values @($(if ($null -ne $manifest) { [string]$manifest.rendererVersion } else { "unknown" }))
+    AddRepoStateSection -Lines $Lines -Title "Alpha.37 Snapshot SHA-256:" -Values @($(if ($null -ne $manifest) { [string]$manifest.snapshotSha256 } else { "unknown" }))
+    AddRepoStateSection -Lines $Lines -Title "Alpha.37 PDF SHA-256:" -Values @($(if ($null -ne $manifest) { [string]$manifest.pdfSha256 } else { "unknown" }))
+    AddRepoStateSection -Lines $Lines -Title "Alpha.37 PDF File Size Bytes:" -Values @($(if ($null -ne $manifest) { [string]$manifest.fileSizeBytes } else { "unknown" }))
+    AddRepoStateSection -Lines $Lines -Title "Alpha.37 PDF Page Count / Orientation:" -Values @($(if ($null -ne $manifest) { "$($manifest.pageCount) / $($manifest.pageOrientations -join ', ')" } else { "unknown" }))
+    AddRepoStateSection -Lines $Lines -Title "Alpha.37 Asset Resolution:" -Values @($(if ($null -ne $manifest) { "PASS - $($manifest.assetResolution.filename); $($manifest.assetResolution.byteLength) bytes; SHA verified" } else { "unknown" }))
+    AddRepoStateSection -Lines $Lines -Title "Alpha.37 Deterministic Object Key:" -Values @($(if ($null -ne $manifest) { "PASS - $($manifest.objectKeyPlan)" } else { "unknown" }))
+    AddRepoStateSection -Lines $Lines -Title "Alpha.37 Lifecycle Plan:" -Values @("PASS - prepare/render-upload/finalize/failure boundaries; write-disabled alpha.37 repository")
+    AddRepoStateSection -Lines $Lines -Title "Alpha.37 Idempotency / Concurrency:" -Values @("PASS - scoped receipt, deterministic generation identity, advisory lock before bounded MAX+1, unique fallback")
+    AddRepoStateSection -Lines $Lines -Title "Alpha.37 Migration Decision:" -Values @("none - existing migrations 004/005 are sufficient")
+    AddRepoStateSection -Lines $Lines -Title "Alpha.37 Actual Issued Scenario:" -Values @($(if ($null -ne $manifest) { "$($manifest.actualIssuedScenario.result) - $($manifest.actualIssuedScenario.reason)" } else { "unknown" }))
+    AddRepoStateSection -Lines $Lines -Title "Alpha.38 Approval Handoff ZIP:" -Values @((Join-Path $approvalDirectory "peacebypiece-checkpoint-2.0.0-alpha.38-pending-db-r2-approval.zip"))
+    AddRepoStateSection -Lines $Lines -Title "Alpha.38 Approval Handoff Repo-State:" -Values @((Join-Path $approvalDirectory "repo-state-checkpoint-2.0.0-alpha.38-pending-db-r2-approval.txt"))
+    AddRepoStateSection -Lines $Lines -Title "Alpha.37 DB Migration / Data Mutation:" -Values @("false / false")
+    AddRepoStateSection -Lines $Lines -Title "Alpha.37 R2 Mutation / Worker Execution / Production Mutation:" -Values @("false / false / false")
+}
+
 function NewLocalRepoBuildResultFile {
     param(
         [string]$Version,
@@ -1342,6 +1393,7 @@ function NewLocalRepoBuildResultFile {
     AddProductUiRuntimeVerificationRepoStateSections -Lines $lines -VerificationSummary $VerificationSummary
     AddAlpha35MaterialCompactInputRepoStateSections -Lines $lines -Version $Version
     AddAlpha36MaterialCardSeparationRepoStateSections -Lines $lines -Version $Version
+    AddAlpha37PdfFoundationRepoStateSections -Lines $lines -Version $Version
     if ($Version -eq "2.0.0-alpha.31") {
         AddRepoStateSection -Lines $lines -Title "Alpha.31 Product Verification:" -Values @("LEVEL_4_PRODUCT_VERIFIED - desktop/tablet/mobile/inline interaction evidence")
         AddRepoStateSection -Lines $lines -Title "Alpha.31 Sample Route Guard:" -Values @("PASS - localhost 200; Host www.wafl.co.kr 404")
@@ -1538,6 +1590,7 @@ function NewLocalRepoStateFile {
     AddProductUiRuntimeVerificationRepoStateSections -Lines $lines -VerificationSummary $VerificationSummary
     AddAlpha35MaterialCompactInputRepoStateSections -Lines $lines -Version $Version
     AddAlpha36MaterialCardSeparationRepoStateSections -Lines $lines -Version $Version
+    AddAlpha37PdfFoundationRepoStateSections -Lines $lines -Version $Version
     if ($Version -eq "2.0.0-alpha.31") {
         $alpha31FeatureCommit = [string](InvokeLocalRepoGitOutput -Arguments @("log", "-1", "--format=%H", "-S", "2.0.0-alpha.31", "--", "lib/constants/version.ts") | Select-Object -First 1)
         $alpha31BaselineCommit = [string](InvokeLocalRepoGitOutput -Arguments @("rev-parse", "$alpha31FeatureCommit^" ) | Select-Object -First 1)

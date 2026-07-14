@@ -5,9 +5,9 @@
 This document starts the WAFL v2 App-first line.
 
 Previous baseline: `0.30.0-alpha.27`.
-Current baseline: `2.0.0-alpha.36`.
+Current baseline: `2.0.0-alpha.37`.
 
-Alpha.36 keeps the Expo surface mock-only, corrects the final order summary and empty-field display, and adds subtle separation between fabric/accessory cards without increasing compact body height. Preview rendering and generated-document/PDF/R2 lifecycle are unchanged and remain a separate alpha.37 boundary.
+Alpha.37 turns the accepted issued Preview into an immutable, stable-hashed PDF snapshot and proves a real local Chromium PDF binary plus the future DB/R2 lifecycle boundary. It performs no generated-document DB write, R2 operation, Worker execution, or production access; those remain separately approved alpha.38 work.
 
 The customer-facing product direction moves from a Next.js-first web showroom implementation path to an Expo React Native mobile/tablet app-first path.
 
@@ -111,6 +111,7 @@ docs/project/app-v2/
   31-mobile-preview-sample-and-material-footer-evidence.md
   32-mobile-material-compact-input-evidence.md
   33-mobile-material-card-separation-and-summary-evidence.md
+  34-issued-revision-pdf-generation-foundation-evidence.md
 ```
 
 The alpha.19 documents are design and read-only audit authority. They do not authorize schema migration, API replacement, seed execution, DB/R2 mutation, or PDF Worker changes.

@@ -1,0 +1,19 @@
+import "server-only";
+
+export const WORK_ORDER_PDF_RENDERER_VERSION = "wafl-work-instruction-pdf/1";
+export const WORK_ORDER_PDF_DTO_SCHEMA_VERSION = 1 as const;
+export const WORK_ORDER_PDF_CONTENT_TYPE = "application/pdf";
+export const WORK_ORDER_PDF_MAX_FILE_SIZE_BYTES = 10 * 1024 * 1024;
+export const WORK_ORDER_PDF_DOCUMENT_TYPE = "factory_instruction" as const;
+export const WORK_ORDER_PDF_PROVIDER_LOCAL_CHROMIUM = "local-chromium" as const;
+
+export const WORK_ORDER_PDF_ALLOWED_WORK_ORDER_STATUSES = new Set([
+  "issued",
+  "revised",
+  "completed",
+]);
+
+export const WORK_ORDER_PDF_ALLOWED_REVISION_STATUSES = new Set([
+  "finalized",
+  "superseded",
+]);

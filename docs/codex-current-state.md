@@ -1,3 +1,17 @@
+# 2.0.0-alpha.37 Issued Revision PDF Generation Foundation
+
+- APP_VERSION and mobile mirrors are `2.0.0-alpha.37`.
+- The canonical PDF source is the immutable `WorkOrderIssuedPreviewReadModel` rendered by the existing `IssuedWorkOrderDocument`; legacy work-order and order-request renderers remain separate.
+- Stable canonical snapshot serialization produced SHA-256 `f1c5a20776a9199160b8b920209e9ec88336de99d04322e1cd7eb665cc419b07` on both runs.
+- Local Chromium produced a 197,751-byte, three-page PDF with landscape cover and two portrait continuations. Korean text, repository-owned image, matrix total 144, blank/clipping/console/network error count 0 passed.
+- PDF byte SHA differed between Chromium runs because metadata is not canonicalized; file size, pages, orientation, page text lengths, and structure were identical.
+- The deterministic key plan is `companies/{companyId}/workorders/{workOrderId}/pdf/{generatedDocumentId}.pdf`. The local object store uses create-new semantics under excluded `.tmp`; the R2 adapter is not instantiated.
+- Migrations 004/005 already support the planned generated-document lifecycle. No migration 010 is proposed.
+- Actual issued DB rendering is `SKIPPED_WITH_REASON`: alpha.37 does not load DB credentials. Accepted alpha.28/30 immutable Preview evidence remains authoritative, and sample fallback is not reported as actual data.
+- Verification level: `LEVEL_4_FOUNDATION_VERIFIED`, not persisted PDF/R2 lifecycle verification.
+- DB data mutation, R2 mutation, Worker execution, and production access are false. Alpha.38 requires separate approval for one pending row, one R2 PDF object, one finalize update, one event, and the exact receipt delta.
+- Evidence: `docs/project/app-v2/34-issued-revision-pdf-generation-foundation-evidence.md`.
+
 # 2.0.0-alpha.36 Material Summary and Card Separation
 
 - APP_VERSION and mobile mirrors are `2.0.0-alpha.36`.

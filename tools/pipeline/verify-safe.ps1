@@ -924,7 +924,19 @@ $profileCommands = @{
                 "tests/workorder-v2-alpha32-inline-density-sample-print-contract.mjs",
                 "tests/workorder-v2-alpha33-realistic-preview-card-flow-contract.mjs",
                 "tests/workorder-v2-alpha34-mobile-preview-footer-contract.mjs",
-                "tests/workorder-v2-alpha35-material-compact-input-contract.mjs"
+                "tests/workorder-v2-alpha35-material-compact-input-contract.mjs",
+                "app/dev/workorder-pdf-snapshot/route.ts",
+                "lib/generated-documents/work-order-pdf/constants.ts",
+                "lib/generated-documents/work-order-pdf/snapshot.ts",
+                "lib/generated-documents/work-order-pdf/assets.ts",
+                "lib/generated-documents/work-order-pdf/sampleFoundation.ts",
+                "lib/generated-documents/work-order-pdf/renderer.ts",
+                "lib/generated-documents/work-order-pdf/localChromiumRenderer.mts",
+                "lib/generated-documents/work-order-pdf/objectStore.ts",
+                "lib/generated-documents/work-order-pdf/localFilesystemObjectStore.mts",
+                "lib/generated-documents/work-order-pdf/generationRepository.ts",
+                "scripts/run-wafl-v2-alpha37-pdf-foundation.mjs",
+                "tests/workorder-v2-alpha37-pdf-generation-foundation-contract.mjs"
             )
         },
         @{ Name = "mobile typecheck"; Command = "npm"; Arguments = @("--prefix", "apps/mobile", "run", "typecheck") },
@@ -947,6 +959,7 @@ $profileCommands = @{
         @{ Name = "workorder v2 alpha.34 mobile Preview and material footer static contract"; Command = "node"; Arguments = @("tests/workorder-v2-alpha34-mobile-preview-footer-contract.mjs") },
         @{ Name = "workorder v2 alpha.35 material compact input static contract"; Command = "node"; Arguments = @("tests/workorder-v2-alpha35-material-compact-input-contract.mjs") },
         @{ Name = "workorder v2 alpha.36 material card separation and summary static contract"; Command = "node"; Arguments = @("tests/workorder-v2-alpha36-material-card-separation-and-summary-contract.mjs") },
+        @{ Name = "workorder v2 alpha.37 PDF generation foundation static contract"; Command = "node"; Arguments = @("tests/workorder-v2-alpha37-pdf-generation-foundation-contract.mjs") },
         @{ Name = "app-v2 document links and Mermaid contract"; Command = "node"; Arguments = @("tests/app-v2-document-links-contract.mjs") },
         @{ Name = "unicode encoding contract"; Command = "node"; Arguments = @("tests/unicode-encoding-contract.mjs") },
         @{ Name = "PowerShell encoding contract"; Command = "node"; Arguments = @("tests/pipeline-powershell-encoding-contract.mjs") },

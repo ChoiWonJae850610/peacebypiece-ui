@@ -1,5 +1,13 @@
 # Final Policy Decisions and Master TODO
 
+## WAFL v2 alpha.37 confirmed immutable PDF foundation contract
+
+- The issued/finalized Preview Read Model and approved `IssuedWorkOrderDocument` layout are the canonical work-instruction PDF source. Legacy PDF builders are not substituted.
+- Snapshot serialization and SHA, renderer/DTO versions, revision asset manifest, local Chromium PDF inspection, and immutable object-key planning are required before DB/R2 persistence.
+- Existing migrations 004/005 are sufficient for the planned generated-document lifecycle; no migration is added for convenience.
+- Alpha.37 performs no generated-document DB write, R2 operation, Worker execution, QR/access-token creation, or production access. Alpha.38 requires a separate exact mutation approval.
+- The foundation result is `LEVEL_4_FOUNDATION_VERIFIED`; it is not persisted PDF/R2 lifecycle completion.
+
 ## WAFL v2 alpha.36 confirmed material-card display contract
 
 - The one final material row summary names all three values: order quantity, unit price, and amount.

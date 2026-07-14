@@ -3,6 +3,10 @@
 Version: 0.24.21.15  
 Status: Canonical PDF product policy and implementation contract
 
+## WAFL v2 alpha.37 implementation note
+
+For the App-first v2 issued work instruction, the current immutable Preview Read Model and `IssuedWorkOrderDocument` override legacy v1 layout assumptions. Alpha.37 proves only local Chromium binary generation and inspection; persisted metadata, R2 upload, Worker execution, QR/access tokens, and production generation remain unexecuted.
+
 ## 1. Scope
 
 WAFL delivers workorder and supplier-order documents as PDF files. It does not provide screen sharing, anonymous share links, or customer-content access to system administrators.
