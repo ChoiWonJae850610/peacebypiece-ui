@@ -3,6 +3,10 @@
 Version: 0.24.21.15  
 Status: Canonical PDF product policy and implementation contract
 
+## WAFL v2 alpha.39 preparation note
+
+The controlled viewer serves the retained immutable alpha.38 PDF through a signed short viewer session and server-side R2 GET. It never redirects a client to a signed R2 URL and never exposes document UUIDs or storage keys. Alpha.39 does not rewrite or overwrite the PDF; QR insertion into a new PDF generation remains alpha.40.
+
 ## WAFL v2 alpha.38 implementation note
 
 The approved dev/test lifecycle now persists one immutable issued-Preview PDF using a PostgreSQL-generated document UUID, exact tenant/work-order R2 key, signed PUT/GET integrity verification, generated finalize, and one event. The successful PDF is retained. This evidence does not authorize production generation, QR, viewer tokens, revoke, delete, or regeneration policy changes.

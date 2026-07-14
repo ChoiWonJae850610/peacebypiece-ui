@@ -16,10 +16,11 @@ const sample = read("lib/internal/samples/issuedWorkOrderPreviewSample.ts");
 const svg = read("public/dev-samples/linen-round-dress-sketch.svg");
 const css = read("components/workorder/preview/IssuedWorkOrderPreview.module.css");
 
-assert.match(read("lib/constants/version.ts"), /2\.0\.0-alpha\.38/);
-assert.match(read("apps/mobile/constants/version.ts"), /2\.0\.0-alpha\.38/);
-assert.equal(JSON.parse(read("apps/mobile/app.json")).expo.version, "2.0.0-alpha.38");
-assert.equal(JSON.parse(read("apps/mobile/package.json")).version, "2.0.0-alpha.38");
+const currentVersion = read("lib/constants/version.ts").match(/APP_VERSION\s*=\s*"([^"]+)"/)?.[1];
+assert.ok(["2.0.0-alpha.38", "2.0.0-alpha.39"].includes(currentVersion));
+assert.match(read("apps/mobile/constants/version.ts"), new RegExp(currentVersion.replaceAll(".", "\\.")));
+assert.equal(JSON.parse(read("apps/mobile/app.json")).expo.version, currentVersion);
+assert.equal(JSON.parse(read("apps/mobile/package.json")).version, currentVersion);
 
 assert.match(samplePage, /assertLocalOnlyRouteHost\(\)/);
 assert.match(uiCatalog, /href="\/dev\/workorder-preview-sample"/);

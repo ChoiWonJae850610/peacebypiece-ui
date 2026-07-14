@@ -145,6 +145,8 @@ for (const token of [
   "db/v2/migrations/008_v2_tenant_document_number_settings_function.sql",
   '$ExpectedAppVersion -eq "2.0.0-alpha.38"',
   "db/v2/migrations/010_v2_generated_document_receipt_link.sql",
+  '$ExpectedAppVersion -eq "2.0.0-alpha.39"',
+  "db/v2/migrations/011_v2_document_access_viewer_functions.sql",
 ]) {
   if (!finish.includes(token)) {
     throw new Error(`Missing finish-version billing migration safety token: ${token}`);

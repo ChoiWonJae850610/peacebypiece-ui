@@ -5,9 +5,11 @@
 This document starts the WAFL v2 App-first line.
 
 Previous baseline: `0.30.0-alpha.27`.
-Current baseline: `2.0.0-alpha.38`.
+Current baseline: `2.0.0-alpha.39`.
 
 Alpha.38 applies the approved native-UUID receipt link to dev/test, persists one immutable generated-document lifecycle, uploads and verifies one actual issued PDF in R2, and proves duplicate no-op plus tenant isolation. The retained DB/R2 result is dev/test evidence only; QR/viewer/access-token work remains alpha.39.
+
+Alpha.39 applies the two bounded FORCE-RLS viewer functions and verifies opaque hash-only links, fragment exchange, secure short sessions, inline/download delivery, QR generation, revoke/rotation, replay, and tenant isolation against the retained alpha.38 PDF. The dev/test token rows, receipt, events, and active replacement link are retained; generated-document/R2 mutation and production access are zero. See `36-document-viewer-security-evidence.md`.
 
 The customer-facing product direction moves from a Next.js-first web showroom implementation path to an Expo React Native mobile/tablet app-first path.
 
@@ -113,6 +115,7 @@ docs/project/app-v2/
   33-mobile-material-card-separation-and-summary-evidence.md
   34-issued-revision-pdf-generation-foundation-evidence.md
   35-generated-document-db-r2-runtime-evidence.md
+  36-document-viewer-security-evidence.md
 ```
 
 The alpha.19 documents are design and read-only audit authority. They do not authorize schema migration, API replacement, seed execution, DB/R2 mutation, or PDF Worker changes.

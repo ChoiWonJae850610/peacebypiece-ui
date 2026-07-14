@@ -1,5 +1,9 @@
 # WAFL v2 PDF / Share Spec - 0.30.0-alpha.7
 
+## App-first alpha.39 preparation note
+
+Controlled links use one opaque 32-byte HMAC output encoded as base64url and store only its SHA-256 hash. Viewer URLs carry the raw token only in the fragment, exchange it by bounded POST, remove the fragment, and use a signed HttpOnly session for PDF inline/download. Default expiry is seven days; multiple links, revoke, rotation, access count, first-view event, and QR of the same viewer URL are implemented behind separate migration/runtime approval gates.
+
 ## App-first alpha.38 implementation note
 
 The App-first line now has one approved dev/test immutable issued-PDF persistence result with DB-generated UUID metadata and verified R2 bytes. External viewer, QR, `document_access_tokens`, expiry, revoke, and public delivery remain unimplemented alpha.39 scope; internal UUID and storage key must not become viewer payloads.

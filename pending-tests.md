@@ -1,9 +1,10 @@
 # Pending Tests — 0.24.21.19
 
-## WAFL v2 alpha.38 retained manual QA
+## WAFL v2 alpha.39 completed automation and remaining manual QA
 
-- Confirm the retained dev/test PDF visually from an approved internal retrieval path when alpha.39 viewer work exists; no public viewer exists in alpha.38.
-- Verify QR/viewer token expiry, revoke, generic NOT_FOUND, UUID/key non-disclosure, and access accounting in alpha.39.
+- Automated PASS: migration 011 ledger 11/11 and function ACL, two hash-only token rows, three bounded updates, five events, three R2 GETs, inline/download integrity, immediate revoke/rotation, generic NOT_FOUND, access accounting, tenant isolation, and generated-document/R2/production mutation 0.
+- Automated PASS: viewer fragment removal and no UUID/key/hash/signed-URL response contract. Final physical browser presentation and network-panel review remain user QA.
+- Scan the generated QR with a real phone camera. Static matrix/SVG evidence must not be reported as a physical scan PASS.
 - Production migration, production R2, real customer documents, mobile document download/share, and device PDF opening remain NOT_RUN.
 
 ## 자동 검증

@@ -13,11 +13,12 @@ const actualRenderer = read("components/workorder/preview/IssuedWorkOrderDocumen
 const samplePage = read("app/dev/workorder-preview-sample/page.tsx");
 const localGuard = read("lib/internal/localOnlyRouteGuard.ts");
 
-assert.match(read("lib/constants/version.ts"), /2\.0\.0-alpha\.38/);
-assert.match(read("apps/mobile/constants/version.ts"), /2\.0\.0-alpha\.38/);
-assert.equal(JSON.parse(read("apps/mobile/app.json")).expo.version, "2.0.0-alpha.38");
-assert.equal(JSON.parse(read("apps/mobile/package.json")).version, "2.0.0-alpha.38");
-assert.equal(JSON.parse(read("apps/mobile/package-lock.json")).version, "2.0.0-alpha.38");
+const currentVersion = read("lib/constants/version.ts").match(/APP_VERSION\s*=\s*"([^"]+)"/)?.[1];
+assert.ok(["2.0.0-alpha.38", "2.0.0-alpha.39"].includes(currentVersion));
+assert.match(read("apps/mobile/constants/version.ts"), new RegExp(currentVersion.replaceAll(".", "\\.")));
+assert.equal(JSON.parse(read("apps/mobile/app.json")).expo.version, currentVersion);
+assert.equal(JSON.parse(read("apps/mobile/package.json")).version, currentVersion);
+assert.equal(JSON.parse(read("apps/mobile/package-lock.json")).version, currentVersion);
 
 for (const token of ['kind: "issued-document"', 'kind: "dev-realistic-sample"']) assert.match(helper, new RegExp(token));
 assert.match(helper, /\/workspace\/documents\/\$\{encodeURIComponent\(identity\.issuedDocumentNumber\)\}\/preview/);

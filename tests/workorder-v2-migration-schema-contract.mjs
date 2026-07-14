@@ -17,6 +17,7 @@ const expectedFiles = [
   "008_v2_tenant_document_number_settings_function.sql",
   "009_v2_workorder_factory_instruction_fields.sql",
   "010_v2_generated_document_receipt_link.sql",
+  "011_v2_document_access_viewer_functions.sql",
 ];
 
 const actualFiles = fs
@@ -36,7 +37,9 @@ const executableSql = combined
   .replace(/^\s*--.*$/gm, "");
 
 for (const { file, source } of sources) {
-  if (file === "010_v2_generated_document_receipt_link.sql") {
+  if (file === "011_v2_document_access_viewer_functions.sql") {
+    assert.ok(source.includes("EXECUTION IS PROHIBITED WITHOUT THE APPROVED ALPHA.39 DEV/TEST GATE"), `${file} missing alpha.39 execution prohibition`);
+  } else if (file === "010_v2_generated_document_receipt_link.sql") {
     assert.ok(source.includes("EXECUTION IS PROHIBITED WITHOUT THE APPROVED ALPHA.38 DEV/TEST GATE"), `${file} missing alpha.38 execution prohibition`);
   } else if (file === "009_v2_workorder_factory_instruction_fields.sql") {
     assert.ok(source.includes("EXECUTION IS PROHIBITED WITHOUT THE APPROVED ALPHA.30 DEV/TEST GATE"), `${file} missing alpha.30 execution prohibition`);
@@ -237,14 +240,31 @@ const alpha26ApiPaths = [
 ];
 const alpha27ApiPaths = ["app/api/v2/work-orders/[workOrderId]/revisions/issue/route.ts"];
 const alpha28ApiPaths = ["app/api/v2/work-orders/[workOrderId]/revisions/[revisionId]/preview/route.ts"];
-const alpha29ApiPaths = ["app/api/v2/work-orders/documents/[documentNumber]/preview-target/route.ts"];
+const alpha29ApiPaths = ["app/api/v2/work-orders/documents/[documentRef]/preview-target/route.ts"];
 const alpha30ApiPaths = ["app/api/v2/work-orders/[workOrderId]/processes/[processId]/route.ts"];
+const alpha39ApiPaths = [
+  "app/api/v2/work-orders/documents/[documentNumber]/preview-target/route.ts",
+  "app/api/v2/work-orders/documents/[documentRef]/preview-target/route.ts",
+  "app/api/public/document-viewer/session/route.ts",
+  "app/api/public/document-viewer/file/route.ts",
+  "app/api/public/document-viewer/download/route.ts",
+  "app/api/v2/work-orders/documents/[documentRef]/access-tokens/route.ts",
+  "app/api/v2/work-orders/documents/[documentRef]/access-tokens/[tokenId]/revoke/route.ts",
+  "app/api/v2/work-orders/documents/[documentRef]/access-tokens/[tokenId]/rotate/route.ts",
+];
+const alpha39ContractExists = fs.existsSync(path.join(root, "tests/workorder-v2-alpha39-document-viewer-security-contract.mjs"));
 const alpha30ContractExists = fs.existsSync(path.join(root, "tests/workorder-v2-alpha30-factory-instruction-contract.mjs"));
 const alpha25ContractExists = fs.existsSync(path.join(root, "tests/workorder-v2-alpha25-command-api-contract.mjs"));
 const alpha26ContractExists = fs.existsSync(path.join(root, "tests/workorder-v2-alpha26-material-command-api-contract.mjs"));
 const alpha27ContractExists = fs.existsSync(path.join(root, "tests/workorder-v2-alpha27-revision-issue-command-contract.mjs"));
 const alpha28ContractExists = fs.existsSync(path.join(root, "tests/workorder-v2-alpha28-issued-preview-contract.mjs"));
-if (alpha30ContractExists && (appVersion.includes('APP_VERSION = "2.0.0-alpha.29"') || appVersion.includes('APP_VERSION = "2.0.0-alpha.30"'))) {
+if (alpha39ContractExists && (appVersion.includes('APP_VERSION = "2.0.0-alpha.38"') || appVersion.includes('APP_VERSION = "2.0.0-alpha.39"'))) {
+  assert.deepEqual(
+    apiChanges.filter((change) => !alpha39ApiPaths.some((allowedPath) => change.endsWith(allowedPath))),
+    [],
+    "alpha.39 preparation may add only the exact controlled-viewer routes",
+  );
+} else if (alpha30ContractExists && (appVersion.includes('APP_VERSION = "2.0.0-alpha.29"') || appVersion.includes('APP_VERSION = "2.0.0-alpha.30"'))) {
   assert.deepEqual(
     apiChanges.filter((change) => ![...alpha25ApiPaths, ...alpha26ApiPaths, ...alpha27ApiPaths, ...alpha28ApiPaths, ...alpha29ApiPaths, ...alpha30ApiPaths].some((allowedPath) => change.endsWith(allowedPath))),
     [],

@@ -1,5 +1,9 @@
 # PeaceByPiece R2 Storage Policy
 
+## WAFL v2 alpha.39 preparation note
+
+The external viewer revalidates its signed session and active access-token row, then retrieves the retained alpha.38 PDF server-side and verifies MIME, size, SHA, and PDF header. Client redirects, public bucket access, object-key responses, PUT, DELETE, overwrite, and production access are forbidden in alpha.39.
+
 ## WAFL v2 alpha.38 implementation note
 
 Approved dev/test stores one retained PDF at `companies/{companyId}/workorders/{workOrderId}/pdf/{generatedDocumentId}.pdf`, where `generatedDocumentId` is the PostgreSQL-returned native UUID. PUT is single-attempt and signed GET verifies MIME, size, header, and SHA before DB finalize. Unknown upload outcomes are read-only audited; automatic overwrite or DELETE is forbidden. Production remains untouched.

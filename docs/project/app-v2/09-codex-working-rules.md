@@ -1,4 +1,15 @@
-# WAFL v2 App-first Codex Working Rules - 2.0.0-alpha.38
+# WAFL v2 App-first Codex Working Rules - 2.0.0-alpha.39
+
+## Alpha.39 approval boundaries
+
+- Alpha.39 migration/runtime approvals are consumed. Migration 011 and the retained token runtime evidence do not authorize replay, additional token creation, cleanup, R2 mutation, or production access.
+
+- Source/static/build and read-only migration preflight may proceed while APP_VERSION remains alpha.38.
+- Migration 011 apply requires its own exact approval and may add only ledger row 011 plus two SECURITY DEFINER functions/grants; table/column/index/data/R2/production deltas remain zero.
+- Token runtime requires a second approval after post-apply audit. It may create at most two token rows, perform three bounded token updates, append five events, and GET the retained PDF; R2 PUT/DELETE and generated-document mutation remain zero.
+- Raw tokens and viewer URLs containing tokens must never enter logs, repo-state, screenshots, handoff ZIPs, cookies, events, or DB rows. DB stores only SHA-256 token hashes.
+- Migration/runtime may not be automatically retried. Partial state requires bounded read-only audit and Failure Handoff; cleanup or rollback needs separate approval.
+- `4. Newest`, APP_VERSION, stage, commit, push, and Finish remain unchanged until migration, runtime, browser evidence, and completion audit all pass.
 
 ## Alpha.38 generated-document persistence boundary
 

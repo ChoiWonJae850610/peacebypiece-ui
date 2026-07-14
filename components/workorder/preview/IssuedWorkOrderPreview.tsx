@@ -5,6 +5,7 @@ import { ArrowLeft, FileText, Printer } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 import type { WorkOrderIssuedPreviewReadModel } from "@/lib/domain/work-orders/contracts";
+import DocumentShareControl from "./DocumentShareControl";
 import IssuedWorkOrderDocument from "./IssuedWorkOrderDocument";
 import styles from "./IssuedWorkOrderPreview.module.css";
 
@@ -52,7 +53,10 @@ export default function IssuedWorkOrderPreview({ workOrderId, revisionId }: { re
       <nav className={styles.toolbar} aria-label="작업지시서 도구">
         <button type="button" onClick={() => router.back()} title="돌아가기"><ArrowLeft aria-hidden="true" /><span>돌아가기</span></button>
         <div><span>발행된 작업지시서</span><strong>{data.document.displayDocumentNumber}</strong></div>
-        <button type="button" onClick={() => window.print()} title="인쇄"><Printer aria-hidden="true" /><span>인쇄</span></button>
+        <div className={styles.toolbarActions}>
+          <DocumentShareControl workOrderId={workOrderId} revisionId={revisionId}/>
+          <button type="button" onClick={() => window.print()} title="인쇄"><Printer aria-hidden="true" /><span>인쇄</span></button>
+        </div>
       </nav>
       <IssuedWorkOrderDocument data={data} />
     </main>

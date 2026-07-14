@@ -2,6 +2,7 @@
 .toolbar { max-width: 1120px; margin: 0 auto 16px; display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 16px; }
 .toolbar button { display: inline-flex; align-items: center; gap: 8px; border: 1px solid #c8cbd0; background: #fff; padding: 10px 12px; border-radius: 6px; }
 .toolbar button svg { width: 18px; }
+.toolbarActions { display: flex; align-items: center; gap: 8px; }
 .toolbar > div span { display: block; font-size: 12px; color: #687080; }
 .toolbar > div strong { display: block; overflow-wrap: anywhere; }
 .document { container-type: inline-size; }
@@ -58,7 +59,7 @@
 @media (max-width: 760px) {
   .shell { padding: 12px 0; }
   .toolbar { padding: 0 12px; grid-template-columns: auto 1fr auto; }
-  .toolbar button span { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0,0,0,0); }
+  .toolbar > button span, .toolbarActions > button span, .toolbarActions > div > button span { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0,0,0,0); }
   .page { width: 100%; min-height: 0; padding: 18px 12px; box-shadow: none; }
   .coverPage { grid-template-columns: 1fr; gap: 16px; }
   .representativeImage, .sketchPlaceholder { min-height: 360px; }

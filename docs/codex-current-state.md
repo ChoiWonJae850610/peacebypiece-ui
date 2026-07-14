@@ -1,3 +1,15 @@
+# 2.0.0-alpha.39 Controlled Document Viewer Security
+
+- APP_VERSION and mobile mirrors are `2.0.0-alpha.39`.
+- Alpha.39 delivers hash-only opaque controlled links, `/v#t=...` fragment exchange, a signed HttpOnly 15-minute viewer session, server-side PDF inline/download, per-link revoke/rotation/history, and source-owned QR Model 2 SVG generation.
+- Approved dev/test migration 011 added only two SECURITY DEFINER functions with fixed search paths and bounded runtime EXECUTE grants; ledger is `11/11`, PUBLIC EXECUTE is absent, and existing rows were unchanged.
+- The single approved token runtime retained one share receipt, two token rows, three token updates, and five events. Token A is revoked after rotation, Token B remains active, and each token has access count one.
+- Inline/download and Token B file delivery performed exactly three R2 GETs against the retained alpha.38 PDF. R2 PUT/DELETE, generated-document mutation, Worker mutation, cleanup, and production access are zero.
+- Replay was a no-op, changed request SHA was rejected, invalid/revoked tokens used generic NOT_FOUND, Company B/H/C isolation passed, incomplete receipts are zero, and the completion audit reports partial mutation false.
+- Raw tokens were not persisted or logged. DB storage is hash-only; external responses expose no generated-document UUID, R2 key, signed URL, company identity, or token hash.
+- The initial runtime attempt failed before any API mutation because of a Next dynamic slug collision. The aligned `[documentRef]` routes subsequently built and served `/v` with HTTP 200; the successful bounded runtime was not retried.
+- Evidence: `docs/project/app-v2/36-document-viewer-security-evidence.md`.
+
 # 2.0.0-alpha.38 Generated Document DB/R2 Lifecycle
 
 - APP_VERSION and mobile mirrors are `2.0.0-alpha.38`.

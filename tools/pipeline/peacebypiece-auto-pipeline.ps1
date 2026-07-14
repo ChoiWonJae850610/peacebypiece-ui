@@ -938,6 +938,10 @@ function GetDbMigrationAppliedDisplayValue {
         return "true; approved dev/test only"
     }
 
+    if ([string]$VerificationSummary.DbMigrationApplyResult -match '^PASS - approved dev/test migration 011') {
+        return "true; approved dev/test migration 011 applied once"
+    }
+
     if ([string]$VerificationSummary.DbMigrationApplyResult -match 'NOT_APPLIED|NOT_APPLICABLE') {
         return "false"
     }
@@ -952,6 +956,10 @@ function GetDbSchemaMutationDisplayValue {
 
     if (TestWorkorderSizePdfMigrationEvidence -VerificationSummary $VerificationSummary) {
         return "true; additive migration only on approved dev/test DB"
+    }
+
+    if ([string]$VerificationSummary.SchemaMigrationThisRun -match '^011_v2_document_access_viewer_functions\.sql') {
+        return "true; additive SECURITY DEFINER functions only on approved dev/test DB"
     }
 
     return [string]$VerificationSummary.SchemaMigrationThisRun
@@ -1038,6 +1046,21 @@ function GetLocalRepoVerificationSummary {
     $workorderPdfLiveProfile = $ProfileName -eq "workorder-pdf-live-integration"
     $productUiRuntimeProfile = $ProfileName -eq "product-ui-runtime-verification"
     $alpha30Completion = $version -eq "2.0.0-alpha.30"
+    $alpha39Completion = $version -eq "2.0.0-alpha.39"
+    $alpha39MigrationManifest = $null
+    $alpha39RuntimeManifest = $null
+    if ($alpha39Completion) {
+        $alpha39MigrationManifestPath = Join-Path $ProjectDir ".tmp\wafl-v2-alpha39\migration-manifest.json"
+        $alpha39RuntimeManifestPath = Join-Path $ProjectDir ".tmp\wafl-v2-alpha39\runtime-manifest.json"
+        if (Test-Path -LiteralPath $alpha39MigrationManifestPath -PathType Leaf) {
+            try { $alpha39MigrationManifest = Get-Content -LiteralPath $alpha39MigrationManifestPath -Raw -Encoding UTF8 | ConvertFrom-Json } catch { $alpha39MigrationManifest = $null }
+        }
+        if (Test-Path -LiteralPath $alpha39RuntimeManifestPath -PathType Leaf) {
+            try { $alpha39RuntimeManifest = Get-Content -LiteralPath $alpha39RuntimeManifestPath -Raw -Encoding UTF8 | ConvertFrom-Json } catch { $alpha39RuntimeManifest = $null }
+        }
+    }
+    $alpha39MigrationPassed = $null -ne $alpha39MigrationManifest -and [bool]$alpha39MigrationManifest.migrationApplied -and [int]$alpha39MigrationManifest.ledgerAfter -eq 11
+    $alpha39RuntimePassed = $null -ne $alpha39RuntimeManifest -and [string]$alpha39RuntimeManifest.result -match 'ALPHA39_(CONTROLLED_VIEWER_SECURITY|DOCUMENT_VIEWER_READ_ONLY_AUDIT)_PASS'
 
     return [pscustomobject]@{
         Path = $ResultPath
@@ -1066,7 +1089,7 @@ function GetLocalRepoVerificationSummary {
         PdfR2Regression = if ([string]::IsNullOrWhiteSpace($pdfR2Regression)) { if ($productUxCleanupProfile) { "PASS - workorder PDF route/viewer static contracts; live R2 NOT_RUN" } elseif ($workorderPdfLiveProfile) { "PASS - live dev/test PDF/R2 lifecycle integration and static contracts" } elseif ($productUiRuntimeProfile) { "PASS - dev/test workorder PDF create/view/render evidence; user visual review remains" } else { "not provided" } } else { $pdfR2Regression }
         VercelReadiness = if ([string]::IsNullOrWhiteSpace($vercelReadiness)) { if ($productUxCleanupProfile) { "NOT_RUN - deployment smoke outside 0.24.34.2 static cleanup" } elseif ($workorderPdfLiveProfile) { "NOT_RUN - no deployment smoke in 0.24.34.3" } elseif ($productUiRuntimeProfile) { "NOT_RUN - localhost evidence only in 0.24.34.5 checkpoint" } else { "not provided" } } else { $vercelReadiness }
         ManualQaStatus = if ([string]::IsNullOrWhiteSpace($manualQaStatus)) { if ($productUxCleanupProfile) { "PENDING_USER_QA - PDF visual/browser matrix" } elseif ($workorderPdfLiveProfile) { "PENDING_USER_QA - rendered PDF visual/browser/device confirmation" } elseif ($productUiRuntimeProfile) { "PRODUCT_QA_INCOMPLETE - user PDF/screen review and same-Google OAuth return remain" } else { "not provided" } } else { $manualQaStatus }
-        DbMigrationApplyResult = if ($alpha30Completion) { "PASS - approved dev/test migration 009 applied once; ledger 9/9" } elseif ($productUxCleanupProfile) { "NOT_APPLICABLE - no migration in 0.24.34.2" } elseif ($workorderPdfLiveProfile) { "NOT_APPLICABLE - no migration in 0.24.34.3" } elseif ($productUiRuntimeProfile) { "NOT_APPLICABLE - no migration in 0.24.34.5" } elseif ($null -ne $workorderEvidence -and $workorderEvidence.DbMigrationApplyResult -ne "not provided") { $workorderEvidence.DbMigrationApplyResult } elseif ($null -ne $billingEvidence -and $billingEvidence.DbMigrationApplyResult -ne "not provided") { $billingEvidence.DbMigrationApplyResult } else { GetLocalRepoVerificationEvidenceLine -Lines $lines -Patterns @(
+        DbMigrationApplyResult = if ($alpha39Completion -and $alpha39MigrationPassed) { "PASS - approved dev/test migration 011 applied once; ledger 11/11" } elseif ($alpha30Completion) { "PASS - approved dev/test migration 009 applied once; ledger 9/9" } elseif ($productUxCleanupProfile) { "NOT_APPLICABLE - no migration in 0.24.34.2" } elseif ($workorderPdfLiveProfile) { "NOT_APPLICABLE - no migration in 0.24.34.3" } elseif ($productUiRuntimeProfile) { "NOT_APPLICABLE - no migration in 0.24.34.5" } elseif ($null -ne $workorderEvidence -and $workorderEvidence.DbMigrationApplyResult -ne "not provided") { $workorderEvidence.DbMigrationApplyResult } elseif ($null -ne $billingEvidence -and $billingEvidence.DbMigrationApplyResult -ne "not provided") { $billingEvidence.DbMigrationApplyResult } else { GetLocalRepoVerificationEvidenceLine -Lines $lines -Patterns @(
             'DB Migration Apply Result:\s*(PASS|FAIL|NOT_APPLIED|NOT_APPLICABLE)',
             'Migration apply:\s*(PASS|FAIL)',
             'Consent migration apply:\s*(PASS|FAIL)'
@@ -1085,9 +1108,9 @@ function GetLocalRepoVerificationSummary {
         DevTestFixtureMutation = if ($alpha30Completion) { "true - one approved direct process fixture row" } elseif ($null -ne $workorderEvidence -and $workorderEvidence.DevTestFixtureMutation -ne "not provided") { $workorderEvidence.DevTestFixtureMutation } elseif ($null -ne $billingEvidence -and $billingEvidence.DevTestFixtureMutation -ne "not provided") { $billingEvidence.DevTestFixtureMutation } else { GetLocalRepoVerificationNamedValue -Lines $lines -Name "Dev/Test Fixture Mutation" -Fallback "false" }
         BusinessDataMutation = if ($null -ne $workorderEvidence -and $workorderEvidence.BusinessDataMutation -ne "not provided") { $workorderEvidence.BusinessDataMutation } else { GetLocalRepoVerificationNamedValue -Lines $lines -Name "Business Data Mutation" -Fallback "false" }
         ProductionBusinessDataMutation = if ($null -ne $workorderEvidence -and $workorderEvidence.ProductionBusinessDataMutation -ne "not provided") { $workorderEvidence.ProductionBusinessDataMutation } else { GetLocalRepoVerificationNamedValue -Lines $lines -Name "Production Business Data Mutation" -Fallback "false" }
-        DevTestR2Mutation = if ($workorderPdfLiveProfile) { "true - synthetic PDF/R2 fixture integration only" } elseif ($null -ne $workorderEvidence -and $workorderEvidence.DevTestR2Mutation -ne "not provided") { $workorderEvidence.DevTestR2Mutation } elseif ($null -ne $billingEvidence -and $billingEvidence.DevTestR2Mutation -ne "not provided") { $billingEvidence.DevTestR2Mutation } else { GetLocalRepoVerificationNamedValue -Lines $lines -Name "Dev/Test R2 Mutation" -Fallback "false" }
+        DevTestR2Mutation = if ($alpha39Completion -and $alpha39RuntimePassed) { "false in alpha.39; historical alpha.38 approved dev/test PUT 1 retained" } elseif ($workorderPdfLiveProfile) { "true - synthetic PDF/R2 fixture integration only" } elseif ($null -ne $workorderEvidence -and $workorderEvidence.DevTestR2Mutation -ne "not provided") { $workorderEvidence.DevTestR2Mutation } elseif ($null -ne $billingEvidence -and $billingEvidence.DevTestR2Mutation -ne "not provided") { $billingEvidence.DevTestR2Mutation } else { GetLocalRepoVerificationNamedValue -Lines $lines -Name "Dev/Test R2 Mutation" -Fallback "false" }
         ProductionMutation = if ($workorderPdfLiveProfile) { "false" } elseif ($null -ne $workorderEvidence -and $workorderEvidence.ProductionMutation -ne "not provided") { $workorderEvidence.ProductionMutation } elseif ($null -ne $billingEvidence -and $billingEvidence.ProductionMutation -ne "not provided") { $billingEvidence.ProductionMutation } else { GetLocalRepoVerificationNamedValue -Lines $lines -Name "Production Mutation" -Fallback "false" }
-        SchemaMigrationThisRun = if ($alpha30Completion) { "false - migration 009 was applied in the separately approved pre-runtime phase" } elseif ($workorderPdfLiveProfile) { "false" } elseif ($null -ne $workorderEvidence -and $workorderEvidence.SchemaMigrationThisRun -ne "not provided") { $workorderEvidence.SchemaMigrationThisRun } elseif ($null -ne $billingEvidence -and $billingEvidence.SchemaMigrationThisRun -ne "not provided") { $billingEvidence.SchemaMigrationThisRun } else { GetLocalRepoVerificationNamedValue -Lines $lines -Name "Schema Migration This Run" -Fallback "false" }
+        SchemaMigrationThisRun = if ($alpha39Completion -and $alpha39MigrationPassed) { "011_v2_document_access_viewer_functions.sql; functions +2; table/column/index/data delta 0" } elseif ($alpha30Completion) { "false - migration 009 was applied in the separately approved pre-runtime phase" } elseif ($workorderPdfLiveProfile) { "false" } elseif ($null -ne $workorderEvidence -and $workorderEvidence.SchemaMigrationThisRun -ne "not provided") { $workorderEvidence.SchemaMigrationThisRun } elseif ($null -ne $billingEvidence -and $billingEvidence.SchemaMigrationThisRun -ne "not provided") { $billingEvidence.SchemaMigrationThisRun } else { GetLocalRepoVerificationNamedValue -Lines $lines -Name "Schema Migration This Run" -Fallback "false" }
         CertificateIntegrationResult = if ($productUxCleanupProfile) { "NOT_APPLICABLE - no certificate integration in 0.24.34.2" } else { GetLocalRepoVerificationNamedValue -Lines $lines -Name "Certificate Integration Result" }
         PngUpload = if ($productUxCleanupProfile) { "NOT_APPLICABLE" } else { GetLocalRepoVerificationNamedValue -Lines $lines -Name "PNG Upload" }
         JpegReplacement = if ($productUxCleanupProfile) { "NOT_APPLICABLE" } else { GetLocalRepoVerificationNamedValue -Lines $lines -Name "JPEG Replacement" }
@@ -1402,6 +1425,44 @@ function AddAlpha38PdfDbR2RuntimeRepoStateSections {
     AddRepoStateSection -Lines $Lines -Title "Alpha.38 Production / Business Mutation:" -Values @("false / false")
 }
 
+function AddAlpha39DocumentViewerRepoStateSections {
+    param(
+        [System.Collections.Generic.List[string]]$Lines,
+        [string]$Version
+    )
+
+    if ($Version -ne "2.0.0-alpha.39") {
+        return
+    }
+
+    $migrationManifest = $null
+    $runtimeManifest = $null
+    $migrationManifestPath = Join-Path $ProjectDir ".tmp\wafl-v2-alpha39\migration-manifest.json"
+    $runtimeManifestPath = Join-Path $ProjectDir ".tmp\wafl-v2-alpha39\runtime-manifest.json"
+    if (Test-Path -LiteralPath $migrationManifestPath -PathType Leaf) {
+        try { $migrationManifest = Get-Content -LiteralPath $migrationManifestPath -Raw -Encoding UTF8 | ConvertFrom-Json } catch { $migrationManifest = $null }
+    }
+    if (Test-Path -LiteralPath $runtimeManifestPath -PathType Leaf) {
+        try { $runtimeManifest = Get-Content -LiteralPath $runtimeManifestPath -Raw -Encoding UTF8 | ConvertFrom-Json } catch { $runtimeManifest = $null }
+    }
+
+    $migrationPass = $null -ne $migrationManifest -and [bool]$migrationManifest.migrationApplied -and [int]$migrationManifest.ledgerAfter -eq 11
+    $runtimePass = $null -ne $runtimeManifest -and [string]$runtimeManifest.result -match 'ALPHA39_(CONTROLLED_VIEWER_SECURITY|DOCUMENT_VIEWER_READ_ONLY_AUDIT)_PASS'
+    AddRepoStateSection -Lines $Lines -Title "Alpha.39 Completion Status:" -Values @($(if ($migrationPass -and $runtimePass) { "ALPHA39_CONTROLLED_VIEWER_SECURITY_PASS" } else { "MISSING_OR_INVALID_MIGRATION_OR_RUNTIME_MANIFEST" }))
+    AddRepoStateSection -Lines $Lines -Title "Alpha.39 Migration 011 / Ledger:" -Values @($(if ($migrationPass) { "applied once in approved dev/test; ledger 11/11; SHA $($migrationManifest.migrationSha256)" } else { "unknown" }))
+    AddRepoStateSection -Lines $Lines -Title "Alpha.39 Viewer Functions / ACL:" -Values @($(if ($migrationPass) { "2 SECURITY DEFINER functions; fixed search_path; PUBLIC execute 0; runtime execute 2" } else { "unknown" }))
+    AddRepoStateSection -Lines $Lines -Title "Alpha.39 Token Rows / Updates / Events:" -Values @($(if ($runtimePass) { "$($runtimeManifest.tokenRows) / $($runtimeManifest.tokenUpdates) / $($runtimeManifest.eventRows)" } else { "unknown" }))
+    AddRepoStateSection -Lines $Lines -Title "Alpha.39 Raw Token Persistence:" -Values @("0 - SHA-256 hash only; viewer URL fragment; HttpOnly signed session without raw token")
+    AddRepoStateSection -Lines $Lines -Title "Alpha.39 Default Expiry / Viewer Session:" -Values @("7 days / maximum 15 minutes and no longer than token expiry")
+    AddRepoStateSection -Lines $Lines -Title "Alpha.39 Revoke / Rotation / Generic NOT_FOUND:" -Values @($(if ($runtimePass) { "PASS / PASS / PASS" } else { "unknown" }))
+    AddRepoStateSection -Lines $Lines -Title "Alpha.39 PDF Inline / Download Integrity:" -Values @($(if ($runtimePass) { "PASS - retained alpha.38 immutable PDF read through server-side R2 GET" } else { "unknown" }))
+    AddRepoStateSection -Lines $Lines -Title "Alpha.39 QR Result:" -Values @("PASS - source-owned QR Model 2 ECC M deterministic SVG; phone camera scan remains manual QA")
+    AddRepoStateSection -Lines $Lines -Title "Alpha.39 R2 GET / PUT / DELETE:" -Values @($(if ($runtimePass) { "$($runtimeManifest.r2GetCount) / $($runtimeManifest.r2PutCount) / $($runtimeManifest.r2DeleteCount)" } else { "unknown" }))
+    AddRepoStateSection -Lines $Lines -Title "Alpha.39 Generated Document Mutation:" -Values @($(if ($runtimePass) { [string]$runtimeManifest.generatedDocumentMutation } else { "unknown" }))
+    AddRepoStateSection -Lines $Lines -Title "Alpha.39 Partial / Production Mutation:" -Values @($(if ($runtimePass) { "$($runtimeManifest.partialMutation) / $($runtimeManifest.productionMutation)" } else { "unknown" }))
+    AddRepoStateSection -Lines $Lines -Title "Alpha.38 Historical Repo-State Correction:" -Values @("approved dev/test migration 010 applied once, ledger 10/10, additive UUID/FK schema mutation true, R2 PUT 1 and retained object 1; production mutation false")
+}
+
 function NewLocalRepoBuildResultFile {
     param(
         [string]$Version,
@@ -1445,6 +1506,7 @@ function NewLocalRepoBuildResultFile {
     AddAlpha36MaterialCardSeparationRepoStateSections -Lines $lines -Version $Version
     AddAlpha37PdfFoundationRepoStateSections -Lines $lines -Version $Version
     AddAlpha38PdfDbR2RuntimeRepoStateSections -Lines $lines -Version $Version
+    AddAlpha39DocumentViewerRepoStateSections -Lines $lines -Version $Version
     if ($Version -eq "2.0.0-alpha.31") {
         AddRepoStateSection -Lines $lines -Title "Alpha.31 Product Verification:" -Values @("LEVEL_4_PRODUCT_VERIFIED - desktop/tablet/mobile/inline interaction evidence")
         AddRepoStateSection -Lines $lines -Title "Alpha.31 Sample Route Guard:" -Values @("PASS - localhost 200; Host www.wafl.co.kr 404")
@@ -1643,6 +1705,7 @@ function NewLocalRepoStateFile {
     AddAlpha36MaterialCardSeparationRepoStateSections -Lines $lines -Version $Version
     AddAlpha37PdfFoundationRepoStateSections -Lines $lines -Version $Version
     AddAlpha38PdfDbR2RuntimeRepoStateSections -Lines $lines -Version $Version
+    AddAlpha39DocumentViewerRepoStateSections -Lines $lines -Version $Version
     if ($Version -eq "2.0.0-alpha.31") {
         $alpha31FeatureCommit = [string](InvokeLocalRepoGitOutput -Arguments @("log", "-1", "--format=%H", "-S", "2.0.0-alpha.31", "--", "lib/constants/version.ts") | Select-Object -First 1)
         $alpha31BaselineCommit = [string](InvokeLocalRepoGitOutput -Arguments @("rev-parse", "$alpha31FeatureCommit^" ) | Select-Object -First 1)

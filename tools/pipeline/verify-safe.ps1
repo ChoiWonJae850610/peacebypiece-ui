@@ -901,7 +901,7 @@ $profileCommands = @{
                 "app/(workspace)/workspace/workorders/[workOrderId]/revisions/[revisionId]/preview/page.tsx",
                 "scripts/run-wafl-v2-alpha28-issued-preview.mjs",
                 "tests/workorder-v2-alpha28-issued-preview-contract.mjs",
-                "app/api/v2/work-orders/documents/[documentNumber]/preview-target/route.ts",
+                "app/api/v2/work-orders/documents/[documentRef]/preview-target/route.ts",
                 "lib/domain/work-orders/read/previewTargetService.ts",
                 "lib/domain/work-orders/read/previewTargetRepository.ts",
                 "components/workorder/preview/DocumentNumberPreviewResolver.tsx",
@@ -947,7 +947,31 @@ $profileCommands = @{
                 "db/v2/migrations/010_v2_generated_document_receipt_link.sql",
                 "scripts/run-wafl-v2-alpha38-document-receipt-migration.mjs",
                 "scripts/run-wafl-v2-alpha38-pdf-r2-runtime.mjs",
-                "tests/workorder-v2-alpha38-pdf-r2-runtime-contract.mjs"
+                "tests/workorder-v2-alpha38-pdf-r2-runtime-contract.mjs",
+                "db/v2/migrations/011_v2_document_access_viewer_functions.sql",
+                "lib/generated-documents/document-access/constants.ts",
+                "lib/generated-documents/document-access/token.ts",
+                "lib/generated-documents/document-access/session.ts",
+                "lib/generated-documents/document-access/qr.ts",
+                "lib/generated-documents/document-access/types.ts",
+                "lib/generated-documents/document-access/repository.ts",
+                "lib/generated-documents/document-access/runtimeGuard.ts",
+                "lib/generated-documents/document-access/service.ts",
+                "lib/generated-documents/document-access/routeHelpers.ts",
+                "components/workorder/preview/DocumentShareControl.tsx",
+                "app/v/DocumentViewerClient.tsx",
+                "app/v/page.tsx",
+                "app/api/public/document-viewer/session/route.ts",
+                "app/api/public/document-viewer/file/route.ts",
+                "app/api/public/document-viewer/download/route.ts",
+                "app/api/v2/work-orders/documents/[documentRef]/access-tokens/route.ts",
+                "app/api/v2/work-orders/documents/[documentRef]/access-tokens/[tokenId]/revoke/route.ts",
+                "app/api/v2/work-orders/documents/[documentRef]/access-tokens/[tokenId]/rotate/route.ts",
+                "next.config.ts",
+                "scripts/run-wafl-v2-alpha39-document-viewer-migration.mjs",
+                "scripts/run-wafl-v2-alpha39-document-viewer-runtime.mjs",
+                "tests/workorder-v2-alpha39-document-viewer-security-contract.mjs",
+                "tests/workorder-v2-alpha22-dev-test-runner-contract.mjs"
             )
         },
         @{ Name = "mobile typecheck"; Command = "npm"; Arguments = @("--prefix", "apps/mobile", "run", "typecheck") },
@@ -972,6 +996,7 @@ $profileCommands = @{
         @{ Name = "workorder v2 alpha.36 material card separation and summary static contract"; Command = "node"; Arguments = @("tests/workorder-v2-alpha36-material-card-separation-and-summary-contract.mjs") },
         @{ Name = "workorder v2 alpha.37 PDF generation foundation static contract"; Command = "node"; Arguments = @("tests/workorder-v2-alpha37-pdf-generation-foundation-contract.mjs") },
         @{ Name = "workorder v2 alpha.38 PDF DB/R2 runtime static contract"; Command = "node"; Arguments = @("tests/workorder-v2-alpha38-pdf-r2-runtime-contract.mjs") },
+        @{ Name = "workorder v2 alpha.39 document viewer security static contract"; Command = "node"; Arguments = @("tests/workorder-v2-alpha39-document-viewer-security-contract.mjs") },
         @{ Name = "app-v2 document links and Mermaid contract"; Command = "node"; Arguments = @("tests/app-v2-document-links-contract.mjs") },
         @{ Name = "unicode encoding contract"; Command = "node"; Arguments = @("tests/unicode-encoding-contract.mjs") },
         @{ Name = "PowerShell encoding contract"; Command = "node"; Arguments = @("tests/pipeline-powershell-encoding-contract.mjs") },
@@ -1480,6 +1505,9 @@ if ($Profile -eq "automation-infrastructure" -and (GetProjectAppVersion) -in @("
 }
 if ($Profile -eq "automation-infrastructure" -and (GetProjectAppVersion) -eq "2.0.0-alpha.38" -and (Test-Path (Join-Path $ProjectDir "tests/workorder-v2-alpha38-pdf-r2-runtime-contract.mjs"))) {
     $allowedMigrationChanges = @("db/v2/migrations/010_v2_generated_document_receipt_link.sql")
+}
+if ($Profile -eq "automation-infrastructure" -and (GetProjectAppVersion) -in @("2.0.0-alpha.38", "2.0.0-alpha.39") -and (Test-Path (Join-Path $ProjectDir "tests/workorder-v2-alpha39-document-viewer-security-contract.mjs"))) {
+    $allowedMigrationChanges = @("db/v2/migrations/011_v2_document_access_viewer_functions.sql")
 }
 $unexpectedMigrationChanges = @($migrationChanges | Where-Object { $allowedMigrationChanges -notcontains $_ })
 if ($unexpectedMigrationChanges.Count -gt 0) {

@@ -1,5 +1,15 @@
 # Final Policy Decisions and Master TODO
 
+## WAFL v2 alpha.39 confirmed controlled-viewer security contract
+
+- External links use a 256-bit HMAC-derived opaque base64url token. The raw token exists only in server memory, the first/idempotent response, the URL fragment, clipboard/QR rendering, and the bounded exchange body; only a lowercase SHA-256 hash is stored.
+- The viewer URL is `/v#t=...`; path/query tokens, direct R2 redirects, UUID/key/hash disclosure, and raw-token logs are forbidden. Successful exchange removes the fragment and creates a signed HttpOnly session no longer than 15 minutes or token expiry.
+- Default link expiry is seven days. Multiple links are allowed; revoke is link-scoped and rotate revokes the old row and inserts a DB-UUID replacement with `rotated_from_token_id` in one transaction.
+- Public token redemption under FORCE RLS uses only the two reviewed migration 011 SECURITY DEFINER functions with fixed search paths, PUBLIC EXECUTE revoked, and the runtime role granted EXECUTE. Migration apply remains a separate explicit approval.
+- Successful exchange increments access count once per exchange and emits only the first-view event. File and download requests revalidate token state but do not increment count.
+- Alpha.39 reuses the retained alpha.38 immutable PDF through server-side R2 GET only. R2 PUT/DELETE, generated-document mutation, production access, and PDF overwrite are forbidden.
+- Approved dev/test evidence now confirms ledger `11/11`, hash-only token persistence, one revoked rotation source, one active replacement, access count `1/1`, five bounded events, three R2 GETs, generic NOT_FOUND, tenant isolation, and partial mutation false.
+
 ## WAFL v2 alpha.38 confirmed generated-document persistence contract
 
 - Generated-document IDs are PostgreSQL native UUIDs created by the column default and returned from INSERT. Application or deterministic UUID generation is not an idempotency mechanism.

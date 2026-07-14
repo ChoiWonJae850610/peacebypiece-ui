@@ -9,7 +9,7 @@ const required = [
   "apps/mobile/utils/previewLink.ts",
   "apps/mobile/components/ProductionCardMock.tsx",
   "apps/mobile/constants/mockProductionCard.ts",
-  "app/api/v2/work-orders/documents/[documentNumber]/preview-target/route.ts",
+  "app/api/v2/work-orders/documents/[documentRef]/preview-target/route.ts",
   "app/(workspace)/workspace/documents/[documentNumber]/preview/page.tsx",
   "components/workorder/preview/DocumentNumberPreviewResolver.tsx",
   "lib/domain/work-orders/read/previewTargetService.ts",

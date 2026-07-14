@@ -15,13 +15,13 @@ const sampleRenderComponent = read("components/workorder/preview/SampleIssuedWor
 const version = read("lib/constants/version.ts").match(/APP_VERSION\s*=\s*"([^"]+)"/)?.[1];
 const mobileVersion = read("apps/mobile/constants/version.ts").match(/APP_VERSION\s*=\s*"([^"]+)"/)?.[1];
 const expoVersion = JSON.parse(read("apps/mobile/app.json")).expo.version;
-const expectedVersion = process.env.WAFL_ALPHA38_PREFINAL_CONTRACT === "1"
-  ? "2.0.0-alpha.37"
-  : "2.0.0-alpha.38";
+const expectedVersions = process.env.WAFL_ALPHA38_PREFINAL_CONTRACT === "1"
+  ? ["2.0.0-alpha.37"]
+  : ["2.0.0-alpha.38", "2.0.0-alpha.39"];
 
-assert.equal(version, expectedVersion);
-assert.equal(mobileVersion, expectedVersion);
-assert.equal(expoVersion, expectedVersion);
+assert.ok(expectedVersions.includes(version));
+assert.equal(mobileVersion, version);
+assert.equal(expoVersion, version);
 
 assert.match(migration, /result_generated_document_id uuid/);
 assert.match(migration, /FOREIGN KEY \(company_id, result_generated_document_id\)/);

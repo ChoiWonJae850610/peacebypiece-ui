@@ -1,4 +1,12 @@
-# WAFL v2 App-first Roadmap 2.0 - 2.0.0-alpha.38
+# WAFL v2 App-first Roadmap 2.0 - 2.0.0-alpha.39 result
+
+## 2.0.0-alpha.39 result
+
+- Implement hash-only opaque token derivation, `/v#t=` exchange, signed short viewer sessions, server-side R2 PDF inline/download, token history/revoke/rotation, and deterministic source-owned QR SVG without package changes.
+- Apply migration 011 once to approved dev/test: ledger `11/11`, two fixed-search-path SECURITY DEFINER functions, PUBLIC EXECUTE zero, and existing-row delta zero.
+- Complete the separately approved token runtime with one share receipt, two token rows, three token updates, five events, three retained-object GETs, and zero R2 PUT/DELETE or generated-document mutation.
+- Correct future repo-state common fields so alpha.38 migration 010 and retained PUT 1 are historical facts while alpha.39 R2 mutation remains false.
+- Replay/conflict, revoked/invalid generic NOT_FOUND, Company B/H/C isolation, inline/download integrity, hash-only persistence, and partial-mutation audit pass. Token A remains revoked, Token B remains active, and production remains untouched. Evidence: `36-document-viewer-security-evidence.md`.
 
 ## 2.0.0-alpha.38 result
 
