@@ -14,13 +14,13 @@ const renderer = read("components/workorder/preview/IssuedWorkOrderDocument.tsx"
 const samplePage = read("app/dev/workorder-preview-sample/page.tsx");
 const pipeline = read("tools/pipeline/peacebypiece-auto-pipeline.ps1");
 
-assert.match(read("lib/constants/version.ts"), /2\.0\.0-alpha\.35/);
-assert.match(read("apps/mobile/constants/version.ts"), /2\.0\.0-alpha\.35/);
+assert.match(read("lib/constants/version.ts"), /2\.0\.0-alpha\.36/);
+assert.match(read("apps/mobile/constants/version.ts"), /2\.0\.0-alpha\.36/);
 const appConfig = JSON.parse(read("apps/mobile/app.json"));
-assert.equal(appConfig.expo.version, "2.0.0-alpha.35");
-assert.equal(appConfig.expo.extra.appVersion, "2.0.0-alpha.35");
-assert.equal(JSON.parse(read("apps/mobile/package.json")).version, "2.0.0-alpha.35");
-assert.equal(JSON.parse(read("apps/mobile/package-lock.json")).version, "2.0.0-alpha.35");
+assert.equal(appConfig.expo.version, "2.0.0-alpha.36");
+assert.equal(appConfig.expo.extra.appVersion, "2.0.0-alpha.36");
+assert.equal(JSON.parse(read("apps/mobile/package.json")).version, "2.0.0-alpha.36");
+assert.equal(JSON.parse(read("apps/mobile/package-lock.json")).version, "2.0.0-alpha.36");
 
 const materialRow = mobile.match(/function MaterialRow\([\s\S]*?\n\}\n\ntype MaterialEditValues/)?.[0] ?? "";
 assert.equal((materialRow.match(/testID="material-core-row"/g) ?? []).length, 2);

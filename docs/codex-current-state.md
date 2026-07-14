@@ -1,3 +1,14 @@
+# 2.0.0-alpha.36 Material Summary and Card Separation
+
+- APP_VERSION and mobile mirrors are `2.0.0-alpha.36`.
+- Fabric/accessory cards preserve the alpha.35 two-row, three-field compact grammar and unit position.
+- The final row now always identifies order quantity, unit price, and amount. Missing calculation inputs render a neutral dash instead of a misleading zero.
+- Core fields and unit expose no default `미입력`, `입력`, or `0` placeholder text. Missing values remain field-only label/underline states; usage area and memo retain their production placeholders.
+- An 8px inter-card interval and faint work-surface background make each material row group legible while preserving the compact body height and existing status accent.
+- Preview renderer, actual/sample boundary, mixed-orientation print contract, API, DB, R2, Worker, and generated-document lifecycle are unchanged.
+- `LEVEL_4_PRODUCT_VERIFIED`: representative mobile card height stayed `214px`; tablet cards were `212px`; 390x844, 768x1024, and 1024x768 horizontal overflow was 0; complete and missing-price summary interactions passed; localhost sample/144/production-host 404/console 0 passed; and the unchanged accepted three-page mixed-orientation Chromium print artifact was re-inspected.
+- Evidence: `docs/project/app-v2/33-mobile-material-card-separation-and-summary-evidence.md`.
+
 # 2.0.0-alpha.35 Material Compact Input and Order Action Density
 
 - APP_VERSION and mobile mirrors are `2.0.0-alpha.35`.

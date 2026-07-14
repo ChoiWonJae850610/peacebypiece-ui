@@ -1,4 +1,13 @@
-# WAFL v2 App-first Codex Working Rules - 2.0.0-alpha.35
+# WAFL v2 App-first Codex Working Rules - 2.0.0-alpha.36
+
+## Alpha.36 material summary and card-separation boundary
+
+- Preserve exactly two core input rows with three fields each, the 22px inline grammar, unit under the material name, and one final summary/action row.
+- The final summary names order quantity, unit price, and amount. Missing calculation prerequisites use neutral dashes and never fabricate zero values.
+- Core fields and unit use no default placeholder copy. Missing required values remain a label/underline state; only usage area and memo keep production placeholders.
+- Strengthen card separation with restrained spacing and faint surface/border/accent grammar. Do not add heavy shadows, thick borders, nested boxes, or card-height growth.
+- Preview/PDF structure is regression-only. Do not connect API persistence, DB, generated documents, QR, R2, Worker, or production behavior.
+- Alpha.37 owns immutable PDF binary and R2 storage foundation under a separate approved work order.
 
 ## Alpha.35 material compact-input boundary
 
@@ -119,11 +128,13 @@ Before any App-first file modification, read:
 32. `docs/project/app-v2/29-inline-density-and-realistic-sample-evidence.md`
 33. `docs/project/app-v2/30-realistic-preview-entry-and-material-card-flow-evidence.md`
 34. `docs/project/app-v2/31-mobile-preview-sample-and-material-footer-evidence.md`
-35. `docs/project/v2/00-start-here.md` through `docs/project/v2/14-operational-policy-absorption.md`
-36. `docs/project/25-korean-unicode-encoding-standard.md`
-37. `docs/project/32-product-completion-and-ui-evidence-standard.md`
-38. `docs/project/26-final-policy-decisions-and-master-todo.md`
-39. `docs/project/31-pre-codex-integrated-master-plan.md`
+35. `docs/project/app-v2/32-mobile-material-compact-input-evidence.md`
+36. `docs/project/app-v2/33-mobile-material-card-separation-and-summary-evidence.md`
+37. `docs/project/v2/00-start-here.md` through `docs/project/v2/14-operational-policy-absorption.md`
+38. `docs/project/25-korean-unicode-encoding-standard.md`
+39. `docs/project/32-product-completion-and-ui-evidence-standard.md`
+40. `docs/project/26-final-policy-decisions-and-master-todo.md`
+41. `docs/project/31-pre-codex-integrated-master-plan.md`
 
 ## 4. Newest rule
 

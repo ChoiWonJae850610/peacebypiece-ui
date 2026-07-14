@@ -1,8 +1,8 @@
 # WAFL Mobile App Mock
 
-Version: `2.0.0-alpha.35`
+Version: `2.0.0-alpha.36`
 
-Alpha.35 compresses fabric/accessory cards into two three-field core-input rows and one final order-summary/action row. Quantity and amount react to local mock edits, while requested/completed rows remain read-only. Preview and PDF/QR/R2/Worker document lifecycle remain disconnected.
+Alpha.36 keeps the compact alpha.35 structure, adds unit price to the final order summary, removes default placeholder copy from core fields, uses neutral incomplete calculations, and separates adjacent cards with restrained spacing and work-surface tone. Preview and PDF/QR/R2/Worker document lifecycle remain disconnected.
 
 Alpha.29 connects issued production-card Preview actions to the authenticated Next workspace through `EXPO_PUBLIC_WAFL_WEB_BASE_URL`. Expo Web may use the localhost Next server fallback only in development; native opens the system browser and may require the normal web login. PDF, QR, R2, WebView, and mobile-to-web SSO are not part of this version.
 
@@ -48,6 +48,7 @@ Current visual foundation:
 - `2.0.0-alpha.33` moves fabric/accessory actions to the final card block, keeps factory-facing inline fields above order summaries and warnings, and clarifies the localhost realistic-sample entry without changing actual issued data.
 - `2.0.0-alpha.34` connects all mock Preview entry points to the local realistic sample, keeps actual issued Preview separate, and aligns material messages/actions in one responsive footer band.
 - `2.0.0-alpha.35` replaces the wrapping material summary and warning/footer stack with two same-line core-input rows, local order math, field-only missing states, and one compact final action row.
+- `2.0.0-alpha.36` completes the final order summary, removes misleading empty/default values, and strengthens card separation without increasing compact body height.
 
 ## Font asset
 

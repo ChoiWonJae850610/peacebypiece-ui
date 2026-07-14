@@ -1279,6 +1279,28 @@ function AddAlpha35MaterialCompactInputRepoStateSections {
     AddRepoStateSection -Lines $Lines -Title "Alpha.35 DB / API / R2 / Worker / PDF Lifecycle / Production Mutation:" -Values @("false")
 }
 
+function AddAlpha36MaterialCardSeparationRepoStateSections {
+    param(
+        [System.Collections.Generic.List[string]]$Lines,
+        [string]$Version
+    )
+
+    if ($Version -ne "2.0.0-alpha.36") {
+        return
+    }
+
+    AddRepoStateSection -Lines $Lines -Title "Alpha.36 Product Verification:" -Values @("LEVEL_4_PRODUCT_VERIFIED - 390/768/1024 responsive interaction and Preview print evidence")
+    AddRepoStateSection -Lines $Lines -Title "Alpha.36 Summary Row Result:" -Values @("PASS - order quantity, unit price, and amount in one final row")
+    AddRepoStateSection -Lines $Lines -Title "Alpha.36 Core Placeholder Removal:" -Values @("PASS - core six fields and unit expose no default placeholder text")
+    AddRepoStateSection -Lines $Lines -Title "Alpha.36 Missing State Result:" -Values @("PASS - field-only muted label and underline; neutral dash in incomplete summary")
+    AddRepoStateSection -Lines $Lines -Title "Alpha.36 Card Separation Result:" -Values @("PASS - 8px inter-card spacing, faint work-surface background, existing subtle top line and status accent")
+    AddRepoStateSection -Lines $Lines -Title "Alpha.36 Card Height Before / After:" -Values @("214px / 214px")
+    AddRepoStateSection -Lines $Lines -Title "Alpha.36 Responsive QA:" -Values @("PASS - 390x844, 768x1024, 1024x768; overflow 0; console warning/error 0")
+    AddRepoStateSection -Lines $Lines -Title "Alpha.36 PDF / Preview Regression:" -Values @("PASS - current localhost sample, production host 404, and total 144; Preview source diff 0; accepted alpha.35 Chromium PDF re-inspected with 1 landscape + 2 portrait pages")
+    AddRepoStateSection -Lines $Lines -Title "Alpha.36 DB Migration Applied:" -Values @("false")
+    AddRepoStateSection -Lines $Lines -Title "Alpha.36 DB / API / R2 / Worker / PDF Lifecycle / Production Mutation:" -Values @("false")
+}
+
 function NewLocalRepoBuildResultFile {
     param(
         [string]$Version,
@@ -1319,6 +1341,7 @@ function NewLocalRepoBuildResultFile {
     AddWorkorderPdfLiveIntegrationRepoStateSections -Lines $lines -VerificationSummary $VerificationSummary
     AddProductUiRuntimeVerificationRepoStateSections -Lines $lines -VerificationSummary $VerificationSummary
     AddAlpha35MaterialCompactInputRepoStateSections -Lines $lines -Version $Version
+    AddAlpha36MaterialCardSeparationRepoStateSections -Lines $lines -Version $Version
     if ($Version -eq "2.0.0-alpha.31") {
         AddRepoStateSection -Lines $lines -Title "Alpha.31 Product Verification:" -Values @("LEVEL_4_PRODUCT_VERIFIED - desktop/tablet/mobile/inline interaction evidence")
         AddRepoStateSection -Lines $lines -Title "Alpha.31 Sample Route Guard:" -Values @("PASS - localhost 200; Host www.wafl.co.kr 404")
@@ -1514,6 +1537,7 @@ function NewLocalRepoStateFile {
     AddWorkorderPdfLiveIntegrationRepoStateSections -Lines $lines -VerificationSummary $VerificationSummary
     AddProductUiRuntimeVerificationRepoStateSections -Lines $lines -VerificationSummary $VerificationSummary
     AddAlpha35MaterialCompactInputRepoStateSections -Lines $lines -Version $Version
+    AddAlpha36MaterialCardSeparationRepoStateSections -Lines $lines -Version $Version
     if ($Version -eq "2.0.0-alpha.31") {
         $alpha31FeatureCommit = [string](InvokeLocalRepoGitOutput -Arguments @("log", "-1", "--format=%H", "-S", "2.0.0-alpha.31", "--", "lib/constants/version.ts") | Select-Object -First 1)
         $alpha31BaselineCommit = [string](InvokeLocalRepoGitOutput -Arguments @("rev-parse", "$alpha31FeatureCommit^" ) | Select-Object -First 1)

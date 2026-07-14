@@ -1,5 +1,13 @@
 # Final Policy Decisions and Master TODO
 
+## WAFL v2 alpha.36 confirmed material-card display contract
+
+- The one final material row summary names all three values: order quantity, unit price, and amount.
+- Missing core values do not render default `미입력`, `입력`, or `0` placeholder copy. Field-only warning treatment remains, while usage area and memo keep their explicit placeholders.
+- An incomplete calculation renders a neutral dash instead of a synthetic zero amount.
+- Material cards gain subtle separation through spacing and a faint work-surface tone without increasing the compact card body height or adding heavy shadow/border treatment.
+- Preview/PDF rendering and the actual/sample boundary remain frozen. Immutable generated-document/PDF/R2 lifecycle work moves to alpha.37 and requires a separate work order.
+
 ## WAFL v2 alpha.35 confirmed material-card input density
 
 - Fabric/accessory cards show core inputs as exactly two compact rows with three same-line label/value fields each; unit stays under the material name.

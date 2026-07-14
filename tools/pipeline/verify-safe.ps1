@@ -946,6 +946,7 @@ $profileCommands = @{
         @{ Name = "workorder v2 alpha.33 realistic Preview and material card flow static contract"; Command = "node"; Arguments = @("tests/workorder-v2-alpha33-realistic-preview-card-flow-contract.mjs") },
         @{ Name = "workorder v2 alpha.34 mobile Preview and material footer static contract"; Command = "node"; Arguments = @("tests/workorder-v2-alpha34-mobile-preview-footer-contract.mjs") },
         @{ Name = "workorder v2 alpha.35 material compact input static contract"; Command = "node"; Arguments = @("tests/workorder-v2-alpha35-material-compact-input-contract.mjs") },
+        @{ Name = "workorder v2 alpha.36 material card separation and summary static contract"; Command = "node"; Arguments = @("tests/workorder-v2-alpha36-material-card-separation-and-summary-contract.mjs") },
         @{ Name = "app-v2 document links and Mermaid contract"; Command = "node"; Arguments = @("tests/app-v2-document-links-contract.mjs") },
         @{ Name = "unicode encoding contract"; Command = "node"; Arguments = @("tests/unicode-encoding-contract.mjs") },
         @{ Name = "PowerShell encoding contract"; Command = "node"; Arguments = @("tests/pipeline-powershell-encoding-contract.mjs") },

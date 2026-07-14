@@ -1015,11 +1015,20 @@ function MaterialRow({ row }: { row: MaterialRowData }) {
     setValues((current) => ({ ...current, [key]: value }));
   };
   const unit = values.unit.trim();
+  const orderQuantityReady = Boolean(
+    unit && values.required.trim() && values.allowance.trim() && values.stockUse.trim()
+  );
+  const unitPriceReady = parseMaterialNumber(values.unitPrice) > 0;
   const orderQuantity = Math.max(
     parseMaterialNumber(values.required) + parseMaterialNumber(values.allowance) - parseMaterialNumber(values.stockUse),
     0
   );
   const amount = orderQuantity * parseMaterialNumber(values.unitPrice);
+  const orderQuantitySummary = orderQuantityReady
+    ? formatMaterialQuantity(String(orderQuantity), unit)
+    : "—";
+  const unitPriceSummary = unitPriceReady ? formatMaterialCurrency(values.unitPrice) : "—";
+  const amountSummary = orderQuantityReady && unitPriceReady ? formatMaterialCurrency(String(amount)) : "—";
 
   return (
     <View testID="material-card" style={[styles.dataRow, styles.materialDataRow, materialRowStateStyle(row.status), locked && styles.lockedRow, row.status === "완료" && styles.completedRow]}>
@@ -1034,7 +1043,7 @@ function MaterialRow({ row }: { row: MaterialRowData }) {
               invalid={!unit}
               label="단위"
               onChange={updateValue("unit")}
-              placeholder="입력"
+              placeholder=""
               value={values.unit}
             />
           </View>
@@ -1048,7 +1057,7 @@ function MaterialRow({ row }: { row: MaterialRowData }) {
           invalid={!values.supplier.trim()}
           label="거래처"
           onChange={updateValue("supplier")}
-          placeholder="미입력"
+          placeholder=""
           value={values.supplier}
         />
         <CompactInlineEditableField
@@ -1057,7 +1066,7 @@ function MaterialRow({ row }: { row: MaterialRowData }) {
           invalid={!values.colorOrOption.trim()}
           label="색상·옵션"
           onChange={updateValue("colorOrOption")}
-          placeholder="미입력"
+          placeholder=""
           value={values.colorOrOption}
         />
         <CompactInlineEditableField
@@ -1068,7 +1077,7 @@ function MaterialRow({ row }: { row: MaterialRowData }) {
           keyboardType="numeric"
           label="단가"
           onChange={updateValue("unitPrice")}
-          placeholder="미입력"
+          placeholder=""
           value={values.unitPrice}
         />
       </View>
@@ -1081,7 +1090,7 @@ function MaterialRow({ row }: { row: MaterialRowData }) {
           keyboardType="numeric"
           label="필요"
           onChange={updateValue("required")}
-          placeholder="0"
+          placeholder=""
           value={values.required}
         />
         <CompactInlineEditableField
@@ -1091,7 +1100,7 @@ function MaterialRow({ row }: { row: MaterialRowData }) {
           keyboardType="numeric"
           label="로스·여유"
           onChange={updateValue("allowance")}
-          placeholder="0"
+          placeholder=""
           value={values.allowance}
         />
         <CompactInlineEditableField
@@ -1101,7 +1110,7 @@ function MaterialRow({ row }: { row: MaterialRowData }) {
           keyboardType="numeric"
           label="재고"
           onChange={updateValue("stockUse")}
-          placeholder="0"
+          placeholder=""
           value={values.stockUse}
         />
       </View>
@@ -1123,7 +1132,7 @@ function MaterialRow({ row }: { row: MaterialRowData }) {
       </View>
       <View testID="material-order-action-row" style={styles.materialOrderActionRow}>
         <Text testID="material-order-summary" numberOfLines={1} style={styles.materialOrderActionSummary}>
-          발주 {formatMaterialQuantity(String(orderQuantity), unit)} · {formatMaterialCurrency(String(amount))}
+          발주 {orderQuantitySummary} · 단가 {unitPriceSummary} · 금액 {amountSummary}
         </Text>
         {actions.length ? (
           <View testID="material-order-actions" style={styles.materialOrderActions}>
@@ -1178,7 +1187,7 @@ function formatMaterialNumber(value: number) {
 
 function formatMaterialQuantity(value: string, unit: string) {
   if (!value.trim()) return "";
-  return `${formatMaterialNumber(parseMaterialNumber(value))}${unit}`;
+  return `${formatMaterialNumber(parseMaterialNumber(value))}${unit ? ` ${unit}` : ""}`;
 }
 
 function formatMaterialCurrency(value: string) {
@@ -3200,7 +3209,11 @@ const styles = StyleSheet.create({
     paddingVertical: 11
   },
   materialDataRow: {
+    backgroundColor: "#fffdf8",
+    borderRadius: 8,
     gap: 5,
+    marginBottom: 8,
+    paddingHorizontal: 10,
     paddingVertical: 9
   },
   materialDraftRow: {

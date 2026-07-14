@@ -37,11 +37,12 @@
   33. `docs/project/app-v2/30-realistic-preview-entry-and-material-card-flow-evidence.md`
   34. `docs/project/app-v2/31-mobile-preview-sample-and-material-footer-evidence.md`
   35. `docs/project/app-v2/32-mobile-material-compact-input-evidence.md`
-  36. `docs/project/v2/00-start-here.md` through `docs/project/v2/14-operational-policy-absorption.md`
-  37. `docs/project/25-korean-unicode-encoding-standard.md`
-  38. `docs/project/32-product-completion-and-ui-evidence-standard.md`
-  39. `docs/project/26-final-policy-decisions-and-master-todo.md`
-  40. `docs/project/31-pre-codex-integrated-master-plan.md`
+  36. `docs/project/app-v2/33-mobile-material-card-separation-and-summary-evidence.md`
+  37. `docs/project/v2/00-start-here.md` through `docs/project/v2/14-operational-policy-absorption.md`
+  38. `docs/project/25-korean-unicode-encoding-standard.md`
+  39. `docs/project/32-product-completion-and-ui-evidence-standard.md`
+  40. `docs/project/26-final-policy-decisions-and-master-todo.md`
+  41. `docs/project/31-pre-codex-integrated-master-plan.md`
 - `docs/project/app-v2/*` is the priority authority for the `2.0.x` App-first line.
 - Existing `docs/project/v2/*` documents are not deleted. They remain the `0.30.x` `/ui` design baseline and preserved policy reference for Product, Sheet/Card, Korean role labels, Neon/R2/Worker, PDF/share, mobile-web, and QA rules.
 - `www.wafl.co.kr` is the public marketing, download, pricing, examples, inquiry, trial-request, and waitlist landing site for the WAFL app.
@@ -63,6 +64,7 @@
 - `docs/project/app-v2/30-realistic-preview-entry-and-material-card-flow-evidence.md` records the alpha.33 actual/sample Preview boundary, localhost sample entry, realistic Korean print evidence, and action-last material card flow. It authorizes no DB/API mutation, generated-document row, QR, R2, Worker, or production lifecycle; those remain later separately approved work.
 - `docs/project/app-v2/31-mobile-preview-sample-and-material-footer-evidence.md` records the alpha.34 Expo mock entry to the localhost realistic sample and the single-band material footer layout. Actual issued Preview keeps its immutable route without sample fallback. Browser print PDF is QA evidence only; generated-document, QR, R2, Worker, and production PDF lifecycle remain later separately approved work.
 - `docs/project/app-v2/32-mobile-material-compact-input-evidence.md` records the alpha.35 mock-only material-card density contract: two core input rows, local quantity/amount calculation, field-only missing states, and one final order/action row. It authorizes no API/DB persistence or document lifecycle work.
+- `docs/project/app-v2/33-mobile-material-card-separation-and-summary-evidence.md` records the alpha.36 final material-card display correction: complete order summary labels, empty core placeholders, neutral incomplete calculations, and subtle card separation without height growth. It authorizes no API/DB persistence or PDF/R2 lifecycle work.
 - Normal mobile production-card screens are portrait-first. Mobile landscape is not the default production-card target; the future sketch/drawing module may be the mobile-landscape exception.
 - Tablet app screens must support portrait and landscape without becoming a compressed desktop admin layout.
 - Next.js remains for system admin, customer admin advanced settings, operations, API, document, internal showroom, and test-console flows.

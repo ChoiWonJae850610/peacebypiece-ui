@@ -1,11 +1,21 @@
-# WAFL v2 App-first Roadmap 2.0 - 2.0.0-alpha.35
+# WAFL v2 App-first Roadmap 2.0 - 2.0.0-alpha.36
+
+## 2.0.0-alpha.36 result
+
+- Preserve alpha.35's two core rows, unit position, local calculation, and one final summary/action row.
+- Name order quantity, unit price, and amount in the final summary; use neutral dashes when required calculation inputs are missing instead of synthetic zero values.
+- Remove default placeholder copy from the six core fields and unit while retaining usage-area and memo placeholders plus field-only missing treatment.
+- Add 8px inter-card spacing and a faint work-surface background while retaining the existing subtle top line/status accent and compact body height.
+- Keep the Preview renderer, actual/sample boundary, mixed-orientation print layout, and all API/DB/R2/Worker/PDF lifecycle boundaries unchanged.
+- `LEVEL_4_PRODUCT_VERIFIED`: summary and missing-input interactions PASS; representative mobile card `214px`; tablet `212px`; 390/768/1024 overflow 0; localhost sample/144/production 404/console 0 PASS; unchanged accepted three-page print contract re-inspected.
+- Evidence: `33-mobile-material-card-separation-and-summary-evidence.md`.
 
 ## 2.0.0-alpha.35 result
 
 - Compress fabric/accessory cards into two horizontal core-input rows with three fields each and keep unit directly below the material name.
 - Use local same-position editing for supplier, color/option, unit price, required, allowance, stock, and unit. Recalculate order quantity and amount without connecting mobile persistence.
 - Replace warning/reference prose and split footer blocks with field-only missing states and one final order-summary/action row.
-- Preserve the alpha.34 sample entry and frozen Preview renderer/print contract. Defer immutable PDF binary, generated-document metadata, QR, R2, and Worker lifecycle to alpha.36.
+- Preserve the alpha.34 sample entry and frozen Preview renderer/print contract. Defer immutable PDF binary, generated-document metadata, QR, R2, and Worker lifecycle beyond this UI correction line.
 - `LEVEL_4_PRODUCT_VERIFIED`: 390/768/1024 overflow 0, card height `275px -> 214px`, edit height stable, local unit/quantity/amount recalculation PASS, locked affordance 0, and three-page Preview print regression PASS.
 - Evidence: `32-mobile-material-compact-input-evidence.md`.
 
