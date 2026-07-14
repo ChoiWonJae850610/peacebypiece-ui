@@ -1,3 +1,16 @@
+# 2.0.0-alpha.38 Generated Document DB/R2 Lifecycle
+
+- APP_VERSION and mobile mirrors are `2.0.0-alpha.38`.
+- Approved dev/test migration 010 added nullable native `uuid` receipt linkage with a tenant-safe composite FK; ledger is `10/10`, existing receipt rows were not backfilled, and production was not accessed.
+- PostgreSQL `DEFAULT gen_random_uuid()` generated document `f9c2141d-19e2-4a37-ba4b-33588cd3cd74`; application code neither supplied nor derived the entity UUID.
+- The first runtime committed one receipt and one pending generated document, then stopped on a local Chromium `networkidle` timeout before PDF/R2/finalize. Bounded audit confirmed `PARTIAL_MUTATION_CONFIRMED`, event 0, and R2 object 0.
+- The renderer now waits for explicit document, font, image, and page-root readiness. A logging wrapper failure occurred before the continuation runner body and caused no mutation; its Failure Handoff is preserved.
+- The approved exact-identity continuation reused the pending UUID, rendered the actual issued A30FACT Preview, uploaded exactly one PDF, verified it by signed GET, finalized the existing row once, and appended one domain event.
+- Final PDF: 130,332 bytes, SHA-256 `9be3cae53b43d11dc397d3f3a9226ee444eedd4a42880edcbfbbee79ef4852d2`, two pages, landscape then portrait. Snapshot SHA-256 is `25d92b5a0dea77da01553173786eec7a05dc10b5ce741a18266ccbc5ca332325`.
+- Final target counts are receipt/document/event `1/1/1`, incomplete/pending/failed `0/0/0`. Duplicate replay produced no DB update, render, PUT, event, UUID, or key delta; B/C/H tenant isolation passed.
+- The DB receipt, generated document, event, and exact R2 object are retained for alpha.39. R2 DELETE, cleanup, rollback, production, and business-data mutation are false.
+- Evidence: `docs/project/app-v2/35-generated-document-db-r2-runtime-evidence.md`.
+
 # 2.0.0-alpha.37 Issued Revision PDF Generation Foundation
 
 - APP_VERSION and mobile mirrors are `2.0.0-alpha.37`.

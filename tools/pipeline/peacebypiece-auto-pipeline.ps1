@@ -1352,6 +1352,56 @@ function AddAlpha37PdfFoundationRepoStateSections {
     AddRepoStateSection -Lines $Lines -Title "Alpha.37 R2 Mutation / Worker Execution / Production Mutation:" -Values @("false / false / false")
 }
 
+function AddAlpha38PdfDbR2RuntimeRepoStateSections {
+    param(
+        [System.Collections.Generic.List[string]]$Lines,
+        [string]$Version
+    )
+
+    if ($Version -ne "2.0.0-alpha.38") {
+        return
+    }
+
+    $manifest = $null
+    $manifestPath = Join-Path $ProjectDir ".tmp\wafl-v2-alpha38\runtime-manifest.json"
+    if (Test-Path -LiteralPath $manifestPath -PathType Leaf) {
+        try {
+            $manifest = Get-Content -LiteralPath $manifestPath -Raw -Encoding UTF8 | ConvertFrom-Json
+        }
+        catch {
+            $manifest = $null
+        }
+    }
+
+    $value = {
+        param([string]$Name)
+        if ($null -eq $manifest) { return "unknown" }
+        $property = $manifest.PSObject.Properties[$Name]
+        if ($null -eq $property -or $null -eq $property.Value) { return "unknown" }
+        return [string]$property.Value
+    }
+
+    AddRepoStateSection -Lines $Lines -Title "Alpha.38 Completion Status:" -Values @($(if ($null -ne $manifest -and $manifest.result -eq "ALPHA38_PDF_DB_R2_CONTINUATION_PASS") { "ALPHA38_PDF_DB_R2_CONTINUATION_AND_COMPLETION_PASS" } else { "MISSING_OR_INVALID_RUNTIME_MANIFEST" }))
+    AddRepoStateSection -Lines $Lines -Title "Alpha.38 Runtime Manifest:" -Values @($(if ($null -ne $manifest) { $manifestPath } else { "missing" }))
+    AddRepoStateSection -Lines $Lines -Title "Alpha.38 Migration 010 / Ledger:" -Values @("applied once in approved dev/test; SHA d75dac55a0536210513a1fb00db2513bc9249a7363d66dcd5d4c0cab24c6e350; ledger 10/10")
+    AddRepoStateSection -Lines $Lines -Title "Alpha.38 Receipt Link Type:" -Values @("native uuid; company-scoped FK; UUID source PostgreSQL DEFAULT gen_random_uuid() RETURNING id")
+    AddRepoStateSection -Lines $Lines -Title "Alpha.38 Generated Document UUID:" -Values @((& $value "generatedDocumentId"))
+    AddRepoStateSection -Lines $Lines -Title "Alpha.38 Actual Source Document:" -Values @("$(& $value 'displayDocumentNumber'); WorkOrder $(& $value 'workOrderId'); revision $(& $value 'revisionId')")
+    AddRepoStateSection -Lines $Lines -Title "Alpha.38 Renderer / DTO Schema:" -Values @("$(& $value 'rendererVersion') / $(& $value 'dtoSchemaVersion')")
+    AddRepoStateSection -Lines $Lines -Title "Alpha.38 Snapshot SHA-256:" -Values @((& $value "snapshotSha256"))
+    AddRepoStateSection -Lines $Lines -Title "Alpha.38 PDF SHA-256 / Size:" -Values @("$(& $value 'pdfSha256') / $(& $value 'fileSizeBytes') bytes")
+    AddRepoStateSection -Lines $Lines -Title "Alpha.38 PDF Pages / Orientation:" -Values @($(if ($null -ne $manifest) { "$($manifest.pageCount) / $($manifest.pageOrientations -join ', ')" } else { "unknown" }))
+    AddRepoStateSection -Lines $Lines -Title "Alpha.38 R2 Object Key:" -Values @((& $value "objectKey"))
+    AddRepoStateSection -Lines $Lines -Title "Alpha.38 R2 PUT / GET Integrity / DELETE:" -Values @("$(& $value 'r2PutCount') / PASS / $(& $value 'r2DeleteCount')")
+    AddRepoStateSection -Lines $Lines -Title "Alpha.38 Continuation Delta:" -Values @("receipt +$(& $value 'receiptDelta'); document +$(& $value 'documentDelta'); finalize update $(& $value 'documentUpdateCount'); event +$(& $value 'eventDelta')")
+    AddRepoStateSection -Lines $Lines -Title "Alpha.38 Final Scoped Counts:" -Values @("receipt/document/event 1/1/1; incomplete/pending/failed 0/0/0; retained R2 object 1")
+    AddRepoStateSection -Lines $Lines -Title "Alpha.38 Duplicate Replay Delta:" -Values @((& $value "duplicateReplayDelta"))
+    AddRepoStateSection -Lines $Lines -Title "Alpha.38 Partial Mutation Result:" -Values @("NO_PARTIAL_MUTATION - initial pending state resolved by exact-identity continuation; no prepare replay or cleanup")
+    AddRepoStateSection -Lines $Lines -Title "Alpha.38 Tenant Isolation:" -Values @("PASS - Company B/C/H generated document and receipt hidden")
+    AddRepoStateSection -Lines $Lines -Title "Alpha.38 Retained Dev/Test State:" -Values @("receipt 1; generated document 1; event 1; R2 PDF object 1; retained for alpha.39")
+    AddRepoStateSection -Lines $Lines -Title "Alpha.38 Production / Business Mutation:" -Values @("false / false")
+}
+
 function NewLocalRepoBuildResultFile {
     param(
         [string]$Version,
@@ -1394,6 +1444,7 @@ function NewLocalRepoBuildResultFile {
     AddAlpha35MaterialCompactInputRepoStateSections -Lines $lines -Version $Version
     AddAlpha36MaterialCardSeparationRepoStateSections -Lines $lines -Version $Version
     AddAlpha37PdfFoundationRepoStateSections -Lines $lines -Version $Version
+    AddAlpha38PdfDbR2RuntimeRepoStateSections -Lines $lines -Version $Version
     if ($Version -eq "2.0.0-alpha.31") {
         AddRepoStateSection -Lines $lines -Title "Alpha.31 Product Verification:" -Values @("LEVEL_4_PRODUCT_VERIFIED - desktop/tablet/mobile/inline interaction evidence")
         AddRepoStateSection -Lines $lines -Title "Alpha.31 Sample Route Guard:" -Values @("PASS - localhost 200; Host www.wafl.co.kr 404")

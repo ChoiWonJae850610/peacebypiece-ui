@@ -1,5 +1,11 @@
 # Pending Tests — 0.24.21.19
 
+## WAFL v2 alpha.38 retained manual QA
+
+- Confirm the retained dev/test PDF visually from an approved internal retrieval path when alpha.39 viewer work exists; no public viewer exists in alpha.38.
+- Verify QR/viewer token expiry, revoke, generic NOT_FOUND, UUID/key non-disclosure, and access accounting in alpha.39.
+- Production migration, production R2, real customer documents, mobile document download/share, and device PDF opening remain NOT_RUN.
+
 ## 자동 검증
 - `node tests/pre-codex-final-contract-gate-contract.mjs`
 - `node tests/document-structure-contract.mjs`

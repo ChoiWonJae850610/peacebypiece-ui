@@ -1,5 +1,9 @@
 # WAFL v2 PDF / Share Spec - 0.30.0-alpha.7
 
+## App-first alpha.38 implementation note
+
+The App-first line now has one approved dev/test immutable issued-PDF persistence result with DB-generated UUID metadata and verified R2 bytes. External viewer, QR, `document_access_tokens`, expiry, revoke, and public delivery remain unimplemented alpha.39 scope; internal UUID and storage key must not become viewer payloads.
+
 ## Purpose
 
 This document defines the first WAFL v2 PDF/share baseline before implementation.

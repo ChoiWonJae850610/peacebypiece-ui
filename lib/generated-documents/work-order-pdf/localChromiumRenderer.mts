@@ -22,7 +22,8 @@ function assertLocalRenderUrl(value: string): URL {
   if (url.protocol !== "http:" || !new Set(["localhost", "127.0.0.1", "::1"]).has(url.hostname)) {
     throw new Error("PDF_LOCAL_RENDER_URL_REQUIRED");
   }
-  if (url.pathname !== "/dev/workorder-preview-sample") {
+  if (url.pathname !== "/dev/workorder-preview-sample"
+    && !/^\/dev\/workorder-pdf-render\/[a-f0-9]{32}$/.test(url.pathname)) {
     throw new Error("PDF_LOCAL_RENDER_ROUTE_INVALID");
   }
   return url;
@@ -81,10 +82,18 @@ export class LocalChromiumIssuedWorkOrderPdfRenderer implements IssuedWorkOrderP
       page.on("requestfailed", (request) => {
         failedRequests.push(new URL(request.url()).pathname.slice(0, 160));
       });
+      page.on("response", (response) => {
+        if (response.status() >= 400) {
+          failedRequests.push(new URL(response.url()).pathname.slice(0, 160));
+        }
+      });
 
-      await page.goto(renderUrl.toString(), { waitUntil: "networkidle" });
+      const response = await page.goto(renderUrl.toString(), { waitUntil: "domcontentloaded" });
+      if (!response || response.status() !== 200) throw new Error("PDF_RENDER_ROUTE_RESPONSE_INVALID");
+      await page.locator('[data-wafl-pdf-ready="true"]').waitFor({ state: "attached" });
+      await page.locator("[data-page-orientation]").first().waitFor({ state: "attached" });
       await page.emulateMedia({ media: "print" });
-      await page.evaluate(async () => {
+      const readyEvidence = await page.evaluate(async () => {
         await document.fonts.ready;
         await Promise.all(Array.from(document.images).map((image) => image.complete
           ? Promise.resolve()
@@ -92,7 +101,20 @@ export class LocalChromiumIssuedWorkOrderPdfRenderer implements IssuedWorkOrderP
             image.addEventListener("load", () => resolve(), { once: true });
             image.addEventListener("error", () => resolve(), { once: true });
           })));
+        return {
+          fontStatus: document.fonts.status,
+          incompleteImageCount: Array.from(document.images).filter((image) => !image.complete).length,
+          pageRootCount: document.querySelectorAll("[data-page-orientation]").length,
+          ready: document.querySelector('[data-wafl-pdf-ready="true"]') !== null,
+        };
       });
+      if (!readyEvidence.ready
+        || readyEvidence.fontStatus !== "loaded"
+        || readyEvidence.incompleteImageCount !== 0
+        || readyEvidence.pageRootCount < 1) {
+        throw new Error("PDF_RENDER_READY_INVALID");
+      }
+      if (consoleErrors.length || failedRequests.length) throw new Error("PDF_RENDER_RESOURCE_ERROR");
 
       const pageSnapshotSha = await page.locator("[data-wafl-pdf-snapshot-sha]")
         .getAttribute("data-wafl-pdf-snapshot-sha");

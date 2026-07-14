@@ -1,6 +1,6 @@
 import "server-only";
 
-import type { WorkOrderIssuedPdfSnapshot } from "@/lib/generated-documents/work-order-pdf/snapshot";
+import type { WorkOrderIssuedPdfSnapshot } from "./snapshot";
 
 export const GENERATED_DOCUMENT_COMMAND_CODE = "work_order.document.generate";
 
@@ -14,11 +14,15 @@ export type GeneratedDocumentGenerationIdentity = {
   readonly displayDocumentNumber: string;
 };
 
-export type PreparedGeneratedDocument = GeneratedDocumentGenerationIdentity & {
-  readonly status: "pending";
+export type PreparePendingGeneratedDocumentInput = Omit<GeneratedDocumentGenerationIdentity, "generatedDocumentId"> & {
   readonly rendererVersion: string;
   readonly dtoSchemaVersion: number;
   readonly snapshot: WorkOrderIssuedPdfSnapshot;
+};
+
+export type PreparedGeneratedDocument = PreparePendingGeneratedDocumentInput & {
+  readonly generatedDocumentId: string;
+  readonly status: "pending";
 };
 
 export type FinalizeGeneratedDocumentInput = GeneratedDocumentGenerationIdentity & {
@@ -39,7 +43,7 @@ export interface GeneratedDocumentGenerationRepository {
     readonly commandCode: typeof GENERATED_DOCUMENT_COMMAND_CODE;
     readonly scopedIdempotencyKeyHash: string;
   }): Promise<PreparedGeneratedDocument | null>;
-  preparePendingGeneration(input: PreparedGeneratedDocument): Promise<void>;
+  preparePendingGeneration(input: PreparePendingGeneratedDocumentInput): Promise<PreparedGeneratedDocument>;
   finalizeGeneratedGeneration(input: FinalizeGeneratedDocumentInput): Promise<void>;
   failGeneration(input: GeneratedDocumentGenerationIdentity & {
     readonly failureCode: string;
@@ -97,22 +101,27 @@ export const GENERATED_DOCUMENT_GENERATION_SQL_PLAN = {
       company_id, command_code, idempotency_key, request_sha256, correlation_id
     ) VALUES ($1, $2, $3, $4, $5)
     ON CONFLICT (company_id, command_code, idempotency_key) DO NOTHING
-    RETURNING request_sha256, work_order_id, result_revision_id, result_entity_version
+    RETURNING request_sha256, work_order_id, result_revision_id,
+              result_generated_document_id, result_entity_version
   `,
   readReceipt: `
-    SELECT request_sha256, work_order_id, result_revision_id, result_entity_version
+    SELECT request_sha256, work_order_id, result_revision_id,
+           result_generated_document_id, result_entity_version
     FROM work_order_command_receipts
     WHERE company_id = $1 AND command_code = $2 AND idempotency_key = $3
+    FOR UPDATE
   `,
   insertPending: `
     INSERT INTO generated_documents (
-      id, company_id, work_order_id, work_order_revision_id, document_type,
+      company_id, work_order_id, work_order_revision_id, document_type,
       generation_no, display_document_number, status, renderer_version,
       dto_schema_version, snapshot
     ) VALUES (
-      $1::uuid, $2, $3::uuid, $4::uuid, $5,
-      $6, $7, 'pending', $8, $9, $10::jsonb
+      $1, $2::uuid, $3::uuid, $4,
+      $5, $6, 'pending', $7, $8, $9::jsonb
     )
+    RETURNING id, company_id, work_order_id, work_order_revision_id,
+              document_type, generation_no, display_document_number, status
   `,
   finalizeGenerated: `
     UPDATE generated_documents
@@ -137,7 +146,7 @@ export const GENERATED_DOCUMENT_GENERATION_SQL_PLAN = {
   completeReceipt: `
     UPDATE work_order_command_receipts
     SET work_order_id = $4::uuid, result_revision_id = $5::uuid,
-        result_entity_version = $6
+        result_generated_document_id = $6::uuid, result_entity_version = $7
     WHERE company_id = $1 AND command_code = $2 AND idempotency_key = $3
   `,
 } as const;
@@ -150,7 +159,8 @@ export const GENERATED_DOCUMENT_TRANSACTION_BOUNDARY = {
     "immutable issued revision lock/read",
     "advisory generation-scope lock",
     "bounded generation number allocation",
-    "pending generated_documents insert",
+    "pending generated_documents insert without id and RETURNING native UUID",
+    "receipt to generated document UUID link",
     "commit",
   ],
   renderUpload: [
@@ -184,7 +194,7 @@ implements GeneratedDocumentGenerationRepository {
   findGenerationByIdempotencyReceipt(): Promise<PreparedGeneratedDocument | null> {
     return Promise.reject(new Error("PDF_DB_READ_NOT_BOUND_ALPHA37"));
   }
-  preparePendingGeneration(): Promise<void> { return this.disabled(); }
+  preparePendingGeneration(): Promise<PreparedGeneratedDocument> { return this.disabled(); }
   finalizeGeneratedGeneration(): Promise<void> { return this.disabled(); }
   failGeneration(): Promise<void> { return this.disabled(); }
 }

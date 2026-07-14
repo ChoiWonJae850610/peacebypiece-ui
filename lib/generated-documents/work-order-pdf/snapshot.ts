@@ -1,5 +1,3 @@
-import "server-only";
-
 import { createHash } from "node:crypto";
 
 import type {
@@ -11,7 +9,7 @@ import {
   WORK_ORDER_PDF_ALLOWED_WORK_ORDER_STATUSES,
   WORK_ORDER_PDF_DTO_SCHEMA_VERSION,
   WORK_ORDER_PDF_RENDERER_VERSION,
-} from "@/lib/generated-documents/work-order-pdf/constants";
+} from "./pdfContract.mjs";
 
 export type WorkOrderIssuedPdfAssetDescriptor = {
   readonly assetType: "image" | "attachment";

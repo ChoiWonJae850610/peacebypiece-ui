@@ -1,4 +1,14 @@
-# WAFL v2 App-first Codex Working Rules - 2.0.0-alpha.37
+# WAFL v2 App-first Codex Working Rules - 2.0.0-alpha.38
+
+## Alpha.38 generated-document persistence boundary
+
+- Generated-document identity comes only from PostgreSQL native `uuid DEFAULT gen_random_uuid()` and `INSERT ... RETURNING id`; application-generated or deterministic entity UUIDs are forbidden.
+- Idempotency uses the tenant/command/key receipt, request SHA, and tenant-safe UUID FK. Replays return the linked document and must not render, PUT, finalize, or emit another event.
+- Prepare, render/upload, and finalize are separate lifecycle boundaries. A committed pending row is retained and audited; uncertain R2 outcomes are checked read-only and are never auto-deleted or blindly re-uploaded.
+- The R2 key is immutable and exact: `companies/{companyId}/workorders/{workOrderId}/pdf/{generatedDocumentId}.pdf`. A generated identity gets at most one object and no overwrite fallback.
+- Local Chromium readiness uses explicit root, font, image, and page markers. `networkidle`, arbitrary sleep, and ignored console/network failures are not accepted PDF readiness criteria.
+- Migration/runtime continuations require exact target fingerprint, ledger, pending identity, object absence, and bounded mutation budgets. No automatic retry, cleanup, rollback, or production access is allowed.
+- Alpha.38 retains its one dev/test receipt/document/event/object for alpha.39 viewer security work. Retention does not authorize QR, token, revoke, delete, or public viewer behavior.
 
 ## Alpha.37 immutable PDF foundation boundary
 

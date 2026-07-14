@@ -1,4 +1,13 @@
-# WAFL v2 App-first Roadmap 2.0 - 2.0.0-alpha.37
+# WAFL v2 App-first Roadmap 2.0 - 2.0.0-alpha.38
+
+## 2.0.0-alpha.38 result
+
+- Apply migration 010 once to approved dev/test: receipt result linkage is native `uuid`, company-scoped, and references the DB-generated document identity. Ledger is 10/10 and existing rows are unchanged.
+- Persist one actual issued A30FACT generation through receipt reservation, pending document, actual Preview PDF render, exact-key R2 PUT/GET integrity, generated finalize, and one domain event.
+- Recover the initial render timeout by retaining and reusing the exact pending UUID. No new receipt, document, UUID, generation number, migration, or object key is created during continuation.
+- Final PDF is 130,332 bytes with SHA-256 `9be3cae53b43d11dc397d3f3a9226ee444eedd4a42880edcbfbbee79ef4852d2`, two pages, and landscape/portrait orientation.
+- Duplicate replay is a complete no-op. Final receipt/document/event is 1/1/1, incomplete/pending/failed is 0/0/0, tenant isolation passes, and retained R2 object count is one.
+- Production/business mutation, R2 DELETE, cleanup, rollback, QR, viewer, and access-token work remain excluded. Evidence: `35-generated-document-db-r2-runtime-evidence.md`.
 
 ## 2.0.0-alpha.37 result
 

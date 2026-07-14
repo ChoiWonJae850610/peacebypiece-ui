@@ -5,9 +5,9 @@
 This document starts the WAFL v2 App-first line.
 
 Previous baseline: `0.30.0-alpha.27`.
-Current baseline: `2.0.0-alpha.37`.
+Current baseline: `2.0.0-alpha.38`.
 
-Alpha.37 turns the accepted issued Preview into an immutable, stable-hashed PDF snapshot and proves a real local Chromium PDF binary plus the future DB/R2 lifecycle boundary. It performs no generated-document DB write, R2 operation, Worker execution, or production access; those remain separately approved alpha.38 work.
+Alpha.38 applies the approved native-UUID receipt link to dev/test, persists one immutable generated-document lifecycle, uploads and verifies one actual issued PDF in R2, and proves duplicate no-op plus tenant isolation. The retained DB/R2 result is dev/test evidence only; QR/viewer/access-token work remains alpha.39.
 
 The customer-facing product direction moves from a Next.js-first web showroom implementation path to an Expo React Native mobile/tablet app-first path.
 
@@ -112,6 +112,7 @@ docs/project/app-v2/
   32-mobile-material-compact-input-evidence.md
   33-mobile-material-card-separation-and-summary-evidence.md
   34-issued-revision-pdf-generation-foundation-evidence.md
+  35-generated-document-db-r2-runtime-evidence.md
 ```
 
 The alpha.19 documents are design and read-only audit authority. They do not authorize schema migration, API replacement, seed execution, DB/R2 mutation, or PDF Worker changes.

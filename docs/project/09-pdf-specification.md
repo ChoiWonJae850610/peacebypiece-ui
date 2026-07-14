@@ -3,6 +3,10 @@
 Version: 0.24.21.15  
 Status: Canonical PDF product policy and implementation contract
 
+## WAFL v2 alpha.38 implementation note
+
+The approved dev/test lifecycle now persists one immutable issued-Preview PDF using a PostgreSQL-generated document UUID, exact tenant/work-order R2 key, signed PUT/GET integrity verification, generated finalize, and one event. The successful PDF is retained. This evidence does not authorize production generation, QR, viewer tokens, revoke, delete, or regeneration policy changes.
+
 ## WAFL v2 alpha.37 implementation note
 
 For the App-first v2 issued work instruction, the current immutable Preview Read Model and `IssuedWorkOrderDocument` override legacy v1 layout assumptions. Alpha.37 proves only local Chromium binary generation and inspection; persisted metadata, R2 upload, Worker execution, QR/access tokens, and production generation remain unexecuted.

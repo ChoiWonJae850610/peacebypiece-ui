@@ -1,5 +1,13 @@
 # Final Policy Decisions and Master TODO
 
+## WAFL v2 alpha.38 confirmed generated-document persistence contract
+
+- Generated-document IDs are PostgreSQL native UUIDs created by the column default and returned from INSERT. Application or deterministic UUID generation is not an idempotency mechanism.
+- A command receipt links to its generated document through a company-scoped native UUID FK. Receipt reservation and pending document creation share one transaction.
+- Actual PDF generation uses only the issued/finalized Preview snapshot. The immutable key contains the DB-returned generated-document UUID and is never overwritten.
+- Upload integrity must pass before pending-to-generated finalize and event append. Unknown outcomes remain retained partial states for bounded reconciliation; automatic DELETE, cleanup, rollback, or duplicate PUT is forbidden.
+- The approved alpha.38 dev/test result retains exactly one receipt, one generated document, one event, and one R2 PDF. Production remains untouched. Alpha.39 owns opaque viewer token, QR, expiry/revoke, and external viewing security.
+
 ## WAFL v2 alpha.37 confirmed immutable PDF foundation contract
 
 - The issued/finalized Preview Read Model and approved `IssuedWorkOrderDocument` layout are the canonical work-instruction PDF source. Legacy PDF builders are not substituted.

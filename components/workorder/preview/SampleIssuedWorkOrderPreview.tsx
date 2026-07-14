@@ -32,6 +32,7 @@ export default function SampleIssuedWorkOrderPreview({
   return (
     <main
       className={styles.shell}
+      data-wafl-pdf-ready="true"
       data-wafl-pdf-snapshot-sha={pdfFoundationMetadata?.snapshotSha256}
       data-wafl-pdf-renderer-version={pdfFoundationMetadata?.rendererVersion}
       data-wafl-pdf-dto-schema-version={pdfFoundationMetadata?.dtoSchemaVersion}

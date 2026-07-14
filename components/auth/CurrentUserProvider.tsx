@@ -15,6 +15,11 @@ type CurrentUserContextValue = {
 const CurrentUserContext = createContext<CurrentUserContextValue | null>(null);
 const CURRENT_USER_FETCH_DISABLED_PATHS = new Set(["/dev/workorder-preview-sample"]);
 
+function isCurrentUserFetchDisabledPath(pathname: string): boolean {
+  return CURRENT_USER_FETCH_DISABLED_PATHS.has(pathname)
+    || pathname.startsWith("/dev/workorder-pdf-render/");
+}
+
 type CurrentUserFetchResult =
   | { status: "authenticated"; user: WaflCurrentUser }
   | { status: "unauthenticated" }
@@ -41,7 +46,7 @@ async function fetchCurrentUser(): Promise<CurrentUserFetchResult> {
 
 export function CurrentUserProvider({ children }: { children: ReactNode }) {
   const pathname = usePathname();
-  const currentUserFetchDisabled = CURRENT_USER_FETCH_DISABLED_PATHS.has(pathname);
+  const currentUserFetchDisabled = isCurrentUserFetchDisabledPath(pathname);
   const [user, setUser] = useState<WaflCurrentUser | null>(null);
   const [isLoading, setIsLoading] = useState(!currentUserFetchDisabled);
   const refreshInFlightRef = useRef<Promise<WaflCurrentUser | null> | null>(null);

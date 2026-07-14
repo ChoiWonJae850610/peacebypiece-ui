@@ -1,5 +1,9 @@
 # PeaceByPiece R2 Storage Policy
 
+## WAFL v2 alpha.38 implementation note
+
+Approved dev/test stores one retained PDF at `companies/{companyId}/workorders/{workOrderId}/pdf/{generatedDocumentId}.pdf`, where `generatedDocumentId` is the PostgreSQL-returned native UUID. PUT is single-attempt and signed GET verifies MIME, size, header, and SHA before DB finalize. Unknown upload outcomes are read-only audited; automatic overwrite or DELETE is forbidden. Production remains untouched.
+
 ## WAFL v2 alpha.37 implementation note
 
 The active existing work-order PDF helper uses `companies/{companyId}/workorders/{workOrderId}/pdf/{generatedDocumentId}.pdf`. Alpha.37 follows that explicitly approved tenant/work-order-scoped grammar for a deterministic plan and local object-store test only. It performs no R2 request. The older generic `v1/{environment}/...` shape below remains a broader policy reference and is not silently substituted into this established v2 work-order key contract.

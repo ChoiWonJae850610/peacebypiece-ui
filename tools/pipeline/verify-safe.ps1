@@ -927,6 +927,8 @@ $profileCommands = @{
                 "tests/workorder-v2-alpha35-material-compact-input-contract.mjs",
                 "app/dev/workorder-pdf-snapshot/route.ts",
                 "lib/generated-documents/work-order-pdf/constants.ts",
+                "lib/generated-documents/work-order-pdf/pdfContract.mjs",
+                "lib/generated-documents/work-order-pdf/pdfContract.d.mts",
                 "lib/generated-documents/work-order-pdf/snapshot.ts",
                 "lib/generated-documents/work-order-pdf/assets.ts",
                 "lib/generated-documents/work-order-pdf/sampleFoundation.ts",
@@ -935,8 +937,17 @@ $profileCommands = @{
                 "lib/generated-documents/work-order-pdf/objectStore.ts",
                 "lib/generated-documents/work-order-pdf/localFilesystemObjectStore.mts",
                 "lib/generated-documents/work-order-pdf/generationRepository.ts",
+                "lib/generated-documents/work-order-pdf/r2WorkerTransport.ts",
+                "lib/generated-documents/work-order-pdf/localRenderInput.ts",
+                "components/workorder/preview/GeneratedIssuedWorkOrderPreview.tsx",
+                "components/auth/CurrentUserProvider.tsx",
+                "app/dev/workorder-pdf-render/[runToken]/page.tsx",
                 "scripts/run-wafl-v2-alpha37-pdf-foundation.mjs",
-                "tests/workorder-v2-alpha37-pdf-generation-foundation-contract.mjs"
+                "tests/workorder-v2-alpha37-pdf-generation-foundation-contract.mjs",
+                "db/v2/migrations/010_v2_generated_document_receipt_link.sql",
+                "scripts/run-wafl-v2-alpha38-document-receipt-migration.mjs",
+                "scripts/run-wafl-v2-alpha38-pdf-r2-runtime.mjs",
+                "tests/workorder-v2-alpha38-pdf-r2-runtime-contract.mjs"
             )
         },
         @{ Name = "mobile typecheck"; Command = "npm"; Arguments = @("--prefix", "apps/mobile", "run", "typecheck") },
@@ -960,6 +971,7 @@ $profileCommands = @{
         @{ Name = "workorder v2 alpha.35 material compact input static contract"; Command = "node"; Arguments = @("tests/workorder-v2-alpha35-material-compact-input-contract.mjs") },
         @{ Name = "workorder v2 alpha.36 material card separation and summary static contract"; Command = "node"; Arguments = @("tests/workorder-v2-alpha36-material-card-separation-and-summary-contract.mjs") },
         @{ Name = "workorder v2 alpha.37 PDF generation foundation static contract"; Command = "node"; Arguments = @("tests/workorder-v2-alpha37-pdf-generation-foundation-contract.mjs") },
+        @{ Name = "workorder v2 alpha.38 PDF DB/R2 runtime static contract"; Command = "node"; Arguments = @("tests/workorder-v2-alpha38-pdf-r2-runtime-contract.mjs") },
         @{ Name = "app-v2 document links and Mermaid contract"; Command = "node"; Arguments = @("tests/app-v2-document-links-contract.mjs") },
         @{ Name = "unicode encoding contract"; Command = "node"; Arguments = @("tests/unicode-encoding-contract.mjs") },
         @{ Name = "PowerShell encoding contract"; Command = "node"; Arguments = @("tests/pipeline-powershell-encoding-contract.mjs") },
@@ -1465,6 +1477,9 @@ if ($Profile -eq "automation-infrastructure" -and (GetProjectAppVersion) -in @("
 }
 if ($Profile -eq "automation-infrastructure" -and (GetProjectAppVersion) -in @("2.0.0-alpha.29", "2.0.0-alpha.30") -and (Test-Path (Join-Path $ProjectDir "tests/workorder-v2-alpha30-factory-instruction-contract.mjs"))) {
     $allowedMigrationChanges = @("db/v2/migrations/009_v2_workorder_factory_instruction_fields.sql")
+}
+if ($Profile -eq "automation-infrastructure" -and (GetProjectAppVersion) -eq "2.0.0-alpha.38" -and (Test-Path (Join-Path $ProjectDir "tests/workorder-v2-alpha38-pdf-r2-runtime-contract.mjs"))) {
+    $allowedMigrationChanges = @("db/v2/migrations/010_v2_generated_document_receipt_link.sql")
 }
 $unexpectedMigrationChanges = @($migrationChanges | Where-Object { $allowedMigrationChanges -notcontains $_ })
 if ($unexpectedMigrationChanges.Count -gt 0) {
