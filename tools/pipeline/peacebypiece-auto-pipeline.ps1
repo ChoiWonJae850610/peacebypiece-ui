@@ -1642,6 +1642,7 @@ function NewLocalRepoStateFile {
     AddAlpha35MaterialCompactInputRepoStateSections -Lines $lines -Version $Version
     AddAlpha36MaterialCardSeparationRepoStateSections -Lines $lines -Version $Version
     AddAlpha37PdfFoundationRepoStateSections -Lines $lines -Version $Version
+    AddAlpha38PdfDbR2RuntimeRepoStateSections -Lines $lines -Version $Version
     if ($Version -eq "2.0.0-alpha.31") {
         $alpha31FeatureCommit = [string](InvokeLocalRepoGitOutput -Arguments @("log", "-1", "--format=%H", "-S", "2.0.0-alpha.31", "--", "lib/constants/version.ts") | Select-Object -First 1)
         $alpha31BaselineCommit = [string](InvokeLocalRepoGitOutput -Arguments @("rev-parse", "$alpha31FeatureCommit^" ) | Select-Object -First 1)
