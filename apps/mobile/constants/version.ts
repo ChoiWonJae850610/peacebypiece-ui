@@ -1,1 +1,1 @@
-export const MOBILE_APP_VERSION = "2.0.0-alpha.40";
+export const MOBILE_APP_VERSION = "2.0.0-alpha.41";

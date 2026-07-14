@@ -976,6 +976,7 @@ $profileCommands = @{
                 "app/dev/workorder-preview-sample/pdf/route.ts",
                 "tests/workorder-v2-alpha40-preview-output-and-action-density-contract.mjs",
                 "scripts/run-wafl-v2-alpha40-preview-output-readonly.mjs",
+                "tests/workorder-v2-alpha41-mobile-summary-page-number-contract.mjs",
                 "tests/workorder-v2-alpha22-dev-test-runner-contract.mjs"
             )
         },
@@ -1003,6 +1004,7 @@ $profileCommands = @{
         @{ Name = "workorder v2 alpha.38 PDF DB/R2 runtime static contract"; Command = "node"; Arguments = @("tests/workorder-v2-alpha38-pdf-r2-runtime-contract.mjs") },
         @{ Name = "workorder v2 alpha.39 document viewer security static contract"; Command = "node"; Arguments = @("tests/workorder-v2-alpha39-document-viewer-security-contract.mjs") },
         @{ Name = "workorder v2 alpha.40 Preview output and action density static contract"; Command = "node"; Arguments = @("tests/workorder-v2-alpha40-preview-output-and-action-density-contract.mjs") },
+        @{ Name = "workorder v2 alpha.41 mobile summary and PDF page number static contract"; Command = "node"; Arguments = @("tests/workorder-v2-alpha41-mobile-summary-page-number-contract.mjs") },
         @{ Name = "app-v2 document links and Mermaid contract"; Command = "node"; Arguments = @("tests/app-v2-document-links-contract.mjs") },
         @{ Name = "unicode encoding contract"; Command = "node"; Arguments = @("tests/unicode-encoding-contract.mjs") },
         @{ Name = "PowerShell encoding contract"; Command = "node"; Arguments = @("tests/pipeline-powershell-encoding-contract.mjs") },

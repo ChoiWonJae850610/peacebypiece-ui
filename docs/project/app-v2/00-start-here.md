@@ -5,7 +5,9 @@
 This document starts the WAFL v2 App-first line.
 
 Previous baseline: `0.30.0-alpha.27`.
-Current baseline: `2.0.0-alpha.40`.
+Current baseline: `2.0.0-alpha.41`.
+
+Alpha.41 standardizes every phone material card on a complete two-line order summary and icon-only actions below the canonical 760px tablet boundary. It removes continuation-page suffixes from the document number and gives every HTML/local-PDF page one dynamic centered `current / total` footer. The retained alpha.38 R2 PDF is read-only regression evidence only and is not regenerated. See `38-mobile-order-summary-and-pdf-page-number-evidence.md`.
 
 Alpha.40 tightens mobile material action density, removes duplicate sample color swatches, uses a real HTML image plus print-safe SVG color chips in the canonical document, and replaces browser print with controlled generated-PDF view/download plus a localhost-only sample PDF download. Generated-document metadata and R2 are read-only; migration ledger remains 11/11 and all DB/R2/Worker/production mutation is zero. See `37-preview-output-and-action-density-evidence.md`.
 
@@ -118,6 +120,8 @@ docs/project/app-v2/
   34-issued-revision-pdf-generation-foundation-evidence.md
   35-generated-document-db-r2-runtime-evidence.md
   36-document-viewer-security-evidence.md
+  37-preview-output-and-action-density-evidence.md
+  38-mobile-order-summary-and-pdf-page-number-evidence.md
 ```
 
 The alpha.19 documents are design and read-only audit authority. They do not authorize schema migration, API replacement, seed execution, DB/R2 mutation, or PDF Worker changes.

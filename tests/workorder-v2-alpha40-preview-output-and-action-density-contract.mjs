@@ -21,7 +21,7 @@ const detailRepository = read("lib/domain/work-orders/read/detailRepository.ts")
 const runtimeRunner = read("scripts/run-wafl-v2-alpha40-preview-output-readonly.mjs");
 
 const version = read("lib/constants/version.ts").match(/APP_VERSION\s*=\s*"([^"]+)"/)?.[1];
-assert.equal(version, "2.0.0-alpha.40");
+assert.ok(["2.0.0-alpha.40", "2.0.0-alpha.41"].includes(version));
 assert.equal(read("apps/mobile/constants/version.ts").match(/MOBILE_APP_VERSION\s*=\s*"([^"]+)"/)?.[1], version);
 assert.equal(JSON.parse(read("apps/mobile/app.json")).expo.version, version);
 assert.equal(JSON.parse(read("apps/mobile/app.json")).expo.extra.appVersion, version);
@@ -29,8 +29,14 @@ assert.equal(JSON.parse(read("apps/mobile/package.json")).version, version);
 assert.equal(JSON.parse(read("apps/mobile/package-lock.json")).version, version);
 assert.equal(JSON.parse(read("apps/mobile/package-lock.json")).packages[""].version, version);
 
-assert.match(mobile, /const compactActions = width <= 390/);
-assert.match(mobile, /numberOfLines=\{width < 360 \? 2 : 1\}/);
+if (version === "2.0.0-alpha.40") {
+  assert.match(mobile, /const compactActions = width <= 390/);
+  assert.match(mobile, /numberOfLines=\{width < 360 \? 2 : 1\}/);
+} else {
+  assert.match(mobile, /const isTablet = width >= 760/);
+  assert.match(mobile, /const compactActions = !isTablet/);
+  assert.doesNotMatch(mobile, /numberOfLines=\{width < 360 \? 2 : 1\}/);
+}
 assert.match(mobile, /hitSlop=\{action \? \{ top: 6, bottom: 6, left: 3, right: 3 \}/);
 const compactActionStyle = mobile.match(/iconActionButtonCompact:\s*\{[\s\S]*?\n\s*\}/)?.[0] ?? "";
 for (const token of ["height: 30", "minWidth: 36", "width: 36", "paddingHorizontal: 4"]) assert.match(compactActionStyle, new RegExp(token));

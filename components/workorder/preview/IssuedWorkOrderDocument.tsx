@@ -149,13 +149,26 @@ function buildBlocks(data: WorkOrderIssuedPreviewReadModel): readonly DocumentBl
   return blocks;
 }
 
-function RepeatedHeading({ data, pageNumber }: { readonly data: WorkOrderIssuedPreviewReadModel; readonly pageNumber: number }) {
-  return <header className={styles.repeatedHeading}><strong>{data.header.productName}</strong><span>작업지시서</span><small>{data.document.displayDocumentNumber} · {pageNumber}</small></header>;
+function RepeatedHeading({ data }: { readonly data: WorkOrderIssuedPreviewReadModel }) {
+  return <header className={styles.repeatedHeading}><strong>{data.header.productName}</strong><span>작업지시서</span><small>{data.document.displayDocumentNumber}</small></header>;
+}
+
+function PageNumberFooter({ pageNumber, totalPages }: { readonly pageNumber: number; readonly totalPages: number }) {
+  return (
+    <footer
+      aria-label={`페이지 ${pageNumber} / ${totalPages}`}
+      className={styles.pageNumberFooter}
+      data-testid="workorder-page-number"
+    >
+      {pageNumber} / {totalPages}
+    </footer>
+  );
 }
 
 export default function IssuedWorkOrderDocument({ data, representativeImageSrc, representativeImageLabel, quantityUnit, coverFacts }: PreviewProps) {
   const timeZone = data.layoutMetadata.businessTimezone;
   const contentPages = packBlocks(buildBlocks(data));
+  const totalPages = contentPages.length + 1;
   const memos = [data.header.factoryDeliveryMemo, data.header.memo].map((memo) => memo?.trim()).filter(Boolean) as string[];
   const quantity = quantityUnit ? `${number.format(data.header.totalQuantity)}${quantityUnit}` : number.format(data.header.totalQuantity);
   const productTypeLabel = coverFacts?.productTypeLabel ?? formatProductTypeLabel(data.header.productTypeCode);
@@ -182,8 +195,15 @@ export default function IssuedWorkOrderDocument({ data, representativeImageSrc, 
           {data.sizeColors.colors.length ? <section aria-label="제품 색상" className={styles.colorSummary}><span>색상</span><div>{data.sizeColors.colors.map((color) => <span className={styles.colorChip} key={color.id}><svg aria-hidden="true" viewBox="0 0 14 14"><rect x="0.5" y="0.5" width="13" height="13" rx="2" fill={color.hexValue ?? "#d8d3ca"} /></svg>{color.displayName}</span>)}</div></section> : null}
           <section className={styles.deliveryMemo}><h2>공장 전달 메모</h2>{memos.length ? memos.map((memo, index) => <p key={`${index}-${memo.slice(0, 12)}`}>{memo}</p>) : <p>-</p>}</section>
         </div>
+        <PageNumberFooter pageNumber={1} totalPages={totalPages} />
       </section>
-      {contentPages.map((blocks, pageIndex) => <section className={`${styles.page} ${styles.contentPage}`} data-page-orientation="portrait" key={`page-${pageIndex}`}><RepeatedHeading data={data} pageNumber={pageIndex + 2} />{blocks.map((block) => <div className={styles.block} key={block.key}>{block.content}</div>)}</section>)}
+      {contentPages.map((blocks, pageIndex) => (
+        <section className={`${styles.page} ${styles.contentPage}`} data-page-orientation="portrait" key={`page-${pageIndex}`}>
+          <RepeatedHeading data={data} />
+          {blocks.map((block) => <div className={styles.block} key={block.key}>{block.content}</div>)}
+          <PageNumberFooter pageNumber={pageIndex + 2} totalPages={totalPages} />
+        </section>
+      ))}
     </article>
   );
 }

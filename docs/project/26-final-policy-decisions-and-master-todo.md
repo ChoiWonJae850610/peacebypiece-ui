@@ -1,5 +1,14 @@
 # Final Policy Decisions and Master TODO
 
+## WAFL v2 alpha.41 confirmed mobile summary and page-number contract
+
+- The canonical phone/tablet boundary is 760px. Every phone width below 760px uses exactly two explicit material-order summary lines: order quantity plus unit price, then amount. Viewport-specific ellipsis branches are forbidden.
+- Every phone material action is icon-only while preserving its accessible name and effective touch target. Tablet layouts may retain captions and the one-line summary.
+- Work-instruction page identity is separate from the display document number. Continuation headers never append a page suffix to the document number.
+- Every cover and continuation page renders exactly one centered `current / total` footer. Total pages are calculated from the cover plus the packed content-page array and are never hardcoded.
+- Alpha.41 may generate only local sample PDF/HTML QA artifacts and may read the retained alpha.38 PDF through the existing authenticated route. It does not migrate or write DB state, mutate tokens/generated documents, PUT/DELETE R2 objects, execute Workers, or access production.
+- The retained alpha.38 PDF is historical immutable evidence and is not rewritten with alpha.41 footers. A new realistic issued generation with embedded QR belongs to separately approved alpha.42 work.
+
 ## WAFL v2 alpha.40 confirmed Preview output contract
 
 - Mobile material actions may use compact icon-only visuals at 320-390px only when labels, state, and at least a 42px effective touch target remain available to assistive technology.

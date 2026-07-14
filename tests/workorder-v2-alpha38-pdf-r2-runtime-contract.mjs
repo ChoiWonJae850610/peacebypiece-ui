@@ -17,7 +17,7 @@ const mobileVersion = read("apps/mobile/constants/version.ts").match(/APP_VERSIO
 const expoVersion = JSON.parse(read("apps/mobile/app.json")).expo.version;
 const expectedVersions = process.env.WAFL_ALPHA38_PREFINAL_CONTRACT === "1"
   ? ["2.0.0-alpha.37"]
-  : ["2.0.0-alpha.38", "2.0.0-alpha.39", "2.0.0-alpha.40"];
+  : ["2.0.0-alpha.38", "2.0.0-alpha.39", "2.0.0-alpha.40", "2.0.0-alpha.41"];
 
 assert.ok(expectedVersions.includes(version));
 assert.equal(mobileVersion, version);

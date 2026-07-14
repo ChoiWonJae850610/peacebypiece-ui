@@ -1,4 +1,14 @@
-# WAFL v2 App-first Roadmap 2.0 - 2.0.0-alpha.40 result
+# WAFL v2 App-first Roadmap 2.0 - 2.0.0-alpha.41 result
+
+## 2.0.0-alpha.41 result
+
+- Use the canonical 760px phone/tablet boundary for material order summaries and actions.
+- Render every phone summary as two complete one-line Text nodes and every phone material action as icon-only while retaining accessible labels and touch targets.
+- Preserve tablet one-line summary and caption-capable actions without changing calculations, material state, or persistence behavior.
+- Remove document-number page suffixes and render one dynamic centered `current / total` footer on every cover and continuation page.
+- Verify 320 through 759px phone layouts, 760/1024px tablet layouts, desktop/mobile HTML Preview, and a three-page mixed-orientation local Chromium PDF at `LEVEL_4_PRODUCT_VERIFIED`.
+- Regress the retained alpha.38 PDF with DB `BEGIN READ ONLY` and R2 GET 2 only. Do not claim the immutable retained PDF contains the new footer and do not perform DB/R2/token/generated-document/Worker/production mutation.
+- Evidence: `38-mobile-order-summary-and-pdf-page-number-evidence.md`.
 
 ## 2.0.0-alpha.40 result
 

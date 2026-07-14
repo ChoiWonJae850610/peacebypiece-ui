@@ -1,4 +1,14 @@
-# WAFL v2 App-first Codex Working Rules - 2.0.0-alpha.40
+# WAFL v2 App-first Codex Working Rules - 2.0.0-alpha.41
+
+## Alpha.41 mobile summary and PDF page-number boundary
+
+- Treat widths below 760px as phone and 760px or wider as tablet. Do not introduce separate Mobile-S/M/L formatting branches for the material order summary.
+- Phone summary content is exactly two explicit one-line Text nodes: order quantity plus unit price, then amount. Do not use ellipsis, hide numeric content, or split actions below the content row.
+- Phone material actions are icon-only, with accessible labels and existing hitSlop preserved. Tablet captions and one-line summary remain allowed.
+- Keep the display document number unchanged on continuation pages. Page identity appears only in one centered footer per page using dynamic `current / total` values.
+- Calculate total pages from the cover plus packed content pages. Do not hardcode a sample total or add a footer outside each page root.
+- Alpha.41 local sample PDF/HTML artifacts are excluded QA evidence. The retained alpha.38 PDF may be read exactly through the existing authenticated route, but it must not be overwritten, regenerated, or reported as containing the new footer.
+- Migration, DB write, token/generated-document mutation, R2 PUT/DELETE, Worker execution, cleanup/reset/rollback, and production access remain forbidden.
 
 ## Alpha.40 output and action-density boundary
 

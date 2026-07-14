@@ -8,7 +8,7 @@
 .toolbar > div strong { display: block; overflow-wrap: anywhere; }
 .toolbarDocumentState small { display: block; margin-top: 2px; color: #687080; font-size: 11px; }
 .document { container-type: inline-size; }
-.page { box-sizing: border-box; margin: 0 auto 18px; background: #fff; box-shadow: 0 3px 16px rgba(22,32,51,.12); break-after: page; }
+.page { position: relative; box-sizing: border-box; margin: 0 auto 18px; background: #fff; box-shadow: 0 3px 16px rgba(22,32,51,.12); break-after: page; }
 .coverPage { page: cover; width: min(100%, 297mm); min-height: 210mm; padding: 12mm; display: grid; grid-template-columns: minmax(0,58fr) minmax(300px,42fr); gap: 12mm; }
 .coverSketch { display: grid; grid-template-rows: auto 1fr; min-width: 0; }
 .coverSectionLabel { border-top: 5px solid #172c4c; padding: 10px 0 8px; color: #172c4c; font-size: 13px; font-weight: 800; }
@@ -38,6 +38,7 @@
 .repeatedHeading strong { font-size: 18px; }
 .repeatedHeading span { font-weight: 800; }
 .repeatedHeading small { grid-column: 1/-1; color: #687080; }
+.pageNumberFooter { position: absolute; left: 0; right: 0; bottom: 5.5mm; color: #687080; font-size: 9px; font-weight: 500; font-variant-numeric: tabular-nums; line-height: 1; pointer-events: none; text-align: center; }
 .block { break-inside: avoid; margin-top: 10px; }
 .documentSection { break-inside: avoid; }
 .documentSection h2 { break-after: avoid; }
@@ -63,7 +64,8 @@
   .shell { padding: 12px 0; }
   .toolbar { padding: 0 12px; grid-template-columns: auto 1fr auto; }
   .toolbar > button span, .toolbarActions > button span, .toolbarActions > div > button span, .toolbarActions > a span { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0,0,0,0); }
-  .page { width: 100%; min-height: 0; padding: 18px 12px; box-shadow: none; }
+  .page { width: 100%; min-height: 0; padding: 18px 12px 36px; box-shadow: none; }
+  .pageNumberFooter { bottom: 10px; }
   .coverPage { grid-template-columns: 1fr; gap: 16px; }
   .representativeImage, .sketchPlaceholder { min-height: 360px; }
   .documentHeader h1 { font-size: 24px; }

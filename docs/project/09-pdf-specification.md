@@ -3,6 +3,10 @@
 Version: 0.24.21.15  
 Status: Canonical PDF product policy and implementation contract
 
+## WAFL v2 alpha.41 implementation note
+
+The canonical work-instruction renderer keeps the display document number unchanged on every page and renders exactly one dynamic `current / total` footer at the bottom center of each landscape or portrait page. The total is the cover plus the packed continuation-page count. Alpha.41 proves this only in localhost HTML and local Chromium PDF artifacts. The retained alpha.38 R2 PDF remains immutable and is read-only regression evidence; a new realistic issued generation with embedded QR is alpha.42 scope.
+
 ## WAFL v2 alpha.40 implementation note
 
 Official issued Preview output uses controlled generated-document view/download/share and no longer calls browser print. The canonical React document uses a real HTML image element with explicit load readiness and inline SVG color chips for print fidelity. A localhost-only sample download reuses the same immutable sample snapshot and Chromium renderer; it does not create DB metadata or an R2 object.

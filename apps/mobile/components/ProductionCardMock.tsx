@@ -1009,7 +1009,8 @@ function MaterialRow({ row }: { row: MaterialRowData }) {
   const actions = getMaterialActions(row);
   const locked = row.status !== "입력중";
   const editable = row.status === "입력중";
-  const compactActions = width <= 390;
+  const isTablet = width >= 760;
+  const compactActions = !isTablet;
   const [values, setValues] = useState(() => createMaterialEditValues(row));
   const updateValue = (key: keyof MaterialEditValues) => (value: string) => {
     setValues((current) => ({ ...current, [key]: value }));
@@ -1131,9 +1132,20 @@ function MaterialRow({ row }: { row: MaterialRowData }) {
         />
       </View>
       <View testID="material-order-action-row" style={styles.materialOrderActionRow}>
-        <Text testID="material-order-summary" numberOfLines={width < 360 ? 2 : 1} style={styles.materialOrderActionSummary}>
-          발주 {orderQuantitySummary} · 단가 {unitPriceSummary} · 금액 {amountSummary}
-        </Text>
+        {isTablet ? (
+          <Text testID="material-order-summary" numberOfLines={1} style={styles.materialOrderActionSummary}>
+            발주 {orderQuantitySummary} · 단가 {unitPriceSummary} · 금액 {amountSummary}
+          </Text>
+        ) : (
+          <View testID="material-order-summary-lines" style={styles.materialOrderLineStack}>
+            <Text testID="material-order-summary-primary" numberOfLines={1} style={styles.materialOrderLineText}>
+              발주 {orderQuantitySummary} · 단가 {unitPriceSummary}
+            </Text>
+            <Text testID="material-order-summary-amount" numberOfLines={1} style={styles.materialOrderLineText}>
+              금액 {amountSummary}
+            </Text>
+          </View>
+        )}
         {actions.length ? (
           <View testID="material-order-actions" style={styles.materialOrderActions}>
             {actions.map((action) => (
@@ -3341,7 +3353,7 @@ const styles = StyleSheet.create({
     gap: 6,
     justifyContent: "space-between",
     marginTop: 2,
-    minHeight: 34,
+    minHeight: 38,
     paddingTop: 4,
     width: "100%"
   },
@@ -3352,6 +3364,18 @@ const styles = StyleSheet.create({
     fontWeight: "800",
     lineHeight: 16,
     minWidth: 0
+  },
+  materialOrderLineStack: {
+    flex: 1,
+    justifyContent: "center",
+    minWidth: 0
+  },
+  materialOrderLineText: {
+    color: "#7b4b32",
+    fontSize: 11,
+    fontVariant: ["tabular-nums"],
+    fontWeight: "800",
+    lineHeight: 15
   },
   materialOrderActions: {
     flexDirection: "row",

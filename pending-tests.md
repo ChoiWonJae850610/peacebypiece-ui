@@ -1,5 +1,14 @@
 # Pending Tests — 0.24.21.19
 
+## WAFL v2 alpha.41 completed automation and remaining user QA
+
+- Automated PASS: phone material summaries at 320/360/375/390/412/425/480/759px, complete quantity/unit-price/amount visibility, icon-only actions, 2/3/0-action states, tablet 760/1024 regression, and horizontal/card overflow 0.
+- Automated PASS: localhost HTML Preview at 1440x900 and 390x844, three dynamic footers, old header suffix 0, footer overlap 0, console errors 0, and failed requests 0.
+- Automated PASS: local Chromium sample PDF 206,949 bytes, SHA-256 `ebb68afd21f5a470cbb460e13999a4357be7b680db74ac1a826eb453b5b1c8fc`, three pages, landscape/portrait/portrait, centered `1 / 3` through `3 / 3`, readable Korean/image/matrix, and visual clipping/overlap 0.
+- Automated PASS: retained alpha.38 PDF inline/download integrity through DB read-only transactions and exactly two R2 GETs; all DB/R2/token/generated-document/Worker/production mutation false.
+- User QA retained: physical iPhone/iPad/Galaxy touch comfort, downloaded PDF opening in native viewers, and final visual judgment of the two-line summary density and page-number placement.
+- The retained alpha.38 PDF does not contain alpha.41 footer changes. A realistic issued-data generation and embedded QR remain alpha.42 separately approved work.
+
 ## WAFL v2 alpha.40 completed automation and remaining user QA
 
 - Automated PASS: 320/390/768 material action density and overflow, two Expo Web popup entry points, rapid-click popup suppression, sample Preview image/color de-duplication, three-page sample PDF inspection, authenticated actual PDF inline/download integrity, tenant blocking, and browser console warning/error zero.

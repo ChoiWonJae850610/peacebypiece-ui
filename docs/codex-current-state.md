@@ -1,3 +1,15 @@
+# 2.0.0-alpha.41 Mobile Order Summary and PDF Page Number
+
+- APP_VERSION and mobile mirrors are `2.0.0-alpha.41`.
+- Phone layouts below 760px render the material order summary as two explicit one-line Text nodes: order quantity plus unit price, then amount. The 320/360/375/390/412/425/480/759px checks found no ellipsis, overlap, card overflow, or horizontal scroll.
+- Phone material actions remain icon-only with accessible labels and existing hitSlop. Tablet layouts at 760px and above retain the one-line summary and caption-capable action grammar.
+- The work-instruction continuation header no longer appends `· 2` or `· 3`. Every rendered page receives one dynamic centered footer using `current / total`, where total is the cover plus packed content pages.
+- Local HTML Preview QA passed at 1440x900 and 390x844 with three pages, footer texts `1 / 3`, `2 / 3`, `3 / 3`, landscape/portrait/portrait orientation, horizontal overflow 0, footer overlap 0, console errors 0, and failed requests 0.
+- Local Chromium generated a 206,949-byte sample PDF with SHA-256 `ebb68afd21f5a470cbb460e13999a4357be7b680db74ac1a826eb453b5b1c8fc`. PDF extraction and page renders confirmed all three centered footers, mixed orientation, readable Korean/image/matrix content, and old header suffix count 0.
+- The retained alpha.38 R2 PDF was read-only regression tested only: inline/download both matched 130,332 bytes and the retained SHA, R2 GET 2, DB `BEGIN READ ONLY`, and every DB/R2 write, token/generated-document, Worker, and production mutation false. The retained PDF is not reported as containing the new alpha.41 footer.
+- Verification level: `LEVEL_4_PRODUCT_VERIFIED` for the approved local/mobile/HTML/PDF scope.
+- Evidence: `docs/project/app-v2/38-mobile-order-summary-and-pdf-page-number-evidence.md`.
+
 # 2.0.0-alpha.40 Preview Output and Material Action Density
 
 - APP_VERSION and mobile mirrors are `2.0.0-alpha.40`.

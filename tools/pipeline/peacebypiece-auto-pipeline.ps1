@@ -1048,6 +1048,7 @@ function GetLocalRepoVerificationSummary {
     $alpha30Completion = $version -eq "2.0.0-alpha.30"
     $alpha39Completion = $version -eq "2.0.0-alpha.39"
     $alpha40Completion = $version -eq "2.0.0-alpha.40"
+    $alpha41Completion = $version -eq "2.0.0-alpha.41"
     $alpha39MigrationManifest = $null
     $alpha39RuntimeManifest = $null
     if ($alpha39Completion) {
@@ -1090,17 +1091,17 @@ function GetLocalRepoVerificationSummary {
         PdfR2Regression = if ([string]::IsNullOrWhiteSpace($pdfR2Regression)) { if ($productUxCleanupProfile) { "PASS - workorder PDF route/viewer static contracts; live R2 NOT_RUN" } elseif ($workorderPdfLiveProfile) { "PASS - live dev/test PDF/R2 lifecycle integration and static contracts" } elseif ($productUiRuntimeProfile) { "PASS - dev/test workorder PDF create/view/render evidence; user visual review remains" } else { "not provided" } } else { $pdfR2Regression }
         VercelReadiness = if ([string]::IsNullOrWhiteSpace($vercelReadiness)) { if ($productUxCleanupProfile) { "NOT_RUN - deployment smoke outside 0.24.34.2 static cleanup" } elseif ($workorderPdfLiveProfile) { "NOT_RUN - no deployment smoke in 0.24.34.3" } elseif ($productUiRuntimeProfile) { "NOT_RUN - localhost evidence only in 0.24.34.5 checkpoint" } else { "not provided" } } else { $vercelReadiness }
         ManualQaStatus = if ([string]::IsNullOrWhiteSpace($manualQaStatus)) { if ($productUxCleanupProfile) { "PENDING_USER_QA - PDF visual/browser matrix" } elseif ($workorderPdfLiveProfile) { "PENDING_USER_QA - rendered PDF visual/browser/device confirmation" } elseif ($productUiRuntimeProfile) { "PRODUCT_QA_INCOMPLETE - user PDF/screen review and same-Google OAuth return remain" } else { "not provided" } } else { $manualQaStatus }
-        DbMigrationApplyResult = if ($alpha40Completion) { "NOT_APPLICABLE - no migration in alpha.40; retained ledger 11/11" } elseif ($alpha39Completion -and $alpha39MigrationPassed) { "PASS - approved dev/test migration 011 applied once; ledger 11/11" } elseif ($alpha30Completion) { "PASS - approved dev/test migration 009 applied once; ledger 9/9" } elseif ($productUxCleanupProfile) { "NOT_APPLICABLE - no migration in 0.24.34.2" } elseif ($workorderPdfLiveProfile) { "NOT_APPLICABLE - no migration in 0.24.34.3" } elseif ($productUiRuntimeProfile) { "NOT_APPLICABLE - no migration in 0.24.34.5" } elseif ($null -ne $workorderEvidence -and $workorderEvidence.DbMigrationApplyResult -ne "not provided") { $workorderEvidence.DbMigrationApplyResult } elseif ($null -ne $billingEvidence -and $billingEvidence.DbMigrationApplyResult -ne "not provided") { $billingEvidence.DbMigrationApplyResult } else { GetLocalRepoVerificationEvidenceLine -Lines $lines -Patterns @(
+        DbMigrationApplyResult = if ($alpha40Completion -or $alpha41Completion) { "NOT_APPLICABLE - no migration in alpha.40/41; retained ledger 11/11" } elseif ($alpha39Completion -and $alpha39MigrationPassed) { "PASS - approved dev/test migration 011 applied once; ledger 11/11" } elseif ($alpha30Completion) { "PASS - approved dev/test migration 009 applied once; ledger 9/9" } elseif ($productUxCleanupProfile) { "NOT_APPLICABLE - no migration in 0.24.34.2" } elseif ($workorderPdfLiveProfile) { "NOT_APPLICABLE - no migration in 0.24.34.3" } elseif ($productUiRuntimeProfile) { "NOT_APPLICABLE - no migration in 0.24.34.5" } elseif ($null -ne $workorderEvidence -and $workorderEvidence.DbMigrationApplyResult -ne "not provided") { $workorderEvidence.DbMigrationApplyResult } elseif ($null -ne $billingEvidence -and $billingEvidence.DbMigrationApplyResult -ne "not provided") { $billingEvidence.DbMigrationApplyResult } else { GetLocalRepoVerificationEvidenceLine -Lines $lines -Patterns @(
             'DB Migration Apply Result:\s*(PASS|FAIL|NOT_APPLIED|NOT_APPLICABLE)',
             'Migration apply:\s*(PASS|FAIL)',
             'Consent migration apply:\s*(PASS|FAIL)'
         ) }
-        PostApplyAuditResult = if ($alpha40Completion) { "NOT_APPLICABLE - no migration in alpha.40" } elseif ($alpha30Completion) { "PASS - four nullable fields and NOT VALID constraints; existing rows/RLS/ACL unchanged" } elseif ($productUxCleanupProfile) { "NOT_APPLICABLE - no migration in 0.24.34.2" } elseif ($workorderPdfLiveProfile) { "NOT_APPLICABLE - no migration in 0.24.34.3" } elseif ($productUiRuntimeProfile) { "NOT_APPLICABLE - no migration in 0.24.34.5" } elseif ($null -ne $workorderEvidence -and $workorderEvidence.PostApplyAuditResult -ne "not provided") { $workorderEvidence.PostApplyAuditResult } elseif ($null -ne $billingEvidence -and $billingEvidence.PostApplyAuditResult -ne "not provided") { $billingEvidence.PostApplyAuditResult } else { GetLocalRepoVerificationEvidenceLine -Lines $lines -Patterns @(
+        PostApplyAuditResult = if ($alpha40Completion -or $alpha41Completion) { "NOT_APPLICABLE - no migration in alpha.40/41" } elseif ($alpha30Completion) { "PASS - four nullable fields and NOT VALID constraints; existing rows/RLS/ACL unchanged" } elseif ($productUxCleanupProfile) { "NOT_APPLICABLE - no migration in 0.24.34.2" } elseif ($workorderPdfLiveProfile) { "NOT_APPLICABLE - no migration in 0.24.34.3" } elseif ($productUiRuntimeProfile) { "NOT_APPLICABLE - no migration in 0.24.34.5" } elseif ($null -ne $workorderEvidence -and $workorderEvidence.PostApplyAuditResult -ne "not provided") { $workorderEvidence.PostApplyAuditResult } elseif ($null -ne $billingEvidence -and $billingEvidence.PostApplyAuditResult -ne "not provided") { $billingEvidence.PostApplyAuditResult } else { GetLocalRepoVerificationEvidenceLine -Lines $lines -Patterns @(
             'Post-Apply Audit Result:\s*(PASS|FAIL|NOT_APPLICABLE)',
             'Post-apply .*audit:\s*(PASS|FAIL)',
             'post-apply .*findings\s+0'
         ) }
-        RollbackSmokeResult = if ($alpha40Completion) { "NOT_APPLICABLE - no migration or data mutation; cleanup/reset/rollback not executed" } elseif ($alpha30Completion) { "NOT_RUN - cleanup/reset/rollback prohibited and not executed" } elseif ($productUxCleanupProfile) { "NOT_APPLICABLE - no DB fixture mutation" } elseif ($workorderPdfLiveProfile) { "PASS - exact fixture cleanup with residual DB/R2 0" } elseif ($productUiRuntimeProfile) { "NOT_APPLICABLE - no cleanup fixture; dev/test existing workorder QA mutation recorded" } elseif ($null -ne $billingEvidence -and $billingEvidence.RollbackSmokeResult -ne "not provided") { $billingEvidence.RollbackSmokeResult } else { GetLocalRepoVerificationEvidenceLine -Lines $lines -Patterns @(
+        RollbackSmokeResult = if ($alpha40Completion -or $alpha41Completion) { "NOT_APPLICABLE - no migration or data mutation; cleanup/reset/rollback not executed" } elseif ($alpha30Completion) { "NOT_RUN - cleanup/reset/rollback prohibited and not executed" } elseif ($productUxCleanupProfile) { "NOT_APPLICABLE - no DB fixture mutation" } elseif ($workorderPdfLiveProfile) { "PASS - exact fixture cleanup with residual DB/R2 0" } elseif ($productUiRuntimeProfile) { "NOT_APPLICABLE - no cleanup fixture; dev/test existing workorder QA mutation recorded" } elseif ($null -ne $billingEvidence -and $billingEvidence.RollbackSmokeResult -ne "not provided") { $billingEvidence.RollbackSmokeResult } else { GetLocalRepoVerificationEvidenceLine -Lines $lines -Patterns @(
             'Rollback Smoke Result:\s*(PASS|FAIL)',
             'rollback smoke:\s*(PASS|FAIL)',
             'rollback smoke .*PASS'
@@ -1109,9 +1110,9 @@ function GetLocalRepoVerificationSummary {
         DevTestFixtureMutation = if ($alpha30Completion) { "true - one approved direct process fixture row" } elseif ($null -ne $workorderEvidence -and $workorderEvidence.DevTestFixtureMutation -ne "not provided") { $workorderEvidence.DevTestFixtureMutation } elseif ($null -ne $billingEvidence -and $billingEvidence.DevTestFixtureMutation -ne "not provided") { $billingEvidence.DevTestFixtureMutation } else { GetLocalRepoVerificationNamedValue -Lines $lines -Name "Dev/Test Fixture Mutation" -Fallback "false" }
         BusinessDataMutation = if ($null -ne $workorderEvidence -and $workorderEvidence.BusinessDataMutation -ne "not provided") { $workorderEvidence.BusinessDataMutation } else { GetLocalRepoVerificationNamedValue -Lines $lines -Name "Business Data Mutation" -Fallback "false" }
         ProductionBusinessDataMutation = if ($null -ne $workorderEvidence -and $workorderEvidence.ProductionBusinessDataMutation -ne "not provided") { $workorderEvidence.ProductionBusinessDataMutation } else { GetLocalRepoVerificationNamedValue -Lines $lines -Name "Production Business Data Mutation" -Fallback "false" }
-        DevTestR2Mutation = if ($alpha40Completion) { "false in alpha.40; R2 GET 2 only; retained alpha.38 object unchanged" } elseif ($alpha39Completion -and $alpha39RuntimePassed) { "false in alpha.39; historical alpha.38 approved dev/test PUT 1 retained" } elseif ($workorderPdfLiveProfile) { "true - synthetic PDF/R2 fixture integration only" } elseif ($null -ne $workorderEvidence -and $workorderEvidence.DevTestR2Mutation -ne "not provided") { $workorderEvidence.DevTestR2Mutation } elseif ($null -ne $billingEvidence -and $billingEvidence.DevTestR2Mutation -ne "not provided") { $billingEvidence.DevTestR2Mutation } else { GetLocalRepoVerificationNamedValue -Lines $lines -Name "Dev/Test R2 Mutation" -Fallback "false" }
+        DevTestR2Mutation = if ($alpha40Completion -or $alpha41Completion) { "false in alpha.40/41; R2 GET 2 only; retained alpha.38 object unchanged" } elseif ($alpha39Completion -and $alpha39RuntimePassed) { "false in alpha.39; historical alpha.38 approved dev/test PUT 1 retained" } elseif ($workorderPdfLiveProfile) { "true - synthetic PDF/R2 fixture integration only" } elseif ($null -ne $workorderEvidence -and $workorderEvidence.DevTestR2Mutation -ne "not provided") { $workorderEvidence.DevTestR2Mutation } elseif ($null -ne $billingEvidence -and $billingEvidence.DevTestR2Mutation -ne "not provided") { $billingEvidence.DevTestR2Mutation } else { GetLocalRepoVerificationNamedValue -Lines $lines -Name "Dev/Test R2 Mutation" -Fallback "false" }
         ProductionMutation = if ($workorderPdfLiveProfile) { "false" } elseif ($null -ne $workorderEvidence -and $workorderEvidence.ProductionMutation -ne "not provided") { $workorderEvidence.ProductionMutation } elseif ($null -ne $billingEvidence -and $billingEvidence.ProductionMutation -ne "not provided") { $billingEvidence.ProductionMutation } else { GetLocalRepoVerificationNamedValue -Lines $lines -Name "Production Mutation" -Fallback "false" }
-        SchemaMigrationThisRun = if ($alpha40Completion) { "false - no migration/schema/index change; retained ledger 11/11" } elseif ($alpha39Completion -and $alpha39MigrationPassed) { "011_v2_document_access_viewer_functions.sql; functions +2; table/column/index/data delta 0" } elseif ($alpha30Completion) { "false - migration 009 was applied in the separately approved pre-runtime phase" } elseif ($workorderPdfLiveProfile) { "false" } elseif ($null -ne $workorderEvidence -and $workorderEvidence.SchemaMigrationThisRun -ne "not provided") { $workorderEvidence.SchemaMigrationThisRun } elseif ($null -ne $billingEvidence -and $billingEvidence.SchemaMigrationThisRun -ne "not provided") { $billingEvidence.SchemaMigrationThisRun } else { GetLocalRepoVerificationNamedValue -Lines $lines -Name "Schema Migration This Run" -Fallback "false" }
+        SchemaMigrationThisRun = if ($alpha40Completion -or $alpha41Completion) { "false - no migration/schema/index change; retained ledger 11/11" } elseif ($alpha39Completion -and $alpha39MigrationPassed) { "011_v2_document_access_viewer_functions.sql; functions +2; table/column/index/data delta 0" } elseif ($alpha30Completion) { "false - migration 009 was applied in the separately approved pre-runtime phase" } elseif ($workorderPdfLiveProfile) { "false" } elseif ($null -ne $workorderEvidence -and $workorderEvidence.SchemaMigrationThisRun -ne "not provided") { $workorderEvidence.SchemaMigrationThisRun } elseif ($null -ne $billingEvidence -and $billingEvidence.SchemaMigrationThisRun -ne "not provided") { $billingEvidence.SchemaMigrationThisRun } else { GetLocalRepoVerificationNamedValue -Lines $lines -Name "Schema Migration This Run" -Fallback "false" }
         CertificateIntegrationResult = if ($productUxCleanupProfile) { "NOT_APPLICABLE - no certificate integration in 0.24.34.2" } else { GetLocalRepoVerificationNamedValue -Lines $lines -Name "Certificate Integration Result" }
         PngUpload = if ($productUxCleanupProfile) { "NOT_APPLICABLE" } else { GetLocalRepoVerificationNamedValue -Lines $lines -Name "PNG Upload" }
         JpegReplacement = if ($productUxCleanupProfile) { "NOT_APPLICABLE" } else { GetLocalRepoVerificationNamedValue -Lines $lines -Name "JPEG Replacement" }
@@ -1492,6 +1493,36 @@ function AddAlpha40PreviewOutputRepoStateSections {
     AddRepoStateSection -Lines $Lines -Title "Alpha.40 Read-only Runner Corrections:" -Values @("two preserved Failure Handoffs: PostgreSQL UUID/text cast and canonical auth envelope assertion; both mutation 0")
 }
 
+function AddAlpha41MobileSummaryPageNumberRepoStateSections {
+    param(
+        [System.Collections.Generic.List[string]]$Lines,
+        [string]$Version
+    )
+
+    if ($Version -ne "2.0.0-alpha.41") { return }
+
+    $manifest = $null
+    $manifestPath = Join-Path $ProjectDir ".tmp\wafl-v2-alpha41\product-qa-manifest.json"
+    if (Test-Path -LiteralPath $manifestPath -PathType Leaf) {
+        try { $manifest = Get-Content -LiteralPath $manifestPath -Raw -Encoding UTF8 | ConvertFrom-Json } catch { $manifest = $null }
+    }
+    $passed = $null -ne $manifest -and [string]$manifest.result -eq "LEVEL_4_PRODUCT_VERIFIED"
+    $pdf = if ($passed) { $manifest.samplePdf } else { $null }
+    $actual = if ($passed) { $manifest.actualPdfRegression } else { $null }
+
+    AddRepoStateSection -Lines $Lines -Title "Alpha.41 Completion Status:" -Values @($(if ($passed) { "LEVEL_4_PRODUCT_VERIFIED" } else { "MISSING_OR_INVALID_PRODUCT_QA_MANIFEST" }))
+    AddRepoStateSection -Lines $Lines -Title "Alpha.41 Phone Breakpoint / Summary Lines:" -Values @($(if ($passed) { "$($manifest.phoneBreakpoint) / 2" } else { "760 / unknown" }))
+    AddRepoStateSection -Lines $Lines -Title "Alpha.41 320 / 375 / 425 Summary:" -Values @($(if ($passed) { "PASS / PASS / PASS - full quantity, unit price, and amount; ellipsis 0" } else { "unknown" }))
+    AddRepoStateSection -Lines $Lines -Title "Alpha.41 Phone Icon-only / 3 Actions:" -Values @($(if ($passed) { "$($manifest.phoneIconOnly) / $($manifest.actionStates.three)" } else { "unknown / unknown" }))
+    AddRepoStateSection -Lines $Lines -Title "Alpha.41 Tablet Regression:" -Values @($(if ($passed) { [string]$manifest.tabletResult } else { "unknown" }))
+    AddRepoStateSection -Lines $Lines -Title "Alpha.41 Page Footer Count / Texts:" -Values @($(if ($passed) { "$($pdf.footerCount) / $([string]::Join(', ', @($pdf.footerTexts)))" } else { "unknown" }))
+    AddRepoStateSection -Lines $Lines -Title "Alpha.41 Header Page Suffix Removal:" -Values @($(if ($passed) { "PASS - suffix count $($pdf.headerSuffixCount)" } else { "unknown" }))
+    AddRepoStateSection -Lines $Lines -Title "Alpha.41 Sample PDF:" -Values @($(if ($passed) { "$($pdf.fileSizeBytes) bytes; SHA-256 $($pdf.sha256); $($pdf.pageCount) pages; $([string]::Join('/', @($pdf.pageOrientations))); blank/clipping $($pdf.blankPageCount)/$($pdf.clippingViolationCount)" } else { "unknown" }))
+    AddRepoStateSection -Lines $Lines -Title "Alpha.41 Actual PDF Read-only Regression:" -Values @($(if ($passed) { "$($actual.result); R2 GET $($actual.r2GetCount); PUT/DELETE 0/0" } else { "unknown" }))
+    AddRepoStateSection -Lines $Lines -Title "Alpha.41 DB / R2 / Token / Generated Document / Production Mutation:" -Values @($(if ($passed) { "$($manifest.dbMutation) / $($manifest.r2Mutation) / $($manifest.tokenMutation) / $($manifest.generatedDocumentMutation) / $($manifest.productionMutation)" } else { "false / false / false / false / false" }))
+    AddRepoStateSection -Lines $Lines -Title "Alpha.41 PowerShell Menu Decision:" -Values @("no new menu; static contract remains in automation-infrastructure profile and local PDF/browser QA remains explicit")
+}
+
 function NewLocalRepoBuildResultFile {
     param(
         [string]$Version,
@@ -1537,6 +1568,7 @@ function NewLocalRepoBuildResultFile {
     AddAlpha38PdfDbR2RuntimeRepoStateSections -Lines $lines -Version $Version
     AddAlpha39DocumentViewerRepoStateSections -Lines $lines -Version $Version
     AddAlpha40PreviewOutputRepoStateSections -Lines $lines -Version $Version
+    AddAlpha41MobileSummaryPageNumberRepoStateSections -Lines $lines -Version $Version
     if ($Version -eq "2.0.0-alpha.31") {
         AddRepoStateSection -Lines $lines -Title "Alpha.31 Product Verification:" -Values @("LEVEL_4_PRODUCT_VERIFIED - desktop/tablet/mobile/inline interaction evidence")
         AddRepoStateSection -Lines $lines -Title "Alpha.31 Sample Route Guard:" -Values @("PASS - localhost 200; Host www.wafl.co.kr 404")
@@ -1737,6 +1769,7 @@ function NewLocalRepoStateFile {
     AddAlpha38PdfDbR2RuntimeRepoStateSections -Lines $lines -Version $Version
     AddAlpha39DocumentViewerRepoStateSections -Lines $lines -Version $Version
     AddAlpha40PreviewOutputRepoStateSections -Lines $lines -Version $Version
+    AddAlpha41MobileSummaryPageNumberRepoStateSections -Lines $lines -Version $Version
     if ($Version -eq "2.0.0-alpha.31") {
         $alpha31FeatureCommit = [string](InvokeLocalRepoGitOutput -Arguments @("log", "-1", "--format=%H", "-S", "2.0.0-alpha.31", "--", "lib/constants/version.ts") | Select-Object -First 1)
         $alpha31BaselineCommit = [string](InvokeLocalRepoGitOutput -Arguments @("rev-parse", "$alpha31FeatureCommit^" ) | Select-Object -First 1)
