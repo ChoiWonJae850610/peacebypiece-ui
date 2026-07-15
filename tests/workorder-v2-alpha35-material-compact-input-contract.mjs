@@ -15,7 +15,7 @@ const samplePage = read("app/dev/workorder-preview-sample/page.tsx");
 const pipeline = read("tools/pipeline/peacebypiece-auto-pipeline.ps1");
 
 const currentVersion = read("lib/constants/version.ts").match(/APP_VERSION\s*=\s*"([^"]+)"/)?.[1];
-assert.ok(["2.0.0-alpha.38", "2.0.0-alpha.39", "2.0.0-alpha.40", "2.0.0-alpha.41"].includes(currentVersion));
+assert.ok(["2.0.0-alpha.38", "2.0.0-alpha.39", "2.0.0-alpha.40", "2.0.0-alpha.41", "2.0.0-alpha.42"].includes(currentVersion));
 assert.match(read("apps/mobile/constants/version.ts"), new RegExp(currentVersion.replaceAll(".", "\\.")));
 const appConfig = JSON.parse(read("apps/mobile/app.json"));
 assert.equal(appConfig.expo.version, currentVersion);

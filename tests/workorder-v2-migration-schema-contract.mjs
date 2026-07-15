@@ -18,6 +18,7 @@ const expectedFiles = [
   "009_v2_workorder_factory_instruction_fields.sql",
   "010_v2_generated_document_receipt_link.sql",
   "011_v2_document_access_viewer_functions.sql",
+  "012_v2_document_access_token_purpose.sql",
 ];
 
 const actualFiles = fs
@@ -37,7 +38,9 @@ const executableSql = combined
   .replace(/^\s*--.*$/gm, "");
 
 for (const { file, source } of sources) {
-  if (file === "011_v2_document_access_viewer_functions.sql") {
+  if (file === "012_v2_document_access_token_purpose.sql") {
+    assert.ok(source.includes("EXECUTION IS PROHIBITED WITHOUT THE APPROVED ALPHA.42 DEV/TEST GATE"), `${file} missing alpha.42 execution prohibition`);
+  } else if (file === "011_v2_document_access_viewer_functions.sql") {
     assert.ok(source.includes("EXECUTION IS PROHIBITED WITHOUT THE APPROVED ALPHA.39 DEV/TEST GATE"), `${file} missing alpha.39 execution prohibition`);
   } else if (file === "010_v2_generated_document_receipt_link.sql") {
     assert.ok(source.includes("EXECUTION IS PROHIBITED WITHOUT THE APPROVED ALPHA.38 DEV/TEST GATE"), `${file} missing alpha.38 execution prohibition`);

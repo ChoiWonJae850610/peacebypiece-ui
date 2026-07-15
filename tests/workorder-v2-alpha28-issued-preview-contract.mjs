@@ -23,6 +23,7 @@ const component = `${read(files[4])}\n${read(files[5])}`;
 const css = read(files[6]);
 const models = read("lib/domain/work-orders/contracts/read-models.ts");
 const runner = read("scripts/run-wafl-v2-alpha28-issued-preview.mjs");
+const hasAlpha42Contract = fs.existsSync(path.join(root, "tests/workorder-v2-alpha42-realistic-issued-embedded-qr-contract.mjs"));
 
 assert.match(models, /export type WorkOrderIssuedPreviewReadModel/);
 assert.match(repository, /const TARGET = `[^`]*r\.id = \$3::uuid[^`]*r\.work_order_id = w\.id/);
@@ -57,7 +58,7 @@ assert.doesNotMatch(component, /window\.print\(\)/);
 assert.match(component, /작업지시서/);
 assert.match(component, /PDF 보기/);
 assert.match(component, /다운로드/);
-assert.doesNotMatch(component, /mock|QR|storage_object_key|signedUrl/i);
+assert.doesNotMatch(component, hasAlpha42Contract ? /mock|storage_object_key|signedUrl/i : /mock|QR|storage_object_key|signedUrl/i);
 assert.match(css, /@page\s+cover\s*\{\s*size:\s*A4 landscape/);
 assert.match(css, /@page\s+content\s*\{\s*size:\s*A4 portrait/);
 assert.match(css, /@media print/);

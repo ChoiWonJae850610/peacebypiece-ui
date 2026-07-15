@@ -123,6 +123,12 @@ export const GENERATED_DOCUMENT_GENERATION_SQL_PLAN = {
     RETURNING id, company_id, work_order_id, work_order_revision_id,
               document_type, generation_no, display_document_number, status
   `,
+  insertEmbeddedQrToken: `
+    INSERT INTO document_access_tokens (
+      company_id, generated_document_id, token_hash, expires_at, token_purpose
+    ) VALUES ($1, $2::uuid, $3::char(64), $4::timestamptz, 'embedded_qr')
+    RETURNING id, generated_document_id, token_purpose, expires_at
+  `,
   finalizeGenerated: `
     UPDATE generated_documents
     SET status = 'generated', storage_object_key = $4,
@@ -160,6 +166,8 @@ export const GENERATED_DOCUMENT_TRANSACTION_BOUNDARY = {
     "advisory generation-scope lock",
     "bounded generation number allocation",
     "pending generated_documents insert without id and RETURNING native UUID",
+    "derive one opaque embedded QR token after the DB returns the document UUID",
+    "insert one hash-only embedded_qr token in the same transaction",
     "receipt to generated document UUID link",
     "commit",
   ],

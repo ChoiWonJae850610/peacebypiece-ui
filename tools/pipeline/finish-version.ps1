@@ -20,6 +20,12 @@ if (-not (Test-Path -LiteralPath $PipelineCommonPath)) {
 
 . $PipelineCommonPath
 
+$ApprovedAppliedMigrationGuardPath = Join-Path $PSScriptRoot "approved-applied-migration-guard.ps1"
+if (-not (Test-Path -LiteralPath $ApprovedAppliedMigrationGuardPath)) {
+    throw "Approved applied migration guard not found: $ApprovedAppliedMigrationGuardPath"
+}
+. $ApprovedAppliedMigrationGuardPath
+
 function InvokeFinishGit {
     param([string[]]$Arguments)
 
@@ -391,6 +397,20 @@ if ($VerificationProfile -eq "automation-infrastructure" -and $ExpectedAppVersio
 }
 if ($VerificationProfile -eq "automation-infrastructure" -and $ExpectedAppVersion -eq "2.0.0-alpha.39") {
     $allowedMigrationChanges = @("db/v2/migrations/011_v2_document_access_viewer_functions.sql")
+}
+$pendingApprovedMigrationChanges = @($migrationChanges | Where-Object { $allowedMigrationChanges -notcontains $_ })
+if ($VerificationProfile -eq "automation-infrastructure" -and
+    $ExpectedAppVersion -in @("2.0.0-alpha.41", "2.0.0-alpha.42") -and
+    $pendingApprovedMigrationChanges.Count -gt 0) {
+    $approvedMigration = AssertApprovedAppliedMigrationCommitGuard `
+        -ProjectDir $ProjectDir `
+        -RepoStatusDir $RepoStatusDir `
+        -VerificationProfile $VerificationProfile `
+        -ExpectedAppVersion $ExpectedAppVersion `
+        -ChangedMigrationPaths $pendingApprovedMigrationChanges `
+        -ConfiguredFingerprint ([string]$PipelineConfig.Simulator.ApprovedDbFingerprint)
+    $allowedMigrationChanges += [string]$approvedMigration.MigrationPath
+    Write-Host "[INFO] Approved already-applied migration guard: $($approvedMigration.Status); ledger $($approvedMigration.LedgerCount)/$($approvedMigration.LedgerCount); apply count $($approvedMigration.ApplyCount)"
 }
 $unexpectedMigrationChanges = @($migrationChanges | Where-Object { $allowedMigrationChanges -notcontains $_ })
 if ($unexpectedMigrationChanges.Count -gt 0) {

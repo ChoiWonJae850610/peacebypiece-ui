@@ -1,5 +1,9 @@
 # WAFL v2 PDF / Share Spec - 0.30.0-alpha.7
 
+## App-first alpha.42 embedded QR purpose
+
+`manual_share` retains the controlled-link lifecycle. `embedded_qr` is a hash-only 365-day token bound one-to-one to a generated document and encoded only as `/v#t=<opaque-token>` inside the immutable PDF. It is excluded from manual-share rotate/list actions and can change only through a new document generation.
+
 ## App-first alpha.39 preparation note
 
 Controlled links use one opaque 32-byte HMAC output encoded as base64url and store only its SHA-256 hash. Viewer URLs carry the raw token only in the fragment, exchange it by bounded POST, remove the fragment, and use a signed HttpOnly session for PDF inline/download. Default expiry is seven days; multiple links, revoke, rotation, access count, first-view event, and QR of the same viewer URL are implemented behind separate migration/runtime approval gates.
@@ -833,3 +837,6 @@ User-facing rules:
 - Confirmation-first order/delete flows do not create final documents, share links, or order PDFs.
 - Keep row-level `보기`, `공유`, `인쇄`, and `저장` actions mock-only.
 - This `/ui` correction is mock-only. It does not create real PDF files, share links, delivery requests, R2 objects, Worker calls, API mutations, or database records.
+# Alpha.42 embedded QR purpose
+
+`manual_share` retains the controlled-link lifecycle. `embedded_qr` is a hash-only 365-day token bound one-to-one to a generated document and encoded only as `/v#t=<opaque-token>` inside the immutable PDF. It is excluded from manual-share rotate/list actions and can change only through a new document generation.

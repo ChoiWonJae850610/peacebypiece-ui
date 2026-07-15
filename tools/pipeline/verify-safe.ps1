@@ -939,6 +939,8 @@ $profileCommands = @{
                 "lib/generated-documents/work-order-pdf/generationRepository.ts",
                 "lib/generated-documents/work-order-pdf/r2WorkerTransport.ts",
                 "lib/generated-documents/work-order-pdf/localRenderInput.ts",
+                "lib/generated-documents/work-order-pdf/localRenderInputCore.mjs",
+                "lib/generated-documents/work-order-pdf/pdfPageOrientation.mjs",
                 "components/workorder/preview/GeneratedIssuedWorkOrderPreview.tsx",
                 "components/auth/CurrentUserProvider.tsx",
                 "app/dev/workorder-pdf-render/[runToken]/page.tsx",
@@ -976,8 +978,23 @@ $profileCommands = @{
                 "app/dev/workorder-preview-sample/pdf/route.ts",
                 "tests/workorder-v2-alpha40-preview-output-and-action-density-contract.mjs",
                 "scripts/run-wafl-v2-alpha40-preview-output-readonly.mjs",
-                "tests/workorder-v2-alpha41-mobile-summary-page-number-contract.mjs",
-                "tests/workorder-v2-alpha22-dev-test-runner-contract.mjs"
+                  "tests/workorder-v2-alpha41-mobile-summary-page-number-contract.mjs",
+                  "tests/workorder-v2-alpha42-realistic-issued-embedded-qr-contract.mjs",
+                  "tests/workorder-v2-alpha42-representative-image-transport-contract.mjs",
+                  "tests/workorder-v2-alpha42-pending-pdf-render-readiness-contract.mjs",
+                  "tests/workorder-v2-alpha42-local-render-input-boundary-contract.mjs",
+                  "tests/workorder-v2-alpha42-pdf-page-orientation-contract.mjs",
+                  "tests/workorder-v2-alpha42-cover-fragmentation-contract.mjs",
+                  "tests/workorder-v2-alpha42-viewer-only-continuation-contract.mjs",
+                  "scripts/run-wafl-v2-alpha42-token-purpose-migration.mjs",
+                  "scripts/run-wafl-v2-alpha42-realistic-issued-embedded-qr-runtime.mjs",
+                  "scripts/run-wafl-v2-alpha42-pending-pdf-render-readiness.mjs",
+                  "scripts/run-wafl-v2-alpha42-renderer-import-smoke.mjs",
+                  "scripts/lib/alpha42-representative-image.mjs",
+                  "scripts/lib/alpha42-viewer-response-assertions.mjs",
+                  "lib/generated-documents/document-access/tokenDerivation.mjs",
+                  "lib/generated-documents/work-order-pdf/realisticIssuedFixture.mjs",
+                  "tests/workorder-v2-alpha22-dev-test-runner-contract.mjs"
             )
         },
         @{ Name = "mobile typecheck"; Command = "npm"; Arguments = @("--prefix", "apps/mobile", "run", "typecheck") },
@@ -1004,7 +1021,16 @@ $profileCommands = @{
         @{ Name = "workorder v2 alpha.38 PDF DB/R2 runtime static contract"; Command = "node"; Arguments = @("tests/workorder-v2-alpha38-pdf-r2-runtime-contract.mjs") },
         @{ Name = "workorder v2 alpha.39 document viewer security static contract"; Command = "node"; Arguments = @("tests/workorder-v2-alpha39-document-viewer-security-contract.mjs") },
         @{ Name = "workorder v2 alpha.40 Preview output and action density static contract"; Command = "node"; Arguments = @("tests/workorder-v2-alpha40-preview-output-and-action-density-contract.mjs") },
-        @{ Name = "workorder v2 alpha.41 mobile summary and PDF page number static contract"; Command = "node"; Arguments = @("tests/workorder-v2-alpha41-mobile-summary-page-number-contract.mjs") },
+          @{ Name = "workorder v2 alpha.41 mobile summary and PDF page number static contract"; Command = "node"; Arguments = @("tests/workorder-v2-alpha41-mobile-summary-page-number-contract.mjs") },
+          @{ Name = "workorder v2 alpha.42 realistic issued embedded QR static contract"; Command = "node"; Arguments = @("tests/workorder-v2-alpha42-realistic-issued-embedded-qr-contract.mjs") },
+          @{ Name = "workorder v2 alpha.42 representative image transport contract"; Command = "node"; Arguments = @("tests/workorder-v2-alpha42-representative-image-transport-contract.mjs") },
+          @{ Name = "workorder v2 alpha.42 pending PDF render readiness contract"; Command = "node"; Arguments = @("tests/workorder-v2-alpha42-pending-pdf-render-readiness-contract.mjs") },
+          @{ Name = "workorder v2 alpha.42 local render input boundary contract"; Command = "node"; Arguments = @("tests/workorder-v2-alpha42-local-render-input-boundary-contract.mjs") },
+          @{ Name = "workorder v2 alpha.42 PDF page orientation contract"; Command = "node"; Arguments = @("tests/workorder-v2-alpha42-pdf-page-orientation-contract.mjs") },
+          @{ Name = "workorder v2 alpha.42 cover fragmentation contract"; Command = "node"; Arguments = @("tests/workorder-v2-alpha42-cover-fragmentation-contract.mjs") },
+          @{ Name = "workorder v2 alpha.42 viewer-only continuation contract"; Command = "node"; Arguments = @("tests/workorder-v2-alpha42-viewer-only-continuation-contract.mjs") },
+          @{ Name = "workorder v2 alpha.42 standalone renderer import smoke"; Command = "node"; Arguments = @("scripts/run-wafl-v2-alpha42-renderer-import-smoke.mjs") },
+          @{ Name = "approved already-applied migration plan guard contract"; Command = "node"; Arguments = @("tests/approved-applied-migration-plan-guard-contract.mjs") },
         @{ Name = "app-v2 document links and Mermaid contract"; Command = "node"; Arguments = @("tests/app-v2-document-links-contract.mjs") },
         @{ Name = "unicode encoding contract"; Command = "node"; Arguments = @("tests/unicode-encoding-contract.mjs") },
         @{ Name = "PowerShell encoding contract"; Command = "node"; Arguments = @("tests/pipeline-powershell-encoding-contract.mjs") },
@@ -1516,6 +1542,9 @@ if ($Profile -eq "automation-infrastructure" -and (GetProjectAppVersion) -eq "2.
 }
 if ($Profile -eq "automation-infrastructure" -and (GetProjectAppVersion) -in @("2.0.0-alpha.38", "2.0.0-alpha.39") -and (Test-Path (Join-Path $ProjectDir "tests/workorder-v2-alpha39-document-viewer-security-contract.mjs"))) {
     $allowedMigrationChanges = @("db/v2/migrations/011_v2_document_access_viewer_functions.sql")
+}
+if ($Profile -eq "automation-infrastructure" -and (GetProjectAppVersion) -in @("2.0.0-alpha.41", "2.0.0-alpha.42") -and (Test-Path (Join-Path $ProjectDir "tests/workorder-v2-alpha42-realistic-issued-embedded-qr-contract.mjs"))) {
+    $allowedMigrationChanges = @("db/v2/migrations/012_v2_document_access_token_purpose.sql")
 }
 $unexpectedMigrationChanges = @($migrationChanges | Where-Object { $allowedMigrationChanges -notcontains $_ })
 if ($unexpectedMigrationChanges.Count -gt 0) {

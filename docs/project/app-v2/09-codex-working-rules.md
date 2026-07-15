@@ -1,4 +1,4 @@
-# WAFL v2 App-first Codex Working Rules - 2.0.0-alpha.41
+# WAFL v2 App-first Codex Working Rules - 2.0.0-alpha.42
 
 ## Alpha.41 mobile summary and PDF page-number boundary
 
@@ -543,6 +543,18 @@ For the alpha.18 mobile/tablet mock:
 - WorkOrder/revision/receipt/domain event writes must share one fixed tenant-role transaction. Audit failure rolls back the main mutation.
 - Source implementation, static verification, invalid-request/auth preflight, and existing GET regression may proceed without DB write. Valid create/PATCH mutation requires a separate explicit owner approval and exact command-mutation runtime gate.
 - Before that approval, keep APP_VERSION at alpha.24, do not commit/push/Finish, do not touch `4. Newest`, and do not run migration, seed, cleanup, reset, rollback, schema validation, or production access.
+
+## 2.0.0-alpha.42 realistic issued embedded QR rule
+
+- Migration 012 apply and the fixture/PDF/R2 runtime are two separate approval boundaries. Source/static/preflight never implies either approval.
+- Keep APP_VERSION at alpha.41 and leave `4. Newest` unchanged until migration, runtime, completion audit, and final verification all pass.
+- Final completion may combine retained runtime effects with endpoint-specific static validation only when the owner explicitly fixes the remaining runtime/request budget at zero. Public viewer nested `NOT_FOUND`, workspace top-level `WAFL_NOT_FOUND`, and company-access forbidden responses must remain separate contracts.
+- Alpha.42 completed with no finalization-time API, DB, or R2 call. Additional live Company H/C validation remains explicitly not executed; it must not be inferred from the static result.
+- Existing A30FACT rows, PDF object, manual-share tokens, receipts, and events are immutable baseline evidence.
+- Embedded QR tokens are hash-only, 365-day, one per generated document, non-rotatable, and absent from manual-share action lists.
+- Pass the raw viewer URL to local Chromium only through ephemeral server memory/header state; never persist it in snapshot, log, manifest, repo-state, screenshot text, or ZIP.
+- Use DB-native UUID defaults for every fixture and document entity. Idempotency uses receipt/legacy identity, never deterministic UUIDs.
+- Runtime mismatch or partial mutation stops all further writes. Never auto-retry, cleanup, delete R2 objects, reissue, or repair without an exact continuation approval.
 
 ## 2.0.0-alpha.26 material and order Command rule
 

@@ -5,9 +5,11 @@
 This document starts the WAFL v2 App-first line.
 
 Previous baseline: `0.30.0-alpha.27`.
-Current baseline: `2.0.0-alpha.41`.
+Current baseline: `2.0.0-alpha.42`.
 
 Alpha.41 standardizes every phone material card on a complete two-line order summary and icon-only actions below the canonical 760px tablet boundary. It removes continuation-page suffixes from the document number and gives every HTML/local-PDF page one dynamic centered `current / total` footer. The retained alpha.38 R2 PDF is read-only regression evidence only and is not regenerated. See `38-mobile-order-summary-and-pdf-page-number-evidence.md`.
+
+Alpha.42 completes the approved dev/test realistic issued-document lifecycle: migration 012 token purposes, repository-owned representative image transport, canonical issue, immutable three-page PDF with first-page embedded QR, generated-document finalize, controlled viewer delivery, and endpoint-specific zero-call tenant validation. Runtime effects are complete; B uses stored workspace `WAFL_NOT_FOUND` evidence, H/C use canonical static isolation contracts, and no extra live validation call was made. See `39-realistic-issued-embedded-qr-pdf-evidence.md`.
 
 Alpha.40 tightens mobile material action density, removes duplicate sample color swatches, uses a real HTML image plus print-safe SVG color chips in the canonical document, and replaces browser print with controlled generated-PDF view/download plus a localhost-only sample PDF download. Generated-document metadata and R2 are read-only; migration ledger remains 11/11 and all DB/R2/Worker/production mutation is zero. See `37-preview-output-and-action-density-evidence.md`.
 
@@ -122,6 +124,7 @@ docs/project/app-v2/
   36-document-viewer-security-evidence.md
   37-preview-output-and-action-density-evidence.md
   38-mobile-order-summary-and-pdf-page-number-evidence.md
+  39-realistic-issued-embedded-qr-pdf-evidence.md
 ```
 
 The alpha.19 documents are design and read-only audit authority. They do not authorize schema migration, API replacement, seed execution, DB/R2 mutation, or PDF Worker changes.

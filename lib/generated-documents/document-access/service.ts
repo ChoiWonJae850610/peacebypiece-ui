@@ -1,6 +1,7 @@
 import "server-only";
 
 import type { WorkspaceApiCompanyScope } from "@/lib/auth/apiRouteGuards";
+import type { DbTransactionClient } from "@/lib/db/client";
 import type { CompanyId, CompanyMemberId, CorrelationId, TenantMemberScope } from "@/lib/domain/work-orders/contracts";
 import { R2WorkerGeneratedDocumentTransport } from "@/lib/generated-documents/work-order-pdf/r2WorkerTransport";
 import {
@@ -8,6 +9,8 @@ import {
   DOCUMENT_ACCESS_MAX_EXPIRY_DAYS,
   DOCUMENT_ACCESS_RAW_TOKEN_PATTERN,
   DOCUMENT_ACCESS_UUID_PATTERN,
+  DOCUMENT_EMBEDDED_QR_EXPIRY_DAYS,
+  DOCUMENT_EMBEDDED_QR_PURPOSE,
   DOCUMENT_SHARE_COMMAND_CODE,
   DOCUMENT_SHARE_ROTATE_COMMAND_CODE,
 } from "./constants";
@@ -16,6 +19,7 @@ import {
   createDocumentAccessToken,
   DocumentAccessRepositoryError,
   listDocumentAccessTokens,
+  insertEmbeddedQrAccessToken,
   readDocumentAccessSession,
   redeemDocumentAccessTokenHash,
   revokeDocumentAccessToken,
@@ -25,11 +29,12 @@ import { getDocumentAccessRuntimeGuard } from "./runtimeGuard";
 import {
   createDocumentViewerUrl,
   deriveDocumentAccessToken,
+  deriveEmbeddedQrAccessToken,
   hashDocumentAccessRequest,
   hashDocumentAccessToken,
   scopeDocumentAccessIdempotencyKey,
 } from "./token";
-import type { CreatedDocumentAccessToken, PublicDocumentAccessMetadata } from "./types";
+import type { CreatedDocumentAccessToken, CreatedEmbeddedQrAccessToken, PublicDocumentAccessMetadata } from "./types";
 
 export type DocumentAccessErrorCode = "NOT_FOUND" | "FORBIDDEN" | "VALIDATION_ERROR" | "CONFLICT" | "INTERNAL_ERROR";
 
@@ -41,6 +46,51 @@ export class DocumentAccessServiceError extends Error {
     this.name = "DocumentAccessServiceError";
     this.code = code;
     this.status = status;
+  }
+}
+
+export async function createEmbeddedQrAccessToken(input: {
+  readonly client: DbTransactionClient;
+  readonly scope: TenantMemberScope;
+  readonly generatedDocumentId: string;
+  readonly generationIdempotencyKey: string;
+  readonly origin: string;
+  readonly now?: Date;
+}): Promise<CreatedEmbeddedQrAccessToken> {
+  const guard = getDocumentAccessRuntimeGuard({ requireMutationApproval: true, mutationPurpose: "embedded_qr" });
+  if (!guard.ok) throw new DocumentAccessServiceError("FORBIDDEN", 403, "승인된 dev/test embedded QR runtime에서만 사용할 수 있습니다.");
+  assertUuid(input.generatedDocumentId);
+  const idempotencyKey = assertIdempotencyKey(input.generationIdempotencyKey);
+  const rawToken = deriveEmbeddedQrAccessToken({
+    companyId: input.scope.companyId,
+    generatedDocumentId: input.generatedDocumentId,
+    idempotencyKey,
+  });
+  const tokenHash = hashDocumentAccessToken(rawToken);
+  const now = input.now ?? new Date();
+  const expiresAt = new Date(now.getTime() + DOCUMENT_EMBEDDED_QR_EXPIRY_DAYS * 86_400_000).toISOString();
+  try {
+    const token = await insertEmbeddedQrAccessToken({
+      client: input.client,
+      companyId: input.scope.companyId,
+      generatedDocumentId: input.generatedDocumentId,
+      tokenHash,
+      expiresAt,
+    });
+    const viewerUrl = createDocumentViewerUrl(input.origin, rawToken);
+    return {
+      tokenId: token.tokenId,
+      generatedDocumentId: input.generatedDocumentId,
+      tokenPurpose: DOCUMENT_EMBEDDED_QR_PURPOSE,
+      rawToken,
+      tokenHash,
+      viewerUrl,
+      qrSvg: createQrSvg(viewerUrl),
+      expiresAt,
+      idempotentReplay: false,
+    };
+  } catch (error) {
+    mapRepositoryError(error);
   }
 }
 

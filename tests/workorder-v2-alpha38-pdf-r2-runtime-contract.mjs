@@ -8,7 +8,7 @@ const runtimeRunner = read("scripts/run-wafl-v2-alpha38-pdf-r2-runtime.mjs");
 const repository = read("lib/generated-documents/work-order-pdf/generationRepository.ts");
 const transport = read("lib/generated-documents/work-order-pdf/r2WorkerTransport.ts");
 const renderer = read("lib/generated-documents/work-order-pdf/localChromiumRenderer.mts");
-const renderInput = read("lib/generated-documents/work-order-pdf/localRenderInput.ts");
+const renderInput = read("lib/generated-documents/work-order-pdf/localRenderInputCore.mjs");
 const renderPage = read("app/dev/workorder-pdf-render/[runToken]/page.tsx");
 const renderComponent = read("components/workorder/preview/GeneratedIssuedWorkOrderPreview.tsx");
 const sampleRenderComponent = read("components/workorder/preview/SampleIssuedWorkOrderPreview.tsx");
@@ -17,7 +17,7 @@ const mobileVersion = read("apps/mobile/constants/version.ts").match(/APP_VERSIO
 const expoVersion = JSON.parse(read("apps/mobile/app.json")).expo.version;
 const expectedVersions = process.env.WAFL_ALPHA38_PREFINAL_CONTRACT === "1"
   ? ["2.0.0-alpha.37"]
-  : ["2.0.0-alpha.38", "2.0.0-alpha.39", "2.0.0-alpha.40", "2.0.0-alpha.41"];
+  : ["2.0.0-alpha.38", "2.0.0-alpha.39", "2.0.0-alpha.40", "2.0.0-alpha.41", "2.0.0-alpha.42"];
 
 assert.ok(expectedVersions.includes(version));
 assert.equal(mobileVersion, version);

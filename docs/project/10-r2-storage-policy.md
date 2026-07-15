@@ -152,3 +152,6 @@ Repair and purge are separate commands. Dry-run is safe; mutation requires envir
 - backup/export/incident procedure;
 - approved plan capacities and retention policy;
 - real-device upload/download QA.
+## WAFL v2 alpha.42 non-overwrite preparation
+
+The realistic representative SVG and generated PDF use separate company/WorkOrder-scoped immutable keys. Runtime must prove absence before each of at most two PUTs, verify size/hash by bounded GET, retain successful objects, and perform DELETE zero. This source/preflight checkpoint performs no R2 operation.

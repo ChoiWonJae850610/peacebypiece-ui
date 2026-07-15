@@ -1,5 +1,14 @@
 # Final Policy Decisions and Master TODO
 
+## WAFL v2 alpha.42 confirmed realistic issued embedded QR contract
+
+- Preserve the retained A30FACT generation and manual-share evidence; alpha.42 creates a separate WorkOrder, image object, document generation, and PDF object.
+- `manual_share` keeps 7-day default/30-day maximum and rotation. `embedded_qr` is 365-day, one per generation, non-rotatable, and replaced only by a new immutable generation.
+- Raw embedded token exists only in server memory, QR payload, PDF binary, and the first viewer verification request. DB and all textual artifacts store no raw token or full viewer URL.
+- Migration 012 and bounded fixture/PDF/R2 runtime require separate explicit approvals. Source/static/preflight leaves APP_VERSION alpha.41 and performs no DB/R2 mutation.
+- Completed dev/test result: ledger `12/12`, generated immutable PDF `252994` bytes, three pages landscape/portrait/portrait, Worker-mediated PDF PUT/GET/DELETE `1/3/0`, finalize `1`, event delta `+3`, receipt/incomplete `3/0`, token access `1`, A30FACT unchanged, and production mutation false.
+- The final zero-call validation keeps public viewer and workspace guard error shapes distinct. Company B stored response is canonical workspace `404 / WAFL_NOT_FOUND`; Company H/C are source-only isolation contracts, with no additional live request.
+
 ## WAFL v2 alpha.41 confirmed mobile summary and page-number contract
 
 - The canonical phone/tablet boundary is 760px. Every phone width below 760px uses exactly two explicit material-order summary lines: order quantity plus unit price, then amount. Viewport-specific ellipsis branches are forbidden.

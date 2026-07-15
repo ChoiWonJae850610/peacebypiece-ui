@@ -9,11 +9,13 @@ const mobile = read("apps/mobile/components/ProductionCardMock.tsx");
 const documentRenderer = read("components/workorder/preview/IssuedWorkOrderDocument.tsx");
 const css = read("components/workorder/preview/IssuedWorkOrderPreview.module.css");
 const chromiumRenderer = read("lib/generated-documents/work-order-pdf/localChromiumRenderer.mts");
+const pageOrientation = read("lib/generated-documents/work-order-pdf/pdfPageOrientation.mjs");
 const samplePdfRoute = read("app/dev/workorder-preview-sample/pdf/route.ts");
 const readonlyRunner = read("scripts/run-wafl-v2-alpha40-preview-output-readonly.mjs");
 
 const version = read("lib/constants/version.ts").match(/APP_VERSION\s*=\s*"([^"]+)"/)?.[1];
-assert.equal(version, "2.0.0-alpha.41");
+const alpha42ContractExists = fs.existsSync(path.join(root, "tests/workorder-v2-alpha42-realistic-issued-embedded-qr-contract.mjs"));
+assert.ok(version === "2.0.0-alpha.41" || (alpha42ContractExists && version === "2.0.0-alpha.42"));
 assert.equal(read("apps/mobile/constants/version.ts").match(/MOBILE_APP_VERSION\s*=\s*"([^"]+)"/)?.[1], version);
 const appConfig = JSON.parse(read("apps/mobile/app.json"));
 assert.equal(appConfig.expo.version, version);
@@ -53,8 +55,9 @@ assert.match(css, /\.page \{ position: relative;/);
 assert.match(css, /\.pageNumberFooter \{[\s\S]*?position: absolute;[\s\S]*?left: 0;[\s\S]*?right: 0;[\s\S]*?bottom: 5\.5mm;[\s\S]*?text-align: center;/);
 assert.match(css, /@media \(max-width: 760px\)[\s\S]*?padding: 18px 12px 36px[\s\S]*?\.pageNumberFooter \{ bottom: 10px; \}/);
 
-assert.match(chromiumRenderer, /pageOrientations\[0\] !== "landscape"/);
-assert.match(chromiumRenderer, /pageOrientations\.slice\(1\).*"portrait"/s);
+assert.match(chromiumRenderer, /validatePdfPageOrientations\(pageOrientationEvidence\)/);
+assert.match(chromiumRenderer, /PdfPageOrientationValidationError/);
+assert.match(pageOrientation, /pageIndex === 0 \? "landscape" : "portrait"/);
 assert.match(samplePdfRoute, /LocalChromiumIssuedWorkOrderPdfRenderer/);
 assert.match(samplePdfRoute, /X-WAFL-PDF-Page-Count/);
 assert.doesNotMatch(samplePdfRoute, /DATABASE_URL|\.put\(|\.delete\(|INSERT\s+INTO|UPDATE\s+/i);
@@ -62,5 +65,5 @@ assert.match(readonlyRunner, /BEGIN READ ONLY/);
 assert.match(readonlyRunner, /r2GetCount: 2/);
 assert.doesNotMatch(readonlyRunner, /method:\s*"(?:POST|PATCH|PUT|DELETE)"|INSERT\s+INTO|UPDATE\s+|DELETE\s+FROM|\.put\(|\.delete\(/i);
 
-assert.equal(fs.readdirSync(path.join(root, "db/v2/migrations")).filter((name) => /^\d{3}_.*\.sql$/.test(name)).length, 11);
+assert.equal(fs.readdirSync(path.join(root, "db/v2/migrations")).filter((name) => /^\d{3}_.*\.sql$/.test(name)).length, alpha42ContractExists ? 12 : 11);
 console.log("workorder v2 alpha.41 mobile summary and PDF page number contract: PASS");

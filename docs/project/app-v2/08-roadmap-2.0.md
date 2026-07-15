@@ -1,3 +1,21 @@
+# WAFL v2 App-first Roadmap 2.0 - 2.0.0-alpha.42 result
+
+## 2.0.0-alpha.42 result
+
+Status: `ALPHA42_RUNTIME_EFFECTS_COMPLETE_STATIC_VALIDATION_PASS`.
+
+- Migration 012 applied once; ledger `12/12`.
+- Realistic WorkOrder/revision, representative image, canonical issue, generated document, embedded QR token, immutable PDF, and controlled viewer effects completed in approved dev/test only.
+- PDF is `252994` bytes, SHA-256 `0334727646ebc43ab19a88ccb64cf1b5d3b1e91d3ca5438d3ec61a9a9665af37`, and landscape/portrait/portrait across three pages.
+- Worker-mediated PDF PUT/GET/DELETE is `1/3/0`; finalize `1`; event delta `+3`; receipt/incomplete `3/0`; token access count `1`; production mutation false.
+- Company B stored workspace response and Company H/C source-only isolation contracts pass. Live H/C was not executed under the approved zero-call finalization policy.
+
+- Add the guarded additive migration 012 contract for `manual_share` versus `embedded_qr`, preserving every existing alpha.39 token as `manual_share`.
+- Use one hash-only, 365-day, non-rotatable embedded token per generated document; pass its viewer URL to Chromium only through an ephemeral render context.
+- Prepare one new DB-native-UUID realistic Company A WorkOrder with matrix 144, six materials, five-by-three size specification, four processes, and one immutable representative image.
+- Preserve A30FACT and all retained DB/R2/token evidence. Migration 012 and the bounded fixture/image/PDF runtime each require their own approval checkpoint.
+- Result version remains pending. APP_VERSION stays alpha.41 until both approved stages and completion audit pass.
+
 # WAFL v2 App-first Roadmap 2.0 - 2.0.0-alpha.41 result
 
 ## 2.0.0-alpha.41 result

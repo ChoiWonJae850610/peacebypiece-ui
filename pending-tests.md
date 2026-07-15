@@ -1,5 +1,13 @@
 # Pending Tests — 0.24.21.19
 
+## WAFL v2 alpha.42 completed automation and remaining user QA
+
+- Automated/runtime PASS: migration 012 ledger `12/12`; realistic issued/finalized target `2/2`; generated document and embedded token `1/1`; immutable PDF `252994` bytes with accepted SHA and three-page landscape/portrait/portrait layout.
+- Automated/runtime PASS: Worker-mediated PDF PUT/GET/DELETE `1/3/0`, finalize `1`, event delta `+3`, receipt/incomplete `3/0`, token access `1`, A30FACT unchanged, cleanup/rollback/delete `0`, and production mutation false.
+- Static completion PASS: Company B stored `404 / WAFL_NOT_FOUND`, Company H resource hiding, and Company C approval-pending forbidden contract. Additional live H/C validation was not executed under the approved zero-call policy.
+- Not preserved: actual ephemeral viewer port and exact server-ready timestamp. They were not reconstructed by a runtime replay.
+- After runtime: physical phone QR scan, printed 18-20mm QR readability, realistic document visual judgment, and native PDF viewer opening remain user QA. Static SVG validation must not be reported as a physical scan PASS.
+
 ## WAFL v2 alpha.41 completed automation and remaining user QA
 
 - Automated PASS: phone material summaries at 320/360/375/390/412/425/480/759px, complete quantity/unit-price/amount visibility, icon-only actions, 2/3/0-action states, tablet 760/1024 regression, and horizontal/card overflow 0.

@@ -4,9 +4,11 @@ import { createHash, createHmac } from "node:crypto";
 
 import { getWaflSessionSigningSecret } from "@/lib/auth/session";
 import {
+  DOCUMENT_EMBEDDED_QR_COMMAND_CODE,
   DOCUMENT_ACCESS_HASH_PATTERN,
   DOCUMENT_ACCESS_RAW_TOKEN_PATTERN,
 } from "./constants";
+import { deriveEmbeddedQrOpaqueToken, scopeEmbeddedQrIdempotencyKey } from "./tokenDerivation.mjs";
 
 const TOKEN_NAMESPACE = "document-share-token:v1";
 const IDEMPOTENCY_NAMESPACE = "document-share-idempotency:v1";
@@ -35,6 +37,30 @@ export function deriveDocumentAccessToken(input: {
   ]).toString("base64url");
   if (!DOCUMENT_ACCESS_RAW_TOKEN_PATTERN.test(token)) throw new Error("DOCUMENT_ACCESS_TOKEN_DERIVATION_FAILED");
   return token;
+}
+
+export function deriveEmbeddedQrAccessToken(input: {
+  readonly companyId: string;
+  readonly generatedDocumentId: string;
+  readonly idempotencyKey: string;
+}): string {
+  const token = deriveEmbeddedQrOpaqueToken(getWaflSessionSigningSecret(), {
+    ...input,
+    commandCode: DOCUMENT_EMBEDDED_QR_COMMAND_CODE,
+  });
+  if (!DOCUMENT_ACCESS_RAW_TOKEN_PATTERN.test(token)) throw new Error("DOCUMENT_ACCESS_TOKEN_DERIVATION_FAILED");
+  return token;
+}
+
+export function scopeEmbeddedQrAccessIdempotencyKey(input: {
+  readonly companyId: string;
+  readonly revisionId: string;
+  readonly idempotencyKey: string;
+}): string {
+  return scopeEmbeddedQrIdempotencyKey(getWaflSessionSigningSecret(), {
+    ...input,
+    commandCode: DOCUMENT_EMBEDDED_QR_COMMAND_CODE,
+  });
 }
 
 export function hashDocumentAccessToken(rawToken: string): string {

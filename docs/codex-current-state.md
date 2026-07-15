@@ -1,3 +1,14 @@
+# 2.0.0-alpha.42 Realistic Issued Embedded QR PDF Lifecycle
+
+- APP_VERSION, mobile mirror, Expo metadata, and mobile package metadata are `2.0.0-alpha.42`.
+- Approved dev/test migration 012 is applied exactly once at ledger `12/12`; it adds `token_purpose`, its CHECK, and the one-embedded-token partial unique index without changing existing token business values.
+- The retained realistic Company A WorkOrder/revision is issued/finalized at version `2/2`. Its generated document is `generated`, its embedded QR token is active with access count `1`, receipts are `3`, and incomplete receipts are `0`.
+- The immutable PDF is `252994` bytes with SHA-256 `0334727646ebc43ab19a88ccb64cf1b5d3b1e91d3ca5438d3ec61a9a9665af37`, three pages in landscape/portrait/portrait order, one representative image, one first-page QR, matrix total 144, and centered page footers.
+- Cumulative approved transport is Cloudflare Worker-mediated PDF PUT/GET/DELETE `1/3/0`; direct R2/S3 access is `0`. Finalize update is `1`, cumulative runtime event delta is `+3`, cleanup/rollback/delete is `0`, A30FACT is unchanged, and production mutation is false.
+- Final runtime classification is `ALPHA42_RUNTIME_EFFECTS_COMPLETE_STATIC_VALIDATION_PASS`: viewer exchange and inline/download succeeded; stored Company B `404 / WAFL_NOT_FOUND` passes the workspace contract; Company H/C isolation passes source-only canonical contracts; additional live H/C calls were intentionally not executed under the zero-call completion policy.
+- The ephemeral viewer port and exact ready timestamp were not preserved and are recorded as unavailable rather than reconstructed by another run.
+- Evidence: `docs/project/app-v2/39-realistic-issued-embedded-qr-pdf-evidence.md`.
+
 # 2.0.0-alpha.41 Mobile Order Summary and PDF Page Number
 
 - APP_VERSION and mobile mirrors are `2.0.0-alpha.41`.

@@ -9,6 +9,8 @@ import {
   type DbTransactionClient,
 } from "@/lib/db/client";
 import {
+  DOCUMENT_EMBEDDED_QR_PURPOSE,
+  DOCUMENT_MANUAL_SHARE_PURPOSE,
   DOCUMENT_SHARE_COMMAND_CODE,
   DOCUMENT_SHARE_EVENT_CODE,
   DOCUMENT_SHARE_REVOKED_EVENT_CODE,
@@ -16,6 +18,7 @@ import {
 import type {
   DocumentAccessTokenStatus,
   DocumentAccessTokenSummary,
+  DocumentAccessTokenPurpose,
   PublicDocumentAccessMetadata,
 } from "./types";
 
@@ -40,6 +43,7 @@ type DocumentRow = DbQueryResultRow & {
 type TokenRow = DbQueryResultRow & {
   readonly id: string;
   readonly generated_document_id: string;
+  readonly token_purpose: DocumentAccessTokenPurpose;
   readonly created_at: Date | string;
   readonly expires_at: Date | string;
   readonly revoked_at: Date | string | null;
@@ -72,6 +76,7 @@ const status = (row: TokenRow): DocumentAccessTokenStatus => {
 function mapToken(row: TokenRow): DocumentAccessTokenSummary {
   return {
     tokenId: String(row.id),
+    tokenPurpose: row.token_purpose,
     createdAt: iso(row.created_at)!,
     expiresAt: iso(row.expires_at)!,
     revokedAt: iso(row.revoked_at),
@@ -176,6 +181,7 @@ export async function createDocumentAccessToken(input: {
         JOIN generated_documents document
           ON document.company_id = token.company_id AND document.id = token.generated_document_id
         WHERE token.company_id = $1 AND token.generated_document_id = $2::uuid AND token.token_hash = $3
+          AND token.token_purpose = 'manual_share'
       `, [input.scope.companyId, input.generatedDocumentId, input.tokenHash]);
       if (!replay.rows[0]) throw new DocumentAccessRepositoryError("idempotency_incomplete");
       return { token: mapToken(replay.rows[0]), displayDocumentNumber: replay.rows[0].display_document_number, idempotentReplay: true };
@@ -184,11 +190,11 @@ export async function createDocumentAccessToken(input: {
     const document = await loadGeneratedDocument(client, input.scope.companyId, input.generatedDocumentId);
     const inserted = await client.query<TokenRow>(`
       INSERT INTO document_access_tokens (
-        company_id, generated_document_id, token_hash, expires_at
-      ) VALUES ($1, $2::uuid, $3::char(64), $4::timestamptz)
-      RETURNING id, generated_document_id, created_at, expires_at, revoked_at,
+        company_id, generated_document_id, token_hash, expires_at, token_purpose
+      ) VALUES ($1, $2::uuid, $3::char(64), $4::timestamptz, $5)
+      RETURNING id, generated_document_id, token_purpose, created_at, expires_at, revoked_at,
                 rotated_from_token_id, last_accessed_at, access_count
-    `, [input.scope.companyId, input.generatedDocumentId, input.tokenHash, input.expiresAt]);
+    `, [input.scope.companyId, input.generatedDocumentId, input.tokenHash, input.expiresAt, DOCUMENT_MANUAL_SHARE_PURPOSE]);
     const token = inserted.rows[0];
     if (!token) throw new DocumentAccessRepositoryError("conflict");
     await appendEvent(client, {
@@ -229,10 +235,11 @@ export async function listDocumentAccessTokens(input: {
     `, [input.scope.companyId, input.generatedDocumentId]);
     if (document.rowCount !== 1) throw new DocumentAccessRepositoryError("not_found");
     const result = await client.query<TokenRow>(`
-      SELECT id, generated_document_id, created_at, expires_at, revoked_at,
+      SELECT id, generated_document_id, token_purpose, created_at, expires_at, revoked_at,
              rotated_from_token_id, last_accessed_at, access_count
       FROM document_access_tokens
       WHERE company_id = $1 AND generated_document_id = $2::uuid
+        AND token_purpose = 'manual_share'
       ORDER BY created_at DESC, id DESC
       LIMIT 100
     `, [input.scope.companyId, input.generatedDocumentId]);
@@ -253,6 +260,7 @@ export async function revokeDocumentAccessToken(input: {
       JOIN generated_documents document
         ON document.company_id = token.company_id AND document.id = token.generated_document_id
       WHERE token.company_id = $1 AND token.generated_document_id = $2::uuid AND token.id = $3::uuid
+        AND token.token_purpose = 'manual_share'
         AND document.status = 'generated' AND document.deleted_at IS NULL
       FOR UPDATE OF token
     `, [input.scope.companyId, input.generatedDocumentId, input.tokenId]);
@@ -264,7 +272,7 @@ export async function revokeDocumentAccessToken(input: {
       UPDATE document_access_tokens
       SET revoked_at = now()
       WHERE company_id = $1 AND generated_document_id = $2::uuid AND id = $3::uuid AND revoked_at IS NULL
-      RETURNING id, generated_document_id, created_at, expires_at, revoked_at,
+      RETURNING id, generated_document_id, token_purpose, created_at, expires_at, revoked_at,
                 rotated_from_token_id, last_accessed_at, access_count
     `, [input.scope.companyId, input.generatedDocumentId, input.tokenId]);
     if (updated.rowCount !== 1 || !updated.rows[0]) throw new DocumentAccessRepositoryError("conflict");
@@ -295,6 +303,7 @@ export async function rotateDocumentAccessToken(input: {
       JOIN generated_documents document
         ON document.company_id = token.company_id AND document.id = token.generated_document_id
       WHERE token.company_id = $1 AND token.generated_document_id = $2::uuid AND token.id = $3::uuid
+        AND token.token_purpose = 'manual_share'
         AND document.status = 'generated' AND document.deleted_at IS NULL
       FOR UPDATE OF token
     `, [input.scope.companyId, input.generatedDocumentId, input.tokenId]);
@@ -302,11 +311,12 @@ export async function rotateDocumentAccessToken(input: {
     if (!current) throw new DocumentAccessRepositoryError("not_found");
     if (current.revoked_at !== null) {
       const replay = await client.query<TokenRow>(`
-        SELECT id, generated_document_id, created_at, expires_at, revoked_at,
+        SELECT id, generated_document_id, token_purpose, created_at, expires_at, revoked_at,
                rotated_from_token_id, last_accessed_at, access_count
         FROM document_access_tokens
         WHERE company_id = $1 AND generated_document_id = $2::uuid
           AND rotated_from_token_id = $3::uuid AND token_hash = $4::char(64)
+          AND token_purpose = 'manual_share'
       `, [input.scope.companyId, input.generatedDocumentId, input.tokenId, input.newTokenHash]);
       if (!replay.rows[0]) throw new DocumentAccessRepositoryError("not_found");
       return { token: mapToken(replay.rows[0]), displayDocumentNumber: current.display_document_number, idempotentReplay: true };
@@ -318,11 +328,11 @@ export async function rotateDocumentAccessToken(input: {
     `, [input.scope.companyId, input.generatedDocumentId, input.tokenId]);
     const inserted = await client.query<TokenRow>(`
       INSERT INTO document_access_tokens (
-        company_id, generated_document_id, token_hash, expires_at, rotated_from_token_id
-      ) VALUES ($1, $2::uuid, $3::char(64), $4::timestamptz, $5::uuid)
-      RETURNING id, generated_document_id, created_at, expires_at, revoked_at,
+        company_id, generated_document_id, token_hash, expires_at, rotated_from_token_id, token_purpose
+      ) VALUES ($1, $2::uuid, $3::char(64), $4::timestamptz, $5::uuid, $6)
+      RETURNING id, generated_document_id, token_purpose, created_at, expires_at, revoked_at,
                 rotated_from_token_id, last_accessed_at, access_count
-    `, [input.scope.companyId, input.generatedDocumentId, input.newTokenHash, input.expiresAt, input.tokenId]);
+    `, [input.scope.companyId, input.generatedDocumentId, input.newTokenHash, input.expiresAt, input.tokenId, DOCUMENT_MANUAL_SHARE_PURPOSE]);
     const next = inserted.rows[0];
     if (!next) throw new DocumentAccessRepositoryError("conflict");
     await appendEvent(client, {
@@ -337,6 +347,32 @@ export async function rotateDocumentAccessToken(input: {
     });
     return { token: mapToken(next), displayDocumentNumber: current.display_document_number, idempotentReplay: false };
   });
+}
+
+export async function insertEmbeddedQrAccessToken(input: {
+  readonly client: DbTransactionClient;
+  readonly companyId: string;
+  readonly generatedDocumentId: string;
+  readonly tokenHash: string;
+  readonly expiresAt: string;
+}): Promise<DocumentAccessTokenSummary> {
+  const document = await input.client.query(`
+    SELECT id
+    FROM generated_documents
+    WHERE company_id = $1 AND id = $2::uuid AND status = 'pending'
+    FOR SHARE
+  `, [input.companyId, input.generatedDocumentId]);
+  if (document.rowCount !== 1) throw new DocumentAccessRepositoryError("not_found");
+
+  const inserted = await input.client.query<TokenRow>(`
+    INSERT INTO document_access_tokens (
+      company_id, generated_document_id, token_hash, expires_at, token_purpose
+    ) VALUES ($1, $2::uuid, $3::char(64), $4::timestamptz, $5)
+    RETURNING id, generated_document_id, token_purpose, created_at, expires_at, revoked_at,
+              rotated_from_token_id, last_accessed_at, access_count
+  `, [input.companyId, input.generatedDocumentId, input.tokenHash, input.expiresAt, DOCUMENT_EMBEDDED_QR_PURPOSE]);
+  if (inserted.rowCount !== 1 || !inserted.rows[0]) throw new DocumentAccessRepositoryError("conflict");
+  return mapToken(inserted.rows[0]);
 }
 
 export async function redeemDocumentAccessTokenHash(input: {

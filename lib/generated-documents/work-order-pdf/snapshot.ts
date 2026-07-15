@@ -43,6 +43,13 @@ export type WorkOrderIssuedPdfSnapshot = {
   readonly dtoSchemaVersion: typeof WORK_ORDER_PDF_DTO_SCHEMA_VERSION;
   readonly snapshotCreatedAt: string;
   readonly businessTimezone: string;
+  readonly embeddedQrPolicy?: {
+    readonly tokenPurpose: "embedded_qr";
+    readonly expiresAt: string;
+    readonly qrPolicyVersion: "wafl-embedded-qr/1";
+    readonly viewerOriginPolicy: "controlled-fragment-viewer";
+    readonly qrPlacementVersion: "cover-top-right/1";
+  };
 };
 
 export type WorkOrderPdfSnapshotErrorCode =
@@ -101,6 +108,7 @@ export function createWorkOrderIssuedPdfSnapshot(input: {
   readonly preview: WorkOrderIssuedPreviewReadModel;
   readonly assetManifest: readonly WorkOrderIssuedPdfAssetDescriptor[];
   readonly snapshotCreatedAt: string;
+  readonly embeddedQrPolicy?: WorkOrderIssuedPdfSnapshot["embeddedQrPolicy"];
 }): WorkOrderIssuedPdfSnapshot {
   const { preview } = input;
   if (!input.companyId.trim()) {
@@ -122,6 +130,10 @@ export function createWorkOrderIssuedPdfSnapshot(input: {
     throw new WorkOrderPdfSnapshotError("PDF_PREVIEW_NOT_READY");
   }
 
+  const embeddedQrPolicy = input.embeddedQrPolicy ? {
+    ...input.embeddedQrPolicy,
+    expiresAt: assertIsoDateTime(input.embeddedQrPolicy.expiresAt),
+  } : undefined;
   return {
     documentIdentity: {
       documentType: input.documentType,
@@ -138,6 +150,7 @@ export function createWorkOrderIssuedPdfSnapshot(input: {
     dtoSchemaVersion: WORK_ORDER_PDF_DTO_SCHEMA_VERSION,
     snapshotCreatedAt: assertIsoDateTime(input.snapshotCreatedAt),
     businessTimezone: preview.layoutMetadata.businessTimezone,
+    ...(embeddedQrPolicy ? { embeddedQrPolicy } : {}),
   };
 }
 

@@ -21,7 +21,7 @@ const detailRepository = read("lib/domain/work-orders/read/detailRepository.ts")
 const runtimeRunner = read("scripts/run-wafl-v2-alpha40-preview-output-readonly.mjs");
 
 const version = read("lib/constants/version.ts").match(/APP_VERSION\s*=\s*"([^"]+)"/)?.[1];
-assert.ok(["2.0.0-alpha.40", "2.0.0-alpha.41"].includes(version));
+assert.ok(["2.0.0-alpha.40", "2.0.0-alpha.41", "2.0.0-alpha.42"].includes(version));
 assert.equal(read("apps/mobile/constants/version.ts").match(/MOBILE_APP_VERSION\s*=\s*"([^"]+)"/)?.[1], version);
 assert.equal(JSON.parse(read("apps/mobile/app.json")).expo.version, version);
 assert.equal(JSON.parse(read("apps/mobile/app.json")).expo.extra.appVersion, version);
@@ -110,5 +110,6 @@ assert.match(runtimeRunner, /companyH: "NOT_FOUND"/);
 assert.match(runtimeRunner, /companyC: "COMPANY_APPROVAL_PENDING"/);
 assert.doesNotMatch(runtimeRunner, /method:\s*"(?:POST|PATCH|PUT|DELETE)"|INSERT\s+INTO|UPDATE\s+|DELETE\s+FROM|\.put\(|\.delete\(/i);
 
-assert.equal(fs.readdirSync(path.join(root, "db/v2/migrations")).filter((name) => /^\d{3}_.*\.sql$/.test(name)).length, 11);
+const alpha42ContractExists = fs.existsSync(path.join(root, "tests/workorder-v2-alpha42-realistic-issued-embedded-qr-contract.mjs"));
+assert.equal(fs.readdirSync(path.join(root, "db/v2/migrations")).filter((name) => /^\d{3}_.*\.sql$/.test(name)).length, alpha42ContractExists ? 12 : 11);
 console.log("workorder v2 alpha.40 preview output and action density contract: PASS");

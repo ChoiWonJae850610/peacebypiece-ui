@@ -1,7 +1,9 @@
 export type DocumentAccessTokenStatus = "active" | "expired" | "revoked";
+export type DocumentAccessTokenPurpose = "manual_share" | "embedded_qr";
 
 export type DocumentAccessTokenSummary = {
   readonly tokenId: string;
+  readonly tokenPurpose: DocumentAccessTokenPurpose;
   readonly createdAt: string;
   readonly expiresAt: string;
   readonly revokedAt: string | null;
@@ -9,6 +11,18 @@ export type DocumentAccessTokenSummary = {
   readonly lastAccessedAt: string | null;
   readonly accessCount: number;
   readonly status: DocumentAccessTokenStatus;
+};
+
+export type CreatedEmbeddedQrAccessToken = {
+  readonly tokenId: string;
+  readonly generatedDocumentId: string;
+  readonly tokenPurpose: "embedded_qr";
+  readonly rawToken: string;
+  readonly tokenHash: string;
+  readonly viewerUrl: string;
+  readonly qrSvg: string;
+  readonly expiresAt: string;
+  readonly idempotentReplay: boolean;
 };
 
 export type CreatedDocumentAccessToken = DocumentAccessTokenSummary & {

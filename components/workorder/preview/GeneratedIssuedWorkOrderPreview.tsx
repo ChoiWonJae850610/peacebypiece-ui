@@ -2,8 +2,9 @@ import IssuedWorkOrderDocument from "./IssuedWorkOrderDocument";
 import styles from "./IssuedWorkOrderPreview.module.css";
 import type { LocalIssuedPdfRenderInput } from "@/lib/generated-documents/work-order-pdf/localRenderInput";
 
-export default function GeneratedIssuedWorkOrderPreview({ input }: {
+export default function GeneratedIssuedWorkOrderPreview({ input, embeddedQr }: {
   readonly input: LocalIssuedPdfRenderInput;
+  readonly embeddedQr?: { readonly qrSvg: string; readonly expiresAt: string; readonly label: "문서 보기" };
 }) {
   return (
     <main
@@ -23,6 +24,7 @@ export default function GeneratedIssuedWorkOrderPreview({ input }: {
       />
       <IssuedWorkOrderDocument
         data={input.snapshot.preview}
+        embeddedQr={embeddedQr}
         representativeImageSrc={input.representativeImageDataUrl ?? undefined}
       />
     </main>

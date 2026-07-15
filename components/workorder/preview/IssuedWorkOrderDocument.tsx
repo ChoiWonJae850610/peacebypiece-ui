@@ -18,6 +18,11 @@ type PreviewProps = {
   readonly representativeImageLabel?: string;
   readonly quantityUnit?: string;
   readonly coverFacts?: WorkOrderPreviewCoverFacts;
+  readonly embeddedQr?: {
+    readonly qrSvg: string;
+    readonly expiresAt: string;
+    readonly label: "문서 보기";
+  };
 };
 
 type DocumentBlock = {
@@ -165,7 +170,7 @@ function PageNumberFooter({ pageNumber, totalPages }: { readonly pageNumber: num
   );
 }
 
-export default function IssuedWorkOrderDocument({ data, representativeImageSrc, representativeImageLabel, quantityUnit, coverFacts }: PreviewProps) {
+export default function IssuedWorkOrderDocument({ data, representativeImageSrc, representativeImageLabel, quantityUnit, coverFacts, embeddedQr }: PreviewProps) {
   const timeZone = data.layoutMetadata.businessTimezone;
   const contentPages = packBlocks(buildBlocks(data));
   const totalPages = contentPages.length + 1;
@@ -181,7 +186,16 @@ export default function IssuedWorkOrderDocument({ data, representativeImageSrc, 
           {representativeImageSrc ? <img alt={representativeImageLabel ?? `${data.header.productName} 제품 스케치`} className={styles.representativeImage} data-wafl-representative-image="true" src={representativeImageSrc} /> : <div className={styles.sketchPlaceholder}><span>제품 스케치·대표 이미지</span><small>첨부 자료 {data.assets.filter((asset) => asset.includeInDocument).length}건</small></div>}
         </div>
         <div className={styles.coverInfo}>
-          <header className={styles.documentHeader}><p>작업지시서</p><h1>{data.header.productName}</h1><small>{[data.header.seasonCode, data.header.itemCode].filter(Boolean).join(" · ")}</small></header>
+          <div className={styles.coverHeaderRow}>
+            <header className={styles.documentHeader}><p>작업지시서</p><h1>{data.header.productName}</h1><small>{[data.header.seasonCode, data.header.itemCode].filter(Boolean).join(" · ")}</small></header>
+            {embeddedQr ? (
+              <aside aria-label="문서 보기 QR" className={styles.embeddedQr} data-wafl-embedded-qr="true">
+                <div aria-hidden="true" dangerouslySetInnerHTML={{ __html: embeddedQr.qrSvg }} />
+                <strong>{embeddedQr.label}</strong>
+                <small>유효기간 {formatDate(embeddedQr.expiresAt, timeZone)}</small>
+              </aside>
+            ) : null}
+          </div>
           <dl className={styles.documentMeta}>
             <div><dt>문서번호</dt><dd>{data.document.displayDocumentNumber}</dd></div>
             <div><dt>개정차수</dt><dd>{formatRevisionLabel(data.document.revisionNumber)}</dd></div>
