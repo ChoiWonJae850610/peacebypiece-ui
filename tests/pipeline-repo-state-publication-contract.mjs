@@ -98,6 +98,13 @@ const required = [
   "playwright-report",
   "test-results",
   "artifacts",
+  "function AddAlpha42RealisticEmbeddedQrRepoStateSections",
+  "ALPHA42_RUNTIME_EFFECTS_COMPLETE_STATIC_VALIDATION_PASS",
+  "Alpha.42 Worker-mediated PDF PUT / GET / DELETE:",
+  "Alpha.42 Company B Stored Response:",
+  "Alpha.42 Company H / C Isolation:",
+  "approved dev/test migration 012 applied once; ledger 12/12",
+  "mobile version metadata only; dependency graph unchanged",
 ];
 
 for (const token of required) {
