@@ -1,0 +1,209 @@
+﻿param(
+    [ValidateSet("production", "development")]
+    [string]$NextMode = "production",
+    [ValidateSet("ExpoTunnelLegacyDisabled", "Lan", "TailscaleLan")]
+    [string]$MobileTransport = "TailscaleLan",
+    [int]$NextPort = 3000,
+    [int]$ExpoPort = 8081,
+    [string]$CloudflaredPath = ""
+)
+
+$ErrorActionPreference = "Stop"
+. (Join-Path $PSScriptRoot "wafl-external-qa-common.ps1")
+
+$root = Get-WaflQaRepositoryRoot
+if (-not (Test-Path -LiteralPath (Join-Path $root ".git") -PathType Container)) { throw "Repository root validation failed: $root" }
+if ((Get-Location).Path -ne $root) { Set-Location -LiteralPath $root }
+
+$node = Get-WaflQaExecutablePath -Name "node"
+$npm = Get-WaflQaExecutablePath -Name "npm.cmd"
+$npx = Get-WaflQaExecutablePath -Name "npx.cmd"
+$cloudflared = Get-WaflQaCloudflaredPath -ExplicitPath $CloudflaredPath
+if (-not $node -or -not $npm -or -not $npx) { throw "Node, npm, and npx must be available on PATH." }
+if (-not $cloudflared) {
+    throw "cloudflared was not found. Installation is not automatic. Approval command: winget install --id Cloudflare.cloudflared --exact"
+}
+if (-not (Test-WaflQaPortAvailable -Port $NextPort)) { throw "Next port is already in use: $NextPort" }
+if (-not (Test-WaflQaPortAvailable -Port $ExpoPort)) { throw "Expo port is already in use: $ExpoPort" }
+
+$nextCli = Join-Path $root "node_modules\next\dist\bin\next"
+$expoCli = Join-Path $root "apps\mobile\node_modules\expo\bin\cli"
+if (-not (Test-Path -LiteralPath $nextCli -PathType Leaf)) { throw "Next CLI not found: $nextCli" }
+if (-not (Test-Path -LiteralPath $expoCli -PathType Leaf)) { throw "Expo CLI not found. Run the approved apps/mobile dependency setup first." }
+if ($NextMode -eq "production" -and -not (Test-Path -LiteralPath (Join-Path $root ".next\BUILD_ID") -PathType Leaf)) {
+    throw "Production build not found. Run the approved build verification before external QA."
+}
+
+$versionLine = Get-Content -LiteralPath (Join-Path $root "lib\constants\version.ts") -Raw -Encoding UTF8
+$appVersion = [regex]::Match($versionLine, 'APP_VERSION\s*=\s*"([^"]+)"').Groups[1].Value
+$gitStatus = @(git -C $root status --short)
+Write-Host ("Repository: {0}" -f $root)
+Write-Host ("APP_VERSION: {0}" -f $appVersion)
+Write-Host ("Working tree entries: {0}" -f $gitStatus.Count)
+
+$stateDir = Get-WaflQaStateDirectory
+[System.IO.Directory]::CreateDirectory($stateDir) | Out-Null
+$ownerMarker = [Guid]::NewGuid().ToString("N")
+$runToken = ([Guid]::NewGuid().ToString("N") + [Guid]::NewGuid().ToString("N"))
+$state = [ordered]@{
+    schemaVersion = 1
+    repositoryRoot = $root
+    ownerMarker = $ownerMarker
+    status = "starting"
+    failureCode = $null
+    appVersion = $appVersion
+    workingTreeEntryCount = $gitStatus.Count
+    nextMode = $NextMode
+    mobileTransport = $MobileTransport
+    nextPort = $NextPort
+    expoPort = $ExpoPort
+    tailscaleIpv4 = $null
+    expoUrl = $null
+    publicOrigin = $null
+    startedAtUtc = [DateTime]::UtcNow.ToString("o")
+    updatedAtUtc = [DateTime]::UtcNow.ToString("o")
+    lastSuccessfulStage = "preflight"
+    processes = @()
+}
+Write-WaflQaJson -Path (Get-WaflQaStatePath) -Value $state
+
+try {
+    if ($MobileTransport -eq "ExpoTunnelLegacyDisabled") {
+        throw "EXPO_TUNNEL_LEGACY_DISABLED"
+    }
+    if ($MobileTransport -eq "TailscaleLan") {
+        $tailscalePath = Get-WaflQaTailscalePath
+        if (-not $tailscalePath) { throw "TAILSCALE_CLI_MISSING" }
+        $tailscaleRuntime = Get-WaflQaTailscaleRuntime -TailscalePath $tailscalePath
+        $state.tailscaleIpv4 = $tailscaleRuntime.Ipv4
+        $state.expoUrl = "exp://$($state.tailscaleIpv4):$ExpoPort"
+        $state.lastSuccessfulStage = "tailscale-connected"
+        Write-WaflQaJson -Path (Get-WaflQaStatePath) -Value $state
+    }
+
+    $cloudflareStdout = Join-Path $stateDir "cloudflared.stdout.log"
+    $cloudflareStderr = Join-Path $stateDir "cloudflared.stderr.log"
+    $cloudflare = Start-WaflQaOwnedProcess -Role "cloudflared" -FilePath $cloudflared -ArgumentList @("tunnel", "--no-autoupdate", "--url", "http://127.0.0.1:$NextPort") -WorkingDirectory $root -OwnerMarker $ownerMarker -Environment @{} -StdoutPath $cloudflareStdout -StderrPath $cloudflareStderr
+    $state.processes += $cloudflare
+    $state.lastSuccessfulStage = "cloudflared-started"
+    Write-WaflQaJson -Path (Get-WaflQaStatePath) -Value $state
+
+    $deadline = [DateTime]::UtcNow.AddSeconds(45)
+    $publicOrigin = $null
+    while ([DateTime]::UtcNow -lt $deadline -and -not $publicOrigin) {
+        foreach ($path in @($cloudflareStdout, $cloudflareStderr)) {
+            if (Test-Path -LiteralPath $path -PathType Leaf) {
+                $bounded = (Get-Content -LiteralPath $path -Tail 120 -Encoding UTF8) -join "`n"
+                $match = [regex]::Match($bounded, 'https://[a-z0-9-]+\.trycloudflare\.com')
+                if ($match.Success) { $publicOrigin = $match.Value; break }
+            }
+        }
+        if (-not $publicOrigin) { Start-Sleep -Milliseconds 250 }
+    }
+    if (-not $publicOrigin) { throw "QUICK_TUNNEL_URL_NOT_FOUND" }
+    $originUri = [Uri]$publicOrigin
+    if ($originUri.Scheme -ne "https" -or $originUri.AbsolutePath -ne "/" -or -not $originUri.Host.EndsWith(".trycloudflare.com")) { throw "QUICK_TUNNEL_URL_INVALID" }
+    $state.publicOrigin = $originUri.GetLeftPart([UriPartial]::Authority)
+    $state.lastSuccessfulStage = "quick-tunnel-origin-validated"
+    Write-WaflQaJson -Path (Get-WaflQaStatePath) -Value $state
+
+    $serverEnvironment = @{
+        WAFL_SERVER_RUNTIME_MODE = "dev"
+        WAFL_EXTERNAL_QA_ENABLED = "true"
+        WAFL_EXTERNAL_QA_ORIGIN = $state.publicOrigin
+        WAFL_EXTERNAL_QA_HOST_ALLOWLIST = $originUri.Host
+        WAFL_EXTERNAL_QA_RUN_TOKEN = $runToken
+    }
+    $nextStdout = Join-Path $stateDir "next.stdout.log"
+    $nextStderr = Join-Path $stateDir "next.stderr.log"
+    $nextArguments = if ($NextMode -eq "production") { @($nextCli, "start", "-H", "127.0.0.1", "-p", [string]$NextPort) } else { @($nextCli, "dev", "-H", "127.0.0.1", "-p", [string]$NextPort) }
+    $next = Start-WaflQaOwnedProcess -Role "next" -FilePath $node -ArgumentList $nextArguments -WorkingDirectory $root -OwnerMarker $ownerMarker -Environment $serverEnvironment -StdoutPath $nextStdout -StderrPath $nextStderr
+    $state.processes += $next
+    $state.lastSuccessfulStage = "next-started"
+    Write-WaflQaJson -Path (Get-WaflQaStatePath) -Value $state
+
+    $readyDeadline = [DateTime]::UtcNow.AddSeconds(45)
+    $ready = $false
+    while ([DateTime]::UtcNow -lt $readyDeadline -and -not $ready) {
+        try {
+            $response = Invoke-WebRequest -UseBasicParsing -Uri "http://127.0.0.1:$NextPort/v" -Method Get -TimeoutSec 3
+            $ready = $response.StatusCode -eq 200
+        } catch {
+            Start-Sleep -Milliseconds 250
+        }
+    }
+    if (-not $ready) { throw "NEXT_LOCAL_READINESS_FAILED" }
+    $state.lastSuccessfulStage = "next-local-readiness-pass"
+    Write-WaflQaJson -Path (Get-WaflQaStatePath) -Value $state
+
+    $mobileEnvironment = @{
+        WAFL_SERVER_RUNTIME_MODE = "dev"
+        EXPO_PUBLIC_WAFL_WEB_BASE_URL = $state.publicOrigin
+        EXPO_PUBLIC_WAFL_EXTERNAL_QA = "true"
+    }
+    if ($MobileTransport -eq "TailscaleLan") {
+        $mobileEnvironment.APP_VARIANT = "development"
+        $mobileEnvironment.EXPO_PACKAGER_PROXY_URL = "http://$($state.tailscaleIpv4):$ExpoPort"
+    }
+    $savedMobile = @{}
+    try {
+        foreach ($name in $mobileEnvironment.Keys) {
+            $savedMobile[$name] = [Environment]::GetEnvironmentVariable($name, "Process")
+            [Environment]::SetEnvironmentVariable($name, $mobileEnvironment[$name], "Process")
+        }
+        & $node (Join-Path $root "scripts\audit-wafl-external-qa-config.mjs") --external-qa
+        if ($LASTEXITCODE -ne 0) { throw "MOBILE_EXTERNAL_QA_CONFIG_INVALID" }
+    } finally {
+        foreach ($name in $mobileEnvironment.Keys) { [Environment]::SetEnvironmentVariable($name, $savedMobile[$name], "Process") }
+    }
+
+    $expoStdout = Join-Path $stateDir "expo.stdout.log"
+    $expoStderr = Join-Path $stateDir "expo.stderr.log"
+    $expo = Start-WaflQaOwnedProcess -Role "expo" -FilePath $node -ArgumentList @($expoCli, "start", "--lan", "--port", [string]$ExpoPort) -WorkingDirectory (Join-Path $root "apps\mobile") -OwnerMarker $ownerMarker -Environment $mobileEnvironment -StdoutPath $expoStdout -StderrPath $expoStderr
+    $state.processes += $expo
+    $state.lastSuccessfulStage = "expo-lan-started"
+    Write-WaflQaJson -Path (Get-WaflQaStatePath) -Value $state
+
+    $expoReadyDeadline = [DateTime]::UtcNow.AddSeconds(45)
+    $expoLocalReady = $false
+    while ([DateTime]::UtcNow -lt $expoReadyDeadline -and -not $expoLocalReady) {
+        if (-not (Get-Process -Id $expo.pid -ErrorAction SilentlyContinue)) { throw "EXPO_LAN_PROCESS_EXITED" }
+        try {
+            $expoResponse = Invoke-WebRequest -UseBasicParsing -Uri "http://127.0.0.1:$ExpoPort/status" -Method Get -TimeoutSec 3
+            $expoLocalReady = $expoResponse.StatusCode -eq 200 -and (Test-WaflQaPackagerStatusRunning -Content $expoResponse.Content)
+        } catch {
+            Start-Sleep -Milliseconds 250
+        }
+    }
+    if (-not $expoLocalReady) { throw "EXPO_LAN_LOCAL_READINESS_FAILED" }
+
+    if ($MobileTransport -eq "TailscaleLan") {
+        try {
+            $tailscaleResponse = Invoke-WebRequest -UseBasicParsing -Uri "http://$($state.tailscaleIpv4):$ExpoPort/status" -Method Get -TimeoutSec 5
+            if ($tailscaleResponse.StatusCode -ne 200 -or -not (Test-WaflQaPackagerStatusRunning -Content $tailscaleResponse.Content)) {
+                throw "EXPO_TAILSCALE_READINESS_FAILED"
+            }
+        } catch {
+            throw "EXPO_TAILSCALE_READINESS_FAILED"
+        }
+    }
+
+    $state.status = "running"
+    $state.lastSuccessfulStage = if ($MobileTransport -eq "TailscaleLan") { "expo-tailscale-lan-ready" } else { "expo-lan-ready" }
+    $state.updatedAtUtc = [DateTime]::UtcNow.ToString("o")
+    Write-WaflQaJson -Path (Get-WaflQaStatePath) -Value $state
+
+    Write-Host "WAFL external QA processes are running."
+    Write-Host ("Viewer base origin: {0}" -f $state.publicOrigin)
+    Write-Host ("Process IDs: {0}" -f (($state.processes | ForEach-Object { "{0}={1}" -f $_.role, $_.pid }) -join ", "))
+    if ($state.expoUrl) {
+        Write-Host ("Expo Go URL (same tailnet only): {0}" -f $state.expoUrl)
+    } else {
+        Write-Host "Open Expo Go on the same LAN and use the LAN connection shown in the Expo log."
+    }
+    Write-Host "Stop command: .\tools\dev\stop-wafl-external-qa.ps1"
+} catch {
+    $failureCode = if ($_.Exception.Message) { $_.Exception.Message } else { "WAFL_EXTERNAL_QA_START_FAILED" }
+    $handoff = Write-WaflQaFailureHandoff -State $state -FailureCode $failureCode
+    Write-Error ("WAFL external QA stopped at stage '{0}'. Existing owned processes were preserved. Failure Handoff: {1}" -f $state.lastSuccessfulStage, $handoff)
+}

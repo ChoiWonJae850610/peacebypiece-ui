@@ -1,20 +1,30 @@
 {
   "name": "@wafl/mobile",
-  "version": "2.0.0-alpha.42",
+  "version": "2.0.0-alpha.43",
   "private": true,
   "main": "expo-router/entry",
   "scripts": {
-    "start": "expo start",
+    "start": "node ../../scripts/audit-wafl-external-qa-config.mjs && expo start",
+    "start:tunnel": "node ../../scripts/reject-wafl-expo-tunnel.mjs",
+    "start:lan": "node ../../scripts/audit-wafl-external-qa-config.mjs && expo start --lan",
+    "start:tailscale-lan": "node ../../scripts/audit-wafl-external-qa-config.mjs --external-qa && expo start --lan",
     "typecheck": "tsc --noEmit",
-    "expo:config": "expo config --type public"
+    "expo:config": "expo config --type public",
+    "qa:config:audit": "node ../../scripts/audit-wafl-external-qa-config.mjs --external-qa"
   },
   "dependencies": {
-    "expo": "~55.0.0",
-    "expo-router": "~55.0.16",
+    "expo": "~55.0.28",
+    "expo-constants": "~55.0.17",
+    "expo-dev-client": "~55.0.37",
+    "expo-font": "~55.0.8",
+    "expo-linking": "~55.0.16",
+    "expo-router": "~55.0.17",
     "lucide-react-native": "^1.24.0",
     "react": "19.2.0",
     "react-dom": "19.2.0",
-    "react-native": "0.83.0",
+    "react-native": "0.83.6",
+    "react-native-safe-area-context": "~5.6.2",
+    "react-native-screens": "~4.23.0",
     "react-native-svg": "15.15.3",
     "react-native-web": "0.21.0"
   },

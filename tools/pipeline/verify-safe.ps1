@@ -911,6 +911,7 @@ $profileCommands = @{
                 "apps/mobile/constants/compactFieldTypography.ts",
                 "apps/mobile/utils/processInstruction.ts",
                 "apps/mobile/utils/previewLink.ts",
+                "apps/mobile/app.config.js",
                 "scripts/run-wafl-v2-alpha29-mobile-preview-entry.mjs",
                 "tests/workorder-v2-alpha29-mobile-preview-entry-contract.mjs",
                 "app/api/v2/work-orders/[workOrderId]/processes/[processId]/route.ts",
@@ -986,6 +987,15 @@ $profileCommands = @{
                   "tests/workorder-v2-alpha42-pdf-page-orientation-contract.mjs",
                   "tests/workorder-v2-alpha42-cover-fragmentation-contract.mjs",
                   "tests/workorder-v2-alpha42-viewer-only-continuation-contract.mjs",
+                  "lib/external-qa/configCore.mjs",
+                  "proxy.ts",
+                  "scripts/audit-wafl-external-qa-config.mjs",
+                  "scripts/reject-wafl-expo-tunnel.mjs",
+                  "lib/generated-documents/work-order-pdf/viewerOriginPolicy.ts",
+                  "lib/generated-documents/work-order-pdf/viewerOriginPolicyCore.mjs",
+                  "tests/workorder-v2-alpha43-external-mobile-qa-contract.mjs",
+                  "tests/wafl-external-qa-stop-state-contract.mjs",
+                  "tests/wafl-external-qa-tailscale-transport-contract.mjs",
                   "scripts/run-wafl-v2-alpha42-token-purpose-migration.mjs",
                   "scripts/run-wafl-v2-alpha42-realistic-issued-embedded-qr-runtime.mjs",
                   "scripts/run-wafl-v2-alpha42-pending-pdf-render-readiness.mjs",
@@ -1029,6 +1039,10 @@ $profileCommands = @{
           @{ Name = "workorder v2 alpha.42 PDF page orientation contract"; Command = "node"; Arguments = @("tests/workorder-v2-alpha42-pdf-page-orientation-contract.mjs") },
           @{ Name = "workorder v2 alpha.42 cover fragmentation contract"; Command = "node"; Arguments = @("tests/workorder-v2-alpha42-cover-fragmentation-contract.mjs") },
           @{ Name = "workorder v2 alpha.42 viewer-only continuation contract"; Command = "node"; Arguments = @("tests/workorder-v2-alpha42-viewer-only-continuation-contract.mjs") },
+          @{ Name = "workorder v2 alpha.43 external mobile QA foundation contract"; Command = "node"; Arguments = @("tests/workorder-v2-alpha43-external-mobile-qa-contract.mjs") },
+          @{ Name = "WAFL external QA stop-state regression contract"; Command = "node"; Arguments = @("tests/wafl-external-qa-stop-state-contract.mjs") },
+          @{ Name = "WAFL external QA Tailscale transport contract"; Command = "node"; Arguments = @("tests/wafl-external-qa-tailscale-transport-contract.mjs") },
+          @{ Name = "WAFL external QA Tailscale runtime contract"; Command = "powershell.exe"; Arguments = @("-NoProfile", "-File", "tests/wafl-external-qa-tailscale-runtime-contract.ps1") },
           @{ Name = "workorder v2 alpha.42 standalone renderer import smoke"; Command = "node"; Arguments = @("scripts/run-wafl-v2-alpha42-renderer-import-smoke.mjs") },
           @{ Name = "approved already-applied migration plan guard contract"; Command = "node"; Arguments = @("tests/approved-applied-migration-plan-guard-contract.mjs") },
         @{ Name = "app-v2 document links and Mermaid contract"; Command = "node"; Arguments = @("tests/app-v2-document-links-contract.mjs") },
@@ -1543,7 +1557,7 @@ if ($Profile -eq "automation-infrastructure" -and (GetProjectAppVersion) -eq "2.
 if ($Profile -eq "automation-infrastructure" -and (GetProjectAppVersion) -in @("2.0.0-alpha.38", "2.0.0-alpha.39") -and (Test-Path (Join-Path $ProjectDir "tests/workorder-v2-alpha39-document-viewer-security-contract.mjs"))) {
     $allowedMigrationChanges = @("db/v2/migrations/011_v2_document_access_viewer_functions.sql")
 }
-if ($Profile -eq "automation-infrastructure" -and (GetProjectAppVersion) -in @("2.0.0-alpha.41", "2.0.0-alpha.42") -and (Test-Path (Join-Path $ProjectDir "tests/workorder-v2-alpha42-realistic-issued-embedded-qr-contract.mjs"))) {
+if ($Profile -eq "automation-infrastructure" -and (GetProjectAppVersion) -in @("2.0.0-alpha.41", "2.0.0-alpha.42", "2.0.0-alpha.43") -and (Test-Path (Join-Path $ProjectDir "tests/workorder-v2-alpha42-realistic-issued-embedded-qr-contract.mjs"))) {
     $allowedMigrationChanges = @("db/v2/migrations/012_v2_document_access_token_purpose.sql")
 }
 $unexpectedMigrationChanges = @($migrationChanges | Where-Object { $allowedMigrationChanges -notcontains $_ })

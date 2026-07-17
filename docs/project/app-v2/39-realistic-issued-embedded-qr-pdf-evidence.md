@@ -1,19 +1,19 @@
 # 2.0.0-alpha.42 Realistic Issued Embedded QR PDF Evidence
 
-Status: `PARTIAL_MUTATION_CONFIRMED_PENDING_PDF_RENDER_READINESS`
+Status: `ALPHA42_RUNTIME_EFFECTS_COMPLETE_STATIC_VALIDATION_PASS`
 
 ## Baseline and current boundary
 
 - Baseline version: `2.0.0-alpha.41`
 - Baseline HEAD: `15d2c014aaf671120f1ad6724adfd83c104711f9`
-- Target version after all approved runtime stages pass: `2.0.0-alpha.42`
+- Result version: `2.0.0-alpha.42`
 - Approved dev/test fingerprint: `01e5dcc7fea3`
 - Current migration ledger: `12/12`
-- APP_VERSION remains `2.0.0-alpha.41` while the retained pending document is completed through separately approved continuation stages.
+- APP_VERSION and all mobile mirrors are finalized at `2.0.0-alpha.42`.
 - Migration 012 was applied exactly once on approved dev/test fingerprint `01e5dcc7fea3`; post-apply read-only audit passed with existing tokens `2`, `manual_share` `2`, and `embedded_qr` `0`.
 - The corrected runtime read-only preflight passed exactly once. It used the approved process-only viewer origin and sanitized R2 fingerprint matches `3/3`; DB write, R2 request, Worker execution, and production access were all `0`.
-- The approved runtime retained one issued/finalized WorkOrder and revision at version `2/2`, one representative PNG object, one pending generated document, and one unused embedded-QR token. Receipt/event counts are `3/2`; incomplete receipt count is `0`.
-- Generated-document storage key, PDF size, PDF SHA-256, and generated timestamp remain null. The planned PDF object is absent. R2 DELETE, Worker execution, and production access remain `0`.
+- The approved continuation finalized one generated document and retained one embedded-QR token. The final PDF is `252994` bytes with SHA-256 `0334727646ebc43ab19a88ccb64cf1b5d3b1e91d3ca5438d3ec61a9a9665af37`; access count is `1` and receipt/incomplete counts are `3/0`.
+- Worker-mediated PDF PUT/GET/DELETE is `1/3/0`; direct R2/S3 access, cleanup, rollback, production access, and remaining runtime budget are all `0`.
 
 ## Token-purpose migration result
 
@@ -116,7 +116,7 @@ The approved viewer-only child is bounded to the retained generated document and
 
 The one approved viewer-only child then consumed that budget exactly. Local Next readiness passed on an ephemeral `127.0.0.1` port, the existing embedded token exchanged once, inline and download each returned the retained `252994`-byte PDF with SHA-256 `0334727646ebc43ab19a88ccb64cf1b5d3b1e91d3ca5438d3ec61a9a9665af37`, and the database retained access count `1` plus one `pdf.share_viewed` event. Cumulative alpha.42 PDF PUT/GET/DELETE is `1/3/0`, finalize update is `1`, generation/view events are `+3`, receipts remain `3`, and incomplete receipts remain `0`.
 
-The child stopped after those effects at the first cross-tenant response-shape assertion. Company B returned the expected HTTP `404`, but the authenticated workspace guard uses the canonical top-level shape `code: WAFL_NOT_FOUND`; the runner incorrectly expected the public viewer shape `error.code: NOT_FOUND`. Company H and Company C requests were after that assertion and were not executed. No retry, extra GET, cleanup, rollback, or delete ran. A bounded `BEGIN READ ONLY` audit confirmed the generated document and token counts at `1/1`, access count `1`, document/token event counts `2/1`, A30FACT unchanged, and production mutation false. The resulting state is `RUNTIME_EFFECTS_COMPLETE_VALIDATION_ASSERTION_FAILED`, not a data or R2 partial-write mismatch. APP_VERSION remains alpha.41 pending a separately approved zero-mutation completion decision.
+At the intermediate viewer checkpoint, the child stopped after those effects at the first cross-tenant response-shape assertion. Company B returned the expected HTTP `404`, but the authenticated workspace guard uses the canonical top-level shape `code: WAFL_NOT_FOUND`; the runner incorrectly expected the public viewer shape `error.code: NOT_FOUND`. Company H and Company C requests were after that assertion and were not executed. No retry, extra GET, cleanup, rollback, or delete ran. A bounded `BEGIN READ ONLY` audit confirmed the generated document and token counts at `1/1`, access count `1`, document/token event counts `2/1`, A30FACT unchanged, and production mutation false. This historical intermediate state was resolved by the following approved zero-call static completion; it is not the document's final status.
 
 ## Zero-call static completion
 

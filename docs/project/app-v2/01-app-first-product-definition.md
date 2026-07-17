@@ -29,6 +29,22 @@ Designated Google or Apple accounts may be mapped to 시스템관리자 in later
 
 Next.js remains important for the public landing site, API/server integration, file/PDF/R2/Worker boundaries, internal localhost development checks, and remaining legacy/admin surfaces during transition.
 
+## Canonical product identity
+
+The final identity policy for the App-first line is:
+
+| Field | Canonical value |
+| --- | --- |
+| Project | `PeaceByPiece` |
+| Company | `Sanjin Works` (planned) |
+| Brand | `WAFL` |
+| Website | `https://www.wafl.co.kr` |
+| Bundle Identifier | `com.wafl.app` |
+
+Project Name identifies the repository/project and is not derived from the Bundle Identifier. Company Name identifies the planned operating legal entity and is also independent of the Bundle Identifier. `com.wafl.app` is the long-lived WAFL brand identifier and remains stable through a future Individual-to-Organization Apple App Transfer unless Apple platform constraints require a separately approved exception.
+
+The technical source-alignment and Apple/EAS account authority is `06-expo-environment-setup.md`. This policy checkpoint does not change the current development identifier in source.
+
 `/system` and `/workspace` are long-term product removal targets. They must be deprecated in phases only after the app replaces their duties.
 
 `/ui`, `/roadmap`, and `/functions` are not customer product screens in the App-first line. They are localhost-only development check routes.

@@ -57,7 +57,7 @@ The App-first architecture must preserve:
 - destructive action confirmations,
 - controlled support/impersonation boundaries.
 
-## Future Expo choices
+## Expo QA and distribution direction
 
 The `2.0.0-alpha.2` skeleton chooses:
 
@@ -65,10 +65,8 @@ The `2.0.0-alpha.2` skeleton chooses:
 - Expo SDK 55.
 - `apps/mobile` as a standalone app folder, not a root workspace.
 
-The following remain candidates for later phases:
+The official mobile QA path is an EAS Development Build. Expo Go is excluded from official WAFL QA evidence and release gates; it may not be used to declare device QA complete. Development Builds must use private Tailscale transport for Metro during the approved development session. Next/PDF/Viewer remain on the separate controlled Cloudflare HTTPS transport.
 
-- EAS Build.
-- development builds for native auth/camera/file features.
-- App Store and Google Play testing flows.
+Later approved phases cover EAS project linking, native auth/camera/file features, internal distribution, TestFlight, and Google Play testing. Canonical identifiers and Apple account transition policy are defined in `06-expo-environment-setup.md`.
 
 This architecture checkpoint still does not authorize DB migration, API route changes, R2/Worker mutation, real upload, real PDF generation, native auth, or production app-store deployment.

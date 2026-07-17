@@ -1,4 +1,28 @@
-# WAFL v2 App-first Roadmap 2.0 - 2.0.0-alpha.42 result
+# WAFL v2 App-first Roadmap 2.0 - 2.0.0-alpha.43 result
+
+## 2.0.0-alpha.43 result
+
+Status: `ALPHA43_EXTERNAL_MOBILE_QA_AND_IOS_DEVELOPMENT_BUILD_COMPLETE`.
+
+- Add strict server/mobile origin validation and reject HTTP, external-QA localhost, production localhost/Quick Tunnel, credentials, path, query, and fragment inputs.
+- Add a Next 16 host/path proxy that trusts the request `Host` only, keeps localhost behavior, admits the exact process-only tunnel host, permits the bounded Viewer/issued-Preview read chain, and blocks internal/admin/dev/test/mutation paths externally.
+- Retire the failed Expo/ngrok tunnel as a non-executable legacy marker; add Expo LAN/TailscaleLan/config-audit scripts without adding a transport-specific dependency.
+- Add Windows start/status/stop orchestration with incremental `.tmp` state, exact PID ownership markers, failure preservation, no automatic retry/rollback/cleanup, and no broad process termination.
+- Add permanent-PDF versus temporary-QA origin policy; Quick Tunnel is never a permanent generated-PDF QR origin.
+- Separate Expo Metro over private Tailscale IPv4 from Next/Viewer over public temporary Cloudflare HTTPS; require Tailscale CLI/online state/`100.64.0.0/10` IPv4 and both local/Tailscale Metro readiness.
+- Record the approved Tailscale installation/login, split-transport runtime, Metro readiness, external `/v` header smoke, internal-path blocking, PID 6284 preservation, and mutation-zero result without persisting temporary hostnames.
+- Establish canonical identity: Project `PeaceByPiece`, planned Company `Sanjin Works`, Brand `WAFL`, Website `https://www.wafl.co.kr`, and long-lived Bundle Identifier `com.wafl.app`, independent of Project/Company naming.
+- Record active Apple Developer Individual membership; the future account direction is Organization plus App Transfer.
+- Configure Expo owner `lostab`, project `@lostab/wafl-mobile`, linked project ID, iOS/Android identifier `com.wafl.app`, `expo-dev-client` `55.0.37`, and one internal `development` profile without starting a build or credential workflow.
+- Regenerate the stale mobile lock through an isolated package.json-only candidate, then align the active lock and physical tree at Expo `55.0.28`, Expo Router `55.0.17`, React Native `0.83.6`, `expo-dev-client` `55.0.37`, and transitive `@expo/log-box` `55.0.13`. Physical/lock-only dependency audits, `expo install --check`, and the Node `24.14.0` canonical Verify pass without deleting `node_modules`, running lifecycle scripts, or adding `@expo/log-box` directly.
+- Exclude Expo Go from official WAFL QA and make EAS Development Build the official device-QA path. Keep Tailscale for Metro and Cloudflare for Next/PDF/Viewer.
+- Separate the internal `2.0.0-alpha.43` trace version from the public Expo/iOS/Android version `2.0.0`, retaining the internal value in `expo.extra.appVersion`.
+- Record the first iOS Development Build Install Pods/Codegen failure, align React Native to `0.83.6` and Screens to `4.23.0`, and retain the subsequently finished and installed Development Build evidence.
+- Record the installed build's exact ATS failure after Safari/Local Network/Tailscale/manifest/bundle evidence excluded the transport and JavaScript paths. Add only the Development variant's `100.64.0.0/10` insecure-HTTP exception; default/production remain exception-free and `NSAllowsArbitraryLoads` remains absent.
+- Complete one frozen-credential ATS-corrected iOS Development Build, prove Pods/Codegen/Xcode and embedded Info.plist, install it on the registered iPhone, and pass deep-link manifest/bundle load, real WAFL display, basic navigation, background/re-entry, and exactly one Reload without ATS recurrence, red screen, crash, or infinite loading.
+- Accept the duplicate internal build number `1` for this installed QA artifact only; record monotonic iOS auto-increment as a candidate required before the next Development Build rather than creating another alpha.43 build.
+- Stop only marker-owned runner processes, release ports 3100/8081, retain Tailscale, and keep migration ledger `12/12` plus every DB/R2/token/PDF/Worker/production mutation at zero.
+- Evidence: `40-external-mobile-qa-foundation-evidence.md`; runbook: `41-external-mobile-qa-runbook.md`; iOS build evidence: `42-ios-development-build-evidence.md`.
 
 ## 2.0.0-alpha.42 result
 
@@ -14,7 +38,7 @@ Status: `ALPHA42_RUNTIME_EFFECTS_COMPLETE_STATIC_VALIDATION_PASS`.
 - Use one hash-only, 365-day, non-rotatable embedded token per generated document; pass its viewer URL to Chromium only through an ephemeral render context.
 - Prepare one new DB-native-UUID realistic Company A WorkOrder with matrix 144, six materials, five-by-three size specification, four processes, and one immutable representative image.
 - Preserve A30FACT and all retained DB/R2/token evidence. Migration 012 and the bounded fixture/image/PDF runtime each require their own approval checkpoint.
-- Result version remains pending. APP_VERSION stays alpha.41 until both approved stages and completion audit pass.
+- Final result version is `2.0.0-alpha.42`; runtime effects and zero-call completion audit passed at `ALPHA42_RUNTIME_EFFECTS_COMPLETE_STATIC_VALIDATION_PASS`.
 
 # WAFL v2 App-first Roadmap 2.0 - 2.0.0-alpha.41 result
 

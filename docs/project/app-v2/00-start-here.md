@@ -5,7 +5,11 @@
 This document starts the WAFL v2 App-first line.
 
 Previous baseline: `0.30.0-alpha.27`.
-Current baseline: `2.0.0-alpha.42`.
+Current baseline: `2.0.0-alpha.43`.
+
+Alpha.43 establishes and runtime-verifies the split external QA foundation: private `TailscaleLan` carries Expo Metro, while a process-only Cloudflare Quick Tunnel carries Next/PDF/Viewer HTTPS behind an exact host/path allowlist. External `/v` headers and internal-route blocking passed with mutation zero. Expo Go is no longer an official WAFL QA path. The first EAS iOS Development Build failed in Pods/Codegen; the corrected SDK 55 tree and public/internal version split now pass canonical static verification, and the approved second build is pending. Canonical release identity and account policy are defined in `06-expo-environment-setup.md`; runtime evidence and operations are in `40-external-mobile-qa-foundation-evidence.md` and `41-external-mobile-qa-runbook.md`; native-build evidence is in `42-ios-development-build-evidence.md`.
+
+Canonical identity is Project `PeaceByPiece`, planned Company `Sanjin Works`, Brand `WAFL`, Website `https://www.wafl.co.kr`, and Bundle Identifier `com.wafl.app`. The bundle identifier is a long-lived brand identifier independent of Project Name and Company Name.
 
 Alpha.41 standardizes every phone material card on a complete two-line order summary and icon-only actions below the canonical 760px tablet boundary. It removes continuation-page suffixes from the document number and gives every HTML/local-PDF page one dynamic centered `current / total` footer. The retained alpha.38 R2 PDF is read-only regression evidence only and is not regenerated. See `38-mobile-order-summary-and-pdf-page-number-evidence.md`.
 
@@ -125,6 +129,8 @@ docs/project/app-v2/
   37-preview-output-and-action-density-evidence.md
   38-mobile-order-summary-and-pdf-page-number-evidence.md
   39-realistic-issued-embedded-qr-pdf-evidence.md
+  40-external-mobile-qa-foundation-evidence.md
+  41-external-mobile-qa-runbook.md
 ```
 
 The alpha.19 documents are design and read-only audit authority. They do not authorize schema migration, API replacement, seed execution, DB/R2 mutation, or PDF Worker changes.

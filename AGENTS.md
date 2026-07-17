@@ -44,11 +44,14 @@
   40. `docs/project/app-v2/37-preview-output-and-action-density-evidence.md`
   41. `docs/project/app-v2/38-mobile-order-summary-and-pdf-page-number-evidence.md`
   42. `docs/project/app-v2/39-realistic-issued-embedded-qr-pdf-evidence.md`
-  43. `docs/project/v2/00-start-here.md` through `docs/project/v2/14-operational-policy-absorption.md`
-  44. `docs/project/25-korean-unicode-encoding-standard.md`
-  45. `docs/project/32-product-completion-and-ui-evidence-standard.md`
-  46. `docs/project/26-final-policy-decisions-and-master-todo.md`
-  47. `docs/project/31-pre-codex-integrated-master-plan.md`
+  43. `docs/project/app-v2/40-external-mobile-qa-foundation-evidence.md`
+  44. `docs/project/app-v2/41-external-mobile-qa-runbook.md`
+  45. `docs/project/app-v2/42-ios-development-build-evidence.md`
+  46. `docs/project/v2/00-start-here.md` through `docs/project/v2/14-operational-policy-absorption.md`
+  47. `docs/project/25-korean-unicode-encoding-standard.md`
+  48. `docs/project/32-product-completion-and-ui-evidence-standard.md`
+  49. `docs/project/26-final-policy-decisions-and-master-todo.md`
+  50. `docs/project/31-pre-codex-integrated-master-plan.md`
 - `docs/project/app-v2/*` is the priority authority for the `2.0.x` App-first line.
 - Existing `docs/project/v2/*` documents are not deleted. They remain the `0.30.x` `/ui` design baseline and preserved policy reference for Product, Sheet/Card, Korean role labels, Neon/R2/Worker, PDF/share, mobile-web, and QA rules.
 - `www.wafl.co.kr` is the public marketing, download, pricing, examples, inquiry, trial-request, and waitlist landing site for the WAFL app.
@@ -76,6 +79,8 @@
 - `docs/project/app-v2/36-document-viewer-security-evidence.md` records the alpha.39 hash-only opaque token, fragment viewer, signed short session, server-side R2 GET, QR, revoke/rotate, migration 011, and bounded approval gates. Source/static readiness does not authorize migration apply or token runtime.
 - `docs/project/app-v2/37-preview-output-and-action-density-evidence.md` records the alpha.40 compact material actions, popup-only Preview entry, HTML image/print-safe color rendering, authenticated generated-PDF GET, and localhost sample PDF download. It authorizes no DB, token, generated-document, R2 write/delete, Worker, or production mutation.
 - `docs/project/app-v2/39-realistic-issued-embedded-qr-pdf-evidence.md` records the alpha.42 token-purpose migration draft, realistic issued-data fixture plan, ephemeral embedded-QR render context, exact bounded DB/R2 runtime budget, and approval checkpoints. Source/static/preflight readiness does not authorize migration 012 apply or fixture/PDF/R2 runtime.
+- `docs/project/app-v2/40-external-mobile-qa-foundation-evidence.md` and `41-external-mobile-qa-runbook.md` define the alpha.43 split transport: private TailscaleLan for Expo Metro and process-only Cloudflare Quick Tunnel for Next/Viewer, with exact external path allowlist, temporary-origin policy, PID ownership stop contract, and user-device procedure. The legacy Expo/ngrok tunnel is disabled. They authorize no Tailscale install/login, transport runtime, external request, DB/API/R2/token/PDF mutation, EAS operation, or production deployment without the separately required approval.
+- `docs/project/app-v2/42-ios-development-build-evidence.md` records the alpha.43 public/internal version split, SDK 55 online compatibility correction, first iOS Development Build failure, and the separately approved second-build gate. It does not authorize another build retry, credential replacement, TestFlight, App Store Connect, or production distribution.
 - Normal mobile production-card screens are portrait-first. Mobile landscape is not the default production-card target; the future sketch/drawing module may be the mobile-landscape exception.
 - Tablet app screens must support portrait and landscape without becoming a compressed desktop admin layout.
 - Next.js remains for system admin, customer admin advanced settings, operations, API, document, internal showroom, and test-console flows.

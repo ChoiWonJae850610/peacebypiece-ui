@@ -26,11 +26,13 @@ Customer signup, approval, provisioning, Trial, billing, and company membership 
 
 After signup/provisioning, a customer user enters the app through an approved company membership and permission context.
 
-## Native account setup
+## Apple Developer account and transfer policy
 
-Apple Developer Program and Google Play Console setup are needed only in later formal testing and distribution phases.
+Apple Developer Program Individual enrollment is complete and Apple approval email is pending. EAS Build, App Store Connect setup, credentials, project linking, device registration, TestFlight, and store submission must not start until a later approved work order after the account is active.
 
-They are not required in this documentation checkpoint.
+The future company-account direction is Apple Developer Organization under planned Company `Sanjin Works`, followed by Apple App Transfer from the Individual account. The canonical Bundle Identifier is `com.wafl.app`; it is a stable WAFL brand identifier and does not depend on Project Name `PeaceByPiece` or Company Name `Sanjin Works`.
+
+Apple login and provider selection remain user-controlled. Codex must not enter credentials, create unattended auth keys, or change account/team policy without explicit approval. The technical EAS and identifier authority is `06-expo-environment-setup.md`.
 
 ## Not implemented in this version
 

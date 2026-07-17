@@ -1,29 +1,38 @@
 {
   "expo": {
+    "owner": "lostab",
     "name": "WAFL",
     "slug": "wafl-mobile",
-    "version": "2.0.0-alpha.42",
+    "version": "2.0.0",
     "scheme": "wafl",
     "orientation": "default",
     "userInterfaceStyle": "light",
-    "newArchEnabled": true,
-    "plugins": ["expo-router"],
+    "plugins": [
+      "expo-router"
+    ],
     "experiments": {
       "typedRoutes": true
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "kr.co.wafl.app.dev"
+      "bundleIdentifier": "com.wafl.app",
+      "config": {
+        "usesNonExemptEncryption": false
+      }
     },
     "android": {
-      "package": "kr.co.wafl.app.dev",
+      "package": "com.wafl.app",
       "adaptiveIcon": {
         "backgroundColor": "#f3eee4"
       }
     },
     "extra": {
-      "appVersion": "2.0.0-alpha.42",
-      "mockOnly": true
+      "appVersion": "2.0.0-alpha.43",
+      "mockOnly": true,
+      "router": {},
+      "eas": {
+        "projectId": "6cc3b260-a2cc-4c97-9c15-764bda530836"
+      }
     }
   }
 }

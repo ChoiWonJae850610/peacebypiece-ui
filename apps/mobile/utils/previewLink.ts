@@ -13,7 +13,20 @@ let webPreviewOpenPending = false;
 function configuredBaseUrl(): string | null {
   const value = process.env.EXPO_PUBLIC_WAFL_WEB_BASE_URL?.trim();
   if (!value) return null;
-  try { const url = new URL(value); return new Set(["http:", "https:"]).has(url.protocol) ? url.origin : null; } catch { return null; }
+  try {
+    const url = new URL(value);
+    const externalQa = process.env.EXPO_PUBLIC_WAFL_EXTERNAL_QA?.trim().toLowerCase() === "true";
+    const production = process.env.NODE_ENV === "production";
+    const isLocal = LOCAL_SAMPLE_HOSTS.has(url.hostname);
+    const isQuickTunnel = url.hostname.endsWith(".trycloudflare.com");
+    if (url.username || url.password || url.pathname !== "/" || url.search || url.hash) return null;
+    if (externalQa && (url.protocol !== "https:" || isLocal)) return null;
+    if (production && (isLocal || isQuickTunnel)) return null;
+    if (!externalQa && !new Set(["http:", "https:"]).has(url.protocol)) return null;
+    return url.origin;
+  } catch {
+    return null;
+  }
 }
 
 function developmentWebFallback(): string | null {

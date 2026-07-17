@@ -57,6 +57,22 @@ For every app feature that edits or shares production data, later implementation
 
 This version is documentation only, so no device QA evidence is required yet.
 
+## 2.0.0-alpha.43 external-device QA
+
+Static and transport-foundation completion do not equal official device QA. Expo Go is excluded from the official WAFL QA path and cannot satisfy a product/device gate. Official device QA begins only with an approved EAS Development Build after Apple Developer activation and the separately approved EAS/native setup.
+
+The alpha.43 Tailscale/Cloudflare foundation has already proven Metro reachability, external `/v` headers, and internal-path blocking with mutation zero. The Development Build device run must preserve that split transport and verify:
+
+- the Windows PC and iPhone/iPad/Galaxy Tab are online in the same tailnet, and the Development Build connects to Metro through the PC's Tailscale address rather than localhost or an ordinary LAN address;
+- iPhone and iPad keep the Development Build bundle connected through Tailscale after a reload;
+- Galaxy Tab uses the same private Metro transport, rotates portrait/landscape, and retains Korean rendering;
+- the public `/v` shell loads over HTTPS without exposing a token in path/query/logs;
+- an authenticated issued Preview is tested only with an already valid same-origin session and never through an anonymous bypass;
+- internal routes return the external block response;
+- the explicit stop script ends only the three runner-owned processes, after which both external transports are unavailable.
+
+Token exchange, PDF/R2 GET, issued Preview DB reads, and actual embedded-token viewing remain separately approved runtime actions. Until the Development Build passes on physical devices, the canonical state remains `USER_DEVICE_QA_PENDING`. Earlier Expo Go or generic `exp://` connectivity may be retained as noncanonical transport evidence only.
+
 ## 2.0.0-alpha.4 design theme and orientation QA
 
 The alpha.4 mobile mock applies `동대문 제작 워크룸 / Dongdaemun Atelier Ops` as the first app visual foundation.

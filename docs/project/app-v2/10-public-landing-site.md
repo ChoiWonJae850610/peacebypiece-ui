@@ -6,6 +6,16 @@ This document defines the public web role for the App-first WAFL v2 line.
 
 `www.wafl.co.kr` is not the customer production workspace. It is the public WAFL app landing site.
 
+Canonical public identity:
+
+- Project: `PeaceByPiece`.
+- Planned Company: `Sanjin Works`.
+- Brand: `WAFL`.
+- Website: `https://www.wafl.co.kr`.
+- App Bundle Identifier: `com.wafl.app`.
+
+The public site presents the WAFL brand. Project Name and Company Name do not determine or rename the Bundle Identifier. Native identifier, Apple account, and EAS policy are defined in `06-expo-environment-setup.md`.
+
 ## Public site role
 
 The public site should introduce the WAFL app and guide visitors to the right next step.

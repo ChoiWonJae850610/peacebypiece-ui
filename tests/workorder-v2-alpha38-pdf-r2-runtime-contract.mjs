@@ -13,15 +13,18 @@ const renderPage = read("app/dev/workorder-pdf-render/[runToken]/page.tsx");
 const renderComponent = read("components/workorder/preview/GeneratedIssuedWorkOrderPreview.tsx");
 const sampleRenderComponent = read("components/workorder/preview/SampleIssuedWorkOrderPreview.tsx");
 const version = read("lib/constants/version.ts").match(/APP_VERSION\s*=\s*"([^"]+)"/)?.[1];
-const mobileVersion = read("apps/mobile/constants/version.ts").match(/APP_VERSION\s*=\s*"([^"]+)"/)?.[1];
-const expoVersion = JSON.parse(read("apps/mobile/app.json")).expo.version;
+const mobileVersion = read("apps/mobile/constants/version.ts").match(/MOBILE_APP_VERSION\s*=\s*"([^"]+)"/)?.[1];
+const appConfig = JSON.parse(read("apps/mobile/app.json"));
+const publicVersion = version.replace(/-.+$/, "");
 const expectedVersions = process.env.WAFL_ALPHA38_PREFINAL_CONTRACT === "1"
   ? ["2.0.0-alpha.37"]
-  : ["2.0.0-alpha.38", "2.0.0-alpha.39", "2.0.0-alpha.40", "2.0.0-alpha.41", "2.0.0-alpha.42"];
+  : ["2.0.0-alpha.38", "2.0.0-alpha.39", "2.0.0-alpha.40", "2.0.0-alpha.41", "2.0.0-alpha.42", "2.0.0-alpha.43"];
 
 assert.ok(expectedVersions.includes(version));
 assert.equal(mobileVersion, version);
-assert.equal(expoVersion, version);
+assert.match(publicVersion, /^\d+\.\d+\.\d+$/);
+assert.equal(appConfig.expo.version, publicVersion);
+assert.equal(appConfig.expo.extra.appVersion, version);
 
 assert.match(migration, /result_generated_document_id uuid/);
 assert.match(migration, /FOREIGN KEY \(company_id, result_generated_document_id\)/);
