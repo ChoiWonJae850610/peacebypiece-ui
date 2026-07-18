@@ -5,7 +5,8 @@
     [string]$MobileTransport = "TailscaleLan",
     [int]$NextPort = 3000,
     [int]$ExpoPort = 8081,
-    [string]$CloudflaredPath = ""
+    [string]$CloudflaredPath = "",
+    [switch]$EnableAlpha46BasicInfoMutation
 )
 
 $ErrorActionPreference = "Stop"
@@ -123,6 +124,8 @@ $state = [ordered]@{
     readApiRuntime = "dev-test"
     fingerprintVerified = $false
     fingerprintPrefix = $null
+    commandApi = "blocked"
+    mutationMode = "read-only"
     processes = @()
 }
 Write-WaflQaJson -Path (Get-WaflQaStatePath) -Value $state
@@ -186,6 +189,13 @@ try {
         WAFL_V2_RUNTIME = $readApiTarget.Runtime
         WAFL_V2_TEST_PREFIX = $readApiTarget.TestPrefix
         WAFL_V2_APPROVED_DB_FINGERPRINT = $readApiTarget.ApprovedFingerprint
+    }
+    if ($EnableAlpha46BasicInfoMutation) {
+        $serverEnvironment.WAFL_V2_COMMAND_API_ENABLED = "1"
+        $serverEnvironment.WAFL_V2_COMMAND_MUTATION_APPROVED = "2.0.0-alpha.46-dev-test-mobile-basic-info-runtime"
+        $serverEnvironment.WAFL_EXTERNAL_QA_ALPHA46_BASIC_INFO_MUTATION_ENABLED = "true"
+        $state.commandApi = "ready"
+        $state.mutationMode = "basic-info-patch"
     }
     $nextStdout = Join-Path $stateDir "next.stdout.log"
     $nextStderr = Join-Path $stateDir "next.stderr.log"

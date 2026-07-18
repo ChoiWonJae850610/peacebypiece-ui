@@ -15,7 +15,7 @@ const readonlyRunner = read("scripts/run-wafl-v2-alpha40-preview-output-readonly
 
 const version = read("lib/constants/version.ts").match(/APP_VERSION\s*=\s*"([^"]+)"/)?.[1];
 const alpha42ContractExists = fs.existsSync(path.join(root, "tests/workorder-v2-alpha42-realistic-issued-embedded-qr-contract.mjs"));
-assert.ok(version === "2.0.0-alpha.41" || (alpha42ContractExists && new Set(["2.0.0-alpha.42", "2.0.0-alpha.43", "2.0.0-alpha.44", "2.0.0-alpha.45"]).has(version)));
+assert.ok(version === "2.0.0-alpha.41" || (alpha42ContractExists && new Set(["2.0.0-alpha.42", "2.0.0-alpha.43", "2.0.0-alpha.44", "2.0.0-alpha.45", "2.0.0-alpha.46"]).has(version)));
 assert.equal(read("apps/mobile/constants/version.ts").match(/MOBILE_APP_VERSION\s*=\s*"([^"]+)"/)?.[1], version);
 const appConfig = JSON.parse(read("apps/mobile/app.json"));
 const publicVersion = version.replace(/-.+$/, "");

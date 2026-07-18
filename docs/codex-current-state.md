@@ -1,3 +1,19 @@
+# 2.0.0-alpha.46 Mobile Basic Info Update
+
+- Internal APP_VERSION, mobile mirror, mobile package/lock trace, and Expo `extra.appVersion` are `2.0.0-alpha.46`; public version remains `2.0.0`, and `dataMode` is descriptive `dev-test-basic-info-write`.
+- The existing draft basic-info PATCH transaction remains the server source of truth. Alpha.46 mobile sends only changed `productName`, `dueDate`, and `totalQuantity` with `expectedVersion` and a bounded `clientRequestId`; it never sends an Idempotency-Key, company scope, revision identity, or a whole detail object.
+- The new alpha.46 approval is not in the generic mutation approval set. Create remains alpha.25-only; material, process, and revision commands retain their own exact approvals. External PATCH is admitted only for one canonical UUID detail pathname when the explicit runner switch enables the non-production alpha.46 mutation mode.
+- The default external runner remains read-only. Mutation-mode values are injected only into the Next child; Metro, tracked env files, and persistent process/user/machine environment remain free of Command approvals.
+- Mobile edit is draft/current-revision and `workorder.update` gated. It provides explicit save, client validation, saving/saved/validation/conflict/locked/error states, dirty-navigation confirmation, manual latest reload, one post-save detail GET, and local list synchronization without automatic retry, polling, autosave, or list refetch.
+- Read-only preflight proved all 503 existing Company A WorkOrders were `issued/finalized`. With separate owner approval, one retained synthetic `QA_DRAFT_A` was created at the exact initial product name, `2026-09-29`, and quantity `136`; creation produced WorkOrder/revision/receipt/event deltas `+1/+1/+1/+1` and no document, token, R2, PDF, or production effect.
+- The owner then approved one three-field mobile save. The retained result is product name `QA 기본정보 저장 검증 A`, due date `2026-09-30`, quantity `137`, WorkOrder/revision entity version `2/2`, one `work_order.patch_basic_info` event, and no save receipt. No additional successful PATCH occurred.
+- PostgreSQL `DATE` is now treated as a calendar-only `YYYY-MM-DD` string at SQL/repository boundaries. It must never round-trip through JavaScript `Date` plus `toISOString().slice(0, 10)`; `timestamp` and `timestamptz` keep their existing ISO datetime contract. DB, list API, detail API, and iPhone now all report `2026-09-30` independent of timezone.
+- One old `expectedVersion=1` request returned typed `409 CONFLICT` while the current version remained `2`; DB, event, receipt, and version deltas were zero. The first local audit invocation had stopped before HTTP because PowerShell 5.1 misread UTF-8 JSON; a separately approved Node UTF-8 direct read produced the sole stale HTTP request.
+- Physical iPhone QA is owner-confirmed PASS for persistence, date display, dirty background/re-entry, unsaved warning, continue editing, discard, non-draft read-only behavior, and disconnect. Automatic save/retry/polling remained zero, and R2/PDF/token/production/native/EAS effects remained zero.
+- Canonical stop ended the three marker-owned cloudflared/Next/Metro processes with skip `0`; ports 3100/8081 have no listener, while the separately owned localhost:3000 login server and Tailscale service remain running.
+- Current checkpoint: final source/document Verify and delivery are pending; the final status may be declared only after those gates pass.
+- Evidence: `docs/project/app-v2/45-mobile-basic-info-update-evidence.md`.
+
 # 2.0.0-alpha.45 Mobile ProductionCard Core Overview
 
 - Internal APP_VERSION, mobile mirror, mobile package/lock trace, and Expo `extra.appVersion` are `2.0.0-alpha.45`. Expo public version remains `2.0.0`; Bundle Identifier and Android package remain `com.wafl.app`.

@@ -10,6 +10,8 @@ export const WAFL_V2_ALPHA27_MUTATION_APPROVAL =
   "2.0.0-alpha.27-dev-test-revision-issue-runtime";
 export const WAFL_V2_ALPHA30_MUTATION_APPROVAL =
   "2.0.0-alpha.30-dev-test-factory-instruction-runtime";
+export const WAFL_V2_ALPHA46_BASIC_INFO_MUTATION_APPROVAL =
+  "2.0.0-alpha.46-dev-test-mobile-basic-info-runtime";
 
 const SUPPORTED_MUTATION_APPROVALS = new Set([
   WAFL_V2_ALPHA25_MUTATION_APPROVAL,
@@ -50,4 +52,22 @@ export function getWorkOrderV2CommandRuntimeGuard(input?: {
     fingerprint: readGuard.fingerprint,
     mutationApproved,
   };
+}
+
+export function getWorkOrderV2BasicInfoMutationRuntimeGuard(): WorkOrderV2CommandRuntimeGuard {
+  const configuredApproval = process.env.WAFL_V2_COMMAND_MUTATION_APPROVED ?? "";
+  if (
+    configuredApproval !== WAFL_V2_ALPHA25_MUTATION_APPROVAL
+    && configuredApproval !== WAFL_V2_ALPHA46_BASIC_INFO_MUTATION_APPROVAL
+  ) {
+    return { ok: false, reason: "basic-info-mutation-approval-missing" };
+  }
+  return getWorkOrderV2CommandRuntimeGuard({
+    requireMutationApproval: true,
+    requiredMutationApproval: configuredApproval,
+  });
+}
+
+export function isAlpha46BasicInfoMutationRuntime(): boolean {
+  return process.env.WAFL_V2_COMMAND_MUTATION_APPROVED === WAFL_V2_ALPHA46_BASIC_INFO_MUTATION_APPROVAL;
 }

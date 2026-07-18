@@ -33,7 +33,7 @@ export function proxy(request: NextRequest) {
   if (!requestHost) return blocked();
   if (isLocalHost(requestHost)) return NextResponse.next();
   if (requestHost !== qaConfig.hostname || !qaConfig.hostAllowlist.has(requestHost)) return blocked();
-  if (!isExternalQaPathAllowed(request.nextUrl.pathname, request.method)) return blocked();
+  if (!isExternalQaPathAllowed(request.nextUrl.pathname, request.method, process.env)) return blocked();
   return NextResponse.next();
 }
 

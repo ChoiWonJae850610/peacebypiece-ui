@@ -1,4 +1,12 @@
-# WAFL v2 App Device Test Plan - 2.0.0-alpha.45
+# WAFL v2 App Device Test Plan - 2.0.0-alpha.46
+
+## 2.0.0-alpha.46 basic-info update result
+
+- The installed iOS Development Build was reused. Owner-approved device QA targeted only retained synthetic `QA_DRAFT_A`: one explicit save changed product name, calendar due date, and total quantity; list/detail persistence and the saved state survived re-entry.
+- DB, list API, detail API, and iPhone all show the same `2026-09-30` due date after the PostgreSQL `DATE` serialization correction. No additional save was used to prove the fix.
+- Dirty background/re-entry retained the temporary input. Back navigation showed the unsaved warning, `계속 편집` preserved the input, and `변경사항 버리기` restored the retained saved value without PATCH.
+- One existing issued/finalized card remained read-only. The separate old-version request returned `409 CONFLICT` with zero DB/event/receipt/version delta.
+- Owner report: entire instructed iPhone QA PASS; automatic save/retry/polling, crash, red screen, and infinite loading were zero. Connection disconnect also passed.
 
 ## 2.0.0-alpha.45 ProductionCard core overview checkpoint
 

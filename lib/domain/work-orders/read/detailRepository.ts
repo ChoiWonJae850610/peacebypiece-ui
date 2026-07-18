@@ -50,6 +50,7 @@ import {
   type WorkOrderSizeSpecReadModel,
   type WorkOrderStatus,
 } from "@/lib/domain/work-orders/contracts";
+import { serializePostgresDateOnly } from "@/lib/domain/work-orders/dateOnly.mjs";
 import { withWaflV2TenantReadOnlyTransaction, type DbQueryResultRow } from "@/lib/db/client";
 
 export const WORK_ORDER_V2_DETAIL_REPOSITORY_STATEMENT_COUNT = 2;
@@ -66,7 +67,7 @@ const TARGET_SQL = `
 export const WORK_ORDER_V2_DETAIL_CORE_SQL = `
   WITH target AS MATERIALIZED (
     SELECT w.id, w.product_name, w.product_type_code, w.season_code, w.item_code,
-           w.status, w.due_date, w.total_quantity, w.document_number_base,
+           w.status, w.due_date::text AS due_date, w.total_quantity, w.document_number_base,
            w.current_revision_id, w.representative_image_id, w.entity_version, w.updated_at,
            r.revision_no, r.revision_status, r.finalized_at, r.unit_price,
            r.fabric_total, r.accessory_total, r.process_total, r.estimated_total
@@ -198,7 +199,7 @@ export const WORK_ORDER_V2_PROCESSES_SQL = `
   WITH target AS MATERIALIZED (${TARGET_SQL})
   SELECT t.id AS work_order_id, t.current_revision_id, t.entity_version,
          p.id, p.process_type_code, p.process_name_snapshot, p.partner_id,
-         p.partner_name_snapshot, p.quantity, p.due_date, p.unit_code,
+         p.partner_name_snapshot, p.quantity, p.due_date::text AS due_date, p.unit_code,
          p.unit_price, p.amount, p.memo, p.application_area, p.application_color_target, p.status, p.display_order
   FROM target t
   LEFT JOIN work_order_processes p
@@ -306,11 +307,6 @@ function asDecimal(value: unknown): DecimalString {
   return String(value ?? "0") as DecimalString;
 }
 
-function asIsoDate(value: unknown): IsoDate | null {
-  if (value === null || value === undefined) return null;
-  return (value instanceof Date ? value.toISOString().slice(0, 10) : String(value).slice(0, 10)) as IsoDate;
-}
-
 function asIsoDateTime(value: unknown): IsoDateTime | null {
   if (value === null || value === undefined) return null;
   return (value instanceof Date ? value.toISOString() : new Date(String(value)).toISOString()) as IsoDateTime;
@@ -359,7 +355,7 @@ export async function getWorkOrderDetailCoreV2(input: {
       productTypeAlias: null,
       seasonCode: row.season_code === null ? null : String(row.season_code),
       itemCode: row.item_code === null ? null : String(row.item_code),
-      dueDate: asIsoDate(row.due_date),
+      dueDate: serializePostgresDateOnly(row.due_date, "WORK_ORDER_DETAIL_INVALID_DUE_DATE"),
       totalQuantity: asCount(row.total_quantity),
       status: asEnum(row.status, WORK_ORDER_STATUSES, "WORK_ORDER_DETAIL_INVALID_STATUS"),
       currentRevisionId: String(row.current_revision_id) as WorkOrderRevisionId,
@@ -537,7 +533,7 @@ export async function getWorkOrderProcessesV2(input: Omit<CommonCollectionInput,
       id: String(row.id) as ProcessId, processTypeCode: String(row.process_type_code), processName: String(row.process_name_snapshot),
       partnerId: row.partner_id ? String(row.partner_id) as PartnerId : null,
       partnerName: row.partner_name_snapshot === null ? null : String(row.partner_name_snapshot),
-      quantity: asDecimal(row.quantity), dueDate: asIsoDate(row.due_date), unitCode: String(row.unit_code),
+      quantity: asDecimal(row.quantity), dueDate: serializePostgresDateOnly(row.due_date, "WORK_ORDER_PROCESS_INVALID_DUE_DATE"), unitCode: String(row.unit_code),
       currency: "KRW" as CurrencyCode, unitPrice: asDecimal(row.unit_price), amount: asDecimal(row.amount),
       memo: row.memo === null ? null : String(row.memo),
       applicationArea: row.application_area === null ? null : String(row.application_area),

@@ -1,4 +1,13 @@
-# WAFL v2 App-first Codex Working Rules - 2.0.0-alpha.45
+# WAFL v2 App-first Codex Working Rules - 2.0.0-alpha.46
+
+## Alpha.46 mobile basic-info mutation boundary
+
+- Edit only product name, due date, and total quantity on a current draft revision. The server remains authoritative for permission, tenant, draft lock, and expectedVersion.
+- Never start mutation mode or send PATCH before a read-only preflight identifies `QA_DRAFT_A` and the owner approves the exact retained values.
+- The default external runner stays read-only. Alpha.46 approval must not enter the generic approval set or enable create/material/process/revision commands.
+- One approved successful PATCH is retained, followed by one stale old-version 409 check. No rollback, delete, cleanup, fixture, or second successful mutation is allowed.
+- Mobile save is explicit and changed-fields-only. Autosave, automatic retry, polling, silent overwrite, full-list refetch, and input discard are forbidden.
+- PostgreSQL `DATE` is a calendar-only value whose API form is exactly `YYYY-MM-DD`. Prefer SQL/repository string boundaries; never serialize it through JavaScript `Date` and UTC ISO slicing. `timestamp` and `timestamptz` remain ISO datetime values and must not share the date-only helper.
 
 ## Alpha.45 live ProductionCard boundary
 

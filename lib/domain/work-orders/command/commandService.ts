@@ -23,7 +23,11 @@ import {
   WorkOrderCommandRepositoryError,
   type WorkOrderCommandRepositoryResult,
 } from "@/lib/domain/work-orders/command/commandRepository";
-import { getWorkOrderV2CommandRuntimeGuard } from "@/lib/domain/work-orders/command/runtimeGuard";
+import {
+  getWorkOrderV2BasicInfoMutationRuntimeGuard,
+  getWorkOrderV2CommandRuntimeGuard,
+  WAFL_V2_ALPHA25_MUTATION_APPROVAL,
+} from "@/lib/domain/work-orders/command/runtimeGuard";
 
 export class WorkOrderCommandRequestError extends Error {
   readonly code: WorkOrderApiErrorCode;
@@ -107,6 +111,17 @@ export function requireCommandMutationApproval(requiredMutationApproval?: string
   }
 }
 
+export function requireBasicInfoMutationApproval() {
+  const guard = getWorkOrderV2BasicInfoMutationRuntimeGuard();
+  if (!guard.ok) {
+    throw new WorkOrderCommandRequestError({
+      code: "FORBIDDEN",
+      status: 403,
+      message: "제작 카드 기본정보 수정은 별도 승인된 dev/test runtime에서만 실행할 수 있습니다.",
+    });
+  }
+}
+
 function mapRepositoryError(error: WorkOrderCommandRepositoryError): never {
   const entityVersion = error.entityVersion === null
     ? undefined
@@ -171,7 +186,7 @@ export async function createWorkOrderDraft(input: {
     correlationId: input.correlationId,
     permissionCode: "workorder.create",
   });
-  requireCommandMutationApproval();
+  requireCommandMutationApproval(WAFL_V2_ALPHA25_MUTATION_APPROVAL);
 
   const scopedIdempotencyKeyHash = sha256([
     WORK_ORDER_CREATE_COMMAND_CODE,
@@ -219,7 +234,7 @@ export async function patchWorkOrderBasicInfo(input: {
     correlationId: input.correlationId,
     permissionCode: "workorder.update",
   });
-  requireCommandMutationApproval();
+  requireBasicInfoMutationApproval();
 
   try {
     return toServiceResult(await patchWorkOrderBasicInfoV2({

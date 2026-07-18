@@ -11,7 +11,7 @@ const apiClient = read("apps/mobile/lib/apiClient.ts");
 const externalQa = read("lib/external-qa/configCore.mjs");
 const mock = read("apps/mobile/components/ProductionCardMock.tsx");
 
-assert.match(version, /APP_VERSION = "2\.0\.0-alpha\.45"/);
+assert.match(version, /APP_VERSION = "2\.0\.0-alpha\.46"/);
 assert.match(detail, /testID="production-card-sheet"/);
 assert.match(detail, /styles\.hero[\s\S]*styles\.summaryGrid[\s\S]*styles\.tabRailFrame[\s\S]*ReadinessPanel[\s\S]*title="금액 요약"/);
 
@@ -50,11 +50,12 @@ assert.match(detail, /tab\.count\(detail\)/);
 assert.doesNotMatch(detail, /setActiveTab|activeTab/);
 
 assert.doesNotMatch(detail, /mockProductionCard|summaryMetrics|costMetrics|overviewInfo|nextCheckByTab|constants\/mockProductionCard/);
-assert.doesNotMatch(detail, /header\.id|entityVersion|header\.document|detail\.revision/);
+assert.doesNotMatch(detail, /header\.id|entityVersion|header\.document/);
+assert.doesNotMatch(detail, /value=\{detail\.revision\.status\}/, "revision status must not return as a duplicate overview row");
 assert.doesNotMatch(detail, /core detail|server calculated|internal status/i);
 assert.doesNotMatch(detail, /<Image\b|Image\s*from\s*["']react-native/);
 assert.doesNotMatch(apiClient, /\/materials|\/processes|\/assets|\/documents|\/history|\/size-color|\/size-spec/);
-assert.doesNotMatch(apiClient, /method: "(?:PUT|PATCH|DELETE)"/);
+assert.doesNotMatch(apiClient, /method: "(?:PUT|DELETE)"/);
 assert.doesNotMatch(app, /setInterval|polling/i);
 assert.match(app, /detailRequestInFlight\.current/);
 assert.match(app, /onReturnToList=\{returnToList\}/);

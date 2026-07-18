@@ -26,6 +26,7 @@ The route is not connected to `apps/mobile`. It adds no command, detail/tab, upl
 - Tampered, expired, version-mismatched, or cross-tenant cursor returns `CURSOR_INVALID`.
 - Success uses the existing WAFL `{ ok: true, data }` envelope and canonical `WorkOrderListPage`.
 - Failure uses canonical `{ ok: false, error: { code, message, retryable, correlationId } }`.
+- Due dates are PostgreSQL calendar dates and are returned as validated `YYYY-MM-DD` strings directly from the SQL/repository boundary. They do not pass through JavaScript Date or UTC ISO conversion.
 
 Each item contains only WorkOrder ID, display document number, product name, state, due date, total quantity, estimated amount summary, one representative-image metadata object, incomplete fabric/accessory counts, process count, latest document status, and updated timestamp. Storage keys, raw tokens, child lists, matrices, snapshots, and attachment metadata are excluded.
 

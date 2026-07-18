@@ -18,6 +18,7 @@ import {
   type WorkOrderListItem,
   type WorkOrderStatus,
 } from "@/lib/domain/work-orders/contracts";
+import { serializePostgresDateOnly } from "@/lib/domain/work-orders/dateOnly.mjs";
 import { withWaflV2TenantReadOnlyTransaction, type DbQueryResultRow } from "@/lib/db/client";
 
 // Counts bounded statements inside the repository callback, not all endpoint protocol round trips.
@@ -34,7 +35,7 @@ export const WORK_ORDER_V2_LIST_SQL = `
     ORDER BY w.updated_at DESC, w.id DESC
     LIMIT $5
   ), page_rows AS MATERIALIZED (
-    SELECT w.id, w.document_number_base, w.product_name, w.status, w.due_date,
+    SELECT w.id, w.document_number_base, w.product_name, w.status, w.due_date::text AS due_date,
            w.total_quantity, w.current_revision_id, w.representative_image_id,
            w.updated_at, r.revision_no, r.estimated_total
     FROM page_ids p
@@ -93,7 +94,7 @@ type WorkOrderListRow = DbQueryResultRow & {
   readonly document_number_base: string | null;
   readonly product_name: string;
   readonly status: string;
-  readonly due_date: string | Date | null;
+  readonly due_date: string | null;
   readonly total_quantity: number | string;
   readonly revision_no: number | string | null;
   readonly estimated_total: string | number | null;
@@ -114,12 +115,6 @@ export type WorkOrderListRepositoryResult = {
   readonly listQueryMs: number;
   readonly transactionMs: number;
 };
-
-function toIsoDate(value: string | Date | null): IsoDate | null {
-  if (value === null) return null;
-  const text = value instanceof Date ? value.toISOString().slice(0, 10) : value.slice(0, 10);
-  return text as IsoDate;
-}
 
 function toIsoDateTime(value: string | Date): IsoDateTime {
   return (value instanceof Date ? value.toISOString() : new Date(value).toISOString()) as IsoDateTime;
@@ -156,7 +151,7 @@ function mapRow(row: WorkOrderListRow): WorkOrderListItem {
     displayDocumentNumber,
     productName: row.product_name,
     status: toWorkOrderStatus(row.status),
-    dueDate: toIsoDate(row.due_date),
+    dueDate: serializePostgresDateOnly(row.due_date, "WORK_ORDER_LIST_INVALID_DUE_DATE"),
     totalQuantity: toCount(row.total_quantity),
     estimatedAmountSummary: {
       currency: "KRW" as CurrencyCode,

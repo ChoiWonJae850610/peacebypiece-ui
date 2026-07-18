@@ -30,6 +30,8 @@ The initial core payload contains only:
 
 It excludes material/process/asset rows, size matrices, document snapshots, history rows, storage keys, and tokens.
 
+Core and process due dates retain PostgreSQL calendar semantics: SQL returns date columns as text, repository mapping validates `YYYY-MM-DD`, and no JavaScript Date/UTC conversion is allowed. Timestamp fields such as `finalizedAt` keep their existing ISO datetime representation.
+
 ## 4. Lazy endpoint contract
 
 | Endpoint | Returned data | Pagination |

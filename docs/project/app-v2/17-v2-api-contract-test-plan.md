@@ -1,5 +1,12 @@
 # WAFL v2 API Contract Test Plan
 
+## Alpha.46 date-only and bounded mobile update additions
+
+- Verify draft-only product name/due date/quantity PATCH, changed-fields-only payload, `expectedVersion`, one post-save detail GET, local list synchronization, and non-draft read-only behavior.
+- Verify exact Next-only runtime approval, default read-only runner, exact external UUID PATCH route, and continued blocking of create/material/process/revision and arbitrary API paths.
+- Verify PostgreSQL `date` columns cross repositories as `YYYY-MM-DD` strings, reject invalid calendar values and JavaScript Date objects, remain identical under UTC and Asia/Seoul, and do not alter timestamp/timestamptz ISO mapping.
+- Verify explicit save, dirty warning, continue editing, discard, manual conflict recovery, and zero autosave/automatic retry/polling.
+
 ## Alpha.30 additions
 
 - Check additive nullable migration fields, matching limits, no backfill/index/destructive SQL, and dev/test apply gate.

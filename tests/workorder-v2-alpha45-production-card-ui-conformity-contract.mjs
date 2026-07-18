@@ -12,7 +12,7 @@ const apiClient = read("apps/mobile/lib/apiClient.ts");
 const mock = read("apps/mobile/components/ProductionCardMock.tsx");
 const externalQa = read("lib/external-qa/configCore.mjs");
 
-assert.match(version, /APP_VERSION = "2\.0\.0-alpha\.45"/);
+assert.match(version, /APP_VERSION = "2\.0\.0-alpha\.46"/);
 assert.doesNotMatch(detail, /mockProductionCard|productionCards|summaryMetrics|costMetrics|overviewInfo|nextCheckByTab|constants\/mockProductionCard/);
 assert.match(detail, /WorkOrderDetailCore/);
 assert.match(detail, /testID="production-card-sheet"/);
@@ -45,7 +45,7 @@ assert.doesNotMatch(detail, /header\.id/);
 assert.match(detail, /대표 이미지 준비 중/);
 assert.doesNotMatch(detail, /<Image\b|Image\s*from\s*["']react-native/);
 assert.doesNotMatch(apiClient, /\/materials|\/processes|\/assets|\/documents|\/history|\/size-color|\/size-spec/);
-assert.doesNotMatch(apiClient, /method: "(?:PUT|PATCH|DELETE)"/);
+assert.doesNotMatch(apiClient, /method: "(?:PUT|DELETE)"/);
 
 for (const tab of ["개요", "이미지·첨부", "사이즈·색상", "원단", "부자재", "제작 플로우", "출력·공유"]) assert.match(detail, new RegExp(tab));
 assert.match(detail, /accessibilityState=\{\{ disabled: true \}\}/);

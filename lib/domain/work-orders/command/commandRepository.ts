@@ -14,6 +14,7 @@ import type {
   WorkOrderId,
   WorkOrderRevisionId,
 } from "@/lib/domain/work-orders/contracts";
+import { serializePostgresDateOnly } from "@/lib/domain/work-orders/dateOnly.mjs";
 import {
   withWaflV2TenantWriteTransaction,
   type DbQueryResultRow,
@@ -54,7 +55,7 @@ type WorkOrderCommandRow = DbQueryResultRow & {
   readonly product_type_code: string | null;
   readonly season_code: string | null;
   readonly item_code: string | null;
-  readonly due_date: string | Date | null;
+  readonly due_date: string | null;
   readonly total_quantity: number | string;
   readonly memo: string | null;
   readonly factory_delivery_memo: string | null;
@@ -88,11 +89,6 @@ function toInteger(value: number | string): number {
   return parsed;
 }
 
-function toIsoDate(value: string | Date | null): IsoDate | null {
-  if (value === null) return null;
-  return (value instanceof Date ? value.toISOString().slice(0, 10) : value.slice(0, 10)) as IsoDate;
-}
-
 function mapCommandRow(row: WorkOrderCommandRow): WorkOrderDraftCommandResult {
   if (row.work_order_status !== "draft" || row.revision_status !== "draft") {
     throw new Error("WORK_ORDER_COMMAND_RESULT_NOT_DRAFT");
@@ -108,7 +104,7 @@ function mapCommandRow(row: WorkOrderCommandRow): WorkOrderDraftCommandResult {
     productTypeCode: row.product_type_code,
     seasonCode: row.season_code,
     itemCode: row.item_code,
-    dueDate: toIsoDate(row.due_date),
+    dueDate: serializePostgresDateOnly(row.due_date, "WORK_ORDER_COMMAND_INVALID_DUE_DATE"),
     totalQuantity: toInteger(row.total_quantity),
     memo: row.memo,
     factoryDeliveryMemo: row.factory_delivery_memo,
@@ -246,7 +242,7 @@ export async function createWorkOrderDraftV2(input: {
       RETURNING id AS work_order_id, $3::uuid AS revision_id, 0 AS revision_no,
                 status AS work_order_status, 'draft'::text AS revision_status,
                 entity_version, product_name, product_type_code, season_code,
-                item_code, due_date, total_quantity, $4::text AS memo, $5::text AS factory_delivery_memo
+                item_code, due_date::text AS due_date, total_quantity, $4::text AS memo, $5::text AS factory_delivery_memo
     `, [input.scope.companyId, workOrderId, revisionId, input.command.memo ?? null, input.command.factoryDeliveryMemo ?? null]);
     statementCount += 1;
     if (!linked.rows[0]) throw new Error("WORK_ORDER_CURRENT_REVISION_LINK_FAILED");
@@ -301,8 +297,8 @@ export async function createWorkOrderDraftV2(input: {
   };
 }
 
-function datesEqual(left: string | Date | null, right: IsoDate | null | undefined): boolean {
-  return toIsoDate(left) === (right ?? null);
+function datesEqual(left: string | null, right: IsoDate | null | undefined): boolean {
+  return serializePostgresDateOnly(left, "WORK_ORDER_COMMAND_INVALID_DUE_DATE") === (right ?? null);
 }
 
 function hasOwn(value: object, key: string): boolean {
@@ -324,7 +320,7 @@ export async function patchWorkOrderBasicInfoV2(input: {
       SELECT w.id AS work_order_id, r.id AS revision_id, r.revision_no,
              w.status AS work_order_status, r.revision_status,
              w.entity_version, w.product_name, w.product_type_code,
-             w.season_code, w.item_code, w.due_date, w.total_quantity, r.memo, r.factory_delivery_memo
+             w.season_code, w.item_code, w.due_date::text AS due_date, w.total_quantity, r.memo, r.factory_delivery_memo
       FROM work_orders w
       JOIN work_order_revisions r
         ON r.company_id = w.company_id AND r.id = w.current_revision_id
@@ -418,7 +414,7 @@ export async function patchWorkOrderBasicInfoV2(input: {
                 $20::integer AS entity_version, product_name_snapshot AS product_name,
                 product_type_code_snapshot AS product_type_code,
                 season_code_snapshot AS season_code, item_code_snapshot AS item_code,
-                due_date_snapshot AS due_date, total_quantity_snapshot AS total_quantity, memo, factory_delivery_memo
+                due_date_snapshot::text AS due_date, total_quantity_snapshot AS total_quantity, memo, factory_delivery_memo
     `, [
       input.scope.companyId,
       current.revision_id,

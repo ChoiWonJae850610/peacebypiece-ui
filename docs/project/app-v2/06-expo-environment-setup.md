@@ -1,4 +1,12 @@
-# WAFL v2 Expo Environment Setup Plan - 2.0.0-alpha.45
+# WAFL v2 Expo Environment Setup Plan - 2.0.0-alpha.46
+
+## Alpha.46 installed-build and process-only Command mode
+
+Alpha.46 reuses iOS Development Build number 1 and changes no native dependency, ATS setting, plugin, EAS profile, credential, device registration, build number, EAS Build, or EAS Update. Internal trace version is `2.0.0-alpha.46`; public version remains `2.0.0`.
+
+The external runner remains read-only unless `-EnableAlpha46BasicInfoMutation` is explicitly supplied after owner approval. That switch injects the exact basic-info Command approval and external PATCH flag into the Next child only. Metro receives no Command environment, and no tracked or persistent environment value is written.
+
+The approved runtime used that switch once for the retained `QA_DRAFT_A` save and old-version conflict audit. The iPhone reused build number 1; native dependency, Expo/ATS configuration, EAS Build/Update, credential, and device-registration deltas remained zero. Runtime shutdown remains a canonical final-delivery gate; ordinary future starts return to read-only unless the bounded switch is explicitly approved again.
 
 ## Alpha.45 installed-build reuse
 

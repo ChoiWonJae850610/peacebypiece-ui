@@ -1,3 +1,16 @@
+# WAFL v2 App-first Roadmap 2.0 - 2.0.0-alpha.46 result
+
+## 2.0.0-alpha.46 result
+
+Status: `ALPHA46_MOBILE_BASIC_INFO_UPDATE_COMPLETE` after the recorded final Verify, canonical stop, push, and handoff gates.
+
+- Delivered draft-only editing for actual product name, calendar due date, and total quantity inside the accepted ProductionCard sheet.
+- Reused the existing PATCH transaction, `expectedVersion`, tenant/RLS scope, `workorder.update`, draft/current-revision lock, version increments, and append-only domain event. One approved save moved the retained target from version `1` to `2`; one old-version request returned `409 CONFLICT` with no mutation.
+- Explicit save, one post-save detail GET, local list synchronization, dirty warning, continue editing, discard, and non-draft read-only behavior passed physical iPhone QA. Autosave, automatic retry, polling, and full-list refetch remained absent.
+- Corrected PostgreSQL `DATE` handling to preserve calendar `YYYY-MM-DD` values without JavaScript Date/UTC conversion. DB, list, detail, and iPhone now agree on `2026-09-30`.
+- The default external runner remains read-only. The bounded alpha.46 switch injected the exact approval into Next only and admitted PATCH only on one canonical UUID detail path; create, material, process, revision, migration, R2, PDF/token, native, EAS, and production paths stayed blocked.
+- Evidence: `45-mobile-basic-info-update-evidence.md`.
+
 # WAFL v2 App-first Roadmap 2.0 - 2.0.0-alpha.45 result
 
 ## 2.0.0-alpha.45 result

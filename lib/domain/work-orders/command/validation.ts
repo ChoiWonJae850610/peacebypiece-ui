@@ -7,10 +7,10 @@ import type {
   PatchWorkOrderBasicInfoCommand,
   WorkOrderFieldError,
 } from "@/lib/domain/work-orders/contracts";
+import { isIsoCalendarDate } from "@/lib/domain/work-orders/dateOnly.mjs";
 
 const CLIENT_REQUEST_ID_PATTERN = /^[A-Za-z0-9._:-]{1,128}$/;
 const IDEMPOTENCY_KEY_PATTERN = /^[A-Za-z0-9._:-]{8,128}$/;
-const ISO_DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
 
 export type JsonObject = Record<string, unknown>;
 
@@ -87,15 +87,9 @@ export function parseOptionalText(
 function parseOptionalDate(value: unknown, field: string, present: boolean): IsoDate | null | undefined {
   if (!present) return undefined;
   if (value === null || value === "") return null;
-  if (typeof value !== "string" || !ISO_DATE_PATTERN.test(value)) {
+  if (typeof value !== "string" || !isIsoCalendarDate(value)) {
     throw new WorkOrderCommandValidationError([
       fieldError(field, "INVALID_DATE", `${field}은 YYYY-MM-DD 형식이어야 합니다.`),
-    ]);
-  }
-  const parsed = new Date(`${value}T00:00:00.000Z`);
-  if (Number.isNaN(parsed.getTime()) || parsed.toISOString().slice(0, 10) !== value) {
-    throw new WorkOrderCommandValidationError([
-      fieldError(field, "INVALID_DATE", `${field}에 유효한 날짜를 입력해 주세요.`),
     ]);
   }
   return value as IsoDate;
@@ -157,7 +151,10 @@ export type ValidatedPatchWorkOrderBasicInfoBody = Omit<
   "workOrderId"
 >;
 
-export function validatePatchWorkOrderBasicInfo(body: unknown): ValidatedPatchWorkOrderBasicInfoBody {
+export function validatePatchWorkOrderBasicInfo(
+  body: unknown,
+  options: { readonly mobileBasicInfoOnly?: boolean } = {},
+): ValidatedPatchWorkOrderBasicInfoBody {
   if (!isJsonObject(body)) {
     throw new WorkOrderCommandValidationError([
       fieldError("body", "INVALID_TYPE", "JSON object 요청이 필요합니다."),
@@ -175,16 +172,19 @@ export function validatePatchWorkOrderBasicInfo(body: unknown): ValidatedPatchWo
     ]);
   }
 
-  assertAllowedKeys(body.patch, new Set([
-    "productName",
-    "productTypeCode",
-    "seasonCode",
-    "itemCode",
-    "dueDate",
-    "totalQuantity",
-    "memo",
-    "factoryDeliveryMemo",
-  ]), "patch.");
+  const allowedPatchKeys = options.mobileBasicInfoOnly
+    ? new Set(["productName", "dueDate", "totalQuantity"])
+    : new Set([
+      "productName",
+      "productTypeCode",
+      "seasonCode",
+      "itemCode",
+      "dueDate",
+      "totalQuantity",
+      "memo",
+      "factoryDeliveryMemo",
+    ]);
+  assertAllowedKeys(body.patch, allowedPatchKeys, "patch.");
   if (Object.keys(body.patch).length === 0) {
     throw new WorkOrderCommandValidationError([
       fieldError("patch", "EMPTY_PATCH", "변경할 기본정보를 하나 이상 입력해 주세요."),

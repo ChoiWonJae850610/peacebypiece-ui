@@ -4,20 +4,20 @@ import path from "node:path";
 
 const read = (relativePath) => fs.readFileSync(path.resolve(relativePath), "utf8");
 
-assert.match(read("lib/constants/version.ts"), /2\.0\.0-alpha\.45/);
-assert.match(read("apps/mobile/constants/version.ts"), /2\.0\.0-alpha\.45/);
+assert.match(read("lib/constants/version.ts"), /2\.0\.0-alpha\.46/);
+assert.match(read("apps/mobile/constants/version.ts"), /2\.0\.0-alpha\.46/);
 const mobilePackage = JSON.parse(read("apps/mobile/package.json"));
 const mobileLock = JSON.parse(read("apps/mobile/package-lock.json"));
 const appConfig = JSON.parse(read("apps/mobile/app.json"));
 const easConfig = JSON.parse(read("apps/mobile/eas.json"));
 
-assert.equal(mobilePackage.version, "2.0.0-alpha.45");
-assert.equal(mobileLock.version, "2.0.0-alpha.45");
-assert.equal(mobileLock.packages[""].version, "2.0.0-alpha.45");
+assert.equal(mobilePackage.version, "2.0.0-alpha.46");
+assert.equal(mobileLock.version, "2.0.0-alpha.46");
+assert.equal(mobileLock.packages[""].version, "2.0.0-alpha.46");
 assert.equal(appConfig.expo.version, "2.0.0");
-assert.equal(appConfig.expo.extra.appVersion, "2.0.0-alpha.45");
+assert.equal(appConfig.expo.extra.appVersion, "2.0.0-alpha.46");
 assert.equal(appConfig.expo.extra.mockOnly, false);
-assert.equal(appConfig.expo.extra.dataMode, "dev-test-read-only");
+assert.equal(appConfig.expo.extra.dataMode, "dev-test-basic-info-write");
 assert.equal(appConfig.expo.owner, "lostab");
 assert.equal(appConfig.expo.slug, "wafl-mobile");
 assert.equal(appConfig.expo.ios.bundleIdentifier, "com.wafl.app");
@@ -51,7 +51,7 @@ assert.match(apiClient, /\/api\/v2\/work-orders\?limit=30/);
 assert.match(apiClient, /\/api\/v2\/work-orders\/\$\{encodeURIComponent\(workOrderId\)\}/);
 assert.match(apiClient, /\/api\/dev\/mobile-connect\/exchange/);
 assert.match(apiClient, /\/api\/dev\/mobile-connect\/disconnect/);
-assert.doesNotMatch(apiClient, /method: "(PUT|PATCH|DELETE)"/);
+assert.doesNotMatch(apiClient, /method: "(PUT|DELETE)"/);
 assert.doesNotMatch(apiClient, /\/materials|\/processes|\/assets|\/documents|\/history|\/size-color|\/size-spec/);
 assert.doesNotMatch(mobileRuntime, /<Image\b|Image\s*from\s*["']react-native/);
 assert.doesNotMatch(app, /setInterval|setTimeout\s*\(.*getWorkOrder|poll/i);

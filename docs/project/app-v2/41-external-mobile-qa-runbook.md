@@ -2,6 +2,16 @@
 
 Status: `ALPHA43_EXTERNAL_MOBILE_QA_AND_IOS_DEVELOPMENT_BUILD_COMPLETE`.
 
+## Alpha.46 explicit basic-info mutation mode
+
+The runner defaults to read-only. After static verification, a read-only Company A preflight, and the owner's exact `QA_DRAFT_A` value approval, start once with `-EnableAlpha46BasicInfoMutation`. This adds the alpha.46 basic-info Command approval and external PATCH flag only to Next. Metro receives no Command variables. The external proxy then admits PATCH only for one canonical UUID core-detail path in non-production; collection POST/PATCH, lazy paths, materials, processes, revisions, and OPTIONS remain blocked.
+
+The approved run may retain one successful three-field PATCH and one stale-version 409 request only. Stop canonically after iPhone persistence/input-loss QA. Never turn on this switch for ordinary alpha.44/45 read-only QA.
+
+Alpha.46 device evidence satisfied that exact budget: one successful save, one `409 CONFLICT`, no second successful PATCH, and owner-confirmed PASS for date persistence, dirty background/re-entry, unsaved warning, continue editing, discard, non-draft read-only behavior, and disconnect. The separately owned localhost:3000 login server is never part of canonical external-runner stop.
+
+The final alpha.46 canonical stop ended exactly the three marker-owned cloudflared/Next/Metro processes, recorded ownership skip `0`, and released ports 3100/8081. It preserved the separately owned localhost:3000 login server and the running Tailscale service.
+
 ## Alpha.45 ProductionCard overview QA
 
 After alpha.45 static checks pass, perform one canonical clean restart of the external runner while preserving the separate localhost:3000 login server. Reuse the alpha.44 development connection and exact external allowlist. On the installed iPhone build, open one recent and one legacy WorkOrder and verify the new read-only ProductionCard shell contains only actual user-priority core-detail fields. Confirm the screen is one integrated paper sheet using the established compact hero/stat/underline-tab/divider grammar; `기본 정보`, `문서 요약`, and `구성 요약` are absent; the title wraps naturally; and actual counts remain in visible disabled tab badges. Touching future tabs must cause no state change or request. Representative image/file, lazy-tab, PDF/token, and mutation requests remain zero. Verify list return, background/re-entry, and disconnect. Final delivery requires the owner's explicit `디자인 최종 판정: PASS`; otherwise preserve the runner/log state and stop before commit/push/Finish. Tablet split view is static-only in this version.

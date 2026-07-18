@@ -17,7 +17,10 @@ import {
   patchWorkOrderBasicInfo,
   WorkOrderCommandRequestError,
 } from "@/lib/domain/work-orders/command/commandService";
-import { getWorkOrderV2CommandRuntimeGuard } from "@/lib/domain/work-orders/command/runtimeGuard";
+import {
+  getWorkOrderV2CommandRuntimeGuard,
+  isAlpha46BasicInfoMutationRuntime,
+} from "@/lib/domain/work-orders/command/runtimeGuard";
 import {
   validateCreateWorkOrderDraft,
   validatePatchWorkOrderBasicInfo,
@@ -134,7 +137,9 @@ async function handleCommand(input: {
       return commandSuccessResponse(result, correlationId, result.idempotentReplay ? 200 : 201);
     }
 
-    const command = validatePatchWorkOrderBasicInfo(body);
+    const command = validatePatchWorkOrderBasicInfo(body, {
+      mobileBasicInfoOnly: isAlpha46BasicInfoMutationRuntime(),
+    });
     const result = await patchWorkOrderBasicInfo({
       workOrderId: input.workOrderId ?? "",
       command,

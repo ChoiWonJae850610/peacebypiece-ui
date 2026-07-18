@@ -1,4 +1,11 @@
-import type { MobileCurrentUser, WorkOrderDetailCore, WorkOrderListPage } from "@/lib/apiTypes";
+import type {
+  MobileCurrentUser,
+  MobileFieldError,
+  PatchWorkOrderBasicInfoInput,
+  PatchWorkOrderBasicInfoResult,
+  WorkOrderDetailCore,
+  WorkOrderListPage,
+} from "@/lib/apiTypes";
 import { MobileApiError } from "@/lib/apiTypes";
 
 const LOCAL_HOSTS = new Set(["localhost", "127.0.0.1", "::1"]);
@@ -36,10 +43,20 @@ function readError(body: unknown, status: number, correlationHeader: string | nu
   const code = String(nested.code ?? root.code ?? (status === 401 ? "AUTH_REQUIRED" : status === 403 ? "FORBIDDEN" : status === 404 ? "NOT_FOUND" : status >= 500 ? "INTERNAL_ERROR" : "NETWORK_ERROR"));
   const message = String(nested.message ?? root.message ?? "요청을 처리하지 못했습니다.");
   const correlationId = String(nested.correlationId ?? correlationHeader ?? "").trim() || null;
-  return new MobileApiError({ code, message, status, correlationId });
+  const fieldErrors = Array.isArray(nested.fieldErrors)
+    ? nested.fieldErrors.filter(isJsonObject).map((fieldError): MobileFieldError => ({
+      field: String(fieldError.field ?? ""),
+      code: String(fieldError.code ?? "VALIDATION_ERROR"),
+      message: String(fieldError.message ?? "입력값을 확인해 주세요."),
+    })).filter((fieldError) => fieldError.field.length > 0)
+    : [];
+  const entityVersion = Number.isSafeInteger(nested.entityVersion) && Number(nested.entityVersion) >= 1
+    ? Number(nested.entityVersion)
+    : null;
+  return new MobileApiError({ code, message, status, correlationId, fieldErrors, entityVersion });
 }
 
-async function requestJson<T>(path: string, options: { readonly method: "GET" | "POST"; readonly body?: JsonObject }): Promise<T> {
+async function requestJson<T>(path: string, options: { readonly method: "GET" | "POST" | "PATCH"; readonly body?: unknown }): Promise<T> {
   if (!path.startsWith("/") || path.startsWith("//")) {
     throw new MobileApiError({ code: "API_ORIGIN_INVALID", message: "요청 경로가 올바르지 않습니다." });
   }
@@ -113,6 +130,25 @@ export async function getWorkOrderList(): Promise<WorkOrderListPage> {
 export async function getWorkOrderDetail(workOrderId: string): Promise<WorkOrderDetailCore> {
   const body = await requestJson<{ readonly ok: boolean; readonly data?: WorkOrderDetailCore }>(`/api/v2/work-orders/${encodeURIComponent(workOrderId)}`, { method: "GET" });
   if (!body.ok || !body.data?.header) throw new MobileApiError({ code: "MALFORMED_RESPONSE", message: "제작 카드 상세 응답이 올바르지 않습니다." });
+  return body.data;
+}
+
+export async function patchWorkOrderBasicInfo(
+  workOrderId: string,
+  command: PatchWorkOrderBasicInfoInput,
+): Promise<PatchWorkOrderBasicInfoResult> {
+  const body = await requestJson<{ readonly ok: boolean; readonly data?: PatchWorkOrderBasicInfoResult }>(
+    `/api/v2/work-orders/${encodeURIComponent(workOrderId)}`,
+    { method: "PATCH", body: command },
+  );
+  if (
+    !body.ok
+    || !body.data?.result
+    || !Number.isSafeInteger(body.data.nextVersion)
+    || body.data.nextVersion < 1
+  ) {
+    throw new MobileApiError({ code: "MALFORMED_RESPONSE", message: "제작 카드 저장 응답이 올바르지 않습니다." });
+  }
   return body.data;
 }
 

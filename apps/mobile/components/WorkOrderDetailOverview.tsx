@@ -1,6 +1,17 @@
 import type { ReactNode } from "react";
-import { Pressable, ScrollView, StyleSheet, Text, useWindowDimensions, View } from "react-native";
-import { ChevronLeft, ImageIcon, LockKeyhole } from "lucide-react-native";
+import {
+  ActivityIndicator,
+  KeyboardAvoidingView,
+  Platform,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  useWindowDimensions,
+  View,
+} from "react-native";
+import { ChevronLeft, ImageIcon, LockKeyhole, PencilLine } from "lucide-react-native";
 
 import { WAFL_FONTS } from "@/constants/fonts";
 import type { WorkOrderDetailCore } from "@/lib/apiTypes";
@@ -76,9 +87,130 @@ function ReadinessPanel({ detail }: { readonly detail: WorkOrderDetailCore }) {
   );
 }
 
-type Props = { readonly detail: WorkOrderDetailCore; readonly phone: boolean; readonly onBack: () => void };
+export type BasicInfoDraft = {
+  readonly productName: string;
+  readonly dueDate: string;
+  readonly totalQuantity: string;
+};
 
-export default function WorkOrderDetailOverview({ detail, phone, onBack }: Props) {
+export type BasicInfoFieldErrors = Partial<Record<keyof BasicInfoDraft, string>>;
+export type BasicInfoSaveState = "read-only" | "editing" | "saving" | "saved" | "validation-error" | "conflict" | "locked" | "save-error";
+
+type Props = {
+  readonly detail: WorkOrderDetailCore;
+  readonly phone: boolean;
+  readonly onBack: () => void;
+  readonly canEdit: boolean;
+  readonly editing: boolean;
+  readonly dirty: boolean;
+  readonly draft: BasicInfoDraft;
+  readonly fieldErrors: BasicInfoFieldErrors;
+  readonly saveState: BasicInfoSaveState;
+  readonly saveMessage: string | null;
+  readonly onBeginEdit: () => void;
+  readonly onChangeDraft: (field: keyof BasicInfoDraft, value: string) => void;
+  readonly onCancelEdit: () => void;
+  readonly onSave: () => void;
+  readonly onReloadLatest: () => void;
+};
+
+function BasicInfoEditor(props: Pick<Props, "draft" | "dirty" | "fieldErrors" | "saveState" | "saveMessage" | "onChangeDraft" | "onCancelEdit" | "onSave" | "onReloadLatest">) {
+  const saving = props.saveState === "saving";
+  const conflict = props.saveState === "conflict";
+  const locked = props.saveState === "locked";
+  return (
+    <View style={styles.editPanel}>
+      <View style={styles.editHeadingRow}>
+        <View style={styles.editHeadingText}>
+          <Text style={styles.editTitle}>기본정보 수정</Text>
+          <Text style={styles.editCaption}>제품명, 납기, 총수량만 수정할 수 있습니다.</Text>
+        </View>
+        <Text style={styles.unsavedBadge}>{props.dirty ? "저장 전" : "변경 없음"}</Text>
+      </View>
+
+      <View style={styles.inputGroup}>
+        <Text style={styles.inputLabel}>제품명</Text>
+        <TextInput
+          accessibilityLabel="제품명 입력"
+          editable={!saving && !locked}
+          maxLength={200}
+          onChangeText={(value) => props.onChangeDraft("productName", value)}
+          placeholder="제품명을 입력하세요"
+          returnKeyType="next"
+          style={[styles.input, props.fieldErrors.productName && styles.inputInvalid]}
+          value={props.draft.productName}
+        />
+        {props.fieldErrors.productName ? <Text style={styles.fieldError}>{props.fieldErrors.productName}</Text> : null}
+      </View>
+
+      <View style={styles.inputGroup}>
+        <View style={styles.inputLabelRow}>
+          <Text style={styles.inputLabel}>납기</Text>
+          <Pressable
+            accessibilityLabel="납기 없음으로 설정"
+            accessibilityRole="button"
+            disabled={saving || locked}
+            onPress={() => props.onChangeDraft("dueDate", "")}
+          >
+            <Text style={styles.clearDate}>납기 없음</Text>
+          </Pressable>
+        </View>
+        <TextInput
+          accessibilityLabel="납기 입력"
+          autoCapitalize="none"
+          editable={!saving && !locked}
+          maxLength={10}
+          onChangeText={(value) => props.onChangeDraft("dueDate", value)}
+          placeholder="YYYY-MM-DD"
+          returnKeyType="next"
+          style={[styles.input, props.fieldErrors.dueDate && styles.inputInvalid]}
+          value={props.draft.dueDate}
+        />
+        {props.fieldErrors.dueDate ? <Text style={styles.fieldError}>{props.fieldErrors.dueDate}</Text> : null}
+      </View>
+
+      <View style={styles.inputGroup}>
+        <Text style={styles.inputLabel}>총수량</Text>
+        <TextInput
+          accessibilityLabel="총수량 입력"
+          editable={!saving && !locked}
+          keyboardType="number-pad"
+          maxLength={9}
+          onChangeText={(value) => props.onChangeDraft("totalQuantity", value)}
+          placeholder="0"
+          returnKeyType="done"
+          style={[styles.input, props.fieldErrors.totalQuantity && styles.inputInvalid]}
+          value={props.draft.totalQuantity}
+        />
+        {props.fieldErrors.totalQuantity ? <Text style={styles.fieldError}>{props.fieldErrors.totalQuantity}</Text> : null}
+      </View>
+
+      {props.saveMessage ? <Text accessibilityRole="alert" style={[styles.saveMessage, conflict && styles.saveMessageConflict]}>{props.saveMessage}</Text> : null}
+      {conflict || locked ? (
+        <Pressable accessibilityRole="button" onPress={props.onReloadLatest} style={styles.reloadLatest}>
+          <Text style={styles.reloadLatestText}>최신 내용 불러오기</Text>
+        </Pressable>
+      ) : null}
+      <View style={styles.editActions}>
+        <Pressable accessibilityRole="button" disabled={saving} onPress={props.onCancelEdit} style={styles.cancelButton}>
+          <Text style={styles.cancelButtonText}>취소</Text>
+        </Pressable>
+        <Pressable
+          accessibilityRole="button"
+          disabled={!props.dirty || saving || locked}
+          onPress={props.onSave}
+          style={[styles.saveButton, (!props.dirty || saving || locked) && styles.saveButtonDisabled]}
+        >
+          {saving ? <ActivityIndicator color="#fff" size="small" /> : null}
+          <Text style={styles.saveButtonText}>{saving ? "저장 중" : "저장"}</Text>
+        </Pressable>
+      </View>
+    </View>
+  );
+}
+
+export default function WorkOrderDetailOverview(props: Props) {
+  const { detail, phone, onBack } = props;
   const { width } = useWindowDimensions();
   const { header } = detail;
   const productType = formatProductType(header.productTypeAlias, header.productTypeCode);
@@ -86,7 +218,7 @@ export default function WorkOrderDetailOverview({ detail, phone, onBack }: Props
   const compactPhoneHero = phone && width < 390;
 
   return (
-    <View style={styles.container}>
+    <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : undefined} style={styles.container}>
       <View style={styles.navigationBar}>
         {phone ? (
           <Pressable
@@ -99,7 +231,15 @@ export default function WorkOrderDetailOverview({ detail, phone, onBack }: Props
             <Text style={styles.backText}>목록</Text>
           </Pressable>
         ) : <View />}
-        <Text style={styles.readOnly}>제작 카드 · 읽기 전용</Text>
+        <View style={styles.navigationActions}>
+          {props.canEdit && !props.editing ? (
+            <Pressable accessibilityLabel="제작 카드 기본정보 수정" accessibilityRole="button" onPress={props.onBeginEdit} style={styles.editEntry}>
+              <PencilLine color="#874423" size={15} />
+              <Text style={styles.editEntryText}>기본정보 수정</Text>
+            </Pressable>
+          ) : null}
+          <Text style={styles.readOnly}>{props.canEdit ? "제작 카드" : "제작 카드 · 읽기 전용"}</Text>
+        </View>
       </View>
 
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
@@ -123,6 +263,31 @@ export default function WorkOrderDetailOverview({ detail, phone, onBack }: Props
               <Text numberOfLines={2} style={styles.meta}>{productType} · {header.seasonCode ?? "미지정"} · {header.itemCode ?? "미지정"}</Text>
             </View>
           </View>
+
+          {props.editing ? (
+            <BasicInfoEditor
+              dirty={props.dirty}
+              draft={props.draft}
+              fieldErrors={props.fieldErrors}
+              onCancelEdit={props.onCancelEdit}
+              onChangeDraft={props.onChangeDraft}
+              onReloadLatest={props.onReloadLatest}
+              onSave={props.onSave}
+              saveMessage={props.saveMessage}
+              saveState={props.saveState}
+            />
+          ) : props.saveState === "saved" && props.saveMessage ? (
+            <Text accessibilityRole="alert" style={styles.savedBanner}>{props.saveMessage}</Text>
+          ) : props.saveState === "locked" && props.saveMessage ? (
+            <View style={styles.lockedBanner}>
+              <Text accessibilityRole="alert" style={styles.lockedBannerText}>{props.saveMessage}</Text>
+              <Pressable accessibilityRole="button" onPress={props.onReloadLatest} style={styles.reloadLatest}>
+                <Text style={styles.reloadLatestText}>최신 내용 불러오기</Text>
+              </Pressable>
+            </View>
+          ) : !props.canEdit && (header.status !== "draft" || detail.revision.status !== "draft") ? (
+            <Text style={styles.lockedNotice}>발행된 제작 카드는 읽기 전용입니다.</Text>
+          ) : null}
 
           <View style={[styles.summaryGrid, !phone && styles.summaryGridTablet]}>
             <MiniStat label="총 수량" value={`${header.totalQuantity.toLocaleString("ko-KR")}벌`} />
@@ -170,13 +335,16 @@ export default function WorkOrderDetailOverview({ detail, phone, onBack }: Props
           </View>
         </View>
       </ScrollView>
-    </View>
+    </KeyboardAvoidingView>
   );
 }
 
 const styles = StyleSheet.create({
   container: { flex: 1, minHeight: 0 },
   navigationBar: { alignItems: "center", flexDirection: "row", justifyContent: "space-between", minHeight: 44, marginBottom: 8 },
+  navigationActions: { alignItems: "center", flexDirection: "row", gap: 8 },
+  editEntry: { alignItems: "center", backgroundColor: "#fff7ec", borderColor: "#d9bda7", borderRadius: 10, borderWidth: 1, flexDirection: "row", gap: 5, minHeight: 40, paddingHorizontal: 10 },
+  editEntryText: { color: "#874423", fontFamily: WAFL_FONTS.bold, fontSize: 11 },
   backButton: { alignItems: "center", flexDirection: "row", minHeight: 44, paddingRight: 8 },
   backText: { color: "#3f352d", fontFamily: WAFL_FONTS.semibold, fontSize: 14 },
   readOnly: { color: "#6d6257", fontFamily: WAFL_FONTS.semibold, fontSize: 11 },
@@ -197,6 +365,33 @@ const styles = StyleSheet.create({
   title: { color: "#141f33", flexShrink: 1, fontFamily: WAFL_FONTS.black, fontSize: 20, lineHeight: 26, minWidth: 0 },
   titleCompactPhone: { fontSize: 18, lineHeight: 24 },
   meta: { color: "#4f463f", fontFamily: WAFL_FONTS.regular, fontSize: 12, lineHeight: 17 },
+  editPanel: { backgroundColor: "#fbf4e9", borderColor: "#e4d3bf", borderRadius: 12, borderWidth: 1, gap: 11, marginBottom: 12, marginHorizontal: 12, padding: 12 },
+  editHeadingRow: { alignItems: "flex-start", flexDirection: "row", gap: 10, justifyContent: "space-between" },
+  editHeadingText: { flex: 1, minWidth: 0 },
+  editTitle: { color: "#17263d", fontFamily: WAFL_FONTS.bold, fontSize: 15 },
+  editCaption: { color: "#75695e", fontFamily: WAFL_FONTS.regular, fontSize: 10, lineHeight: 15, marginTop: 2 },
+  unsavedBadge: { backgroundColor: "#efe2d2", borderRadius: 999, color: "#76503b", fontFamily: WAFL_FONTS.bold, fontSize: 9, overflow: "hidden", paddingHorizontal: 7, paddingVertical: 4 },
+  inputGroup: { gap: 4 },
+  inputLabelRow: { alignItems: "center", flexDirection: "row", justifyContent: "space-between" },
+  inputLabel: { color: "#51483e", fontFamily: WAFL_FONTS.semibold, fontSize: 11 },
+  clearDate: { color: "#874423", fontFamily: WAFL_FONTS.semibold, fontSize: 10, paddingVertical: 5 },
+  input: { backgroundColor: "#fffdf8", borderColor: "#cdbfae", borderRadius: 9, borderWidth: 1, color: "#17263d", fontFamily: WAFL_FONTS.regular, fontSize: 16, minHeight: 44, paddingHorizontal: 11, paddingVertical: 8 },
+  inputInvalid: { borderColor: "#b74b43" },
+  fieldError: { color: "#a13933", fontFamily: WAFL_FONTS.regular, fontSize: 10, lineHeight: 15 },
+  saveMessage: { color: "#8a4330", fontFamily: WAFL_FONTS.semibold, fontSize: 11, lineHeight: 17 },
+  saveMessageConflict: { color: "#9a3f31" },
+  reloadLatest: { alignItems: "center", alignSelf: "flex-start", borderColor: "#9a7b66", borderRadius: 9, borderWidth: 1, justifyContent: "center", minHeight: 40, paddingHorizontal: 12 },
+  reloadLatestText: { color: "#5d4435", fontFamily: WAFL_FONTS.bold, fontSize: 11 },
+  editActions: { flexDirection: "row", gap: 8, justifyContent: "flex-end" },
+  cancelButton: { alignItems: "center", borderColor: "#b9aa9a", borderRadius: 10, borderWidth: 1, justifyContent: "center", minHeight: 44, minWidth: 92, paddingHorizontal: 14 },
+  cancelButtonText: { color: "#4f463f", fontFamily: WAFL_FONTS.bold, fontSize: 12 },
+  saveButton: { alignItems: "center", backgroundColor: "#23375a", borderRadius: 10, flexDirection: "row", gap: 6, justifyContent: "center", minHeight: 44, minWidth: 100, paddingHorizontal: 16 },
+  saveButtonDisabled: { opacity: 0.42 },
+  saveButtonText: { color: "#fff", fontFamily: WAFL_FONTS.bold, fontSize: 12 },
+  savedBanner: { backgroundColor: "#edf2e7", color: "#405b34", fontFamily: WAFL_FONTS.bold, fontSize: 11, marginBottom: 10, marginHorizontal: 12, paddingHorizontal: 10, paddingVertical: 8 },
+  lockedBanner: { alignItems: "flex-start", backgroundColor: "#fff1d3", gap: 7, marginBottom: 10, marginHorizontal: 12, padding: 10 },
+  lockedBannerText: { color: "#8a4330", fontFamily: WAFL_FONTS.bold, fontSize: 11 },
+  lockedNotice: { color: "#75695e", fontFamily: WAFL_FONTS.regular, fontSize: 10, marginBottom: 8, marginHorizontal: 12 },
   summaryGrid: { flexDirection: "row", flexWrap: "wrap", gap: 6, paddingBottom: 12, paddingHorizontal: 12 },
   summaryGridTablet: { flexWrap: "nowrap" },
   miniStat: { backgroundColor: "#f7f0e5", borderRadius: 9, flexBasis: "47%", flexGrow: 1, minWidth: 112, paddingHorizontal: 9, paddingVertical: 7 },

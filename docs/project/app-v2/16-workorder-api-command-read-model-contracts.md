@@ -1,5 +1,11 @@
 # WAFL v2 WorkOrder API, Command, and Read Model Contracts
 
+## Calendar date-only serialization
+
+- `IsoDate` represents a calendar value whose API form is exactly `YYYY-MM-DD`; it is not an instant or timezone-bearing datetime.
+- PostgreSQL `date` should cross the SQL/repository boundary as text and be validated as a real calendar date. Converting it through JavaScript `Date`, UTC, or `toISOString().slice(0, 10)` is forbidden.
+- PostgreSQL `timestamp` and `timestamptz` keep the existing ISO datetime contract and must not use the date-only serializer.
+
 ## Alpha.30 factory instruction extension
 
 - `usageArea`, `applicationArea`, `applicationColorTarget`, and `factoryDeliveryMemo` are nullable trimmed text with limits 1,000/1,000/1,000/5,000.

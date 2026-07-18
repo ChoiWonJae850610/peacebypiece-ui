@@ -91,16 +91,52 @@ export type MobileApiErrorCode =
   | "MOBILE_CONNECT_CODE_UNAVAILABLE"
   | string;
 
+export type MobileFieldError = {
+  readonly field: string;
+  readonly code: string;
+  readonly message: string;
+};
+
+export type PatchWorkOrderBasicInfoInput = {
+  readonly clientRequestId: string;
+  readonly expectedVersion: number;
+  readonly patch: {
+    readonly productName?: string;
+    readonly dueDate?: string | null;
+    readonly totalQuantity?: number;
+  };
+};
+
+export type PatchWorkOrderBasicInfoResult = {
+  readonly result: {
+    readonly productName: string;
+    readonly dueDate: string | null;
+    readonly totalQuantity: number;
+  };
+  readonly nextVersion: number;
+};
+
 export class MobileApiError extends Error {
   readonly code: MobileApiErrorCode;
   readonly status: number;
   readonly correlationId: string | null;
+  readonly fieldErrors: readonly MobileFieldError[];
+  readonly entityVersion: number | null;
 
-  constructor(input: { readonly code: MobileApiErrorCode; readonly message: string; readonly status?: number; readonly correlationId?: string | null }) {
+  constructor(input: {
+    readonly code: MobileApiErrorCode;
+    readonly message: string;
+    readonly status?: number;
+    readonly correlationId?: string | null;
+    readonly fieldErrors?: readonly MobileFieldError[];
+    readonly entityVersion?: number | null;
+  }) {
     super(input.message);
     this.name = "MobileApiError";
     this.code = input.code;
     this.status = input.status ?? 0;
     this.correlationId = input.correlationId ?? null;
+    this.fieldErrors = input.fieldErrors ?? [];
+    this.entityVersion = input.entityVersion ?? null;
   }
 }

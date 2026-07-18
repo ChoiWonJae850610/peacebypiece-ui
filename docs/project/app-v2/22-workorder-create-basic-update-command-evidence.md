@@ -4,6 +4,22 @@ Version: `2.0.0-alpha.25`
 Status: implemented; static, read-only preflight, and explicitly approved dev/test Command runtime verified
 Predecessors: `16-workorder-api-command-read-model-contracts.md`, `17-v2-api-contract-test-plan.md`, `19-v2-dev-test-migration-and-performance-evidence.md`, `20-workorder-list-read-api-evidence.md`, `21-workorder-detail-lazy-read-api-evidence.md`
 
+## Alpha.46 mobile basic-info boundary
+
+Alpha.46 reuses only the existing basic-info PATCH transaction for the approved dev/test mobile slice. The exact approval is `2.0.0-alpha.46-dev-test-mobile-basic-info-runtime`; it is accepted by the dedicated basic-info guard and is deliberately absent from the generic Command approval set. Create remains alpha.25-only, and material, process, and revision commands retain their own approvals.
+
+- Allowed fields: `productName`, `dueDate`, `totalQuantity` only.
+- Required concurrency input: current `expectedVersion`; the client does not send an idempotency header.
+- Mutable target: WorkOrder `draft` with its current revision also `draft`.
+- Successful effect: WorkOrder and revision snapshot versions each `+1`, one append-only `work_order.patch_basic_info` event, and no receipt.
+- Conflict proof: one later request with the retained old version and the same saved values must return typed `409 CONFLICT` with zero additional DB delta.
+- External QA remains read-only by default. The explicit mutation switch injects the alpha.46 approval into the Next child only and admits PATCH only on one exact UUID core-detail path in non-production.
+- Before the owner approves the exact retained values, the bounded preflight uses `BEGIN READ ONLY`, requires mutation approval to be absent, selects the synthetic `QA_DRAFT_A`, and proves generated-document, token, and object ties are zero. It stores internal identifiers only in the ignored local `.tmp` checkpoint and never prints them.
+
+Runtime evidence retained one separately approved synthetic draft create and one separately approved mobile save. Creation produced WorkOrder/revision/receipt/event `+1/+1/+1/+1`. The save changed product name, due date, and total quantity, moved WorkOrder/revision versions `1→2`, appended one patch event, and added no receipt. A single old-version request returned `409 CONFLICT` with zero DB/event/receipt/version delta. No additional successful PATCH, cleanup, rollback, or delete occurred.
+
+PostgreSQL `DATE` values in this command and the corresponding Read repositories are calendar-only strings. SQL returns them as text and the strict mapper validates `YYYY-MM-DD` without JavaScript Date/UTC conversion. Timestamp fields keep their existing ISO datetime mapping.
+
 ## 1. 목적과 범위
 
 Alpha.25는 v2 WorkOrder Command의 첫 vertical slice다.

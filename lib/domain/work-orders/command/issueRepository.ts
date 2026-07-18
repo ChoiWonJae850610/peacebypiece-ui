@@ -15,6 +15,7 @@ import type {
 } from "@/lib/domain/work-orders/contracts";
 import { withWaflV2TenantWriteTransaction, type DbQueryResultRow } from "@/lib/db/client";
 import { installTenantClaims } from "@/lib/domain/work-orders/command/commandRepository";
+import { serializePostgresDateOnly } from "@/lib/domain/work-orders/dateOnly.mjs";
 
 export const WORK_ORDER_ISSUE_COMMAND_CODE = "work_order.revision.issue";
 
@@ -58,12 +59,12 @@ type IssueTargetRow = DbQueryResultRow & {
   readonly product_type_code: string | null;
   readonly season_code: string | null;
   readonly item_code: string | null;
-  readonly due_date: string | Date | null;
+  readonly due_date: string | null;
   readonly total_quantity: number | string;
   readonly document_number_base: string | null;
   readonly company_code: string | null;
   readonly business_timezone: string;
-  readonly business_date: string | Date;
+  readonly business_date: string;
   readonly fabric_count: number | string;
   readonly accessory_count: number | string;
 };
@@ -178,10 +179,10 @@ export async function issueWorkOrderRevisionV2(input: {
              w.status AS work_order_status, r.revision_status,
              w.entity_version AS work_order_version, r.entity_version AS revision_version,
              w.product_name, w.product_type_code, w.season_code, w.item_code,
-             w.due_date, w.total_quantity, w.document_number_base,
+             w.due_date::text AS due_date, w.total_quantity, w.document_number_base,
              settings.document_code AS company_code,
              settings.business_timezone,
-             timezone(settings.business_timezone, now())::date AS business_date,
+             timezone(settings.business_timezone, now())::date::text AS business_date,
              (SELECT count(*) FROM work_order_material_lines m
               WHERE m.company_id = w.company_id AND m.revision_id = r.id
                 AND m.material_type = 'fabric') AS fabric_count,
@@ -228,9 +229,8 @@ export async function issueWorkOrderRevisionV2(input: {
     );
     statementCount += 1;
     const sequence = integer(sequenceResult.rows[0]?.sequence ?? 0);
-    const businessDate = target.business_date instanceof Date
-      ? target.business_date.toISOString().slice(0, 10)
-      : String(target.business_date).slice(0, 10);
+    const businessDate = serializePostgresDateOnly(target.business_date, "WORK_ORDER_ISSUE_INVALID_BUSINESS_DATE");
+    if (!businessDate) throw new Error("WORK_ORDER_ISSUE_INVALID_BUSINESS_DATE");
     const compactDate = businessDate.replaceAll("-", "").slice(2);
     const documentNumberBase = `${companyCode}-${seasonCode}-${itemCode}-${compactDate}-${String(sequence).padStart(3, "0")}`;
 

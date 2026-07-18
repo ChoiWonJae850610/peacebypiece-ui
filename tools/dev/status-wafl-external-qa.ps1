@@ -9,6 +9,8 @@ if ($state.PSObject.Properties.Name -contains "readApiGuard") { Write-Host ("Rea
 if ($state.PSObject.Properties.Name -contains "readApiRuntime") { Write-Host ("Read API runtime: {0}" -f $state.readApiRuntime) }
 if ($state.PSObject.Properties.Name -contains "fingerprintVerified") { Write-Host ("DB fingerprint verified: {0}" -f $state.fingerprintVerified) }
 if ($state.PSObject.Properties.Name -contains "fingerprintPrefix" -and $state.fingerprintPrefix) { Write-Host ("DB fingerprint prefix: {0}" -f $state.fingerprintPrefix) }
+if ($state.PSObject.Properties.Name -contains "commandApi") { Write-Host ("Command API: {0}" -f $state.commandApi) }
+if ($state.PSObject.Properties.Name -contains "mutationMode") { Write-Host ("Mutation mode: {0}" -f $state.mutationMode) }
 if ($state.PSObject.Properties.Name -contains "mobileTransport" -and $state.mobileTransport) { Write-Host ("Mobile transport: {0}" -f $state.mobileTransport) }
 if ($state.publicOrigin) { Write-Host ("Viewer base origin: {0}" -f $state.publicOrigin) }
 if ($state.PSObject.Properties.Name -contains "expoUrl" -and $state.expoUrl) { Write-Host ("Expo Go URL (same tailnet only): {0}" -f $state.expoUrl) }
