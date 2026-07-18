@@ -1,4 +1,18 @@
-# WAFL v2 App-first Roadmap 2.0 - 2.0.0-alpha.44 checkpoint
+# WAFL v2 App-first Roadmap 2.0 - 2.0.0-alpha.45 result
+
+## 2.0.0-alpha.45 result
+
+Status: `ALPHA45_MOBILE_PRODUCTION_CARD_CORE_OVERVIEW_COMPLETE`.
+
+- Preserve the real dev/test connection and WorkOrder list from alpha.44.
+- Present the selected actual core detail in a ProductionCard-style read-only shell with actual header, priority metrics, readiness, and amounts. Keep actual component/document counts in their future-tab badges rather than duplicating them in the overview body.
+- Keep future tabs visible but disabled; do not call lazy APIs, fetch representative files, or expose mutation/output actions.
+- Preserve phone list return, tablet split-view code, alpha.44 detail-error recovery, and exact external UUID boundary.
+- The initial iPhone functional/data pass did not satisfy visual conformity. Replace its dashboard/card-stack treatment with one integrated ProductionCard paper sheet, compact mock-derived header/stat/tab/divider grammar, resolved Korean labels, and no developer-only copy before requesting the final visual judgment.
+- The first paper-sheet correction remained too long because it repeated basic metadata, document metadata, and all component counts below the tab rail. The final information architecture removes `기본 정보`, `문서 요약`, and `구성 요약`, widens the natural product-title column, and documents Revision/history and document metadata as future-tab concerns without adding any lazy endpoint.
+- The owner explicitly accepted the final physical-iPhone design as the pre-feature-expansion ProductionCard overview shell and found no issue that blocks feature use or information understanding. Fine typography, spacing, representative-media, tab-density, and color polish is deferred until actual tabs and inputs are connected.
+- The final clean run preserves connection, actual list, recent/legacy detail, disabled tabs, list return, background/re-entry, and disconnect. Exact API request counts are unavailable because the retained runner has no request-level access ledger; source/contracts and runtime error audit show no lazy/file/PDF/token/mutation path.
+- Canonical stop releases ports 3100/8081 with ownership skip zero, preserves localhost:3000, and leaves Tailscale running. Final Verify, Git delivery, and matching alpha.45 artifacts are recorded by the canonical workflow and repo-state.
 
 ## 2.0.0-alpha.44 checkpoint
 

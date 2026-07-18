@@ -2,6 +2,12 @@
 
 Status: `ALPHA43_EXTERNAL_MOBILE_QA_AND_IOS_DEVELOPMENT_BUILD_COMPLETE`.
 
+## Alpha.45 ProductionCard overview QA
+
+After alpha.45 static checks pass, perform one canonical clean restart of the external runner while preserving the separate localhost:3000 login server. Reuse the alpha.44 development connection and exact external allowlist. On the installed iPhone build, open one recent and one legacy WorkOrder and verify the new read-only ProductionCard shell contains only actual user-priority core-detail fields. Confirm the screen is one integrated paper sheet using the established compact hero/stat/underline-tab/divider grammar; `기본 정보`, `문서 요약`, and `구성 요약` are absent; the title wraps naturally; and actual counts remain in visible disabled tab badges. Touching future tabs must cause no state change or request. Representative image/file, lazy-tab, PDF/token, and mutation requests remain zero. Verify list return, background/re-entry, and disconnect. Final delivery requires the owner's explicit `디자인 최종 판정: PASS`; otherwise preserve the runner/log state and stop before commit/push/Finish. Tablet split view is static-only in this version.
+
+Alpha.45 completion record: the owner reported `디자인 최종 판정: PASS`, approved the overview as the pre-feature-expansion shell, and found no blocking functional or information-comprehension issue. The clean run retained connection, actual list, recent/legacy detail, disabled tabs, list return, background/re-entry, and disconnect. The canonical stop ended only marker-owned cloudflared/Next/Metro, released ports 3100/8081 with ownership skip zero, preserved localhost:3000, and left Tailscale running. The retained logs do not provide a request-level access ledger, so exact API counts must remain unavailable rather than inferred.
+
 ## Alpha.44 development connection and read-only WorkOrder QA
 
 After alpha.44 static and canonical verification pass:

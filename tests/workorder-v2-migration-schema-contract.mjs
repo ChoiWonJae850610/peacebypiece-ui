@@ -268,7 +268,7 @@ const alpha25ContractExists = fs.existsSync(path.join(root, "tests/workorder-v2-
 const alpha26ContractExists = fs.existsSync(path.join(root, "tests/workorder-v2-alpha26-material-command-api-contract.mjs"));
 const alpha27ContractExists = fs.existsSync(path.join(root, "tests/workorder-v2-alpha27-revision-issue-command-contract.mjs"));
 const alpha28ContractExists = fs.existsSync(path.join(root, "tests/workorder-v2-alpha28-issued-preview-contract.mjs"));
-if (appVersion.includes('APP_VERSION = "2.0.0-alpha.44"')) {
+if (/APP_VERSION = "2\.0\.0-alpha\.(44|45)"/.test(appVersion)) {
   assert.deepEqual(
     apiChanges.filter((change) => !alpha44ApiChanges.includes(change)),
     [],

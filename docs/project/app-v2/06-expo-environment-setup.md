@@ -1,4 +1,12 @@
-# WAFL v2 Expo Environment Setup Plan - 2.0.0-alpha.2
+# WAFL v2 Expo Environment Setup Plan - 2.0.0-alpha.45
+
+## Alpha.45 installed-build reuse
+
+Alpha.45 is JavaScript/UI-only and reuses iOS Development Build number 1. Public version `2.0.0`, identity, SDK/native dependencies, EAS profile, ATS development exception, certificate/profile/device state, and `APP_VARIANT=development` remain unchanged. Internal `extra.appVersion` is `2.0.0-alpha.45`; no EAS Build or EAS Update is authorized.
+
+The final ProductionCard information-density correction changes only React Native presentation and contracts. It removes repeated overview sections and adjusts responsive hero sizing without changing native configuration, permissions, plugins, signing, or the installed binary.
+
+The installed build completed the final alpha.45 physical-iPhone visual and read-only flow. The owner accepted the ProductionCard overview shell, and no native dependency, EAS Build, EAS Update, credential, profile, device-registration, ATS, or build-number change occurred.
 
 ## Alpha.44 installed-build reuse
 

@@ -1,4 +1,15 @@
-# WAFL v2 App Device Test Plan - 2.0.0-alpha.1
+# WAFL v2 App Device Test Plan - 2.0.0-alpha.45
+
+## 2.0.0-alpha.45 ProductionCard core overview checkpoint
+
+- Reuse the installed ATS-corrected iOS Development Build; no native rebuild is part of this gate.
+- On iPhone, verify development connection, actual list, one recent and one legacy detail, actual product/quantity/due/status/amount/readiness content, actual count badges on visible disabled future tabs, list return, background/re-entry, and disconnect.
+- Confirm mock product values, lazy-tab requests, representative image/file GET, automatic retry/polling, and mutation requests remain absent.
+- Tablet acceptance is static split-view/responsive validation only. iPad mini, iPad Pro, and Galaxy Tab physical QA are explicitly not run in alpha.45.
+- Treat functional/data correctness and visual conformity as separate gates. The final iPhone gate must verify the integrated one-sheet ProductionCard grammar and requires an explicit owner `디자인 최종 판정: PASS` before delivery.
+- Verify that `기본 정보`, `문서 요약`, and `구성 요약` are absent from the overview, the product name wraps naturally beside the compact media frame, the lower body has no repeated system metadata, and bottom content is not clipped.
+- Final physical-iPhone judgment: `PASS`. The owner approved the current ProductionCard overview as the pre-feature-expansion shell and found no issue that blocks feature use or information understanding. Detailed typography, spacing, representative-media, tab-density, and color polish remains a later gate after actual tabs and inputs are connected.
+- The final run retained actual list/recent/legacy detail, disabled future tabs, list return, background/re-entry, and disconnect without crash, red screen, or infinite loading. iPad mini, iPad Pro, and Galaxy Tab actual QA remain not run; only the static tablet boundary passes in alpha.45.
 
 ## 2.0.0-alpha.44 real-data read-only iPhone checkpoint
 

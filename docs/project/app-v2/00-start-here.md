@@ -5,7 +5,9 @@
 This document starts the WAFL v2 App-first line.
 
 Previous baseline: `0.30.0-alpha.27`.
-Current baseline: `2.0.0-alpha.44`.
+Current baseline: `2.0.0-alpha.45`.
+
+Alpha.45 keeps the real alpha.44 list and core-detail transport while replacing the temporary live detail presentation with a ProductionCard-style read-only overview. It maps only actual core-detail values, performs no representative-image or lazy-tab request, and shows the future tab structure as disabled. The owner accepted the final physical-iPhone information architecture as the pre-feature-expansion shell; remaining fine visual polish is deferred until actual tabs and inputs are connected. Completion evidence and delivery identity are tracked in `44-mobile-production-card-core-overview-evidence.md` and the matching repo-state.
 
 Alpha.44 completes a dev/test-only one-time mobile connection that reuses the existing WAFL auth cookie, exact external session/read allowlist, and actual WorkOrder list/core-detail APIs. The Expo entry displays real dev/test read-only data with phone navigation and tablet split view without native changes, object reads, lazy tabs, automatic retry, or business mutation. Physical iPhone acceptance passed connection, effective Company A context, list, recent and legacy detail, back, background/re-entry, and disconnect. The legacy-detail 404 was an exact-path UUID compatibility defect (`C4`) and is corrected without widening the external route boundary. See `43-mobile-real-data-read-only-evidence.md`.
 
@@ -135,6 +137,7 @@ docs/project/app-v2/
   41-external-mobile-qa-runbook.md
   42-ios-development-build-evidence.md
   43-mobile-real-data-read-only-evidence.md
+  44-mobile-production-card-core-overview-evidence.md
 ```
 
 The alpha.19 documents are design and read-only audit authority. They do not authorize schema migration, API replacement, seed execution, DB/R2 mutation, or PDF Worker changes.

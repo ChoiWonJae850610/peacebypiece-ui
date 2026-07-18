@@ -27,7 +27,7 @@
       }
     },
     "extra": {
-      "appVersion": "2.0.0-alpha.44",
+      "appVersion": "2.0.0-alpha.45",
       "mockOnly": false,
       "dataMode": "dev-test-read-only",
       "router": {},

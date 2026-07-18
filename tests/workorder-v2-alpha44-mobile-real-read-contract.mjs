@@ -4,18 +4,18 @@ import path from "node:path";
 
 const read = (relativePath) => fs.readFileSync(path.resolve(relativePath), "utf8");
 
-assert.match(read("lib/constants/version.ts"), /2\.0\.0-alpha\.44/);
-assert.match(read("apps/mobile/constants/version.ts"), /2\.0\.0-alpha\.44/);
+assert.match(read("lib/constants/version.ts"), /2\.0\.0-alpha\.45/);
+assert.match(read("apps/mobile/constants/version.ts"), /2\.0\.0-alpha\.45/);
 const mobilePackage = JSON.parse(read("apps/mobile/package.json"));
 const mobileLock = JSON.parse(read("apps/mobile/package-lock.json"));
 const appConfig = JSON.parse(read("apps/mobile/app.json"));
 const easConfig = JSON.parse(read("apps/mobile/eas.json"));
 
-assert.equal(mobilePackage.version, "2.0.0-alpha.44");
-assert.equal(mobileLock.version, "2.0.0-alpha.44");
-assert.equal(mobileLock.packages[""].version, "2.0.0-alpha.44");
+assert.equal(mobilePackage.version, "2.0.0-alpha.45");
+assert.equal(mobileLock.version, "2.0.0-alpha.45");
+assert.equal(mobileLock.packages[""].version, "2.0.0-alpha.45");
 assert.equal(appConfig.expo.version, "2.0.0");
-assert.equal(appConfig.expo.extra.appVersion, "2.0.0-alpha.44");
+assert.equal(appConfig.expo.extra.appVersion, "2.0.0-alpha.45");
 assert.equal(appConfig.expo.extra.mockOnly, false);
 assert.equal(appConfig.expo.extra.dataMode, "dev-test-read-only");
 assert.equal(appConfig.expo.owner, "lostab");
@@ -53,7 +53,7 @@ assert.match(apiClient, /\/api\/dev\/mobile-connect\/exchange/);
 assert.match(apiClient, /\/api\/dev\/mobile-connect\/disconnect/);
 assert.doesNotMatch(apiClient, /method: "(PUT|PATCH|DELETE)"/);
 assert.doesNotMatch(apiClient, /\/materials|\/processes|\/assets|\/documents|\/history|\/size-color|\/size-spec/);
-assert.doesNotMatch(mobileRuntime, /<Image|Image\s*from\s*["']react-native/);
+assert.doesNotMatch(mobileRuntime, /<Image\b|Image\s*from\s*["']react-native/);
 assert.doesNotMatch(app, /setInterval|setTimeout\s*\(.*getWorkOrder|poll/i);
 assert.match(app, /useWindowDimensions/);
 assert.match(app, /width >= 768/);
@@ -61,7 +61,7 @@ assert.match(app, /"booting"[\s\S]*"disconnected"[\s\S]*"connecting"[\s\S]*"auth
 for (const forbidden of ["저장", "수정", "발주", "삭제"]) assert.doesNotMatch(detail, new RegExp(`>${forbidden}<`));
 assert.match(list, /현재 불러온 카드/);
 assert.match(list, /representativeThumbnail \? "이미지 있음" : "이미지 없음"/);
-assert.match(detail, /상세 개요 · 읽기 전용/);
+assert.match(detail, /제작 카드 · 읽기 전용/);
 assert.match(app, /자동으로 다시 요청하지 않습니다/);
 assert.match(app, /목록으로 돌아가 다른 제작 카드를 선택하세요/);
 assert.match(app, /accessibilityLabel="제작 카드 목록으로 돌아가기"/);

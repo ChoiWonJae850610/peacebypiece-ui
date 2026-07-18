@@ -18,7 +18,7 @@ const appConfig = JSON.parse(read("apps/mobile/app.json"));
 const publicVersion = version.replace(/-.+$/, "");
 const expectedVersions = process.env.WAFL_ALPHA38_PREFINAL_CONTRACT === "1"
   ? ["2.0.0-alpha.37"]
-  : ["2.0.0-alpha.38", "2.0.0-alpha.39", "2.0.0-alpha.40", "2.0.0-alpha.41", "2.0.0-alpha.42", "2.0.0-alpha.43", "2.0.0-alpha.44"];
+  : ["2.0.0-alpha.38", "2.0.0-alpha.39", "2.0.0-alpha.40", "2.0.0-alpha.41", "2.0.0-alpha.42", "2.0.0-alpha.43", "2.0.0-alpha.44", "2.0.0-alpha.45"];
 
 assert.ok(expectedVersions.includes(version));
 assert.equal(mobileVersion, version);

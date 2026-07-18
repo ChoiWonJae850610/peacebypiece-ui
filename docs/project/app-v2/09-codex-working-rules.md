@@ -1,4 +1,16 @@
-# WAFL v2 App-first Codex Working Rules - 2.0.0-alpha.44
+# WAFL v2 App-first Codex Working Rules - 2.0.0-alpha.45
+
+## Alpha.45 live ProductionCard boundary
+
+- `ProductionCardMock` is a visual/structural reference only. Live entry and detail must not import its component, mock constants, or mock values.
+- `WorkOrderDetailCore` is the only live detail source. Missing values use explicit neutral fallbacks and are never inferred from mocks.
+- Only overview is active. Future tabs stay visible, disabled, and free of press handlers, lazy requests, remote image/file requests, and mutation/output actions.
+- Keep one representative-image placeholder until a separately approved safe media contract exists. Image count may be shown, but R2/file GET remains zero.
+- Preserve alpha.44 list identity, exact UUID path, session/tenant guard, manual retry, list escape, list state, and automatic retry/polling zero.
+- Physical iPhone QA is required; tablet validation is static only and must not be reported as actual device PASS.
+- A functional/data iPhone pass does not prove visual conformity. Alpha.45 delivery stays blocked until the owner explicitly accepts the ProductionCard design with `디자인 최종 판정: PASS`.
+- Alpha.45 overview is user-priority-only: hero product metadata, four priority metrics, readiness, and amount summary. Do not repeat `기본 정보`, document lifecycle rows, Revision lifecycle rows, update timestamps, or a component-count grid below the tabs.
+- Keep actual counts in the disabled tab badges. Reserve document metadata for future `출력·공유` and Revision/final-update/history metadata for a future history surface; this placement policy does not authorize a new tab, lazy API, or data change.
 
 ## Alpha.44 mobile real-data read-only boundary
 

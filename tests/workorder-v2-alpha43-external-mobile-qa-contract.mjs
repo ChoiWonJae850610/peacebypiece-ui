@@ -112,7 +112,7 @@ const mobileConfig = JSON.parse(read("apps/mobile/app.json"));
 assert.equal(mobileConfig.expo.owner, "lostab");
 assert.equal(mobileConfig.expo.slug, "wafl-mobile");
 assert.equal(mobileConfig.expo.version, "2.0.0");
-assert.equal(mobileConfig.expo.extra.appVersion, "2.0.0-alpha.44");
+assert.equal(mobileConfig.expo.extra.appVersion, "2.0.0-alpha.45");
 assert.equal(mobileConfig.expo.extra.eas.projectId, "6cc3b260-a2cc-4c97-9c15-764bda530836");
 assert.equal(mobileConfig.expo.ios.bundleIdentifier, "com.wafl.app");
 assert.equal(mobileConfig.expo.ios.config.usesNonExemptEncryption, false);
@@ -156,7 +156,7 @@ for (const config of [defaultMobileConfig, productionMobileConfig, developmentMo
   assert.equal(config.owner, "lostab");
   assert.equal(config.slug, "wafl-mobile");
   assert.equal(config.version, "2.0.0");
-  assert.equal(config.extra.appVersion, "2.0.0-alpha.44");
+  assert.equal(config.extra.appVersion, "2.0.0-alpha.45");
   assert.equal(config.extra.eas.projectId, "6cc3b260-a2cc-4c97-9c15-764bda530836");
   assert.equal(config.ios.bundleIdentifier, "com.wafl.app");
   assert.equal(config.ios.config.usesNonExemptEncryption, false);

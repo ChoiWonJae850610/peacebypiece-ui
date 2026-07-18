@@ -1,3 +1,18 @@
+# 2.0.0-alpha.45 Mobile ProductionCard Core Overview
+
+- Internal APP_VERSION, mobile mirror, mobile package/lock trace, and Expo `extra.appVersion` are `2.0.0-alpha.45`. Expo public version remains `2.0.0`; Bundle Identifier and Android package remain `com.wafl.app`.
+- Alpha.45 preserves the alpha.44 development connection, actual WorkOrder list/core-detail client, PostgreSQL UUID exact-path correction, session/tenant guards, and detail-error list escape path.
+- The live detail now uses the visual grammar of the historical ProductionCard mock but imports no mock component, mock constants, or mock values. `WorkOrderDetailCore` remains the only live detail source.
+- The active overview maps actual product identity, status, quantity, due date, Revision, amounts, and readiness. Actual tab counts remain in the disabled future-tab badges; document, history, and component metadata are intentionally absent from the overview body.
+- A neutral representative-image placeholder performs no remote image/file request. The future tabs remain visible and disabled with actual count badges; they have no selection handler, lazy API, or mutation path.
+- The first physical iPhone run passed development connection, actual list/recent/legacy detail data, disabled-tab behavior, list return, background/re-entry, and disconnect, but the owner rejected its dashboard/card-stack visual treatment as not inheriting the established ProductionCard design.
+- The first paper-sheet rework moved the screen closer to the historical mock, but the second owner screenshot review found an overlong system-oriented lower body: repeated basic metadata, document summary, and component-count summary remained visible.
+- The final information-architecture rework removes those three sections, leaves actual counts only in their tab badges, and reserves Revision/final-update history for a future history surface and document metadata for `출력·공유`. The four priority metrics now sit below the compact hero so the actual product title has a wider, naturally wrapping column.
+- The owner explicitly accepted the final physical-iPhone information architecture with `디자인 최종 판정: PASS`: the ProductionCard overview is approved as the pre-feature-expansion shell, and remaining typography, spacing, representative-media, tab-density, and color polish is deferred until actual tabs and inputs are connected. The user found no issue that blocks feature use or information understanding.
+- The clean-run iPhone flow retained development connection, actual list, recent and legacy detail, disabled-tab behavior, list return, background/re-entry, and disconnect without crash, red screen, or infinite loading. Preserved logs contain no request-level access ledger, so exact API counts are unavailable rather than reconstructed; lazy/file/PDF/token/mutation paths remain absent by source, contracts, and runtime error audit.
+- The canonical ownership stop ended only runner-owned cloudflared/Next/Metro processes, released ports 3100/8081 with ownership skip zero, preserved the separate localhost:3000 login server, and left Tailscale running. Current status is `ALPHA45_MOBILE_PRODUCTION_CARD_CORE_OVERVIEW_COMPLETE`; final Git and handoff identities are recorded by the matching alpha.45 repo-state.
+- Evidence: `docs/project/app-v2/44-mobile-production-card-core-overview-evidence.md`.
+
 # 2.0.0-alpha.44 Mobile Real Data Read-only Slice
 
 - Internal APP_VERSION, mobile mirror, mobile package/lock trace, and Expo `extra.appVersion` are `2.0.0-alpha.44`. Expo public version stays `2.0.0`; Bundle Identifier and Android package stay `com.wafl.app`.

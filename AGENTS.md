@@ -48,11 +48,12 @@
   44. `docs/project/app-v2/41-external-mobile-qa-runbook.md`
   45. `docs/project/app-v2/42-ios-development-build-evidence.md`
   46. `docs/project/app-v2/43-mobile-real-data-read-only-evidence.md`
-  47. `docs/project/v2/00-start-here.md` through `docs/project/v2/14-operational-policy-absorption.md`
-  48. `docs/project/25-korean-unicode-encoding-standard.md`
-  49. `docs/project/32-product-completion-and-ui-evidence-standard.md`
-  50. `docs/project/26-final-policy-decisions-and-master-todo.md`
-  51. `docs/project/31-pre-codex-integrated-master-plan.md`
+  47. `docs/project/app-v2/44-mobile-production-card-core-overview-evidence.md`
+  48. `docs/project/v2/00-start-here.md` through `docs/project/v2/14-operational-policy-absorption.md`
+  49. `docs/project/25-korean-unicode-encoding-standard.md`
+  50. `docs/project/32-product-completion-and-ui-evidence-standard.md`
+  51. `docs/project/26-final-policy-decisions-and-master-todo.md`
+  52. `docs/project/31-pre-codex-integrated-master-plan.md`
 - `docs/project/app-v2/*` is the priority authority for the `2.0.x` App-first line.
 - Existing `docs/project/v2/*` documents are not deleted. They remain the `0.30.x` `/ui` design baseline and preserved policy reference for Product, Sheet/Card, Korean role labels, Neon/R2/Worker, PDF/share, mobile-web, and QA rules.
 - `www.wafl.co.kr` is the public marketing, download, pricing, examples, inquiry, trial-request, and waitlist landing site for the WAFL app.
@@ -83,6 +84,7 @@
 - `docs/project/app-v2/40-external-mobile-qa-foundation-evidence.md` and `41-external-mobile-qa-runbook.md` define the alpha.43 split transport: private TailscaleLan for Expo Metro and process-only Cloudflare Quick Tunnel for Next/Viewer, with exact external path allowlist, temporary-origin policy, PID ownership stop contract, and user-device procedure. The legacy Expo/ngrok tunnel is disabled. They authorize no Tailscale install/login, transport runtime, external request, DB/API/R2/token/PDF mutation, EAS operation, or production deployment without the separately required approval.
 - `docs/project/app-v2/42-ios-development-build-evidence.md` records the alpha.43 public/internal version split, SDK 55 online compatibility correction, first iOS Development Build failure, and the separately approved second-build gate. It does not authorize another build retry, credential replacement, TestFlight, App Store Connect, or production distribution.
 - `docs/project/app-v2/43-mobile-real-data-read-only-evidence.md` defines the alpha.44 process-memory development connection, exact external read/session allowlist, existing WAFL auth-cookie reuse, real WorkOrder list/core-detail mobile slice, and physical-device acceptance gate. It authorizes no WorkOrder command, lazy-tab read, migration, seed, DB/R2/PDF/token mutation, native dependency, EAS Build, EAS Update, or production access.
+- `docs/project/app-v2/44-mobile-production-card-core-overview-evidence.md` defines the alpha.45 live ProductionCard read-only shell over the existing core-detail response, user-priority overview information architecture, actual count badges on visible disabled future tabs, and phone/tablet-static acceptance boundary. It authorizes no lazy-tab read, representative-image/object fetch, WorkOrder command, DB/R2/PDF/token mutation, native dependency, EAS Build, EAS Update, or production access.
 - Normal mobile production-card screens are portrait-first. Mobile landscape is not the default production-card target; the future sketch/drawing module may be the mobile-landscape exception.
 - Tablet app screens must support portrait and landscape without becoming a compressed desktop admin layout.
 - Next.js remains for system admin, customer admin advanced settings, operations, API, document, internal showroom, and test-console flows.
