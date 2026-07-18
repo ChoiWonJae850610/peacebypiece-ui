@@ -1,5 +1,17 @@
 # WAFL v2 App Device Test Plan - 2.0.0-alpha.1
 
+## 2.0.0-alpha.44 real-data read-only iPhone checkpoint
+
+- Reuse the installed ATS-corrected Development Build; do not reinstall or create another build.
+- On the connected iPhone, enter one localhost-issued development code without sharing it in chat or logs.
+- Confirm the displayed effective user/company matches the selected approved dev/test Company A context and is clearly labeled as a development read-only connection rather than production login.
+- Confirm at least one actual WorkOrder list item, one UUID core-detail response, phone detail/back navigation, background/re-entry, and final disconnect.
+- Confirm no mock card, remote representative-image request, lazy-tab request, automatic retry/polling, red screen, crash, blank screen, or infinite spinner.
+- Confirm request/effect audit: exchange 1, post-exchange auth/me 1, list 1, detail per explicit selection, disconnect 1; WorkOrder writes, DB writes, R2 operations, PDF/token calls, and production access zero.
+- Physical iPhone PASS is recorded: connection, effective Company A context, actual list, recent detail, the formerly failing legacy detail, back, background/re-entry, and disconnect succeeded with no crash, red screen, blank screen, or infinite spinner.
+- The corrected legacy card no longer enters the detail-error state. `뒤로가기`, `목록으로`, and one-request-per-user-action `다시 시도` therefore pass source/contracts; their final device run is correctly recorded as runtime not applicable.
+- Alpha.44 reaches `ALPHA44_MOBILE_REAL_DATA_READ_ONLY_SLICE_COMPLETE` only with the matching final Verify/Finish and canonical runner stop recorded in its evidence.
+
 ## Purpose
 
 This document defines the first App-first device QA matrix. It is a planning document only and does not implement tests.

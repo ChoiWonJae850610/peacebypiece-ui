@@ -994,6 +994,24 @@ $profileCommands = @{
                   "lib/generated-documents/work-order-pdf/viewerOriginPolicy.ts",
                   "lib/generated-documents/work-order-pdf/viewerOriginPolicyCore.mjs",
                   "tests/workorder-v2-alpha43-external-mobile-qa-contract.mjs",
+                  "app/dev/mobile-connect/page.tsx",
+                  "app/dev/mobile-connect/MobileConnectClient.tsx",
+                  "app/api/dev/mobile-connect/code/route.ts",
+                  "app/api/dev/mobile-connect/exchange/route.ts",
+                  "app/api/dev/mobile-connect/disconnect/route.ts",
+                  "lib/mobile-dev-session/config.ts",
+                  "lib/mobile-dev-session/registry.ts",
+                  "lib/mobile-dev-session/service.ts",
+                  "lib/mobile-dev-session/types.ts",
+                  "apps/mobile/app/index.tsx",
+                  "apps/mobile/components/MobileWorkOrderApp.tsx",
+                  "apps/mobile/components/MobileConnectScreen.tsx",
+                  "apps/mobile/components/WorkOrderListScreen.tsx",
+                  "apps/mobile/components/WorkOrderDetailOverview.tsx",
+                  "apps/mobile/lib/apiClient.ts",
+                  "apps/mobile/lib/apiTypes.ts",
+                  "tests/workorder-v2-alpha44-mobile-dev-session-security-contract.mjs",
+                  "tests/workorder-v2-alpha44-mobile-real-read-contract.mjs",
                   "tests/wafl-external-qa-stop-state-contract.mjs",
                   "tests/wafl-external-qa-tailscale-transport-contract.mjs",
                   "scripts/run-wafl-v2-alpha42-token-purpose-migration.mjs",
@@ -1040,6 +1058,8 @@ $profileCommands = @{
           @{ Name = "workorder v2 alpha.42 cover fragmentation contract"; Command = "node"; Arguments = @("tests/workorder-v2-alpha42-cover-fragmentation-contract.mjs") },
           @{ Name = "workorder v2 alpha.42 viewer-only continuation contract"; Command = "node"; Arguments = @("tests/workorder-v2-alpha42-viewer-only-continuation-contract.mjs") },
           @{ Name = "workorder v2 alpha.43 external mobile QA foundation contract"; Command = "node"; Arguments = @("tests/workorder-v2-alpha43-external-mobile-qa-contract.mjs") },
+          @{ Name = "workorder v2 alpha.44 mobile dev session security contract"; Command = "node"; Arguments = @("tests/workorder-v2-alpha44-mobile-dev-session-security-contract.mjs") },
+          @{ Name = "workorder v2 alpha.44 mobile real read contract"; Command = "node"; Arguments = @("tests/workorder-v2-alpha44-mobile-real-read-contract.mjs") },
           @{ Name = "WAFL external QA stop-state regression contract"; Command = "node"; Arguments = @("tests/wafl-external-qa-stop-state-contract.mjs") },
           @{ Name = "WAFL external QA Tailscale transport contract"; Command = "node"; Arguments = @("tests/wafl-external-qa-tailscale-transport-contract.mjs") },
           @{ Name = "WAFL external QA Tailscale runtime contract"; Command = "powershell.exe"; Arguments = @("-NoProfile", "-File", "tests/wafl-external-qa-tailscale-runtime-contract.ps1") },
@@ -1557,7 +1577,7 @@ if ($Profile -eq "automation-infrastructure" -and (GetProjectAppVersion) -eq "2.
 if ($Profile -eq "automation-infrastructure" -and (GetProjectAppVersion) -in @("2.0.0-alpha.38", "2.0.0-alpha.39") -and (Test-Path (Join-Path $ProjectDir "tests/workorder-v2-alpha39-document-viewer-security-contract.mjs"))) {
     $allowedMigrationChanges = @("db/v2/migrations/011_v2_document_access_viewer_functions.sql")
 }
-if ($Profile -eq "automation-infrastructure" -and (GetProjectAppVersion) -in @("2.0.0-alpha.41", "2.0.0-alpha.42", "2.0.0-alpha.43") -and (Test-Path (Join-Path $ProjectDir "tests/workorder-v2-alpha42-realistic-issued-embedded-qr-contract.mjs"))) {
+if ($Profile -eq "automation-infrastructure" -and (GetProjectAppVersion) -in @("2.0.0-alpha.41", "2.0.0-alpha.42", "2.0.0-alpha.43", "2.0.0-alpha.44") -and (Test-Path (Join-Path $ProjectDir "tests/workorder-v2-alpha42-realistic-issued-embedded-qr-contract.mjs"))) {
     $allowedMigrationChanges = @("db/v2/migrations/012_v2_document_access_token_purpose.sql")
 }
 $unexpectedMigrationChanges = @($migrationChanges | Where-Object { $allowedMigrationChanges -notcontains $_ })

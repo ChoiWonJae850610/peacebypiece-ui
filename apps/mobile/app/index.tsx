@@ -1,5 +1,5 @@
-import ProductionCardMock from "@/components/ProductionCardMock";
+import MobileWorkOrderApp from "@/components/MobileWorkOrderApp";
 
 export default function Index() {
-  return <ProductionCardMock />;
+  return <MobileWorkOrderApp />;
 }

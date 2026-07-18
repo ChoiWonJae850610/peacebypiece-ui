@@ -27,8 +27,9 @@
       }
     },
     "extra": {
-      "appVersion": "2.0.0-alpha.43",
-      "mockOnly": true,
+      "appVersion": "2.0.0-alpha.44",
+      "mockOnly": false,
+      "dataMode": "dev-test-read-only",
       "router": {},
       "eas": {
         "projectId": "6cc3b260-a2cc-4c97-9c15-764bda530836"

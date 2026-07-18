@@ -1,3 +1,22 @@
+# WAFL v2 App-first Roadmap 2.0 - 2.0.0-alpha.44 checkpoint
+
+## 2.0.0-alpha.44 checkpoint
+
+Status: `ALPHA44_MOBILE_REAL_DATA_READ_ONLY_SLICE_COMPLETE`.
+
+- Reuse the installed alpha.43 Development Build with no native dependency, ATS, EAS profile, credential, build-number, EAS Build, or EAS Update change.
+- Add a localhost-only, actual-system-admin-gated, effective-dev/test-company-gated one-time development connection. Keep codes five minutes or less, one-use, process-memory-only, SHA-256 keyed, bounded, and runner-bound.
+- Reuse the existing signed `wafl_auth_session` cookie with HttpOnly/Secure/SameSite=Lax/Path and a two-hour maximum. Do not add bearer auth, raw-cookie response, SecureStore, or native cookie dependencies.
+- Extend the exact external QA allowlist only for exchange/disconnect, auth/me, WorkOrder list GET, and UUID core-detail GET. Keep WorkOrder commands, lazy tabs, internal/dev routes, arbitrary APIs, and OPTIONS blocked.
+- Replace the current mobile mock entry with a real dev/test read-only WorkOrder list and core-detail overview while preserving the mock component as historical design evidence.
+- Implement explicit phone list/detail/back and tablet split layouts plus loading, empty, permission, not-found, network, malformed, timeout, server, session-expired, manual retry, refresh, and disconnect states.
+- Never fetch representative objects, call lazy tabs, retry automatically, poll, or invoke WorkOrder/R2/PDF/token mutations.
+- Correct the reproduced legacy-detail `C4` mismatch: the database/list/detail joins admitted all Company A rows, while the external matcher incorrectly required RFC UUID version/variant bits. Keep an exact GET-only single canonical `8-4-4-4-12` hexadecimal UUID pathname with no wildcard or prefix expansion.
+- Give every detail error an upper-left back action, primary `목록으로`, and secondary bounded manual retry. Returning preserves the loaded list and performs no automatic list refetch; tablet keeps its list pane.
+- Real iPhone QA passes connection, effective user/Company A context, actual list, recent detail, corrected legacy detail, back, background/re-entry, and disconnect. Crash, red screen, infinite loading, automatic retry/polling, data/object/document/token writes, and production access are zero. Error-action runtime is not applicable because the corrected legacy card opens; source/contracts cover it.
+- Canonical runner stop releases ports 3100/8081 with ownership skip zero while preserving localhost:3000 and Tailscale.
+- Evidence: `43-mobile-real-data-read-only-evidence.md`.
+
 # WAFL v2 App-first Roadmap 2.0 - 2.0.0-alpha.43 result
 
 ## 2.0.0-alpha.43 result

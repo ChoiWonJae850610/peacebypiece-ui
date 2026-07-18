@@ -2,6 +2,23 @@
 
 Status: `ALPHA43_EXTERNAL_MOBILE_QA_AND_IOS_DEVELOPMENT_BUILD_COMPLETE`.
 
+## Alpha.44 development connection and read-only WorkOrder QA
+
+After alpha.44 static and canonical verification pass:
+
+1. Start the canonical runner once with `TailscaleLan`; preserve the split transport and exact ownership markers. Before any child starts, the runner validates the current DB identity against the canonical approved dev/test fingerprint and injects the WorkOrder Read API guard only into the Next child. State reports `readApiGuard`, dev/test runtime, fingerprint verification, and only a short fingerprint prefix; the full DB URL and fingerprint are never logged.
+2. On PC localhost, sign in through the existing flow and select the approved Company A dev/test read context if needed.
+3. Open `/dev/mobile-connect` on localhost. The same path must remain 404 through the Quick Tunnel.
+4. Issue one code. Do not copy it into chat, terminal output, tracked files, or logs.
+5. Keep iPhone Tailscale connected, open the installed WAFL Development Build, and use at most one manual Development Client Reload if the new JavaScript bundle is not active.
+6. Enter the code and confirm the effective user/company display, actual list, one core detail, phone back navigation, background/re-entry, and disconnect.
+7. Audit exchange/auth/list/detail/disconnect request counts plus DB/R2/PDF/token/production zero effects. Do not call lazy tabs or representative object URLs.
+8. End PASS or FAIL with the canonical stop script. Runner-owned process and ports 3100/8081 must be zero; ownership skip and unrelated process termination must be zero; Tailscale remains running.
+
+Cookie retention failure, repeated 401, wrong company, tenant leak, mutation/object/token request, production access, raw secret logging, ATS recurrence, crash, red screen, or infinite loading is a stop condition. Preserve the runner/log state and create a Failure Handoff; do not retry, rebuild, reinstall, change ATS, or add an auth fallback automatically.
+
+Alpha.44 final device evidence passed connection, effective Company A context, actual list, recent and formerly failing legacy detail, back, background/re-entry, and disconnect. The legacy 404 was caused by an over-restrictive UUID version/variant matcher in the exact external core-detail path; the corrected matcher still admits only one canonical hexadecimal UUID segment and GET. If a detail error is reached in later device QA, verify explicit back, `목록으로`, and one manual `다시 시도`; do not count those interactions as runtime PASS when no error state occurred. Final stop preserved the separate localhost:3000 login server and Tailscale while releasing owned ports 3100/8081.
+
 ## Preconditions
 
 - Windows PC remains powered on and connected.

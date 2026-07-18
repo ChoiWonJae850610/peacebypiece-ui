@@ -13,6 +13,7 @@
     "app",
     "components",
     "constants",
+    "lib",
     "expo-env.d.ts",
     ".expo/types/**/*.ts"
   ]

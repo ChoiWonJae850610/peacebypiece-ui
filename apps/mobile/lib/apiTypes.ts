@@ -1,0 +1,106 @@
+export type MobileCurrentUser = {
+  readonly id: string;
+  readonly name: string;
+  readonly role: "company_admin" | "member" | "system_admin";
+  readonly companyId: string | null;
+  readonly companyName: string | null;
+  readonly companyMemberId: string | null;
+  readonly permissionCodes?: readonly string[];
+};
+
+export type WorkOrderStatus = "draft" | "ready_to_issue" | "issued" | "revised" | "completed" | "cancelled";
+
+export type WorkOrderListItem = {
+  readonly workOrderId: string;
+  readonly displayDocumentNumber: string | null;
+  readonly productName: string;
+  readonly status: WorkOrderStatus;
+  readonly dueDate: string | null;
+  readonly totalQuantity: number;
+  readonly estimatedAmountSummary: { readonly currency: string; readonly estimatedTotal: string };
+  readonly representativeThumbnail: { readonly imageId: string; readonly thumbnailUrl: string | null; readonly altText: string } | null;
+  readonly incompleteMaterialSummary: { readonly incompleteFabricCount: number; readonly incompleteAccessoryCount: number };
+  readonly processCount: number;
+  readonly latestDocumentStatus: string | null;
+  readonly updatedAt: string;
+};
+
+export type WorkOrderListPage = {
+  readonly items: readonly WorkOrderListItem[];
+  readonly nextCursor: string | null;
+  readonly hasMore: boolean;
+  readonly limit: number;
+};
+
+export type WorkOrderDetailCore = {
+  readonly header: {
+    readonly id: string;
+    readonly productName: string;
+    readonly productTypeCode: string | null;
+    readonly productTypeAlias: string | null;
+    readonly seasonCode: string | null;
+    readonly itemCode: string | null;
+    readonly dueDate: string | null;
+    readonly totalQuantity: number;
+    readonly status: WorkOrderStatus;
+    readonly currentRevisionNumber: number;
+    readonly readiness: {
+      readonly canIssue: boolean;
+      readonly hardBlockers: readonly { readonly code: string; readonly message: string }[];
+      readonly warnings: readonly { readonly code: string; readonly message: string }[];
+    };
+    readonly document: {
+      readonly status: string | null;
+      readonly displayDocumentNumber: string | null;
+      readonly generatedAt: string | null;
+    };
+    readonly entityVersion: number;
+    readonly updatedAt: string;
+  };
+  readonly revision: { readonly status: string; readonly finalizedAt: string | null };
+  readonly amounts: {
+    readonly currency: string;
+    readonly unitPrice: string;
+    readonly fabricTotal: string;
+    readonly accessoryTotal: string;
+    readonly processTotal: string;
+    readonly estimatedTotal: string;
+  };
+  readonly tabCounts: {
+    readonly fabric: number;
+    readonly accessory: number;
+    readonly colors: number;
+    readonly sizes: number;
+    readonly processes: number;
+    readonly images: number;
+    readonly attachments: number;
+    readonly documents: number;
+    readonly history: number;
+  };
+};
+
+export type MobileApiErrorCode =
+  | "API_ORIGIN_INVALID"
+  | "NETWORK_ERROR"
+  | "TIMEOUT"
+  | "MALFORMED_RESPONSE"
+  | "AUTH_REQUIRED"
+  | "FORBIDDEN"
+  | "NOT_FOUND"
+  | "INTERNAL_ERROR"
+  | "MOBILE_CONNECT_CODE_UNAVAILABLE"
+  | string;
+
+export class MobileApiError extends Error {
+  readonly code: MobileApiErrorCode;
+  readonly status: number;
+  readonly correlationId: string | null;
+
+  constructor(input: { readonly code: MobileApiErrorCode; readonly message: string; readonly status?: number; readonly correlationId?: string | null }) {
+    super(input.message);
+    this.name = "MobileApiError";
+    this.code = input.code;
+    this.status = input.status ?? 0;
+    this.correlationId = input.correlationId ?? null;
+  }
+}

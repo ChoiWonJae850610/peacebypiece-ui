@@ -1,4 +1,18 @@
-# WAFL v2 App-first Codex Working Rules - 2.0.0-alpha.42
+# WAFL v2 App-first Codex Working Rules - 2.0.0-alpha.44
+
+## Alpha.44 mobile real-data read-only boundary
+
+- Call the feature `개발용 연결`; never present it as completed Google/Apple login, production account login, or an operational authentication replacement.
+- Issue only on localhost during an exact active external QA run. Require both an actual active system administrator and an effective approved dev/test company context with existing `workorder.read` and company-access guards.
+- Keep codes uppercase/eight-character, five-minute-or-less, one-use, hash-keyed, bounded, process-memory-only, and current-run-bound. Never persist or log raw code, cookie, session, token, user ID, or company ID.
+- Exchange only on the exact Quick Tunnel host and reuse the existing signed HttpOnly WAFL auth cookie. No bearer fallback, raw cookie body, SecureStore, native cookie library, or permission-guard relaxation is allowed.
+- External allowlist additions are limited to exchange/disconnect, auth/me, list GET, and UUID core-detail GET. WorkOrder POST/PATCH, lazy tabs, commands, arbitrary APIs, internal/dev pages, and OPTIONS remain blocked.
+- Mobile API calls are centralized, credentials-included, no-store, JSON-checked, timeout-bounded, and user-retried only. Automatic retry, polling, mutation methods, representative image/object GET, and lazy-tab GET are forbidden.
+- The current app entry must not mix mock and actual cards. Detail displays only fields present in the core response and exposes no save/edit/order/delete/PDF/token actions.
+- Runtime QA is read-only. Cookie/code effects are ephemeral auth effects; DB/schema/migration/fixture/business/R2/PDF/token/document/production effects remain zero.
+- Do not commit, push, Finish, or replace `4. Newest` until the real iPhone passes connection, list, detail, phone navigation, background/re-entry, disconnect, audit, and canonical runner stop.
+- UUID route validation may require canonical PostgreSQL text shape (`8-4-4-4-12` hexadecimal) but must not require RFC version/variant bits for stored UUID values. Keep the full pathname and method exact; never replace this with a `/api/v2/*` prefix or wildcard.
+- Every detail error must retain a list escape path: explicit back plus primary `목록으로`, with `다시 시도` issuing at most one detail GET per deliberate user action. Returning to the preserved list must not trigger an automatic list refetch.
 
 ## Alpha.41 mobile summary and PDF page-number boundary
 

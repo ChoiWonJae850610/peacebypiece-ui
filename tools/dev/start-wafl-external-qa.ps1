@@ -10,6 +10,62 @@
 
 $ErrorActionPreference = "Stop"
 . (Join-Path $PSScriptRoot "wafl-external-qa-common.ps1")
+. (Join-Path $PSScriptRoot "..\pipeline\pipeline-common.ps1")
+
+function Get-WaflQaDatabaseUrl {
+    param([Parameter(Mandatory = $true)][string]$RepositoryRoot)
+
+    $processValue = [Environment]::GetEnvironmentVariable("DATABASE_URL", "Process")
+    if (-not [string]::IsNullOrWhiteSpace($processValue)) { return $processValue.Trim() }
+
+    $envPath = Join-Path $RepositoryRoot ".env.local"
+    if (-not (Test-Path -LiteralPath $envPath -PathType Leaf)) { return $null }
+    foreach ($line in Get-Content -LiteralPath $envPath -Encoding UTF8) {
+        $match = [regex]::Match($line, '^\s*DATABASE_URL\s*=\s*(.*)\s*$')
+        if (-not $match.Success) { continue }
+        $value = $match.Groups[1].Value.Trim()
+        if ($value.Length -ge 2 -and (($value.StartsWith('"') -and $value.EndsWith('"')) -or ($value.StartsWith("'") -and $value.EndsWith("'")))) {
+            $value = $value.Substring(1, $value.Length - 2)
+        }
+        return $(if ([string]::IsNullOrWhiteSpace($value)) { $null } else { $value })
+    }
+    return $null
+}
+
+function Test-WaflQaReadApiTarget {
+    param([Parameter(Mandatory = $true)][string]$RepositoryRoot)
+
+    $runtime = "dev"
+    $allowedRuntimes = @([string[]]$PipelineConfig.Simulator.AllowedRuntimes)
+    $testPrefix = ([string]$PipelineConfig.Simulator.TestPrefix).Trim()
+    $approvedFingerprint = ([string]$PipelineConfig.Simulator.ApprovedDbFingerprint).Trim().ToLowerInvariant()
+    if ($allowedRuntimes -notcontains $runtime) { return [pscustomobject]@{ Passed = $false; Reason = "runtime-blocked" } }
+    if ($testPrefix -ne "wafl-fn") { return [pscustomobject]@{ Passed = $false; Reason = "test-prefix-mismatch" } }
+    if ([string]::IsNullOrWhiteSpace($approvedFingerprint)) { return [pscustomobject]@{ Passed = $false; Reason = "approved-fingerprint-missing" } }
+
+    $databaseUrl = Get-WaflQaDatabaseUrl -RepositoryRoot $RepositoryRoot
+    if ([string]::IsNullOrWhiteSpace($databaseUrl)) { return [pscustomobject]@{ Passed = $false; Reason = "database-url-missing" } }
+    try {
+        $uri = [System.Uri]$databaseUrl
+        $databaseName = $uri.AbsolutePath.Trim('/')
+        if (@("postgres", "postgresql") -notcontains $uri.Scheme.ToLowerInvariant() -or [string]::IsNullOrWhiteSpace($uri.Host) -or [string]::IsNullOrWhiteSpace($databaseName)) {
+            return [pscustomobject]@{ Passed = $false; Reason = "database-url-invalid" }
+        }
+        $fingerprint = GetSha256HexPrefix -Value ("{0}/{1}" -f $uri.Host, $databaseName)
+        if ($fingerprint -ne $approvedFingerprint) { return [pscustomobject]@{ Passed = $false; Reason = "fingerprint-mismatch" } }
+        return [pscustomobject]@{
+            Passed = $true
+            Reason = "approved-dev-test-target"
+            Runtime = $runtime
+            TestPrefix = $testPrefix
+            ApprovedFingerprint = $approvedFingerprint
+            FingerprintPrefix = $fingerprint.Substring(0, [Math]::Min(6, $fingerprint.Length))
+        }
+    }
+    catch {
+        return [pscustomobject]@{ Passed = $false; Reason = "database-url-parse-failed" }
+    }
+}
 
 $root = Get-WaflQaRepositoryRoot
 if (-not (Test-Path -LiteralPath (Join-Path $root ".git") -PathType Container)) { throw "Repository root validation failed: $root" }
@@ -63,11 +119,23 @@ $state = [ordered]@{
     startedAtUtc = [DateTime]::UtcNow.ToString("o")
     updatedAtUtc = [DateTime]::UtcNow.ToString("o")
     lastSuccessfulStage = "preflight"
+    readApiGuard = "blocked"
+    readApiRuntime = "dev-test"
+    fingerprintVerified = $false
+    fingerprintPrefix = $null
     processes = @()
 }
 Write-WaflQaJson -Path (Get-WaflQaStatePath) -Value $state
 
 try {
+    $readApiTarget = Test-WaflQaReadApiTarget -RepositoryRoot $root
+    if (-not $readApiTarget.Passed) { throw ("READ_API_GUARD_{0}" -f $readApiTarget.Reason.ToUpperInvariant().Replace('-', '_')) }
+    $state.readApiGuard = "ready"
+    $state.fingerprintVerified = $true
+    $state.fingerprintPrefix = $readApiTarget.FingerprintPrefix
+    $state.lastSuccessfulStage = "read-api-guard-ready"
+    Write-WaflQaJson -Path (Get-WaflQaStatePath) -Value $state
+
     if ($MobileTransport -eq "ExpoTunnelLegacyDisabled") {
         throw "EXPO_TUNNEL_LEGACY_DISABLED"
     }
@@ -113,6 +181,11 @@ try {
         WAFL_EXTERNAL_QA_ORIGIN = $state.publicOrigin
         WAFL_EXTERNAL_QA_HOST_ALLOWLIST = $originUri.Host
         WAFL_EXTERNAL_QA_RUN_TOKEN = $runToken
+        WAFL_V2_READ_API_ENABLED = "1"
+        WAFL_V2_READ_APPROVED = "1"
+        WAFL_V2_RUNTIME = $readApiTarget.Runtime
+        WAFL_V2_TEST_PREFIX = $readApiTarget.TestPrefix
+        WAFL_V2_APPROVED_DB_FINGERPRINT = $readApiTarget.ApprovedFingerprint
     }
     $nextStdout = Join-Path $stateDir "next.stdout.log"
     $nextStderr = Join-Path $stateDir "next.stderr.log"

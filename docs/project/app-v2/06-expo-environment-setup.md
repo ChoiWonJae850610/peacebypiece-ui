@@ -1,5 +1,14 @@
 # WAFL v2 Expo Environment Setup Plan - 2.0.0-alpha.2
 
+## Alpha.44 installed-build reuse
+
+- Alpha.44 changes JavaScript/Next source only and reuses the installed ATS-corrected alpha.43 Development Build.
+- Public Expo version remains `2.0.0`; internal `extra.appVersion` and mobile package trace become `2.0.0-alpha.44`.
+- `app.config.js`, the Development-only `100.64.0.0/10` ATS exception, `eas.json`, native plugins/dependencies, Bundle Identifier, Android package, remote version source, and internal build number are unchanged.
+- `app.json` now marks `mockOnly: false` and `dataMode: dev-test-read-only`; this metadata is descriptive and is never an authorization input.
+- No EAS Build, EAS Update, credential/profile/device operation, native dependency, or package installation is authorized or required for alpha.44.
+- The installed alpha.43 binary completed alpha.44 physical iPhone connection, actual list/recent-and-legacy-detail, navigation, background/re-entry, and disconnect. The legacy-detail correction is JavaScript/proxy-only and does not alter ATS, Info.plist, native plugins, credentials, or build number.
+
 ## Purpose
 
 This document records the Expo setup direction and the first skeleton choice.

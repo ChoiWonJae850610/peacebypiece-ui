@@ -7,6 +7,7 @@ const root = path.resolve(import.meta.dirname, "..");
 const read = (relativePath) => fs.readFileSync(path.join(root, relativePath), "utf8");
 const startScript = read("tools/dev/start-wafl-external-qa.ps1");
 const commonScript = read("tools/dev/wafl-external-qa-common.ps1");
+const statusScript = read("tools/dev/status-wafl-external-qa.ps1");
 const rejectScript = path.join(root, "scripts/reject-wafl-expo-tunnel.mjs");
 
 assert.match(startScript, /TAILSCALE_CLI_MISSING/);
@@ -19,6 +20,20 @@ assert.match(startScript, /if \(\$MobileTransport -eq "TailscaleLan"\) \{\s*\$mo
 assert.match(startScript, /EXPO_PACKAGER_PROXY_URL = "http:\/\/\$\(\$state\.tailscaleIpv4\):\$ExpoPort"/);
 assert.match(startScript, /http:\/\/127\.0\.0\.1:\$ExpoPort\/status/);
 assert.match(startScript, /http:\/\/\$\(\$state\.tailscaleIpv4\):\$ExpoPort\/status/);
+assert.match(startScript, /Test-WaflQaReadApiTarget/);
+assert.match(startScript, /GetSha256HexPrefix/);
+assert.match(startScript, /readApiGuard = "ready"/);
+assert.match(startScript, /fingerprintVerified = \$true/);
+for (const name of [
+  "WAFL_V2_READ_API_ENABLED",
+  "WAFL_V2_READ_APPROVED",
+  "WAFL_V2_RUNTIME",
+  "WAFL_V2_TEST_PREFIX",
+  "WAFL_V2_APPROVED_DB_FINGERPRINT",
+]) assert.equal((startScript.match(new RegExp(name, "g")) ?? []).length, 1, `${name} must be Next-only`);
+assert.doesNotMatch(startScript.slice(startScript.indexOf("$mobileEnvironment = @{")), /WAFL_V2_(?:READ|RUNTIME|TEST_PREFIX|APPROVED_DB_FINGERPRINT)/);
+assert.match(statusScript, /Read API guard:/);
+assert.match(statusScript, /DB fingerprint verified:/);
 assert.doesNotMatch(`${startScript}\n${commonScript}`, /authkey|nodekey|loginurl/i);
 
 const legacy = spawnSync(process.execPath, [rejectScript], { encoding: "utf8" });

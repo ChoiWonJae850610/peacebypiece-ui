@@ -5,7 +5,9 @@
 This document starts the WAFL v2 App-first line.
 
 Previous baseline: `0.30.0-alpha.27`.
-Current baseline: `2.0.0-alpha.43`.
+Current baseline: `2.0.0-alpha.44`.
+
+Alpha.44 completes a dev/test-only one-time mobile connection that reuses the existing WAFL auth cookie, exact external session/read allowlist, and actual WorkOrder list/core-detail APIs. The Expo entry displays real dev/test read-only data with phone navigation and tablet split view without native changes, object reads, lazy tabs, automatic retry, or business mutation. Physical iPhone acceptance passed connection, effective Company A context, list, recent and legacy detail, back, background/re-entry, and disconnect. The legacy-detail 404 was an exact-path UUID compatibility defect (`C4`) and is corrected without widening the external route boundary. See `43-mobile-real-data-read-only-evidence.md`.
 
 Alpha.43 establishes and runtime-verifies the split external QA foundation: private `TailscaleLan` carries Expo Metro, while a process-only Cloudflare Quick Tunnel carries Next/PDF/Viewer HTTPS behind an exact host/path allowlist. External `/v` headers and internal-route blocking passed with mutation zero. Expo Go is no longer an official WAFL QA path. The first EAS iOS Development Build failed in Pods/Codegen; the corrected SDK 55 tree and public/internal version split now pass canonical static verification, and the approved second build is pending. Canonical release identity and account policy are defined in `06-expo-environment-setup.md`; runtime evidence and operations are in `40-external-mobile-qa-foundation-evidence.md` and `41-external-mobile-qa-runbook.md`; native-build evidence is in `42-ios-development-build-evidence.md`.
 
@@ -131,6 +133,8 @@ docs/project/app-v2/
   39-realistic-issued-embedded-qr-pdf-evidence.md
   40-external-mobile-qa-foundation-evidence.md
   41-external-mobile-qa-runbook.md
+  42-ios-development-build-evidence.md
+  43-mobile-real-data-read-only-evidence.md
 ```
 
 The alpha.19 documents are design and read-only audit authority. They do not authorize schema migration, API replacement, seed execution, DB/R2 mutation, or PDF Worker changes.

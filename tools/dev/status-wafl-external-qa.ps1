@@ -5,6 +5,10 @@ $state = Read-WaflQaState
 Write-Host ("Status: {0}" -f $state.status)
 Write-Host ("APP_VERSION: {0}" -f $state.appVersion)
 Write-Host ("Last successful stage: {0}" -f $state.lastSuccessfulStage)
+if ($state.PSObject.Properties.Name -contains "readApiGuard") { Write-Host ("Read API guard: {0}" -f $state.readApiGuard) }
+if ($state.PSObject.Properties.Name -contains "readApiRuntime") { Write-Host ("Read API runtime: {0}" -f $state.readApiRuntime) }
+if ($state.PSObject.Properties.Name -contains "fingerprintVerified") { Write-Host ("DB fingerprint verified: {0}" -f $state.fingerprintVerified) }
+if ($state.PSObject.Properties.Name -contains "fingerprintPrefix" -and $state.fingerprintPrefix) { Write-Host ("DB fingerprint prefix: {0}" -f $state.fingerprintPrefix) }
 if ($state.PSObject.Properties.Name -contains "mobileTransport" -and $state.mobileTransport) { Write-Host ("Mobile transport: {0}" -f $state.mobileTransport) }
 if ($state.publicOrigin) { Write-Host ("Viewer base origin: {0}" -f $state.publicOrigin) }
 if ($state.PSObject.Properties.Name -contains "expoUrl" -and $state.expoUrl) { Write-Host ("Expo Go URL (same tailnet only): {0}" -f $state.expoUrl) }

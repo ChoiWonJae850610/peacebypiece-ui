@@ -1,3 +1,19 @@
+# 2.0.0-alpha.44 Mobile Real Data Read-only Slice
+
+- Internal APP_VERSION, mobile mirror, mobile package/lock trace, and Expo `extra.appVersion` are `2.0.0-alpha.44`. Expo public version stays `2.0.0`; Bundle Identifier and Android package stay `com.wafl.app`.
+- Alpha.44 reuses the installed ATS-corrected alpha.43 iOS Development Build. Native dependencies, Expo/EAS/ATS configuration, build number, certificates, profiles, registered devices, EAS Build, and EAS Update are unchanged.
+- A localhost-only `/dev/mobile-connect` flow issues an eight-character, five-minute, one-use development code only when the current external QA run is enabled, the actual session is an active system administrator, and the effective dev/test company context passes existing company access plus `workorder.read` guards.
+- The code registry is process-local, bounded, hash-keyed, and bound to the current runner secret fingerprint. Raw code/session/cookie values are not persisted or logged.
+- Exact external routes added are exchange, disconnect, auth/me, WorkOrder list GET, and UUID core-detail GET. WorkOrder POST/PATCH, lazy tabs, arbitrary APIs, internal/dev routes, and OPTIONS remain blocked. Request `Host` remains the only external authority input.
+- Mobile runtime now uses real API data through one credentials-included, no-store, timeout-bounded JSON client. The entry no longer renders `ProductionCardMock`; remote representative-image fetch, automatic retry, polling, mutation methods, and lazy detail calls are absent.
+- Phone implements list/detail/back navigation. Tablet implements bounded list/detail split view. Every detail failure keeps an explicit upper-left back action plus primary `목록으로` and secondary `다시 시도`; returning clears only detail selection/error and does not refetch the list, while retry is bounded to one request per user action.
+- The reproduced legacy-detail 404 was classification `C4`, not missing data or a tenant/permission defect: Company A list and detail joins each admitted all 503 rows, but the external proxy accepted only RFC-version/variant-shaped UUIDs. PostgreSQL UUID values are valid independent of RFC version/variant bits, so the exact one-segment core-detail matcher now accepts canonical hexadecimal `8-4-4-4-12` UUID text while retaining exact GET-only pathname matching and every existing external block.
+- Final iPhone QA passed development connection, effective Company A/user context, actual list, recent detail, the formerly failing legacy detail, back navigation, background/re-entry, and disconnect without crash, red screen, or infinite loading. Because the corrected legacy card opened successfully, the detail-error buttons are static/contract PASS and runtime not applicable rather than falsely reported as runtime-clicked.
+- Automatic retry/polling, WorkOrder commands, lazy-tab/object/PDF/token requests, DB writes, and production access remained zero. Preserved runner logs prove one Metro JavaScript bundle but do not contain HTTP access records, so exact API request counts are recorded as unavailable rather than reconstructed.
+- The final marker-owned cloudflared/Next/Metro processes were stopped by the canonical ownership guard with skip zero; ports 3100/8081 are released, localhost:3000 remains owned by its separate login server, and Tailscale remains running.
+- Current status is `ALPHA44_MOBILE_REAL_DATA_READ_ONLY_SLICE_COMPLETE` after the final matching canonical verification and delivery workflow.
+- Evidence: `docs/project/app-v2/43-mobile-real-data-read-only-evidence.md`.
+
 # 2.0.0-alpha.43 External Mobile QA Foundation
 
 - Internal APP_VERSION, the mobile mirror, and mobile package metadata are `2.0.0-alpha.43`. Expo's public iOS/Android version is the Apple-compatible numeric triplet `2.0.0`, while `expo.extra.appVersion` retains `2.0.0-alpha.43` for internal traceability.

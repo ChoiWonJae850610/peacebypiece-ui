@@ -35,7 +35,7 @@ const verifySafe = read("tools/pipeline/verify-safe.ps1");
 const pipeline = read("tools/pipeline/peacebypiece-auto-pipeline.ps1");
 
 const currentVersion = version.match(/APP_VERSION\s*=\s*"([^"]+)"/)?.[1];
-assert.ok(["2.0.0-alpha.37", "2.0.0-alpha.38", "2.0.0-alpha.39", "2.0.0-alpha.40", "2.0.0-alpha.41", "2.0.0-alpha.42", "2.0.0-alpha.43"].includes(currentVersion));
+assert.ok(["2.0.0-alpha.37", "2.0.0-alpha.38", "2.0.0-alpha.39", "2.0.0-alpha.40", "2.0.0-alpha.41", "2.0.0-alpha.42", "2.0.0-alpha.43", "2.0.0-alpha.44"].includes(currentVersion));
 assert.match(mobileVersion, new RegExp(currentVersion.replaceAll(".", "\\.")));
 const appConfig = JSON.parse(appJson);
 const publicVersion = currentVersion.replace(/-.+$/, "");
