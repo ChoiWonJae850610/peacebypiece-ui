@@ -11,7 +11,7 @@ const apiClient = read("apps/mobile/lib/apiClient.ts");
 const externalQa = read("lib/external-qa/configCore.mjs");
 const mock = read("apps/mobile/components/ProductionCardMock.tsx");
 
-assert.match(version, /APP_VERSION = "2\.0\.0-alpha\.48"/);
+assert.match(version, /APP_VERSION = "2\.0\.0-alpha\.49"/);
 assert.match(detail, /testID="production-card-sheet"/);
 assert.match(detail, /styles\.hero[\s\S]*styles\.summaryGrid[\s\S]*styles\.tabRailFrame[\s\S]*ReadinessPanel[\s\S]*title="금액 요약"/);
 

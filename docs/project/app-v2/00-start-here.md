@@ -1,167 +1,181 @@
-# WAFL v2 App-first Start Here - 2.0.0-alpha.1
+# WAFL v2 App-first Canonical Start Here
 
-## Purpose
+Document role: canonical index, responsibility matrix, and task routing for the `2.0.x` App-first line.
 
-This document starts the WAFL v2 App-first line.
+This document tells Codex what to read. It does not own Permanent Rules, current Git/runtime facts, version scope, API semantics, or historical PASS/FAIL evidence.
 
-Previous baseline: `0.30.0-alpha.27`.
-Current baseline: `2.0.0-alpha.48`.
+## Four canonical document types
 
-Alpha.48 activates only the live ProductionCard `원단` tab. It consumes the existing tenant-scoped material Read API through Tailscale Serve with lazy loading, a bounded WorkOrder cache, request identity protection, explicit retry/pagination, actual decimal-preserving fields, and the accepted compact material-card presentation. External cellular iPhone functional and UI-conformity QA passed after a presentation-only correction; all business/R2/PDF/token/native/EAS effects remained zero. See `47-mobile-materials-real-read-evidence.md`.
+1. **Permanent Rules** — durable execution, safety, Git, Runtime, failure, QA, and delivery rules.
+2. **Current Baseline** — one compact snapshot of the latest accepted repository/product state.
+3. **Version Delta** — the current version's objective, inclusions, exclusions, effects, gates, and next boundary.
+4. **Immutable Evidence** — numbered historical records of what actually happened.
 
-Alpha.47 replaces the normal external developer code-entry step with tailnet-only Tailscale Serve HTTPS auto-connect. The Serve-supplied login is accepted only on one exact Serve host and compared through a process-local hash pair to one active WAFL system administrator; the resulting workspace session targets the canonical simulator Company A. Cloudflare remains Preview/Viewer-only, the one-time code remains fallback, and the default runner remains read-only. External cellular iPhone acceptance passed code-free launch, disconnect, explicit reconnect, close/reopen, and cold-restart auto-connect; see `46-mobile-tailscale-serve-developer-auto-connect-evidence.md`.
+Every fact or rule has one canonical owner. Other documents keep only the context needed for their specialist role and link to that owner.
 
-Alpha.46 completed draft-only product name, calendar due date, and total-quantity editing with explicit save, optimistic concurrency, input-loss protection, PostgreSQL date-only correction, and physical-iPhone acceptance. See `45-mobile-basic-info-update-evidence.md`.
+## Responsibility matrix
 
-Alpha.45 keeps the real alpha.44 list and core-detail transport while replacing the temporary live detail presentation with a ProductionCard-style read-only overview. It maps only actual core-detail values, performs no representative-image or lazy-tab request, and shows the future tab structure as disabled. The owner accepted the final physical-iPhone information architecture as the pre-feature-expansion shell; remaining fine visual polish is deferred until actual tabs and inputs are connected. Completion evidence and delivery identity are tracked in `44-mobile-production-card-core-overview-evidence.md` and the matching repo-state.
+| Area | Canonical owner | Main references | Change frequency | Evidence | Mutability | Task routing |
+| --- | --- | --- | --- | --- | --- | --- |
+| Repository routing | `AGENTS.md` | this index | rare | no | mutable | always |
+| Permanent Rules | `09-codex-working-rules.md` | `AGENTS.md`, policy docs | rare | no | mutable | always |
+| Current Baseline | `../../codex-current-state.md` | matching repo-state | each completed version | no | replace current snapshot | always |
+| Current/next roadmap and Version Delta | `08-roadmap-2.0.md` | latest work order | each version | no | mutable | always |
+| Product direction | `01-app-first-product-definition.md` | `02`, `03`, `04`, confirmed policy | policy change only | no | mutable | product/UI/auth |
+| Device QA matrix | `05-device-test-plan.md` | UI evidence standard | device/support change | no | mutable | mobile/tablet/UI |
+| Expo/native environment | `06-expo-environment-setup.md` | app config, EAS config | environment change | no | mutable | mobile/native/EAS |
+| External Runtime operations | `41-external-mobile-qa-runbook.md` | runner source/contracts | operational change | no | mutable | external Runtime QA |
+| WorkOrder API semantics | `16-workorder-api-command-read-model-contracts.md` | domain contracts | API contract change | no | mutable normative contract | API/read/command |
+| Verification semantics | `17-v2-api-contract-test-plan.md` | tests and Verify profile | verification change | no | mutable | every implementation task |
+| PDF/R2 lifecycle | applicable confirmed policy and routed evidence | PDF/R2 specialist docs | scoped change | mixed | owner-dependent | PDF/R2/document |
+| Auth | `04-auth-google-apple.md` | `03`, security evidence | auth policy change | no | mutable | auth/session |
+| Historical result | numbered `*-evidence.md` | matching repo-state/artifact | once at completion | yes | immutable | only relevant versions |
 
-Alpha.44 completes a dev/test-only one-time mobile connection that reuses the existing WAFL auth cookie, exact external session/read allowlist, and actual WorkOrder list/core-detail APIs. The Expo entry displays real dev/test read-only data with phone navigation and tablet split view without native changes, object reads, lazy tabs, automatic retry, or business mutation. Physical iPhone acceptance passed connection, effective Company A context, list, recent and legacy detail, back, background/re-entry, and disconnect. The legacy-detail 404 was an exact-path UUID compatibility defect (`C4`) and is corrected without widening the external route boundary. See `43-mobile-real-data-read-only-evidence.md`.
+`docs/codex-current-state.md` resolves from this file as `../../codex-current-state.md`.
 
-Alpha.43 establishes and runtime-verifies the split external QA foundation: private `TailscaleLan` carries Expo Metro, while a process-only Cloudflare Quick Tunnel carries Next/PDF/Viewer HTTPS behind an exact host/path allowlist. External `/v` headers and internal-route blocking passed with mutation zero. Expo Go is no longer an official WAFL QA path. The first EAS iOS Development Build failed in Pods/Codegen; the corrected SDK 55 tree and public/internal version split now pass canonical static verification, and the approved second build is pending. Canonical release identity and account policy are defined in `06-expo-environment-setup.md`; runtime evidence and operations are in `40-external-mobile-qa-foundation-evidence.md` and `41-external-mobile-qa-runbook.md`; native-build evidence is in `42-ios-development-build-evidence.md`.
+## Core read order
 
-Canonical identity is Project `PeaceByPiece`, planned Company `Sanjin Works`, Brand `WAFL`, Website `https://www.wafl.co.kr`, and Bundle Identifier `com.wafl.app`. The bundle identifier is a long-lived brand identifier independent of Project Name and Company Name.
+Read every item before modifying an App-first version:
 
-Alpha.41 standardizes every phone material card on a complete two-line order summary and icon-only actions below the canonical 760px tablet boundary. It removes continuation-page suffixes from the document number and gives every HTML/local-PDF page one dynamic centered `current / total` footer. The retained alpha.38 R2 PDF is read-only regression evidence only and is not regenerated. See `38-mobile-order-summary-and-pdf-page-number-evidence.md`.
+1. `AGENTS.md`
+2. `docs/codex-current-state.md`
+3. `docs/project/26-final-policy-decisions-and-master-todo.md`
+4. `docs/project/31-pre-codex-integrated-master-plan.md`
+5. this document
+6. `docs/project/app-v2/09-codex-working-rules.md`
+7. `docs/project/app-v2/08-roadmap-2.0.md`
 
-Alpha.42 completes the approved dev/test realistic issued-document lifecycle: migration 012 token purposes, repository-owned representative image transport, canonical issue, immutable three-page PDF with first-page embedded QR, generated-document finalize, controlled viewer delivery, and endpoint-specific zero-call tenant validation. Runtime effects are complete; B uses stored workspace `WAFL_NOT_FOUND` evidence, H/C use canonical static isolation contracts, and no extra live validation call was made. See `39-realistic-issued-embedded-qr-pdf-evidence.md`.
+Then read the active owner-approved Version Delta and all task-routed specialist documents below. Core read order is never replaced by task routing.
 
-Alpha.40 tightens mobile material action density, removes duplicate sample color swatches, uses a real HTML image plus print-safe SVG color chips in the canonical document, and replaces browser print with controlled generated-PDF view/download plus a localhost-only sample PDF download. Generated-document metadata and R2 are read-only; migration ledger remains 11/11 and all DB/R2/Worker/production mutation is zero. See `37-preview-output-and-action-density-evidence.md`.
+## Conservative task-based additional routing
 
-Alpha.38 applies the approved native-UUID receipt link to dev/test, persists one immutable generated-document lifecycle, uploads and verifies one actual issued PDF in R2, and proves duplicate no-op plus tenant isolation. The retained DB/R2 result is dev/test evidence only; QR/viewer/access-token work remains alpha.39.
+### Mobile UI or ProductionCard
 
-Alpha.39 applies the two bounded FORCE-RLS viewer functions and verifies opaque hash-only links, fragment exchange, secure short sessions, inline/download delivery, QR generation, revoke/rotation, replay, and tenant isolation against the retained alpha.38 PDF. The dev/test token rows, receipt, events, and active replacement link are retained; generated-document/R2 mutation and production access are zero. See `36-document-viewer-security-evidence.md`.
+Read:
 
-The customer-facing product direction moves from a Next.js-first web showroom implementation path to an Expo React Native mobile/tablet app-first path.
+- `01-app-first-product-definition.md`
+- `02-mobile-tablet-ux-principles.md`
+- `03-app-architecture.md`
+- `05-device-test-plan.md`
+- `06-expo-environment-setup.md`
+- `docs/project/32-product-completion-and-ui-evidence-standard.md`
+- relevant recent UI evidence and target components/contracts
 
-## 2.0.0-alpha.2 checkpoint
+### API Read
 
-This checkpoint turns the App-first direction into the first repository structure.
+Read:
 
-- `www.wafl.co.kr` is the public WAFL app landing site for product introduction, launch/download information, pricing, examples, Instagram CTA, trial request, inquiry, and waitlist.
-- Before launch, public CTAs must use wording such as `출시 준비 중`, `체험 신청`, `문의하기`, and `대기자 신청`.
-- Do not expose TestFlight, Google Play Internal Testing, Expo dev build, or internal tester links on the public landing site.
-- `/ui`, `/roadmap`, and `/functions` are localhost-only development check routes.
-- `/system` and `/workspace` are long-term removal targets in the product direction, but they are not deleted in this checkpoint.
-- `apps/mobile` contains the first Expo React Native skeleton and mock-only 제작 카드 navigation.
-- Root package metadata and root lockfiles remain untouched.
+- `03-app-architecture.md`
+- `15-v2-source-db-boundary-and-release-policy.md`
+- `16-workorder-api-command-read-model-contracts.md`
+- `17-v2-api-contract-test-plan.md`
+- the latest relevant Read evidence and runtime guards
 
-## Product direction
+### Command or bounded dev/test mutation
 
-WAFL remains a clothing-production workspace:
+Read the API Read set plus:
 
-```text
-WAFL v2 = 옷 하나를 만들기 위한 모바일/태블릿 우선 제작 워크스페이스
-```
+- relevant command evidence and command contracts
+- current migration ledger/evidence when the command depends on applied schema
+- tenant, permission, receipt, event, concurrency, and mutation-audit owners
 
-Customer-facing use is now prioritized for:
+An exact Version Delta must name the target, expected effects, and mutation budget. Production is never implied.
 
-- iPhone.
-- iPad mini.
-- iPad Pro.
-- Galaxy Tab.
+### Migration/schema
 
-The app must feel comfortable for image capture, image selection, size/color confirmation, material/accessory entry, process/factory instruction, output/share, and quick delivery request work.
+Read:
 
-## Platform roles
+- `12-v1-db-api-performance-audit.md`
+- `13-core-domain-schema-v2.md`
+- `14-v2-schema-migration-and-performance-plan.md`
+- `15-v2-source-db-boundary-and-release-policy.md`
+- `18-v2-additive-migration-draft-and-schema-contract.md`
+- `19-v2-dev-test-migration-and-performance-evidence.md`
+- every later evidence on which the proposed migration depends
 
-Expo React Native is the priority target for customer field work and everyday production-card use.
+### External Runtime/mobile QA
 
-Next.js remains active for:
+Read:
 
-- public app landing site,
-- operations and internal diagnostics,
-- API routes and server integration,
-- file/PDF/R2/Worker integration,
-- `/ui`, `/roadmap`, and `/functions` localhost-only development check routes,
-- internal documents,
-- test console.
+- `03-app-architecture.md`
+- `04-auth-google-apple.md`
+- `05-device-test-plan.md`
+- `06-expo-environment-setup.md`
+- `40-external-mobile-qa-foundation-evidence.md`
+- `41-external-mobile-qa-runbook.md`
+- latest relevant Runtime/effect evidence
 
-`/ui` remains the implementation-baseline design showroom. It is not the customer-facing app target.
+### PDF, R2, Viewer, or output/share
 
-## Boundary for this version
+Read:
 
-This version creates the App-first skeleton and aligns the app display version.
+- normative PDF/R2 policy documents routed by the current Delta
+- `16-workorder-api-command-read-model-contracts.md`
+- relevant generated-document, Viewer security, Preview/output, and realistic PDF evidence
+- Worker/storage source and contracts before any operation
 
-It does not create:
+### Auth/session
 
-```text
-DB migration
-API change
-R2/Worker/PDF integration change
-.env file
-production auth
-real camera/file/share/PDF behavior
-```
+Read:
 
-Expo dependencies are scoped to `apps/mobile` only.
+- `03-app-architecture.md`
+- `04-auth-google-apple.md`
+- current session/security implementation
+- relevant mobile connection or Viewer security evidence
 
-## Active document set
+### Native, EAS, distribution, or deployment
 
-```text
-docs/project/app-v2/
-  00-start-here.md
-  01-app-first-product-definition.md
-  02-mobile-tablet-ux-principles.md
-  03-app-architecture.md
-  04-auth-google-apple.md
-  05-device-test-plan.md
-  06-expo-environment-setup.md
-  07-feature-map-from-ui-alpha27.md
-  08-roadmap-2.0.md
-  09-codex-working-rules.md
-  10-public-landing-site.md
-  11-app-design-theme-v1.md
-  12-v1-db-api-performance-audit.md
-  13-core-domain-schema-v2.md
-  14-v2-schema-migration-and-performance-plan.md
-  15-v2-source-db-boundary-and-release-policy.md
-  16-workorder-api-command-read-model-contracts.md
-  17-v2-api-contract-test-plan.md
-  18-v2-additive-migration-draft-and-schema-contract.md
-  19-v2-dev-test-migration-and-performance-evidence.md
-  20-workorder-list-read-api-evidence.md
-  21-workorder-detail-lazy-read-api-evidence.md
-  22-workorder-create-basic-update-command-evidence.md
-  23-workorder-material-order-command-evidence.md
-  24-workorder-revision-issue-command-evidence.md
-  25-workorder-issued-revision-preview-evidence.md
-  26-mobile-issued-preview-entry-evidence.md
-  27-factory-workorder-input-and-preview-evidence.md
-  28-inline-input-and-preview-layout-evidence.md
-  29-inline-density-and-realistic-sample-evidence.md
-  30-realistic-preview-entry-and-material-card-flow-evidence.md
-  31-mobile-preview-sample-and-material-footer-evidence.md
-  32-mobile-material-compact-input-evidence.md
-  33-mobile-material-card-separation-and-summary-evidence.md
-  34-issued-revision-pdf-generation-foundation-evidence.md
-  35-generated-document-db-r2-runtime-evidence.md
-  36-document-viewer-security-evidence.md
-  37-preview-output-and-action-density-evidence.md
-  38-mobile-order-summary-and-pdf-page-number-evidence.md
-  39-realistic-issued-embedded-qr-pdf-evidence.md
-  40-external-mobile-qa-foundation-evidence.md
-  41-external-mobile-qa-runbook.md
-  42-ios-development-build-evidence.md
-  43-mobile-real-data-read-only-evidence.md
-  44-mobile-production-card-core-overview-evidence.md
-```
+Read:
 
-The alpha.19 documents are design and read-only audit authority. They do not authorize schema migration, API replacement, seed execution, DB/R2 mutation, or PDF Worker changes.
+- `05-device-test-plan.md`
+- `06-expo-environment-setup.md`
+- `42-ios-development-build-evidence.md`
+- current app/EAS/native config and the separately approved Delta
 
-The alpha.20 documents and `lib/domain/work-orders/contracts/` define source/DB boundaries and type-only API contracts. `db/v2/` is a README-only workspace in alpha.20; no migration, full reset, seed, API route, or runtime DB integration is authorized.
+### Canonical documentation/infrastructure
 
-The alpha.21 checkpoint adds ordered additive migration SQL drafts and a static schema contract under `db/v2/migrations/`. The drafts are not applied. Neon access, constraint validation, RLS runtime proof, seed, benchmark, API implementation, and production mutation remain forbidden until a separately approved alpha.22 work order.
+Read the full core set plus:
 
-Alpha.22 applied the six reviewed migrations and synthetic performance fixtures only to the approved dev/test target. Alpha.23 adopts the first bounded runtime read path, `GET /api/v2/work-orders`, behind authenticated company scope, `workorder.read`, an expiring signed cursor, the `NOBYPASSRLS` tenant role, and a dev/test fingerprint guard. The mobile app remains disconnected, and production/API writes/schema mutation remain forbidden.
+- `docs/project/25-korean-unicode-encoding-standard.md`
+- `docs/project/32-product-completion-and-ui-evidence-standard.md`
+- document/link/owner contracts
+- only the evidence needed to verify links and immutability
 
-Alpha.24 adds only the WorkOrder core detail and seven tab-specific lazy Read endpoints on the same approved dev/test target. It reuses ledger 7, index 007, and the alpha.22 synthetic seed without schema/data mutation; the mobile app remains disconnected.
+## Immutable evidence policy
 
-Alpha.25 introduces the source and static/read-only preflight boundary for draft WorkOrder create and basic-info update Commands. Valid POST/PATCH dev/test mutation remains blocked until a separate explicit owner approval; production, mobile, migration/schema, material/process, document, R2, Worker, and PDF paths remain disconnected.
+Numbered evidence records are historical and immutable after completion.
 
-Alpha.26 extends the same guarded Command architecture to fabric/accessory line create and patch plus order request, cancel, and completion. Valid material/order mutation remains separately approval-gated; no migration, delete lifecycle, mobile connection, R2/Worker/PDF, business-data, or production path is added.
+Forbidden:
 
-## Relationship to 0.30.x documents
+- merging or deleting evidence;
+- rewriting old PASS/FAIL, timestamps, hashes, QA outcomes, mutation counts, or status;
+- replacing historical facts with the latest current state;
+- renumbering evidence to fit a new index.
 
-`docs/project/v2/*` remains the 0.30.x Product/Sheet/Card and `/ui` showroom design baseline.
+Allowed only when necessary:
 
-For App-first `2.0.x` work, `docs/project/app-v2/*` has priority for customer-facing platform direction. Existing v2 documents remain active references for business policy, Product/Sheet/Card concepts, Korean labels, Neon/R2/Worker safety, PDF/share rules, and QA evidence.
+- minimal broken-link repair;
+- a clearly labeled correction note for an objectively proven typo;
+- links from a current mutable owner to the evidence.
+
+Prior evidence files remain byte-unchanged during ordinary canonical refactoring. New evidence uses the next actual available number.
+
+## Authority and product identity
+
+- Project: PeaceByPiece.
+- Brand: WAFL (`Work Assignment FLow`).
+- Planned company: Sanjin Works.
+- Website: `https://www.wafl.co.kr`.
+- iOS/Android identifier: `com.wafl.app`.
+- Customer-facing product: Expo React Native mobile/tablet first.
+- Next.js: public web, administration, operations, API, files, documents, and internal tooling.
+
+`docs/project/v2/*` remains a preserved reference for the `0.30.x` Product/Sheet/Card and showroom line. It does not override current App-first platform direction.
+
+## Future work-order rule
+
+Future work orders should be short Version Deltas. Use this standard reference:
+
+> 실행·보안·Git·Runtime·artifact·실패 정책은 `docs/project/app-v2/09-codex-working-rules.md`를 전부 따른다.
+
+The Delta does not repeat Permanent Rules. Its required fields are owned by `08-roadmap-2.0.md` and `09-codex-working-rules.md`.

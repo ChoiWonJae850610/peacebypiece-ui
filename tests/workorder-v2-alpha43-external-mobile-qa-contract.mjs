@@ -112,7 +112,7 @@ const mobileConfig = JSON.parse(read("apps/mobile/app.json"));
 assert.equal(mobileConfig.expo.owner, "lostab");
 assert.equal(mobileConfig.expo.slug, "wafl-mobile");
 assert.equal(mobileConfig.expo.version, "2.0.0");
-assert.equal(mobileConfig.expo.extra.appVersion, "2.0.0-alpha.48");
+assert.equal(mobileConfig.expo.extra.appVersion, "2.0.0-alpha.49");
 assert.equal(mobileConfig.expo.extra.eas.projectId, "6cc3b260-a2cc-4c97-9c15-764bda530836");
 assert.equal(mobileConfig.expo.ios.bundleIdentifier, "com.wafl.app");
 assert.equal(mobileConfig.expo.ios.config.usesNonExemptEncryption, false);
@@ -156,7 +156,7 @@ for (const config of [defaultMobileConfig, productionMobileConfig, developmentMo
   assert.equal(config.owner, "lostab");
   assert.equal(config.slug, "wafl-mobile");
   assert.equal(config.version, "2.0.0");
-  assert.equal(config.extra.appVersion, "2.0.0-alpha.48");
+  assert.equal(config.extra.appVersion, "2.0.0-alpha.49");
   assert.equal(config.extra.eas.projectId, "6cc3b260-a2cc-4c97-9c15-764bda530836");
   assert.equal(config.ios.bundleIdentifier, "com.wafl.app");
   assert.equal(config.ios.config.usesNonExemptEncryption, false);
@@ -207,18 +207,14 @@ assert.throws(() => assertPdfViewerOriginPolicy({ origin: quickOrigin, runtime: 
 
 const finalStatus = "ALPHA43_EXTERNAL_MOBILE_QA_AND_IOS_DEVELOPMENT_BUILD_COMPLETE";
 for (const documentPath of [
-  "docs/codex-current-state.md",
-  "docs/project/app-v2/08-roadmap-2.0.md",
   "docs/project/app-v2/40-external-mobile-qa-foundation-evidence.md",
-  "docs/project/app-v2/41-external-mobile-qa-runbook.md",
   "docs/project/app-v2/42-ios-development-build-evidence.md",
 ]) {
   assert.match(read(documentPath), new RegExp(finalStatus), `${documentPath} must retain the final alpha.43 status`);
 }
-const finalCurrentState = read("docs/codex-current-state.md");
 const finalBuildEvidence = read("docs/project/app-v2/42-ios-development-build-evidence.md");
-assert.match(finalCurrentState, /ALPHA43_ATS_FIXED_USER_DEVICE_APP_LOAD_PASS/);
-assert.match(finalCurrentState, /exactly one Development Client Reload/);
+assert.match(finalBuildEvidence, /without the former ATS secure-connection error/);
+assert.match(finalBuildEvidence, /exactly one Development Client Reload/);
 assert.match(finalBuildEvidence, /build number `1`/);
 assert.match(finalBuildEvidence, /monotonic iOS auto-increment policy/);
 assert.match(finalBuildEvidence, /DB\/R2\/token\/PDF\/Worker\/production mutation stayed zero/);

@@ -1,330 +1,113 @@
 # Codex Operating Rules
 
-## WAFL v2 App-first 2.0 Read Order
-- For WAFL v2 App-first / `2.0.x` work, Codex must read this order before any file modification:
-  1. `AGENTS.md`
-  2. `docs/codex-current-state.md`
-  3. `docs/project/app-v2/00-start-here.md`
-  4. `docs/project/app-v2/01-app-first-product-definition.md`
-  5. `docs/project/app-v2/02-mobile-tablet-ux-principles.md`
-  6. `docs/project/app-v2/03-app-architecture.md`
-  7. `docs/project/app-v2/04-auth-google-apple.md`
-  8. `docs/project/app-v2/05-device-test-plan.md`
-  9. `docs/project/app-v2/06-expo-environment-setup.md`
-  10. `docs/project/app-v2/07-feature-map-from-ui-alpha27.md`
-  11. `docs/project/app-v2/08-roadmap-2.0.md`
-  12. `docs/project/app-v2/09-codex-working-rules.md`
-  13. `docs/project/app-v2/10-public-landing-site.md`
-  14. `docs/project/app-v2/11-app-design-theme-v1.md`
-  15. `docs/project/app-v2/12-v1-db-api-performance-audit.md`
-  16. `docs/project/app-v2/13-core-domain-schema-v2.md`
-  17. `docs/project/app-v2/14-v2-schema-migration-and-performance-plan.md`
-  18. `docs/project/app-v2/15-v2-source-db-boundary-and-release-policy.md`
-  19. `docs/project/app-v2/16-workorder-api-command-read-model-contracts.md`
-  20. `docs/project/app-v2/17-v2-api-contract-test-plan.md`
-  21. `docs/project/app-v2/18-v2-additive-migration-draft-and-schema-contract.md`
-  22. `docs/project/app-v2/19-v2-dev-test-migration-and-performance-evidence.md`
-  23. `docs/project/app-v2/20-workorder-list-read-api-evidence.md`
-  24. `docs/project/app-v2/21-workorder-detail-lazy-read-api-evidence.md`
-  25. `docs/project/app-v2/22-workorder-create-basic-update-command-evidence.md`
-  26. `docs/project/app-v2/23-workorder-material-order-command-evidence.md`
-  27. `docs/project/app-v2/24-workorder-revision-issue-command-evidence.md`
-  28. `docs/project/app-v2/25-workorder-issued-revision-preview-evidence.md`
-  29. `docs/project/app-v2/26-mobile-issued-preview-entry-evidence.md`
-  30. `docs/project/app-v2/27-factory-workorder-input-and-preview-evidence.md`
-  31. `docs/project/app-v2/28-inline-input-and-preview-layout-evidence.md`
-  32. `docs/project/app-v2/29-inline-density-and-realistic-sample-evidence.md`
-  33. `docs/project/app-v2/30-realistic-preview-entry-and-material-card-flow-evidence.md`
-  34. `docs/project/app-v2/31-mobile-preview-sample-and-material-footer-evidence.md`
-  35. `docs/project/app-v2/32-mobile-material-compact-input-evidence.md`
-  36. `docs/project/app-v2/33-mobile-material-card-separation-and-summary-evidence.md`
-  37. `docs/project/app-v2/34-issued-revision-pdf-generation-foundation-evidence.md`
-  38. `docs/project/app-v2/35-generated-document-db-r2-runtime-evidence.md`
-  39. `docs/project/app-v2/36-document-viewer-security-evidence.md`
-  40. `docs/project/app-v2/37-preview-output-and-action-density-evidence.md`
-  41. `docs/project/app-v2/38-mobile-order-summary-and-pdf-page-number-evidence.md`
-  42. `docs/project/app-v2/39-realistic-issued-embedded-qr-pdf-evidence.md`
-  43. `docs/project/app-v2/40-external-mobile-qa-foundation-evidence.md`
-  44. `docs/project/app-v2/41-external-mobile-qa-runbook.md`
-  45. `docs/project/app-v2/42-ios-development-build-evidence.md`
-  46. `docs/project/app-v2/43-mobile-real-data-read-only-evidence.md`
-  47. `docs/project/app-v2/44-mobile-production-card-core-overview-evidence.md`
-  48. `docs/project/app-v2/45-mobile-basic-info-update-evidence.md`
-  49. `docs/project/app-v2/46-mobile-tailscale-serve-developer-auto-connect-evidence.md`
-  50. `docs/project/app-v2/47-mobile-materials-real-read-evidence.md`
-  51. `docs/project/v2/00-start-here.md` through `docs/project/v2/14-operational-policy-absorption.md`
-  52. `docs/project/25-korean-unicode-encoding-standard.md`
-  53. `docs/project/32-product-completion-and-ui-evidence-standard.md`
-  54. `docs/project/26-final-policy-decisions-and-master-todo.md`
-  55. `docs/project/31-pre-codex-integrated-master-plan.md`
+## WAFL v2 App-first canonical routing
+
+For every WAFL App-first `2.0.x` task, read these core authorities before modifying files:
+
+1. `AGENTS.md`
+2. `docs/codex-current-state.md`
+3. `docs/project/26-final-policy-decisions-and-master-todo.md`
+4. `docs/project/31-pre-codex-integrated-master-plan.md`
+5. `docs/project/app-v2/00-start-here.md`
+6. `docs/project/app-v2/09-codex-working-rules.md`
+7. `docs/project/app-v2/08-roadmap-2.0.md`
+
+`docs/project/app-v2/00-start-here.md` owns the conservative task-based additional read set. Read every routed specialist contract and relevant numbered evidence before acting. Do not read every historical evidence file by default, and do not omit cross-domain authorities needed by the task.
+
+Canonical document types are:
+
+- Permanent Rules: `docs/project/app-v2/09-codex-working-rules.md`.
+- Current Baseline: `docs/codex-current-state.md`.
+- Version Delta and current/next roadmap: `docs/project/app-v2/08-roadmap-2.0.md`.
+- Immutable Evidence: numbered `docs/project/app-v2/*-evidence.md` files.
+
+The responsibility matrix and task routing live in `docs/project/app-v2/00-start-here.md`. This file defines repository-level routing and universal safeguards; it does not duplicate App-first Permanent Rules or version histories.
+
+## App-first product boundary
+
 - `docs/project/app-v2/*` is the priority authority for the `2.0.x` App-first line.
-- Existing `docs/project/v2/*` documents are not deleted. They remain the `0.30.x` `/ui` design baseline and preserved policy reference for Product, Sheet/Card, Korean role labels, Neon/R2/Worker, PDF/share, mobile-web, and QA rules.
-- `www.wafl.co.kr` is the public marketing, download, pricing, examples, inquiry, trial-request, and waitlist landing site for the WAFL app.
-- `/ui`, `/roadmap`, and `/functions` are localhost-only development check routes for `2.0.x`. They must not be exposed on production domains, Vercel preview hosts, or `www.wafl.co.kr`.
-- `/system` and `/workspace` are long-term removal targets in the App-first product direction, but do not delete them until a separate phased deprecation, guard/hidden, and removal work order replaces their remaining duties.
-- `/ui` remains an implementation-baseline design showroom. It is not the customer-facing app target.
-- The customer-facing UI direction is Expo React Native first.
-- `docs/project/app-v2/11-app-design-theme-v1.md` defines the first app visual foundation: `동대문 제작 워크룸 / Dongdaemun Atelier Ops`.
-- `docs/project/app-v2/12-v1-db-api-performance-audit.md`, `13-core-domain-schema-v2.md`, and `14-v2-schema-migration-and-performance-plan.md` define the read-only v1 evidence, v2 core schema target, and migration/performance gates. They do not authorize migration execution.
-- `docs/project/app-v2/15-v2-source-db-boundary-and-release-policy.md`, `16-workorder-api-command-read-model-contracts.md`, and `17-v2-api-contract-test-plan.md` define the source/DB workspace boundary, type-only WorkOrder contracts, and alpha.21~22 gates. `db/v2` contains no executable SQL in alpha.20.
-- `docs/project/app-v2/18-v2-additive-migration-draft-and-schema-contract.md` and `db/v2/migrations/001` through `006` define the alpha.21 additive SQL draft and static schema contract. They do not authorize SQL execution; apply, constraint validation, seed, RLS runtime proof, and benchmarks remain alpha.22 dev/test-only work requiring separate approval.
-- `docs/project/app-v2/19-v2-dev-test-migration-and-performance-evidence.md` records the explicitly approved alpha.22 dev/test apply, deterministic 500/5,000/multi-tenant seed, RLS/cursor/concurrency evidence, and measured budgets. It does not authorize production apply, cleanup, Full Reset, constraint validation, API writes, or future DB mutation.
-- `docs/project/app-v2/20-workorder-list-read-api-evidence.md` defines the alpha.23 dev/test-only `GET /api/v2/work-orders` vertical slice. It authorizes no write command, production DB access, mobile API connection, detailed/tab API, migration, seed, cleanup, R2, Worker, or PDF mutation.
-- `docs/project/app-v2/21-workorder-detail-lazy-read-api-evidence.md` defines the alpha.24 dev/test-only core detail and tab-specific lazy Read API slice. It authorizes no command, mobile API connection, migration, seed, schema validation, R2/Worker/PDF integration, or production access.
-- `docs/project/app-v2/22-workorder-create-basic-update-command-evidence.md` defines the alpha.25 draft WorkOrder create/basic-update Command boundary. Source and read-only preflight do not authorize valid POST/PATCH mutation; the bounded synthetic dev/test Command runtime requires a separate explicit owner approval.
-- `docs/project/app-v2/23-workorder-material-order-command-evidence.md` defines the completed alpha.26 fabric/accessory create, patch, order-request, cancel, and complete boundary, including its approved bounded synthetic mutation, `NO_PARTIAL_MUTATION` audit, preserved runner failures, and final GET-only completion evidence. It authorizes no further mutation replay, cleanup, production access, or mobile API connection.
-- `docs/project/app-v2/24-workorder-revision-issue-command-evidence.md` records the completed alpha.27 current-revision issue, document-number allocation, immutable finalization, idempotency/concurrency runtime, bounded completion, and material-order shared lock/rollback contract. It authorizes no replay, correction/reissue, production access, R2/Worker/PDF integration, or further synthetic mutation.
-- `docs/project/app-v2/29-inline-density-and-realistic-sample-evidence.md` records the alpha.32 compact single-line editing grammar, display-only process-instruction merge, realistic deterministic localhost sample, and Chromium print evidence.
-- `docs/project/app-v2/30-realistic-preview-entry-and-material-card-flow-evidence.md` records the alpha.33 actual/sample Preview boundary, localhost sample entry, realistic Korean print evidence, and action-last material card flow. It authorizes no DB/API mutation, generated-document row, QR, R2, Worker, or production lifecycle; those remain later separately approved work.
-- `docs/project/app-v2/31-mobile-preview-sample-and-material-footer-evidence.md` records the alpha.34 Expo mock entry to the localhost realistic sample and the single-band material footer layout. Actual issued Preview keeps its immutable route without sample fallback. Browser print PDF is QA evidence only; generated-document, QR, R2, Worker, and production PDF lifecycle remain later separately approved work.
-- `docs/project/app-v2/32-mobile-material-compact-input-evidence.md` records the alpha.35 mock-only material-card density contract: two core input rows, local quantity/amount calculation, field-only missing states, and one final order/action row. It authorizes no API/DB persistence or document lifecycle work.
-- `docs/project/app-v2/33-mobile-material-card-separation-and-summary-evidence.md` records the alpha.36 final material-card display correction: complete order summary labels, empty core placeholders, neutral incomplete calculations, and subtle card separation without height growth. It authorizes no API/DB persistence or PDF/R2 lifecycle work.
-- `docs/project/app-v2/34-issued-revision-pdf-generation-foundation-evidence.md` records the alpha.37 immutable Preview snapshot, local Chromium PDF binary, asset resolver, deterministic object-key plan, and generated-document lifecycle boundary. It authorizes no generated-document DB write, R2 operation, Worker execution, QR/access-token creation, or production lifecycle; those require a separately approved alpha.38 scope.
-- `docs/project/app-v2/35-generated-document-db-r2-runtime-evidence.md` records the approved alpha.38 dev/test native-UUID receipt link, one retained generated-document row, one verified R2 PDF, completion event, duplicate no-op, and resolved partial-mutation continuation. It authorizes no replay, cleanup, production operation, QR, external viewer, access-token, revoke, or delete lifecycle.
-- `docs/project/app-v2/36-document-viewer-security-evidence.md` records the alpha.39 hash-only opaque token, fragment viewer, signed short session, server-side R2 GET, QR, revoke/rotate, migration 011, and bounded approval gates. Source/static readiness does not authorize migration apply or token runtime.
-- `docs/project/app-v2/37-preview-output-and-action-density-evidence.md` records the alpha.40 compact material actions, popup-only Preview entry, HTML image/print-safe color rendering, authenticated generated-PDF GET, and localhost sample PDF download. It authorizes no DB, token, generated-document, R2 write/delete, Worker, or production mutation.
-- `docs/project/app-v2/39-realistic-issued-embedded-qr-pdf-evidence.md` records the alpha.42 token-purpose migration draft, realistic issued-data fixture plan, ephemeral embedded-QR render context, exact bounded DB/R2 runtime budget, and approval checkpoints. Source/static/preflight readiness does not authorize migration 012 apply or fixture/PDF/R2 runtime.
-- `docs/project/app-v2/40-external-mobile-qa-foundation-evidence.md` and `41-external-mobile-qa-runbook.md` define the alpha.43 split transport: private TailscaleLan for Expo Metro and process-only Cloudflare Quick Tunnel for Next/Viewer, with exact external path allowlist, temporary-origin policy, PID ownership stop contract, and user-device procedure. The legacy Expo/ngrok tunnel is disabled. They authorize no Tailscale install/login, transport runtime, external request, DB/API/R2/token/PDF mutation, EAS operation, or production deployment without the separately required approval.
-- `docs/project/app-v2/42-ios-development-build-evidence.md` records the alpha.43 public/internal version split, SDK 55 online compatibility correction, first iOS Development Build failure, and the separately approved second-build gate. It does not authorize another build retry, credential replacement, TestFlight, App Store Connect, or production distribution.
-- `docs/project/app-v2/43-mobile-real-data-read-only-evidence.md` defines the alpha.44 process-memory development connection, exact external read/session allowlist, existing WAFL auth-cookie reuse, real WorkOrder list/core-detail mobile slice, and physical-device acceptance gate. It authorizes no WorkOrder command, lazy-tab read, migration, seed, DB/R2/PDF/token mutation, native dependency, EAS Build, EAS Update, or production access.
-- `docs/project/app-v2/44-mobile-production-card-core-overview-evidence.md` defines the alpha.45 live ProductionCard read-only shell over the existing core-detail response, user-priority overview information architecture, actual count badges on visible disabled future tabs, and phone/tablet-static acceptance boundary. It authorizes no lazy-tab read, representative-image/object fetch, WorkOrder command, DB/R2/PDF/token mutation, native dependency, EAS Build, EAS Update, or production access.
-- `docs/project/app-v2/45-mobile-basic-info-update-evidence.md` records the alpha.46 owner-approved retained synthetic draft, one draft-only mobile save of product name/due date/total quantity, optimistic-concurrency conflict proof, date-only serialization correction, and physical iPhone acceptance. The default runner remains read-only; the historical bounded approval authorizes no additional create/PATCH, material/process/revision command, migration, R2/PDF/token operation, native dependency, EAS Build, EAS Update, cleanup, or production access.
-- `docs/project/app-v2/46-mobile-tailscale-serve-developer-auto-connect-evidence.md` records the alpha.47 tailnet-only Serve identity boundary, exact process-local developer mapping, dual mobile origins, code-free external-cellular acceptance, and hardened canonical stop. It authorizes no public/Funnel login, production access, persistent identity secret, business mutation, native dependency, EAS Build, or EAS Update.
-- `docs/project/app-v2/47-mobile-materials-real-read-evidence.md` records the alpha.48 live ProductionCard fabric Read tab, per-WorkOrder lazy/cache/request-identity boundary, accepted material-card presentation, external-cellular iPhone acceptance, and mutation-zero teardown. It authorizes no material write/order Command, other tab implementation, migration, R2/PDF/token operation, production access, native dependency, EAS Build, or EAS Update.
-- `docs/project/app-v2/46-mobile-tailscale-serve-developer-auto-connect-evidence.md` records the alpha.47 tailnet-only Serve HTTPS developer auto-connect boundary, exact process-local identity hash pair, canonical simulator Company A effective session, dual API/Preview origins, manual-code fallback, disconnect suppression, bounded exact-PID Serve metadata fallback, protected stale-PID reuse, structural Funnel status, runner ownership, and external-device acceptance gate. It authorizes no Funnel, tailnet policy change, public auto-connect, business mutation, R2/PDF/token operation, production access, native dependency, EAS Build, or EAS Update.
-- Normal mobile production-card screens are portrait-first. Mobile landscape is not the default production-card target; the future sketch/drawing module may be the mobile-landscape exception.
-- Tablet app screens must support portrait and landscape without becoming a compressed desktop admin layout.
-- Next.js remains for system admin, customer admin advanced settings, operations, API, document, internal showroom, and test-console flows.
-- For `2.0.x` work, do not implement from old `0.24.x` workorder-centric documents when they conflict with the App-first product direction or the active `app-v2` documents.
+- Expo React Native is the customer-facing mobile/tablet priority. Next.js remains for public web, administration, operations, API, documents, internal showroom, and test tooling.
+- `docs/project/v2/*` remains the preserved `0.30.x` Product/Sheet/Card and `/ui` design baseline. It is a task-routed reference, not the active App-first delivery ledger.
+- Normal production-card phone screens are portrait-first. Tablets support portrait and landscape without becoming compressed desktop administration.
+- `/system` and `/workspace` remain until a separately approved phased replacement and removal.
+- Do not infer current authority from an old completion paragraph. Use the current snapshot, roadmap Delta, normative specialist owner, and applicable immutable evidence.
 
-## WAFL v2 0.30 Redesign Read Order
-- For WAFL v2 / `0.30.x` redesign work, Codex must read this order before any file modification:
-  1. `AGENTS.md`
-  2. `docs/codex-current-state.md`
-  3. `docs/project/v2/00-start-here.md`
-  4. `docs/project/v2/01-product-definition.md`
-  5. `docs/project/v2/02-ui-philosophy.md`
-  6. `docs/project/v2/03-data-model.md`
-  7. `docs/project/v2/04-permission-action-codes.md`
-  8. `docs/project/v2/05-status-workflow.md`
-  9. `docs/project/v2/06-screen-spec.md`
-  10. `docs/project/v2/07-design-system.md`
-  11. `docs/project/v2/08-feature-spec.md`
-  12. `docs/project/v2/09-test-plan.md`
-  13. `docs/project/v2/10-roadmap-0.30.md`
-  14. `docs/project/v2/11-pdf-share-spec.md`
-  15. `docs/project/v2/12-codex-working-rules.md`
-  16. `docs/project/25-korean-unicode-encoding-standard.md`
-  17. `docs/project/32-product-completion-and-ui-evidence-standard.md`
-- For v2 work, `docs/project/v2/*` is the active product/design/spec authority. Pre-v2 `docs/project/*` documents remain historical references unless `docs/project/v2/12-codex-working-rules.md` explicitly classifies them as keep/reference/archive.
-- Do not implement from old `0.24.x` workorder-centric documents when they conflict with v2 Product/Style, WAFL Sheet, Sheet Card, Korean role label, Neon/R2/Worker, or mobile-web interaction decisions.
+## WAFL v2 0.30 redesign routing
 
+For `0.30.x` redesign work, read:
 
-## Canonical Project Context
-- For productization/version work, read these files before implementation: `docs/codex-current-state.md`, `docs/project/01-codex-context.md`, `docs/project/02-project-decisions.md`, `docs/project/03-productization.md`, `docs/project/04-release-checklist.md`, `docs/productization-backlog.md`, and the target `lib/internal/roadmap/roadmap-*.ts`.
-- `AGENTS.md` defines operating rules. `docs/project/*` records the project context, durable decisions, productization process, and release checklist. Do not duplicate large policy blocks in both places.
-- For product policy, billing, signup, trial, access-boundary, and launch decisions, prefer the final owner policy documents first: `docs/codex-current-state.md`, then `docs/project/26-final-policy-decisions-and-master-todo.md`, then `docs/project/31-pre-codex-integrated-master-plan.md`, then related latest confirmed topic specs, then `lib/internal/roadmap/*`, then older/provisional documents.
-- For next-version scope and actual completion state, read the latest relevant implementation audit after final owner policy and topic specs; current audit: `docs/audits/0.24.33.1-unimplemented-feature-full-audit.md`. Audits provide implementation evidence and do not override final owner policy.
-- A roadmap item marked completed proves only that item's declared scope. Do not infer that all higher-level canonical product requirements in the same domain are finished when the item explicitly delivered foundation or deferred execution.
-- If existing implementation, older roadmap text, or general security defaults conflict with final owner policy, classify it as an implementation mismatch and align the roadmap/implementation to the final policy instead of re-asking settled decisions.
+1. `AGENTS.md`
+2. `docs/codex-current-state.md`
+3. `docs/project/v2/00-start-here.md`
+4. the task-routed `docs/project/v2/*` product, UI, data, permission, workflow, screen, test, roadmap, PDF/share, and working-rule documents
+5. `docs/project/25-korean-unicode-encoding-standard.md`
+6. `docs/project/32-product-completion-and-ui-evidence-standard.md`
 
+The `docs/project/v2/*` set is authoritative for the preserved `0.30.x` redesign line. Do not apply old `0.24.x` workorder-centered text when it conflicts with that line's Product/Sheet/Card decisions.
 
+## Canonical policy precedence
 
-## Product Completion And UI Evidence
-- For every user-visible UI task, read and follow `docs/project/32-product-completion-and-ui-evidence-standard.md`.
-- UI work is complete only at `LEVEL_4_PRODUCT_VERIFIED`: the running localhost product matches the requested location, wording, visual system, responsive behavior, and interaction flow, with required screenshot/locator/console/network evidence.
-- Code existence, passing build, or static contracts alone must be reported as `CODE_COMPLETE` or `STATIC_VERIFIED`, not `completed`.
-- Use the exact canonical WAFL components listed in the standard. A screen-local `fixed inset-0` dialog overlay, custom focus/scroll-lock modal, or duplicated button/input/table visual grammar is a failure when a canonical WAFL component exists.
-- Express layout requirements as exact host component, section order, and forbidden duplicate locations, then verify them with Playwright locators.
-- UI versions require localhost Playwright evidence: desktop/mobile screenshots, iPad when relevant, interaction screenshots, console error 0, unexpected failed request 0, and trace/network diagnostics for failures. Missing evidence means `PRODUCT_QA_INCOMPLETE`.
-- Credentials and Google account passwords must remain in gitignored local environment/storageState inputs and must never enter Git, logs, screenshots, traces, or handoff ZIPs.
-- Do not recommend Full Reset for loading/UI failures until API, server, loading-state, migration, schema, and query evidence proves it is required. Full Reset remains destructive and requires explicit user approval.
+When sources conflict, use this order:
 
-## Start Of Work
-- Before changing files, check `git status`, the current branch, and `HEAD`.
-- Do not edit files when the user asks for analysis, inspection, or reporting only.
-- Keep changes inside the requested scope. Do not refactor adjacent code unless it is required for the task.
-- Prefer existing shared components, constants, utilities, services, and repositories before adding new code.
-- Treat the local repository, committed docs, and current Git state as the source of truth. Do not rely on previous chat memory when recovering project state.
+1. actual current code, Git, and verified runtime evidence;
+2. latest canonical owner document;
+3. explicit `CONFIRMED` owner policy;
+4. `docs/codex-current-state.md`;
+5. current Version Delta and routed specialist contract;
+6. immutable evidence for the historical fact it records;
+7. older or provisional documents;
+8. chat summaries that are not the active owner-approved work order.
 
-## Autonomy And Questions
-- When the user gives a clear goal and scope, proceed within the safest reversible path instead of stopping to ask broad 1/2/3 option questions.
-- Codex should decide routine implementation details such as helper names, file organization, wording, test order, and minor refactors by following the existing project pattern, minimum change, shared components/utilities, low risk, and maintainability.
-- If several safe implementations are equivalent for product behavior, choose the recommended one and explain the reason in the result report.
-- Stop for user confirmation only when the action needs explicit approval, can affect production data or secrets, changes dependencies/package metadata, moves/deletes/renames files beyond the safe scoped cleanup rules below, changes schema or product policy, or is hard to reverse.
-- If the user explicitly asks for analysis, inspection, review, or reporting only, stop after that and do not modify files.
-- Unless the user asked for analysis only, continue from analysis to scoped edits and safe verification when the request clearly implies a fix.
-- For ordinary version work with a clear user-provided goal and scope, follow the automatic version workflow below instead of stopping before every Git index/history/remote step.
+Product policy starts with `docs/project/26-final-policy-decisions-and-master-todo.md`, then `docs/project/31-pre-codex-integrated-master-plan.md`, then the related latest confirmed topic specification. A bounded completion proves only its declared scope.
 
-## Default Automatic Version Workflow
-- When the user clearly specifies a version goal and scope, treat analysis, implementation, validation, staging, commit, push, and final reporting as one continuous task.
-- The normal flow is: check branch/HEAD/origin/working tree, read the canonical roadmap detail for the target version, inspect relevant code and docs, implement within scope, update `APP_VERSION` and versioned docs when the task is a versioned patch, update the roadmap result with actual implementation/verification/commit/remaining issues, run `tools/pipeline/approved-workflow.ps1 -Action Verify` when its profile covers the scope, review the final diff, use `tools/pipeline/approved-workflow.ps1 -Action Plan`, finish Git with `tools/pipeline/approved-workflow.ps1 -Action Finish`, verify origin is synchronized and the working tree is clean, verify `4. Newest` handoff artifacts, then report the result.
-- Do not ask for separate user approval before stage, commit, or `git push origin master` during ordinary version work when all automatic Git conditions below are satisfied.
-- If any automatic Git condition is not satisfied, stop before stage/commit/push and report the reason plus the recommended next action.
+## Start of work
 
-## Automatic Git Conditions
-- Automatic stage/commit/push is allowed only when all of these are true:
-  - Starting branch is `master`.
-  - Starting `origin/master...HEAD` is ahead `0`, behind `0`.
-  - Starting working tree is clean.
-  - Changes are inside the user-requested scope.
-  - No unexpected files changed.
-  - No actual secret, production URL, token, account ID, or production binding is included.
-  - No dependency or lockfile change is included.
-  - No DB migration is included.
-  - Required build and tests pass.
-  - `git diff --check` passes.
-  - `git diff --cached --check` passes.
-  - No force push, amend, reset, clean, checkout, rebase, or destructive Git operation is used.
-- If automatic push is allowed, push only with `git push origin master`.
+- Check actual KST, repository, branch, HEAD, origin comparison, and full working-tree state before edits.
+- Treat the local repository and committed canonical owners as source of truth.
+- Do not edit when the user asks for analysis or reporting only.
+- Keep changes inside the approved Version Delta and prefer existing shared code and contracts.
+- Unexpected dirty state, authority conflict, historical evidence rewrite, or required security relaxation is a stop condition.
 
-## Stop Before Commit Cases
-- In these cases, proceed through scoped edits and safe validation, then stop before stage/commit/push and report the result:
-  - Visual design, layout, PDF output, responsive behavior, or generated document format changes that require direct user judgment.
-  - Broad UI structure changes or product-policy choices where several valid outcomes require user selection.
-  - The user explicitly asks to stop before commit, asks for report-only work, or labels the task as a checkpoint before commit.
-  - Required validation is blocked, fails outside the requested scope, or depends on manual browser/session evidence that has not been supplied.
-- When stopping before commit, keep the working tree intact and report exact next commands or decisions needed.
+## Safety and approval
 
-## Safe Work Without Extra Confirmation
-- Reading repository files, tracing references, checking docs/audits, and inspecting existing tests or scripts is allowed.
-- Read-only Git commands such as `git status`, `git status --short`, `git status --branch --short`, `git diff`, `git diff --check`, `git diff --cached`, `git diff --cached --check`, `git log`, `git show`, `git branch --show-current`, and `git rev-list --left-right --count` are allowed.
-- Scoped code, UI, logic, import, comment, and documentation edits inside the requested files or feature area are allowed when they are safe and reversible.
-- Adding a new file is allowed only when it is clearly required by the requested change and does not replace or delete an existing file.
-- Small unused-file deletion is allowed only when references are checked and build/tests validate the deletion. Bulk deletion, moves, and broad renames still require explicit approval.
-- Safe verification such as build, lint, typecheck, existing contract tests, mutation audits, PowerShell parse checks, dry-run commands, plan-mode commands, and simulator checks without DB/R2 mutation is allowed.
-- Prefer `tools/pipeline/approved-workflow.ps1 -Action Verify` over ad hoc individual validation commands when an available profile covers the changed area.
-- If a matching `verify-safe.ps1` profile exists, do not repeatedly run individual `node tests/...`, `npm run build`, or `npm run audit:wafl-mutations` outside the wrapper except for a first syntax/contract check immediately after creating a new test.
-- Reuse a PASS verification result for the same working tree when the result profile, HEAD, explicit path set, and changed fingerprint match. Do not rerun Mutation Audit only to get finding/high-risk counts; read them from the verification result.
-- `tools/pipeline/approved-workflow.ps1 -Action Verify`, `tools/pipeline/approved-workflow.ps1 -Action Handoff`, and `tools/pipeline/approved-workflow.ps1 -Action Plan` are read/validation-only commands. They may still need Codex app OS approval when writing pipeline output files outside the workspace.
-- If a safe validation fails and the cause is inside the requested scope, fix it and rerun the same validation when reasonable.
-- Under the automatic version workflow, explicit-path staging, ordinary commit, `git push origin master`, and post-push Git state checks are allowed when all automatic Git conditions are satisfied.
+- Never print or commit env values, credentials, tokens, cookies, private account identifiers, raw connection codes, DB URLs, full fingerprints, private object keys, or temporary external origins.
+- Never access or mutate production DB/R2/API bindings without exact approval.
+- Never use force push, amend, reset, clean, checkout, rebase, broad process termination, wildcard deletion, or destructive data commands as routine recovery.
+- Schema/migration, seed, cleanup, reset, rollback, DB/R2/PDF/token mutation, native/EAS work, dependency changes, and account/credential operations follow the exact boundaries in `09-codex-working-rules.md` and the active Version Delta.
+- Stage only explicit paths. Never use `git add .`, `git add -A`, or `git commit -am`.
 
-## Approved Read-Only Runtime Correction Loop
-- When the owner explicitly approves a bounded version scope, Codex may repeat diagnosis, a minimal in-scope fix, static verification, and dev/test read-only runtime verification without asking again for every retry.
-- The loop is allowed only while all changed files stay inside the approved version scope, the approved dev/test target fingerprint is unchanged, DB/API access is read-only, no DB/R2/Worker/PDF or production mutation occurs, and root package/lockfile/dependencies remain unchanged.
-- Preserve a failure source ZIP, failure repo-state, and failure log under `Logs/Repo_Status/Failure_Handoff` for every failed attempt. Do not place failure artifacts in `4. Newest`, and do not change `4. Newest` before successful Finish.
-- Unless the owner sets a different limit, stop after at most three diagnosis/fix/static/runtime cycles. Stop immediately when the same error repeats or the bounded loop does not resolve the failure.
-- Static, build, and type errors may be corrected inside the same bounded loop when the fix remains in scope.
-- Stop and request explicit owner approval before migration apply, seed, cleanup, reset, rollback, schema validation, destructive SQL, any DB/data/R2/Worker/PDF/production mutation, a target fingerprint change, an unclear dev/test target, an unexpected write, tenant leak, RLS bypass, data-integrity mismatch, partial mutation, unclear ledger state, an out-of-scope file change, or a dependency/root package/lockfile change.
+## Product completion and UI evidence
 
-## Actions Requiring Explicit Approval
-- Production DB, production R2, production APIs/bindings, secrets, tokens, account IDs, and production URLs require explicit approval before access or use.
-- Reset, Seed execute mode, Cleanup execute mode, Migration execution or creation, destructive SQL, broad UPDATE/MERGE, and any DB/R2 mutation require explicit approval.
-- `git add`, `git rm`, `git commit`, and `git push` require explicit approval unless the automatic version workflow and all automatic Git conditions apply. Force push, amend, reset, clean, checkout, restore, branch deletion, rebase, merge, and cherry-pick always require explicit approval.
-- Bulk file deletion, file moves, broad renames, dependency installs, dependency removals, dependency version changes, package manager changes, lockfile creation, and lockfile changes require explicit approval.
-- DB schema changes, authentication/authorization policy changes, tenant-isolation changes, and user-data-shape changes require explicit approval unless the user directly requested that exact change.
-- Production data access, actual Seed/Reset/Cleanup/Migration, DROP/TRUNCATE/DELETE SQL, R2 object creation/deletion, dependency or lockfile changes, force/amend/reset/clean/checkout/rebase, and committing with failed required tests always require a stop-and-ask confirmation.
-- Do not use `git add .`, `git add -A`, or `git commit -am`. Stage only approved files by explicit path.
+- Every user-visible task follows `docs/project/32-product-completion-and-ui-evidence-standard.md` plus the App-first device gate in `docs/project/app-v2/05-device-test-plan.md`.
+- Code/build/static PASS is not product completion. Required runtime and owner visual judgment must be present before `LEVEL_4_PRODUCT_VERIFIED` or a completed status.
+- Reuse canonical WAFL primitives. Do not introduce screen-local duplicate modal, input, button, card, or table grammar when a canonical primitive exists.
+- Never recommend Full Reset for a loading/UI failure until API, server, schema, migration, and query evidence proves it necessary and the owner approves it.
 
-## Version Policy
-- The app display version is `APP_VERSION` in `lib/constants/version.ts`.
-- `package.json` `version` is npm package metadata and is not the app display version.
-- For patch work, keep `APP_VERSION`, `commit-meta.md` `Version`, and the reported result version aligned.
-- Do not change `package.json` or lock files unless the user explicitly approves dependency/package metadata changes.
-- Do not bump `APP_VERSION` for Codex operating-rule documentation updates alone unless the user explicitly asks for a versioned patch.
-- `commit-meta.md` is ignored local metadata; do not stage it.
+## Version and delivery
 
-## Data And Environment Safety
-- Never print `.env.local`, DB URLs, credentials, tokens, or secrets.
-- Never modify production DB or production R2.
-- The dev/test simulator fixture prefix is `wafl-fn`.
-- Simulator companies use deterministic IDs and display names; keep both stable:
+- `lib/constants/version.ts` owns the app display `APP_VERSION`.
+- Root `package.json` is package metadata and changes only under its own approved boundary.
+- Ordinary owner-approved version work may proceed continuously through implementation, verification, exact-path stage, one commit, normal `git push origin master`, Finish, and matching artifacts when all safety conditions pass.
+- Stop before commit when required validation or user/runtime evidence is absent, an unexpected file changed, a dependency/lockfile or migration appeared outside scope, or any secret/security boundary is uncertain.
+- Prefer `tools/pipeline/approved-workflow.ps1 -Action Verify -Profile <profile>`, then Plan/Finish according to the canonical workflow.
+- Final delivery requires synchronized `master`, clean Git, one matching Source ZIP and repo-state in `4. Newest`, and no excluded artifact or secret.
 
-| Code | Company ID | Display name |
-|---|---|---|
-| A | `wafl-fn-company-a` | 기본 운영사 |
-| B | `wafl-fn-company-b` | 협업 운영사 |
-| C | `wafl-fn-company-c` | 승인 대기사 |
-| D | `wafl-fn-company-d` | 파일 반려사 |
-| E | `wafl-fn-company-e` | 이용 중지사 |
-| F | `wafl-fn-company-f` | 탈퇴 요청사 |
-| G | `wafl-fn-company-g` | 인원 한도사 |
-| H | `wafl-fn-company-h` | 대량 운영사 |
-| I | `wafl-fn-company-i` | 과거 데이터사 |
-| J | `wafl-fn-company-j` | 경계값 전용사 |
-- DB/R2 destructive commands require explicit user approval.
-- PowerShell menu 9 `Reset Database Schema` must keep production/runtime/fingerprint/prefix/confirmation guards before any SQL runner call.
-- Normal test artifacts and logs may be generated by approved test commands, but keep them distinct from source changes.
+## Runtime and internal access
 
-## Runtime And Access Guards
-- `/id-control`, `/roadmap`, `/ui`, and `/functions` are system-administrator-only internal read/view screens and must be accessible to authenticated active system-admin users regardless of runtime mode, including Vercel preview/production deployments.
-- General users, customer administrators, workers, and unauthenticated users must remain blocked from direct URL access to `/id-control`, `/roadmap`, `/ui`, and `/functions`.
-- Runtime/environment guards must protect dangerous actions, not the system-admin page view. Seed, Reset, Full Reset, Cleanup, DB mutation, R2 create/delete, destructive simulator actions, fixture creation/deletion, and schema execution remain dev/test-only and require their existing action-specific guards.
-- `/dev/test-console` must remain production-blocked, explicitly enabled, and guarded before redirecting to `/id-control`; `/id-control` itself may show read-only account/runtime/impersonation state when execution is unavailable.
-- `/roadmap` is a system-administrator-only read-only screen. It must not add edit/save/delete actions, DB writes, R2 writes, or URL/query/localStorage mutation paths without a separate explicit policy decision.
-- User-facing text on `/roadmap` should be Korean by default. When roadmap plans change, update the canonical data under `lib/internal/roadmap/`, keep `lib/internal/productizationRoadmap.ts` as a compatibility facade if still used, and update `docs/productization-roadmap.md`.
-- Before starting a new version feature task, read the canonical roadmap detail for that version and treat it as the current work contract. If user chat or older docs conflict with the latest canonical roadmap and `docs/codex-current-state.md`, prefer the canonical roadmap and current-state.
-- Do not expand roadmap detail scope on your own. If success conditions cannot be met, do not mark the roadmap item complete.
-- After version work finishes, update the roadmap result with actual applied work, verification result, commit hash, push state, remaining issues, and user confirmation status.
-- UI, responsive, and PDF work that requires human judgment must remain `사용자 확인 필요` until user confirmation is complete, even when automatic tests pass.
-- If the next user instruction is only "next version" or similar, read the next planned roadmap detail before implementing.
-- Impersonation must use an allowlist, support returning to the original session, and keep audit logs.
-- Maintain tenant isolation in UI, API, repository, DB, and simulator flows.
-- Validate permissions in both UI affordances and API/server handlers.
+- Non-destructive internal/test/diagnostic features are permission-gated by active `system_admin`, not by environment strings alone.
+- `/id-control` test account switching is allowed for an active system administrator while the action-specific dev/test guard remains authoritative.
+- Destructive Reset, Seed, Cleanup, R2 mutation, DB migration, and Purge guards remain unchanged.
+- `/roadmap` remains read-only. Tenant, permission, impersonation restore, and audit boundaries remain enforced in UI and server code.
+- App-first external QA uses the specialist environment and runtime owners: `06-expo-environment-setup.md` and `41-external-mobile-qa-runbook.md`.
 
-## Git And Delivery
-- Do not commit or push unless the user explicitly approved it or the automatic version workflow conditions are fully satisfied.
-- Do not run `git reset`, `git checkout`, `git clean`, or equivalent destructive commands unless explicitly requested.
-- For automatic version work, prefer `tools/pipeline/approved-workflow.ps1 -Action Finish` over separate `git add`, `git commit`, and `git push` commands. It still performs Git writes through `finish-version.ps1`, so one version-scoped execution approval may remain necessary in the Codex app.
-- If `approved-workflow.ps1` fails, do not bypass it by manually assembling `node`, `npm`, `git add`, `git commit`, or `git push` commands. Report the blocker, fix the wrapper or verification result when the cause is in scope, and rerun the wrapper.
-- For automatic version work, stage only in-scope files by explicit path, run `git diff --cached --check`, commit, push, and report the staged/committed/pushed result in the final report instead of pausing at each step.
-- For non-automatic Git work, before staging, report the exact files and command. After staging, report the full staged file list.
-- For non-automatic Git work, before committing, run `git diff --cached --check`, then report the staged file list and diff summary.
-- Before pushing, verify branch, remote, ahead/behind count, and working tree state. Automatic pushes must target `origin master` only.
-- Force push is always forbidden unless the user explicitly changes this rule for a one-off recovery operation.
-- Do not hide failed or skipped tests. Report what ran, what did not run, and why.
-- Final reports should include: original version, result version, files changed, tests run, failures/skips, DB migration status, git status, and whether commit/push were performed.
-- For automatic version work, the normal `approved-workflow.ps1 -Action Finish` creates the latest ChatGPT handoff artifacts in `4. Newest` after commit/push unless `-SkipHandoff` is explicitly used. Report the ZIP, repo-state, and build-result filenames and whether APP_VERSION/HEAD match.
-- A version is not complete after `approved-workflow.ps1 -Action Finish` unless `4. Newest` contains exactly one final source ZIP and one matching repo-state for the current `HEAD` and `APP_VERSION`.
-- The matching build-result and verification log must remain under `Logs/Repo_Status`, and the repo-state must reference them.
-- Remove prior-version or duplicate handoff artifacts from `4. Newest`; source ZIPs must apply the complete exclude contract, including every `.env*` file.
-- `commit-meta.md` remains ignored local patch metadata and must not be staged or committed.
-- The canonical PowerShell entry point is `tools/pipeline/peacebypiece-auto-pipeline.ps1` and should be tracked in Git. Old version, patch, backup, temporary, and copied PowerShell variants remain ignored.
-- When Git is directly connected, full ZIP uploads, repo-state files, and separate PowerShell uploads are unnecessary operating overhead unless the user asks for them. A separate PowerShell upload is only useful when a newer external script copy exists or the task is explicitly script-only.
+## Korean and Unicode
 
-## Communication And Reporting
-- Answer in Korean by default for project work unless the user asks otherwise.
-- Explain results in user-facing terms; do not return raw logs without summarizing what they mean.
-- Ask questions only when the answer is truly needed. When asking, state the recommended option first and briefly explain why user judgment is required. Prefer yes/no confirmation for genuinely risky actions.
-- Do not repeatedly ask the user to choose already-settled policies or purely technical implementation details.
-- For normal completion reports, include original version, result version, development progress, productization progress, Git status, what was checked, what changed, changed files, tests run, failures/skips, commit hash/message when committed, push result when pushed, direct user-confirmation items, next work, DB migration status, PowerShell change status, whether ZIP/repo-state/PowerShell upload is needed, and whether a new Codex/ChatGPT conversation is needed.
-- For short intermediate updates, keep the report concise and focused on what changed or what was learned.
-- When a version is marked as a checkpoint, report completion and wait. Do not automatically start the next version or follow-up task.
+- Follow `docs/project/25-korean-unicode-encoding-standard.md`.
+- Markdown/source uses UTF-8 and repository line-ending policy. Windows PowerShell files keep the required UTF-8 BOM.
+- Do not rename Korean paths or rewrite text from a mojibake display alone. Verify Git and original bytes first.
 
-## Manual Verification Guidance
-- Final reports must clearly separate automatic validation from user manual verification.
-- If UI behavior changes, include the exact route or menu path, account role/permission, target devices when relevant, actions to perform, expected before/after difference, empty/loading/error/forbidden states, refresh/re-login expectations, and the normal completion criteria.
-- If DB values or persistence behavior changes, explain the table/entity/repository/API path, which values change, which values must remain unchanged, save timing, refresh persistence, whether a real DB mutation was executed, and whether the user needs a read-only SQL check.
-- If a workflow changes, describe the user action sequence, permission check, API/server handling, DB write or read, R2/PDF/Worker involvement, screen result, failure/recovery message, and repeated-click/refresh/network-delay behavior.
-- If permissions change, distinguish system administrator, customer administrator, general user, partner/external user, dev/test account, and no-permission user where relevant. Report accessible routes, visible buttons, allowed read/create/update/delete actions, blocked actions, and whether permission changes apply immediately.
-- If storage or R2 behavior changes, report plan quota, current usage, DB and R2 aggregation method, usage formula, warning/block thresholds, expected test-company usage, UI/database consistency criteria, whether R2 objects were actually created/deleted, and dev/test versus production separation.
-- If PDF behavior changes, report generation state, button location, included data, workorder versus supplier/material-order purpose, temporary versus final PDF behavior, R2 storage, regeneration, download/print method, filename rules, screen/PDF comparison points, and actual Worker/R2 call status.
-- If no user manual verification is needed, state that explicitly and explain why automatic validation is sufficient.
+## Reporting
 
-## Test Execution Environment
-- If Node execution fails inside the Codex sandbox because of permissions or environment limitations, first try the existing project PowerShell pipeline or another safe already-available runtime path.
-- Do not install dependencies, change lockfiles, or make permanent system environment changes without explicit approval.
-- If validation still cannot run, distinguish code failure from environment failure, provide the minimal user-run commands in one batch, and continue the same task after the user provides results.
-
-## Tool And Approval Settings
-- Codex approval settings cannot be changed from this file, and the Codex app OS execution approval UI cannot be bypassed by repository rules. The recommended operating posture is: auto-allow repository file reads, safe scoped edits, read-only Git commands, and safe validation; ask for network writes, Git index/history/remote changes, dependency changes, DB/R2 mutation, production access, and destructive commands.
-- Use wrappers to reduce approval count, not to broaden permission. Do not encourage broad always-approve prefixes such as all `powershell`, all `node`, or all `git`. Prefer exact read/validation commands or version-scoped wrapper commands.
-
-
-## Korean And Unicode Encoding
-- General source, documentation, JSON, YAML, SQL, and configuration text must be UTF-8 with LF line endings.
-- PowerShell `.ps1`, `.psm1`, and `.psd1` files executed by Windows PowerShell 5.1 must be UTF-8 with BOM.
-- Preserve Korean and other Unicode file and folder names. Do not rename them to English only to avoid encoding issues.
-- Treat GitHub and `git ls-files` as the path source of truth. Do not rename a path solely because a ZIP extraction or analysis tool displays mojibake.
-- Never mass-rewrite files through an encoding conversion command without a manifest, byte-level evidence, and explicit approval.
-- Repair corrupted Korean text only when the original can be proven from Git history, GitHub, or another canonical source. Do not guess missing text.
-- Before finishing any patch that touches Korean paths or text, run `node tests/unicode-encoding-contract.mjs`. For PowerShell changes, also run `node tests/pipeline-powershell-encoding-contract.mjs`.
-- Patch ZIPs and full handoff ZIPs must preserve Unicode entry names. Verify Korean paths after ZIP creation before delivery.
-- The canonical detailed standard is `docs/project/25-korean-unicode-encoding-standard.md`.
-
-## WAFL v2 0.30.0-alpha.12 operational policy absorption rule
-
-For WAFL v2 implementation work, `docs/project/v2/13-v1-gap-review.md` and `docs/project/v2/14-operational-policy-absorption.md` must be read after `docs/project/v2/12-codex-working-rules.md`.
-
-The gap review and absorption document clarify that v2 replaces the Product/Sheet/Card product center, but it does not discard confirmed business, signup, billing, storage, DB, R2, PDF, deletion, QA, and production safety policies from existing project docs. The recommended first narrow Codex implementation after alpha.12 is the mock-only `/ui` showroom work order in `docs/codex-prompts/0.30.0-alpha.13-v2-ui-showroom-prototype.md`.
+- Lead intermediate and final reports with the actual KST timestamp required by the active Version Delta.
+- Separate verified facts from inference and from `NOT_RUN`.
+- A failure handoff preserves Git state, logs, runtime ownership, mutation effects, and the smallest next action. It does not claim success, retry automatically, roll back, clean, or delete evidence.

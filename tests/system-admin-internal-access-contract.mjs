@@ -16,7 +16,7 @@ const systemShell = read("components/system/SystemConsoleShell.tsx");
 const internalNavigation = read("lib/system/systemInternalToolsNavigation.ts");
 const uiCatalog = read("app/ui/WaflUiCatalogPage.tsx");
 const functionsClient = read("app/functions/FunctionsCatalogClient.tsx");
-const currentState = read("docs/codex-current-state.md");
+const permanentRules = read("docs/project/app-v2/09-codex-working-rules.md");
 const productizationRoadmap = read("docs/productization-roadmap.md");
 const runtimePolicy = read("lib/runtime/runtimePolicy.ts");
 const devConfig = read("lib/dev/testContext/config.ts");
@@ -165,7 +165,7 @@ for (const token of [
   "Destructive Reset, Seed, Cleanup, R2 mutation, DB migration, and Purge guards remain unchanged",
   "system-admin-internal-access",
 ]) {
-  assert.ok(currentState.includes(token), `current-state missing ${token}`);
+  assert.ok(permanentRules.includes(token), `Permanent Rules missing ${token}`);
   assert.ok(productizationRoadmap.includes(token), `productization roadmap missing ${token}`);
 }
 

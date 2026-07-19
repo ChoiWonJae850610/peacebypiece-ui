@@ -1,5 +1,7 @@
 # WAFL v2 API Contract Test Plan
 
+Document role: verification owner for the normative contracts in `16-workorder-api-command-read-model-contracts.md`. It defines test layers, gates, budgets, and required evidence; it does not redefine API semantics or authorize Runtime mutation. Version-specific execution authority belongs to the active Delta and `09-codex-working-rules.md`.
+
 ## Alpha.46 date-only and bounded mobile update additions
 
 - Verify draft-only product name/due date/quantity PATCH, changed-fields-only payload, `expectedVersion`, one post-save detail GET, local list synchronization, and non-draft read-only behavior.

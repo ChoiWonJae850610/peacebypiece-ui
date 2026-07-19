@@ -30,21 +30,16 @@ for (const file of docs) {
 }
 
 for (const [file, token] of [
-  ["AGENTS.md", "20-workorder-list-read-api-evidence.md"],
-  ["AGENTS.md", "21-workorder-detail-lazy-read-api-evidence.md"],
-  ["AGENTS.md", "22-workorder-create-basic-update-command-evidence.md"],
-  ["AGENTS.md", "23-workorder-material-order-command-evidence.md"],
-  ["docs/project/app-v2/00-start-here.md", "20-workorder-list-read-api-evidence.md"],
-  ["docs/project/app-v2/00-start-here.md", "21-workorder-detail-lazy-read-api-evidence.md"],
-  ["docs/project/app-v2/00-start-here.md", "22-workorder-create-basic-update-command-evidence.md"],
-  ["docs/project/app-v2/00-start-here.md", "23-workorder-material-order-command-evidence.md"],
-  ["AGENTS.md", "25-workorder-issued-revision-preview-evidence.md"],
-  ["docs/project/app-v2/08-roadmap-2.0.md", "2.0.0-alpha.28"],
-  ["docs/codex-current-state.md", "# 2.0.0-alpha.28"],
-  ["docs/project/app-v2/08-roadmap-2.0.md", "2.0.0-alpha.23"],
-  ["docs/codex-current-state.md", "# 2.0.0-alpha.23"],
-  ["docs/codex-current-state.md", "# 2.0.0-alpha.24"],
-  ["docs/codex-current-state.md", "# 2.0.0-alpha.26"],
+  ["AGENTS.md", "WAFL v2 App-first canonical routing"],
+  ["AGENTS.md", "docs/project/app-v2/00-start-here.md"],
+  ["AGENTS.md", "docs/project/app-v2/09-codex-working-rules.md"],
+  ["docs/project/app-v2/00-start-here.md", "Responsibility matrix"],
+  ["docs/project/app-v2/00-start-here.md", "Conservative task-based additional routing"],
+  ["docs/project/app-v2/00-start-here.md", "41-external-mobile-qa-runbook.md"],
+  ["docs/project/app-v2/08-roadmap-2.0.md", "48-canonical-codex-instruction-architecture-evidence.md"],
+  ["docs/project/app-v2/09-codex-working-rules.md", "Document type: **Permanent Rules**"],
+  ["docs/codex-current-state.md", "Document type: **Current Baseline**"],
+  ["docs/codex-current-state.md", "2.0.0-alpha.49"],
 ]) {
   assert.ok(fs.readFileSync(path.join(root, file), "utf8").includes(token), `${file} missing ${token}`);
 }

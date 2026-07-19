@@ -1,5 +1,7 @@
 # WAFL v2 WorkOrder API, Command, and Read Model Contracts
 
+Document role: normative owner for WorkOrder API DTO, state, error, pagination, tenant, permission, concurrency, and command/read-model semantics. It defines what the API means; `17-v2-api-contract-test-plan.md` defines how those semantics are verified. Version-specific results belong to numbered evidence, and execution/approval rules belong to `09-codex-working-rules.md`.
+
 ## Calendar date-only serialization
 
 - `IsoDate` represents a calendar value whose API form is exactly `YYYY-MM-DD`; it is not an instant or timezone-bearing datetime.
