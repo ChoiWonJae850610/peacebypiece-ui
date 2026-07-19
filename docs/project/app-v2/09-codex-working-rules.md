@@ -1,4 +1,13 @@
-# WAFL v2 App-first Codex Working Rules - 2.0.0-alpha.47
+# WAFL v2 App-first Codex Working Rules - 2.0.0-alpha.48
+
+## Alpha.48 mobile material Read boundary
+
+- Only the exact WorkOrder fabric-material GET route is added to the mobile live tab. Material create/edit/delete/order Commands, other lazy tabs, mutation mode, and production access remain blocked.
+- Fetch on first explicit tab entry, key cache and state by WorkOrder identity, bound the cache, reject late mismatched responses, and permit retry/page requests only by explicit user action. Never poll or retry automatically.
+- Preserve decimal strings and null versus zero. Quantity and won formatting are presentation-only and must not change API/DB precision or infer missing values.
+- Historical mock material cards may supply pure presentation grammar only. Live data must not import mock constants or fabricate supplier, image, attachment, color, status, or amount values.
+- Visual action controls may mirror the approved read-only card, but they remain disabled with no handler and no Command route. UI presence does not authorize a mutation.
+- Physical iPhone functional and UI-conformity acceptance, post-runtime mutation-zero audit, and canonical runner stop are required before alpha.48 delivery.
 
 ## Alpha.47 Tailscale developer identity boundary
 

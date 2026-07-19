@@ -4,6 +4,8 @@ import type {
   PatchWorkOrderBasicInfoInput,
   PatchWorkOrderBasicInfoResult,
   WorkOrderDetailCore,
+  WorkOrderMaterialLine,
+  WorkOrderMaterialPage,
   WorkOrderListPage,
 } from "@/lib/apiTypes";
 import { MobileApiError } from "@/lib/apiTypes";
@@ -145,6 +147,94 @@ export async function getWorkOrderDetail(workOrderId: string): Promise<WorkOrder
   const body = await requestJson<{ readonly ok: boolean; readonly data?: WorkOrderDetailCore }>(`/api/v2/work-orders/${encodeURIComponent(workOrderId)}`, { method: "GET" });
   if (!body.ok || !body.data?.header) throw new MobileApiError({ code: "MALFORMED_RESPONSE", message: "제작 카드 상세 응답이 올바르지 않습니다." });
   return body.data;
+}
+
+const MATERIAL_STATUSES = new Set(["editing", "requested", "completed", "cancelled"]);
+const DECIMAL_PATTERN = /^-?(?:0|[1-9]\d*)(?:\.\d+)?$/;
+
+function optionalString(value: unknown): string | null | undefined {
+  if (value === null) return null;
+  return typeof value === "string" ? value : undefined;
+}
+
+function normalizeMaterialLine(value: unknown): WorkOrderMaterialLine | null {
+  if (!isJsonObject(value)) return null;
+  const decimalFields = [
+    value.requiredQuantity,
+    value.allowanceQuantity,
+    value.inventoryUsageQuantity,
+    value.orderQuantity,
+    value.unitPrice,
+    value.amount,
+  ];
+  if (decimalFields.some((field) => typeof field !== "string" || !DECIMAL_PATTERN.test(field))) return null;
+  if (
+    typeof value.id !== "string"
+    || value.materialType !== "fabric"
+    || typeof value.name !== "string"
+    || optionalString(value.colorOption) === undefined
+    || optionalString(value.usageArea) === undefined
+    || typeof value.unitCode !== "string"
+    || typeof value.currency !== "string"
+    || optionalString(value.memo) === undefined
+    || typeof value.status !== "string"
+    || !Number.isSafeInteger(value.displayOrder)
+    || typeof value.locked !== "boolean"
+  ) return null;
+  return {
+    id: value.id,
+    materialType: "fabric",
+    name: value.name,
+    colorOption: optionalString(value.colorOption) ?? null,
+    usageArea: optionalString(value.usageArea) ?? null,
+    requiredQuantity: value.requiredQuantity as string,
+    allowanceQuantity: value.allowanceQuantity as string,
+    inventoryUsageQuantity: value.inventoryUsageQuantity as string,
+    orderQuantity: value.orderQuantity as string,
+    unitCode: value.unitCode,
+    currency: value.currency,
+    unitPrice: value.unitPrice as string,
+    amount: value.amount as string,
+    memo: optionalString(value.memo) ?? null,
+    status: MATERIAL_STATUSES.has(value.status) ? value.status as WorkOrderMaterialLine["status"] : "unknown",
+    displayOrder: Number(value.displayOrder),
+    locked: value.locked,
+  };
+}
+
+export async function getWorkOrderMaterials(workOrderId: string, cursor: string | null = null): Promise<WorkOrderMaterialPage> {
+  const query = new URLSearchParams({ type: "fabric", limit: "30" });
+  if (cursor) query.set("cursor", cursor);
+  const body = await requestJson<{ readonly ok: boolean; readonly data?: unknown }>(
+    `/api/v2/work-orders/${encodeURIComponent(workOrderId)}/materials?${query.toString()}`,
+    { method: "GET" },
+  );
+  if (!body.ok || !isJsonObject(body.data) || !Array.isArray(body.data.items)) {
+    throw new MobileApiError({ code: "MALFORMED_RESPONSE", message: "원단 정보 응답이 올바르지 않습니다." });
+  }
+  const lines = body.data.items.map(normalizeMaterialLine);
+  if (
+    body.data.workOrderId !== workOrderId
+    || body.data.materialType !== "fabric"
+    || lines.some((line) => line === null)
+    || !(body.data.nextCursor === null || typeof body.data.nextCursor === "string")
+    || typeof body.data.hasMore !== "boolean"
+    || (body.data.hasMore && (typeof body.data.nextCursor !== "string" || body.data.nextCursor.length === 0))
+    || (!body.data.hasMore && body.data.nextCursor !== null)
+    || !Number.isSafeInteger(body.data.limit)
+    || !Number.isSafeInteger(body.data.entityVersion)
+  ) {
+    throw new MobileApiError({ code: "MALFORMED_RESPONSE", message: "원단 정보 응답이 올바르지 않습니다." });
+  }
+  return {
+    workOrderId,
+    materialType: "fabric",
+    items: lines as WorkOrderMaterialLine[],
+    nextCursor: body.data.nextCursor as string | null,
+    hasMore: body.data.hasMore,
+    limit: Number(body.data.limit),
+    entityVersion: Number(body.data.entityVersion),
+  };
 }
 
 export async function patchWorkOrderBasicInfo(

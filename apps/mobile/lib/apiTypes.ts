@@ -79,6 +79,38 @@ export type WorkOrderDetailCore = {
   };
 };
 
+export type MaterialLineStatus = "editing" | "requested" | "completed" | "cancelled" | "unknown";
+
+export type WorkOrderMaterialLine = {
+  readonly id: string;
+  readonly materialType: "fabric";
+  readonly name: string;
+  readonly colorOption: string | null;
+  readonly usageArea: string | null;
+  readonly requiredQuantity: string;
+  readonly allowanceQuantity: string;
+  readonly inventoryUsageQuantity: string;
+  readonly orderQuantity: string;
+  readonly unitCode: string;
+  readonly currency: string;
+  readonly unitPrice: string;
+  readonly amount: string;
+  readonly memo: string | null;
+  readonly status: MaterialLineStatus;
+  readonly displayOrder: number;
+  readonly locked: boolean;
+};
+
+export type WorkOrderMaterialPage = {
+  readonly workOrderId: string;
+  readonly materialType: "fabric";
+  readonly items: readonly WorkOrderMaterialLine[];
+  readonly nextCursor: string | null;
+  readonly hasMore: boolean;
+  readonly limit: number;
+  readonly entityVersion: number;
+};
+
 export type MobileApiErrorCode =
   | "API_ORIGIN_INVALID"
   | "NETWORK_ERROR"

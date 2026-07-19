@@ -1,3 +1,16 @@
+# WAFL v2 App-first Roadmap 2.0 - 2.0.0-alpha.48 result
+
+## 2.0.0-alpha.48 result
+
+Status: `ALPHA48_MOBILE_MATERIALS_REAL_READ_COMPLETE` after actual material Read, external-cellular iPhone UI acceptance, mutation-zero audit, canonical Verify/stop, Git, and handoff gates.
+
+- Activate only the ProductionCard `원단` tab using the existing exact fabric Read route. Preserve tenant permission, Tailscale Serve API origin, Cloudflare Preview origin, and read-only Command block.
+- Lazy-load on first tab entry; retain per-WorkOrder bounded cache, request/session/response identity guards, explicit retry, and explicit cursor `더 보기`. Automatic retry, polling, and cross-card response application remain absent.
+- Present actual material fields with accepted compact-card status, quantity/won, expanded-detail, two-line footer, and disabled action grammar. Mock values and command handlers remain absent.
+- External cellular iPhone QA passed recent/past material reads, cache re-entry, background/re-entry, corrected UI conformity, and overall UI without code entry, overflow, data mixing, crash, red screen, or infinite loading.
+- Runtime and post-stop audits found business, material, revision, event, receipt, document, token, R2, PDF, production, native, and EAS deltas zero. Evidence: `47-mobile-materials-real-read-evidence.md`.
+- Next candidate is alpha.49 draft material basic editing; material order Commands remain separately scoped.
+
 # WAFL v2 App-first Roadmap 2.0 - 2.0.0-alpha.47 checkpoint
 
 ## 2.0.0-alpha.47 checkpoint

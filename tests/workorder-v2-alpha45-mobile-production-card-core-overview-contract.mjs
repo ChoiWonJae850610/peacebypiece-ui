@@ -21,13 +21,13 @@ const proxy = read("proxy.ts");
 const externalQa = read("lib/external-qa/configCore.mjs");
 const runtime = [entry, app, list, detail, apiClient].join("\n");
 
-assert.match(version, /APP_VERSION = "2\.0\.0-alpha\.47"/);
-assert.match(mobileVersion, /MOBILE_APP_VERSION = "2\.0\.0-alpha\.47"/);
-assert.equal(mobilePackage.version, "2.0.0-alpha.47");
-assert.equal(mobileLock.version, "2.0.0-alpha.47");
-assert.equal(mobileLock.packages[""].version, "2.0.0-alpha.47");
+assert.match(version, /APP_VERSION = "2\.0\.0-alpha\.48"/);
+assert.match(mobileVersion, /MOBILE_APP_VERSION = "2\.0\.0-alpha\.48"/);
+assert.equal(mobilePackage.version, "2.0.0-alpha.48");
+assert.equal(mobileLock.version, "2.0.0-alpha.48");
+assert.equal(mobileLock.packages[""].version, "2.0.0-alpha.48");
 assert.equal(appConfig.expo.version, "2.0.0");
-assert.equal(appConfig.expo.extra.appVersion, "2.0.0-alpha.47");
+assert.equal(appConfig.expo.extra.appVersion, "2.0.0-alpha.48");
 assert.equal(appConfig.expo.extra.mockOnly, false);
 assert.equal(appConfig.expo.extra.dataMode, "dev-test-tailscale-auto-connect");
 assert.equal(appConfig.expo.owner, "lostab");
@@ -55,7 +55,7 @@ assert.match(app, /WorkOrderDetailOverview/);
 assert.match(apiClient, /\/api\/v2\/work-orders\?limit=30/);
 assert.match(apiClient, /\/api\/v2\/work-orders\/\$\{encodeURIComponent\(workOrderId\)\}/);
 assert.match(apiClient, /credentials: "include"/);
-assert.doesNotMatch(apiClient, /\/materials|\/processes|\/assets|\/documents|\/history|\/size-color|\/size-spec/);
+assert.doesNotMatch(apiClient, /\/processes|\/assets|\/documents|\/history|\/size-color|\/size-spec/);
 assert.doesNotMatch(apiClient, /method: "(?:PUT|DELETE)"/);
 
 assert.doesNotMatch(detail, /mockProductionCard|productionCards|summaryMetrics|costMetrics|overviewInfo|nextCheckByTab/);
@@ -93,7 +93,8 @@ for (const label of ["개요", "이미지·첨부", "사이즈·색상", "원단
 assert.match(detail, /accessibilityState=\{\{ disabled: true \}\}/);
 assert.match(detail, /disabled\s*\n/);
 assert.match(detail, /다른 탭은 다음 단계에서 연결 예정입니다/);
-assert.doesNotMatch(detail, /setActiveTab|activeTab|onPress=\{\(\) => set/);
+assert.match(detail, /setActiveSection/);
+assert.doesNotMatch(detail, /setActiveTab|activeTab/);
 
 for (const forbiddenAction of ["저장", "수정", "발주", "완료", "삭제", "공유", "출력", "Preview", "카메라", "첨부 버튼"]) {
   assert.doesNotMatch(detail, new RegExp(`>\\s*${forbiddenAction}\\s*<`), `live detail must not expose ${forbiddenAction}`);

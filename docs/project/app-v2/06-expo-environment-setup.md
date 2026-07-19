@@ -1,4 +1,8 @@
-# WAFL v2 Expo Environment Setup Plan - 2.0.0-alpha.47
+# WAFL v2 Expo Environment Setup Plan - 2.0.0-alpha.48
+
+## Alpha.48 installed-build reuse
+
+Alpha.48 is a JavaScript/TypeScript and existing read-route change. It reuses iOS Development Build number 1, the alpha.47 dual-origin DeveloperAutoConnect transport, and the Development-only Tailscale Metro ATS boundary. Expo public version remains `2.0.0`; no native dependency, plugin, Info.plist, Android manifest, EAS profile, credential, EAS Build, or EAS Update changes occur. The read-only runner completed external cellular material QA and canonical teardown with Serve/Funnel/listener ownership intact.
 
 ## Alpha.47 dual-origin developer transport
 

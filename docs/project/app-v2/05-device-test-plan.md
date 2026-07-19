@@ -1,4 +1,11 @@
-# WAFL v2 App Device Test Plan - 2.0.0-alpha.47
+# WAFL v2 App Device Test Plan - 2.0.0-alpha.48
+
+## 2.0.0-alpha.48 material Read gate
+
+- Reuse iOS Development Build number 1 and the alpha.47 DeveloperAutoConnect read-only runner. Verify code-free external-cellular connection, list, recent/past card material reads, draft/non-draft read-only behavior, cache re-entry, stale-response isolation, and background/re-entry.
+- Verify actual material name/unit/status/color/usage/quantities/price/amount/memo, neutral null handling, trimmed quantities, won display, compact/expanded rows, two-line footer, and disabled original action icons. No material edit/delete/order Command is permitted.
+- Owner result: external cellular, Tailscale, auto-connect, list/recent/past Read, all corrected material presentation points, background/re-entry, and overall UI PASS. Connection codes and Command calls were zero; overflow, cross-card mixing, crash, red screen, infinite loading, and anomalies were absent.
+- Tablet responsive code is static PASS only. iPad mini, iPad Pro, and Galaxy Tab actual QA were not run.
 
 ## 2.0.0-alpha.47 external developer auto-connect gate
 

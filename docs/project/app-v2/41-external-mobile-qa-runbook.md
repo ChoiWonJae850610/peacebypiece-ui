@@ -2,6 +2,12 @@
 
 Status: `ALPHA43_EXTERNAL_MOBILE_QA_AND_IOS_DEVELOPMENT_BUILD_COMPLETE`.
 
+## Alpha.48 material Read mode
+
+Reuse the alpha.47 `DeveloperAutoConnect` mode without a mutation switch. After static verification, validate one existing-session/auto-connect flow, Company A list, recent/past detail and fabric-material GET, draft/non-draft reads, cursor shape, and disconnect. The user-device gate checks the same paths over external cellular plus cache re-entry, stale-card isolation, background/re-entry, corrected material-card conformity, and disabled actions. Connection-code entry, Command methods, R2/PDF/token requests, and production access remain zero.
+
+Final alpha.48 stop must use the canonical ownership path and reach `stopped` with Serve config empty, explicit Funnel true count zero, ports 3000/3100/8081 listener zero, Tailscale Running, and unrelated termination zero. Post-runtime read-only audit must show WorkOrder/revision/material/event/receipt/document/token/migration delta zero.
+
 ## Alpha.47 DeveloperAutoConnect mode
 
 Use `-MobileTransport DeveloperAutoConnect` only after the read-only identity/DB mapping preflight and static verification pass. The runner requires empty pre-existing Serve/Funnel configuration, derives the current user-owned Tailscale login and Serve DNS name, resolves exactly one active WAFL system administrator and one `wafl-fn-company-a` company-admin target, and starts Next on `127.0.0.1`. Full identities and hashes are never printed; marker/status may contain only a short hash prefix.

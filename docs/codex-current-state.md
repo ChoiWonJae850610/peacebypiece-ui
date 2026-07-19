@@ -1,3 +1,13 @@
+# 2.0.0-alpha.48 Mobile Materials Real Read
+
+- Internal APP_VERSION, mobile mirror, package/lock trace, and Expo `extra.appVersion` are `2.0.0-alpha.48`; public version remains `2.0.0`, iOS build number remains `1`, and native/EAS/ATS configuration is unchanged.
+- The live ProductionCard `원단` tab now lazily reads actual fabric lines from the exact WorkOrder materials GET route through Tailscale Serve. The read-only client preserves decimal strings, cursor pagination, tenant/permission guards, and the alpha.47 dual-origin developer session.
+- A bounded six-entry WorkOrder cache, in-flight request token, session generation, and response identity guard prevent duplicate GETs and cross-card stale-response application. Retry and pagination are explicit; polling and automatic retry remain zero.
+- Live cards follow the accepted compact material grammar with actual status accents, quantity/won formatting, compact and expanded rows, a two-line order summary, and disabled original action icons. No mock values or Command handlers are connected.
+- Owner external-cellular iPhone QA passed automatic connection without a code, list/recent/past material reads, corrected UI conformity, cache re-entry, background/re-entry, and overall UI. No overflow, data mixing, crash, red screen, infinite loading, or anomaly was reported.
+- Canonical stop passed with all runner-owned processes stopped, Serve config empty, Funnel true count zero, ports 3000/3100/8081 listener zero, Tailscale Running, and unrelated termination zero. Post-runtime audit found business/material/revision/event/receipt/document/token/migration delta zero.
+- Final status is `ALPHA48_MOBILE_MATERIALS_REAL_READ_COMPLETE`. Evidence: `docs/project/app-v2/47-mobile-materials-real-read-evidence.md`; matching Git and artifact identities remain authoritative in the alpha.48 repo-state.
+
 # 2.0.0-alpha.47 Tailscale Serve Developer Auto-connect
 
 - Internal APP_VERSION, mobile mirror, mobile package/lock trace, and Expo `extra.appVersion` are `2.0.0-alpha.47`; public version remains `2.0.0`, native/EAS/ATS configuration is unchanged, and `dataMode` is descriptive `dev-test-tailscale-auto-connect`.

@@ -17,7 +17,7 @@ const svg = read("public/dev-samples/linen-round-dress-sketch.svg");
 const css = read("components/workorder/preview/IssuedWorkOrderPreview.module.css");
 
 const currentVersion = read("lib/constants/version.ts").match(/APP_VERSION\s*=\s*"([^"]+)"/)?.[1];
-assert.ok(["2.0.0-alpha.38", "2.0.0-alpha.39", "2.0.0-alpha.40", "2.0.0-alpha.41", "2.0.0-alpha.42", "2.0.0-alpha.43", "2.0.0-alpha.44", "2.0.0-alpha.45", "2.0.0-alpha.46", "2.0.0-alpha.47"].includes(currentVersion));
+assert.ok(["2.0.0-alpha.38", "2.0.0-alpha.39", "2.0.0-alpha.40", "2.0.0-alpha.41", "2.0.0-alpha.42", "2.0.0-alpha.43", "2.0.0-alpha.44", "2.0.0-alpha.45", "2.0.0-alpha.46", "2.0.0-alpha.47", "2.0.0-alpha.48"].includes(currentVersion));
 assert.match(read("apps/mobile/constants/version.ts"), new RegExp(currentVersion.replaceAll(".", "\\.")));
 const appConfig = JSON.parse(read("apps/mobile/app.json"));
 const publicVersion = currentVersion.replace(/-.+$/, "");

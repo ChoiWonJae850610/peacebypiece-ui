@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 import {
   ActivityIndicator,
   KeyboardAvoidingView,
@@ -14,13 +14,14 @@ import {
 import { ChevronLeft, ImageIcon, LockKeyhole, PencilLine } from "lucide-react-native";
 
 import { WAFL_FONTS } from "@/constants/fonts";
+import WorkOrderMaterialsReadOnly, { type MaterialReadViewState } from "@/components/WorkOrderMaterialsReadOnly";
 import type { WorkOrderDetailCore } from "@/lib/apiTypes";
 import {
   formatProductType,
   formatWorkOrderStatus,
 } from "@/lib/workOrderDisplay";
 
-const FUTURE_TABS = [
+const SECTION_TABS = [
   { id: "media", label: "이미지·첨부", count: (detail: WorkOrderDetailCore) => detail.tabCounts.images + detail.tabCounts.attachments },
   { id: "sizes", label: "사이즈·색상", count: (detail: WorkOrderDetailCore) => detail.tabCounts.sizes + detail.tabCounts.colors },
   { id: "fabric", label: "원단", count: (detail: WorkOrderDetailCore) => detail.tabCounts.fabric },
@@ -112,6 +113,11 @@ type Props = {
   readonly onCancelEdit: () => void;
   readonly onSave: () => void;
   readonly onReloadLatest: () => void;
+  readonly materials: MaterialReadViewState;
+  readonly materialIdentityKey: string;
+  readonly onOpenMaterials: () => void;
+  readonly onRetryMaterials: () => void;
+  readonly onLoadMoreMaterials: () => void;
 };
 
 function BasicInfoEditor(props: Pick<Props, "draft" | "dirty" | "fieldErrors" | "saveState" | "saveMessage" | "onChangeDraft" | "onCancelEdit" | "onSave" | "onReloadLatest">) {
@@ -211,6 +217,7 @@ function BasicInfoEditor(props: Pick<Props, "draft" | "dirty" | "fieldErrors" | 
 
 export default function WorkOrderDetailOverview(props: Props) {
   const { detail, phone, onBack } = props;
+  const [activeSection, setActiveSection] = useState<"overview" | "fabric">("overview");
   const { width } = useWindowDimensions();
   const { header } = detail;
   const productType = formatProductType(header.productTypeAlias, header.productTypeCode);
@@ -233,7 +240,15 @@ export default function WorkOrderDetailOverview(props: Props) {
         ) : <View />}
         <View style={styles.navigationActions}>
           {props.canEdit && !props.editing ? (
-            <Pressable accessibilityLabel="제작 카드 기본정보 수정" accessibilityRole="button" onPress={props.onBeginEdit} style={styles.editEntry}>
+            <Pressable
+              accessibilityLabel="제작 카드 기본정보 수정"
+              accessibilityRole="button"
+              onPress={() => {
+                setActiveSection("overview");
+                props.onBeginEdit();
+              }}
+              style={styles.editEntry}
+            >
               <PencilLine color="#874423" size={15} />
               <Text style={styles.editEntryText}>기본정보 수정</Text>
             </Pressable>
@@ -298,11 +313,34 @@ export default function WorkOrderDetailOverview(props: Props) {
 
           <View style={styles.tabRailFrame}>
             <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.tabRail}>
-              <View accessibilityState={{ selected: true }} style={[styles.tab, styles.tabSelected]}>
-                <Text style={[styles.tabText, styles.tabTextSelected]}>개요</Text>
-                <View style={[styles.tabUnderline, styles.tabUnderlineSelected]} />
-              </View>
-              {FUTURE_TABS.map((tab) => (
+              <Pressable
+                accessibilityRole="button"
+                accessibilityState={{ selected: activeSection === "overview" }}
+                onPress={() => setActiveSection("overview")}
+                style={[styles.tab, activeSection === "overview" && styles.tabSelected]}
+              >
+                <Text style={[styles.tabText, activeSection === "overview" && styles.tabTextSelected]}>개요</Text>
+                <View style={[styles.tabUnderline, activeSection === "overview" && styles.tabUnderlineSelected]} />
+              </Pressable>
+              {SECTION_TABS.map((tab) => tab.id === "fabric" ? (
+                <Pressable
+                  key={tab.id}
+                  accessibilityLabel={`원단 ${tab.count(detail)}건`}
+                  accessibilityRole="button"
+                  accessibilityState={{ selected: activeSection === "fabric" }}
+                  onPress={() => {
+                    setActiveSection("fabric");
+                    props.onOpenMaterials();
+                  }}
+                  style={[styles.tab, activeSection === "fabric" && styles.tabSelected]}
+                >
+                  <View style={styles.tabLabelRow}>
+                    <Text style={[styles.tabText, activeSection === "fabric" && styles.tabTextSelected]}>{tab.label}</Text>
+                    <Text style={styles.tabCount}>{tab.count(detail)}</Text>
+                  </View>
+                  <View style={[styles.tabUnderline, activeSection === "fabric" && styles.tabUnderlineSelected]} />
+                </Pressable>
+              ) : (
                 <Pressable
                   key={tab.id}
                   accessibilityLabel={`${tab.label}, 다음 단계에서 연결 예정`}
@@ -320,19 +358,28 @@ export default function WorkOrderDetailOverview(props: Props) {
                 </Pressable>
               ))}
             </ScrollView>
-            <Text style={styles.tabNotice}>다른 탭은 다음 단계에서 연결 예정입니다.</Text>
+            <Text style={styles.tabNotice}>원단 외 다른 탭은 다음 단계에서 연결 예정입니다.</Text>
           </View>
 
-          <View style={styles.overviewSection}>
-            <ReadinessPanel detail={detail} />
-            <Section title="금액 요약">
-              <MetricLine label="원단 총액" value={formatAmount(detail.amounts.fabricTotal, currency)} />
-              <MetricLine label="부자재 총액" value={formatAmount(detail.amounts.accessoryTotal, currency)} />
-              <MetricLine label="공정 총액" value={formatAmount(detail.amounts.processTotal, currency)} />
-              <MetricLine label="한벌 단가" value={formatAmount(detail.amounts.unitPrice, currency)} />
-              <MetricLine emphasized label="총 예상" value={formatAmount(detail.amounts.estimatedTotal, currency)} />
-            </Section>
-          </View>
+          {activeSection === "overview" ? (
+            <View style={styles.overviewSection}>
+              <ReadinessPanel detail={detail} />
+              <Section title="금액 요약">
+                <MetricLine label="원단 총액" value={formatAmount(detail.amounts.fabricTotal, currency)} />
+                <MetricLine label="부자재 총액" value={formatAmount(detail.amounts.accessoryTotal, currency)} />
+                <MetricLine label="공정 총액" value={formatAmount(detail.amounts.processTotal, currency)} />
+                <MetricLine label="한벌 단가" value={formatAmount(detail.amounts.unitPrice, currency)} />
+                <MetricLine emphasized label="총 예상" value={formatAmount(detail.amounts.estimatedTotal, currency)} />
+              </Section>
+            </View>
+          ) : (
+            <WorkOrderMaterialsReadOnly
+              key={props.materialIdentityKey}
+              onLoadMore={props.onLoadMoreMaterials}
+              onRetry={props.onRetryMaterials}
+              state={props.materials}
+            />
+          )}
         </View>
       </ScrollView>
     </KeyboardAvoidingView>

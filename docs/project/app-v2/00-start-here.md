@@ -5,7 +5,9 @@
 This document starts the WAFL v2 App-first line.
 
 Previous baseline: `0.30.0-alpha.27`.
-Current baseline: `2.0.0-alpha.47`.
+Current baseline: `2.0.0-alpha.48`.
+
+Alpha.48 activates only the live ProductionCard `원단` tab. It consumes the existing tenant-scoped material Read API through Tailscale Serve with lazy loading, a bounded WorkOrder cache, request identity protection, explicit retry/pagination, actual decimal-preserving fields, and the accepted compact material-card presentation. External cellular iPhone functional and UI-conformity QA passed after a presentation-only correction; all business/R2/PDF/token/native/EAS effects remained zero. See `47-mobile-materials-real-read-evidence.md`.
 
 Alpha.47 replaces the normal external developer code-entry step with tailnet-only Tailscale Serve HTTPS auto-connect. The Serve-supplied login is accepted only on one exact Serve host and compared through a process-local hash pair to one active WAFL system administrator; the resulting workspace session targets the canonical simulator Company A. Cloudflare remains Preview/Viewer-only, the one-time code remains fallback, and the default runner remains read-only. External cellular iPhone acceptance passed code-free launch, disconnect, explicit reconnect, close/reopen, and cold-restart auto-connect; see `46-mobile-tailscale-serve-developer-auto-connect-evidence.md`.
 

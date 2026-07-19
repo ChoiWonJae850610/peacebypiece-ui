@@ -12,7 +12,7 @@ const apiClient = read("apps/mobile/lib/apiClient.ts");
 const mock = read("apps/mobile/components/ProductionCardMock.tsx");
 const externalQa = read("lib/external-qa/configCore.mjs");
 
-assert.match(version, /APP_VERSION = "2\.0\.0-alpha\.47"/);
+assert.match(version, /APP_VERSION = "2\.0\.0-alpha\.48"/);
 assert.doesNotMatch(detail, /mockProductionCard|productionCards|summaryMetrics|costMetrics|overviewInfo|nextCheckByTab|constants\/mockProductionCard/);
 assert.match(detail, /WorkOrderDetailCore/);
 assert.match(detail, /testID="production-card-sheet"/);
@@ -44,12 +44,13 @@ for (const field of ["header.productName", "header.totalQuantity", "header.dueDa
 assert.doesNotMatch(detail, /header\.id/);
 assert.match(detail, /대표 이미지 준비 중/);
 assert.doesNotMatch(detail, /<Image\b|Image\s*from\s*["']react-native/);
-assert.doesNotMatch(apiClient, /\/materials|\/processes|\/assets|\/documents|\/history|\/size-color|\/size-spec/);
+assert.doesNotMatch(apiClient, /\/processes|\/assets|\/documents|\/history|\/size-color|\/size-spec/);
 assert.doesNotMatch(apiClient, /method: "(?:PUT|DELETE)"/);
 
 for (const tab of ["개요", "이미지·첨부", "사이즈·색상", "원단", "부자재", "제작 플로우", "출력·공유"]) assert.match(detail, new RegExp(tab));
 assert.match(detail, /accessibilityState=\{\{ disabled: true \}\}/);
 assert.match(detail, /disabled\s*\n/);
+assert.match(detail, /setActiveSection/);
 assert.doesNotMatch(detail, /setActiveTab|activeTab/);
 assert.match(detail, /다른 탭은 다음 단계에서 연결 예정입니다/);
 

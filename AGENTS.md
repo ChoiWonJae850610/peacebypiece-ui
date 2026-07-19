@@ -51,11 +51,12 @@
   47. `docs/project/app-v2/44-mobile-production-card-core-overview-evidence.md`
   48. `docs/project/app-v2/45-mobile-basic-info-update-evidence.md`
   49. `docs/project/app-v2/46-mobile-tailscale-serve-developer-auto-connect-evidence.md`
-  50. `docs/project/v2/00-start-here.md` through `docs/project/v2/14-operational-policy-absorption.md`
-  51. `docs/project/25-korean-unicode-encoding-standard.md`
-  52. `docs/project/32-product-completion-and-ui-evidence-standard.md`
-  53. `docs/project/26-final-policy-decisions-and-master-todo.md`
-  54. `docs/project/31-pre-codex-integrated-master-plan.md`
+  50. `docs/project/app-v2/47-mobile-materials-real-read-evidence.md`
+  51. `docs/project/v2/00-start-here.md` through `docs/project/v2/14-operational-policy-absorption.md`
+  52. `docs/project/25-korean-unicode-encoding-standard.md`
+  53. `docs/project/32-product-completion-and-ui-evidence-standard.md`
+  54. `docs/project/26-final-policy-decisions-and-master-todo.md`
+  55. `docs/project/31-pre-codex-integrated-master-plan.md`
 - `docs/project/app-v2/*` is the priority authority for the `2.0.x` App-first line.
 - Existing `docs/project/v2/*` documents are not deleted. They remain the `0.30.x` `/ui` design baseline and preserved policy reference for Product, Sheet/Card, Korean role labels, Neon/R2/Worker, PDF/share, mobile-web, and QA rules.
 - `www.wafl.co.kr` is the public marketing, download, pricing, examples, inquiry, trial-request, and waitlist landing site for the WAFL app.
@@ -88,6 +89,8 @@
 - `docs/project/app-v2/43-mobile-real-data-read-only-evidence.md` defines the alpha.44 process-memory development connection, exact external read/session allowlist, existing WAFL auth-cookie reuse, real WorkOrder list/core-detail mobile slice, and physical-device acceptance gate. It authorizes no WorkOrder command, lazy-tab read, migration, seed, DB/R2/PDF/token mutation, native dependency, EAS Build, EAS Update, or production access.
 - `docs/project/app-v2/44-mobile-production-card-core-overview-evidence.md` defines the alpha.45 live ProductionCard read-only shell over the existing core-detail response, user-priority overview information architecture, actual count badges on visible disabled future tabs, and phone/tablet-static acceptance boundary. It authorizes no lazy-tab read, representative-image/object fetch, WorkOrder command, DB/R2/PDF/token mutation, native dependency, EAS Build, EAS Update, or production access.
 - `docs/project/app-v2/45-mobile-basic-info-update-evidence.md` records the alpha.46 owner-approved retained synthetic draft, one draft-only mobile save of product name/due date/total quantity, optimistic-concurrency conflict proof, date-only serialization correction, and physical iPhone acceptance. The default runner remains read-only; the historical bounded approval authorizes no additional create/PATCH, material/process/revision command, migration, R2/PDF/token operation, native dependency, EAS Build, EAS Update, cleanup, or production access.
+- `docs/project/app-v2/46-mobile-tailscale-serve-developer-auto-connect-evidence.md` records the alpha.47 tailnet-only Serve identity boundary, exact process-local developer mapping, dual mobile origins, code-free external-cellular acceptance, and hardened canonical stop. It authorizes no public/Funnel login, production access, persistent identity secret, business mutation, native dependency, EAS Build, or EAS Update.
+- `docs/project/app-v2/47-mobile-materials-real-read-evidence.md` records the alpha.48 live ProductionCard fabric Read tab, per-WorkOrder lazy/cache/request-identity boundary, accepted material-card presentation, external-cellular iPhone acceptance, and mutation-zero teardown. It authorizes no material write/order Command, other tab implementation, migration, R2/PDF/token operation, production access, native dependency, EAS Build, or EAS Update.
 - `docs/project/app-v2/46-mobile-tailscale-serve-developer-auto-connect-evidence.md` records the alpha.47 tailnet-only Serve HTTPS developer auto-connect boundary, exact process-local identity hash pair, canonical simulator Company A effective session, dual API/Preview origins, manual-code fallback, disconnect suppression, bounded exact-PID Serve metadata fallback, protected stale-PID reuse, structural Funnel status, runner ownership, and external-device acceptance gate. It authorizes no Funnel, tailnet policy change, public auto-connect, business mutation, R2/PDF/token operation, production access, native dependency, EAS Build, or EAS Update.
 - Normal mobile production-card screens are portrait-first. Mobile landscape is not the default production-card target; the future sketch/drawing module may be the mobile-landscape exception.
 - Tablet app screens must support portrait and landscape without becoming a compressed desktop admin layout.

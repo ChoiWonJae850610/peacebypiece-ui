@@ -4,18 +4,18 @@ import path from "node:path";
 
 const read = (relativePath) => fs.readFileSync(path.resolve(relativePath), "utf8");
 
-assert.match(read("lib/constants/version.ts"), /2\.0\.0-alpha\.47/);
-assert.match(read("apps/mobile/constants/version.ts"), /2\.0\.0-alpha\.47/);
+assert.match(read("lib/constants/version.ts"), /2\.0\.0-alpha\.48/);
+assert.match(read("apps/mobile/constants/version.ts"), /2\.0\.0-alpha\.48/);
 const mobilePackage = JSON.parse(read("apps/mobile/package.json"));
 const mobileLock = JSON.parse(read("apps/mobile/package-lock.json"));
 const appConfig = JSON.parse(read("apps/mobile/app.json"));
 const easConfig = JSON.parse(read("apps/mobile/eas.json"));
 
-assert.equal(mobilePackage.version, "2.0.0-alpha.47");
-assert.equal(mobileLock.version, "2.0.0-alpha.47");
-assert.equal(mobileLock.packages[""].version, "2.0.0-alpha.47");
+assert.equal(mobilePackage.version, "2.0.0-alpha.48");
+assert.equal(mobileLock.version, "2.0.0-alpha.48");
+assert.equal(mobileLock.packages[""].version, "2.0.0-alpha.48");
 assert.equal(appConfig.expo.version, "2.0.0");
-assert.equal(appConfig.expo.extra.appVersion, "2.0.0-alpha.47");
+assert.equal(appConfig.expo.extra.appVersion, "2.0.0-alpha.48");
 assert.equal(appConfig.expo.extra.mockOnly, false);
 assert.equal(appConfig.expo.extra.dataMode, "dev-test-tailscale-auto-connect");
 assert.equal(appConfig.expo.owner, "lostab");
@@ -52,7 +52,7 @@ assert.match(apiClient, /\/api\/v2\/work-orders\/\$\{encodeURIComponent\(workOrd
 assert.match(apiClient, /\/api\/dev\/mobile-connect\/exchange/);
 assert.match(apiClient, /\/api\/dev\/mobile-connect\/disconnect/);
 assert.doesNotMatch(apiClient, /method: "(PUT|DELETE)"/);
-assert.doesNotMatch(apiClient, /\/materials|\/processes|\/assets|\/documents|\/history|\/size-color|\/size-spec/);
+assert.doesNotMatch(apiClient, /\/processes|\/assets|\/documents|\/history|\/size-color|\/size-spec/);
 assert.doesNotMatch(mobileRuntime, /<Image\b|Image\s*from\s*["']react-native/);
 assert.doesNotMatch(app, /setInterval|setTimeout\s*\(.*getWorkOrder|poll/i);
 assert.match(app, /useWindowDimensions/);
