@@ -2,6 +2,20 @@
 
 Status: `ALPHA43_EXTERNAL_MOBILE_QA_AND_IOS_DEVELOPMENT_BUILD_COMPLETE`.
 
+## Alpha.47 DeveloperAutoConnect mode
+
+Use `-MobileTransport DeveloperAutoConnect` only after the read-only identity/DB mapping preflight and static verification pass. The runner requires empty pre-existing Serve/Funnel configuration, derives the current user-owned Tailscale login and Serve DNS name, resolves exactly one active WAFL system administrator and one `wafl-fn-company-a` company-admin target, and starts Next on `127.0.0.1`. Full identities and hashes are never printed; marker/status may contain only a short hash prefix.
+
+Foreground `tailscale serve --https=443 http://127.0.0.1:<NextPort>` is runner-owned. If the CLI requests first-time HTTPS consent, preserve state and stop for owner action; do not open the URL or change the admin console. Never use Funnel, `tailscale serve reset`, or persistent `--bg` as an automatic fallback. Canonical stop terminates the exact Serve child and verifies the WAFL Serve configuration is gone, Funnel is unchanged, Tailscale remains running, and unrelated localhost:3000 is untouched.
+
+Stop normally uses exact CIM ownership. If the initial exact-PID Serve CIM object is unavailable, one WMI lookup of that same marker-owned PID is permitted; PID, owner marker, normalized start/creation second, canonical executable, exact Serve command, exact localhost backend, and Funnel-disabled config must all match. A missing field or mismatch blocks termination. If a marker PID exists with a different StartTime, the original runner process is already stopped and the current PID is protected as unrelated reuse: send no termination signal and record an informational already-stopped result. Do not classify a same-StartTime path/command mismatch or metadata failure as PID reuse.
+
+Funnel status is structural: only explicit `AllowFunnel: true` means enabled. A foreground Serve object with false, null, or missing `AllowFunnel` remains Funnel-disabled. Parse failure is never disabled PASS. Alpha.47 final stop ended in `stopped` with all roles already stopped, Serve config empty, true count zero, ports 3000/3100/8081 listener zero, Tailscale Running, ownership skip zero, and unrelated termination zero.
+
+Metro receives the exact Serve API origin and Cloudflare Preview origin, but no identity hash, DB fingerprint, session secret, or Command approval. The default DeveloperAutoConnect mode is read-only. The mobile boot sequence checks auth once, attempts auto-connect once after 401, rechecks auth, and loads the list. Explicit disconnect suppresses same-process auto-connect; manual code entry remains an explicit fallback.
+
+Alpha.47 completion record: Serve HTTPS readiness and the bounded auto/auth/list/disconnect preflight passed, the Tailscale Metro manifest advertised the exact private endpoint, and one bounded bundle transfer returned JavaScript without execution or persistence. The owner then reported external cellular iPhone PASS for code-free launch, disconnect, explicit reconnect, close/reopen, and cold-restart auto-connect. Request-level Next access logging was not enabled, so do not reconstruct per-route iPhone counts. The final run did not repeat the manual fallback screen; preserve its source/contract regression and alpha.44 physical-runtime evidence.
+
 ## Alpha.46 explicit basic-info mutation mode
 
 The runner defaults to read-only. After static verification, a read-only Company A preflight, and the owner's exact `QA_DRAFT_A` value approval, start once with `-EnableAlpha46BasicInfoMutation`. This adds the alpha.46 basic-info Command approval and external PATCH flag only to Next. Metro receives no Command variables. The external proxy then admits PATCH only for one canonical UUID core-detail path in non-production; collection POST/PATCH, lazy paths, materials, processes, revisions, and OPTIONS remain blocked.

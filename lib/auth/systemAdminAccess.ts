@@ -32,6 +32,20 @@ export async function findActiveSystemAdminByEmail(email: string): Promise<Activ
   return result.rows[0] ?? null;
 }
 
+export async function listActiveSystemAdministratorsForExactMapping(): Promise<readonly ActiveSystemAdmin[]> {
+  const result = await queryDb<ActiveSystemAdmin>(
+    `
+      SELECT id, email, name
+      FROM system_users
+      WHERE role = 'system_admin'
+        AND is_active = true
+      ORDER BY id
+      LIMIT 2
+    `,
+  );
+  return result.rows;
+}
+
 export async function isActiveSystemAdminSession(
   session: Pick<WaflSessionPayload, "email"> | null | undefined,
 ): Promise<boolean> {

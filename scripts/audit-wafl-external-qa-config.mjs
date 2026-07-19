@@ -17,7 +17,9 @@ try {
   console.log(JSON.stringify({
     result: "WAFL_EXTERNAL_QA_CONFIG_PASS",
     externalQa: config.externalQa,
-    webOriginConfigured: Boolean(config.origin),
+    webOriginConfigured: Boolean(config.webOrigin),
+    apiOriginConfigured: Boolean(config.apiOrigin),
+    developerAutoConnect: config.developerAutoConnect,
     developmentBuildStaticCompatibility: "PASS",
     expoGoOfficialQa: "EXCLUDED",
     rawOriginLogged: false,

@@ -16,15 +16,15 @@ const detail = read("apps/mobile/components/WorkOrderDetailOverview.tsx");
 const client = read("apps/mobile/lib/apiClient.ts");
 const types = read("apps/mobile/lib/apiTypes.ts");
 
-assert.match(version, /APP_VERSION = "2\.0\.0-alpha\.46"/);
-assert.match(mobileVersion, /MOBILE_APP_VERSION = "2\.0\.0-alpha\.46"/);
-assert.equal(mobilePackage.version, "2.0.0-alpha.46");
-assert.equal(mobileLock.version, "2.0.0-alpha.46");
-assert.equal(mobileLock.packages[""].version, "2.0.0-alpha.46");
+assert.match(version, /APP_VERSION = "2\.0\.0-alpha\.47"/);
+assert.match(mobileVersion, /MOBILE_APP_VERSION = "2\.0\.0-alpha\.47"/);
+assert.equal(mobilePackage.version, "2.0.0-alpha.47");
+assert.equal(mobileLock.version, "2.0.0-alpha.47");
+assert.equal(mobileLock.packages[""].version, "2.0.0-alpha.47");
 assert.equal(appConfig.expo.version, "2.0.0");
-assert.equal(appConfig.expo.extra.appVersion, "2.0.0-alpha.46");
+assert.equal(appConfig.expo.extra.appVersion, "2.0.0-alpha.47");
 assert.equal(appConfig.expo.extra.mockOnly, false);
-assert.equal(appConfig.expo.extra.dataMode, "dev-test-basic-info-write");
+assert.equal(appConfig.expo.extra.dataMode, "dev-test-tailscale-auto-connect");
 assert.equal(appConfig.expo.ios.bundleIdentifier, "com.wafl.app");
 assert.equal(appConfig.expo.android.package, "com.wafl.app");
 assert.deepEqual(easConfig, {

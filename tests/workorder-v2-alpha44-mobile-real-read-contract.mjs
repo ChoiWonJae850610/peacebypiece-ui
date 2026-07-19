@@ -4,20 +4,20 @@ import path from "node:path";
 
 const read = (relativePath) => fs.readFileSync(path.resolve(relativePath), "utf8");
 
-assert.match(read("lib/constants/version.ts"), /2\.0\.0-alpha\.46/);
-assert.match(read("apps/mobile/constants/version.ts"), /2\.0\.0-alpha\.46/);
+assert.match(read("lib/constants/version.ts"), /2\.0\.0-alpha\.47/);
+assert.match(read("apps/mobile/constants/version.ts"), /2\.0\.0-alpha\.47/);
 const mobilePackage = JSON.parse(read("apps/mobile/package.json"));
 const mobileLock = JSON.parse(read("apps/mobile/package-lock.json"));
 const appConfig = JSON.parse(read("apps/mobile/app.json"));
 const easConfig = JSON.parse(read("apps/mobile/eas.json"));
 
-assert.equal(mobilePackage.version, "2.0.0-alpha.46");
-assert.equal(mobileLock.version, "2.0.0-alpha.46");
-assert.equal(mobileLock.packages[""].version, "2.0.0-alpha.46");
+assert.equal(mobilePackage.version, "2.0.0-alpha.47");
+assert.equal(mobileLock.version, "2.0.0-alpha.47");
+assert.equal(mobileLock.packages[""].version, "2.0.0-alpha.47");
 assert.equal(appConfig.expo.version, "2.0.0");
-assert.equal(appConfig.expo.extra.appVersion, "2.0.0-alpha.46");
+assert.equal(appConfig.expo.extra.appVersion, "2.0.0-alpha.47");
 assert.equal(appConfig.expo.extra.mockOnly, false);
-assert.equal(appConfig.expo.extra.dataMode, "dev-test-basic-info-write");
+assert.equal(appConfig.expo.extra.dataMode, "dev-test-tailscale-auto-connect");
 assert.equal(appConfig.expo.owner, "lostab");
 assert.equal(appConfig.expo.slug, "wafl-mobile");
 assert.equal(appConfig.expo.ios.bundleIdentifier, "com.wafl.app");
@@ -57,7 +57,7 @@ assert.doesNotMatch(mobileRuntime, /<Image\b|Image\s*from\s*["']react-native/);
 assert.doesNotMatch(app, /setInterval|setTimeout\s*\(.*getWorkOrder|poll/i);
 assert.match(app, /useWindowDimensions/);
 assert.match(app, /width >= 768/);
-assert.match(app, /"booting"[\s\S]*"disconnected"[\s\S]*"connecting"[\s\S]*"authenticated-loading-list"[\s\S]*"list-ready"[\s\S]*"detail-loading"[\s\S]*"detail-ready"[\s\S]*"recoverable-error"[\s\S]*"session-expired"/);
+assert.match(app, /"booting"[\s\S]*"session-checking"[\s\S]*"developer-auto-connecting"[\s\S]*"disconnected-auto-failed"[\s\S]*"manual-code-entry"[\s\S]*"connecting-manual"[\s\S]*"authenticated-loading-list"[\s\S]*"list-ready"[\s\S]*"detail-loading"[\s\S]*"detail-ready"[\s\S]*"recoverable-error"[\s\S]*"session-expired"/);
 for (const forbidden of ["저장", "수정", "발주", "삭제"]) assert.doesNotMatch(detail, new RegExp(`>${forbidden}<`));
 assert.match(list, /현재 불러온 카드/);
 assert.match(list, /representativeThumbnail \? "이미지 있음" : "이미지 없음"/);

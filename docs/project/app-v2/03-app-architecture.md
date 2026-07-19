@@ -17,6 +17,8 @@ Next.js remains active for:
 
 ## Infrastructure baseline
 
+Alpha.47 external developer QA uses three bounded transports: Expo Metro over private Tailscale LAN HTTP, authentication and WorkOrder API over tailnet-only Tailscale Serve HTTPS, and Preview/Viewer over the process-owned Cloudflare Quick Tunnel. The Serve backend binds only `127.0.0.1`; Funnel is forbidden. Request `Host` selects one exact transport allowlist, and `x-forwarded-host` is never an authority input.
+
 The App-first line preserves the existing infrastructure direction:
 
 - Neon DB remains the metadata and business-state source of truth.

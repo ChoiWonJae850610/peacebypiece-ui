@@ -40,7 +40,7 @@ assert.equal(normalizeRequestHost(`${quickHost}:443`), quickHost);
 assert.equal(normalizeRequestHost(`${quickHost},attacker.invalid`), null);
 assert.deepEqual(readExternalQaServerConfig({ WAFL_EXTERNAL_QA_ENABLED: "false" }), { enabled: false });
 
-assert.deepEqual(readMobileQaConfig({ WAFL_SERVER_RUNTIME_MODE: "dev" }), { externalQa: false, origin: null });
+assert.deepEqual(readMobileQaConfig({ WAFL_SERVER_RUNTIME_MODE: "dev" }), { externalQa: false, origin: null, apiOrigin: null, webOrigin: null, developerAutoConnect: false });
 assert.equal(readMobileQaConfig({
   WAFL_SERVER_RUNTIME_MODE: "dev",
   EXPO_PUBLIC_WAFL_EXTERNAL_QA: "true",
@@ -112,7 +112,7 @@ const mobileConfig = JSON.parse(read("apps/mobile/app.json"));
 assert.equal(mobileConfig.expo.owner, "lostab");
 assert.equal(mobileConfig.expo.slug, "wafl-mobile");
 assert.equal(mobileConfig.expo.version, "2.0.0");
-assert.equal(mobileConfig.expo.extra.appVersion, "2.0.0-alpha.46");
+assert.equal(mobileConfig.expo.extra.appVersion, "2.0.0-alpha.47");
 assert.equal(mobileConfig.expo.extra.eas.projectId, "6cc3b260-a2cc-4c97-9c15-764bda530836");
 assert.equal(mobileConfig.expo.ios.bundleIdentifier, "com.wafl.app");
 assert.equal(mobileConfig.expo.ios.config.usesNonExemptEncryption, false);
@@ -156,7 +156,7 @@ for (const config of [defaultMobileConfig, productionMobileConfig, developmentMo
   assert.equal(config.owner, "lostab");
   assert.equal(config.slug, "wafl-mobile");
   assert.equal(config.version, "2.0.0");
-  assert.equal(config.extra.appVersion, "2.0.0-alpha.46");
+  assert.equal(config.extra.appVersion, "2.0.0-alpha.47");
   assert.equal(config.extra.eas.projectId, "6cc3b260-a2cc-4c97-9c15-764bda530836");
   assert.equal(config.ios.bundleIdentifier, "com.wafl.app");
   assert.equal(config.ios.config.usesNonExemptEncryption, false);
@@ -180,10 +180,10 @@ const stopScript = read("tools/dev/stop-wafl-external-qa.ps1");
 const commonScript = read("tools/dev/wafl-external-qa-common.ps1");
 assert.match(startScript, /quick-tunnel-origin-validated/);
 assert.match(startScript, /EXPO_PUBLIC_WAFL_WEB_BASE_URL/);
-assert.match(startScript, /ValidateSet\("ExpoTunnelLegacyDisabled", "Lan", "TailscaleLan"\)/);
+assert.match(startScript, /ValidateSet\("ExpoTunnelLegacyDisabled", "Lan", "TailscaleLan", "DeveloperAutoConnect"\)/);
 assert.match(startScript, /EXPO_PACKAGER_PROXY_URL/);
 assert.equal((startScript.match(/APP_VARIANT/g) ?? []).length, 1);
-assert.match(startScript, /if \(\$MobileTransport -eq "TailscaleLan"\) \{\s*\$mobileEnvironment\.APP_VARIANT = "development"\s*\$mobileEnvironment\.EXPO_PACKAGER_PROXY_URL/);
+assert.match(startScript, /if \(\$MobileTransport -in @\("TailscaleLan", "DeveloperAutoConnect"\)\) \{\s*\$mobileEnvironment\.APP_VARIANT = "development"\s*\$mobileEnvironment\.EXPO_PACKAGER_PROXY_URL/);
 assert.match(startScript, /expo-tailscale-lan-ready/);
 assert.match(startScript, /"--lan"/);
 assert.doesNotMatch(startScript, /"--tunnel"/);

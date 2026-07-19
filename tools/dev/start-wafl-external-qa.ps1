@@ -1,7 +1,7 @@
 ﻿param(
     [ValidateSet("production", "development")]
     [string]$NextMode = "production",
-    [ValidateSet("ExpoTunnelLegacyDisabled", "Lan", "TailscaleLan")]
+    [ValidateSet("ExpoTunnelLegacyDisabled", "Lan", "TailscaleLan", "DeveloperAutoConnect")]
     [string]$MobileTransport = "TailscaleLan",
     [int]$NextPort = 3000,
     [int]$ExpoPort = 8081,
@@ -61,6 +61,7 @@ function Test-WaflQaReadApiTarget {
             TestPrefix = $testPrefix
             ApprovedFingerprint = $approvedFingerprint
             FingerprintPrefix = $fingerprint.Substring(0, [Math]::Min(6, $fingerprint.Length))
+            DatabaseUrl = $databaseUrl
         }
     }
     catch {
@@ -124,6 +125,13 @@ $state = [ordered]@{
     readApiRuntime = "dev-test"
     fingerprintVerified = $false
     fingerprintPrefix = $null
+    tailscaleServeReady = $false
+    tailscaleServeHostname = $null
+    developerAutoConnectReady = $false
+    developerIdentityVerified = $false
+    developerLoginHashPrefix = $null
+    serveConfigOwnership = "none"
+    funnelUnchanged = $true
     commandApi = "blocked"
     mutationMode = "read-only"
     processes = @()
@@ -142,7 +150,11 @@ try {
     if ($MobileTransport -eq "ExpoTunnelLegacyDisabled") {
         throw "EXPO_TUNNEL_LEGACY_DISABLED"
     }
-    if ($MobileTransport -eq "TailscaleLan") {
+    $developerAutoConnect = $MobileTransport -eq "DeveloperAutoConnect"
+    $tailscalePath = $null
+    $developerIdentity = $null
+    $developerMapping = $null
+    if ($MobileTransport -in @("TailscaleLan", "DeveloperAutoConnect")) {
         $tailscalePath = Get-WaflQaTailscalePath
         if (-not $tailscalePath) { throw "TAILSCALE_CLI_MISSING" }
         $tailscaleRuntime = Get-WaflQaTailscaleRuntime -TailscalePath $tailscalePath
@@ -150,6 +162,43 @@ try {
         $state.expoUrl = "exp://$($state.tailscaleIpv4):$ExpoPort"
         $state.lastSuccessfulStage = "tailscale-connected"
         Write-WaflQaJson -Path (Get-WaflQaStatePath) -Value $state
+        if ($developerAutoConnect) {
+            $developerIdentity = Get-WaflQaTailscaleDeveloperIdentity -TailscalePath $tailscalePath
+            $serveStatus = @(& $tailscalePath serve status --json 2>$null)
+            if ($LASTEXITCODE -ne 0 -or -not (Test-WaflQaEmptyJsonObject -Value $serveStatus)) { throw "TAILSCALE_EXISTING_SERVE_CONFIG_CONFLICT" }
+            $funnelStatus = @(& $tailscalePath funnel status --json 2>$null)
+            if ($LASTEXITCODE -ne 0 -or -not (Test-WaflQaEmptyJsonObject -Value $funnelStatus)) { throw "TAILSCALE_EXISTING_FUNNEL_CONFIG_CONFLICT" }
+
+            $mappingEnvironment = @{
+                DATABASE_URL = $readApiTarget.DatabaseUrl
+                WAFL_ALPHA47_TAILSCALE_LOGIN = $developerIdentity.Login
+                WAFL_ALPHA47_RUNTIME = $readApiTarget.Runtime
+                WAFL_ALPHA47_TEST_PREFIX = $readApiTarget.TestPrefix
+                WAFL_ALPHA47_APPROVED_DB_FINGERPRINT = $readApiTarget.ApprovedFingerprint
+                NODE_NO_WARNINGS = "1"
+            }
+            $savedMapping = @{}
+            try {
+                foreach ($name in $mappingEnvironment.Keys) {
+                    $savedMapping[$name] = [Environment]::GetEnvironmentVariable($name, "Process")
+                    [Environment]::SetEnvironmentVariable($name, [string]$mappingEnvironment[$name], "Process")
+                }
+                $mappingText = @(& $node (Join-Path $root "scripts\resolve-wafl-alpha47-developer-mapping.mjs") 2>$null)
+                if ($LASTEXITCODE -ne 0 -or -not $mappingText.Count) { throw "ALPHA47_DEVELOPER_MAPPING_PREFLIGHT_FAILED" }
+                $developerMapping = ($mappingText -join "`n") | ConvertFrom-Json
+            }
+            finally {
+                foreach ($name in $mappingEnvironment.Keys) { [Environment]::SetEnvironmentVariable($name, $savedMapping[$name], "Process") }
+            }
+            if (-not $developerMapping.ok -or $developerMapping.activeSystemAdminCount -ne 1 -or $developerMapping.companyATargetCount -ne 1 -or $developerMapping.workorderRead -ne $true) {
+                throw "ALPHA47_DEVELOPER_MAPPING_NOT_EXACT"
+            }
+            $state.tailscaleServeHostname = $developerIdentity.DnsName
+            $state.developerIdentityVerified = $true
+            $state.developerLoginHashPrefix = ([string]$developerMapping.tailscaleLoginSha256).Substring(0, 6)
+            $state.lastSuccessfulStage = "developer-identity-mapping-ready"
+            Write-WaflQaJson -Path (Get-WaflQaStatePath) -Value $state
+        }
     }
 
     $cloudflareStdout = Join-Path $stateDir "cloudflared.stdout.log"
@@ -190,6 +239,15 @@ try {
         WAFL_V2_TEST_PREFIX = $readApiTarget.TestPrefix
         WAFL_V2_APPROVED_DB_FINGERPRINT = $readApiTarget.ApprovedFingerprint
     }
+    if ($developerAutoConnect) {
+        $serverEnvironment.WAFL_TAILSCALE_DEVELOPER_AUTO_CONNECT_ENABLED = "true"
+        $serverEnvironment.WAFL_TAILSCALE_SERVE_ORIGIN = $developerIdentity.ServeOrigin
+        $serverEnvironment.WAFL_TAILSCALE_SERVE_HOST_ALLOWLIST = $developerIdentity.DnsName
+        $serverEnvironment.WAFL_TAILSCALE_DEVELOPER_LOGIN_SHA256 = [string]$developerMapping.tailscaleLoginSha256
+        $serverEnvironment.WAFL_DEVELOPER_SYSTEM_ADMIN_EMAIL_SHA256 = [string]$developerMapping.systemAdminEmailSha256
+        $serverEnvironment.WAFL_TAILSCALE_SERVE_BACKEND_LOOPBACK = "true"
+        $serverEnvironment.WAFL_TAILSCALE_FUNNEL_DISABLED = "true"
+    }
     if ($EnableAlpha46BasicInfoMutation) {
         $serverEnvironment.WAFL_V2_COMMAND_API_ENABLED = "1"
         $serverEnvironment.WAFL_V2_COMMAND_MUTATION_APPROVED = "2.0.0-alpha.46-dev-test-mobile-basic-info-runtime"
@@ -219,12 +277,49 @@ try {
     $state.lastSuccessfulStage = "next-local-readiness-pass"
     Write-WaflQaJson -Path (Get-WaflQaStatePath) -Value $state
 
+    if ($developerAutoConnect) {
+        $serveStdout = Join-Path $stateDir "tailscale-serve.stdout.log"
+        $serveStderr = Join-Path $stateDir "tailscale-serve.stderr.log"
+        $serve = Start-WaflQaOwnedProcess -Role "tailscale-serve" -FilePath $tailscalePath -ArgumentList @("serve", "--https=443", "http://127.0.0.1:$NextPort") -WorkingDirectory $root -OwnerMarker $ownerMarker -Environment @{} -StdoutPath $serveStdout -StderrPath $serveStderr
+        $state.processes += $serve
+        $state.serveConfigOwnership = "foreground-process"
+        $state.lastSuccessfulStage = "tailscale-serve-started"
+        Write-WaflQaJson -Path (Get-WaflQaStatePath) -Value $state
+
+        $serveDeadline = [DateTime]::UtcNow.AddSeconds(45)
+        $serveReady = $false
+        while ([DateTime]::UtcNow -lt $serveDeadline -and -not $serveReady) {
+            if (-not (Get-Process -Id $serve.pid -ErrorAction SilentlyContinue)) {
+                $serveLog = ((@(Get-Content -LiteralPath $serveStdout -Tail 80 -Encoding UTF8 -ErrorAction SilentlyContinue) + @(Get-Content -LiteralPath $serveStderr -Tail 80 -Encoding UTF8 -ErrorAction SilentlyContinue)) -join "`n")
+                if ($serveLog -match 'https://login\.tailscale\.com/' -or $serveLog -match 'enable.*https') { throw "TAILSCALE_SERVE_HTTPS_CONSENT_REQUIRED" }
+                throw "TAILSCALE_SERVE_PROCESS_EXITED"
+            }
+            try {
+                $serveResponse = Invoke-WebRequest -UseBasicParsing -Uri "$($developerIdentity.ServeOrigin)/api/auth/me" -Method Get -TimeoutSec 5
+                $serveReady = $serveResponse.StatusCode -in @(200, 401)
+            }
+            catch {
+                if ($_.Exception.Response -and [int]$_.Exception.Response.StatusCode -eq 401) { $serveReady = $true }
+                else { Start-Sleep -Milliseconds 250 }
+            }
+        }
+        if (-not $serveReady) { throw "TAILSCALE_SERVE_HTTPS_READINESS_FAILED" }
+        $state.tailscaleServeReady = $true
+        $state.developerAutoConnectReady = $true
+        $state.lastSuccessfulStage = "tailscale-serve-https-ready"
+        Write-WaflQaJson -Path (Get-WaflQaStatePath) -Value $state
+    }
+
     $mobileEnvironment = @{
         WAFL_SERVER_RUNTIME_MODE = "dev"
         EXPO_PUBLIC_WAFL_WEB_BASE_URL = $state.publicOrigin
         EXPO_PUBLIC_WAFL_EXTERNAL_QA = "true"
     }
-    if ($MobileTransport -eq "TailscaleLan") {
+    if ($developerAutoConnect) {
+        $mobileEnvironment.EXPO_PUBLIC_WAFL_API_BASE_URL = $developerIdentity.ServeOrigin
+        $mobileEnvironment.EXPO_PUBLIC_WAFL_DEVELOPER_AUTO_CONNECT = "true"
+    }
+    if ($MobileTransport -in @("TailscaleLan", "DeveloperAutoConnect")) {
         $mobileEnvironment.APP_VARIANT = "development"
         $mobileEnvironment.EXPO_PACKAGER_PROXY_URL = "http://$($state.tailscaleIpv4):$ExpoPort"
     }
@@ -260,7 +355,7 @@ try {
     }
     if (-not $expoLocalReady) { throw "EXPO_LAN_LOCAL_READINESS_FAILED" }
 
-    if ($MobileTransport -eq "TailscaleLan") {
+    if ($MobileTransport -in @("TailscaleLan", "DeveloperAutoConnect")) {
         try {
             $tailscaleResponse = Invoke-WebRequest -UseBasicParsing -Uri "http://$($state.tailscaleIpv4):$ExpoPort/status" -Method Get -TimeoutSec 5
             if ($tailscaleResponse.StatusCode -ne 200 -or -not (Test-WaflQaPackagerStatusRunning -Content $tailscaleResponse.Content)) {
@@ -272,7 +367,7 @@ try {
     }
 
     $state.status = "running"
-    $state.lastSuccessfulStage = if ($MobileTransport -eq "TailscaleLan") { "expo-tailscale-lan-ready" } else { "expo-lan-ready" }
+    $state.lastSuccessfulStage = if ($developerAutoConnect) { "expo-tailscale-lan-developer-auto-connect-ready" } elseif ($MobileTransport -eq "TailscaleLan") { "expo-tailscale-lan-ready" } else { "expo-lan-ready" }
     $state.updatedAtUtc = [DateTime]::UtcNow.ToString("o")
     Write-WaflQaJson -Path (Get-WaflQaStatePath) -Value $state
 

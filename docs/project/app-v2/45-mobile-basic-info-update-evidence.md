@@ -2,7 +2,7 @@
 
 Version: `2.0.0-alpha.46`
 
-Status: final source/runtime and canonical stop PASS; final Verify and delivery gates pending
+Status: `ALPHA46_MOBILE_BASIC_INFO_UPDATE_COMPLETE`
 
 ## Baseline and delivered scope
 
@@ -123,4 +123,6 @@ The owner reported the entire instructed QA as PASS:
 - native dependency/EAS Build/EAS Update: `0/0/0`
 - cleanup/rollback/delete: `0/0/0`
 
-Canonical stop ended the three marker-owned cloudflared/Next/Metro processes with ownership skip `0` and released ports 3100/8081. The separately owned localhost:3000 login server and Tailscale service remained running. The final source/document Verify, push, Source ZIP, and matching repo-state remain delivery gates whose actual identities are recorded only after successful execution; no temporary origin, internal UUID, credential, session, cookie, raw form payload, or full DB fingerprint is tracked.
+Canonical stop ended the three marker-owned cloudflared/Next/Metro processes with ownership skip `0` and released ports 3100/8081. The separately owned localhost:3000 login server and Tailscale service remained running.
+
+Alpha.46 closed at `ALPHA46_MOBILE_BASIC_INFO_UPDATE_COMPLETE` on 2026-07-19 00:54 KST. Final canonical Verify passed with 51 contracts and zero failures. Commit and push completed at `d70b7902623e4a4aeeb7a108b5df9790bd41cbf9`. The final Source ZIP is `peacebypiece-ui-2.0.0-alpha.46.zip`, and its matching state record is `repo-state-2.0.0-alpha.46-20260719-005306.txt`. The repo-state generator did not support every manual-QA field, so the owner-confirmed physical-device results in this document remain authoritative. No temporary origin, internal UUID, credential, session, cookie, raw form payload, or full DB fingerprint is tracked.

@@ -12,6 +12,12 @@ export type MobileConnectExchangeResponse = {
   readonly connected: true;
 };
 
+export type MobileDeveloperAutoConnectResponse = {
+  readonly ok: true;
+  readonly connected: true;
+  readonly mode: "tailscale-developer";
+};
+
 export type MobileConnectErrorResponse = {
   readonly ok: false;
   readonly code: string;

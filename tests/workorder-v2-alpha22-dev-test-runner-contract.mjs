@@ -198,17 +198,18 @@ const alpha44ApiChanges = [
   "?? app/api/dev/mobile-connect/code/route.ts",
   "?? app/api/dev/mobile-connect/exchange/route.ts",
   "?? app/api/dev/mobile-connect/disconnect/route.ts",
+  "?? app/api/dev/mobile-connect/auto/route.ts",
 ];
 const alpha39ContractExists = fs.existsSync(path.join(root, "tests/workorder-v2-alpha39-document-viewer-security-contract.mjs"));
 const alpha40ContractExists = fs.existsSync(path.join(root, "tests/workorder-v2-alpha40-preview-output-and-action-density-contract.mjs"));
 const alpha30ContractExists = fs.existsSync(path.join(root, "tests/workorder-v2-alpha30-factory-instruction-contract.mjs"));
 const alpha27ContractExists = fs.existsSync(path.join(root, "tests/workorder-v2-alpha27-revision-issue-command-contract.mjs"));
 const alpha28ContractExists = fs.existsSync(path.join(root, "tests/workorder-v2-alpha28-issued-preview-contract.mjs"));
-if (/APP_VERSION = "2\.0\.0-alpha\.(44|45)"/.test(appVersion)) {
+if (/APP_VERSION = "2\.0\.0-alpha\.(44|45|46|47)"/.test(appVersion)) {
   assert.deepEqual(
     apiChanges.filter((change) => !alpha44ApiChanges.includes(change)),
     [],
-    "alpha.44 may add only the exact three mobile-connect API routes",
+    "alpha.44+ may add only the exact four mobile-connect API routes",
   );
 } else if (alpha40ContractExists && appVersion.includes('APP_VERSION = "2.0.0-alpha.40"')) {
   assert.deepEqual(apiChanges.filter((change) => !alpha40ApiPaths.some((allowedPath) => change.endsWith(allowedPath))), [], "alpha.40 may add only the authenticated generated-document file route under app/api");

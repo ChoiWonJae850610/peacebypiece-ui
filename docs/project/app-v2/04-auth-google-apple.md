@@ -9,6 +9,8 @@ For customer app login, prioritize:
 
 This aligns the App-first product with iPhone, iPad, and Android tablet usage.
 
+Alpha.47 Tailscale developer auto-connect is a dev/test-only QA mechanism, not customer login and not a replacement for the future native Google/Apple flow. It accepts the Serve-provided login only on the exact tailnet Serve host, maps it through a process-local hash pair to one active WAFL system administrator, and creates a bounded Company A effective workspace session. It is production-blocked, retains the one-time code fallback, and stores no raw login or email in tracked source.
+
 ## Role and permission stance
 
 The app may show Korean role labels:

@@ -1,3 +1,17 @@
+# WAFL v2 App-first Roadmap 2.0 - 2.0.0-alpha.47 checkpoint
+
+## 2.0.0-alpha.47 checkpoint
+
+Status: `ALPHA47_TAILSCALE_SERVE_DEVELOPER_AUTO_CONNECT_COMPLETE` after exact mapping, Serve HTTPS, bounded runtime, external cellular iPhone, canonical Verify/stop, Git, and handoff gates.
+
+- Add a Serve-only developer auto-connect endpoint using one exact process-local Tailscale-login/WAFL-admin hash pair and one exact canonical simulator Company A target.
+- Split mobile API and Preview origins between tailnet-only Tailscale Serve HTTPS and the existing process-owned Cloudflare Quick Tunnel. Keep Metro on private Tailscale LAN.
+- Preserve the one-time code fallback, boot-attempt bound, disconnect suppression, exact host/path allowlists, read-only default, and all alpha.43-46 security/data boundaries.
+- External cellular iPhone QA passed code-free launch, disconnect, explicit reconnect, close/reopen, and cold-restart auto-connect. Manual fallback was not repeated on-device in the final run; its source/contract regression and alpha.44 runtime evidence remain preserved.
+- Manifest/bundle audits ended at exact cumulative counts `4/1`, both HTTP 200 with the expected media types, no redirect, no bundle execution, and no raw URL/body persistence.
+- Canonical stop preserves strict Serve ownership through one bounded exact-PID metadata fallback, protects stale PID reuse without termination, distinguishes Serve objects from explicit Funnel enablement, and finished `stopped` with empty Serve config, Funnel true count zero, Tailscale Running, and listener/ownership skip/unrelated termination zero.
+- Evidence: `46-mobile-tailscale-serve-developer-auto-connect-evidence.md`.
+
 # WAFL v2 App-first Roadmap 2.0 - 2.0.0-alpha.46 result
 
 ## 2.0.0-alpha.46 result

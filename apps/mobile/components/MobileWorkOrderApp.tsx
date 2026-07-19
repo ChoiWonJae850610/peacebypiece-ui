@@ -13,6 +13,7 @@ import WorkOrderListScreen from "@/components/WorkOrderListScreen";
 import { WAFL_FONTS } from "@/constants/fonts";
 import {
   assertMobileApiOrigin,
+  connectTailscaleDeveloper,
   disconnectMobileSession,
   exchangeMobileConnectCode,
   getCurrentMobileUser,
@@ -24,8 +25,11 @@ import { MobileApiError, type MobileCurrentUser, type WorkOrderDetailCore, type 
 
 type AppPhase =
   | "booting"
-  | "disconnected"
-  | "connecting"
+  | "session-checking"
+  | "developer-auto-connecting"
+  | "disconnected-auto-failed"
+  | "manual-code-entry"
+  | "connecting-manual"
   | "authenticated-loading-list"
   | "list-ready"
   | "detail-loading"
@@ -117,6 +121,9 @@ export default function MobileWorkOrderApp() {
   const detailRequestInFlight = useRef(false);
   const saveRequestInFlight = useRef(false);
   const clientRequestCounter = useRef(0);
+  const autoConnectInFlight = useRef(false);
+  const manualDisconnectSuppressed = useRef(false);
+  const bootStarted = useRef(false);
 
   const dirty = detail ? (
     basicInfoDraft.productName !== detail.header.productName
@@ -132,7 +139,7 @@ export default function MobileWorkOrderApp() {
       setDetail(null);
       setEditing(false);
       setSaveState("read-only");
-      setErrorState({ message: "연결이 만료되었습니다. 새 연결 코드를 입력하세요.", guidance: "다시 연결해 주세요.", correlationId: error.correlationId, retryTarget: "boot" });
+      setErrorState({ message: "연결이 만료되었습니다.", guidance: "개발자 자동 연결을 다시 실행해 주세요.", correlationId: error.correlationId, retryTarget: "boot" });
       setPhase("session-expired");
       return;
     }
@@ -160,77 +167,64 @@ export default function MobileWorkOrderApp() {
     }
   }, [setRequestError]);
 
-  const boot = useCallback(async () => {
-    await Promise.resolve();
+  const authenticateAndLoadList = useCallback(async () => {
+    const currentUser = await getCurrentMobileUser();
+    if (!currentUser.companyId || !currentUser.companyName) {
+      throw new MobileApiError({ code: "FORBIDDEN", message: "회사 연결이 필요합니다.", status: 403 });
+    }
+    setUser(currentUser);
+    const page = await getWorkOrderList();
+    setItems(page.items);
+    setHasMore(page.hasMore);
+    setPhase("list-ready");
+  }, []);
+
+  const autoConnect = useCallback(async () => {
+    if (autoConnectInFlight.current || manualDisconnectSuppressed.current) return;
+    autoConnectInFlight.current = true;
+    setErrorState(null);
+    setPhase("developer-auto-connecting");
     try {
       assertMobileApiOrigin();
-      const currentUser = await getCurrentMobileUser();
-      if (!currentUser.companyId || !currentUser.companyName) {
-        throw new MobileApiError({ code: "FORBIDDEN", message: "회사 연결이 필요합니다.", status: 403 });
-      }
-      setUser(currentUser);
-      const page = await getWorkOrderList();
-      setItems(page.items);
-      setHasMore(page.hasMore);
-      setPhase("list-ready");
+      await connectTailscaleDeveloper();
+      await authenticateAndLoadList();
+    } catch (error) {
+      setErrorState({ message: "개발자 자동 연결을 사용할 수 없습니다.", guidance: customerGuidance(error, "boot"), correlationId: error instanceof MobileApiError ? error.correlationId : null, retryTarget: "boot" });
+      setPhase("disconnected-auto-failed");
+    } finally {
+      autoConnectInFlight.current = false;
+    }
+  }, [authenticateAndLoadList]);
+
+  const boot = useCallback(async () => {
+    setPhase("session-checking");
+    try {
+      assertMobileApiOrigin();
+      await authenticateAndLoadList();
     } catch (error) {
       if (error instanceof MobileApiError && (error.code === "AUTH_REQUIRED" || error.status === 401)) {
-        setPhase("disconnected");
+        await autoConnect();
         return;
       }
       setRequestError(error, "boot");
     }
-  }, [setRequestError]);
+  }, [authenticateAndLoadList, autoConnect, setRequestError]);
 
   useEffect(() => {
-    let cancelled = false;
-    void Promise.resolve()
-      .then(async () => {
-        assertMobileApiOrigin();
-        const currentUser = await getCurrentMobileUser();
-        if (!currentUser.companyId || !currentUser.companyName) {
-          throw new MobileApiError({ code: "FORBIDDEN", message: "회사 연결이 필요합니다.", status: 403 });
-        }
-        const page = await getWorkOrderList();
-        return { currentUser, page };
-      })
-      .then(({ currentUser, page }) => {
-        if (cancelled) return;
-        setUser(currentUser);
-        setItems(page.items);
-        setHasMore(page.hasMore);
-        setPhase("list-ready");
-      })
-      .catch((error: unknown) => {
-        if (cancelled) return;
-        if (error instanceof MobileApiError && (error.code === "AUTH_REQUIRED" || error.status === 401)) {
-          setPhase("disconnected");
-          return;
-        }
-        setRequestError(error, "boot");
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [setRequestError]);
+    if (bootStarted.current) return;
+    bootStarted.current = true;
+    void boot().catch(() => undefined);
+  }, [boot]);
 
   async function connect(code: string) {
     setErrorState(null);
-    setPhase("connecting");
+    setPhase("connecting-manual");
     try {
       await exchangeMobileConnectCode(code);
-      const currentUser = await getCurrentMobileUser();
-      if (!currentUser.companyId || !currentUser.companyName) {
-        throw new MobileApiError({ code: "FORBIDDEN", message: "회사 연결이 필요합니다.", status: 403 });
-      }
-      setUser(currentUser);
-      const page = await getWorkOrderList();
-      setItems(page.items);
-      setHasMore(page.hasMore);
-      setPhase("list-ready");
+      await authenticateAndLoadList();
     } catch (error) {
       setErrorState({ message: customerMessage(error), guidance: customerGuidance(error, "boot"), correlationId: error instanceof MobileApiError ? error.correlationId : null, retryTarget: "boot" });
-      setPhase("disconnected");
+      setPhase("manual-code-entry");
     }
   }
 
@@ -305,6 +299,7 @@ export default function MobileWorkOrderApp() {
     setErrorState(null);
     try {
       await disconnectMobileSession();
+      manualDisconnectSuppressed.current = true;
       setUser(null);
       setItems([]);
       setHasMore(false);
@@ -312,7 +307,8 @@ export default function MobileWorkOrderApp() {
       setDetail(null);
       setEditing(false);
       setSaveState("read-only");
-      setPhase("disconnected");
+      setErrorState(null);
+      setPhase("disconnected-auto-failed");
     } catch (error) {
       setRequestError(error, "disconnect");
     }
@@ -493,18 +489,25 @@ export default function MobileWorkOrderApp() {
     }
   }
 
-  if (phase === "booting") {
+  if (phase === "booting" || phase === "session-checking") {
     return <SafeAreaView style={styles.safe}><View style={styles.center}><ActivityIndicator color="#9b4a27" size="large" /><Text style={styles.loadingText}>연결 상태를 확인하고 있습니다.</Text></View></SafeAreaView>;
   }
 
-  if (phase === "disconnected" || phase === "connecting" || phase === "session-expired") {
+  if (phase === "developer-auto-connecting" || phase === "disconnected-auto-failed" || phase === "manual-code-entry" || phase === "connecting-manual" || phase === "session-expired") {
     return (
       <SafeAreaView style={styles.safe}>
         <View style={styles.connectPage}>
           <MobileConnectScreen
-            connecting={phase === "connecting"}
+            autoConnecting={phase === "developer-auto-connecting"}
+            manualConnecting={phase === "connecting-manual"}
+            manualEntry={phase === "manual-code-entry" || phase === "connecting-manual"}
             message={errorState?.message ?? null}
+            onAutoConnect={() => {
+              manualDisconnectSuppressed.current = false;
+              void autoConnect();
+            }}
             onConnect={(code) => void connect(code)}
+            onUseCode={() => setPhase("manual-code-entry")}
           />
         </View>
       </SafeAreaView>

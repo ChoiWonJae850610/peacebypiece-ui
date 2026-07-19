@@ -1,4 +1,14 @@
-# WAFL v2 App-first Codex Working Rules - 2.0.0-alpha.46
+# WAFL v2 App-first Codex Working Rules - 2.0.0-alpha.47
+
+## Alpha.47 Tailscale developer identity boundary
+
+- Trust `Tailscale-User-Login` only on the exact runner-owned Serve host after dev/test, approved-DB, localhost-backend, and Funnel-disabled guards pass. Never use display name, profile picture, forwarded host, source IP alone, or a client-supplied identity field.
+- Derive one user-owned Tailscale identity and the sole active WAFL system administrator in process memory. Compare exact hashes and log only a short irreversible prefix. Never persist raw login, email, full hashes, DB fingerprint, or session material.
+- Use exact `wafl-fn-company-a` company-admin authority. Do not use provisional `test-company-a`, arbitrary first-match selection, or a system-admin session directly for workspace APIs.
+- Preserve manual one-time code fallback. Boot auto-connect is bounded to one attempt, user retry is explicit, polling is absent, and disconnect suppresses same-process immediate reconnection.
+- Serve is tailnet-only; Funnel, tailnet policy mutation, broad Serve reset, and existing configuration overwrite are forbidden. Stop only the runner-owned foreground Serve process or restore an exact owned configuration.
+- Canonical stop may use one exact-PID alternative Windows metadata lookup only when the initial marker-owned Serve CIM object is unavailable. Require exact owner marker, normalized StartTime/CreationDate, absolute executable, command grammar, and localhost backend. PID alone is never ownership. A different current StartTime proves protected PID reuse and means the original runner role is already stopped; send zero termination signals and do not weaken a same-StartTime path/command mismatch.
+- Parse Funnel status structurally. Only explicit `AllowFunnel: true` is enabled; a non-empty Serve object alone is not Funnel exposure, and malformed JSON is never disabled PASS.
 
 ## Alpha.46 mobile basic-info mutation boundary
 

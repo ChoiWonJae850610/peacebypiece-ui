@@ -1,4 +1,12 @@
-# WAFL v2 App Device Test Plan - 2.0.0-alpha.46
+# WAFL v2 App Device Test Plan - 2.0.0-alpha.47
+
+## 2.0.0-alpha.47 external developer auto-connect gate
+
+- Reuse iOS Development Build number 1. With iPhone Tailscale connected over an external cellular path, launch WAFL without viewing the home PC, localhost:3000, or a connection code.
+- Verify one boot session check, at most one Serve auto-connect after 401, Company A list/detail read, `QA_DRAFT_A` read-only display, background/re-entry, disconnect, no same-process immediate reconnect, and code-free cold-restart auto-connect.
+- Verify the manual eight-character connection screen remains reachable only as fallback. Business PATCH/POST, lazy/file, R2/PDF/token, production, polling, and automatic retry remain zero.
+- Owner-reported external cellular iPhone result: PASS for Tailscale connection, WAFL launch, code-free automatic connection, disconnect, explicit reconnect, close/reopen, and code-free cold restart, with no reported crash, red screen, or infinite loading. The owner did not separately exercise the manual fallback screen in this final run; its alpha.47 status remains source/contract regression PASS plus preserved alpha.44 physical-runtime evidence.
+- Final teardown acceptance: three partial handoffs were preserved without broad termination; the exact marker-owned Serve was ultimately stopped, stale Expo PID reuse received no termination signal, and the final canonical stop reached `stopped` with Serve config empty, Funnel true count zero, Tailscale Running, and ports 3000/3100/8081 listener zero.
 
 ## 2.0.0-alpha.46 basic-info update result
 

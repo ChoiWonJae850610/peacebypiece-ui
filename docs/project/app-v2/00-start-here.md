@@ -5,7 +5,11 @@
 This document starts the WAFL v2 App-first line.
 
 Previous baseline: `0.30.0-alpha.27`.
-Current baseline: `2.0.0-alpha.45`.
+Current baseline: `2.0.0-alpha.47`.
+
+Alpha.47 replaces the normal external developer code-entry step with tailnet-only Tailscale Serve HTTPS auto-connect. The Serve-supplied login is accepted only on one exact Serve host and compared through a process-local hash pair to one active WAFL system administrator; the resulting workspace session targets the canonical simulator Company A. Cloudflare remains Preview/Viewer-only, the one-time code remains fallback, and the default runner remains read-only. External cellular iPhone acceptance passed code-free launch, disconnect, explicit reconnect, close/reopen, and cold-restart auto-connect; see `46-mobile-tailscale-serve-developer-auto-connect-evidence.md`.
+
+Alpha.46 completed draft-only product name, calendar due date, and total-quantity editing with explicit save, optimistic concurrency, input-loss protection, PostgreSQL date-only correction, and physical-iPhone acceptance. See `45-mobile-basic-info-update-evidence.md`.
 
 Alpha.45 keeps the real alpha.44 list and core-detail transport while replacing the temporary live detail presentation with a ProductionCard-style read-only overview. It maps only actual core-detail values, performs no representative-image or lazy-tab request, and shows the future tab structure as disabled. The owner accepted the final physical-iPhone information architecture as the pre-feature-expansion shell; remaining fine visual polish is deferred until actual tabs and inputs are connected. Completion evidence and delivery identity are tracked in `44-mobile-production-card-core-overview-evidence.md` and the matching repo-state.
 

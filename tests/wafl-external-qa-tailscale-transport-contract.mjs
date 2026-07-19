@@ -16,7 +16,7 @@ assert.match(startScript, /Write-WaflQaFailureHandoff/);
 assert.match(commonScript, /TAILSCALE_DISCONNECTED/);
 assert.match(commonScript, /TAILSCALE_IPV4_NOT_FOUND/);
 assert.equal((startScript.match(/APP_VARIANT/g) ?? []).length, 1);
-assert.match(startScript, /if \(\$MobileTransport -eq "TailscaleLan"\) \{\s*\$mobileEnvironment\.APP_VARIANT = "development"\s*\$mobileEnvironment\.EXPO_PACKAGER_PROXY_URL/);
+assert.match(startScript, /if \(\$MobileTransport -in @\("TailscaleLan", "DeveloperAutoConnect"\)\) \{\s*\$mobileEnvironment\.APP_VARIANT = "development"\s*\$mobileEnvironment\.EXPO_PACKAGER_PROXY_URL/);
 assert.match(startScript, /EXPO_PACKAGER_PROXY_URL = "http:\/\/\$\(\$state\.tailscaleIpv4\):\$ExpoPort"/);
 assert.match(startScript, /http:\/\/127\.0\.0\.1:\$ExpoPort\/status/);
 assert.match(startScript, /http:\/\/\$\(\$state\.tailscaleIpv4\):\$ExpoPort\/status/);

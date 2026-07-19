@@ -14,7 +14,9 @@ const REQUEST_TIMEOUT_MS = 15_000;
 type JsonObject = Record<string, unknown>;
 
 function configuredOrigin(): string {
-  const raw = process.env.EXPO_PUBLIC_WAFL_WEB_BASE_URL?.trim();
+  const autoConnect = process.env.EXPO_PUBLIC_WAFL_DEVELOPER_AUTO_CONNECT?.trim().toLowerCase() === "true";
+  const raw = process.env.EXPO_PUBLIC_WAFL_API_BASE_URL?.trim()
+    || (!autoConnect ? process.env.EXPO_PUBLIC_WAFL_WEB_BASE_URL?.trim() : "");
   const externalQa = process.env.EXPO_PUBLIC_WAFL_EXTERNAL_QA?.trim().toLowerCase() === "true";
   if (!raw) throw new MobileApiError({ code: "API_ORIGIN_INVALID", message: "개발용 연결 주소가 설정되지 않았습니다." });
 
@@ -23,9 +25,11 @@ function configuredOrigin(): string {
     const production = process.env.NODE_ENV === "production";
     const isLocal = LOCAL_HOSTS.has(url.hostname);
     const isQuickTunnel = url.hostname.endsWith(".trycloudflare.com");
+    const isTailscaleServe = url.hostname.endsWith(".ts.net");
     if (url.username || url.password || url.pathname !== "/" || url.search || url.hash) throw new Error("origin-only");
     if (externalQa && (url.protocol !== "https:" || isLocal)) throw new Error("external-https-required");
-    if (production && (isLocal || isQuickTunnel)) throw new Error("temporary-origin-forbidden");
+    if (autoConnect && (url.protocol !== "https:" || !isTailscaleServe || isQuickTunnel)) throw new Error("tailscale-serve-origin-required");
+    if (production && (isLocal || isQuickTunnel || isTailscaleServe)) throw new Error("temporary-origin-forbidden");
     if (!new Set(["http:", "https:"]).has(url.protocol)) throw new Error("protocol");
     return url.origin;
   } catch {
@@ -114,6 +118,16 @@ export async function getCurrentMobileUser(): Promise<MobileCurrentUser> {
 export async function exchangeMobileConnectCode(code: string): Promise<void> {
   const body = await requestJson<{ readonly ok: boolean; readonly connected?: boolean }>("/api/dev/mobile-connect/exchange", { method: "POST", body: { code } });
   if (!body.ok || body.connected !== true) throw new MobileApiError({ code: "MALFORMED_RESPONSE", message: "연결 응답을 확인할 수 없습니다." });
+}
+
+export async function connectTailscaleDeveloper(): Promise<void> {
+  const body = await requestJson<{ readonly ok: boolean; readonly connected?: boolean; readonly mode?: string }>(
+    "/api/dev/mobile-connect/auto",
+    { method: "POST" },
+  );
+  if (!body.ok || body.connected !== true || body.mode !== "tailscale-developer") {
+    throw new MobileApiError({ code: "MALFORMED_RESPONSE", message: "자동 연결 응답을 확인할 수 없습니다." });
+  }
 }
 
 export async function disconnectMobileSession(): Promise<void> {

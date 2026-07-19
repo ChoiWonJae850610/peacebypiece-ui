@@ -1,4 +1,12 @@
-# WAFL v2 Expo Environment Setup Plan - 2.0.0-alpha.46
+# WAFL v2 Expo Environment Setup Plan - 2.0.0-alpha.47
+
+## Alpha.47 dual-origin developer transport
+
+Alpha.47 reuses iOS Development Build number 1 with no native dependency, ATS, plugin, EAS profile, credential, device, build-number, EAS Build, or EAS Update change. `EXPO_PUBLIC_WAFL_API_BASE_URL` is the exact Tailscale Serve HTTPS origin for developer authentication and WorkOrder API, while `EXPO_PUBLIC_WAFL_WEB_BASE_URL` remains the exact Cloudflare Quick Tunnel origin for Preview/Viewer. Metro receives only these public origins, the auto-connect flag, and its existing Tailscale LAN settings; identity hashes, DB fingerprint, Command approval, and session material remain Next-only/process-only.
+
+The retained build passed external cellular iPhone auto-connect without localhost:3000 or a connection code. Serve HTTPS and the Tailscale Metro manifest/bundle path passed bounded audits, Funnel remained disabled, and no native/EAS change was required.
+
+Final runner teardown preserved strict Windows process ownership. An exact Serve CIM miss permits one exact-PID WMI metadata lookup with full marker/start/path/command/backend validation; stale PID reuse is protected without termination. Final state was stopped with empty Serve config, structurally verified Funnel true count zero, Tailscale Running, and listeners zero on 3000/3100/8081.
 
 ## Alpha.46 installed-build and process-only Command mode
 
