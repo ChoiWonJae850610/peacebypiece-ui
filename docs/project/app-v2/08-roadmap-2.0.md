@@ -2,21 +2,27 @@
 
 Document role: canonical owner for the current result, next candidate, and Version Delta boundary. It is not the historical implementation ledger; completed details live in numbered immutable evidence.
 
-## Current result — 2.0.0-alpha.50
+## Current result — 2.0.0-alpha.51
+
+Status: `ALPHA51_MOBILE_MATERIAL_SOFT_DELETE_RESTORE_LIFECYCLE_COMPLETE`.
+
+Alpha.51 completes recoverable draft fabric-line archive and restore:
+
+- migration 013 lifecycle metadata and active/archived indexes, applied exactly once to approved dev/test;
+- draft-only archive/restore POST Commands with expectedVersion, event/receipt, and same-row identity/value/sort-order preservation;
+- default active Read and explicit archived Read, plus active-only current count, totals, readiness, and preview;
+- deleted-material mobile section, confirmation, canonical refresh, restore, dirty guard, and non-draft blocking;
+- stale/non-draft conflict and hard DELETE blocking with mutation delta zero;
+- physical-iPhone archive/restore and persistence QA plus canonical runner teardown;
+- R2/PDF/token, production, native, and EAS effects remain zero.
+
+Evidence: `50-mobile-material-soft-delete-restore-lifecycle-evidence.md`.
+
+## Previous product result — 2.0.0-alpha.50
 
 Status: `ALPHA50_MOBILE_MATERIAL_DRAFT_CREATE_UPDATE_COMPLETE`.
 
-Alpha.50 completes draft fabric-line create and update:
-
-- one full supported-field create POST and explicit changed-field PATCH editing;
-- validation, saving/error/conflict states, stale 409, dirty guard, and unsaved-new-editor cancellation;
-- canonical detail/material refresh and WorkOrder-keyed cache synchronization;
-- draft-only tenant/permission/runtime approval while saved DELETE and material order Commands remain blocked;
-- retained QA data with actual version/material/event/receipt effects recorded transparently;
-- physical-iPhone no-save guard/read-only QA and canonical runner teardown;
-- schema, R2/PDF/token, production, native, and EAS effects remain zero.
-
-Evidence: `49-mobile-material-draft-create-update-evidence.md`.
+Draft material create/update, explicit save, validation/conflict, dirty guard, and canonical cache refresh remain complete. Detailed facts are preserved in `49-mobile-material-draft-create-update-evidence.md`.
 
 ## Previous infrastructure result — 2.0.0-alpha.49
 
@@ -36,6 +42,7 @@ Permanent Rules, Current Baseline, Version Delta, Immutable Evidence, responsibi
 | alpha.48 | mobile material real Read | `47-mobile-materials-real-read-evidence.md` |
 | alpha.49 | canonical Codex instruction architecture | `48-canonical-codex-instruction-architecture-evidence.md` |
 | alpha.50 | mobile material draft create/update | `49-mobile-material-draft-create-update-evidence.md` |
+| alpha.51 | mobile material soft-delete/restore lifecycle | `50-mobile-material-soft-delete-restore-lifecycle-evidence.md` |
 
 Older results remain in numbered evidence files indexed and task-routed by `00-start-here.md`. Their detailed outcomes are not duplicated here.
 
@@ -66,24 +73,23 @@ Standard reference:
 
 The Delta does not repeat Permanent Rules. An omitted exceptional authority remains forbidden.
 
-## Next candidate — 2.0.0-alpha.51
+## Next candidate — 2.0.0-alpha.52
 
-Candidate objective: define and implement the material-line soft-delete lifecycle only after owner approval.
+Candidate objective: connect material order request/cancel/complete Commands only after owner approval.
 
-Potential included scope, subject to the actual alpha.51 Delta:
+Potential included scope, subject to the actual alpha.52 Delta:
 
-- lifecycle policy and schema;
-- visibility and restore behavior;
-- revision snapshot and concurrency semantics;
-- event/receipt effects and an exact bounded migration/mutation budget.
+- exact order transition states and permission boundaries;
+- expectedVersion, stale/repeated conflict, event/receipt, canonical GET synchronization, and bounded mutation budget;
+- mobile confirmations and state badges without weakening archive or non-draft boundaries.
 
 Explicitly separate later scope:
 
-- hard DELETE remains forbidden unless the approved lifecycle explicitly changes that contract;
-- material order request/cancel/complete Commands remain the alpha.52 candidate;
+- hard DELETE and purge remain forbidden;
+- archived material remains ineligible for order Commands;
 - accessory tab implementation;
 - production deployment or production mutation;
 - native dependencies/plugins and EAS Build/Update;
 - unrelated UI polish or document lifecycle work.
 
-Alpha.51 does not start merely because it is listed here. It begins only with its owner-approved Version Delta and a matching clean baseline.
+Alpha.52 does not start merely because it is listed here. It begins only with its owner-approved Version Delta and a matching clean baseline.

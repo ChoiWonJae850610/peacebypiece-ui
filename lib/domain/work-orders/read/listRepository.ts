@@ -51,7 +51,8 @@ export const WORK_ORDER_V2_LIST_SQL = `
              WHERE m.material_type = 'accessory' AND m.status IN ('editing', 'requested')
            )::integer AS incomplete_accessory_count
     FROM work_order_material_lines m
-    WHERE m.company_id = $1
+    WHERE m.archived_at IS NULL
+      AND m.company_id = $1
       AND m.revision_id IN (SELECT current_revision_id FROM page_rows WHERE current_revision_id IS NOT NULL)
     GROUP BY m.revision_id
   ), process_counts AS (

@@ -24,6 +24,8 @@ import {
 import {
   addMaterialLineV2,
   MATERIAL_CREATE_COMMAND_CODE,
+  MATERIAL_ARCHIVE_COMMAND_CODE,
+  MATERIAL_RESTORE_COMMAND_CODE,
   MATERIAL_ORDER_CANCEL_COMMAND_CODE,
   MATERIAL_ORDER_COMPLETE_COMMAND_CODE,
   MATERIAL_ORDER_REQUEST_COMMAND_CODE,
@@ -31,6 +33,7 @@ import {
   type MaterialCommandRepositoryResult,
   type MaterialOrderTransitionKind,
   patchMaterialLineV2,
+  transitionMaterialLifecycleV2,
   transitionMaterialOrderV2,
 } from "@/lib/domain/work-orders/command/materialCommandRepository";
 import { WAFL_V2_ALPHA26_MUTATION_APPROVAL } from "@/lib/domain/work-orders/command/runtimeGuard";
@@ -226,6 +229,55 @@ export async function patchMaterialLine(input: {
       expectedVersion: input.command.expectedVersion,
       clientRequestId: input.command.clientRequestId,
       patch: input.command.patch,
+    }));
+  } catch (error) {
+    if (error instanceof MaterialCommandRepositoryError) mapRepositoryError(error);
+    throw error;
+  }
+}
+
+export async function transitionMaterialLifecycle(input: {
+  readonly workOrderId: string;
+  readonly materialLineId: string;
+  readonly kind: "archive" | "restore";
+  readonly command: {
+    readonly clientRequestId: string;
+    readonly expectedVersion: EntityVersion;
+    readonly idempotencyKey: string;
+  };
+  readonly scope: WorkspaceApiCompanyScope;
+  readonly companyMemberId: string | null;
+  readonly correlationId: CorrelationId;
+}): Promise<MaterialCommandServiceResult> {
+  assertUuid(input.workOrderId);
+  assertUuid(input.materialLineId);
+  const tenantScope = createCommandTenantScope({
+    scope: input.scope, companyMemberId: input.companyMemberId,
+    correlationId: input.correlationId, permissionCode: "workorder.update",
+  });
+  requireMaterialDraftMutationApproval();
+  const commandCode = input.kind === "archive" ? MATERIAL_ARCHIVE_COMMAND_CODE : MATERIAL_RESTORE_COMMAND_CODE;
+  const keyHash = scopedKeyHash({
+    commandCode, companyId: tenantScope.companyId,
+    companyMemberId: tenantScope.companyMemberId, idempotencyKey: input.command.idempotencyKey,
+  });
+  const requestHash = sha256(JSON.stringify({
+    workOrderId: input.workOrderId,
+    materialLineId: input.materialLineId,
+    expectedVersion: input.command.expectedVersion,
+    kind: input.kind,
+  }));
+  try {
+    return toServiceResult(await transitionMaterialLifecycleV2({
+      scope: tenantScope,
+      assignedCompanyMemberId: assignedMemberId(input.scope),
+      workOrderId: input.workOrderId as WorkOrderId,
+      materialLineId: input.materialLineId as MaterialLineId,
+      expectedVersion: input.command.expectedVersion,
+      clientRequestId: input.command.clientRequestId,
+      kind: input.kind,
+      scopedIdempotencyKeyHash: keyHash,
+      requestHash,
     }));
   } catch (error) {
     if (error instanceof MaterialCommandRepositoryError) mapRepositoryError(error);

@@ -178,6 +178,12 @@ const alpha26ApiPaths = [
   "app/api/v2/work-orders/[workOrderId]/materials/[materialLineId]/order-cancel/route.ts",
   "app/api/v2/work-orders/[workOrderId]/materials/[materialLineId]/order-complete/route.ts",
 ];
+const alpha51ApiPaths = [
+  ...alpha26ApiPaths,
+  "app/api/v2/work-orders/[workOrderId]/materials/[materialLineId]/archive/route.ts",
+  "app/api/v2/work-orders/[workOrderId]/materials/[materialLineId]/restore/route.ts",
+];
+const alpha51ContractExists = fs.existsSync(path.join(root, "tests/workorder-v2-alpha51-material-soft-delete-restore-contract.mjs"));
 const alpha26ContractExists = fs.existsSync(path.join(root, "tests/workorder-v2-alpha26-material-command-api-contract.mjs"));
 const alpha27ApiPaths = ["app/api/v2/work-orders/[workOrderId]/revisions/issue/route.ts"];
 const alpha28ApiPaths = ["app/api/v2/work-orders/[workOrderId]/revisions/[revisionId]/preview/route.ts"];
@@ -205,7 +211,9 @@ const alpha40ContractExists = fs.existsSync(path.join(root, "tests/workorder-v2-
 const alpha30ContractExists = fs.existsSync(path.join(root, "tests/workorder-v2-alpha30-factory-instruction-contract.mjs"));
 const alpha27ContractExists = fs.existsSync(path.join(root, "tests/workorder-v2-alpha27-revision-issue-command-contract.mjs"));
 const alpha28ContractExists = fs.existsSync(path.join(root, "tests/workorder-v2-alpha28-issued-preview-contract.mjs"));
-if (/APP_VERSION = "2\.0\.0-alpha\.(44|45|46|47)"/.test(appVersion)) {
+if (alpha51ContractExists && appVersion.includes('APP_VERSION = "2.0.0-alpha.51"')) {
+  assert.deepEqual(apiChanges.filter((change) => !alpha51ApiPaths.some((allowedPath) => change.endsWith(allowedPath))), [], "alpha.51 may add only archive/restore routes beside canonical material routes");
+} else if (/APP_VERSION = "2\.0\.0-alpha\.(44|45|46|47)"/.test(appVersion)) {
   assert.deepEqual(
     apiChanges.filter((change) => !alpha44ApiChanges.includes(change)),
     [],

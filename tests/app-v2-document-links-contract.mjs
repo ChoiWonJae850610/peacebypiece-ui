@@ -38,10 +38,12 @@ for (const [file, token] of [
   ["docs/project/app-v2/00-start-here.md", "41-external-mobile-qa-runbook.md"],
   ["docs/project/app-v2/08-roadmap-2.0.md", "48-canonical-codex-instruction-architecture-evidence.md"],
   ["docs/project/app-v2/08-roadmap-2.0.md", "49-mobile-material-draft-create-update-evidence.md"],
+  ["docs/project/app-v2/08-roadmap-2.0.md", "50-mobile-material-soft-delete-restore-lifecycle-evidence.md"],
   ["docs/project/app-v2/09-codex-working-rules.md", "Document type: **Permanent Rules**"],
   ["docs/codex-current-state.md", "Document type: **Current Baseline**"],
-  ["docs/codex-current-state.md", "2.0.0-alpha.50"],
+  ["docs/codex-current-state.md", "2.0.0-alpha.51"],
   ["docs/codex-current-state.md", "49-mobile-material-draft-create-update-evidence.md"],
+  ["docs/codex-current-state.md", "50-mobile-material-soft-delete-restore-lifecycle-evidence.md"],
 ]) {
   assert.ok(fs.readFileSync(path.join(root, file), "utf8").includes(token), `${file} missing ${token}`);
 }

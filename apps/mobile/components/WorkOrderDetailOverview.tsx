@@ -115,6 +115,9 @@ type Props = {
   readonly onSave: () => void;
   readonly onReloadLatest: () => void;
   readonly materials: MaterialReadViewState;
+  readonly archivedMaterials: MaterialReadViewState;
+  readonly archivedMaterialCount: number;
+  readonly materialLifecycleBusyId: string | null;
   readonly materialIdentityKey: string;
   readonly canEditMaterials: boolean;
   readonly materialEditor: MaterialEditorViewState | null;
@@ -122,6 +125,8 @@ type Props = {
   readonly materialSaveNotice: string | null;
   readonly onBeginMaterialCreate: () => void;
   readonly onBeginMaterialEdit: (line: WorkOrderMaterialLine) => void;
+  readonly onArchiveMaterial: (line: WorkOrderMaterialLine) => void;
+  readonly onRestoreMaterial: (line: WorkOrderMaterialLine) => void;
   readonly onChangeMaterialDraft: (field: keyof MaterialDraftFields, value: string) => void;
   readonly onCancelMaterialEditor: () => void;
   readonly onSaveMaterial: () => void;
@@ -130,6 +135,7 @@ type Props = {
   readonly onOpenMaterials: () => void;
   readonly onRetryMaterials: () => void;
   readonly onLoadMoreMaterials: () => void;
+  readonly onLoadMoreArchivedMaterials: () => void;
 };
 
 function BasicInfoEditor(props: Pick<Props, "draft" | "dirty" | "fieldErrors" | "saveState" | "saveMessage" | "onChangeDraft" | "onCancelEdit" | "onSave" | "onReloadLatest">) {
@@ -397,12 +403,18 @@ export default function WorkOrderDetailOverview(props: Props) {
             />
           ) : (
             <WorkOrderMaterialsReadOnly
+              archivedState={props.archivedMaterials}
+              archivedTotalCount={props.archivedMaterialCount}
               canEdit={props.canEditMaterials}
               key={props.materialIdentityKey}
+              lifecycleBusyId={props.materialLifecycleBusyId}
               onAdd={props.onBeginMaterialCreate}
+              onArchive={props.onArchiveMaterial}
               onEdit={props.onBeginMaterialEdit}
               onLoadMore={props.onLoadMoreMaterials}
+              onLoadMoreArchived={props.onLoadMoreArchivedMaterials}
               onRetry={props.onRetryMaterials}
+              onRestore={props.onRestoreMaterial}
               saveNotice={props.materialSaveNotice}
               state={props.materials}
             />

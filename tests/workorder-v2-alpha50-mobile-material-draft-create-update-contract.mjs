@@ -29,12 +29,12 @@ const start = read("tools/dev/start-wafl-external-qa.ps1");
 const alpha26 = read("tests/workorder-v2-alpha26-material-command-api-contract.mjs");
 const evidence = read("docs/project/app-v2/49-mobile-material-draft-create-update-evidence.md");
 
-assert.match(version, /APP_VERSION = "2\.0\.0-alpha\.50"/);
-assert.match(mobileVersion, /MOBILE_APP_VERSION = "2\.0\.0-alpha\.50"/);
-assert.equal(mobilePackage.version, "2.0.0-alpha.50");
-assert.equal(mobileLock.version, "2.0.0-alpha.50");
-assert.equal(mobileLock.packages[""].version, "2.0.0-alpha.50");
-assert.equal(appJson.expo.extra.appVersion, "2.0.0-alpha.50");
+assert.match(version, /APP_VERSION = "2\.0\.0-alpha\.51"/);
+assert.match(mobileVersion, /MOBILE_APP_VERSION = "2\.0\.0-alpha\.51"/);
+assert.equal(mobilePackage.version, "2.0.0-alpha.51");
+assert.equal(mobileLock.version, "2.0.0-alpha.51");
+assert.equal(mobileLock.packages[""].version, "2.0.0-alpha.51");
+assert.equal(appJson.expo.extra.appVersion, "2.0.0-alpha.51");
 assert.equal(appJson.expo.version, "2.0.0");
 assert.equal(appJson.expo.ios.bundleIdentifier, "com.wafl.app");
 assert.equal(appJson.expo.android.package, "com.wafl.app");

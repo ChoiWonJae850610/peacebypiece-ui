@@ -99,16 +99,20 @@ export type WorkOrderMaterialLine = {
   readonly status: MaterialLineStatus;
   readonly displayOrder: number;
   readonly locked: boolean;
+  readonly lifecycle: "active" | "archived";
+  readonly archivedAt: string | null;
 };
 
 export type WorkOrderMaterialPage = {
   readonly workOrderId: string;
   readonly materialType: "fabric";
+  readonly lifecycle: "active" | "archived";
   readonly items: readonly WorkOrderMaterialLine[];
   readonly nextCursor: string | null;
   readonly hasMore: boolean;
   readonly limit: number;
   readonly entityVersion: number;
+  readonly totalCount: number;
 };
 
 export type MaterialDraftFields = {
@@ -144,8 +148,14 @@ export type MaterialLineCommandResult = {
     readonly status: Exclude<MaterialLineStatus, "unknown">;
     readonly nextVersion: number;
     readonly lineVersion: number;
+    readonly lifecycle: "active" | "archived";
   };
   readonly nextVersion: number;
+};
+
+export type MaterialLifecycleCommandInput = {
+  readonly clientRequestId: string;
+  readonly expectedVersion: number;
 };
 
 export type MobileApiErrorCode =

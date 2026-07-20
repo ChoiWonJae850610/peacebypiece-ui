@@ -26,7 +26,7 @@ const renderRoute = read("app/dev/workorder-pdf-render/[runToken]/page.tsx");
 const fixture = assertAlpha42RealisticFixture(ALPHA42_REALISTIC_FIXTURE);
 
 const version = read("lib/constants/version.ts").match(/APP_VERSION\s*=\s*"([^"]+)"/)?.[1];
-assert.ok(new Set(["2.0.0-alpha.41", "2.0.0-alpha.42", "2.0.0-alpha.43", "2.0.0-alpha.44", "2.0.0-alpha.45", "2.0.0-alpha.46", "2.0.0-alpha.47", "2.0.0-alpha.48", "2.0.0-alpha.49", "2.0.0-alpha.50"]).has(version), "alpha.42 checkpoint/final version invalid");
+assert.ok(new Set(["2.0.0-alpha.41", "2.0.0-alpha.42", "2.0.0-alpha.43", "2.0.0-alpha.44", "2.0.0-alpha.45", "2.0.0-alpha.46", "2.0.0-alpha.47", "2.0.0-alpha.48", "2.0.0-alpha.49", "2.0.0-alpha.50", "2.0.0-alpha.51"]).has(version), "alpha.42 checkpoint/final version invalid");
 
 assert.match(migration, /ADD COLUMN token_purpose text NOT NULL DEFAULT 'manual_share'/);
 assert.match(migration, /token_purpose IN \('manual_share', 'embedded_qr'\)/);
@@ -34,7 +34,7 @@ assert.match(migration, /CREATE UNIQUE INDEX document_access_tokens_one_embedded
 assert.match(migration, /ON public\.document_access_tokens \(company_id, generated_document_id\)/);
 assert.match(migration, /WHERE token_purpose = 'embedded_qr'/);
 assert.doesNotMatch(migration, /\b(?:DROP|TRUNCATE|DELETE|UPDATE)\b/i);
-assert.equal(fs.readdirSync(path.join(root, "db/v2/migrations")).filter((name) => /^\d{3}_.*\.sql$/.test(name)).length, 12);
+assert.equal(fs.readdirSync(path.join(root, "db/v2/migrations")).filter((name) => /^\d{3}_.*\.sql$/.test(name)).length, fs.existsSync(path.join(root, "db/v2/migrations/013_v2_material_line_archive_lifecycle.sql")) ? 13 : 12);
 
 assert.match(migrationRunner, /const FILE = "012_v2_document_access_token_purpose\.sql"/);
 assert.match(migrationRunner, /before\.ledger\.length, 11/);

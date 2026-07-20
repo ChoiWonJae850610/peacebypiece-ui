@@ -15,18 +15,20 @@ import {
   addMaterialLine,
   type MaterialCommandServiceResult,
   patchMaterialLine,
+  transitionMaterialLifecycle,
   transitionMaterialOrder,
 } from "@/lib/domain/work-orders/command/materialCommandService";
 import { getWorkOrderV2CommandRuntimeGuard } from "@/lib/domain/work-orders/command/runtimeGuard";
 import {
   validateAddMaterialLine,
   validateMaterialOrderTransition,
+  validateMaterialLifecycleTransition,
   validatePatchMaterialLine,
 } from "@/lib/domain/work-orders/command/materialValidation";
 import { WorkOrderCommandRequestError } from "@/lib/domain/work-orders/command/commandService";
 import { WorkOrderCommandValidationError } from "@/lib/domain/work-orders/command/validation";
 
-type MaterialCommandKind = "create" | "patch" | "request" | "cancel" | "complete";
+type MaterialCommandKind = "create" | "patch" | "archive" | "restore" | "request" | "cancel" | "complete";
 
 function successResponse(
   result: MaterialCommandServiceResult,
@@ -89,6 +91,15 @@ async function handleMaterialCommand(input: {
       });
       return successResponse(result, correlationId, 200);
     }
+    if (input.kind === "archive" || input.kind === "restore") {
+      const command = validateMaterialLifecycleTransition({ body, idempotencyKey: input.request.headers.get("Idempotency-Key") });
+      const result = await transitionMaterialLifecycle({
+        workOrderId: input.workOrderId, materialLineId: input.materialLineId ?? "",
+        kind: input.kind, command, scope: guard.scope,
+        companyMemberId: guard.session.companyMemberId, correlationId,
+      });
+      return successResponse(result, correlationId, 200);
+    }
 
     const command = validateMaterialOrderTransition({
       body,
@@ -138,6 +149,15 @@ export function handleAddMaterialLineV2(request: Request, workOrderId: string) {
 
 export function handlePatchMaterialLineV2(request: Request, workOrderId: string, materialLineId: string) {
   return handleMaterialCommand({ request, workOrderId, materialLineId, kind: "patch" });
+}
+
+export function handleMaterialLifecycleTransitionV2(
+  request: Request,
+  workOrderId: string,
+  materialLineId: string,
+  kind: "archive" | "restore",
+) {
+  return handleMaterialCommand({ request, workOrderId, materialLineId, kind });
 }
 
 export function handleMaterialOrderTransitionV2(

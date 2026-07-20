@@ -8,7 +8,14 @@ import type { OpaqueCursor, WorkOrderId } from "@/lib/domain/work-orders/contrac
 const CURSOR_VERSION = 1;
 const CURSOR_TTL_MS = 60 * 60 * 1000;
 
-export type WorkOrderTabCursorKind = "materials:fabric" | "materials:accessory" | "assets" | "documents" | "history";
+export type WorkOrderTabCursorKind =
+  | "materials:fabric"
+  | "materials:accessory"
+  | "materials:fabric:archived"
+  | "materials:accessory:archived"
+  | "assets"
+  | "documents"
+  | "history";
 
 type WorkOrderTabCursorPayload = {
   readonly v: number;

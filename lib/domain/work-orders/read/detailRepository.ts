@@ -92,9 +92,11 @@ export const WORK_ORDER_V2_DETAIL_CORE_SQL = `
          t.accessory_total, t.process_total, t.estimated_total,
          i.id AS image_id, i.title AS image_title,
          (SELECT count(*)::integer FROM work_order_material_lines m
-          WHERE m.company_id = $1 AND m.revision_id = t.current_revision_id AND m.material_type = 'fabric') AS fabric_count,
+          WHERE m.company_id = $1 AND m.revision_id = t.current_revision_id AND m.material_type = 'fabric'
+            AND m.archived_at IS NULL) AS fabric_count,
          (SELECT count(*)::integer FROM work_order_material_lines m
-          WHERE m.company_id = $1 AND m.revision_id = t.current_revision_id AND m.material_type = 'accessory') AS accessory_count,
+          WHERE m.company_id = $1 AND m.revision_id = t.current_revision_id AND m.material_type = 'accessory'
+            AND m.archived_at IS NULL) AS accessory_count,
          (SELECT count(*)::integer FROM work_order_colors c
           WHERE c.company_id = $1 AND c.revision_id = t.current_revision_id) AS color_count,
          (SELECT count(*)::integer FROM work_order_sizes s
@@ -124,11 +126,13 @@ export const WORK_ORDER_V2_MATERIALS_SQL = `
          m.id, m.material_id, m.material_type, m.name, m.color_option, m.usage_area,
          m.supplier_partner_id, NULL::text AS partner_name, m.required_quantity,
          m.allowance_quantity, m.inventory_usage_quantity, m.order_quantity,
-         m.unit_code, m.unit_price, m.amount, m.memo, m.status, m.display_order
+         m.unit_code, m.unit_price, m.amount, m.memo, m.status, m.display_order,
+         m.archived_at, count(m.id) OVER ()::integer AS total_count
   FROM target t
   LEFT JOIN work_order_material_lines m
     ON m.company_id = $1 AND m.revision_id = t.current_revision_id
    AND m.material_type = $6
+   AND (($8 = 'active' AND m.archived_at IS NULL) OR ($8 = 'archived' AND m.archived_at IS NOT NULL))
    AND ($4::integer IS NULL OR (m.display_order, m.id) > ($4::integer, $5::uuid))
   ORDER BY m.display_order ASC NULLS LAST, m.id ASC NULLS LAST
   LIMIT $7
@@ -417,13 +421,16 @@ type CommonCollectionInput = {
   readonly cursorPosition: readonly string[] | null;
 };
 
-export async function getWorkOrderMaterialsV2(input: CommonCollectionInput & { readonly materialType: MaterialType }): Promise<RepositoryResult<WorkOrderMaterialPage>> {
+export async function getWorkOrderMaterialsV2(input: CommonCollectionInput & {
+  readonly materialType: MaterialType;
+  readonly lifecycle: "active" | "archived";
+}): Promise<RepositoryResult<WorkOrderMaterialPage>> {
   const displayOrder = input.cursorPosition ? Number(input.cursorPosition[0]) : null;
   const cursorId = input.cursorPosition?.[1] ?? null;
   const result = await queryTenantRows<DbQueryResultRow>({
     scope: input.scope,
     sql: WORK_ORDER_V2_MATERIALS_SQL,
-    params: [...baseParams(input), displayOrder, cursorId, input.materialType, input.limit + 1],
+    params: [...baseParams(input), displayOrder, cursorId, input.materialType, input.limit + 1, input.lifecycle],
   });
   const meta = result.rows[0];
   if (!meta) return { data: null, ...timing(result) };
@@ -446,7 +453,10 @@ export async function getWorkOrderMaterialsV2(input: CommonCollectionInput & { r
       unitPrice: asDecimal(row.unit_price), amount: asDecimal(row.amount),
       memo: row.memo === null ? null : String(row.memo),
       status, displayOrder: asCount(row.display_order),
-      editable: status === "editing", locked: status === "completed",
+      editable: input.lifecycle === "active" && status === "editing",
+      locked: input.lifecycle === "archived" || status === "completed",
+      lifecycle: input.lifecycle,
+      archivedAt: row.archived_at === null ? null : new Date(String(row.archived_at)).toISOString() as WorkOrderMaterialLineReadModel["archivedAt"],
     };
   });
   const last = rows.at(-1);
@@ -455,8 +465,10 @@ export async function getWorkOrderMaterialsV2(input: CommonCollectionInput & { r
       workOrderId: String(meta.work_order_id) as WorkOrderId,
       revisionId: String(meta.current_revision_id) as WorkOrderRevisionId,
       materialType: input.materialType,
+      lifecycle: input.lifecycle,
       items, nextCursor: null, hasMore, limit: input.limit,
       entityVersion: asCount(meta.entity_version) as EntityVersion,
+      totalCount: rows.length === 0 ? 0 : asCount(rows[0].total_count),
     },
     nextPosition: hasMore && last ? [String(last.display_order), String(last.id)] : null,
     hasMore,

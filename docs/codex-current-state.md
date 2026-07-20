@@ -4,8 +4,8 @@ Document type: **Current Baseline**
 
 Canonical owner: `docs/codex-current-state.md`
 
-Result version: `2.0.0-alpha.50`
-Status: `ALPHA50_MOBILE_MATERIAL_DRAFT_CREATE_UPDATE_COMPLETE`
+Result version: `2.0.0-alpha.51`
+Status: `ALPHA51_MOBILE_MATERIAL_SOFT_DELETE_RESTORE_LIFECYCLE_COMPLETE`
 
 This file is a compact present-state snapshot. It is not a version history, Permanent Rules owner, runtime process ledger, or evidence archive. Historical implementation details belong to numbered immutable evidence under `docs/project/app-v2/`.
 
@@ -15,24 +15,24 @@ This file is a compact present-state snapshot. It is not a version history, Perm
 | --- | --- |
 | Repository | `C:\CWJ_Project\peacebypiece-2.0` |
 | Branch | `master` |
-| Alpha.50 entry HEAD/origin | `c375ef12fa03b088ef04b020ebe8f2c0d6653c8d` |
-| Entry commit | `docs: WAFL v2 Codex canonical 작업지시 체계 정리` |
+| Alpha.51 entry HEAD/origin | `20590dd8ff38df0d90981a3278b0e5edc87a7fc8` |
+| Entry commit | `feat: WAFL v2 모바일 원단 draft 추가와 수정 완성` |
 | Entry ahead/behind | `0/0` |
 | Entry working tree | clean |
-| APP_VERSION | `2.0.0-alpha.50` |
-| Mobile package version | `2.0.0-alpha.50` |
+| APP_VERSION | `2.0.0-alpha.51` |
+| Mobile package version | `2.0.0-alpha.51` |
 | Root package version | `0.5.637` |
 | Expo public version | `2.0.0` |
 | iOS Development Build | build number `1`, reusable while native inputs remain unchanged |
 | iOS bundle identifier | `com.wafl.app` |
 | Android package | `com.wafl.app` |
 
-The source cannot contain the hash of the commit that contains itself. Final alpha.50 HEAD, origin synchronization, Git cleanliness, ZIP hash/size/entry count, and exact repo-state filename are owned by the matching post-commit alpha.50 repo-state.
+The source cannot contain the hash of the commit that contains itself. Final alpha.51 HEAD, origin synchronization, Git cleanliness, ZIP hash/size/entry count, and exact repo-state filename are owned by the matching post-commit alpha.51 repo-state.
 
 ## Latest delivery boundary
 
-- Target Source ZIP: `peacebypiece-ui-2.0.0-alpha.50.zip`.
-- Target repo-state: `repo-state-2.0.0-alpha.50-<actual timestamp>.txt`.
+- Target Source ZIP: `peacebypiece-ui-2.0.0-alpha.51.zip`.
+- Target repo-state: `repo-state-2.0.0-alpha.51-<actual timestamp>.txt`.
 - `4. Newest` must contain only that matching pair after Finish.
 - The previous accepted handoff is the matching alpha.49 ZIP/repo-state pair recorded in its repo-state.
 
@@ -53,18 +53,17 @@ Do not record live PID, port ownership, temporary origin, connection code, sessi
 
 ## Latest feature baseline
 
-Alpha.50 adds draft fabric-line create/update only:
+Alpha.51 adds the draft fabric-line recoverable archive/restore lifecycle:
 
-- full supported-field material POST create and changed-field PATCH editing with explicit save;
-- validation, saving/error/conflict, stale 409, dirty guard, unsaved-new-editor cancellation, canonical refresh, and WorkOrder-keyed cache synchronization;
-- draft/tenant/permission/version guards and non-draft read-only behavior;
-- saved material DELETE remains blocked; order request/cancel/complete remains blocked;
-- actual retained QA effects: POST `1`, PATCH `2`, WorkOrder/revision/material-version deltas `+3/+3/+3`, material row `+1`, receipt `+1`, event `+3`;
-- one validation HTTP 400 and one stale HTTP 409 had mutation delta zero;
-- schema/migration, R2/PDF/token, production, native dependency, and EAS Build/Update effects were zero;
-- no-save physical-iPhone guard/read-only QA and canonical runner stop passed.
-
-The exact interaction step owning each of the two explicit PATCH operations was not recoverable without an interaction ledger. This is recorded transparently in the alpha.50 evidence and is not classified as automatic save or a proven product defect.
+- migration 013 adds lifecycle timestamp/actor metadata and active/archived partial indexes; exact dev/test apply and post-audit passed at ledger `13/13`;
+- explicit POST archive/restore Commands preserve physical row identity, values, and sort order while incrementing material/WorkOrder/revision versions and emitting canonical receipt/event evidence;
+- default material Read returns active rows only; explicit archived Read is separate; current draft count, totals, readiness, and preview exclude archived rows;
+- requested/completed/cancelled order states and all non-draft WorkOrders block archive/restore; HTTP DELETE and material order Commands remain blocked;
+- the deleted-material collapsed mobile section supports restore only and synchronizes canonical detail, active, and archived GET results;
+- bounded preflight plus physical-iPhone QA performed archive/restore `2/2`, producing WorkOrder/revision/material-version and event/receipt deltas `+4/+4/+4` and `+4/+4`, with material row delta `0` and final lifecycle active;
+- stale and non-draft lifecycle requests returned HTTP 409 with delta zero, and one hard DELETE request was blocked with delta zero;
+- generated-document, token, R2/PDF, production, native dependency, and EAS Build/Update effects were zero;
+- physical-iPhone archive/restore, dirty guard, persistence, non-draft blocking, background/re-entry, and canonical runner stop passed.
 
 Final TypeScript, ESLint, Next, Expo, contracts, mutation audit, Canonical Verify, Git, and artifact identities are recorded by the final workflow and matching repo-state.
 
@@ -88,19 +87,19 @@ Final TypeScript, ESLint, Next, Expo, contracts, mutation audit, Canonical Verif
 - Alpha.48 material Read: `docs/project/app-v2/47-mobile-materials-real-read-evidence.md`.
 - Alpha.49 canonical instruction architecture: `docs/project/app-v2/48-canonical-codex-instruction-architecture-evidence.md`.
 - Alpha.50 material draft create/update: `docs/project/app-v2/49-mobile-material-draft-create-update-evidence.md`.
+- Alpha.51 material soft-delete/restore lifecycle: `docs/project/app-v2/50-mobile-material-soft-delete-restore-lifecycle-evidence.md`.
 
 Older facts remain in their numbered evidence. They are not recopied here.
 
 ## Next candidate boundary
 
-Candidate: `2.0.0-alpha.51` — material-line soft-delete lifecycle policy and schema.
+Candidate: `2.0.0-alpha.52` — material order request/cancel/complete Commands.
 
 Potential Delta scope:
 
-- lifecycle policy, schema, visibility, restore, snapshot, event, receipt, and concurrency semantics;
-- an exact dev/test mutation budget and migration approval;
-- existing hard DELETE prohibition remains until that Delta is approved and verified;
-- material order request/cancel/complete remains the separate alpha.52 candidate;
+- exact request/cancel/complete transition states and permissions;
+- expectedVersion, stale/repeated conflict, event/receipt, canonical refresh, and bounded device mutation evidence;
+- archived rows remain ineligible and hard DELETE/purge remain forbidden;
 - production, native/EAS, broad cleanup, and unrelated feature expansion remain excluded unless explicitly named.
 
-The alpha.51 owner work order should be a short Version Delta that references the Permanent Rules instead of repeating them.
+The alpha.52 owner work order should be a short Version Delta that references the Permanent Rules instead of repeating them.

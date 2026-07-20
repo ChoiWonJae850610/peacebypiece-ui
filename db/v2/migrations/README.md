@@ -54,5 +54,6 @@ The existing `db/migrations/` path remains the legacy/current executable baselin
 10. `010_v2_generated_document_receipt_link.sql`
 11. `011_v2_document_access_viewer_functions.sql`
 12. `012_v2_document_access_token_purpose.sql`
+13. `013_v2_material_line_archive_lifecycle.sql`
 
 The order is a static contract. No file is applied, validated, backfilled, seeded, or benchmarked in alpha.21.

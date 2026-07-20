@@ -15,6 +15,7 @@ import WorkOrderListScreen from "@/components/WorkOrderListScreen";
 import { WAFL_FONTS } from "@/constants/fonts";
 import {
   assertMobileApiOrigin,
+  archiveWorkOrderMaterial,
   connectTailscaleDeveloper,
   createWorkOrderMaterial,
   disconnectMobileSession,
@@ -25,6 +26,7 @@ import {
   getWorkOrderMaterials,
   patchWorkOrderMaterial,
   patchWorkOrderBasicInfo,
+  restoreWorkOrderMaterial,
 } from "@/lib/apiClient";
 import { MobileApiError, type MaterialDraftFields, type MobileCurrentUser, type WorkOrderDetailCore, type WorkOrderListItem, type WorkOrderMaterialLine } from "@/lib/apiTypes";
 
@@ -54,6 +56,12 @@ type MaterialCacheEntry = MaterialReadViewState & {
   readonly failedCursor: string | null;
   readonly entityVersion: number | null;
   readonly touchedAt: number;
+  readonly archivedStatus?: MaterialReadStatus;
+  readonly archivedItems?: readonly WorkOrderMaterialLine[];
+  readonly archivedNextCursor?: string | null;
+  readonly archivedHasMore?: boolean;
+  readonly archivedTotalCount?: number;
+  readonly archivedErrorMessage?: string | null;
 };
 
 const MATERIAL_CACHE_LIMIT = 6;
@@ -63,6 +71,15 @@ const EMPTY_MATERIAL_STATE: MaterialReadViewState = {
   hasMore: false,
   errorMessage: null,
 };
+
+function archivedMaterialState(entry: MaterialCacheEntry | undefined): MaterialReadViewState {
+  return {
+    status: entry?.archivedStatus ?? "not-loaded",
+    items: entry?.archivedItems ?? [],
+    hasMore: entry?.archivedHasMore ?? false,
+    errorMessage: entry?.archivedErrorMessage ?? null,
+  };
+}
 
 function materialErrorMessage(error: unknown) {
   if (!(error instanceof MobileApiError)) return "원단 정보를 불러오지 못했습니다";
@@ -246,9 +263,11 @@ export default function MobileWorkOrderApp() {
   const [materialCache, setMaterialCache] = useState<Readonly<Record<string, MaterialCacheEntry>>>({});
   const [materialEditor, setMaterialEditor] = useState<MaterialEditorViewState | null>(null);
   const [materialSaveNotice, setMaterialSaveNotice] = useState<string | null>(null);
+  const [materialLifecycleBusyId, setMaterialLifecycleBusyId] = useState<string | null>(null);
   const detailRequestInFlight = useRef(false);
   const saveRequestInFlight = useRef(false);
   const materialSaveRequestInFlight = useRef(false);
+  const materialLifecycleRequestInFlight = useRef(false);
   const clientRequestCounter = useRef(0);
   const autoConnectInFlight = useRef(false);
   const manualDisconnectSuppressed = useRef(false);
@@ -260,6 +279,7 @@ export default function MobileWorkOrderApp() {
   const materialSessionGeneration = useRef(0);
   const materialEditorSequence = useRef(0);
   const materialEditorRef = useRef<MaterialEditorViewState | null>(null);
+  const materialLifecycleSequence = useRef(0);
 
   const updateMaterialEditor = useCallback((updater: (current: MaterialEditorViewState | null) => MaterialEditorViewState | null) => {
     setMaterialEditor((current) => {
@@ -285,6 +305,8 @@ export default function MobileWorkOrderApp() {
     materialEditorRef.current = null;
     setMaterialEditor(null);
     setMaterialSaveNotice(null);
+    materialLifecycleRequestInFlight.current = false;
+    setMaterialLifecycleBusyId(null);
   }, []);
 
   const basicInfoDirty = detail ? (
@@ -536,10 +558,19 @@ export default function MobileWorkOrderApp() {
       hasMore: existing?.hasMore ?? false,
       errorMessage: null,
       touchedAt: Date.now(),
+      archivedStatus: existing?.archivedStatus,
+      archivedItems: existing?.archivedItems,
+      archivedNextCursor: existing?.archivedNextCursor,
+      archivedHasMore: existing?.archivedHasMore,
+      archivedTotalCount: existing?.archivedTotalCount,
+      archivedErrorMessage: existing?.archivedErrorMessage,
     }));
 
     try {
-      const page = await getWorkOrderMaterials(workOrderId, cursor);
+      const [page, archivedPage] = await Promise.all([
+        getWorkOrderMaterials(workOrderId, cursor, "active"),
+        action === "more" ? Promise.resolve(null) : getWorkOrderMaterials(workOrderId, null, "archived"),
+      ]);
       if (
         materialSessionGeneration.current !== sessionGeneration
         || materialRequests.current.get(workOrderId) !== requestToken
@@ -562,6 +593,12 @@ export default function MobileWorkOrderApp() {
         hasMore: page.hasMore,
         errorMessage: null,
         touchedAt: Date.now(),
+        archivedStatus: archivedPage ? (archivedPage.items.length === 0 ? "empty" : "loaded") : existing?.archivedStatus,
+        archivedItems: archivedPage?.items ?? existing?.archivedItems,
+        archivedNextCursor: archivedPage?.nextCursor ?? existing?.archivedNextCursor,
+        archivedHasMore: archivedPage?.hasMore ?? existing?.archivedHasMore,
+        archivedTotalCount: archivedPage?.totalCount ?? existing?.archivedTotalCount,
+        archivedErrorMessage: null,
       }));
     } catch (error) {
       if (
@@ -581,15 +618,50 @@ export default function MobileWorkOrderApp() {
         hasMore: existing?.hasMore ?? false,
         errorMessage: materialErrorMessage(error),
         touchedAt: Date.now(),
+        archivedStatus: existing?.archivedStatus,
+        archivedItems: existing?.archivedItems,
+        archivedNextCursor: existing?.archivedNextCursor,
+        archivedHasMore: existing?.archivedHasMore,
+        archivedTotalCount: existing?.archivedTotalCount,
+        archivedErrorMessage: existing?.archivedErrorMessage,
       }));
     } finally {
       if (materialRequests.current.get(workOrderId) === requestToken) materialRequests.current.delete(workOrderId);
     }
   }
 
+  async function loadMoreArchivedMaterials(workOrderId: string) {
+    const existing = materialCacheRef.current[workOrderId];
+    if (!existing?.archivedHasMore || !existing.archivedNextCursor || materialRequests.current.has(`${workOrderId}:archived`)) return;
+    const requestKey = `${workOrderId}:archived`;
+    const requestToken = ++materialRequestSequence.current;
+    const sessionGeneration = materialSessionGeneration.current;
+    materialRequests.current.set(requestKey, requestToken);
+    updateMaterialCache((current) => putBoundedMaterialEntry(current, workOrderId, { ...existing, archivedStatus: "loading-more", touchedAt: Date.now() }));
+    try {
+      const page = await getWorkOrderMaterials(workOrderId, existing.archivedNextCursor, "archived");
+      if (materialSessionGeneration.current !== sessionGeneration || materialRequests.current.get(requestKey) !== requestToken || selectedWorkOrderId.current !== workOrderId) return;
+      const merged = [...(existing.archivedItems ?? [])];
+      const knownIds = new Set(merged.map((line) => line.id));
+      for (const line of page.items) if (!knownIds.has(line.id)) { knownIds.add(line.id); merged.push(line); }
+      updateMaterialCache((current) => putBoundedMaterialEntry(current, workOrderId, {
+        ...(current[workOrderId] ?? existing), archivedStatus: merged.length ? "loaded" : "empty",
+        archivedItems: merged, archivedNextCursor: page.nextCursor, archivedHasMore: page.hasMore,
+        archivedTotalCount: page.totalCount, archivedErrorMessage: null, touchedAt: Date.now(),
+      }));
+    } catch (error) {
+      updateMaterialCache((current) => putBoundedMaterialEntry(current, workOrderId, {
+        ...(current[workOrderId] ?? existing), archivedStatus: "error",
+        archivedErrorMessage: materialErrorMessage(error), touchedAt: Date.now(),
+      }));
+    } finally {
+      if (materialRequests.current.get(requestKey) === requestToken) materialRequests.current.delete(requestKey);
+    }
+  }
+
   function nextMaterialRequestIdentity(kind: "client" | "idempotency") {
     clientRequestCounter.current += 1;
-    return `alpha50-mobile-material-${kind}-${Date.now()}-${clientRequestCounter.current}`;
+    return `alpha51-mobile-material-${kind}-${Date.now()}-${clientRequestCounter.current}`;
   }
 
   function beginMaterialCreate() {
@@ -671,6 +743,7 @@ export default function MobileWorkOrderApp() {
     setDetail(refreshed);
     setBasicInfoDraft(draftFromDetail(refreshed));
     updateMaterialCache((current) => putBoundedMaterialEntry(current, workOrderId, {
+      ...current[workOrderId],
       status: page.items.length === 0 ? "empty" : "loaded",
       items: page.items,
       nextCursor: page.nextCursor,
@@ -724,6 +797,98 @@ export default function MobileWorkOrderApp() {
     ) return false;
     applyRefreshedMaterialSnapshot(input.workOrderId, refreshed, page);
     return true;
+  }
+
+  async function executeMaterialLifecycle(line: WorkOrderMaterialLine, kind: "archive" | "restore") {
+    const currentDetail = detail;
+    if (
+      !currentDetail
+      || currentDetail.header.status !== "draft"
+      || currentDetail.revision.status !== "draft"
+      || !user?.permissionCodes?.includes("workorder.update")
+      || materialLifecycleRequestInFlight.current
+      || selectedWorkOrderId.current !== currentDetail.header.id
+    ) return;
+    const requestToken = ++materialLifecycleSequence.current;
+    const sessionGeneration = materialSessionGeneration.current;
+    materialLifecycleRequestInFlight.current = true;
+    setMaterialLifecycleBusyId(line.id);
+    setMaterialSaveNotice(kind === "archive" ? "원단을 삭제된 원단으로 이동하고 있습니다." : "원단을 복구하고 있습니다.");
+    try {
+      const command = {
+        clientRequestId: nextMaterialRequestIdentity("client"),
+        expectedVersion: currentDetail.header.entityVersion,
+      };
+      const result = kind === "archive"
+        ? await archiveWorkOrderMaterial(currentDetail.header.id, line.id, command, nextMaterialRequestIdentity("idempotency"))
+        : await restoreWorkOrderMaterial(currentDetail.header.id, line.id, command, nextMaterialRequestIdentity("idempotency"));
+      const [refreshed, activePage, archivedPage] = await Promise.all([
+        getWorkOrderDetail(currentDetail.header.id),
+        getWorkOrderMaterials(currentDetail.header.id, null, "active"),
+        getWorkOrderMaterials(currentDetail.header.id, null, "archived"),
+      ]);
+      if (
+        result.nextVersion !== refreshed.header.entityVersion
+        || activePage.entityVersion !== result.nextVersion
+        || archivedPage.entityVersion !== result.nextVersion
+        || refreshed.header.id !== currentDetail.header.id
+      ) throw new MobileApiError({ code: "MALFORMED_RESPONSE", message: "원단 lifecycle 최신 상태를 확인할 수 없습니다." });
+      if (
+        materialSessionGeneration.current !== sessionGeneration
+        || materialLifecycleSequence.current !== requestToken
+        || selectedWorkOrderId.current !== currentDetail.header.id
+      ) return;
+      applyRefreshedMaterialSnapshot(currentDetail.header.id, refreshed, activePage);
+      updateMaterialCache((current) => {
+        const active = current[currentDetail.header.id];
+        if (!active) return current;
+        return putBoundedMaterialEntry(current, currentDetail.header.id, {
+          ...active,
+          archivedStatus: archivedPage.items.length ? "loaded" : "empty",
+          archivedItems: archivedPage.items,
+          archivedNextCursor: archivedPage.nextCursor,
+          archivedHasMore: archivedPage.hasMore,
+          archivedTotalCount: archivedPage.totalCount,
+          archivedErrorMessage: null,
+          touchedAt: Date.now(),
+        });
+      });
+      setMaterialSaveNotice(kind === "archive" ? "원단을 삭제된 원단으로 이동했습니다." : "원단을 복구했습니다.");
+    } catch (error) {
+      if (materialSessionGeneration.current !== sessionGeneration || materialLifecycleSequence.current !== requestToken) return;
+      setMaterialSaveNotice(error instanceof MobileApiError ? error.message : "원단 상태를 변경하지 못했습니다.");
+    } finally {
+      if (materialLifecycleSequence.current === requestToken) {
+        materialLifecycleRequestInFlight.current = false;
+        setMaterialLifecycleBusyId(null);
+      }
+    }
+  }
+
+  function requestArchiveMaterial(line: WorkOrderMaterialLine) {
+    confirmDiscard(() => {
+      Alert.alert(
+        "원단 삭제",
+        `“${line.name}” 원단을 삭제된 원단으로 이동합니다. 다시 복구할 수 있습니다.`,
+        [
+          { text: "취소", style: "cancel" },
+          { text: "삭제된 원단으로 이동", style: "destructive", onPress: () => void executeMaterialLifecycle(line, "archive") },
+        ],
+      );
+    });
+  }
+
+  function requestRestoreMaterial(line: WorkOrderMaterialLine) {
+    confirmDiscard(() => {
+      Alert.alert(
+        "원단 복구",
+        `“${line.name}” 원단을 기존 위치로 복구합니다.`,
+        [
+          { text: "취소", style: "cancel" },
+          { text: "복구", onPress: () => void executeMaterialLifecycle(line, "restore") },
+        ],
+      );
+    });
   }
 
   async function saveMaterial() {
@@ -1066,10 +1231,14 @@ export default function MobileWorkOrderApp() {
       fieldErrors={basicInfoErrors}
       materialEditor={materialEditor}
       materialEditorDirty={materialEditorDirty}
+      archivedMaterials={archivedMaterialState(materialCache[detail.header.id])}
+      archivedMaterialCount={materialCache[detail.header.id]?.archivedTotalCount ?? 0}
+      materialLifecycleBusyId={materialLifecycleBusyId}
       onBack={returnToList}
       onBeginEdit={beginBasicInfoEdit}
       onBeginMaterialCreate={beginMaterialCreate}
       onBeginMaterialEdit={beginMaterialEdit}
+      onArchiveMaterial={requestArchiveMaterial}
       onCancelEdit={cancelBasicInfoEdit}
       onCancelMaterialEditor={cancelMaterialEditor}
       onChangeDraft={changeBasicInfoDraft}
@@ -1080,9 +1249,11 @@ export default function MobileWorkOrderApp() {
       materialIdentityKey={detail.header.id}
       materialSaveNotice={materialSaveNotice}
       onLoadMoreMaterials={() => void loadMaterials(detail.header.id, "more")}
+      onLoadMoreArchivedMaterials={() => void loadMoreArchivedMaterials(detail.header.id)}
       onOpenMaterials={() => void loadMaterials(detail.header.id, "initial")}
       onRequestSectionChange={confirmDiscard}
       onRetryMaterials={() => void loadMaterials(detail.header.id, "retry")}
+      onRestoreMaterial={requestRestoreMaterial}
       onSave={() => void saveBasicInfo()}
       onSaveMaterial={() => void saveMaterial()}
       phone={!tablet}

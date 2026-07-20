@@ -256,6 +256,8 @@ export type WorkOrderMaterialLineReadModel = {
   readonly displayOrder: number;
   readonly editable: boolean;
   readonly locked: boolean;
+  readonly lifecycle: "active" | "archived";
+  readonly archivedAt: IsoDateTime | null;
 };
 
 export type WorkOrderMaterialsReadModel = {
@@ -270,11 +272,13 @@ export type WorkOrderMaterialPage = {
   readonly workOrderId: WorkOrderId;
   readonly revisionId: WorkOrderRevisionId;
   readonly materialType: MaterialType;
+  readonly lifecycle: "active" | "archived";
   readonly items: readonly WorkOrderMaterialLineReadModel[];
   readonly nextCursor: import("@/lib/domain/work-orders/contracts/primitives").OpaqueCursor | null;
   readonly hasMore: boolean;
   readonly limit: number;
   readonly entityVersion: EntityVersion;
+  readonly totalCount: number;
 };
 
 export type WorkOrderSizeColorMatrixReadModel = {

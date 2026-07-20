@@ -1,6 +1,7 @@
 import type {
   CreateMaterialLineInput,
   MaterialLineCommandResult,
+  MaterialLifecycleCommandInput,
   MobileCurrentUser,
   MobileFieldError,
   PatchMaterialLineInput,
@@ -188,6 +189,8 @@ function normalizeMaterialLine(value: unknown): WorkOrderMaterialLine | null {
     || typeof value.status !== "string"
     || !Number.isSafeInteger(value.displayOrder)
     || typeof value.locked !== "boolean"
+    || (value.lifecycle !== "active" && value.lifecycle !== "archived")
+    || !(value.archivedAt === null || typeof value.archivedAt === "string")
   ) return null;
   return {
     id: value.id,
@@ -207,11 +210,17 @@ function normalizeMaterialLine(value: unknown): WorkOrderMaterialLine | null {
     status: MATERIAL_STATUSES.has(value.status) ? value.status as WorkOrderMaterialLine["status"] : "unknown",
     displayOrder: Number(value.displayOrder),
     locked: value.locked,
+    lifecycle: value.lifecycle,
+    archivedAt: value.archivedAt,
   };
 }
 
-export async function getWorkOrderMaterials(workOrderId: string, cursor: string | null = null): Promise<WorkOrderMaterialPage> {
-  const query = new URLSearchParams({ type: "fabric", limit: "30" });
+export async function getWorkOrderMaterials(
+  workOrderId: string,
+  cursor: string | null = null,
+  lifecycle: "active" | "archived" = "active",
+): Promise<WorkOrderMaterialPage> {
+  const query = new URLSearchParams({ type: "fabric", lifecycle, limit: "30" });
   if (cursor) query.set("cursor", cursor);
   const body = await requestJson<{ readonly ok: boolean; readonly data?: unknown }>(
     `/api/v2/work-orders/${encodeURIComponent(workOrderId)}/materials?${query.toString()}`,
@@ -224,6 +233,7 @@ export async function getWorkOrderMaterials(workOrderId: string, cursor: string 
   if (
     body.data.workOrderId !== workOrderId
     || body.data.materialType !== "fabric"
+    || body.data.lifecycle !== lifecycle
     || lines.some((line) => line === null)
     || !(body.data.nextCursor === null || typeof body.data.nextCursor === "string")
     || typeof body.data.hasMore !== "boolean"
@@ -231,17 +241,20 @@ export async function getWorkOrderMaterials(workOrderId: string, cursor: string 
     || (!body.data.hasMore && body.data.nextCursor !== null)
     || !Number.isSafeInteger(body.data.limit)
     || !Number.isSafeInteger(body.data.entityVersion)
+    || !Number.isSafeInteger(body.data.totalCount)
   ) {
     throw new MobileApiError({ code: "MALFORMED_RESPONSE", message: "원단 정보 응답이 올바르지 않습니다." });
   }
   return {
     workOrderId,
     materialType: "fabric",
+    lifecycle,
     items: lines as WorkOrderMaterialLine[],
     nextCursor: body.data.nextCursor as string | null,
     hasMore: body.data.hasMore,
     limit: Number(body.data.limit),
     entityVersion: Number(body.data.entityVersion),
+    totalCount: Number(body.data.totalCount),
   };
 }
 
@@ -256,12 +269,49 @@ function normalizeMaterialCommandResult(value: unknown, workOrderId: string): Ma
     || !MATERIAL_STATUSES.has(result.status)
     || !Number.isSafeInteger(result.nextVersion)
     || !Number.isSafeInteger(result.lineVersion)
+    || (result.lifecycle !== "active" && result.lifecycle !== "archived")
     || !Number.isSafeInteger(value.nextVersion)
     || value.nextVersion !== result.nextVersion
     || Number(value.nextVersion) < 1
     || Number(result.lineVersion) < 1
   ) return null;
   return value as MaterialLineCommandResult;
+}
+
+async function transitionWorkOrderMaterialLifecycle(
+  workOrderId: string,
+  materialLineId: string,
+  kind: "archive" | "restore",
+  command: MaterialLifecycleCommandInput,
+  idempotencyKey: string,
+): Promise<MaterialLineCommandResult> {
+  const body = await requestJson<{ readonly ok: boolean; readonly data?: unknown }>(
+    `/api/v2/work-orders/${encodeURIComponent(workOrderId)}/materials/${encodeURIComponent(materialLineId)}/${kind}`,
+    { method: "POST", body: command, idempotencyKey },
+  );
+  const normalized = body.ok ? normalizeMaterialCommandResult(body.data, workOrderId) : null;
+  if (!normalized || normalized.result.materialLineId !== materialLineId || normalized.result.lifecycle !== (kind === "archive" ? "archived" : "active")) {
+    throw new MobileApiError({ code: "MALFORMED_RESPONSE", message: "원단 상태 변경 응답이 올바르지 않습니다." });
+  }
+  return normalized;
+}
+
+export function archiveWorkOrderMaterial(
+  workOrderId: string,
+  materialLineId: string,
+  command: MaterialLifecycleCommandInput,
+  idempotencyKey: string,
+) {
+  return transitionWorkOrderMaterialLifecycle(workOrderId, materialLineId, "archive", command, idempotencyKey);
+}
+
+export function restoreWorkOrderMaterial(
+  workOrderId: string,
+  materialLineId: string,
+  command: MaterialLifecycleCommandInput,
+  idempotencyKey: string,
+) {
+  return transitionWorkOrderMaterialLifecycle(workOrderId, materialLineId, "restore", command, idempotencyKey);
 }
 
 export async function createWorkOrderMaterial(

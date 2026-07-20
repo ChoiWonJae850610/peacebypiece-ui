@@ -152,6 +152,14 @@ export type RemoveMaterialLineCommand = VersionedWorkOrderCommand & {
   readonly materialLineId: MaterialLineId;
 };
 
+export type ArchiveMaterialLineCommand = IdempotentWorkOrderCommand & {
+  readonly materialLineId: MaterialLineId;
+};
+
+export type RestoreMaterialLineCommand = IdempotentWorkOrderCommand & {
+  readonly materialLineId: MaterialLineId;
+};
+
 export type RequestMaterialOrderCommand = IdempotentWorkOrderCommand & {
   readonly materialLineId: MaterialLineId;
 };
@@ -173,6 +181,7 @@ export type MaterialLineCommandResult = {
   readonly status: "editing" | "requested" | "completed" | "cancelled";
   readonly nextVersion: EntityVersion;
   readonly lineVersion: EntityVersion;
+  readonly lifecycle: "active" | "archived";
 };
 
 export type PatchSizeSpecCellCommand = VersionedWorkOrderCommand & {

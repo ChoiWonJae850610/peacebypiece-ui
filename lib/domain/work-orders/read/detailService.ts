@@ -96,10 +96,12 @@ function createContext(input: ServiceInput) {
 }
 
 function assertAllowedQueryKeys(searchParams: URLSearchParams, allowed: ReadonlySet<string>) {
+  const seen = new Set<string>();
   for (const key of searchParams.keys()) {
-    if (!allowed.has(key)) {
+    if (!allowed.has(key) || seen.has(key)) {
       throw new WorkOrderDetailRequestError({ code: "VALIDATION_ERROR", status: 400, message: `지원하지 않는 query parameter입니다: ${key}` });
     }
+    seen.add(key);
   }
 }
 
@@ -176,17 +178,21 @@ export async function getWorkOrderDetailTab(input: ServiceInput & { readonly tab
   };
 
   if (input.tab === "materials") {
-    assertAllowedQueryKeys(input.searchParams, new Set(["type", "limit", "cursor"]));
+    assertAllowedQueryKeys(input.searchParams, new Set(["type", "lifecycle", "limit", "cursor"]));
     const materialType = input.searchParams.get("type");
     if (materialType !== "fabric" && materialType !== "accessory") {
       throw new WorkOrderDetailRequestError({ code: "VALIDATION_ERROR", status: 400, message: "type은 fabric 또는 accessory여야 합니다." });
     }
-    const kind = `materials:${materialType}` as WorkOrderTabCursorKind;
+    const lifecycle = input.searchParams.get("lifecycle") ?? "active";
+    if (lifecycle !== "active" && lifecycle !== "archived") {
+      throw new WorkOrderDetailRequestError({ code: "VALIDATION_ERROR", status: 400, message: "lifecycle은 active 또는 archived여야 합니다." });
+    }
+    const kind = `${`materials:${materialType}`}${lifecycle === "archived" ? ":archived" : ""}` as WorkOrderTabCursorKind;
     const cursorPosition = decodeCursor({
       value: input.searchParams.get("cursor"), companyId: input.scope.companyId,
       visibilityKey: context.visibilityKey, workOrderId: context.workOrderId, kind, positionLength: 2,
     });
-    const result = await getWorkOrderMaterialsV2({ ...base, materialType, limit: parseLimit(input.searchParams.get("limit")), cursorPosition });
+    const result = await getWorkOrderMaterialsV2({ ...base, materialType, lifecycle, limit: parseLimit(input.searchParams.get("limit")), cursorPosition });
     if (!result.data) notFound();
     const nextCursor = result.nextPosition
       ? encodeWorkOrderTabCursor({ companyId: input.scope.companyId, visibilityKey: context.visibilityKey, workOrderId: context.workOrderId, kind, position: result.nextPosition })

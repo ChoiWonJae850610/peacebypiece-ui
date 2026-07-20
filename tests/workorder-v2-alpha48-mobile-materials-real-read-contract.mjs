@@ -23,13 +23,13 @@ const detailRead = read("lib/domain/work-orders/read/detailRoute.ts");
 const detailService = read("lib/domain/work-orders/read/detailService.ts");
 const externalQa = read("lib/external-qa/configCore.mjs");
 
-assert.match(version, /APP_VERSION = "2\.0\.0-alpha\.50"/);
-assert.match(mobileVersion, /MOBILE_APP_VERSION = "2\.0\.0-alpha\.50"/);
-assert.equal(mobilePackage.version, "2.0.0-alpha.50");
-assert.equal(mobileLock.version, "2.0.0-alpha.50");
-assert.equal(mobileLock.packages[""].version, "2.0.0-alpha.50");
+assert.match(version, /APP_VERSION = "2\.0\.0-alpha\.51"/);
+assert.match(mobileVersion, /MOBILE_APP_VERSION = "2\.0\.0-alpha\.51"/);
+assert.equal(mobilePackage.version, "2.0.0-alpha.51");
+assert.equal(mobileLock.version, "2.0.0-alpha.51");
+assert.equal(mobileLock.packages[""].version, "2.0.0-alpha.51");
 assert.equal(appJson.expo.version, "2.0.0");
-assert.equal(appJson.expo.extra.appVersion, "2.0.0-alpha.50");
+assert.equal(appJson.expo.extra.appVersion, "2.0.0-alpha.51");
 assert.equal(appJson.expo.extra.dataMode, "dev-test-tailscale-auto-connect");
 assert.equal(appJson.expo.extra.mockOnly, false);
 assert.equal(appJson.expo.ios.bundleIdentifier, "com.wafl.app");
@@ -52,7 +52,7 @@ for (const field of [
 assert.doesNotMatch(apiTypes, /\[key:\s*string\]|:\s*any\b/);
 
 assert.match(apiClient, /export async function getWorkOrderMaterials/);
-assert.match(apiClient, /type: "fabric", limit: "30"/);
+assert.match(apiClient, /type: "fabric", lifecycle, limit: "30"/);
 assert.match(apiClient, /method: "GET"/);
 assert.match(apiClient, /body\.data\.workOrderId !== workOrderId/);
 assert.match(apiClient, /DECIMAL_PATTERN/);

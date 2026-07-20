@@ -185,10 +185,10 @@ export async function issueWorkOrderRevisionV2(input: {
              timezone(settings.business_timezone, now())::date::text AS business_date,
              (SELECT count(*) FROM work_order_material_lines m
               WHERE m.company_id = w.company_id AND m.revision_id = r.id
-                AND m.material_type = 'fabric') AS fabric_count,
+                AND m.material_type = 'fabric' AND m.archived_at IS NULL) AS fabric_count,
              (SELECT count(*) FROM work_order_material_lines m
               WHERE m.company_id = w.company_id AND m.revision_id = r.id
-                AND m.material_type = 'accessory') AS accessory_count
+                AND m.material_type = 'accessory' AND m.archived_at IS NULL) AS accessory_count
       FROM work_orders w
       JOIN work_order_revisions r ON r.company_id = w.company_id AND r.id = w.current_revision_id
       CROSS JOIN LATERAL public.wafl_v2_document_number_settings() AS settings

@@ -19,6 +19,7 @@ const expectedFiles = [
   "010_v2_generated_document_receipt_link.sql",
   "011_v2_document_access_viewer_functions.sql",
   "012_v2_document_access_token_purpose.sql",
+  "013_v2_material_line_archive_lifecycle.sql",
 ];
 
 const actualFiles = fs
@@ -38,7 +39,9 @@ const executableSql = combined
   .replace(/^\s*--.*$/gm, "");
 
 for (const { file, source } of sources) {
-  if (file === "012_v2_document_access_token_purpose.sql") {
+  if (file === "013_v2_material_line_archive_lifecycle.sql") {
+    assert.ok(source.includes("EXECUTION IS PROHIBITED WITHOUT THE APPROVED ALPHA.51 DEV/TEST GATE"), `${file} missing alpha.51 execution prohibition`);
+  } else if (file === "012_v2_document_access_token_purpose.sql") {
     assert.ok(source.includes("EXECUTION IS PROHIBITED WITHOUT THE APPROVED ALPHA.42 DEV/TEST GATE"), `${file} missing alpha.42 execution prohibition`);
   } else if (file === "011_v2_document_access_viewer_functions.sql") {
     assert.ok(source.includes("EXECUTION IS PROHIBITED WITHOUT THE APPROVED ALPHA.39 DEV/TEST GATE"), `${file} missing alpha.39 execution prohibition`);
@@ -241,6 +244,11 @@ const alpha26ApiPaths = [
   "app/api/v2/work-orders/[workOrderId]/materials/[materialLineId]/order-cancel/route.ts",
   "app/api/v2/work-orders/[workOrderId]/materials/[materialLineId]/order-complete/route.ts",
 ];
+const alpha51ApiPaths = [
+  ...alpha26ApiPaths,
+  "app/api/v2/work-orders/[workOrderId]/materials/[materialLineId]/archive/route.ts",
+  "app/api/v2/work-orders/[workOrderId]/materials/[materialLineId]/restore/route.ts",
+];
 const alpha27ApiPaths = ["app/api/v2/work-orders/[workOrderId]/revisions/issue/route.ts"];
 const alpha28ApiPaths = ["app/api/v2/work-orders/[workOrderId]/revisions/[revisionId]/preview/route.ts"];
 const alpha29ApiPaths = ["app/api/v2/work-orders/documents/[documentRef]/preview-target/route.ts"];
@@ -256,6 +264,7 @@ const alpha39ApiPaths = [
   "app/api/v2/work-orders/documents/[documentRef]/access-tokens/[tokenId]/rotate/route.ts",
 ];
 const alpha40ApiPaths = ["app/api/v2/work-orders/documents/[documentRef]/file/route.ts"];
+const alpha51ContractExists = fs.existsSync(path.join(root, "tests/workorder-v2-alpha51-material-soft-delete-restore-contract.mjs"));
 const alpha44ApiChanges = [
   "?? app/api/dev/mobile-connect/code/route.ts",
   "?? app/api/dev/mobile-connect/exchange/route.ts",
@@ -269,7 +278,13 @@ const alpha25ContractExists = fs.existsSync(path.join(root, "tests/workorder-v2-
 const alpha26ContractExists = fs.existsSync(path.join(root, "tests/workorder-v2-alpha26-material-command-api-contract.mjs"));
 const alpha27ContractExists = fs.existsSync(path.join(root, "tests/workorder-v2-alpha27-revision-issue-command-contract.mjs"));
 const alpha28ContractExists = fs.existsSync(path.join(root, "tests/workorder-v2-alpha28-issued-preview-contract.mjs"));
-if (/APP_VERSION = "2\.0\.0-alpha\.(44|45|46|47)"/.test(appVersion)) {
+if (alpha51ContractExists && appVersion.includes('APP_VERSION = "2.0.0-alpha.51"')) {
+  assert.deepEqual(
+    apiChanges.filter((change) => !alpha51ApiPaths.some((allowedPath) => change.endsWith(allowedPath))),
+    [],
+    "alpha.51 may add only the archive/restore material lifecycle routes",
+  );
+} else if (/APP_VERSION = "2\.0\.0-alpha\.(44|45|46|47)"/.test(appVersion)) {
   assert.deepEqual(
     apiChanges.filter((change) => !alpha44ApiChanges.includes(change)),
     [],

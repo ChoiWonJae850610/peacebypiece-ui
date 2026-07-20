@@ -1031,6 +1031,7 @@ $profileCommands = @{
                    "tests/workorder-v2-alpha48-mobile-materials-real-read-contract.mjs",
                    "tests/workorder-v2-alpha49-canonical-instruction-architecture-contract.mjs",
                   "tests/workorder-v2-alpha50-mobile-material-draft-create-update-contract.mjs",
+                  "tests/workorder-v2-alpha51-material-soft-delete-restore-contract.mjs",
                   "scripts/run-wafl-v2-alpha46-basic-info-preflight.mjs",
                   "scripts/run-wafl-v2-alpha46-basic-info-stale-audit.mjs",
                   "scripts/run-wafl-v2-alpha46-create-qa-draft.mjs",
@@ -1093,6 +1094,7 @@ $profileCommands = @{
           @{ Name = "workorder v2 alpha.48 mobile materials real read contract"; Command = "node"; Arguments = @("tests/workorder-v2-alpha48-mobile-materials-real-read-contract.mjs") },
           @{ Name = "workorder v2 alpha.49 canonical instruction architecture contract"; Command = "node"; Arguments = @("tests/workorder-v2-alpha49-canonical-instruction-architecture-contract.mjs") },
           @{ Name = "workorder v2 alpha.50 mobile material draft create/update contract"; Command = "node"; Arguments = @("tests/workorder-v2-alpha50-mobile-material-draft-create-update-contract.mjs") },
+          @{ Name = "workorder v2 alpha.51 material soft-delete restore lifecycle contract"; Command = "node"; Arguments = @("tests/workorder-v2-alpha51-material-soft-delete-restore-contract.mjs") },
           @{ Name = "WAFL external QA stop-state regression contract"; Command = "node"; Arguments = @("tests/wafl-external-qa-stop-state-contract.mjs") },
           @{ Name = "WAFL external QA Tailscale transport contract"; Command = "node"; Arguments = @("tests/wafl-external-qa-tailscale-transport-contract.mjs") },
           @{ Name = "WAFL external QA Tailscale runtime contract"; Command = "powershell.exe"; Arguments = @("-NoProfile", "-File", "tests/wafl-external-qa-tailscale-runtime-contract.ps1") },
@@ -1612,6 +1614,9 @@ if ($Profile -eq "automation-infrastructure" -and (GetProjectAppVersion) -in @("
 }
 if ($Profile -eq "automation-infrastructure" -and (GetProjectAppVersion) -in @("2.0.0-alpha.41", "2.0.0-alpha.42", "2.0.0-alpha.43", "2.0.0-alpha.44", "2.0.0-alpha.45", "2.0.0-alpha.46") -and (Test-Path (Join-Path $ProjectDir "tests/workorder-v2-alpha42-realistic-issued-embedded-qr-contract.mjs"))) {
     $allowedMigrationChanges = @("db/v2/migrations/012_v2_document_access_token_purpose.sql")
+}
+if ($Profile -eq "automation-infrastructure" -and (GetProjectAppVersion) -eq "2.0.0-alpha.51" -and (Test-Path (Join-Path $ProjectDir "tests/workorder-v2-alpha51-material-soft-delete-restore-contract.mjs"))) {
+    $allowedMigrationChanges = @("db/v2/migrations/013_v2_material_line_archive_lifecycle.sql")
 }
 $unexpectedMigrationChanges = @($migrationChanges | Where-Object { $allowedMigrationChanges -notcontains $_ })
 if ($unexpectedMigrationChanges.Count -gt 0) {

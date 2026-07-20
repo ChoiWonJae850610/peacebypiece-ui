@@ -26,8 +26,11 @@ export const MATERIAL_PATCH_COMMAND_CODE = "work_order.material.patch";
 export const MATERIAL_ORDER_REQUEST_COMMAND_CODE = "work_order.material.order_request";
 export const MATERIAL_ORDER_CANCEL_COMMAND_CODE = "work_order.material.order_cancel";
 export const MATERIAL_ORDER_COMPLETE_COMMAND_CODE = "work_order.material.order_complete";
+export const MATERIAL_ARCHIVE_COMMAND_CODE = "work_order.material.archive";
+export const MATERIAL_RESTORE_COMMAND_CODE = "work_order.material.restore";
 
 export type MaterialOrderTransitionKind = "request" | "cancel" | "complete";
+export type MaterialLifecycleTransitionKind = "archive" | "restore";
 
 type MaterialCommandFailureReason =
   | "not_found"
@@ -79,6 +82,7 @@ type MaterialTargetRow = WorkOrderTargetRow & {
   readonly unit_price: string | number;
   readonly memo: string | null;
   readonly requested_at: string | Date | null;
+  readonly archived_at: string | Date | null;
 };
 
 type ReceiptRow = DbQueryResultRow & {
@@ -130,6 +134,7 @@ function mapMaterialResult(row: MaterialTargetRow, nextVersion?: number): Materi
     status: toMaterialStatus(row.material_status),
     nextVersion: workOrderVersion as EntityVersion,
     lineVersion: toInteger(row.line_version) as EntityVersion,
+    lifecycle: row.archived_at === null ? "active" : "archived",
   };
 }
 
@@ -268,7 +273,7 @@ async function lockMaterialTarget(input: {
            m.entity_version AS line_version, m.material_id, m.name, m.color_option, m.usage_area,
            m.supplier_partner_id, m.required_quantity, m.allowance_quantity,
            m.inventory_usage_quantity, m.order_quantity, m.unit_code,
-           m.unit_price, m.memo, m.requested_at
+           m.unit_price, m.memo, m.requested_at, m.archived_at
     FROM work_orders w
     JOIN work_order_revisions r
       ON r.company_id = w.company_id AND r.id = w.current_revision_id
@@ -305,7 +310,7 @@ async function advanceParentVersions(input: {
       SELECT COALESCE(sum(amount) FILTER (WHERE material_type = 'fabric'), 0)::numeric(14,2) AS fabric_total,
              COALESCE(sum(amount) FILTER (WHERE material_type = 'accessory'), 0)::numeric(14,2) AS accessory_total
       FROM work_order_material_lines
-      WHERE company_id = $1 AND revision_id = $4::uuid
+      WHERE company_id = $1 AND revision_id = $4::uuid AND archived_at IS NULL
     ),
     updated_work_order AS (
       UPDATE work_orders
@@ -389,7 +394,7 @@ async function readReplayMaterial(input: {
            m.entity_version AS line_version, m.material_id, m.name, m.color_option, m.usage_area,
            m.supplier_partner_id, m.required_quantity, m.allowance_quantity,
            m.inventory_usage_quantity, m.order_quantity, m.unit_code,
-           m.unit_price, m.memo, m.requested_at
+           m.unit_price, m.memo, m.requested_at, m.archived_at
     FROM work_orders w
     JOIN work_order_revisions r
       ON r.company_id = w.company_id AND r.id = $3::uuid AND r.work_order_id = w.id
@@ -479,7 +484,7 @@ export async function addMaterialLineV2(input: {
                   id AS material_line_id, material_type, status AS material_status,
                   entity_version AS line_version, material_id, name, color_option, usage_area,
                   supplier_partner_id, required_quantity, allowance_quantity,
-                  inventory_usage_quantity, order_quantity, unit_code, unit_price, memo, requested_at
+                  inventory_usage_quantity, order_quantity, unit_code, unit_price, memo, requested_at, archived_at
       `, [
         input.scope.companyId, input.materialLineId, target.revision_id,
         input.command.materialId ?? null, input.command.materialType, input.command.name,
@@ -549,7 +554,7 @@ export async function patchMaterialLineV2(input: {
         materialLineId: input.materialLineId, assignedCompanyMemberId: input.assignedCompanyMemberId,
       });
       assertCurrentDraft(target, input.expectedVersion);
-      if (target.material_status !== "editing") {
+      if (target.material_status !== "editing" || target.archived_at !== null) {
         throw new MaterialCommandRepositoryError("locked", Number(target.work_order_version));
       }
 
@@ -605,7 +610,7 @@ export async function patchMaterialLineV2(input: {
                   id AS material_line_id, material_type, status AS material_status,
                   entity_version AS line_version, material_id, name, color_option, usage_area,
                   supplier_partner_id, required_quantity, allowance_quantity,
-                  inventory_usage_quantity, order_quantity, unit_code, unit_price, memo, requested_at
+                  inventory_usage_quantity, order_quantity, unit_code, unit_price, memo, requested_at, archived_at
       `, [
         input.scope.companyId, input.materialLineId, target.revision_id,
         hasOwn(patch, "name"), patch.name ?? null,
@@ -707,7 +712,7 @@ export async function transitionMaterialOrderV2(input: {
       materialLineId: input.materialLineId, assignedCompanyMemberId: input.assignedCompanyMemberId,
     });
     assertCurrentDraft(target, input.expectedVersion);
-    if (target.material_status !== config.from) {
+    if (target.archived_at !== null || target.material_status !== config.from) {
       throw new MaterialCommandRepositoryError("invalid_state_transition", Number(target.work_order_version));
     }
     if ((input.kind === "request" || input.kind === "complete")
@@ -734,7 +739,7 @@ export async function transitionMaterialOrderV2(input: {
                 id AS material_line_id, material_type, status AS material_status,
                 entity_version AS line_version, material_id, name, color_option, usage_area,
                 supplier_partner_id, required_quantity, allowance_quantity,
-                inventory_usage_quantity, order_quantity, unit_code, unit_price, memo, requested_at
+                inventory_usage_quantity, order_quantity, unit_code, unit_price, memo, requested_at, archived_at
     `, [
       input.scope.companyId, input.materialLineId, target.revision_id,
       config.to, config.from, target.line_version,
@@ -772,5 +777,98 @@ export async function transitionMaterialOrderV2(input: {
     result: mapMaterialResult(result.row), context, startedAt,
     idempotentReplay: result.idempotentReplay,
     changedFields: result.idempotentReplay ? [] : ["status"],
+  });
+}
+
+export async function transitionMaterialLifecycleV2(input: {
+  readonly scope: TenantMemberScope;
+  readonly assignedCompanyMemberId: CompanyMemberId | null;
+  readonly workOrderId: WorkOrderId;
+  readonly materialLineId: MaterialLineId;
+  readonly expectedVersion: EntityVersion;
+  readonly clientRequestId: string;
+  readonly kind: MaterialLifecycleTransitionKind;
+  readonly scopedIdempotencyKeyHash: string;
+  readonly requestHash: string;
+}): Promise<MaterialCommandRepositoryResult> {
+  const startedAt = performance.now();
+  const context: RepositoryContext = { statementCount: 0 };
+  const commandCode = input.kind === "archive" ? MATERIAL_ARCHIVE_COMMAND_CODE : MATERIAL_RESTORE_COMMAND_CODE;
+  const result = await withWaflV2TenantWriteTransaction(async (client) => {
+    await installTenantClaims(client, input.scope);
+    context.statementCount += 1;
+    const target = await lockMaterialTarget({
+      client, context, scope: input.scope, workOrderId: input.workOrderId,
+      materialLineId: input.materialLineId, assignedCompanyMemberId: input.assignedCompanyMemberId,
+    });
+    assertCurrentDraft(target, input.expectedVersion);
+    if (target.material_status !== "editing") {
+      throw new MaterialCommandRepositoryError("invalid_state_transition", Number(target.work_order_version));
+    }
+    const currentlyArchived = target.archived_at !== null;
+    if ((input.kind === "archive" && currentlyArchived) || (input.kind === "restore" && !currentlyArchived)) {
+      throw new MaterialCommandRepositoryError("conflict", Number(target.work_order_version));
+    }
+
+    const receipt = await reserveReceipt({
+      client, context, scope: input.scope, commandCode,
+      scopedIdempotencyKeyHash: input.scopedIdempotencyKeyHash, requestHash: input.requestHash,
+    });
+    if (receipt) {
+      throw new MaterialCommandRepositoryError("conflict", Number(target.work_order_version));
+    }
+
+    const updated = await client.query<MaterialTargetRow>(`
+      UPDATE work_order_material_lines
+      SET archived_at = CASE WHEN $4 = 'archive' THEN now() ELSE NULL END,
+          archived_by_member_id = CASE WHEN $4 = 'archive' THEN $5 ELSE NULL END,
+          entity_version = entity_version + 1,
+          updated_at = now()
+      WHERE company_id = $1 AND id = $2::uuid AND revision_id = $3::uuid
+        AND status = 'editing' AND entity_version = $6
+        AND (($4 = 'archive' AND archived_at IS NULL) OR ($4 = 'restore' AND archived_at IS NOT NULL))
+      RETURNING $7::uuid AS work_order_id, revision_id, $8::integer AS revision_no,
+                'draft'::text AS work_order_status, 'draft'::text AS revision_status,
+                $9::integer AS work_order_version,
+                id AS material_line_id, material_type, status AS material_status,
+                entity_version AS line_version, material_id, name, color_option, usage_area,
+                supplier_partner_id, required_quantity, allowance_quantity,
+                inventory_usage_quantity, order_quantity, unit_code, unit_price, memo, requested_at, archived_at
+    `, [
+      input.scope.companyId, input.materialLineId, target.revision_id, input.kind,
+      input.scope.companyMemberId, target.line_version,
+      target.work_order_id, target.revision_no, target.work_order_version,
+    ]);
+    context.statementCount += 1;
+    const row = updated.rows[0];
+    if (!row) throw new MaterialCommandRepositoryError("conflict", Number(target.work_order_version));
+    const nextVersion = await advanceParentVersions({
+      client, context, scope: input.scope, target,
+      expectedVersion: input.expectedVersion, recalculateMaterialTotals: true,
+    });
+    const materialType = toMaterialType(row.material_type);
+    await appendMaterialEvent({
+      client, context, scope: input.scope, target, materialLineId: row.material_line_id,
+      materialType, commandCode,
+      summary: `${materialType === "fabric" ? "원단" : "부자재"} line ${input.kind === "archive" ? "보관" : "복구"}`,
+      metadata: {
+        clientRequestId: input.clientRequestId,
+        changedFields: ["lifecycle"],
+        lifecycleTransition: { from: currentlyArchived ? "archived" : "active", to: input.kind === "archive" ? "archived" : "active" },
+        versionTransition: { from: Number(target.work_order_version), to: nextVersion },
+        lineVersionTransition: { from: Number(target.line_version), to: Number(row.line_version) },
+      },
+    });
+    await completeReceipt({
+      client, context, scope: input.scope, commandCode,
+      scopedIdempotencyKeyHash: input.scopedIdempotencyKeyHash,
+      workOrderId: target.work_order_id, revisionId: target.revision_id, nextVersion,
+    });
+    return { row: { ...row, work_order_version: nextVersion } };
+  });
+
+  return wrapResult({
+    result: mapMaterialResult(result.row), context, startedAt,
+    idempotentReplay: false, changedFields: ["lifecycle"],
   });
 }

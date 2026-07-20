@@ -185,6 +185,21 @@ type MaterialTransitionBody = {
   readonly reason?: string;
 };
 
+export function validateMaterialLifecycleTransition(input: {
+  readonly body: unknown;
+  readonly idempotencyKey: string | null;
+}): MaterialTransitionBody {
+  if (!isJsonObject(input.body)) {
+    throw new WorkOrderCommandValidationError([fieldError("body", "INVALID_TYPE", "JSON object 요청이 필요합니다.")]);
+  }
+  assertAllowedKeys(input.body, new Set(["clientRequestId", "expectedVersion"]));
+  return {
+    clientRequestId: parseClientRequestId(input.body.clientRequestId),
+    expectedVersion: parseExpectedVersion(input.body.expectedVersion),
+    idempotencyKey: parseIdempotencyKey(input.idempotencyKey),
+  };
+}
+
 export function validateMaterialOrderTransition(input: {
   readonly body: unknown;
   readonly idempotencyKey: string | null;

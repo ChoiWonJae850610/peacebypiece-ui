@@ -7,14 +7,15 @@
     [int]$ExpoPort = 8081,
     [string]$CloudflaredPath = "",
     [switch]$EnableAlpha46BasicInfoMutation,
-    [switch]$EnableAlpha50MaterialDraftMutation
+    [switch]$EnableAlpha50MaterialDraftMutation,
+    [switch]$EnableAlpha51MaterialLifecycleMutation
 )
 
 $ErrorActionPreference = "Stop"
 . (Join-Path $PSScriptRoot "wafl-external-qa-common.ps1")
 . (Join-Path $PSScriptRoot "..\pipeline\pipeline-common.ps1")
 
-if ($EnableAlpha46BasicInfoMutation -and $EnableAlpha50MaterialDraftMutation) {
+if (@($EnableAlpha46BasicInfoMutation, $EnableAlpha50MaterialDraftMutation, $EnableAlpha51MaterialLifecycleMutation).Where({ $_ }).Count -gt 1) {
     throw "EXTERNAL_QA_MUTATION_MODES_ARE_MUTUALLY_EXCLUSIVE"
 }
 
@@ -266,6 +267,13 @@ try {
         $serverEnvironment.WAFL_EXTERNAL_QA_ALPHA50_MATERIAL_DRAFT_MUTATION_ENABLED = "true"
         $state.commandApi = "ready"
         $state.mutationMode = "material-draft-create-update"
+    }
+    if ($EnableAlpha51MaterialLifecycleMutation) {
+        $serverEnvironment.WAFL_V2_COMMAND_API_ENABLED = "1"
+        $serverEnvironment.WAFL_V2_COMMAND_MUTATION_APPROVED = "2.0.0-alpha.51-dev-test-mobile-material-lifecycle-runtime"
+        $serverEnvironment.WAFL_EXTERNAL_QA_ALPHA51_MATERIAL_LIFECYCLE_MUTATION_ENABLED = "true"
+        $state.commandApi = "ready"
+        $state.mutationMode = "material-archive-restore"
     }
     $nextStdout = Join-Path $stateDir "next.stdout.log"
     $nextStderr = Join-Path $stateDir "next.stderr.log"

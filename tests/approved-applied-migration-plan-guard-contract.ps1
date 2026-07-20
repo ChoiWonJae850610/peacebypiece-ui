@@ -52,4 +52,44 @@ AssertGuardFails -Name "migration 011 content changed" -Mutation { param($state)
 AssertGuardFails -Name "migration 013 added" -Mutation { param($state) $state.MigrationFiles += "013_unapproved.sql"; $state.MigrationHashes["013_unapproved.sql"] = "0" * 64 }
 AssertGuardFails -Name "approval evidence missing" -Mutation { param($state) $state.ApplyEvidenceValid = $false }
 
+$alpha51Approval = [hashtable]$manifest.Alpha51Migration013
+function NewAlpha51GuardState {
+    $hashes = @{}
+    foreach ($migration in $alpha51Approval.MigrationFiles) { $hashes[[string]$migration.Name] = [string]$migration.Sha256 }
+    return @{
+        VerificationProfile = "automation-infrastructure"
+        ExpectedAppVersion = "2.0.0-alpha.51"
+        RuntimeEnvironment = "development"
+        TargetFingerprint = "01e5dcc7fea3"
+        LedgerCount = 13
+        ApplyCount = 1
+        ChangedMigrationPaths = @("db/v2/migrations/013_v2_material_line_archive_lifecycle.sql")
+        MigrationFiles = @($alpha51Approval.MigrationFiles | ForEach-Object { [string]$_.Name })
+        MigrationHashes = $hashes
+        ApplyEvidenceValid = $true
+        PostApplyEvidenceValid = $true
+    }
+}
+
+$alpha51Pass = AssertApprovedAppliedMigrationState -Approval $alpha51Approval -State (NewAlpha51GuardState)
+if ($alpha51Pass.LedgerCount -ne 13) { throw "alpha51 exact approved state did not pass" }
+
+foreach ($case in @(
+    @{ Name = "alpha51 wrong migration"; Mutation = { param($state) $state.ChangedMigrationPaths = @("db/v2/migrations/012_v2_document_access_token_purpose.sql") } }
+    @{ Name = "alpha51 ledger 12"; Mutation = { param($state) $state.LedgerCount = 12 } }
+    @{ Name = "alpha51 migration content hash mismatch"; Mutation = { param($state) $state.MigrationHashes["013_v2_material_line_archive_lifecycle.sql"] = "0" * 64 } }
+    @{ Name = "alpha51 apply count two"; Mutation = { param($state) $state.ApplyCount = 2 } }
+    @{ Name = "alpha51 production runtime"; Mutation = { param($state) $state.RuntimeEnvironment = "production" } }
+)) {
+    $state = NewAlpha51GuardState
+    & $case.Mutation $state
+    try {
+        AssertApprovedAppliedMigrationState -Approval $alpha51Approval -State $state | Out-Null
+        throw "guard case unexpectedly passed: $($case.Name)"
+    }
+    catch {
+        if ($_.Exception.Message -like "guard case unexpectedly passed:*") { throw }
+    }
+}
+
 Write-Output "APPROVED_APPLIED_MIGRATION_PLAN_GUARD_CONTRACT: PASS"

@@ -47,7 +47,7 @@ function AssertApprovedAppliedMigrationState {
 
     $approvedName = Split-Path -Leaf $Approval.MigrationPath
     if ($State.MigrationHashes[$approvedName] -ne $Approval.MigrationSha256) {
-        throw "approved migration 012 SHA mismatch"
+        throw "approved migration SHA mismatch"
     }
 
     return [pscustomobject]@{
@@ -89,7 +89,13 @@ function AssertApprovedAppliedMigrationCommitGuard {
     $manifestPath = Join-Path $PSScriptRoot "approved-applied-migrations.psd1"
     if (-not (Test-Path -LiteralPath $manifestPath -PathType Leaf)) { throw "approved migration manifest missing" }
     $manifest = Import-PowerShellDataFile -LiteralPath $manifestPath
-    $approval = [hashtable]$manifest.Alpha42Migration012
+    $matchingApprovals = @($manifest.GetEnumerator() | Where-Object {
+        $candidate = [hashtable]$_.Value
+        $candidate.ExpectedAppVersions -contains $ExpectedAppVersion -and
+        $ChangedMigrationPaths -contains ([string]$candidate.MigrationPath)
+    })
+    if ($matchingApprovals.Count -ne 1) { throw "approved migration selection mismatch" }
+    $approval = [hashtable]$matchingApprovals[0].Value
 
     $explicitRuntime = [string]$env:WAFL_V2_RUNTIME
     $runtimeEnvironment = if ([string]::IsNullOrWhiteSpace($explicitRuntime)) {
@@ -111,14 +117,14 @@ function AssertApprovedAppliedMigrationCommitGuard {
     $applyContent = if (Test-Path -LiteralPath $applyEvidencePath -PathType Leaf) {
         Get-Content -LiteralPath $applyEvidencePath -Raw -Encoding UTF8
     } else { "" }
-    $applyCount = ([regex]::Matches($applyContent, [regex]::Escape("ALPHA42_MIGRATION_012_APPLY_PASS"))).Count
+    $applyCount = ([regex]::Matches($applyContent, [regex]::Escape([string]$approval.ApplyMarker))).Count
 
     $state = @{
         VerificationProfile = $VerificationProfile
         ExpectedAppVersion = $ExpectedAppVersion
         RuntimeEnvironment = $runtimeEnvironment
         TargetFingerprint = $ConfiguredFingerprint
-        LedgerCount = 12
+        LedgerCount = [int]$approval.ExpectedLedgerCount
         ApplyCount = $applyCount
         ChangedMigrationPaths = @($ChangedMigrationPaths)
         MigrationFiles = @($migrationFiles.Name)
