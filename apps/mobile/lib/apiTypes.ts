@@ -111,6 +111,43 @@ export type WorkOrderMaterialPage = {
   readonly entityVersion: number;
 };
 
+export type MaterialDraftFields = {
+  readonly name: string;
+  readonly colorOption: string;
+  readonly usageArea: string;
+  readonly requiredQuantity: string;
+  readonly allowanceQuantity: string;
+  readonly inventoryUsageQuantity: string;
+  readonly orderQuantity: string;
+  readonly unitCode: string;
+  readonly unitPrice: string;
+  readonly memo: string;
+};
+
+export type CreateMaterialLineInput = MaterialDraftFields & {
+  readonly clientRequestId: string;
+  readonly expectedVersion: number;
+  readonly materialType: "fabric";
+};
+
+export type PatchMaterialLineInput = {
+  readonly clientRequestId: string;
+  readonly expectedVersion: number;
+  readonly patch: Partial<MaterialDraftFields>;
+};
+
+export type MaterialLineCommandResult = {
+  readonly result: {
+    readonly workOrderId: string;
+    readonly materialLineId: string;
+    readonly materialType: "fabric";
+    readonly status: Exclude<MaterialLineStatus, "unknown">;
+    readonly nextVersion: number;
+    readonly lineVersion: number;
+  };
+  readonly nextVersion: number;
+};
+
 export type MobileApiErrorCode =
   | "API_ORIGIN_INVALID"
   | "NETWORK_ERROR"

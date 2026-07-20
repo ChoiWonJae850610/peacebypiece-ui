@@ -6,12 +6,17 @@
     [int]$NextPort = 3000,
     [int]$ExpoPort = 8081,
     [string]$CloudflaredPath = "",
-    [switch]$EnableAlpha46BasicInfoMutation
+    [switch]$EnableAlpha46BasicInfoMutation,
+    [switch]$EnableAlpha50MaterialDraftMutation
 )
 
 $ErrorActionPreference = "Stop"
 . (Join-Path $PSScriptRoot "wafl-external-qa-common.ps1")
 . (Join-Path $PSScriptRoot "..\pipeline\pipeline-common.ps1")
+
+if ($EnableAlpha46BasicInfoMutation -and $EnableAlpha50MaterialDraftMutation) {
+    throw "EXTERNAL_QA_MUTATION_MODES_ARE_MUTUALLY_EXCLUSIVE"
+}
 
 function Get-WaflQaDatabaseUrl {
     param([Parameter(Mandatory = $true)][string]$RepositoryRoot)
@@ -254,6 +259,13 @@ try {
         $serverEnvironment.WAFL_EXTERNAL_QA_ALPHA46_BASIC_INFO_MUTATION_ENABLED = "true"
         $state.commandApi = "ready"
         $state.mutationMode = "basic-info-patch"
+    }
+    if ($EnableAlpha50MaterialDraftMutation) {
+        $serverEnvironment.WAFL_V2_COMMAND_API_ENABLED = "1"
+        $serverEnvironment.WAFL_V2_COMMAND_MUTATION_APPROVED = "2.0.0-alpha.50-dev-test-mobile-material-draft-runtime"
+        $serverEnvironment.WAFL_EXTERNAL_QA_ALPHA50_MATERIAL_DRAFT_MUTATION_ENABLED = "true"
+        $state.commandApi = "ready"
+        $state.mutationMode = "material-draft-create-update"
     }
     $nextStdout = Join-Path $stateDir "next.stdout.log"
     $nextStderr = Join-Path $stateDir "next.stderr.log"

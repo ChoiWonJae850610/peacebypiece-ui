@@ -15,7 +15,8 @@ import { ChevronLeft, ImageIcon, LockKeyhole, PencilLine } from "lucide-react-na
 
 import { WAFL_FONTS } from "@/constants/fonts";
 import WorkOrderMaterialsReadOnly, { type MaterialReadViewState } from "@/components/WorkOrderMaterialsReadOnly";
-import type { WorkOrderDetailCore } from "@/lib/apiTypes";
+import WorkOrderMaterialEditor, { type MaterialEditorViewState } from "@/components/WorkOrderMaterialEditor";
+import type { MaterialDraftFields, WorkOrderDetailCore, WorkOrderMaterialLine } from "@/lib/apiTypes";
 import {
   formatProductType,
   formatWorkOrderStatus,
@@ -115,6 +116,17 @@ type Props = {
   readonly onReloadLatest: () => void;
   readonly materials: MaterialReadViewState;
   readonly materialIdentityKey: string;
+  readonly canEditMaterials: boolean;
+  readonly materialEditor: MaterialEditorViewState | null;
+  readonly materialEditorDirty: boolean;
+  readonly materialSaveNotice: string | null;
+  readonly onBeginMaterialCreate: () => void;
+  readonly onBeginMaterialEdit: (line: WorkOrderMaterialLine) => void;
+  readonly onChangeMaterialDraft: (field: keyof MaterialDraftFields, value: string) => void;
+  readonly onCancelMaterialEditor: () => void;
+  readonly onSaveMaterial: () => void;
+  readonly onReloadLatestMaterial: () => void;
+  readonly onRequestSectionChange: (onProceed: () => void) => void;
   readonly onOpenMaterials: () => void;
   readonly onRetryMaterials: () => void;
   readonly onLoadMoreMaterials: () => void;
@@ -244,8 +256,10 @@ export default function WorkOrderDetailOverview(props: Props) {
               accessibilityLabel="제작 카드 기본정보 수정"
               accessibilityRole="button"
               onPress={() => {
-                setActiveSection("overview");
-                props.onBeginEdit();
+                props.onRequestSectionChange(() => {
+                  setActiveSection("overview");
+                  props.onBeginEdit();
+                });
               }}
               style={styles.editEntry}
             >
@@ -316,7 +330,7 @@ export default function WorkOrderDetailOverview(props: Props) {
               <Pressable
                 accessibilityRole="button"
                 accessibilityState={{ selected: activeSection === "overview" }}
-                onPress={() => setActiveSection("overview")}
+                onPress={() => props.onRequestSectionChange(() => setActiveSection("overview"))}
                 style={[styles.tab, activeSection === "overview" && styles.tabSelected]}
               >
                 <Text style={[styles.tabText, activeSection === "overview" && styles.tabTextSelected]}>개요</Text>
@@ -328,10 +342,10 @@ export default function WorkOrderDetailOverview(props: Props) {
                   accessibilityLabel={`원단 ${tab.count(detail)}건`}
                   accessibilityRole="button"
                   accessibilityState={{ selected: activeSection === "fabric" }}
-                  onPress={() => {
+                  onPress={() => props.onRequestSectionChange(() => {
                     setActiveSection("fabric");
                     props.onOpenMaterials();
-                  }}
+                  })}
                   style={[styles.tab, activeSection === "fabric" && styles.tabSelected]}
                 >
                   <View style={styles.tabLabelRow}>
@@ -372,11 +386,24 @@ export default function WorkOrderDetailOverview(props: Props) {
                 <MetricLine emphasized label="총 예상" value={formatAmount(detail.amounts.estimatedTotal, currency)} />
               </Section>
             </View>
+          ) : props.materialEditor ? (
+            <WorkOrderMaterialEditor
+              dirty={props.materialEditorDirty}
+              onCancel={props.onCancelMaterialEditor}
+              onChange={props.onChangeMaterialDraft}
+              onReloadLatest={props.onReloadLatestMaterial}
+              onSave={props.onSaveMaterial}
+              state={props.materialEditor}
+            />
           ) : (
             <WorkOrderMaterialsReadOnly
+              canEdit={props.canEditMaterials}
               key={props.materialIdentityKey}
+              onAdd={props.onBeginMaterialCreate}
+              onEdit={props.onBeginMaterialEdit}
               onLoadMore={props.onLoadMoreMaterials}
               onRetry={props.onRetryMaterials}
+              saveNotice={props.materialSaveNotice}
               state={props.materials}
             />
           )}

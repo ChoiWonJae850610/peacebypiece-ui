@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { ActivityIndicator, Pressable, StyleSheet, Text, View, useWindowDimensions } from "react-native";
-import { Check, ChevronDown, ChevronUp, FileUp, RefreshCw, RotateCcw, Trash2, type LucideIcon } from "lucide-react-native";
+import { Check, ChevronDown, ChevronUp, FileUp, PencilLine, Plus, RefreshCw, RotateCcw, Trash2, type LucideIcon } from "lucide-react-native";
 
 import { WAFL_FONTS } from "@/constants/fonts";
 import type { WorkOrderMaterialLine } from "@/lib/apiTypes";
@@ -16,6 +16,10 @@ export type MaterialReadViewState = {
 
 type Props = {
   readonly state: MaterialReadViewState;
+  readonly canEdit: boolean;
+  readonly saveNotice: string | null;
+  readonly onAdd: () => void;
+  readonly onEdit: (line: WorkOrderMaterialLine) => void;
   readonly onRetry: () => void;
   readonly onLoadMore: () => void;
 };
@@ -147,7 +151,13 @@ function ReadOnlyActionButton({ action, compact }: { readonly action: ReadOnlyAc
   );
 }
 
-function MaterialCard({ line, expanded, onToggle }: { readonly line: WorkOrderMaterialLine; readonly expanded: boolean; readonly onToggle: () => void }) {
+function MaterialCard({ line, expanded, canEdit, onEdit, onToggle }: {
+  readonly line: WorkOrderMaterialLine;
+  readonly expanded: boolean;
+  readonly canEdit: boolean;
+  readonly onEdit: () => void;
+  readonly onToggle: () => void;
+}) {
   const { width } = useWindowDimensions();
   const compactActions = width < 760;
   const actions = materialActions(line.status);
@@ -221,6 +231,12 @@ function MaterialCard({ line, expanded, onToggle }: { readonly line: WorkOrderMa
         )}
         {actions.length ? (
           <View testID="material-order-actions" style={styles.materialOrderActions}>
+            {canEdit && line.status === "editing" ? (
+              <Pressable accessibilityLabel={`${line.name} 수정`} accessibilityRole="button" onPress={onEdit} style={({ pressed }) => [styles.editActionButton, pressed && styles.pressed]}>
+                <PencilLine color="#ffffff" size={17} strokeWidth={2.25} />
+                {!compactActions ? <Text style={styles.editActionCaption}>수정</Text> : null}
+              </Pressable>
+            ) : null}
             {actions.map((action) => <ReadOnlyActionButton action={action} compact={compactActions} key={action.caption} />)}
           </View>
         ) : null}
@@ -229,7 +245,16 @@ function MaterialCard({ line, expanded, onToggle }: { readonly line: WorkOrderMa
   );
 }
 
-export default function WorkOrderMaterialsReadOnly({ state, onRetry, onLoadMore }: Props) {
+function AddMaterialButton({ onPress }: { readonly onPress: () => void }) {
+  return (
+    <Pressable accessibilityLabel="새 원단 추가" accessibilityRole="button" onPress={onPress} style={({ pressed }) => [styles.addButton, pressed && styles.pressed]}>
+      <Plus color="#ffffff" size={16} strokeWidth={2.4} />
+      <Text style={styles.addButtonText}>원단 추가</Text>
+    </Pressable>
+  );
+}
+
+export default function WorkOrderMaterialsReadOnly({ state, canEdit, saveNotice, onAdd, onEdit, onRetry, onLoadMore }: Props) {
   const [expandedIds, setExpandedIds] = useState<ReadonlySet<string>>(() => new Set());
   const waiting = state.status === "loading" || state.status === "retrying";
 
@@ -243,7 +268,7 @@ export default function WorkOrderMaterialsReadOnly({ state, onRetry, onLoadMore 
   }
 
   if (state.status === "empty") {
-    return <View style={styles.centerState}><Text style={styles.stateTitle}>등록된 원단이 없습니다</Text><Text style={styles.stateCaption}>이 제작 카드에 연결된 원단 내역이 없습니다.</Text></View>;
+    return <View style={styles.centerState}><Text style={styles.stateTitle}>등록된 원단이 없습니다</Text><Text style={styles.stateCaption}>이 제작 카드에 연결된 원단 내역이 없습니다.</Text>{canEdit ? <AddMaterialButton onPress={onAdd} /> : null}</View>;
   }
 
   if (state.status === "error" && state.items.length === 0) {
@@ -261,11 +286,19 @@ export default function WorkOrderMaterialsReadOnly({ state, onRetry, onLoadMore 
 
   return (
     <View style={styles.list}>
+      {canEdit || saveNotice ? (
+        <View style={styles.listToolbar}>
+          {saveNotice ? <Text accessibilityRole="alert" style={styles.saveNotice}>{saveNotice}</Text> : <View style={styles.toolbarSpacer} />}
+          {canEdit ? <AddMaterialButton onPress={onAdd} /> : null}
+        </View>
+      ) : null}
       {state.items.map((line) => (
         <MaterialCard
+          canEdit={canEdit}
           key={line.id}
           expanded={expandedIds.has(line.id)}
           line={line}
+          onEdit={() => onEdit(line)}
           onToggle={() => setExpandedIds((current) => {
             const next = new Set(current);
             if (next.has(line.id)) next.delete(line.id);
@@ -304,6 +337,11 @@ const styles = StyleSheet.create({
   retryText: { color: "#fff", fontFamily: WAFL_FONTS.bold, fontSize: 13 },
   pressed: { opacity: 0.7 },
   list: { gap: 10, padding: 12, paddingBottom: 16 },
+  listToolbar: { alignItems: "center", flexDirection: "row", gap: 8, justifyContent: "space-between", minHeight: 44 },
+  toolbarSpacer: { flex: 1 },
+  saveNotice: { color: "#4d6a3a", flex: 1, fontFamily: WAFL_FONTS.bold, fontSize: 11, lineHeight: 16, minWidth: 0 },
+  addButton: { alignItems: "center", backgroundColor: "#17263d", borderRadius: 8, flexDirection: "row", gap: 5, justifyContent: "center", minHeight: 40, paddingHorizontal: 12 },
+  addButtonText: { color: "#ffffff", fontFamily: WAFL_FONTS.bold, fontSize: 11 },
   card: { backgroundColor: "#fffdf8", borderColor: "#e7ded1", borderLeftWidth: 4, borderRadius: 8, borderWidth: 1, overflow: "hidden" },
   cardEditing: { borderLeftColor: "#a89d90" },
   cardRequested: { borderLeftColor: "#c75f35" },
@@ -344,6 +382,8 @@ const styles = StyleSheet.create({
   iconActionEmphasized: { backgroundColor: "#23375a", borderColor: "#23375a" },
   iconActionDanger: { backgroundColor: "#fff5f0", borderColor: "#e5b7ac" },
   disabledAction: { opacity: 0.46 },
+  editActionButton: { alignItems: "center", backgroundColor: "#17263d", borderColor: "#17263d", borderRadius: 8, borderWidth: 1, flexDirection: "row", gap: 3, height: 30, justifyContent: "center", minWidth: 36, paddingHorizontal: 7 },
+  editActionCaption: { color: "#ffffff", fontFamily: WAFL_FONTS.bold, fontSize: 10 },
   iconActionCaption: { color: "#17263d", fontFamily: WAFL_FONTS.bold, fontSize: 10 },
   iconActionCaptionEmphasized: { color: "#fff" },
   iconActionCaptionDanger: { color: "#9a4035" },

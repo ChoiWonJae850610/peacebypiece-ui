@@ -16,7 +16,7 @@ Document role: canonical owner for supported Expo/native environment, app identi
 | iOS bundle identifier | `com.wafl.app` |
 | Android package | `com.wafl.app` |
 | Expo public version | `2.0.0` |
-| Internal APP_VERSION | `2.0.0-alpha.49` |
+| Internal APP_VERSION | `2.0.0-alpha.50` |
 | iOS Development Build | build number `1` |
 
 `com.wafl.app` is the stable WAFL brand identifier and does not derive from repository project or planned company names.
@@ -93,6 +93,6 @@ The accepted Apple account and build history is immutable evidence in `42-ios-de
 - Do not introduce another Expo tunnel provider or fallback transport.
 - Do not claim a new native build, Expo install correction, or device registration unless corresponding immutable evidence exists.
 
-## Current alpha.49 effect boundary
+## Current alpha.50 effect boundary
 
-Alpha.49 changes canonical documentation and document-validation infrastructure only. Expo public version, iOS build number, SDK, dependencies, plugins, native manifests, ATS, EAS profile, credentials, EAS Build, and EAS Update remain unchanged.
+Alpha.50 changes JavaScript/TypeScript mobile material editing and existing server dev/test guards only. The installed Development Build remains reusable. Expo public version, iOS build number, SDK, dependencies, plugins, native manifests, ATS, EAS profile, credentials, EAS Build, and EAS Update remain unchanged.

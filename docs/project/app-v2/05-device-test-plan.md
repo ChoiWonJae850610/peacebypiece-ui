@@ -15,7 +15,7 @@ Document role: canonical owner for supported-device matrix, physical-device acce
 
 | Device | Primary orientation | Required concerns | Current actual evidence |
 | --- | --- | --- | --- |
-| iPhone | portrait | one-card flow, Korean input, touch targets, loading/error, background/re-entry, share/camera when implemented | alpha.43–48 evidence |
+| iPhone | portrait | one-card flow, Korean input, touch targets, loading/error, background/re-entry, share/camera when implemented | alpha.43–50 evidence |
 | iPad mini | portrait and landscape | readable centered workspace, drawer/selection, tab and table overflow | actual feature QA remains task-specific |
 | iPad Pro | portrait and landscape | useful expanded/split review without desktop-admin compression | actual feature QA remains task-specific |
 | Galaxy phone | portrait | Android permissions/input/navigation and production-card density | actual feature QA remains task-specific |
@@ -87,3 +87,4 @@ Do not copy version-by-version results into this plan. Use immutable evidence:
 - basic-info update: `45-mobile-basic-info-update-evidence.md`;
 - developer auto-connect: `46-mobile-tailscale-serve-developer-auto-connect-evidence.md`;
 - material Read: `47-mobile-materials-real-read-evidence.md`.
+- material draft create/update: `49-mobile-material-draft-create-update-evidence.md`.

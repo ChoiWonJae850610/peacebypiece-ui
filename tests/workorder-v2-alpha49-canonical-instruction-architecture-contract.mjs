@@ -20,10 +20,10 @@ const verification = read("docs/project/app-v2/17-v2-api-contract-test-plan.md")
 const runbook = read("docs/project/app-v2/41-external-mobile-qa-runbook.md");
 const evidence = read("docs/project/app-v2/48-canonical-codex-instruction-architecture-evidence.md");
 
-assert.match(read("lib/constants/version.ts"), /APP_VERSION = "2\.0\.0-alpha\.49"/);
-assert.equal(JSON.parse(read("apps/mobile/package.json")).version, "2.0.0-alpha.49");
-assert.equal(JSON.parse(read("apps/mobile/package-lock.json")).packages[""].version, "2.0.0-alpha.49");
-assert.equal(JSON.parse(read("apps/mobile/app.json")).expo.extra.appVersion, "2.0.0-alpha.49");
+assert.match(read("lib/constants/version.ts"), /APP_VERSION = "2\.0\.0-alpha\.50"/);
+assert.equal(JSON.parse(read("apps/mobile/package.json")).version, "2.0.0-alpha.50");
+assert.equal(JSON.parse(read("apps/mobile/package-lock.json")).packages[""].version, "2.0.0-alpha.50");
+assert.equal(JSON.parse(read("apps/mobile/app.json")).expo.extra.appVersion, "2.0.0-alpha.50");
 assert.equal(JSON.parse(read("apps/mobile/app.json")).expo.version, "2.0.0");
 
 for (const [source, token] of [

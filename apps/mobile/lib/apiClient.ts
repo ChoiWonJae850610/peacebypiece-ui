@@ -1,6 +1,9 @@
 import type {
+  CreateMaterialLineInput,
+  MaterialLineCommandResult,
   MobileCurrentUser,
   MobileFieldError,
+  PatchMaterialLineInput,
   PatchWorkOrderBasicInfoInput,
   PatchWorkOrderBasicInfoResult,
   WorkOrderDetailCore,
@@ -62,7 +65,11 @@ function readError(body: unknown, status: number, correlationHeader: string | nu
   return new MobileApiError({ code, message, status, correlationId, fieldErrors, entityVersion });
 }
 
-async function requestJson<T>(path: string, options: { readonly method: "GET" | "POST" | "PATCH"; readonly body?: unknown }): Promise<T> {
+async function requestJson<T>(path: string, options: {
+  readonly method: "GET" | "POST" | "PATCH";
+  readonly body?: unknown;
+  readonly idempotencyKey?: string;
+}): Promise<T> {
   if (!path.startsWith("/") || path.startsWith("//")) {
     throw new MobileApiError({ code: "API_ORIGIN_INVALID", message: "요청 경로가 올바르지 않습니다." });
   }
@@ -78,6 +85,7 @@ async function requestJson<T>(path: string, options: { readonly method: "GET" | 
         Accept: "application/json",
         "Cache-Control": "no-store",
         ...(options.body ? { "Content-Type": "application/json" } : {}),
+        ...(options.idempotencyKey ? { "Idempotency-Key": options.idempotencyKey } : {}),
       },
       body: options.body ? JSON.stringify(options.body) : undefined,
       signal: controller.signal,
@@ -235,6 +243,55 @@ export async function getWorkOrderMaterials(workOrderId: string, cursor: string 
     limit: Number(body.data.limit),
     entityVersion: Number(body.data.entityVersion),
   };
+}
+
+function normalizeMaterialCommandResult(value: unknown, workOrderId: string): MaterialLineCommandResult | null {
+  if (!isJsonObject(value) || !isJsonObject(value.result)) return null;
+  const result = value.result;
+  if (
+    result.workOrderId !== workOrderId
+    || typeof result.materialLineId !== "string"
+    || result.materialType !== "fabric"
+    || typeof result.status !== "string"
+    || !MATERIAL_STATUSES.has(result.status)
+    || !Number.isSafeInteger(result.nextVersion)
+    || !Number.isSafeInteger(result.lineVersion)
+    || !Number.isSafeInteger(value.nextVersion)
+    || value.nextVersion !== result.nextVersion
+    || Number(value.nextVersion) < 1
+    || Number(result.lineVersion) < 1
+  ) return null;
+  return value as MaterialLineCommandResult;
+}
+
+export async function createWorkOrderMaterial(
+  workOrderId: string,
+  command: CreateMaterialLineInput,
+  idempotencyKey: string,
+): Promise<MaterialLineCommandResult> {
+  const body = await requestJson<{ readonly ok: boolean; readonly data?: unknown }>(
+    `/api/v2/work-orders/${encodeURIComponent(workOrderId)}/materials`,
+    { method: "POST", body: command, idempotencyKey },
+  );
+  const normalized = body.ok ? normalizeMaterialCommandResult(body.data, workOrderId) : null;
+  if (!normalized) throw new MobileApiError({ code: "MALFORMED_RESPONSE", message: "원단 저장 응답이 올바르지 않습니다." });
+  return normalized;
+}
+
+export async function patchWorkOrderMaterial(
+  workOrderId: string,
+  materialLineId: string,
+  command: PatchMaterialLineInput,
+): Promise<MaterialLineCommandResult> {
+  const body = await requestJson<{ readonly ok: boolean; readonly data?: unknown }>(
+    `/api/v2/work-orders/${encodeURIComponent(workOrderId)}/materials/${encodeURIComponent(materialLineId)}`,
+    { method: "PATCH", body: command },
+  );
+  const normalized = body.ok ? normalizeMaterialCommandResult(body.data, workOrderId) : null;
+  if (!normalized || normalized.result.materialLineId !== materialLineId) {
+    throw new MobileApiError({ code: "MALFORMED_RESPONSE", message: "원단 저장 응답이 올바르지 않습니다." });
+  }
+  return normalized;
 }
 
 export async function patchWorkOrderBasicInfo(

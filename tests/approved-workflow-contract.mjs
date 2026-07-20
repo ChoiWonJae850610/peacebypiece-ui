@@ -111,6 +111,8 @@ const requiredVerifyTokens = [
   "tests/workorder-v2-alpha26-material-command-api-contract.mjs",
   "workorder v2 alpha.49 canonical instruction architecture contract",
   "tests/workorder-v2-alpha49-canonical-instruction-architecture-contract.mjs",
+  "workorder v2 alpha.50 mobile material draft create/update contract",
+  "tests/workorder-v2-alpha50-mobile-material-draft-create-update-contract.mjs",
   "app-v2 document links and Mermaid contract",
   "tests/app-v2-document-links-contract.mjs",
   "mobile typecheck",

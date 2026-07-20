@@ -18,6 +18,7 @@ import type {
 import {
   createCommandTenantScope,
   requireCommandMutationApproval,
+  requireMaterialDraftMutationApproval,
   WorkOrderCommandRequestError,
 } from "@/lib/domain/work-orders/command/commandService";
 import {
@@ -159,7 +160,7 @@ export async function addMaterialLine(input: {
     scope: input.scope, companyMemberId: input.companyMemberId,
     correlationId: input.correlationId, permissionCode: "workorder.update",
   });
-  requireCommandMutationApproval(WAFL_V2_ALPHA26_MUTATION_APPROVAL);
+  requireMaterialDraftMutationApproval();
   const keyHash = scopedKeyHash({
     commandCode: MATERIAL_CREATE_COMMAND_CODE,
     companyId: tenantScope.companyId,
@@ -215,7 +216,7 @@ export async function patchMaterialLine(input: {
     scope: input.scope, companyMemberId: input.companyMemberId,
     correlationId: input.correlationId, permissionCode: "workorder.update",
   });
-  requireCommandMutationApproval(WAFL_V2_ALPHA26_MUTATION_APPROVAL);
+  requireMaterialDraftMutationApproval();
   try {
     return toServiceResult(await patchMaterialLineV2({
       scope: tenantScope,

@@ -4,8 +4,8 @@ Document type: **Current Baseline**
 
 Canonical owner: `docs/codex-current-state.md`
 
-Result version: `2.0.0-alpha.49`
-Status: `ALPHA49_CANONICAL_CODEX_INSTRUCTION_ARCHITECTURE_COMPLETE`
+Result version: `2.0.0-alpha.50`
+Status: `ALPHA50_MOBILE_MATERIAL_DRAFT_CREATE_UPDATE_COMPLETE`
 
 This file is a compact present-state snapshot. It is not a version history, Permanent Rules owner, runtime process ledger, or evidence archive. Historical implementation details belong to numbered immutable evidence under `docs/project/app-v2/`.
 
@@ -15,26 +15,26 @@ This file is a compact present-state snapshot. It is not a version history, Perm
 | --- | --- |
 | Repository | `C:\CWJ_Project\peacebypiece-2.0` |
 | Branch | `master` |
-| Alpha.49 entry HEAD/origin | `800b5e6052b67134706d0a94a7743ca8ed608aff` |
-| Entry commit | `feat: WAFL v2 모바일 원단 실데이터 조회 연결` |
+| Alpha.50 entry HEAD/origin | `c375ef12fa03b088ef04b020ebe8f2c0d6653c8d` |
+| Entry commit | `docs: WAFL v2 Codex canonical 작업지시 체계 정리` |
 | Entry ahead/behind | `0/0` |
 | Entry working tree | clean |
-| APP_VERSION | `2.0.0-alpha.49` |
-| Mobile package version | `2.0.0-alpha.49` |
+| APP_VERSION | `2.0.0-alpha.50` |
+| Mobile package version | `2.0.0-alpha.50` |
 | Root package version | `0.5.637` |
 | Expo public version | `2.0.0` |
 | iOS Development Build | build number `1`, reusable while native inputs remain unchanged |
 | iOS bundle identifier | `com.wafl.app` |
 | Android package | `com.wafl.app` |
 
-The source cannot contain the hash of the commit that contains itself. Final alpha.49 HEAD, origin synchronization, Git cleanliness, ZIP hash/size/entry count, and the exact generated repo-state filename are therefore owned by the matching alpha.49 repo-state created after the one version commit.
+The source cannot contain the hash of the commit that contains itself. Final alpha.50 HEAD, origin synchronization, Git cleanliness, ZIP hash/size/entry count, and exact repo-state filename are owned by the matching post-commit alpha.50 repo-state.
 
 ## Latest delivery boundary
 
-- Target Source ZIP: `peacebypiece-ui-2.0.0-alpha.49.zip`.
-- Target repo-state: `repo-state-2.0.0-alpha.49-<actual timestamp>.txt`.
+- Target Source ZIP: `peacebypiece-ui-2.0.0-alpha.50.zip`.
+- Target repo-state: `repo-state-2.0.0-alpha.50-<actual timestamp>.txt`.
 - `4. Newest` must contain only that matching pair after Finish.
-- The previous accepted handoff was alpha.48 ZIP SHA-256 `9bd97b5ac24f773dd2c1fe9a030ae10f7ae0809e597ce224a832643d78f1b876`, size `6,600,361` bytes, entries `2,606`, exclude violations `0`, with `repo-state-2.0.0-alpha.48-20260720-000147.txt`.
+- The previous accepted handoff is the matching alpha.49 ZIP/repo-state pair recorded in its repo-state.
 
 ## Current product and transport baseline
 
@@ -44,25 +44,29 @@ The source cannot contain the hash of the commit that contains itself. Final alp
 - Preview/Viewer transport: process-owned Cloudflare Quick Tunnel HTTPS.
 - Next backend for DeveloperAutoConnect: localhost-only.
 - Tailscale Funnel: disabled; only structural `AllowFunnel: true` means enabled.
-- Default external runner mode: read-only `DeveloperAutoConnect`.
+- Default external runner mode: read-only `DeveloperAutoConnect`; separately approved mutation Deltas may enable only their exact process-local route set.
 - The manual one-time connection-code fallback remains available.
 - Normal flow dependency on localhost:3000: none.
 - Production access and mutation: blocked by default.
 
 Do not record live PID, port ownership, temporary origin, connection code, session/cookie, full identity hash, credentials, or full WorkOrder UUID in this tracked snapshot.
 
-## Latest verification baseline
+## Latest feature baseline
 
-Alpha.48 delivery completed with:
+Alpha.50 adds draft fabric-line create/update only:
 
-- Canonical Verify: PASS.
-- Contract summary: `53 passed / 0 failed`.
-- Mutation audit: `203 findings / high-risk 0`.
-- TypeScript, targeted ESLint, Next build, and Expo Doctor `19/19`: PASS.
-- External cellular iPhone material Read and UI conformity: PASS.
-- Business/DB/material/revision/event/receipt/R2/PDF/token/production/native/EAS delta: zero.
+- full supported-field material POST create and changed-field PATCH editing with explicit save;
+- validation, saving/error/conflict, stale 409, dirty guard, unsaved-new-editor cancellation, canonical refresh, and WorkOrder-keyed cache synchronization;
+- draft/tenant/permission/version guards and non-draft read-only behavior;
+- saved material DELETE remains blocked; order request/cancel/complete remains blocked;
+- actual retained QA effects: POST `1`, PATCH `2`, WorkOrder/revision/material-version deltas `+3/+3/+3`, material row `+1`, receipt `+1`, event `+3`;
+- one validation HTTP 400 and one stale HTTP 409 had mutation delta zero;
+- schema/migration, R2/PDF/token, production, native dependency, and EAS Build/Update effects were zero;
+- no-save physical-iPhone guard/read-only QA and canonical runner stop passed.
 
-Alpha.49 is documentation and development-infrastructure only. It requires no mobile runner or physical-device QA. Its final Verify, contract summary, mutation audit, Git identity, and handoff metadata are recorded in the alpha.49 evidence and matching repo-state.
+The exact interaction step owning each of the two explicit PATCH operations was not recoverable without an interaction ledger. This is recorded transparently in the alpha.50 evidence and is not classified as automatic save or a proven product defect.
+
+Final TypeScript, ESLint, Next, Expo, contracts, mutation audit, Canonical Verify, Git, and artifact identities are recorded by the final workflow and matching repo-state.
 
 ## Canonical owner structure
 
@@ -83,18 +87,20 @@ Alpha.49 is documentation and development-infrastructure only. It requires no mo
 - Alpha.47 developer auto-connect: `docs/project/app-v2/46-mobile-tailscale-serve-developer-auto-connect-evidence.md`.
 - Alpha.48 material Read: `docs/project/app-v2/47-mobile-materials-real-read-evidence.md`.
 - Alpha.49 canonical instruction architecture: `docs/project/app-v2/48-canonical-codex-instruction-architecture-evidence.md`.
+- Alpha.50 material draft create/update: `docs/project/app-v2/49-mobile-material-draft-create-update-evidence.md`.
 
 Older facts remain in their numbered evidence. They are not recopied here.
 
 ## Next candidate boundary
 
-Candidate: `2.0.0-alpha.50` — draft material basic editing.
+Candidate: `2.0.0-alpha.51` — material-line soft-delete lifecycle policy and schema.
 
 Potential Delta scope:
 
-- material-line add/edit/delete only after actual API and policy audit;
-- explicit save, entity/expected version, conflict, and dirty-state guard;
-- order request/cancel/complete remains a separate later Version Delta;
+- lifecycle policy, schema, visibility, restore, snapshot, event, receipt, and concurrency semantics;
+- an exact dev/test mutation budget and migration approval;
+- existing hard DELETE prohibition remains until that Delta is approved and verified;
+- material order request/cancel/complete remains the separate alpha.52 candidate;
 - production, native/EAS, broad cleanup, and unrelated feature expansion remain excluded unless explicitly named.
 
-The alpha.50 owner work order should be a short Version Delta that references the Permanent Rules instead of repeating them.
+The alpha.51 owner work order should be a short Version Delta that references the Permanent Rules instead of repeating them.

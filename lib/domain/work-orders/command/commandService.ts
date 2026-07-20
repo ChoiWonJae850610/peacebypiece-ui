@@ -26,6 +26,7 @@ import {
 import {
   getWorkOrderV2BasicInfoMutationRuntimeGuard,
   getWorkOrderV2CommandRuntimeGuard,
+  getWorkOrderV2MaterialDraftMutationRuntimeGuard,
   WAFL_V2_ALPHA25_MUTATION_APPROVAL,
 } from "@/lib/domain/work-orders/command/runtimeGuard";
 
@@ -118,6 +119,17 @@ export function requireBasicInfoMutationApproval() {
       code: "FORBIDDEN",
       status: 403,
       message: "제작 카드 기본정보 수정은 별도 승인된 dev/test runtime에서만 실행할 수 있습니다.",
+    });
+  }
+}
+
+export function requireMaterialDraftMutationApproval() {
+  const guard = getWorkOrderV2MaterialDraftMutationRuntimeGuard();
+  if (!guard.ok) {
+    throw new WorkOrderCommandRequestError({
+      code: "FORBIDDEN",
+      status: 403,
+      message: "원단 draft 추가와 수정은 별도 승인된 dev/test runtime에서만 실행할 수 있습니다.",
     });
   }
 }

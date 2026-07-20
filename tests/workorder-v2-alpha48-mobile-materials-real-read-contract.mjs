@@ -23,13 +23,13 @@ const detailRead = read("lib/domain/work-orders/read/detailRoute.ts");
 const detailService = read("lib/domain/work-orders/read/detailService.ts");
 const externalQa = read("lib/external-qa/configCore.mjs");
 
-assert.match(version, /APP_VERSION = "2\.0\.0-alpha\.49"/);
-assert.match(mobileVersion, /MOBILE_APP_VERSION = "2\.0\.0-alpha\.49"/);
-assert.equal(mobilePackage.version, "2.0.0-alpha.49");
-assert.equal(mobileLock.version, "2.0.0-alpha.49");
-assert.equal(mobileLock.packages[""].version, "2.0.0-alpha.49");
+assert.match(version, /APP_VERSION = "2\.0\.0-alpha\.50"/);
+assert.match(mobileVersion, /MOBILE_APP_VERSION = "2\.0\.0-alpha\.50"/);
+assert.equal(mobilePackage.version, "2.0.0-alpha.50");
+assert.equal(mobileLock.version, "2.0.0-alpha.50");
+assert.equal(mobileLock.packages[""].version, "2.0.0-alpha.50");
 assert.equal(appJson.expo.version, "2.0.0");
-assert.equal(appJson.expo.extra.appVersion, "2.0.0-alpha.49");
+assert.equal(appJson.expo.extra.appVersion, "2.0.0-alpha.50");
 assert.equal(appJson.expo.extra.dataMode, "dev-test-tailscale-auto-connect");
 assert.equal(appJson.expo.extra.mockOnly, false);
 assert.equal(appJson.expo.ios.bundleIdentifier, "com.wafl.app");
@@ -123,7 +123,8 @@ assert.doesNotMatch(materials, /styles\.listHeading|listHeading:/);
 assert.match(materials, /const matched = \/\^\(-\?\)\(\\d\+\)/);
 assert.doesNotMatch(materials, /Number\(line\.|parseFloat\(line\.|parseInt\(line\./);
 const materialCardBody = materials.slice(materials.indexOf("function MaterialCard"), materials.indexOf("export default function WorkOrderMaterialsReadOnly"));
-assert.equal((materialCardBody.match(/<Pressable/g) ?? []).length, 1, "material summary card must not nest pressable controls");
+const materialSummaryBody = materialCardBody.slice(materialCardBody.indexOf("<Pressable"), materialCardBody.indexOf("testID=\"material-order-action-row\""));
+assert.equal((materialSummaryBody.match(/<Pressable/g) ?? []).length, 1, "material summary card must not nest pressable controls");
 
 assert.match(app, /const MATERIAL_CACHE_LIMIT = 6/);
 assert.match(app, /materialCacheRef\.current\[workOrderId\]/);
@@ -146,7 +147,7 @@ assert.doesNotMatch(app + materials, /mockProductionCard|mockMaterial|production
 assert.doesNotMatch(app + materials, /console\.(?:log|debug|info|warn|error)/);
 
 const materialUiSlice = [materials, detail].join("\n");
-assert.doesNotMatch(materialUiSlice, /patchWorkOrder|POST|PUT|DELETE|order-request|order-cancel|order-complete/);
+assert.doesNotMatch(materials, /createWorkOrderMaterial|patchWorkOrderMaterial|POST|PUT|DELETE|order-request|order-cancel|order-complete/);
 assert.doesNotMatch(materialUiSlice, /<Image\b|Image\s*from\s*["']react-native/);
 assert.equal(mobilePackage.dependencies["@react-native-async-storage/async-storage"], undefined);
 

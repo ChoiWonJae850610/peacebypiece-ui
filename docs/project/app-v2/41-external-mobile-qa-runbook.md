@@ -160,5 +160,6 @@ On any Runtime failure:
 - manual connection/real reads: `43-mobile-real-data-read-only-evidence.md`;
 - developer auto-connect and stop hardening: `46-mobile-tailscale-serve-developer-auto-connect-evidence.md`;
 - material Read external QA: `47-mobile-materials-real-read-evidence.md`.
+- material draft create/update and bounded stale conflict: `49-mobile-material-draft-create-update-evidence.md`.
 
 These records are immutable. This runbook may evolve operational procedure without rewriting what those runs observed.

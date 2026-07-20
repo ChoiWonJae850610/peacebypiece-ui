@@ -2,28 +2,27 @@
 
 Document role: canonical owner for the current result, next candidate, and Version Delta boundary. It is not the historical implementation ledger; completed details live in numbered immutable evidence.
 
-## Current result — 2.0.0-alpha.49
+## Current result — 2.0.0-alpha.50
+
+Status: `ALPHA50_MOBILE_MATERIAL_DRAFT_CREATE_UPDATE_COMPLETE`.
+
+Alpha.50 completes draft fabric-line create and update:
+
+- one full supported-field create POST and explicit changed-field PATCH editing;
+- validation, saving/error/conflict states, stale 409, dirty guard, and unsaved-new-editor cancellation;
+- canonical detail/material refresh and WorkOrder-keyed cache synchronization;
+- draft-only tenant/permission/runtime approval while saved DELETE and material order Commands remain blocked;
+- retained QA data with actual version/material/event/receipt effects recorded transparently;
+- physical-iPhone no-save guard/read-only QA and canonical runner teardown;
+- schema, R2/PDF/token, production, native, and EAS effects remain zero.
+
+Evidence: `49-mobile-material-draft-create-update-evidence.md`.
+
+## Previous infrastructure result — 2.0.0-alpha.49
 
 Status: `ALPHA49_CANONICAL_CODEX_INSTRUCTION_ARCHITECTURE_COMPLETE`.
 
-Alpha.49 is documentation and development-infrastructure only:
-
-- establishes Permanent Rules / Current Baseline / Version Delta / Immutable Evidence;
-- assigns one canonical owner per recurring rule or fact;
-- replaces mandatory full-history reading with a stable core set plus conservative task routing;
-- compacts current-state and roadmap history into current snapshots and evidence links;
-- separates device QA, environment setup, Runtime runbook, API semantics, and verification semantics;
-- defines exact Version Delta fields and standing authorization without weakening production, native/EAS, destructive, tenant, or security gates;
-- adds document architecture contracts and current-version compatibility assertions;
-- changes no mobile UI, API behavior, DB/schema, Runtime behavior, historical evidence, native input, or EAS state.
-
-Evidence: `48-canonical-codex-instruction-architecture-evidence.md`.
-
-## Latest completed feature result — 2.0.0-alpha.48
-
-Status: `ALPHA48_MOBILE_MATERIALS_REAL_READ_COMPLETE`.
-
-The live ProductionCard fabric tab uses actual tenant-scoped material Read data with bounded lazy/cache/request identity behavior and accepted physical-iPhone presentation. Business/DB/R2/PDF/token/native/EAS effects were zero. Full facts remain in `47-mobile-materials-real-read-evidence.md`.
+Permanent Rules, Current Baseline, Version Delta, Immutable Evidence, responsibility routing, and compact future work orders were established without changing product Runtime behavior. Full facts remain in `48-canonical-codex-instruction-architecture-evidence.md`.
 
 ## Recent immutable evidence index
 
@@ -36,8 +35,9 @@ The live ProductionCard fabric tab uses actual tenant-scoped material Read data 
 | alpha.47 | Tailscale Serve developer auto-connect | `46-mobile-tailscale-serve-developer-auto-connect-evidence.md` |
 | alpha.48 | mobile material real Read | `47-mobile-materials-real-read-evidence.md` |
 | alpha.49 | canonical Codex instruction architecture | `48-canonical-codex-instruction-architecture-evidence.md` |
+| alpha.50 | mobile material draft create/update | `49-mobile-material-draft-create-update-evidence.md` |
 
-Older results remain in the numbered evidence files indexed and task-routed by `00-start-here.md`. Their detailed outcomes are not duplicated here.
+Older results remain in numbered evidence files indexed and task-routed by `00-start-here.md`. Their detailed outcomes are not duplicated here.
 
 ## Version Delta owner contract
 
@@ -66,24 +66,24 @@ Standard reference:
 
 The Delta does not repeat Permanent Rules. An omitted exceptional authority remains forbidden.
 
-## Next candidate — 2.0.0-alpha.50
+## Next candidate — 2.0.0-alpha.51
 
-Candidate objective: draft material basic editing.
+Candidate objective: define and implement the material-line soft-delete lifecycle only after owner approval.
 
-Potential included scope, subject to the actual alpha.50 Delta:
+Potential included scope, subject to the actual alpha.51 Delta:
 
-- add/edit/delete draft material lines;
-- explicit save;
-- expected/entity version and conflict handling;
-- dirty-state/input-loss guard;
-- actual API and tenant/permission audit before mutation.
+- lifecycle policy and schema;
+- visibility and restore behavior;
+- revision snapshot and concurrency semantics;
+- event/receipt effects and an exact bounded migration/mutation budget.
 
 Explicitly separate later scope:
 
-- material order request/cancel/complete Commands;
+- hard DELETE remains forbidden unless the approved lifecycle explicitly changes that contract;
+- material order request/cancel/complete Commands remain the alpha.52 candidate;
 - accessory tab implementation;
 - production deployment or production mutation;
 - native dependencies/plugins and EAS Build/Update;
 - unrelated UI polish or document lifecycle work.
 
-Alpha.50 does not start merely because it is listed here. It begins only with its owner-approved Version Delta and a matching clean baseline.
+Alpha.51 does not start merely because it is listed here. It begins only with its owner-approved Version Delta and a matching clean baseline.
