@@ -7,6 +7,7 @@ import MobileConnectScreen from "@/components/MobileConnectScreen";
 import WorkOrderDetailOverview, {
   type BasicInfoDraft,
   type BasicInfoFieldErrors,
+  type BasicInfoInlineField,
   type BasicInfoSaveState,
 } from "@/components/WorkOrderDetailOverview";
 import type { MaterialReadStatus, MaterialReadViewState } from "@/components/WorkOrderMaterialsReadOnly";
@@ -28,7 +29,8 @@ import {
   patchWorkOrderBasicInfo,
   restoreWorkOrderMaterial,
 } from "@/lib/apiClient";
-import { MobileApiError, type MaterialDraftFields, type MobileCurrentUser, type WorkOrderDetailCore, type WorkOrderListItem, type WorkOrderMaterialLine } from "@/lib/apiTypes";
+import { MobileApiError, type MaterialDraftFields, type MobileCurrentUser, type WorkOrderDetailCore, type WorkOrderListItem, type WorkOrderListStatusFilter, type WorkOrderMaterialLine } from "@/lib/apiTypes";
+import { calculateOrderQuantity, stripDecimalTrailingZeros } from "@/lib/mobileDisplay";
 
 type AppPhase =
   | "booting"
@@ -84,7 +86,7 @@ function archivedMaterialState(entry: MaterialCacheEntry | undefined): MaterialR
 function materialErrorMessage(error: unknown) {
   if (!(error instanceof MobileApiError)) return "원단 정보를 불러오지 못했습니다";
   if (error.code === "FORBIDDEN" || error.status === 403) return "원단 정보를 볼 권한이 없습니다";
-  if (error.code === "NOT_FOUND" || error.status === 404) return "제작 카드 또는 원단 정보를 찾을 수 없습니다";
+  if (error.code === "NOT_FOUND" || error.status === 404) return "작업지시서 또는 원단 정보를 찾을 수 없습니다";
   if (error.code === "CONFLICT" || error.status === 409) return "원단 정보를 최신 상태로 불러오지 못했습니다";
   return "원단 정보를 불러오지 못했습니다";
 }
@@ -107,21 +109,21 @@ function putBoundedMaterialEntry(
 function customerMessage(error: unknown) {
   if (!(error instanceof MobileApiError)) return "요청을 처리하지 못했습니다.";
   if (error.code === "AUTH_REQUIRED" || error.status === 401) return "연결이 필요합니다.";
-  if (error.code === "FORBIDDEN" || error.status === 403) return "제작 카드를 볼 권한이 없습니다.";
-  if (error.code === "NOT_FOUND" || error.status === 404) return "제작 카드를 찾을 수 없습니다.";
+  if (error.code === "FORBIDDEN" || error.status === 403) return "작업지시서를 볼 권한이 없습니다.";
+  if (error.code === "NOT_FOUND" || error.status === 404) return "작업지시서를 찾을 수 없습니다.";
   if (error.code === "MOBILE_CONNECT_CODE_UNAVAILABLE") return "연결 코드가 만료되었거나 사용할 수 없습니다.";
   if (error.code === "API_ORIGIN_INVALID") return error.message;
   if (error.code === "TIMEOUT") return "요청 시간이 초과되었습니다. 연결 상태를 확인한 뒤 다시 시도하세요.";
   if (error.code === "NETWORK_ERROR") return "연결 상태를 확인한 뒤 다시 시도하세요.";
-  return "제작 카드를 불러오지 못했습니다.";
+  return "작업지시서를 불러오지 못했습니다.";
 }
 
 function customerGuidance(error: unknown, retryTarget: ErrorState["retryTarget"]) {
   if (retryTarget === "detail" && error instanceof MobileApiError && (error.code === "NOT_FOUND" || error.status === 404)) {
-    return "목록으로 돌아가 다른 제작 카드를 선택하세요.";
+    return "목록으로 돌아가 다른 작업지시서를 선택하세요.";
   }
   if (retryTarget === "detail" && error instanceof MobileApiError && (error.code === "FORBIDDEN" || error.status === 403)) {
-    return "목록으로 돌아가 볼 수 있는 제작 카드를 선택하세요.";
+    return "목록으로 돌아가 볼 수 있는 작업지시서를 선택하세요.";
   }
   if (error instanceof MobileApiError && (error.code === "NETWORK_ERROR" || error.code === "TIMEOUT" || error.status >= 500)) {
     return "연결 상태를 확인한 뒤 직접 다시 시도하세요.";
@@ -176,19 +178,19 @@ const EMPTY_MATERIAL_DRAFT: MaterialDraftFields = {
 };
 
 const MATERIAL_QUANTITY_PATTERN = /^(?:0|[1-9]\d{0,10})(?:\.\d{1,3})?$/;
-const MATERIAL_PRICE_PATTERN = /^(?:0|[1-9]\d{0,11})(?:\.\d{1,2})?$/;
+const MATERIAL_PRICE_PATTERN = /^(?:0|[1-9]\d{0,11})$/;
 
 function materialDraftFromLine(line: WorkOrderMaterialLine): MaterialDraftFields {
   return {
     name: line.name,
     colorOption: line.colorOption ?? "",
     usageArea: line.usageArea ?? "",
-    requiredQuantity: line.requiredQuantity,
-    allowanceQuantity: line.allowanceQuantity,
-    inventoryUsageQuantity: line.inventoryUsageQuantity,
-    orderQuantity: line.orderQuantity,
+    requiredQuantity: stripDecimalTrailingZeros(line.requiredQuantity),
+    allowanceQuantity: stripDecimalTrailingZeros(line.allowanceQuantity),
+    inventoryUsageQuantity: stripDecimalTrailingZeros(line.inventoryUsageQuantity),
+    orderQuantity: stripDecimalTrailingZeros(line.orderQuantity),
     unitCode: line.unitCode,
-    unitPrice: line.unitPrice,
+    unitPrice: stripDecimalTrailingZeros(line.unitPrice),
     memo: line.memo ?? "",
   };
 }
@@ -204,17 +206,18 @@ function validateMaterialDraft(draft: MaterialDraftFields): MaterialEditorFieldE
   if (draft.usageArea.trim().length > 1000) errors.usageArea = "사용부위는 1,000자 이하여야 합니다.";
   if (draft.memo.trim().length > 2000) errors.memo = "메모는 2,000자 이하여야 합니다.";
   if (draft.unitCode.trim().length < 1 || draft.unitCode.trim().length > 32) errors.unitCode = "단위는 1자 이상 32자 이하여야 합니다.";
-  for (const field of ["requiredQuantity", "allowanceQuantity", "inventoryUsageQuantity", "orderQuantity"] as const) {
+  for (const field of ["requiredQuantity", "allowanceQuantity", "inventoryUsageQuantity"] as const) {
     if (!MATERIAL_QUANTITY_PATTERN.test(draft[field].trim())) errors[field] = "0 이상의 소수점 3자리 이하 숫자를 입력해 주세요.";
   }
-  if (!MATERIAL_PRICE_PATTERN.test(draft.unitPrice.trim())) errors.unitPrice = "0 이상의 소수점 2자리 이하 숫자를 입력해 주세요.";
-  if (!errors.orderQuantity && !errors.unitPrice) {
-    const [quantityWhole, quantityFraction = ""] = draft.orderQuantity.trim().split(".");
+  if (!MATERIAL_PRICE_PATTERN.test(draft.unitPrice.trim())) errors.unitPrice = "단가는 0 이상의 정수 원 단위로 입력해 주세요.";
+  const calculatedOrderQuantity = calculateOrderQuantity(draft);
+  if (calculatedOrderQuantity !== null && !errors.unitPrice) {
+    const [quantityWhole, quantityFraction = ""] = calculatedOrderQuantity.split(".");
     const [priceWhole, priceFraction = ""] = draft.unitPrice.trim().split(".");
     const quantityScaled = BigInt(quantityWhole) * 1000n + BigInt(quantityFraction.padEnd(3, "0"));
     const priceScaled = BigInt(priceWhole) * 100n + BigInt(priceFraction.padEnd(2, "0"));
     const amountCents = (quantityScaled * priceScaled + 500n) / 1000n;
-    if (amountCents > 99999999999999n) errors.orderQuantity = "발주수량 또는 단가를 줄여 주세요.";
+    if (amountCents > 99999999999999n) errors.unitPrice = "계산 금액이 허용 범위를 넘지 않도록 단가를 줄여 주세요.";
   }
   return errors;
 }
@@ -222,6 +225,7 @@ function validateMaterialDraft(draft: MaterialDraftFields): MaterialEditorFieldE
 function materialPatch(base: MaterialDraftFields, draft: MaterialDraftFields): Partial<MaterialDraftFields> {
   const patch: Partial<Record<keyof MaterialDraftFields, string>> = {};
   for (const field of Object.keys(base) as (keyof MaterialDraftFields)[]) {
+    if (field === "orderQuantity") continue;
     const normalized = draft[field].trim();
     const baseNormalized = base[field].trim();
     if (normalized !== baseNormalized) patch[field] = normalized;
@@ -230,16 +234,20 @@ function materialPatch(base: MaterialDraftFields, draft: MaterialDraftFields): P
 }
 
 function normalizedMaterialDraft(draft: MaterialDraftFields): MaterialDraftFields {
+  const requiredQuantity = stripDecimalTrailingZeros(draft.requiredQuantity);
+  const allowanceQuantity = stripDecimalTrailingZeros(draft.allowanceQuantity);
+  const inventoryUsageQuantity = stripDecimalTrailingZeros(draft.inventoryUsageQuantity);
+  const orderQuantity = calculateOrderQuantity({ requiredQuantity, allowanceQuantity, inventoryUsageQuantity }) ?? "0";
   return {
     name: draft.name.trim(),
     colorOption: draft.colorOption.trim(),
     usageArea: draft.usageArea.trim(),
-    requiredQuantity: draft.requiredQuantity.trim(),
-    allowanceQuantity: draft.allowanceQuantity.trim(),
-    inventoryUsageQuantity: draft.inventoryUsageQuantity.trim(),
-    orderQuantity: draft.orderQuantity.trim(),
+    requiredQuantity,
+    allowanceQuantity,
+    inventoryUsageQuantity,
+    orderQuantity,
     unitCode: draft.unitCode.trim(),
-    unitPrice: draft.unitPrice.trim(),
+    unitPrice: stripDecimalTrailingZeros(draft.unitPrice),
     memo: draft.memo.trim(),
   };
 }
@@ -251,10 +259,15 @@ export default function MobileWorkOrderApp() {
   const [user, setUser] = useState<MobileCurrentUser | null>(null);
   const [items, setItems] = useState<readonly WorkOrderListItem[]>([]);
   const [hasMore, setHasMore] = useState(false);
+  const [listNextCursor, setListNextCursor] = useState<string | null>(null);
+  const [listQuery, setListQuery] = useState("");
+  const [listStatusFilter, setListStatusFilter] = useState<WorkOrderListStatusFilter>("all");
+  const [listLoadingMore, setListLoadingMore] = useState(false);
   const [selected, setSelected] = useState<WorkOrderListItem | null>(null);
   const [detail, setDetail] = useState<WorkOrderDetailCore | null>(null);
   const [errorState, setErrorState] = useState<ErrorState | null>(null);
   const [editing, setEditing] = useState(false);
+  const [activeBasicField, setActiveBasicField] = useState<BasicInfoInlineField | null>(null);
   const [basicInfoDraft, setBasicInfoDraft] = useState<BasicInfoDraft>({ productName: "", dueDate: "", totalQuantity: "0" });
   const [basicInfoErrors, setBasicInfoErrors] = useState<BasicInfoFieldErrors>({});
   const [saveState, setSaveState] = useState<BasicInfoSaveState>("read-only");
@@ -262,9 +275,11 @@ export default function MobileWorkOrderApp() {
   const [conflictVersion, setConflictVersion] = useState<number | null>(null);
   const [materialCache, setMaterialCache] = useState<Readonly<Record<string, MaterialCacheEntry>>>({});
   const [materialEditor, setMaterialEditor] = useState<MaterialEditorViewState | null>(null);
+  const [activeMaterialField, setActiveMaterialField] = useState<keyof MaterialDraftFields | null>(null);
   const [materialSaveNotice, setMaterialSaveNotice] = useState<string | null>(null);
   const [materialLifecycleBusyId, setMaterialLifecycleBusyId] = useState<string | null>(null);
   const detailRequestInFlight = useRef(false);
+  const listRequestInFlight = useRef(false);
   const saveRequestInFlight = useRef(false);
   const materialSaveRequestInFlight = useRef(false);
   const materialLifecycleRequestInFlight = useRef(false);
@@ -304,6 +319,7 @@ export default function MobileWorkOrderApp() {
     setMaterialCache({});
     materialEditorRef.current = null;
     setMaterialEditor(null);
+    setActiveMaterialField(null);
     setMaterialSaveNotice(null);
     materialLifecycleRequestInFlight.current = false;
     setMaterialLifecycleBusyId(null);
@@ -326,6 +342,7 @@ export default function MobileWorkOrderApp() {
       setDetail(null);
       resetMaterialSession();
       setEditing(false);
+      setActiveBasicField(null);
       setSaveState("read-only");
       setErrorState({ message: "연결이 만료되었습니다.", guidance: "개발자 자동 연결을 다시 실행해 주세요.", correlationId: error.correlationId, retryTarget: "boot" });
       setPhase("session-expired");
@@ -340,21 +357,30 @@ export default function MobileWorkOrderApp() {
     setPhase("recoverable-error");
   }, [resetMaterialSession]);
 
-  const loadList = useCallback(async () => {
+  const loadListFor = useCallback(async (query: string, status: WorkOrderListStatusFilter) => {
+    if (listRequestInFlight.current) return;
+    listRequestInFlight.current = true;
     setErrorState(null);
     setPhase("authenticated-loading-list");
     try {
-      const page = await getWorkOrderList();
+      const page = await getWorkOrderList({ query, status });
       setItems(page.items);
       setHasMore(page.hasMore);
+      setListNextCursor(page.nextCursor);
+      setListQuery(query);
+      setListStatusFilter(status);
       setSelected(null);
       selectedWorkOrderId.current = null;
       setDetail(null);
       setPhase("list-ready");
     } catch (error) {
       setRequestError(error, "list");
+    } finally {
+      listRequestInFlight.current = false;
     }
   }, [setRequestError]);
+
+  const loadList = useCallback(async () => loadListFor(listQuery, listStatusFilter), [listQuery, listStatusFilter, loadListFor]);
 
   const authenticateAndLoadList = useCallback(async () => {
     const currentUser = await getCurrentMobileUser();
@@ -365,6 +391,9 @@ export default function MobileWorkOrderApp() {
     const page = await getWorkOrderList();
     setItems(page.items);
     setHasMore(page.hasMore);
+    setListNextCursor(page.nextCursor);
+    setListQuery("");
+    setListStatusFilter("all");
     setPhase("list-ready");
   }, []);
 
@@ -423,6 +452,7 @@ export default function MobileWorkOrderApp() {
     selectedWorkOrderId.current = item.workOrderId;
     materialEditorRef.current = null;
     setMaterialEditor(null);
+    setActiveMaterialField(null);
     setMaterialSaveNotice(null);
     setSelected(item);
     setDetail(null);
@@ -450,11 +480,13 @@ export default function MobileWorkOrderApp() {
     setDetail(null);
     setErrorState(null);
     setEditing(false);
+    setActiveBasicField(null);
     setBasicInfoErrors({});
     setSaveState("read-only");
     setSaveMessage(null);
     materialEditorRef.current = null;
     setMaterialEditor(null);
+    setActiveMaterialField(null);
     setMaterialSaveNotice(null);
     setPhase("list-ready");
   }
@@ -464,10 +496,12 @@ export default function MobileWorkOrderApp() {
     setBasicInfoErrors({});
     setConflictVersion(null);
     setEditing(false);
+    setActiveBasicField(null);
     setSaveState("read-only");
     setSaveMessage(null);
     materialEditorRef.current = null;
     setMaterialEditor(null);
+    setActiveMaterialField(null);
     setMaterialSaveNotice(null);
   }
 
@@ -508,6 +542,37 @@ export default function MobileWorkOrderApp() {
     confirmDiscard(() => void loadList());
   }
 
+  function applyListSearch(query: string) {
+    const normalized = query.trim();
+    if (normalized === listQuery) return;
+    confirmDiscard(() => void loadListFor(normalized, listStatusFilter));
+  }
+
+  function applyListStatusFilter(status: WorkOrderListStatusFilter) {
+    if (status === listStatusFilter) return;
+    confirmDiscard(() => void loadListFor(listQuery, status));
+  }
+
+  async function loadMoreList() {
+    if (!listNextCursor || !hasMore || listRequestInFlight.current) return;
+    listRequestInFlight.current = true;
+    setListLoadingMore(true);
+    try {
+      const page = await getWorkOrderList({ query: listQuery, status: listStatusFilter, cursor: listNextCursor });
+      setItems((current) => {
+        const known = new Set(current.map((item) => item.workOrderId));
+        return [...current, ...page.items.filter((item) => !known.has(item.workOrderId))];
+      });
+      setHasMore(page.hasMore);
+      setListNextCursor(page.nextCursor);
+    } catch (error) {
+      setRequestError(error, "list");
+    } finally {
+      listRequestInFlight.current = false;
+      setListLoadingMore(false);
+    }
+  }
+
   async function disconnect() {
     setErrorState(null);
     try {
@@ -516,6 +581,7 @@ export default function MobileWorkOrderApp() {
       setUser(null);
       setItems([]);
       setHasMore(false);
+      setListNextCursor(null);
       selectedWorkOrderId.current = null;
       setSelected(null);
       setDetail(null);
@@ -524,6 +590,7 @@ export default function MobileWorkOrderApp() {
       setSaveState("read-only");
       materialEditorRef.current = null;
       setMaterialEditor(null);
+      setActiveMaterialField(null);
       setMaterialSaveNotice(null);
       setErrorState(null);
       setPhase("disconnected-auto-failed");
@@ -666,7 +733,12 @@ export default function MobileWorkOrderApp() {
 
   function beginMaterialCreate() {
     if (!detail || detail.header.status !== "draft" || detail.revision.status !== "draft" || !user?.permissionCodes?.includes("workorder.update")) return;
+    if (editing && basicInfoDirty) {
+      Alert.alert("개요 편집을 완료해 주세요.", "현재 값을 저장하거나 취소한 뒤 원단을 추가할 수 있습니다.");
+      return;
+    }
     setEditing(false);
+    setActiveBasicField(null);
     setSaveState("read-only");
     setSaveMessage(null);
     const token = ++materialEditorSequence.current;
@@ -685,18 +757,40 @@ export default function MobileWorkOrderApp() {
       idempotencyKey: nextMaterialRequestIdentity("idempotency"),
       committedNextVersion: null,
     }));
+    setActiveMaterialField(null);
     setMaterialSaveNotice(null);
   }
 
-  function beginMaterialEdit(line: WorkOrderMaterialLine) {
+  function beginMaterialEdit(line: WorkOrderMaterialLine, field: keyof MaterialDraftFields) {
+    if (field === "orderQuantity") return;
     if (
       !detail
       || detail.header.status !== "draft"
       || detail.revision.status !== "draft"
       || line.status !== "editing"
+      || line.locked
+      || line.lifecycle !== "active"
       || !user?.permissionCodes?.includes("workorder.update")
     ) return;
+    if (editing && basicInfoDirty) {
+      Alert.alert("개요 편집을 완료해 주세요.", "현재 값을 저장하거나 취소한 뒤 원단을 수정할 수 있습니다.");
+      return;
+    }
+    const current = materialEditorRef.current;
+    if (current?.mode === "edit" && current.materialLineId === line.id) {
+      if (materialEditorDirty && activeMaterialField !== field) {
+        Alert.alert("현재 필드 편집을 완료해 주세요.", "값을 저장하거나 취소한 뒤 다른 필드를 수정할 수 있습니다.");
+        return;
+      }
+      setActiveMaterialField(field);
+      return;
+    }
+    if (current && materialEditorDirty) {
+      Alert.alert("현재 원단 편집을 완료해 주세요.", "값을 저장하거나 취소한 뒤 다른 원단을 수정할 수 있습니다.");
+      return;
+    }
     setEditing(false);
+    setActiveBasicField(null);
     setSaveState("read-only");
     setSaveMessage(null);
     const token = ++materialEditorSequence.current;
@@ -715,10 +809,12 @@ export default function MobileWorkOrderApp() {
       idempotencyKey: "",
       committedNextVersion: null,
     }));
+    setActiveMaterialField(field);
     setMaterialSaveNotice(null);
   }
 
   function changeMaterialDraft(field: keyof MaterialDraftFields, value: string) {
+    if (field === "orderQuantity") return;
     updateMaterialEditor((current) => current ? {
       ...current,
       draft: { ...current.draft, [field]: value },
@@ -732,6 +828,8 @@ export default function MobileWorkOrderApp() {
     confirmDiscard(() => {
       materialEditorRef.current = null;
       setMaterialEditor(null);
+      setActiveMaterialField(null);
+      setActiveMaterialField(null);
     });
   }
 
@@ -910,6 +1008,7 @@ export default function MobileWorkOrderApp() {
     if (editor.mode === "edit" && Object.keys(patch).length === 0) return;
 
     materialSaveRequestInFlight.current = true;
+    const saveStartedAt = Date.now();
     const sessionGeneration = materialSessionGeneration.current;
     updateMaterialEditor((current) => current?.token === editor.token ? {
       ...current,
@@ -933,6 +1032,7 @@ export default function MobileWorkOrderApp() {
           patch,
         });
       committedNextVersion = saved.nextVersion;
+      const patchCompletedAt = Date.now();
       updateMaterialEditor((current) => current?.token === editor.token ? {
         ...current,
         base: normalizedDraft,
@@ -947,8 +1047,19 @@ export default function MobileWorkOrderApp() {
         sessionGeneration,
       });
       if (!applied) return;
+      const revalidationCompletedAt = Date.now();
+      if (process.env.EXPO_PUBLIC_WAFL_EXTERNAL_QA?.trim().toLowerCase() === "true") console.info("[WAFL_MATERIAL_SAVE_METRIC]", {
+        mode: editor.mode,
+        payloadFields: editor.mode === "edit" ? Object.keys(patch).sort() : ["create"],
+        patchMs: patchCompletedAt - saveStartedAt,
+        canonicalRevalidationMs: revalidationCompletedAt - patchCompletedAt,
+        totalMs: revalidationCompletedAt - saveStartedAt,
+        canonicalGetCount: 2,
+        duplicateCanonicalGetCount: 0,
+      });
       materialEditorRef.current = null;
       setMaterialEditor(null);
+      setActiveMaterialField(null);
       setMaterialSaveNotice(editor.mode === "create" ? "원단을 추가했습니다." : "원단을 저장했습니다.");
     } catch (error) {
       if (committedNextVersion !== null) {
@@ -998,6 +1109,7 @@ export default function MobileWorkOrderApp() {
         if (!applied) return;
         materialEditorRef.current = null;
         setMaterialEditor(null);
+        setActiveMaterialField(null);
         setMaterialSaveNotice(editor.committedNextVersion === null ? null : "저장된 원단을 확인했습니다.");
       } catch (error) {
         updateMaterialEditor((current) => current?.token === editor.token ? {
@@ -1018,10 +1130,23 @@ export default function MobileWorkOrderApp() {
     }
   }
 
-  function beginBasicInfoEdit() {
+  function beginBasicInfoEdit(field: BasicInfoInlineField) {
     if (!detail || detail.header.status !== "draft" || detail.revision.status !== "draft") return;
+    if (materialEditorRef.current && materialEditorDirty) {
+      Alert.alert("원단 편집을 완료해 주세요.", "현재 값을 저장하거나 취소한 뒤 개요를 수정할 수 있습니다.");
+      return;
+    }
+    if (editing) {
+      if (basicInfoDirty && activeBasicField !== field) {
+        Alert.alert("현재 필드 편집을 완료해 주세요.", "값을 저장하거나 취소한 뒤 다른 필드를 수정할 수 있습니다.");
+        return;
+      }
+      setActiveBasicField(field);
+      return;
+    }
     materialEditorRef.current = null;
     setMaterialEditor(null);
+    setActiveMaterialField(null);
     setMaterialSaveNotice(null);
     setBasicInfoDraft(draftFromDetail(detail));
     setBasicInfoErrors({});
@@ -1029,6 +1154,7 @@ export default function MobileWorkOrderApp() {
     setSaveState("editing");
     setSaveMessage(null);
     setEditing(true);
+    setActiveBasicField(field);
   }
 
   function changeBasicInfoDraft(field: keyof BasicInfoDraft, value: string) {
@@ -1046,6 +1172,7 @@ export default function MobileWorkOrderApp() {
       setSaveState("read-only");
       setSaveMessage(null);
       setEditing(false);
+      setActiveBasicField(null);
     });
   }
 
@@ -1054,9 +1181,14 @@ export default function MobileWorkOrderApp() {
     return `alpha46-mobile-basic-${Date.now()}-${clientRequestCounter.current}`;
   }
 
-  async function saveBasicInfo() {
-    if (!detail || !selected || !editing || !basicInfoDirty || saveRequestInFlight.current) return;
-    const fieldErrors = validateBasicInfoDraft(basicInfoDraft);
+  async function saveBasicInfo(override?: Partial<BasicInfoDraft>) {
+    if (!detail || !selected || !editing || saveRequestInFlight.current) return;
+    const effectiveDraft = override ? { ...basicInfoDraft, ...override } : basicInfoDraft;
+    const effectiveDirty = effectiveDraft.productName !== detail.header.productName
+      || effectiveDraft.dueDate !== (detail.header.dueDate ?? "")
+      || effectiveDraft.totalQuantity !== String(detail.header.totalQuantity);
+    if (!effectiveDirty) return;
+    const fieldErrors = validateBasicInfoDraft(effectiveDraft);
     if (Object.keys(fieldErrors).length > 0) {
       setBasicInfoErrors(fieldErrors);
       setSaveState("validation-error");
@@ -1065,15 +1197,16 @@ export default function MobileWorkOrderApp() {
     }
 
     const patch: { productName?: string; dueDate?: string | null; totalQuantity?: number } = {};
-    const productName = basicInfoDraft.productName.trim();
+    const productName = effectiveDraft.productName.trim();
     if (productName !== detail.header.productName) patch.productName = productName;
-    const dueDate = basicInfoDraft.dueDate || null;
+    const dueDate = effectiveDraft.dueDate || null;
     if (dueDate !== detail.header.dueDate) patch.dueDate = dueDate;
-    const totalQuantity = Number(basicInfoDraft.totalQuantity);
+    const totalQuantity = Number(effectiveDraft.totalQuantity);
     if (totalQuantity !== detail.header.totalQuantity) patch.totalQuantity = totalQuantity;
     if (Object.keys(patch).length === 0) return;
 
     saveRequestInFlight.current = true;
+    const saveStartedAt = Date.now();
     setBasicInfoErrors({});
     setSaveState("saving");
     setSaveMessage(null);
@@ -1083,6 +1216,7 @@ export default function MobileWorkOrderApp() {
         expectedVersion: detail.header.entityVersion,
         patch,
       });
+      const patchCompletedAt = Date.now();
       const refreshed = await getWorkOrderDetail(selected.workOrderId);
       if (refreshed.header.entityVersion !== saved.nextVersion) {
         throw new MobileApiError({ code: "MALFORMED_RESPONSE", message: "저장 후 최신 버전을 확인할 수 없습니다." });
@@ -1105,8 +1239,18 @@ export default function MobileWorkOrderApp() {
       } : current);
       setConflictVersion(null);
       setEditing(false);
+      setActiveBasicField(null);
       setSaveState("saved");
       setSaveMessage("저장됨");
+      const completedAt = Date.now();
+      if (process.env.EXPO_PUBLIC_WAFL_EXTERNAL_QA?.trim().toLowerCase() === "true") console.info("[WAFL_OVERVIEW_SAVE_METRIC]", {
+        payloadFields: Object.keys(patch).sort(),
+        patchMs: patchCompletedAt - saveStartedAt,
+        canonicalRevalidationMs: completedAt - patchCompletedAt,
+        totalMs: completedAt - saveStartedAt,
+        canonicalGetCount: 1,
+        duplicateCanonicalGetCount: 0,
+      });
     } catch (error) {
       if (error instanceof MobileApiError && error.code === "VALIDATION_ERROR") {
         const mapped: BasicInfoFieldErrors = {};
@@ -1124,6 +1268,7 @@ export default function MobileWorkOrderApp() {
         setSaveMessage("다른 변경이 먼저 저장되었습니다.");
       } else if (error instanceof MobileApiError && (error.code === "LOCKED" || error.code === "REVISION_MISMATCH")) {
         setEditing(false);
+        setActiveBasicField(null);
         setSaveState("locked");
         setSaveMessage("현재 상태에서는 수정할 수 없습니다.");
       } else if (error instanceof MobileApiError && (error.code === "AUTH_REQUIRED" || error.status === 401)) {
@@ -1217,7 +1362,7 @@ export default function MobileWorkOrderApp() {
   }
 
   const detailPane = phase === "detail-loading" ? (
-    <View style={styles.center}><ActivityIndicator color="#9b4a27" /><Text style={styles.loadingText}>제작 카드 상세를 불러오고 있습니다.</Text></View>
+    <View style={styles.center}><ActivityIndicator color="#9b4a27" /><Text style={styles.loadingText}>작업지시서 상세를 불러오고 있습니다.</Text></View>
   ) : phase === "recoverable-error" && errorState?.retryTarget === "detail" ? (
     <ErrorPanel error={errorState} onRetry={retry} onReturnToList={returnToList} />
   ) : detail ? (
@@ -1227,9 +1372,10 @@ export default function MobileWorkOrderApp() {
       detail={detail}
       dirty={basicInfoDirty}
       draft={basicInfoDraft}
-      editing={editing}
+      activeBasicField={activeBasicField}
       fieldErrors={basicInfoErrors}
       materialEditor={materialEditor}
+      activeMaterialField={activeMaterialField}
       materialEditorDirty={materialEditorDirty}
       archivedMaterials={archivedMaterialState(materialCache[detail.header.id])}
       archivedMaterialCount={materialCache[detail.header.id]?.archivedTotalCount ?? 0}
@@ -1255,13 +1401,17 @@ export default function MobileWorkOrderApp() {
       onRetryMaterials={() => void loadMaterials(detail.header.id, "retry")}
       onRestoreMaterial={requestRestoreMaterial}
       onSave={() => void saveBasicInfo()}
+      onSaveDate={(value) => {
+        changeBasicInfoDraft("dueDate", value);
+        void saveBasicInfo({ dueDate: value });
+      }}
       onSaveMaterial={() => void saveMaterial()}
       phone={!tablet}
       saveMessage={saveMessage}
       saveState={saveState}
     />
   ) : (
-    <View style={styles.placeholder}><Text style={styles.placeholderTitle}>제작 카드를 선택하세요.</Text><Text style={styles.placeholderBody}>왼쪽 목록에서 카드를 선택하면 실제 상세 개요가 표시됩니다.</Text></View>
+    <View style={styles.placeholder}><Text style={styles.placeholderTitle}>작업지시서를 선택하세요.</Text><Text style={styles.placeholderBody}>왼쪽 목록에서 작업지시서를 선택하면 실제 상세 개요가 표시됩니다.</Text></View>
   );
 
   const globalError = phase === "recoverable-error" && errorState?.retryTarget !== "detail";
@@ -1283,7 +1433,7 @@ export default function MobileWorkOrderApp() {
         {globalError && errorState ? <ErrorPanel error={errorState} onRetry={retry} /> : tablet ? (
           <View style={styles.split}>
             <View style={styles.listPane}>
-              <WorkOrderListScreen items={items} hasMore={hasMore} selectedId={selected?.workOrderId ?? null} loading={phase === "authenticated-loading-list"} onRefresh={loadListSafely} onSelect={selectItemSafely} />
+              <WorkOrderListScreen items={items} hasMore={hasMore} selectedId={selected?.workOrderId ?? null} loading={phase === "authenticated-loading-list"} loadingMore={listLoadingMore} query={listQuery} statusFilter={listStatusFilter} onLoadMore={() => void loadMoreList()} onRefresh={loadListSafely} onSearch={applyListSearch} onStatusFilter={applyListStatusFilter} onSelect={selectItemSafely} />
             </View>
             <View style={styles.detailPane}>{detailPane}</View>
           </View>
@@ -1291,7 +1441,7 @@ export default function MobileWorkOrderApp() {
           <View style={styles.phoneBody}>{detailPane}</View>
         ) : (
           <View style={styles.phoneBody}>
-            <WorkOrderListScreen items={items} hasMore={hasMore} selectedId={null} loading={phase === "authenticated-loading-list"} onRefresh={loadListSafely} onSelect={selectItemSafely} />
+            <WorkOrderListScreen items={items} hasMore={hasMore} selectedId={null} loading={phase === "authenticated-loading-list"} loadingMore={listLoadingMore} query={listQuery} statusFilter={listStatusFilter} onLoadMore={() => void loadMoreList()} onRefresh={loadListSafely} onSearch={applyListSearch} onStatusFilter={applyListStatusFilter} onSelect={selectItemSafely} />
           </View>
         )}
       </View>
@@ -1303,7 +1453,7 @@ function ErrorPanel({ error, onRetry, onReturnToList }: { readonly error: ErrorS
   return (
     <View style={styles.errorPanel}>
       {onReturnToList ? (
-        <Pressable accessibilityLabel="제작 카드 목록으로 돌아가기" accessibilityRole="button" onPress={onReturnToList} style={({ pressed }) => [styles.errorBack, pressed && styles.pressed]}>
+        <Pressable accessibilityLabel="작업지시서 목록으로 돌아가기" accessibilityRole="button" onPress={onReturnToList} style={({ pressed }) => [styles.errorBack, pressed && styles.pressed]}>
           <ChevronLeft color="#3f352d" size={22} /><Text style={styles.errorBackText}>뒤로가기</Text>
         </Pressable>
       ) : null}
@@ -1313,9 +1463,9 @@ function ErrorPanel({ error, onRetry, onReturnToList }: { readonly error: ErrorS
       {error.correlationId ? <Text selectable style={styles.correlation}>오류 참조 {error.correlationId}</Text> : null}
       <View style={styles.errorActions}>
         {onReturnToList ? (
-          <Pressable accessibilityLabel="제작 카드 목록으로" accessibilityRole="button" onPress={onReturnToList} style={({ pressed }) => [styles.returnToList, pressed && styles.pressed]}><Text style={styles.returnToListText}>목록으로</Text></Pressable>
+          <Pressable accessibilityLabel="작업지시서 목록으로" accessibilityRole="button" onPress={onReturnToList} style={({ pressed }) => [styles.returnToList, pressed && styles.pressed]}><Text style={styles.returnToListText}>목록으로</Text></Pressable>
         ) : null}
-        <Pressable accessibilityLabel="제작 카드 상세 다시 시도" accessibilityRole="button" onPress={onRetry} style={({ pressed }) => [styles.retry, pressed && styles.pressed]}><Text style={styles.retryText}>다시 시도</Text></Pressable>
+        <Pressable accessibilityLabel="작업지시서 상세 다시 시도" accessibilityRole="button" onPress={onRetry} style={({ pressed }) => [styles.retry, pressed && styles.pressed]}><Text style={styles.retryText}>다시 시도</Text></Pressable>
       </View>
     </View>
   );

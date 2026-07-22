@@ -16,13 +16,13 @@ const detail = read("apps/mobile/components/WorkOrderDetailOverview.tsx");
 const client = read("apps/mobile/lib/apiClient.ts");
 const types = read("apps/mobile/lib/apiTypes.ts");
 
-assert.match(version, /APP_VERSION = "2\.0\.0-alpha\.51"/);
-assert.match(mobileVersion, /MOBILE_APP_VERSION = "2\.0\.0-alpha\.51"/);
-assert.equal(mobilePackage.version, "2.0.0-alpha.51");
-assert.equal(mobileLock.version, "2.0.0-alpha.51");
-assert.equal(mobileLock.packages[""].version, "2.0.0-alpha.51");
+assert.match(version, /APP_VERSION = "2\.0\.0-alpha\.52"/);
+assert.match(mobileVersion, /MOBILE_APP_VERSION = "2\.0\.0-alpha\.52"/);
+assert.equal(mobilePackage.version, "2.0.0-alpha.52");
+assert.equal(mobileLock.version, "2.0.0-alpha.52");
+assert.equal(mobileLock.packages[""].version, "2.0.0-alpha.52");
 assert.equal(appConfig.expo.version, "2.0.0");
-assert.equal(appConfig.expo.extra.appVersion, "2.0.0-alpha.51");
+assert.equal(appConfig.expo.extra.appVersion, "2.0.0-alpha.52");
 assert.equal(appConfig.expo.extra.mockOnly, false);
 assert.equal(appConfig.expo.extra.dataMode, "dev-test-tailscale-auto-connect");
 assert.equal(appConfig.expo.ios.bundleIdentifier, "com.wafl.app");
@@ -34,9 +34,11 @@ assert.deepEqual(easConfig, {
 assert.match(appConfigFactory, /100\.64\.0\.0\/10/);
 assert.doesNotMatch(appConfigFactory, /NSAllowsArbitraryLoads/);
 
-for (const label of ["기본정보 수정", "제품명", "납기", "총수량", "취소", "저장", "저장 중", "저장됨"]) {
+for (const label of ["제품명", "납기", "총 수량", "취소", "완료", "저장 중", "저장됨"]) {
   assert.match(`${app}\n${detail}`, new RegExp(label), `mobile basic-info UI missing ${label}`);
 }
+assert.doesNotMatch(detail, /BasicInfoEditor|기본정보 수정|PencilLine/);
+assert.match(detail, /overview-inline-product-name/);
 for (const field of ["productName", "dueDate", "totalQuantity"]) assert.match(app, new RegExp(field));
 for (const forbiddenEditField of ["productTypeCode", "seasonCode", "itemCode", "factoryDeliveryMemo"]) {
   const patchBlock = app.match(/const patch:[\s\S]*?if \(Object\.keys\(patch\)\.length === 0\) return;/)?.[0] ?? "";

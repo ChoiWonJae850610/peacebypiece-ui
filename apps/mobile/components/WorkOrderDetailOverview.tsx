@@ -1,22 +1,23 @@
-import { useState, type ReactNode } from "react";
+import { useRef, useState, type ReactNode } from "react";
 import {
-  ActivityIndicator,
-  KeyboardAvoidingView,
   Platform,
   Pressable,
   ScrollView,
   StyleSheet,
   Text,
-  TextInput,
   useWindowDimensions,
   View,
 } from "react-native";
-import { ChevronLeft, ImageIcon, LockKeyhole, PencilLine } from "lucide-react-native";
+import { ChevronLeft, ImageIcon, LockKeyhole } from "lucide-react-native";
 
 import { WAFL_FONTS } from "@/constants/fonts";
+import ControlledInlineEditValue from "@/components/ControlledInlineEditValue";
+import InlineDatePicker from "@/components/InlineDatePicker";
 import WorkOrderMaterialsReadOnly, { type MaterialReadViewState } from "@/components/WorkOrderMaterialsReadOnly";
 import WorkOrderMaterialEditor, { type MaterialEditorViewState } from "@/components/WorkOrderMaterialEditor";
 import type { MaterialDraftFields, WorkOrderDetailCore, WorkOrderMaterialLine } from "@/lib/apiTypes";
+import { formatWon } from "@/lib/mobileDisplay";
+import { useFocusedFieldVisibility } from "@/hooks/useFocusedFieldVisibility";
 import {
   formatProductType,
   formatWorkOrderStatus,
@@ -31,20 +32,11 @@ const SECTION_TABS = [
   { id: "output", label: "출력·공유", count: (detail: WorkOrderDetailCore) => detail.tabCounts.documents },
 ] as const;
 
-function formatAmount(value: string, currency: string) {
-  const normalized = value.trim();
-  const matched = /^(-?)(\d+)(?:\.(\d+))?$/.exec(normalized);
-  if (!matched) return `${normalized} ${currency}`;
-  const [, sign, integer, fraction] = matched;
-  const grouped = integer.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-  return `${sign}${grouped}${fraction ? `.${fraction}` : ""} ${currency}`;
-}
-
-function MiniStat({ label, value }: { readonly label: string; readonly value: string }) {
+function MiniStat({ label, value, editor, expanded = false }: { readonly label: string; readonly value: string; readonly editor?: ReactNode; readonly expanded?: boolean }) {
   return (
-    <View style={styles.miniStat}>
+    <View style={[styles.miniStat, expanded && styles.miniStatExpanded]}>
       <Text style={styles.miniLabel}>{label}</Text>
-      <Text numberOfLines={2} style={styles.miniValue}>{value}</Text>
+      {editor ?? <Text numberOfLines={2} style={styles.miniValue}>{value}</Text>}
     </View>
   );
 }
@@ -97,22 +89,24 @@ export type BasicInfoDraft = {
 
 export type BasicInfoFieldErrors = Partial<Record<keyof BasicInfoDraft, string>>;
 export type BasicInfoSaveState = "read-only" | "editing" | "saving" | "saved" | "validation-error" | "conflict" | "locked" | "save-error";
+export type BasicInfoInlineField = keyof BasicInfoDraft;
 
 type Props = {
   readonly detail: WorkOrderDetailCore;
   readonly phone: boolean;
   readonly onBack: () => void;
   readonly canEdit: boolean;
-  readonly editing: boolean;
+  readonly activeBasicField: BasicInfoInlineField | null;
   readonly dirty: boolean;
   readonly draft: BasicInfoDraft;
   readonly fieldErrors: BasicInfoFieldErrors;
   readonly saveState: BasicInfoSaveState;
   readonly saveMessage: string | null;
-  readonly onBeginEdit: () => void;
+  readonly onBeginEdit: (field: BasicInfoInlineField) => void;
   readonly onChangeDraft: (field: keyof BasicInfoDraft, value: string) => void;
   readonly onCancelEdit: () => void;
   readonly onSave: () => void;
+  readonly onSaveDate: (value: string) => void;
   readonly onReloadLatest: () => void;
   readonly materials: MaterialReadViewState;
   readonly archivedMaterials: MaterialReadViewState;
@@ -121,10 +115,11 @@ type Props = {
   readonly materialIdentityKey: string;
   readonly canEditMaterials: boolean;
   readonly materialEditor: MaterialEditorViewState | null;
+  readonly activeMaterialField: keyof MaterialDraftFields | null;
   readonly materialEditorDirty: boolean;
   readonly materialSaveNotice: string | null;
   readonly onBeginMaterialCreate: () => void;
-  readonly onBeginMaterialEdit: (line: WorkOrderMaterialLine) => void;
+  readonly onBeginMaterialEdit: (line: WorkOrderMaterialLine, field: keyof MaterialDraftFields) => void;
   readonly onArchiveMaterial: (line: WorkOrderMaterialLine) => void;
   readonly onRestoreMaterial: (line: WorkOrderMaterialLine) => void;
   readonly onChangeMaterialDraft: (field: keyof MaterialDraftFields, value: string) => void;
@@ -138,116 +133,24 @@ type Props = {
   readonly onLoadMoreArchivedMaterials: () => void;
 };
 
-function BasicInfoEditor(props: Pick<Props, "draft" | "dirty" | "fieldErrors" | "saveState" | "saveMessage" | "onChangeDraft" | "onCancelEdit" | "onSave" | "onReloadLatest">) {
-  const saving = props.saveState === "saving";
-  const conflict = props.saveState === "conflict";
-  const locked = props.saveState === "locked";
-  return (
-    <View style={styles.editPanel}>
-      <View style={styles.editHeadingRow}>
-        <View style={styles.editHeadingText}>
-          <Text style={styles.editTitle}>기본정보 수정</Text>
-          <Text style={styles.editCaption}>제품명, 납기, 총수량만 수정할 수 있습니다.</Text>
-        </View>
-        <Text style={styles.unsavedBadge}>{props.dirty ? "저장 전" : "변경 없음"}</Text>
-      </View>
-
-      <View style={styles.inputGroup}>
-        <Text style={styles.inputLabel}>제품명</Text>
-        <TextInput
-          accessibilityLabel="제품명 입력"
-          editable={!saving && !locked}
-          maxLength={200}
-          onChangeText={(value) => props.onChangeDraft("productName", value)}
-          placeholder="제품명을 입력하세요"
-          returnKeyType="next"
-          style={[styles.input, props.fieldErrors.productName && styles.inputInvalid]}
-          value={props.draft.productName}
-        />
-        {props.fieldErrors.productName ? <Text style={styles.fieldError}>{props.fieldErrors.productName}</Text> : null}
-      </View>
-
-      <View style={styles.inputGroup}>
-        <View style={styles.inputLabelRow}>
-          <Text style={styles.inputLabel}>납기</Text>
-          <Pressable
-            accessibilityLabel="납기 없음으로 설정"
-            accessibilityRole="button"
-            disabled={saving || locked}
-            onPress={() => props.onChangeDraft("dueDate", "")}
-          >
-            <Text style={styles.clearDate}>납기 없음</Text>
-          </Pressable>
-        </View>
-        <TextInput
-          accessibilityLabel="납기 입력"
-          autoCapitalize="none"
-          editable={!saving && !locked}
-          maxLength={10}
-          onChangeText={(value) => props.onChangeDraft("dueDate", value)}
-          placeholder="YYYY-MM-DD"
-          returnKeyType="next"
-          style={[styles.input, props.fieldErrors.dueDate && styles.inputInvalid]}
-          value={props.draft.dueDate}
-        />
-        {props.fieldErrors.dueDate ? <Text style={styles.fieldError}>{props.fieldErrors.dueDate}</Text> : null}
-      </View>
-
-      <View style={styles.inputGroup}>
-        <Text style={styles.inputLabel}>총수량</Text>
-        <TextInput
-          accessibilityLabel="총수량 입력"
-          editable={!saving && !locked}
-          keyboardType="number-pad"
-          maxLength={9}
-          onChangeText={(value) => props.onChangeDraft("totalQuantity", value)}
-          placeholder="0"
-          returnKeyType="done"
-          style={[styles.input, props.fieldErrors.totalQuantity && styles.inputInvalid]}
-          value={props.draft.totalQuantity}
-        />
-        {props.fieldErrors.totalQuantity ? <Text style={styles.fieldError}>{props.fieldErrors.totalQuantity}</Text> : null}
-      </View>
-
-      {props.saveMessage ? <Text accessibilityRole="alert" style={[styles.saveMessage, conflict && styles.saveMessageConflict]}>{props.saveMessage}</Text> : null}
-      {conflict || locked ? (
-        <Pressable accessibilityRole="button" onPress={props.onReloadLatest} style={styles.reloadLatest}>
-          <Text style={styles.reloadLatestText}>최신 내용 불러오기</Text>
-        </Pressable>
-      ) : null}
-      <View style={styles.editActions}>
-        <Pressable accessibilityRole="button" disabled={saving} onPress={props.onCancelEdit} style={styles.cancelButton}>
-          <Text style={styles.cancelButtonText}>취소</Text>
-        </Pressable>
-        <Pressable
-          accessibilityRole="button"
-          disabled={!props.dirty || saving || locked}
-          onPress={props.onSave}
-          style={[styles.saveButton, (!props.dirty || saving || locked) && styles.saveButtonDisabled]}
-        >
-          {saving ? <ActivityIndicator color="#fff" size="small" /> : null}
-          <Text style={styles.saveButtonText}>{saving ? "저장 중" : "저장"}</Text>
-        </Pressable>
-      </View>
-    </View>
-  );
-}
-
 export default function WorkOrderDetailOverview(props: Props) {
   const { detail, phone, onBack } = props;
   const [activeSection, setActiveSection] = useState<"overview" | "fabric">("overview");
   const { width } = useWindowDimensions();
   const { header } = detail;
   const productType = formatProductType(header.productTypeAlias, header.productTypeCode);
-  const currency = detail.amounts.currency;
   const compactPhoneHero = phone && width < 390;
+  const savingBasic = props.saveState === "saving";
+  const basicLocked = props.saveState === "locked";
+  const detailScrollRef = useRef<ScrollView>(null);
+  const { onFieldFocus, onScroll } = useFocusedFieldVisibility(detailScrollRef);
 
   return (
-    <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : undefined} style={styles.container}>
+    <View style={styles.container}>
       <View style={styles.navigationBar}>
         {phone ? (
           <Pressable
-            accessibilityLabel="제작 카드 목록으로 돌아가기"
+            accessibilityLabel="작업지시서 목록으로 돌아가기"
             accessibilityRole="button"
             onPress={onBack}
             style={({ pressed }) => [styles.backButton, pressed && styles.pressed]}
@@ -257,27 +160,20 @@ export default function WorkOrderDetailOverview(props: Props) {
           </Pressable>
         ) : <View />}
         <View style={styles.navigationActions}>
-          {props.canEdit && !props.editing ? (
-            <Pressable
-              accessibilityLabel="제작 카드 기본정보 수정"
-              accessibilityRole="button"
-              onPress={() => {
-                props.onRequestSectionChange(() => {
-                  setActiveSection("overview");
-                  props.onBeginEdit();
-                });
-              }}
-              style={styles.editEntry}
-            >
-              <PencilLine color="#874423" size={15} />
-              <Text style={styles.editEntryText}>기본정보 수정</Text>
-            </Pressable>
-          ) : null}
-          <Text style={styles.readOnly}>{props.canEdit ? "제작 카드" : "제작 카드 · 읽기 전용"}</Text>
+          <Text style={styles.readOnly}>{props.canEdit ? "작업지시서" : "작업지시서 · 읽기 전용"}</Text>
         </View>
       </View>
 
-      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+      <ScrollView
+        ref={detailScrollRef}
+        automaticallyAdjustKeyboardInsets={Platform.OS === "ios"}
+        contentContainerStyle={styles.scrollContent}
+        keyboardDismissMode="interactive"
+        keyboardShouldPersistTaps="handled"
+        onScroll={onScroll}
+        scrollEventThrottle={16}
+        showsVerticalScrollIndicator={false}
+      >
         <View testID="production-card-sheet" style={styles.productionCardSheet}>
           <View style={[styles.hero, compactPhoneHero && styles.heroCompactPhone]}>
             <View
@@ -292,28 +188,36 @@ export default function WorkOrderDetailOverview(props: Props) {
             <View style={styles.heroText}>
               <View style={styles.statusRow}>
                 <Text style={styles.statusBadge}>{formatWorkOrderStatus(header.status)}</Text>
-                <Text style={styles.revision}>Revision R{header.currentRevisionNumber}</Text>
               </View>
-              <Text accessibilityRole="header" style={[styles.title, compactPhoneHero && styles.titleCompactPhone]}>{header.productName}</Text>
+              <ControlledInlineEditValue
+                accessibilityLabel="제품명"
+                active={props.activeBasicField === "productName"}
+                containerStyle={styles.heroInlineField}
+                dirty={props.dirty}
+                displayStyle={[styles.title, compactPhoneHero && styles.titleCompactPhone]}
+                displayValue={header.productName}
+                editable={props.canEdit && !basicLocked}
+                errorMessage={props.fieldErrors.productName ?? null}
+                invalid={Boolean(props.fieldErrors.productName)}
+                maxLength={200}
+                onActivate={() => props.onRequestSectionChange(() => props.onBeginEdit("productName"))}
+                onCancel={props.onCancelEdit}
+                onChange={(value) => props.onChangeDraft("productName", value)}
+                onSave={props.onSave}
+                onFocusTarget={onFieldFocus}
+                placeholder="제품명 미입력"
+                saving={savingBasic}
+                selectTextOnFocus
+                testID="overview-inline-product-name"
+                value={props.draft.productName}
+              />
               <Text numberOfLines={2} style={styles.meta}>{productType} · {header.seasonCode ?? "미지정"} · {header.itemCode ?? "미지정"}</Text>
             </View>
           </View>
 
-          {props.editing ? (
-            <BasicInfoEditor
-              dirty={props.dirty}
-              draft={props.draft}
-              fieldErrors={props.fieldErrors}
-              onCancelEdit={props.onCancelEdit}
-              onChangeDraft={props.onChangeDraft}
-              onReloadLatest={props.onReloadLatest}
-              onSave={props.onSave}
-              saveMessage={props.saveMessage}
-              saveState={props.saveState}
-            />
-          ) : props.saveState === "saved" && props.saveMessage ? (
+          {props.saveState === "saved" && props.saveMessage ? (
             <Text accessibilityRole="alert" style={styles.savedBanner}>{props.saveMessage}</Text>
-          ) : props.saveState === "locked" && props.saveMessage ? (
+          ) : (props.saveState === "locked" || props.saveState === "conflict" || props.saveState === "save-error") && props.saveMessage ? (
             <View style={styles.lockedBanner}>
               <Text accessibilityRole="alert" style={styles.lockedBannerText}>{props.saveMessage}</Text>
               <Pressable accessibilityRole="button" onPress={props.onReloadLatest} style={styles.reloadLatest}>
@@ -321,14 +225,59 @@ export default function WorkOrderDetailOverview(props: Props) {
               </Pressable>
             </View>
           ) : !props.canEdit && (header.status !== "draft" || detail.revision.status !== "draft") ? (
-            <Text style={styles.lockedNotice}>발행된 제작 카드는 읽기 전용입니다.</Text>
+            <Text style={styles.lockedNotice}>발행된 작업지시서는 읽기 전용입니다.</Text>
           ) : null}
 
           <View style={[styles.summaryGrid, !phone && styles.summaryGridTablet]}>
-            <MiniStat label="총 수량" value={`${header.totalQuantity.toLocaleString("ko-KR")}벌`} />
-            <MiniStat label="납기" value={header.dueDate ?? "미정"} />
-            <MiniStat label="한벌 단가" value={formatAmount(detail.amounts.unitPrice, currency)} />
-            <MiniStat label="총 예상" value={formatAmount(detail.amounts.estimatedTotal, currency)} />
+            <MiniStat
+              expanded={props.activeBasicField === "totalQuantity"}
+              label="총 수량"
+              value={`${header.totalQuantity.toLocaleString("ko-KR")}벌`}
+              editor={(
+                <ControlledInlineEditValue
+                  accessibilityLabel="총 수량"
+                  active={props.activeBasicField === "totalQuantity"}
+                  dirty={props.dirty}
+                  displayStyle={styles.miniValue}
+                  displayValue={`${header.totalQuantity.toLocaleString("ko-KR")}벌`}
+                  editable={props.canEdit && !basicLocked}
+                  errorMessage={props.fieldErrors.totalQuantity ?? null}
+                  invalid={Boolean(props.fieldErrors.totalQuantity)}
+                  keyboardType="number-pad"
+                  maxLength={9}
+                  onActivate={() => props.onRequestSectionChange(() => props.onBeginEdit("totalQuantity"))}
+                  onCancel={props.onCancelEdit}
+                  onChange={(value) => props.onChangeDraft("totalQuantity", value)}
+                  onSave={props.onSave}
+                  onFocusTarget={onFieldFocus}
+                  placeholder="0"
+                  saving={savingBasic}
+                  selectTextOnFocus
+                  testID="overview-inline-total-quantity"
+                  value={props.draft.totalQuantity}
+                />
+              )}
+            />
+            <MiniStat
+              expanded={props.activeBasicField === "dueDate"}
+              label="납기"
+              value={header.dueDate ?? "미정"}
+              editor={(
+                <InlineDatePicker
+                  active={props.activeBasicField === "dueDate"}
+                  displayValue={header.dueDate ?? ""}
+                  editable={props.canEdit && !basicLocked}
+                  errorMessage={props.fieldErrors.dueDate ?? null}
+                  onActivate={() => props.onRequestSectionChange(() => props.onBeginEdit("dueDate"))}
+                  onCancel={props.onCancelEdit}
+                  onCommit={props.onSaveDate}
+                  saving={savingBasic}
+                  value={props.draft.dueDate}
+                />
+              )}
+            />
+            <MiniStat label="한벌 단가" value={formatWon(detail.amounts.unitPrice)} />
+            <MiniStat label="총 예상" value={formatWon(detail.amounts.estimatedTotal)} />
           </View>
 
           <View style={styles.tabRailFrame}>
@@ -385,14 +334,14 @@ export default function WorkOrderDetailOverview(props: Props) {
             <View style={styles.overviewSection}>
               <ReadinessPanel detail={detail} />
               <Section title="금액 요약">
-                <MetricLine label="원단 총액" value={formatAmount(detail.amounts.fabricTotal, currency)} />
-                <MetricLine label="부자재 총액" value={formatAmount(detail.amounts.accessoryTotal, currency)} />
-                <MetricLine label="공정 총액" value={formatAmount(detail.amounts.processTotal, currency)} />
-                <MetricLine label="한벌 단가" value={formatAmount(detail.amounts.unitPrice, currency)} />
-                <MetricLine emphasized label="총 예상" value={formatAmount(detail.amounts.estimatedTotal, currency)} />
+                <MetricLine label="원단 총액" value={formatWon(detail.amounts.fabricTotal)} />
+                <MetricLine label="부자재 총액" value={formatWon(detail.amounts.accessoryTotal)} />
+                <MetricLine label="공정 총액" value={formatWon(detail.amounts.processTotal)} />
+                <MetricLine label="한벌 단가" value={formatWon(detail.amounts.unitPrice)} />
+                <MetricLine emphasized label="총 예상" value={formatWon(detail.amounts.estimatedTotal)} />
               </Section>
             </View>
-          ) : props.materialEditor ? (
+          ) : props.materialEditor?.mode === "create" ? (
             <WorkOrderMaterialEditor
               dirty={props.materialEditorDirty}
               onCancel={props.onCancelMaterialEditor}
@@ -406,22 +355,28 @@ export default function WorkOrderDetailOverview(props: Props) {
               archivedState={props.archivedMaterials}
               archivedTotalCount={props.archivedMaterialCount}
               canEdit={props.canEditMaterials}
+              activeEditor={props.materialEditor?.mode === "edit" ? props.materialEditor : null}
+              activeField={props.activeMaterialField}
               key={props.materialIdentityKey}
               lifecycleBusyId={props.materialLifecycleBusyId}
               onAdd={props.onBeginMaterialCreate}
               onArchive={props.onArchiveMaterial}
               onEdit={props.onBeginMaterialEdit}
+              onCancelEdit={props.onCancelMaterialEditor}
+              onChangeEdit={props.onChangeMaterialDraft}
+              onSaveEdit={props.onSaveMaterial}
               onLoadMore={props.onLoadMoreMaterials}
               onLoadMoreArchived={props.onLoadMoreArchivedMaterials}
               onRetry={props.onRetryMaterials}
               onRestore={props.onRestoreMaterial}
+              onFieldFocus={onFieldFocus}
               saveNotice={props.materialSaveNotice}
               state={props.materials}
             />
           )}
         </View>
       </ScrollView>
-    </KeyboardAvoidingView>
+    </View>
   );
 }
 
@@ -429,8 +384,6 @@ const styles = StyleSheet.create({
   container: { flex: 1, minHeight: 0 },
   navigationBar: { alignItems: "center", flexDirection: "row", justifyContent: "space-between", minHeight: 44, marginBottom: 8 },
   navigationActions: { alignItems: "center", flexDirection: "row", gap: 8 },
-  editEntry: { alignItems: "center", backgroundColor: "#fff7ec", borderColor: "#d9bda7", borderRadius: 10, borderWidth: 1, flexDirection: "row", gap: 5, minHeight: 40, paddingHorizontal: 10 },
-  editEntryText: { color: "#874423", fontFamily: WAFL_FONTS.bold, fontSize: 11 },
   backButton: { alignItems: "center", flexDirection: "row", minHeight: 44, paddingRight: 8 },
   backText: { color: "#3f352d", fontFamily: WAFL_FONTS.semibold, fontSize: 14 },
   readOnly: { color: "#6d6257", fontFamily: WAFL_FONTS.semibold, fontSize: 11 },
@@ -450,6 +403,7 @@ const styles = StyleSheet.create({
   revision: { color: "#6d6257", fontFamily: WAFL_FONTS.semibold, fontSize: 11 },
   title: { color: "#141f33", flexShrink: 1, fontFamily: WAFL_FONTS.black, fontSize: 20, lineHeight: 26, minWidth: 0 },
   titleCompactPhone: { fontSize: 18, lineHeight: 24 },
+  heroInlineField: { alignSelf: "stretch", minWidth: 0 },
   meta: { color: "#4f463f", fontFamily: WAFL_FONTS.regular, fontSize: 12, lineHeight: 17 },
   editPanel: { backgroundColor: "#fbf4e9", borderColor: "#e4d3bf", borderRadius: 12, borderWidth: 1, gap: 11, marginBottom: 12, marginHorizontal: 12, padding: 12 },
   editHeadingRow: { alignItems: "flex-start", flexDirection: "row", gap: 10, justifyContent: "space-between" },
@@ -481,6 +435,7 @@ const styles = StyleSheet.create({
   summaryGrid: { flexDirection: "row", flexWrap: "wrap", gap: 6, paddingBottom: 12, paddingHorizontal: 12 },
   summaryGridTablet: { flexWrap: "nowrap" },
   miniStat: { backgroundColor: "#f7f0e5", borderRadius: 9, flexBasis: "47%", flexGrow: 1, minWidth: 112, paddingHorizontal: 9, paddingVertical: 7 },
+  miniStatExpanded: { flexBasis: "100%", minWidth: "100%" },
   miniLabel: { color: "#7a6c5c", fontFamily: WAFL_FONTS.medium, fontSize: 9 },
   miniValue: { color: "#17263d", fontFamily: WAFL_FONTS.bold, fontSize: 11, lineHeight: 15, marginTop: 2 },
   tabRailFrame: { backgroundColor: "rgba(255, 250, 242, 0.72)", borderBottomColor: "#eadfce", borderBottomWidth: 1, borderTopColor: "#eadfce", borderTopWidth: 1 },

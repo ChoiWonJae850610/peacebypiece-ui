@@ -21,13 +21,13 @@ const proxy = read("proxy.ts");
 const externalQa = read("lib/external-qa/configCore.mjs");
 const runtime = [entry, app, list, detail, apiClient].join("\n");
 
-assert.match(version, /APP_VERSION = "2\.0\.0-alpha\.51"/);
-assert.match(mobileVersion, /MOBILE_APP_VERSION = "2\.0\.0-alpha\.51"/);
-assert.equal(mobilePackage.version, "2.0.0-alpha.51");
-assert.equal(mobileLock.version, "2.0.0-alpha.51");
-assert.equal(mobileLock.packages[""].version, "2.0.0-alpha.51");
+assert.match(version, /APP_VERSION = "2\.0\.0-alpha\.52"/);
+assert.match(mobileVersion, /MOBILE_APP_VERSION = "2\.0\.0-alpha\.52"/);
+assert.equal(mobilePackage.version, "2.0.0-alpha.52");
+assert.equal(mobileLock.version, "2.0.0-alpha.52");
+assert.equal(mobileLock.packages[""].version, "2.0.0-alpha.52");
 assert.equal(appConfig.expo.version, "2.0.0");
-assert.equal(appConfig.expo.extra.appVersion, "2.0.0-alpha.51");
+assert.equal(appConfig.expo.extra.appVersion, "2.0.0-alpha.52");
 assert.equal(appConfig.expo.extra.mockOnly, false);
 assert.equal(appConfig.expo.extra.dataMode, "dev-test-tailscale-auto-connect");
 assert.equal(appConfig.expo.owner, "lostab");
@@ -52,7 +52,8 @@ assert.deepEqual(mobilePackage.dependencies, expectedDependencies, "native/depen
 
 assert.match(entry, /MobileWorkOrderApp/);
 assert.match(app, /WorkOrderDetailOverview/);
-assert.match(apiClient, /\/api\/v2\/work-orders\?limit=30/);
+assert.match(apiClient, /new URLSearchParams\(\{ limit: "30" \}\)/);
+assert.match(apiClient, /`\/api\/v2\/work-orders\?\$\{query\.toString\(\)\}`/);
 assert.match(apiClient, /\/api\/v2\/work-orders\/\$\{encodeURIComponent\(workOrderId\)\}/);
 assert.match(apiClient, /credentials: "include"/);
 assert.doesNotMatch(apiClient, /\/processes|\/assets|\/documents|\/history|\/size-color|\/size-spec/);
@@ -65,11 +66,12 @@ assert.ok(fs.existsSync(path.resolve("apps/mobile/constants/mockProductionCard.t
 assert.doesNotMatch(entry, /ProductionCardMock/);
 
 for (const actualField of [
-  "header.productName", "header.status", "header.totalQuantity", "header.dueDate", "header.currentRevisionNumber",
+  "header.productName", "header.status", "header.totalQuantity", "header.dueDate",
   "header.productTypeAlias", "header.productTypeCode", "header.seasonCode", "header.itemCode",
   "detail.amounts.unitPrice", "detail.amounts.fabricTotal", "detail.amounts.accessoryTotal", "detail.amounts.processTotal",
   "detail.amounts.estimatedTotal", "header.readiness.hardBlockers", "header.readiness.warnings", "detail.tabCounts",
 ]) assert.match(detail, new RegExp(actualField.replaceAll(".", "\\.")), `missing actual core mapping: ${actualField}`);
+assert.doesNotMatch(detail, /Revision\s*R/);
 
 assert.doesNotMatch(detail, /header\.id/);
 assert.doesNotMatch(detail, /header\.entityVersion|Entity version/);
@@ -106,11 +108,11 @@ assert.match(app, /styles\.split/);
 assert.match(app, /detailRequestInFlight\.current/);
 assert.match(app, /if \(detailRequestInFlight\.current\) return/);
 assert.match(app, /onReturnToList=\{returnToList\}/);
-assert.match(app, /accessibilityLabel="제작 카드 목록으로 돌아가기"/);
-assert.match(app, /accessibilityLabel="제작 카드 목록으로"/);
+assert.match(app, /accessibilityLabel="작업지시서 목록으로 돌아가기"/);
+assert.match(app, /accessibilityLabel="작업지시서 목록으로"/);
 assert.doesNotMatch(app, /returnToList[\s\S]{0,500}getWorkOrderList\(/, "returning to list must not refetch automatically");
-assert.match(list, /현재 불러온 카드/);
-assert.doesNotMatch(list, /검색/);
+assert.match(list, /현재 불러온 작업지시서/);
+assert.match(list, /accessibilityLabel="작업지시서 검색"/);
 
 assert.match(proxy, /isExternalQaPathAllowed/);
 assert.match(externalQa, /\[0-9a-f\]\{8\}-\[0-9a-f\]\{4\}-\[0-9a-f\]\{4\}-\[0-9a-f\]\{4\}-\[0-9a-f\]\{12\}/);

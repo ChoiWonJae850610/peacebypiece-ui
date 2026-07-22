@@ -11,7 +11,7 @@ const apiClient = read("apps/mobile/lib/apiClient.ts");
 const externalQa = read("lib/external-qa/configCore.mjs");
 const mock = read("apps/mobile/components/ProductionCardMock.tsx");
 
-assert.match(version, /APP_VERSION = "2\.0\.0-alpha\.51"/);
+assert.match(version, /APP_VERSION = "2\.0\.0-alpha\.52"/);
 assert.match(detail, /testID="production-card-sheet"/);
 assert.match(detail, /styles\.hero[\s\S]*styles\.summaryGrid[\s\S]*styles\.tabRailFrame[\s\S]*ReadinessPanel[\s\S]*title="금액 요약"/);
 
@@ -26,7 +26,7 @@ for (const removedPrimitive of ["InfoRow", "countList", "countRow", "countLabel"
 }
 
 for (const actualField of [
-  "header.productName", "header.status", "header.currentRevisionNumber", "header.productTypeAlias", "header.productTypeCode",
+  "header.productName", "header.status", "header.productTypeAlias", "header.productTypeCode",
   "header.seasonCode", "header.itemCode", "header.totalQuantity", "header.dueDate", "header.readiness.hardBlockers",
   "header.readiness.warnings", "detail.amounts.fabricTotal", "detail.amounts.accessoryTotal", "detail.amounts.processTotal",
   "detail.amounts.unitPrice", "detail.amounts.estimatedTotal", "detail.tabCounts.images", "detail.tabCounts.attachments",

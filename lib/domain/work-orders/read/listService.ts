@@ -1,5 +1,7 @@
 import "server-only";
 
+import { createHash } from "crypto";
+
 import type { WorkspaceApiCompanyScope } from "@/lib/auth/apiRouteGuards";
 import type {
   CompanyId,
@@ -23,7 +25,17 @@ import {
 } from "@/lib/domain/work-orders/read/listCursor";
 import { listWorkOrdersV2 } from "@/lib/domain/work-orders/read/listRepository";
 
-const ALLOWED_QUERY_KEYS = new Set(["limit", "cursor"]);
+const ALLOWED_QUERY_KEYS = new Set(["limit", "cursor", "q", "status"]);
+const STATUS_FILTERS = ["all", "draft", "delivery", "progress", "completed", "hold_cancel"] as const;
+type StatusFilter = (typeof STATUS_FILTERS)[number];
+
+const STATUS_MAPPING: Record<Exclude<StatusFilter, "all">, readonly string[]> = {
+  draft: ["draft", "revised"],
+  delivery: ["ready_to_issue"],
+  progress: ["issued"],
+  completed: ["completed"],
+  hold_cancel: ["cancelled"],
+};
 
 export class WorkOrderListRequestError extends Error {
   readonly code: WorkOrderApiErrorCode;
@@ -61,10 +73,12 @@ function parseLimit(value: string | null): number {
   return limit;
 }
 
-function visibilityKey(scope: WorkspaceApiCompanyScope): string {
-  return scope.visibility?.mode === "assigned"
+function visibilityKey(scope: WorkspaceApiCompanyScope, query: string | null, status: StatusFilter): string {
+  const scopeKey = scope.visibility?.mode === "assigned"
     ? `assigned:${scope.visibility.companyMemberId ?? "missing"}`
     : "company";
+  const filterHash = createHash("sha256").update(`${query ?? ""}\0${status}`).digest("hex").slice(0, 16);
+  return `${scopeKey}:filter:${filterHash}`;
 }
 
 export async function getWorkOrderListPage(input: {
@@ -78,9 +92,23 @@ export async function getWorkOrderListPage(input: {
       throw new WorkOrderListRequestError({ code: "VALIDATION_ERROR", status: 400, message: `지원하지 않는 query parameter입니다: ${key}` });
     }
   }
+  for (const key of ALLOWED_QUERY_KEYS) {
+    if (input.searchParams.getAll(key).length > 1) {
+      throw new WorkOrderListRequestError({ code: "VALIDATION_ERROR", status: 400, message: `query parameter는 한 번만 사용할 수 있습니다: ${key}` });
+    }
+  }
 
   const limit = parseLimit(input.searchParams.get("limit"));
-  const scopeVisibilityKey = visibilityKey(input.scope);
+  const rawQuery = input.searchParams.get("q")?.trim() ?? "";
+  if (rawQuery.length > 100) throw new WorkOrderListRequestError({ code: "VALIDATION_ERROR", status: 400, message: "검색어는 100자 이하여야 합니다." });
+  const searchQuery = rawQuery.length ? rawQuery : null;
+  const rawStatus = input.searchParams.get("status") ?? "all";
+  if (!STATUS_FILTERS.includes(rawStatus as StatusFilter)) {
+    throw new WorkOrderListRequestError({ code: "VALIDATION_ERROR", status: 400, message: "지원하지 않는 상태 필터입니다." });
+  }
+  const statusFilter = rawStatus as StatusFilter;
+  const statuses = statusFilter === "all" ? null : STATUS_MAPPING[statusFilter];
+  const scopeVisibilityKey = visibilityKey(input.scope, searchQuery, statusFilter);
   const cursorValue = input.searchParams.get("cursor");
   let cursorUpdatedAt: IsoDateTime | null = null;
   let cursorWorkOrderId: WorkOrderId | null = null;
@@ -117,6 +145,8 @@ export async function getWorkOrderListPage(input: {
     assignedCompanyMemberId,
     cursorUpdatedAt,
     cursorWorkOrderId,
+    searchQuery,
+    statuses,
     limit,
   });
   const nextCursor = result.hasMore && result.lastPosition

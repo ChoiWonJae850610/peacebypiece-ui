@@ -60,7 +60,11 @@ assert.match(service, /WORK_ORDER_LIST_DEFAULT_LIMIT/, "default limit must reuse
 assert.match(service, /WORK_ORDER_LIST_MAX_LIMIT/, "maximum limit must reuse canonical constant");
 assert.match(service, /LIMIT_EXCEEDED/, "limit overflow must use typed error");
 assert.match(service, /CURSOR_INVALID/, "invalid cursor must use typed error");
-assert.match(service, /ALLOWED_QUERY_KEYS = new Set\(\["limit", "cursor"\]\)/, "companyId and workOrderId query inputs must be rejected");
+assert.match(
+  service,
+  /ALLOWED_QUERY_KEYS = new Set\(\["limit", "cursor", "q", "status"\]\)/,
+  "only bounded list paging, search, and status query inputs may be accepted; companyId and workOrderId must remain rejected",
+);
 
 for (const token of ["createHmac", "timingSafeEqual", "CURSOR_VERSION", "CURSOR_TTL_MS", "scopeHash"]) {
   assert.ok(cursor.includes(token), `signed/expiring cursor contract missing ${token}`);
@@ -108,7 +112,7 @@ assert.match(
   "query-count header semantics must not be confused with total endpoint protocol round trips",
 );
 assert.match(repository, /WITH page_ids AS MATERIALIZED/, "page IDs must be bounded before child summaries");
-assert.match(repository, /LIMIT \$5/, "page query must be bounded");
+assert.match(repository, /LIMIT \$7/, "page query must remain bounded after the alpha.52 search and status parameters");
 assert.match(repository, /ORDER BY w\.updated_at DESC, w\.id DESC/, "stable order is required");
 assert.match(repository, /\(w\.updated_at, w\.id\) < \(\$2::timestamptz, \$3::uuid\)/, "stable cursor predicate is required");
 assert.doesNotMatch(repository, /SELECT\s+\*/i, "v2 list repository must not use SELECT *");

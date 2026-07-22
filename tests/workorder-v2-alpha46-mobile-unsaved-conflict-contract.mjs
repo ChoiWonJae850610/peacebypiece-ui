@@ -6,6 +6,9 @@ import path from "node:path";
 const read = (relativePath) => fs.readFileSync(path.resolve(relativePath), "utf8");
 const app = read("apps/mobile/components/MobileWorkOrderApp.tsx");
 const detail = read("apps/mobile/components/WorkOrderDetailOverview.tsx");
+const inlineField = read("apps/mobile/components/ControlledInlineEditValue.tsx");
+const datePicker = read("apps/mobile/components/InlineDatePicker.tsx");
+const focusedVisibility = read("apps/mobile/hooks/useFocusedFieldVisibility.ts");
 const client = read("apps/mobile/lib/apiClient.ts");
 
 assert.match(app, /저장하지 않은 변경사항이 있습니다\./);
@@ -30,11 +33,16 @@ assert.match(app, /const refreshed = await getWorkOrderDetail\(selected\.workOrd
 assert.doesNotMatch(app.match(/function reloadLatestBasicInfo\(\)[\s\S]*?\n  function retry/)?.[0] ?? "", /patchWorkOrderBasicInfo/);
 assert.match(app, /error\.code === "LOCKED" \|\| error\.code === "REVISION_MISMATCH"/);
 assert.match(app, /현재 상태에서는 수정할 수 없습니다\./);
-assert.match(detail, /발행된 제작 카드는 읽기 전용입니다\./);
-assert.match(detail, /disabled=\{!props\.dirty \|\| saving \|\| locked\}/);
+assert.match(detail, /발행된 작업지시서는 읽기 전용입니다\./);
+assert.match(inlineField, /const saveDisabled = !dirty \|\| saving \|\| emptyNumericDraft/);
+assert.match(inlineField, /disabled=\{saveDisabled\}/);
 assert.match(detail, /keyboardType="number-pad"/);
-assert.match(detail, /placeholder="YYYY-MM-DD"/);
-assert.match(detail, /KeyboardAvoidingView/);
+assert.match(detail, /<InlineDatePicker/);
+assert.match(datePicker, /testID="overview-inline-due-date"/);
+assert.match(detail, /automaticallyAdjustKeyboardInsets/);
+assert.doesNotMatch(detail, /KeyboardAvoidingView/);
+assert.match(focusedVisibility, /measureInWindow/);
+assert.match(focusedVisibility, /endCoordinates\.screenY/);
 assert.doesNotMatch(`${app}\n${client}`, /setInterval|exponential|polling/i);
 
 console.log("workorder v2 alpha.46 unsaved/conflict contract: PASS");

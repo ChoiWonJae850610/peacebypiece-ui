@@ -211,7 +211,7 @@ const alpha40ContractExists = fs.existsSync(path.join(root, "tests/workorder-v2-
 const alpha30ContractExists = fs.existsSync(path.join(root, "tests/workorder-v2-alpha30-factory-instruction-contract.mjs"));
 const alpha27ContractExists = fs.existsSync(path.join(root, "tests/workorder-v2-alpha27-revision-issue-command-contract.mjs"));
 const alpha28ContractExists = fs.existsSync(path.join(root, "tests/workorder-v2-alpha28-issued-preview-contract.mjs"));
-if (alpha51ContractExists && appVersion.includes('APP_VERSION = "2.0.0-alpha.51"')) {
+if (alpha51ContractExists && /APP_VERSION = "2\.0\.0-alpha\.(51|52)"/.test(appVersion)) {
   assert.deepEqual(apiChanges.filter((change) => !alpha51ApiPaths.some((allowedPath) => change.endsWith(allowedPath))), [], "alpha.51 may add only archive/restore routes beside canonical material routes");
 } else if (/APP_VERSION = "2\.0\.0-alpha\.(44|45|46|47)"/.test(appVersion)) {
   assert.deepEqual(

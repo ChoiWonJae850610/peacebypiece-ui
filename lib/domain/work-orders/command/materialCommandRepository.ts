@@ -148,12 +148,32 @@ function sameDecimal(left: string | number, right: string | undefined): boolean 
 }
 
 function assertAmountWithinDatabaseRange(orderQuantity: string | number, unitPrice: string | number) {
-  const quantityScaled = BigInt(Math.round(Number(orderQuantity) * 1_000));
-  const priceScaled = BigInt(Math.round(Number(unitPrice) * 100));
+  const toScaled = (value: string | number, scale: number) => {
+    const [whole, fraction = ""] = String(value).split(".");
+    return BigInt(whole) * (BigInt(10) ** BigInt(scale)) + BigInt(fraction.padEnd(scale, "0").slice(0, scale));
+  };
+  const quantityScaled = toScaled(orderQuantity, 3);
+  const priceScaled = toScaled(unitPrice, 2);
   const amountCents = (quantityScaled * priceScaled + BigInt(500)) / BigInt(1_000);
   if (amountCents > BigInt("99999999999999")) {
     throw new MaterialCommandRepositoryError("amount_out_of_range");
   }
+}
+
+function canonicalOrderQuantity(input: {
+  readonly requiredQuantity: string | number;
+  readonly allowanceQuantity: string | number;
+  readonly inventoryUsageQuantity: string | number;
+}) {
+  const scaled = (value: string | number) => {
+    const [whole, fraction = ""] = String(value).split(".");
+    return BigInt(whole) * BigInt(1000) + BigInt(fraction.padEnd(3, "0").slice(0, 3));
+  };
+  const result = scaled(input.requiredQuantity) + scaled(input.allowanceQuantity) - scaled(input.inventoryUsageQuantity);
+  const bounded = result > BigInt(0) ? result : BigInt(0);
+  const whole = bounded / BigInt(1000);
+  const fraction = (bounded % BigInt(1000)).toString().padStart(3, "0").replace(/0+$/, "");
+  return `${whole}${fraction ? `.${fraction}` : ""}`;
 }
 
 function isForeignKeyReferenceError(error: unknown): boolean {
@@ -460,6 +480,12 @@ export async function addMaterialLineV2(input: {
         assignedCompanyMemberId: input.assignedCompanyMemberId,
       });
       assertCurrentDraft(target, input.command.expectedVersion);
+      const calculatedOrderQuantity = canonicalOrderQuantity({
+        requiredQuantity: input.command.requiredQuantity,
+        allowanceQuantity: input.command.allowanceQuantity,
+        inventoryUsageQuantity: input.command.inventoryUsageQuantity,
+      });
+      assertAmountWithinDatabaseRange(calculatedOrderQuantity, input.command.unitPrice);
 
       const inserted = await client.query<MaterialTargetRow>(`
         INSERT INTO work_order_material_lines (
@@ -490,7 +516,7 @@ export async function addMaterialLineV2(input: {
         input.command.materialId ?? null, input.command.materialType, input.command.name,
         input.command.colorOption ?? null, input.command.usageArea ?? null, input.command.partnerId ?? null,
         input.command.requiredQuantity, input.command.allowanceQuantity,
-        input.command.inventoryUsageQuantity, input.command.orderQuantity,
+        input.command.inventoryUsageQuantity, calculatedOrderQuantity,
         input.command.unitCode, input.command.unitPrice, input.command.memo ?? null,
         input.command.displayOrder ?? null, target.work_order_id, target.revision_no,
         target.work_order_version,
@@ -559,11 +585,13 @@ export async function patchMaterialLineV2(input: {
       }
 
       const patch = input.patch;
-      assertAmountWithinDatabaseRange(
-        patch.orderQuantity ?? target.order_quantity,
-        patch.unitPrice ?? target.unit_price,
-      );
-      const changedFields = [
+      const calculatedOrderQuantity = canonicalOrderQuantity({
+        requiredQuantity: patch.requiredQuantity ?? target.required_quantity,
+        allowanceQuantity: patch.allowanceQuantity ?? target.allowance_quantity,
+        inventoryUsageQuantity: patch.inventoryUsageQuantity ?? target.inventory_usage_quantity,
+      });
+      assertAmountWithinDatabaseRange(calculatedOrderQuantity, patch.unitPrice ?? target.unit_price);
+      const requestedChangedFields = [
         hasOwn(patch, "name") && patch.name !== target.name ? "name" : null,
         hasOwn(patch, "materialId") && (patch.materialId ?? null) !== target.material_id ? "materialId" : null,
         hasOwn(patch, "partnerId") && (patch.partnerId ?? null) !== target.supplier_partner_id ? "partnerId" : null,
@@ -572,15 +600,17 @@ export async function patchMaterialLineV2(input: {
         hasOwn(patch, "requiredQuantity") && !sameDecimal(target.required_quantity, patch.requiredQuantity) ? "requiredQuantity" : null,
         hasOwn(patch, "allowanceQuantity") && !sameDecimal(target.allowance_quantity, patch.allowanceQuantity) ? "allowanceQuantity" : null,
         hasOwn(patch, "inventoryUsageQuantity") && !sameDecimal(target.inventory_usage_quantity, patch.inventoryUsageQuantity) ? "inventoryUsageQuantity" : null,
-        hasOwn(patch, "orderQuantity") && !sameDecimal(target.order_quantity, patch.orderQuantity) ? "orderQuantity" : null,
         hasOwn(patch, "unitCode") && patch.unitCode !== target.unit_code ? "unitCode" : null,
         hasOwn(patch, "unitPrice") && !sameDecimal(target.unit_price, patch.unitPrice) ? "unitPrice" : null,
         hasOwn(patch, "memo") && (patch.memo ?? null) !== target.memo ? "memo" : null,
       ].filter((field): field is string => field !== null);
 
-      if (changedFields.length === 0) {
-        return { row: target, changedFields };
+      if (requestedChangedFields.length === 0) {
+        return { row: target, changedFields: requestedChangedFields };
       }
+      const changedFields = sameDecimal(target.order_quantity, calculatedOrderQuantity)
+        ? requestedChangedFields
+        : [...requestedChangedFields, "orderQuantity"];
 
       const updated = await client.query<MaterialTargetRow>(`
         UPDATE work_order_material_lines
@@ -592,21 +622,20 @@ export async function patchMaterialLineV2(input: {
             required_quantity = CASE WHEN $14 THEN $15::numeric ELSE required_quantity END,
             allowance_quantity = CASE WHEN $16 THEN $17::numeric ELSE allowance_quantity END,
             inventory_usage_quantity = CASE WHEN $18 THEN $19::numeric ELSE inventory_usage_quantity END,
-            order_quantity = CASE WHEN $20 THEN $21::numeric ELSE order_quantity END,
-            unit_code = CASE WHEN $22 THEN $23 ELSE unit_code END,
-            unit_price = CASE WHEN $24 THEN $25::numeric ELSE unit_price END,
+            order_quantity = $20::numeric,
+            unit_code = CASE WHEN $21 THEN $22 ELSE unit_code END,
+            unit_price = CASE WHEN $23 THEN $24::numeric ELSE unit_price END,
             amount = round(
-              (CASE WHEN $20 THEN $21::numeric ELSE order_quantity END)
-              * (CASE WHEN $24 THEN $25::numeric ELSE unit_price END), 2
+              $20::numeric * (CASE WHEN $23 THEN $24::numeric ELSE unit_price END), 2
             ),
-            memo = CASE WHEN $26 THEN $27 ELSE memo END,
+            memo = CASE WHEN $25 THEN $26 ELSE memo END,
             entity_version = entity_version + 1,
             updated_at = now()
         WHERE company_id = $1 AND id = $2::uuid AND revision_id = $3::uuid
-          AND status = 'editing' AND entity_version = $28
-        RETURNING $29::uuid AS work_order_id, revision_id, $30::integer AS revision_no,
+          AND status = 'editing' AND entity_version = $27
+        RETURNING $28::uuid AS work_order_id, revision_id, $29::integer AS revision_no,
                   'draft'::text AS work_order_status, 'draft'::text AS revision_status,
-                  $31::integer AS work_order_version,
+                  $30::integer AS work_order_version,
                   id AS material_line_id, material_type, status AS material_status,
                   entity_version AS line_version, material_id, name, color_option, usage_area,
                   supplier_partner_id, required_quantity, allowance_quantity,
@@ -621,7 +650,7 @@ export async function patchMaterialLineV2(input: {
         hasOwn(patch, "requiredQuantity"), patch.requiredQuantity ?? null,
         hasOwn(patch, "allowanceQuantity"), patch.allowanceQuantity ?? null,
         hasOwn(patch, "inventoryUsageQuantity"), patch.inventoryUsageQuantity ?? null,
-        hasOwn(patch, "orderQuantity"), patch.orderQuantity ?? null,
+        calculatedOrderQuantity,
         hasOwn(patch, "unitCode"), patch.unitCode ?? null,
         hasOwn(patch, "unitPrice"), patch.unitPrice ?? null,
         hasOwn(patch, "memo"), patch.memo ?? null,

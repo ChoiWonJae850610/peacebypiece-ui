@@ -30,11 +30,11 @@ const archiveRoute = read("app/api/v2/work-orders/[workOrderId]/materials/[mater
 const restoreRoute = read("app/api/v2/work-orders/[workOrderId]/materials/[materialLineId]/restore/route.ts");
 const lineRoute = read("app/api/v2/work-orders/[workOrderId]/materials/[materialLineId]/route.ts");
 
-assert.match(read("lib/constants/version.ts"), /APP_VERSION = "2\.0\.0-alpha\.51"/);
-assert.match(read("apps/mobile/constants/version.ts"), /MOBILE_APP_VERSION = "2\.0\.0-alpha\.51"/);
-assert.equal(json("apps/mobile/package.json").version, "2.0.0-alpha.51");
-assert.equal(json("apps/mobile/package-lock.json").packages[""].version, "2.0.0-alpha.51");
-assert.equal(json("apps/mobile/app.json").expo.extra.appVersion, "2.0.0-alpha.51");
+assert.match(read("lib/constants/version.ts"), /APP_VERSION = "2\.0\.0-alpha\.52"/);
+assert.match(read("apps/mobile/constants/version.ts"), /MOBILE_APP_VERSION = "2\.0\.0-alpha\.52"/);
+assert.equal(json("apps/mobile/package.json").version, "2.0.0-alpha.52");
+assert.equal(json("apps/mobile/package-lock.json").packages[""].version, "2.0.0-alpha.52");
+assert.equal(json("apps/mobile/app.json").expo.extra.appVersion, "2.0.0-alpha.52");
 assert.equal(json("apps/mobile/app.json").expo.version, "2.0.0");
 
 assert.match(migration, /APPROVED ALPHA\.51 DEV\/TEST GATE/);
@@ -131,8 +131,8 @@ assert.match(evidence, /ALPHA51_MOBILE_MATERIAL_SOFT_DELETE_RESTORE_LIFECYCLE_CO
 assert.match(evidence, /archive success \| 2/);
 assert.match(evidence, /restore success \| 2/);
 assert.match(evidence, /material row delta \| 0/);
-assert.match(currentState, /Result version: `2\.0\.0-alpha\.51`/);
-assert.match(roadmap, /Current result — 2\.0\.0-alpha\.51/);
-assert.match(roadmap, /Next candidate — 2\.0\.0-alpha\.52/);
+assert.match(currentState, /Result version: `2\.0\.0-alpha\.52`/);
+assert.match(roadmap, /Current result — 2\.0\.0-alpha\.52/);
+assert.match(roadmap, /Next candidate — 2\.0\.0-alpha\.53/);
 
 console.log("workorder v2 alpha.51 material soft-delete restore lifecycle contract: PASS");

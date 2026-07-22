@@ -11,7 +11,6 @@ import {
   type DisplayDocumentNumber,
   type GeneratedDocumentStatus,
   type ImageId,
-  type IsoDate,
   type IsoDateTime,
   type TenantMemberScope,
   type WorkOrderId,
@@ -32,8 +31,16 @@ export const WORK_ORDER_V2_LIST_SQL = `
       AND w.deleted_at IS NULL
       AND ($2::timestamptz IS NULL OR (w.updated_at, w.id) < ($2::timestamptz, $3::uuid))
       AND ($4::text IS NULL OR w.assignee_member_id = $4)
+      AND (
+        $5::text IS NULL
+        OR w.product_name ILIKE '%' || $5 || '%'
+        OR w.document_number_base ILIKE '%' || $5 || '%'
+        OR COALESCE(w.item_code, '') ILIKE '%' || $5 || '%'
+        OR COALESCE(w.season_code, '') ILIKE '%' || $5 || '%'
+      )
+      AND ($6::text[] IS NULL OR w.status = ANY($6::text[]))
     ORDER BY w.updated_at DESC, w.id DESC
-    LIMIT $5
+    LIMIT $7
   ), page_rows AS MATERIALIZED (
     SELECT w.id, w.document_number_base, w.product_name, w.status, w.due_date::text AS due_date,
            w.total_quantity, w.current_revision_id, w.representative_image_id,
@@ -180,6 +187,8 @@ export async function listWorkOrdersV2(input: {
   readonly assignedCompanyMemberId: CompanyMemberId | null;
   readonly cursorUpdatedAt: IsoDateTime | null;
   readonly cursorWorkOrderId: WorkOrderId | null;
+  readonly searchQuery: string | null;
+  readonly statuses: readonly string[] | null;
   readonly limit: number;
 }): Promise<WorkOrderListRepositoryResult> {
   const transactionStartedAt = performance.now();
@@ -198,6 +207,8 @@ export async function listWorkOrdersV2(input: {
       input.cursorUpdatedAt,
       input.cursorWorkOrderId,
       input.assignedCompanyMemberId,
+      input.searchQuery,
+      input.statuses,
       input.limit + 1,
     ]);
     const listQueryMs = performance.now() - listStartedAt;

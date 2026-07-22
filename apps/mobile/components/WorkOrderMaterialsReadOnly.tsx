@@ -1,9 +1,13 @@
 import { useState } from "react";
-import { ActivityIndicator, Pressable, StyleSheet, Text, View, useWindowDimensions } from "react-native";
-import { Check, ChevronDown, ChevronUp, FileUp, PencilLine, Plus, RefreshCw, RotateCcw, Trash2, type LucideIcon } from "lucide-react-native";
+import { ActivityIndicator, Pressable, StyleSheet, Text, View, useWindowDimensions, type TextInput } from "react-native";
+import { Check, ChevronDown, ChevronUp, FileUp, Plus, RefreshCw, RotateCcw, Trash2, type LucideIcon } from "lucide-react-native";
 
 import { WAFL_FONTS } from "@/constants/fonts";
-import type { WorkOrderMaterialLine } from "@/lib/apiTypes";
+import ControlledInlineEditValue from "@/components/ControlledInlineEditValue";
+import ExpandedInlineField from "@/components/ExpandedInlineField";
+import type { MaterialEditorViewState } from "@/components/WorkOrderMaterialEditor";
+import type { MaterialDraftFields, WorkOrderMaterialLine } from "@/lib/apiTypes";
+import { calculateMaterialAmount, calculateOrderQuantity, formatQuantity, formatWon } from "@/lib/mobileDisplay";
 
 export type MaterialReadStatus = "not-loaded" | "loading" | "loaded" | "empty" | "error" | "retrying" | "loading-more";
 
@@ -21,14 +25,77 @@ type Props = {
   readonly canEdit: boolean;
   readonly lifecycleBusyId: string | null;
   readonly saveNotice: string | null;
+  readonly activeEditor: MaterialEditorViewState | null;
+  readonly activeField: keyof MaterialDraftFields | null;
   readonly onAdd: () => void;
-  readonly onEdit: (line: WorkOrderMaterialLine) => void;
+  readonly onEdit: (line: WorkOrderMaterialLine, field: keyof MaterialDraftFields) => void;
+  readonly onChangeEdit: (field: keyof MaterialDraftFields, value: string) => void;
+  readonly onCancelEdit: () => void;
+  readonly onSaveEdit: () => void;
   readonly onArchive: (line: WorkOrderMaterialLine) => void;
   readonly onRestore: (line: WorkOrderMaterialLine) => void;
   readonly onRetry: () => void;
   readonly onLoadMore: () => void;
   readonly onLoadMoreArchived: () => void;
+  readonly onFieldFocus: (target: TextInput) => void;
 };
+
+type MaterialInlineFieldProps = {
+  readonly field: keyof MaterialDraftFields;
+  readonly label: string;
+  readonly line: WorkOrderMaterialLine;
+  readonly editor: MaterialEditorViewState | null;
+  readonly activeField: keyof MaterialDraftFields | null;
+  readonly canEdit: boolean;
+  readonly displayValue: string;
+  readonly placeholder: string;
+  readonly onEdit: (field: keyof MaterialDraftFields) => void;
+  readonly onChange: Props["onChangeEdit"];
+  readonly onCancel: Props["onCancelEdit"];
+  readonly onSave: Props["onSaveEdit"];
+  readonly keyboardType?: "default" | "decimal-pad" | "number-pad";
+  readonly maxLength: number;
+  readonly multiline?: boolean;
+  readonly displayStyle?: object;
+  readonly containerStyle?: object;
+  readonly testID?: string;
+  readonly onFieldFocus: Props["onFieldFocus"];
+};
+
+function MaterialInlineField({
+  field, label, line, editor, activeField, canEdit, displayValue, placeholder,
+  onEdit, onChange, onCancel, onSave, keyboardType = "default", maxLength,
+  multiline = false, displayStyle, containerStyle, testID, onFieldFocus,
+}: MaterialInlineFieldProps) {
+  const active = editor?.materialLineId === line.id && activeField === field;
+  const editable = canEdit && line.lifecycle === "active" && line.status === "editing" && !line.locked;
+  return (
+    <ControlledInlineEditValue
+      accessibilityLabel={label}
+      active={active}
+      containerStyle={containerStyle}
+      dirty={active ? editor?.draft[field] !== editor?.base[field] : false}
+      displayStyle={displayStyle}
+      displayValue={displayValue}
+      editable={editable}
+      errorMessage={active ? editor?.fieldErrors[field] ?? null : null}
+      invalid={active ? Boolean(editor?.fieldErrors[field]) : false}
+      keyboardType={keyboardType}
+      maxLength={maxLength}
+      multiline={multiline}
+      onActivate={() => onEdit(field)}
+      onCancel={onCancel}
+      onChange={(value) => onChange(field, value)}
+      onSave={onSave}
+      onFocusTarget={onFieldFocus}
+      placeholder={placeholder}
+      saving={active ? editor?.saveState === "saving" : false}
+      selectTextOnFocus={!multiline}
+      testID={testID}
+      value={active ? editor?.draft[field] ?? "" : ""}
+    />
+  );
+}
 
 const STATUS_LABELS = {
   editing: "입력 중",
@@ -58,36 +125,6 @@ function materialBadge(status: WorkOrderMaterialLine["status"]) {
   }
 }
 
-function formatDecimal(value: string | null, maximumFractionDigits: 0 | 2) {
-  const matched = /^(-?)(\d+)(?:\.(\d+))?$/.exec(value?.trim() ?? "");
-  if (!matched) return null;
-  const [, sign, rawInteger, rawFraction = ""] = matched;
-  const integer = rawInteger.replace(/^0+(?=\d)/, "") || "0";
-  const scale = maximumFractionDigits === 0 ? 1n : 100n;
-  const keptFraction = maximumFractionDigits === 0 ? "" : `${rawFraction}00`.slice(0, 2);
-  let scaled = BigInt(integer) * scale + BigInt(keptFraction || "0");
-  const roundingDigit = rawFraction[maximumFractionDigits];
-  if (roundingDigit && roundingDigit >= "5") scaled += 1n;
-  const roundedInteger = (scaled / scale).toString();
-  const roundedFraction = maximumFractionDigits === 0
-    ? ""
-    : (scaled % scale).toString().padStart(2, "0").replace(/0+$/, "");
-  const grouped = roundedInteger.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-  const normalizedSign = sign === "-" && scaled !== 0n ? "-" : "";
-  return `${normalizedSign}${grouped}${roundedFraction ? `.${roundedFraction}` : ""}`;
-}
-
-function quantity(value: string | null, unit: string) {
-  const formatted = formatDecimal(value, 2);
-  if (formatted === null) return "미입력";
-  return `${formatted}${unit.trim() ? ` ${unit.trim()}` : ""}`;
-}
-
-function won(value: string | null) {
-  const formatted = formatDecimal(value, 0);
-  return formatted === null ? "미입력" : `${formatted}원`;
-}
-
 function exactHexColor(value: string | null) {
   const candidate = value?.trim() ?? "";
   return /^#[0-9a-f]{6}$/i.test(candidate) ? candidate : null;
@@ -98,15 +135,6 @@ function CompactField({ label, value }: { readonly label: string; readonly value
     <View style={styles.compactField}>
       <Text style={styles.compactLabel}>{label}</Text>
       <Text style={styles.compactValue}>{value}</Text>
-    </View>
-  );
-}
-
-function ReadOnlyLine({ label, value }: { readonly label: string; readonly value: string }) {
-  return (
-    <View style={styles.readOnlyLine}>
-      <Text style={styles.readOnlyLabel}>{label}</Text>
-      <Text style={styles.readOnlyValue}>{value}</Text>
     </View>
   );
 }
@@ -157,14 +185,20 @@ function ReadOnlyActionButton({ action, compact }: { readonly action: ReadOnlyAc
   );
 }
 
-function MaterialCard({ line, expanded, canEdit, lifecycleBusy, onEdit, onArchive, onToggle }: {
+function MaterialCard({ line, expanded, canEdit, lifecycleBusy, editor, activeField, onEdit, onChangeEdit, onCancelEdit, onSaveEdit, onArchive, onToggle, onFieldFocus }: {
   readonly line: WorkOrderMaterialLine;
   readonly expanded: boolean;
   readonly canEdit: boolean;
   readonly lifecycleBusy: boolean;
-  readonly onEdit: () => void;
+  readonly editor: MaterialEditorViewState | null;
+  readonly activeField: keyof MaterialDraftFields | null;
+  readonly onEdit: (field: keyof MaterialDraftFields) => void;
+  readonly onChangeEdit: Props["onChangeEdit"];
+  readonly onCancelEdit: Props["onCancelEdit"];
+  readonly onSaveEdit: Props["onSaveEdit"];
   readonly onArchive: () => void;
   readonly onToggle: () => void;
+  readonly onFieldFocus: Props["onFieldFocus"];
 }) {
   const { width } = useWindowDimensions();
   const compactActions = width < 760;
@@ -173,78 +207,119 @@ function MaterialCard({ line, expanded, canEdit, lifecycleBusy, onEdit, onArchiv
   const colorLabel = line.colorOption?.trim() || "미입력";
   const usageArea = line.usageArea?.trim() || "미입력";
   const memo = line.memo?.trim() || "없음";
+  const inlineProps = { line, editor, activeField, canEdit, onEdit, onChange: onChangeEdit, onCancel: onCancelEdit, onSave: onSaveEdit, onFieldFocus };
+  const cardActiveField = editor ? activeField : null;
+  const activeHeaderField = cardActiveField === "name" || cardActiveField === "unitCode" ? cardActiveField : null;
+  const activeSummaryField = cardActiveField === "colorOption" || cardActiveField === "unitPrice" ? cardActiveField : null;
+  const activeQuantityField = cardActiveField === "requiredQuantity" || cardActiveField === "allowanceQuantity" || cardActiveField === "inventoryUsageQuantity" ? cardActiveField : null;
+  const calculationDraft = editor?.materialLineId === line.id ? editor.draft : {
+    requiredQuantity: line.requiredQuantity,
+    allowanceQuantity: line.allowanceQuantity,
+    inventoryUsageQuantity: line.inventoryUsageQuantity,
+    unitPrice: line.unitPrice,
+  };
+  const calculatedOrderQuantity = calculateOrderQuantity(calculationDraft);
+  const calculatedAmount = calculateMaterialAmount(calculatedOrderQuantity, calculationDraft.unitPrice);
   return (
     <View style={[styles.card, materialAccent(line.status)]}>
-      <Pressable
-        accessibilityLabel={`${line.name}, 원단 상세 ${expanded ? "접기" : "펼치기"}`}
-        accessibilityRole="button"
-        accessibilityState={{ expanded }}
-        onPress={onToggle}
-        style={({ pressed }) => [styles.summaryButton, pressed && styles.pressed]}
-      >
+      <View style={styles.summaryButton}>
         <View style={styles.cardHeader}>
           <View style={styles.materialIdentity}>
-            <View style={styles.materialTitleRow}>
-              <Text numberOfLines={2} style={styles.materialName}>{line.name || "원단명 미입력"}</Text>
-              <Text style={styles.unitChip}>{line.unitCode || "단위 미입력"}</Text>
-            </View>
+            {activeHeaderField ? (
+              <ExpandedInlineField label={activeHeaderField === "name" ? "원단명" : "단위"} testID="material-header-expanded-editor">
+                {activeHeaderField === "name" ? (
+                  <MaterialInlineField {...inlineProps} displayStyle={styles.materialName} displayValue={line.name} field="name" label="원단명" maxLength={200} placeholder="원단명 미입력" testID="material-inline-name" />
+                ) : (
+                  <MaterialInlineField {...inlineProps} displayStyle={styles.compactValue} displayValue={line.unitCode} field="unitCode" label="단위" maxLength={32} placeholder="단위 미입력" testID="material-inline-unit" />
+                )}
+              </ExpandedInlineField>
+            ) : (
+              <View style={styles.materialTitleRow}>
+                <MaterialInlineField {...inlineProps} displayStyle={styles.materialName} displayValue={line.name} field="name" label="원단명" maxLength={200} placeholder="원단명 미입력" testID="material-inline-name" />
+                <MaterialInlineField {...inlineProps} containerStyle={styles.unitInline} displayStyle={styles.unitChip} displayValue={line.unitCode} field="unitCode" label="단위" maxLength={32} placeholder="단위 미입력" testID="material-inline-unit" />
+              </View>
+            )}
           </View>
-          <View style={styles.headerAside}>
+          {!activeHeaderField ? <View style={styles.headerAside}>
             <Text style={[styles.statusBadge, materialBadge(line.status)]}>{STATUS_LABELS[line.status]}</Text>
-            {expanded ? <ChevronUp color="#6b5b4d" size={18} /> : <ChevronDown color="#6b5b4d" size={18} />}
-          </View>
+            <Pressable
+              accessibilityLabel={`${line.name}, 원단 상세 ${expanded ? "접기" : "펼치기"}`}
+              accessibilityRole="button"
+              accessibilityState={{ expanded }}
+              hitSlop={8}
+              onPress={onToggle}
+              style={({ pressed }) => [styles.expandButton, pressed && styles.pressed]}
+            >
+              {expanded ? <ChevronUp color="#6b5b4d" size={18} /> : <ChevronDown color="#6b5b4d" size={18} />}
+            </Pressable>
+          </View> : null}
         </View>
 
+        {activeSummaryField ? (
+          <View testID="material-core-row-expanded" style={styles.coreRowExpanded}>
+            <ExpandedInlineField label={activeSummaryField === "colorOption" ? "색상·옵션" : "단가"} testID="material-summary-expanded-editor">
+              {activeSummaryField === "colorOption" ? (
+                <MaterialInlineField {...inlineProps} displayStyle={styles.compactValue} displayValue={line.colorOption?.trim() ?? ""} field="colorOption" label="색상·옵션" maxLength={200} placeholder="미입력" testID="material-inline-color-option" />
+              ) : (
+                <MaterialInlineField {...inlineProps} displayStyle={styles.compactValue} displayValue={formatWon(line.unitPrice)} field="unitPrice" keyboardType="number-pad" label="단가" maxLength={16} placeholder="미입력" testID="material-inline-unit-price" />
+              )}
+            </ExpandedInlineField>
+          </View>
+        ) : (
         <View testID="material-core-row" style={styles.coreRow}>
           <CompactField label="거래처" value="—" />
           <View style={styles.compactField}>
             <Text style={styles.compactLabel}>색상·옵션</Text>
             <View style={styles.colorRow}>
               {swatch ? <View accessibilityLabel={`색상 ${colorLabel}`} style={[styles.swatch, { backgroundColor: swatch }]} /> : null}
-              <Text numberOfLines={1} style={styles.compactValue}>{colorLabel}</Text>
+              <MaterialInlineField {...inlineProps} containerStyle={styles.compactInline} displayStyle={styles.compactValue} displayValue={line.colorOption?.trim() ?? ""} field="colorOption" label="색상·옵션" maxLength={200} placeholder="미입력" testID="material-inline-color-option" />
             </View>
           </View>
-          <CompactField label="단가" value={won(line.unitPrice)} />
+          <View style={styles.compactField}>
+            <Text style={styles.compactLabel}>단가</Text>
+            <MaterialInlineField {...inlineProps} containerStyle={styles.compactInline} displayStyle={styles.compactValue} displayValue={formatWon(line.unitPrice)} field="unitPrice" keyboardType="number-pad" label="단가" maxLength={16} placeholder="미입력" testID="material-inline-unit-price" />
+          </View>
         </View>
-      </Pressable>
+        )}
+      </View>
 
       {expanded ? (
         <View style={styles.expandedPanel}>
+          {activeQuantityField ? (
+            <View style={styles.coreRowExpanded} testID="material-quantity-row-expanded">
+              <ExpandedInlineField label={activeQuantityField === "requiredQuantity" ? "필요수량" : activeQuantityField === "allowanceQuantity" ? "로스·여유" : "재고사용"} testID="material-quantity-expanded-editor">
+                {activeQuantityField === "requiredQuantity" ? <MaterialInlineField {...inlineProps} displayStyle={styles.compactValue} displayValue={formatQuantity(line.requiredQuantity, line.unitCode)} field="requiredQuantity" keyboardType="decimal-pad" label="필요수량" maxLength={16} placeholder="0" testID="material-inline-required-quantity" /> : null}
+                {activeQuantityField === "allowanceQuantity" ? <MaterialInlineField {...inlineProps} displayStyle={styles.compactValue} displayValue={formatQuantity(line.allowanceQuantity, line.unitCode)} field="allowanceQuantity" keyboardType="decimal-pad" label="로스·여유" maxLength={16} placeholder="0" testID="material-inline-allowance-quantity" /> : null}
+                {activeQuantityField === "inventoryUsageQuantity" ? <MaterialInlineField {...inlineProps} displayStyle={styles.compactValue} displayValue={formatQuantity(line.inventoryUsageQuantity, line.unitCode)} field="inventoryUsageQuantity" keyboardType="decimal-pad" label="재고사용" maxLength={16} placeholder="0" testID="material-inline-inventory-usage" /> : null}
+              </ExpandedInlineField>
+            </View>
+          ) : (
           <View style={styles.coreRow}>
-            <CompactField label="필요수량" value={quantity(line.requiredQuantity, line.unitCode)} />
-            <CompactField label="로스·여유" value={quantity(line.allowanceQuantity, line.unitCode)} />
-            <CompactField label="재고사용" value={quantity(line.inventoryUsageQuantity, line.unitCode)} />
+            <View style={styles.compactField}><Text style={styles.compactLabel}>필요수량</Text><MaterialInlineField {...inlineProps} containerStyle={styles.compactInline} displayStyle={styles.compactValue} displayValue={formatQuantity(line.requiredQuantity, line.unitCode)} field="requiredQuantity" keyboardType="decimal-pad" label="필요수량" maxLength={16} placeholder="0" testID="material-inline-required-quantity" /></View>
+            <View style={styles.compactField}><Text style={styles.compactLabel}>로스·여유</Text><MaterialInlineField {...inlineProps} containerStyle={styles.compactInline} displayStyle={styles.compactValue} displayValue={formatQuantity(line.allowanceQuantity, line.unitCode)} field="allowanceQuantity" keyboardType="decimal-pad" label="로스·여유" maxLength={16} placeholder="0" testID="material-inline-allowance-quantity" /></View>
+            <View style={styles.compactField}><Text style={styles.compactLabel}>재고사용</Text><MaterialInlineField {...inlineProps} containerStyle={styles.compactInline} displayStyle={styles.compactValue} displayValue={formatQuantity(line.inventoryUsageQuantity, line.unitCode)} field="inventoryUsageQuantity" keyboardType="decimal-pad" label="재고사용" maxLength={16} placeholder="0" testID="material-inline-inventory-usage" /></View>
           </View>
+          )}
           <View style={styles.readOnlyRows}>
-            <ReadOnlyLine label="사용부위" value={usageArea} />
-            <ReadOnlyLine label="메모" value={memo} />
+            <View style={styles.readOnlyLine}><Text style={styles.readOnlyLabel}>사용부위</Text><MaterialInlineField {...inlineProps} containerStyle={styles.readOnlyInline} displayStyle={styles.readOnlyValue} displayValue={usageArea} field="usageArea" label="사용부위" maxLength={1000} multiline placeholder="미입력" testID="material-inline-usage-area" /></View>
+            <View style={styles.readOnlyLine}><Text style={styles.readOnlyLabel}>메모</Text><MaterialInlineField {...inlineProps} containerStyle={styles.readOnlyInline} displayStyle={styles.readOnlyValue} displayValue={memo} field="memo" label="메모" maxLength={2000} multiline placeholder="없음" testID="material-inline-memo" /></View>
           </View>
         </View>
       ) : null}
 
       <View testID="material-order-action-row" style={styles.materialOrderActionRow}>
-        {compactActions ? (
-          <View testID="material-order-summary-lines" style={styles.materialOrderLineStack}>
-            <Text testID="material-order-summary-primary" numberOfLines={1} style={styles.materialOrderLineText}>
-              발주수량 {quantity(line.orderQuantity, line.unitCode)} · 단가 {won(line.unitPrice)}
-            </Text>
-            <Text testID="material-order-summary-amount" numberOfLines={1} style={styles.materialOrderLineText}>
-              금액 {won(line.amount)}
-            </Text>
+        <View testID="material-order-summary-lines" style={styles.materialOrderLineStack}>
+          <View style={styles.orderInlineRow}>
+            <Text style={styles.materialOrderLineText}>발주수량</Text>
+            <Text accessibilityLabel="발주수량, 자동 계산, 읽기 전용" testID="material-order-quantity-calculated" style={styles.materialOrderLineText}>{formatQuantity(calculatedOrderQuantity, line.unitCode)}</Text>
+            <Text style={styles.materialOrderLineText}>· 단가 {formatWon(calculationDraft.unitPrice)}</Text>
           </View>
-        ) : (
-          <Text testID="material-order-summary" numberOfLines={1} style={styles.materialOrderActionSummary}>
-            발주수량 {quantity(line.orderQuantity, line.unitCode)} · 단가 {won(line.unitPrice)} · 금액 {won(line.amount)}
+          <Text testID="material-order-summary-amount" numberOfLines={1} style={styles.materialOrderLineText}>
+            금액 {formatWon(calculatedAmount)}
           </Text>
-        )}
+        </View>
         {actions.length ? (
           <View testID="material-order-actions" style={styles.materialOrderActions}>
-            {canEdit && line.status === "editing" ? (
-              <Pressable accessibilityLabel={`${line.name} 수정`} accessibilityRole="button" onPress={onEdit} style={({ pressed }) => [styles.editActionButton, pressed && styles.pressed]}>
-                <PencilLine color="#ffffff" size={17} strokeWidth={2.25} />
-                {!compactActions ? <Text style={styles.editActionCaption}>수정</Text> : null}
-              </Pressable>
-            ) : null}
             {canEdit && line.status === "editing" ? (
               <Pressable
                 accessibilityLabel={`${line.name} 삭제된 원단으로 이동`}
@@ -275,7 +350,7 @@ function ArchivedMaterialCard({ line, busy, onRestore }: {
     <View style={styles.archivedCard}>
       <View style={styles.archivedIdentity}>
         <Text numberOfLines={2} style={styles.archivedName}>{line.name || "원단명 미입력"}</Text>
-        <Text numberOfLines={1} style={styles.archivedMeta}>{line.colorOption?.trim() || "색상 미입력"} · {quantity(line.requiredQuantity, line.unitCode)}</Text>
+        <Text numberOfLines={1} style={styles.archivedMeta}>{line.colorOption?.trim() || "색상 미입력"} · {formatQuantity(line.requiredQuantity, line.unitCode)}</Text>
         <Text style={styles.archivedBadge}>삭제됨</Text>
       </View>
       <Pressable
@@ -295,16 +370,16 @@ function ArchivedMaterialCard({ line, busy, onRestore }: {
 
 function AddMaterialButton({ onPress }: { readonly onPress: () => void }) {
   return (
-    <Pressable accessibilityLabel="새 원단 추가" accessibilityRole="button" onPress={onPress} style={({ pressed }) => [styles.addButton, pressed && styles.pressed]}>
-      <Plus color="#ffffff" size={16} strokeWidth={2.4} />
-      <Text style={styles.addButtonText}>원단 추가</Text>
+    <Pressable accessibilityHint="새 원단 입력 화면을 엽니다" accessibilityLabel="원단 추가" accessibilityRole="button" onPress={onPress} style={({ pressed }) => [styles.addButton, pressed && styles.pressed]}>
+      <Plus color="#ffffff" size={19} strokeWidth={2.4} />
     </Pressable>
   );
 }
 
 export default function WorkOrderMaterialsReadOnly({
   state, archivedState, archivedTotalCount, canEdit, lifecycleBusyId, saveNotice,
-  onAdd, onEdit, onArchive, onRestore, onRetry, onLoadMore, onLoadMoreArchived,
+  activeEditor, activeField, onAdd, onEdit, onChangeEdit, onCancelEdit, onSaveEdit,
+  onArchive, onRestore, onRetry, onLoadMore, onLoadMoreArchived, onFieldFocus,
 }: Props) {
   const [expandedIds, setExpandedIds] = useState<ReadonlySet<string>>(() => new Set());
   const [archivedExpanded, setArchivedExpanded] = useState(false);
@@ -320,7 +395,7 @@ export default function WorkOrderMaterialsReadOnly({
   }
 
   if (state.status === "empty" && (!canEdit || archivedTotalCount === 0)) {
-    return <View style={styles.centerState}><Text style={styles.stateTitle}>등록된 원단이 없습니다</Text><Text style={styles.stateCaption}>이 제작 카드에 연결된 원단 내역이 없습니다.</Text>{canEdit ? <AddMaterialButton onPress={onAdd} /> : null}</View>;
+    return <View style={styles.centerState}><Text style={styles.stateTitle}>등록된 원단이 없습니다</Text><Text style={styles.stateCaption}>이 작업지시서에 연결된 원단 내역이 없습니다.</Text>{canEdit ? <AddMaterialButton onPress={onAdd} /> : null}</View>;
   }
 
   if (state.status === "error" && state.items.length === 0) {
@@ -349,13 +424,19 @@ export default function WorkOrderMaterialsReadOnly({
       ) : null}
       {state.items.map((line) => (
         <MaterialCard
+          activeField={activeField}
           canEdit={canEdit}
+          editor={activeEditor?.materialLineId === line.id ? activeEditor : null}
           key={line.id}
           expanded={expandedIds.has(line.id)}
           lifecycleBusy={lifecycleBusyId === line.id}
           line={line}
           onArchive={() => onArchive(line)}
-          onEdit={() => onEdit(line)}
+          onCancelEdit={onCancelEdit}
+          onChangeEdit={onChangeEdit}
+          onEdit={(field) => onEdit(line, field)}
+          onSaveEdit={onSaveEdit}
+          onFieldFocus={onFieldFocus}
           onToggle={() => setExpandedIds((current) => {
             const next = new Set(current);
             if (next.has(line.id)) next.delete(line.id);
@@ -423,8 +504,7 @@ const styles = StyleSheet.create({
   listToolbar: { alignItems: "center", flexDirection: "row", gap: 8, justifyContent: "space-between", minHeight: 44 },
   toolbarSpacer: { flex: 1 },
   saveNotice: { color: "#4d6a3a", flex: 1, fontFamily: WAFL_FONTS.bold, fontSize: 11, lineHeight: 16, minWidth: 0 },
-  addButton: { alignItems: "center", backgroundColor: "#17263d", borderRadius: 8, flexDirection: "row", gap: 5, justifyContent: "center", minHeight: 40, paddingHorizontal: 12 },
-  addButtonText: { color: "#ffffff", fontFamily: WAFL_FONTS.bold, fontSize: 11 },
+  addButton: { alignItems: "center", backgroundColor: "#17263d", borderRadius: 8, height: 40, justifyContent: "center", width: 40 },
   card: { backgroundColor: "#fffdf8", borderColor: "#e7ded1", borderLeftWidth: 4, borderRadius: 8, borderWidth: 1, overflow: "hidden" },
   cardEditing: { borderLeftColor: "#a89d90" },
   cardRequested: { borderLeftColor: "#c75f35" },
@@ -436,10 +516,12 @@ const styles = StyleSheet.create({
   materialIdentity: { flex: 1, minWidth: 0 },
   materialTitleRow: { alignItems: "center", flexDirection: "row", flexWrap: "wrap", gap: 7 },
   materialName: { color: "#17263d", flexShrink: 1, fontFamily: WAFL_FONTS.bold, fontSize: 14, lineHeight: 20, minWidth: 0 },
+  unitInline: { flexShrink: 0 },
   unitChip: { backgroundColor: "#f2eadf", borderRadius: 999, color: "#6b5b4d", flexShrink: 0, fontFamily: WAFL_FONTS.bold, fontSize: 9, overflow: "hidden", paddingHorizontal: 7, paddingVertical: 3 },
   colorRow: { alignItems: "center", flexDirection: "row", gap: 5, minWidth: 0 },
   swatch: { borderColor: "#aa9d90", borderRadius: 4, borderWidth: 1, flexShrink: 0, height: 18, width: 18 },
   headerAside: { alignItems: "flex-end", gap: 8 },
+  expandButton: { alignItems: "center", height: 34, justifyContent: "center", width: 34 },
   statusBadge: { borderRadius: 999, fontFamily: WAFL_FONTS.bold, fontSize: 10, minWidth: 64, overflow: "hidden", paddingHorizontal: 8, paddingVertical: 4, textAlign: "center" },
   statusBadgeEditing: { backgroundColor: "#ece8e0", color: "#534b43" },
   statusBadgeRequested: { backgroundColor: "#ffe1c8", color: "#9b4a27" },
@@ -448,17 +530,22 @@ const styles = StyleSheet.create({
   statusBadgeUnknown: { backgroundColor: "#eee9e2", color: "#675f58" },
   expandedPanel: { borderTopColor: "#eee3d5", borderTopWidth: 1, paddingHorizontal: 10, paddingTop: 7 },
   coreRow: { alignItems: "flex-start", flexDirection: "row", gap: 5, marginTop: 7, width: "100%" },
+  coreRowExpanded: { alignItems: "stretch", marginTop: 7, minWidth: 0, width: "100%" },
   compactField: { flex: 1, minWidth: 0 },
+  compactInline: { flex: 1, minWidth: 0 },
   compactLabel: { color: "#8b7e72", fontFamily: WAFL_FONTS.medium, fontSize: 9, lineHeight: 13 },
   compactValue: { color: "#3f352d", flexShrink: 1, fontFamily: WAFL_FONTS.semibold, fontSize: 11, lineHeight: 16, marginTop: 1, minWidth: 0 },
   readOnlyRows: { marginTop: 4 },
   readOnlyLine: { alignItems: "flex-start", borderTopColor: "#f0e7dc", borderTopWidth: 1, flexDirection: "row", gap: 10, minHeight: 28, paddingVertical: 5 },
   readOnlyLabel: { color: "#827568", flexShrink: 0, fontFamily: WAFL_FONTS.medium, fontSize: 10, lineHeight: 17, width: 54 },
   readOnlyValue: { color: "#3f352d", flex: 1, fontFamily: WAFL_FONTS.regular, fontSize: 11, lineHeight: 17, minWidth: 0 },
+  readOnlyInline: { flex: 1, minWidth: 0 },
   materialOrderActionRow: { alignItems: "center", borderTopColor: "#eee3d5", borderTopWidth: 1, flexDirection: "row", gap: 6, justifyContent: "space-between", marginHorizontal: 10, minHeight: 38, paddingVertical: 4 },
   materialOrderActionSummary: { color: "#7b4b32", flex: 1, flexShrink: 1, fontFamily: WAFL_FONTS.bold, fontSize: 11, fontVariant: ["tabular-nums"], lineHeight: 16, minWidth: 0 },
   materialOrderLineStack: { flex: 1, justifyContent: "center", minWidth: 0 },
   materialOrderLineText: { color: "#7b4b32", flexShrink: 1, fontFamily: WAFL_FONTS.bold, fontSize: 11, fontVariant: ["tabular-nums"], lineHeight: 15, minWidth: 0 },
+  orderInlineRow: { alignItems: "center", flexDirection: "row", flexWrap: "wrap", gap: 3, minWidth: 0 },
+  orderInlineValue: { flexShrink: 1, minWidth: 56 },
   materialOrderActions: { flexDirection: "row", flexShrink: 0, gap: 3, marginLeft: "auto" },
   iconActionButton: { alignItems: "center", backgroundColor: "#fff", borderColor: "#d8d0c3", borderRadius: 8, borderWidth: 1, flexDirection: "row", gap: 3, height: 30, justifyContent: "center", minWidth: 58, paddingHorizontal: 8 },
   archiveActionButton: { alignItems: "center", backgroundColor: "#fff5f0", borderColor: "#e5b7ac", borderRadius: 8, borderWidth: 1, flexDirection: "row", gap: 3, height: 30, justifyContent: "center", minWidth: 36, paddingHorizontal: 7 },
@@ -466,8 +553,6 @@ const styles = StyleSheet.create({
   iconActionEmphasized: { backgroundColor: "#23375a", borderColor: "#23375a" },
   iconActionDanger: { backgroundColor: "#fff5f0", borderColor: "#e5b7ac" },
   disabledAction: { opacity: 0.46 },
-  editActionButton: { alignItems: "center", backgroundColor: "#17263d", borderColor: "#17263d", borderRadius: 8, borderWidth: 1, flexDirection: "row", gap: 3, height: 30, justifyContent: "center", minWidth: 36, paddingHorizontal: 7 },
-  editActionCaption: { color: "#ffffff", fontFamily: WAFL_FONTS.bold, fontSize: 10 },
   iconActionCaption: { color: "#17263d", fontFamily: WAFL_FONTS.bold, fontSize: 10 },
   iconActionCaptionEmphasized: { color: "#fff" },
   iconActionCaptionDanger: { color: "#9a4035" },

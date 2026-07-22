@@ -18,18 +18,19 @@ const materials = read("apps/mobile/components/WorkOrderMaterialsReadOnly.tsx");
 const app = read("apps/mobile/components/MobileWorkOrderApp.tsx");
 const apiClient = read("apps/mobile/lib/apiClient.ts");
 const apiTypes = read("apps/mobile/lib/apiTypes.ts");
+const mobileDisplay = read("apps/mobile/lib/mobileDisplay.ts");
 const route = read("app/api/v2/work-orders/[workOrderId]/materials/route.ts");
 const detailRead = read("lib/domain/work-orders/read/detailRoute.ts");
 const detailService = read("lib/domain/work-orders/read/detailService.ts");
 const externalQa = read("lib/external-qa/configCore.mjs");
 
-assert.match(version, /APP_VERSION = "2\.0\.0-alpha\.51"/);
-assert.match(mobileVersion, /MOBILE_APP_VERSION = "2\.0\.0-alpha\.51"/);
-assert.equal(mobilePackage.version, "2.0.0-alpha.51");
-assert.equal(mobileLock.version, "2.0.0-alpha.51");
-assert.equal(mobileLock.packages[""].version, "2.0.0-alpha.51");
+assert.match(version, /APP_VERSION = "2\.0\.0-alpha\.52"/);
+assert.match(mobileVersion, /MOBILE_APP_VERSION = "2\.0\.0-alpha\.52"/);
+assert.equal(mobilePackage.version, "2.0.0-alpha.52");
+assert.equal(mobileLock.version, "2.0.0-alpha.52");
+assert.equal(mobileLock.packages[""].version, "2.0.0-alpha.52");
 assert.equal(appJson.expo.version, "2.0.0");
-assert.equal(appJson.expo.extra.appVersion, "2.0.0-alpha.51");
+assert.equal(appJson.expo.extra.appVersion, "2.0.0-alpha.52");
 assert.equal(appJson.expo.extra.dataMode, "dev-test-tailscale-auto-connect");
 assert.equal(appJson.expo.extra.mockOnly, false);
 assert.equal(appJson.expo.ios.bundleIdentifier, "com.wafl.app");
@@ -103,9 +104,10 @@ for (const badge of ["statusBadgeEditing", "statusBadgeRequested", "statusBadgeC
 }
 assert.match(materials, /materialTitleRow[\s\S]{0,500}unitChip/);
 assert.match(materials, /testID="material-core-row"[\s\S]{0,900}label="거래처" value="—"[\s\S]{0,900}>색상·옵션<[\s\S]{0,900}label="단가"/);
-assert.equal((materials.match(/label="필요수량"/g) ?? []).length, 1, "필요수량 label must appear in one live field slot");
+assert.equal((materials.match(/label="필요수량"/g) ?? []).length, 2, "compact and expanded 필요수량 source slots must both exist");
+assert.match(materials, /activeQuantityField \? \([\s\S]*material-quantity-row-expanded[\s\S]*\) : \([\s\S]*styles\.coreRow/, "compact and expanded quantity slots must be mutually exclusive");
 assert.match(materials, /expandedPanel[\s\S]{0,900}label="필요수량"[\s\S]{0,900}label="로스·여유"[\s\S]{0,900}label="재고사용"/);
-assert.match(materials, /readOnlyRows[\s\S]{0,700}ReadOnlyLine label="사용부위"[\s\S]{0,700}ReadOnlyLine label="메모"/);
+assert.match(materials, /readOnlyRows[\s\S]{0,1600}field="usageArea" label="사용부위"[\s\S]{0,1600}field="memo" label="메모"/);
 assert.match(materials, /testID="material-order-action-row"[\s\S]{0,1200}testID="material-order-summary-lines"[\s\S]{0,800}발주수량[\s\S]{0,500}단가[\s\S]{0,500}testID="material-order-summary-amount"[\s\S]{0,300}금액/);
 assert.match(materials, /materialOrderActionRow: \{[^\n]*flexDirection: "row"[^\n]*minHeight: 38[^\n]*paddingVertical: 4/);
 assert.match(materials, /materialOrderLineStack: \{[^\n]*flex: 1[^\n]*minWidth: 0/);
@@ -116,11 +118,12 @@ assert.match(readOnlyActionButton, /accessibilityState=\{\{ disabled: true \}\}/
 assert.match(readOnlyActionButton, /\n\s+disabled\n/);
 assert.doesNotMatch(readOnlyActionButton, /onPress=/);
 assert.doesNotMatch(materials, /\bKRW\b|line\.currency/);
-assert.match(materials, /return formatted === null \? "미입력" : `\$\{formatted\}원`/);
-assert.match(materials, /replace\(\/0\+\$\/, ""\)/);
-assert.doesNotMatch(materials, /toFixed\(3\)|minimumFractionDigits:\s*3|toFixed\(2\)|minimumFractionDigits:\s*2/);
+assert.match(mobileDisplay, /if \(!matched\) return "미입력"/);
+assert.match(mobileDisplay, /\$\{grouped\}원/);
+assert.match(mobileDisplay, /replace\(\/0\+\$\/, ""\)/);
+assert.doesNotMatch(`${materials}\n${mobileDisplay}`, /toFixed\(3\)|minimumFractionDigits:\s*3|toFixed\(2\)|minimumFractionDigits:\s*2/);
 assert.doesNotMatch(materials, /styles\.listHeading|listHeading:/);
-assert.match(materials, /const matched = \/\^\(-\?\)\(\\d\+\)/);
+assert.match(mobileDisplay, /const DECIMAL_PATTERN = \/\^\(-\?\)\(\\d\+\)/);
 assert.doesNotMatch(materials, /Number\(line\.|parseFloat\(line\.|parseInt\(line\./);
 const materialCardBody = materials.slice(materials.indexOf("function MaterialCard"), materials.indexOf("export default function WorkOrderMaterialsReadOnly"));
 const materialSummaryBody = materialCardBody.slice(materialCardBody.indexOf("<Pressable"), materialCardBody.indexOf("testID=\"material-order-action-row\""));
@@ -144,7 +147,11 @@ for (const errorBoundary of ["status === 401", "status === 403", "status === 404
 }
 assert.doesNotMatch(app + materials, /setInterval|setTimeout\([^)]*getWorkOrderMaterials|polling/i);
 assert.doesNotMatch(app + materials, /mockProductionCard|mockMaterial|productionCards/);
-assert.doesNotMatch(app + materials, /console\.(?:log|debug|info|warn|error)/);
+assert.doesNotMatch(materials, /console\.(?:log|debug|info|warn|error)/);
+assert.equal((app.match(/console\.(?:log|debug|info|warn|error)/g) ?? []).length, 2, "only bounded save metrics may log in external QA");
+assert.equal((app.match(/console\.info/g) ?? []).length, 2);
+assert.match(app, /WAFL_MATERIAL_SAVE_METRIC/);
+assert.match(app, /WAFL_OVERVIEW_SAVE_METRIC/);
 
 const materialUiSlice = [materials, detail].join("\n");
 assert.doesNotMatch(materials, /createWorkOrderMaterial|patchWorkOrderMaterial|POST|PUT|DELETE|order-request|order-cancel|order-complete/);

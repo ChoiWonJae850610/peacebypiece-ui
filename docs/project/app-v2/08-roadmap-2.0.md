@@ -2,27 +2,27 @@
 
 Document role: canonical owner for the current result, next candidate, and Version Delta boundary. It is not the historical implementation ledger; completed details live in numbered immutable evidence.
 
-## Current result — 2.0.0-alpha.51
+## Current result — 2.0.0-alpha.52
+
+Status: `ALPHA52_MOBILE_CORE_INLINE_UX_CALCULATION_LIST_AND_DATE_COMPLETE`.
+
+Alpha.52 completes the connected mobile core inline UX, calculation, list, and date slice:
+
+- customer-facing WorkOrder naming and bounded list search/status filtering;
+- same-position overview/material inline editing with editable/read-only/locked affordance and explicit X/Check;
+- narrow-field expansion, exact-field keyboard-safe focus, dirty/conflict/save/cancel preservation, and automatic-save `0`;
+- canonical order-quantity/amount calculation plus decimal, currency, and numeric-zero draft correction;
+- compact due-date bottom sheet with date-only preservation and automatic reopen `0`;
+- physical-iPhone UX acceptance, mutation-free final Runtime preflight, and canonical runner teardown;
+- migration, R2/PDF/token, production, native, and EAS effects remain zero.
+
+Evidence: `51-mobile-core-inline-ux-calculation-list-date-evidence.md`.
+
+## Previous product result — 2.0.0-alpha.51
 
 Status: `ALPHA51_MOBILE_MATERIAL_SOFT_DELETE_RESTORE_LIFECYCLE_COMPLETE`.
 
-Alpha.51 completes recoverable draft fabric-line archive and restore:
-
-- migration 013 lifecycle metadata and active/archived indexes, applied exactly once to approved dev/test;
-- draft-only archive/restore POST Commands with expectedVersion, event/receipt, and same-row identity/value/sort-order preservation;
-- default active Read and explicit archived Read, plus active-only current count, totals, readiness, and preview;
-- deleted-material mobile section, confirmation, canonical refresh, restore, dirty guard, and non-draft blocking;
-- stale/non-draft conflict and hard DELETE blocking with mutation delta zero;
-- physical-iPhone archive/restore and persistence QA plus canonical runner teardown;
-- R2/PDF/token, production, native, and EAS effects remain zero.
-
-Evidence: `50-mobile-material-soft-delete-restore-lifecycle-evidence.md`.
-
-## Previous product result — 2.0.0-alpha.50
-
-Status: `ALPHA50_MOBILE_MATERIAL_DRAFT_CREATE_UPDATE_COMPLETE`.
-
-Draft material create/update, explicit save, validation/conflict, dirty guard, and canonical cache refresh remain complete. Detailed facts are preserved in `49-mobile-material-draft-create-update-evidence.md`.
+Recoverable draft material archive/restore, active/archived visibility, lifecycle concurrency, mobile recovery, and hard-DELETE blocking remain complete. Detailed facts are preserved in `50-mobile-material-soft-delete-restore-lifecycle-evidence.md`.
 
 ## Previous infrastructure result — 2.0.0-alpha.49
 
@@ -43,6 +43,7 @@ Permanent Rules, Current Baseline, Version Delta, Immutable Evidence, responsibi
 | alpha.49 | canonical Codex instruction architecture | `48-canonical-codex-instruction-architecture-evidence.md` |
 | alpha.50 | mobile material draft create/update | `49-mobile-material-draft-create-update-evidence.md` |
 | alpha.51 | mobile material soft-delete/restore lifecycle | `50-mobile-material-soft-delete-restore-lifecycle-evidence.md` |
+| alpha.52 | mobile core inline UX, calculation, list, and date | `51-mobile-core-inline-ux-calculation-list-date-evidence.md` |
 
 Older results remain in numbered evidence files indexed and task-routed by `00-start-here.md`. Their detailed outcomes are not duplicated here.
 
@@ -73,23 +74,22 @@ Standard reference:
 
 The Delta does not repeat Permanent Rules. An omitted exceptional authority remains forbidden.
 
-## Next candidate — 2.0.0-alpha.52
+## Next candidate — 2.0.0-alpha.53
 
-Candidate objective: connect material order request/cancel/complete Commands only after owner approval.
+Candidate objective: `ALPHA53_MOBILE_ARCHITECTURE_FOUNDATION_COMPLETE` only after owner approval.
 
-Potential included scope, subject to the actual alpha.52 Delta:
+Potential included scope, subject to the actual alpha.53 Delta:
 
-- exact order transition states and permission boundaries;
-- expectedVersion, stale/repeated conflict, event/receipt, canonical GET synchronization, and bounded mutation budget;
-- mobile confirmations and state badges without weakening archive or non-draft boundaries.
+- split mobile orchestration into bounded controllers/hooks;
+- centralize shared API contracts, validation constants, policy functions, and currency/decimal/quantity/date formatters;
+- establish WAFL theme tokens and bounded reel-input state/component foundations;
+- limit any reel prototype to an explicitly approved field and device QA scope.
 
 Explicitly separate later scope:
 
+- material order request/cancel/complete remains a later candidate;
 - hard DELETE and purge remain forbidden;
-- archived material remains ineligible for order Commands;
-- accessory tab implementation;
-- production deployment or production mutation;
-- native dependencies/plugins and EAS Build/Update;
-- unrelated UI polish or document lifecycle work.
+- production deployment or mutation, schema changes, and unrelated feature expansion remain excluded;
+- native dependencies/plugins and EAS Build/Update require an explicit boundary.
 
-Alpha.52 does not start merely because it is listed here. It begins only with its owner-approved Version Delta and a matching clean baseline.
+Alpha.53 does not start merely because it is listed here. It begins only with its owner-approved Version Delta and a matching clean baseline.

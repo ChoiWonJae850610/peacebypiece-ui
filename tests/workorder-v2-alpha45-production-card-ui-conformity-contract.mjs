@@ -12,7 +12,7 @@ const apiClient = read("apps/mobile/lib/apiClient.ts");
 const mock = read("apps/mobile/components/ProductionCardMock.tsx");
 const externalQa = read("lib/external-qa/configCore.mjs");
 
-assert.match(version, /APP_VERSION = "2\.0\.0-alpha\.51"/);
+assert.match(version, /APP_VERSION = "2\.0\.0-alpha\.52"/);
 assert.doesNotMatch(detail, /mockProductionCard|productionCards|summaryMetrics|costMetrics|overviewInfo|nextCheckByTab|constants\/mockProductionCard/);
 assert.match(detail, /WorkOrderDetailCore/);
 assert.match(detail, /testID="production-card-sheet"/);
@@ -38,9 +38,10 @@ assert.match(display, /finalized: "확정됨"/);
 assert.match(display, /generated: "생성 완료"/);
 assert.match(display, /제품 유형 확인 필요/);
 
-for (const field of ["header.productName", "header.totalQuantity", "header.dueDate", "header.status", "header.currentRevisionNumber", "detail.amounts.estimatedTotal", "header.readiness", "detail.tabCounts"]) {
+for (const field of ["header.productName", "header.totalQuantity", "header.dueDate", "header.status", "detail.amounts.estimatedTotal", "header.readiness", "detail.tabCounts"]) {
   assert.match(detail, new RegExp(field.replaceAll(".", "\\.")), `actual field missing: ${field}`);
 }
+assert.doesNotMatch(detail, /Revision\s*R/);
 assert.doesNotMatch(detail, /header\.id/);
 assert.match(detail, /대표 이미지 준비 중/);
 assert.doesNotMatch(detail, /<Image\b|Image\s*from\s*["']react-native/);

@@ -9,6 +9,7 @@ export type MobileCurrentUser = {
 };
 
 export type WorkOrderStatus = "draft" | "ready_to_issue" | "issued" | "revised" | "completed" | "cancelled";
+export type WorkOrderListStatusFilter = "all" | "draft" | "delivery" | "progress" | "completed" | "hold_cancel";
 
 export type WorkOrderListItem = {
   readonly workOrderId: string;
@@ -137,7 +138,7 @@ export type CreateMaterialLineInput = MaterialDraftFields & {
 export type PatchMaterialLineInput = {
   readonly clientRequestId: string;
   readonly expectedVersion: number;
-  readonly patch: Partial<MaterialDraftFields>;
+  readonly patch: Partial<Omit<MaterialDraftFields, "orderQuantity">>;
 };
 
 export type MaterialLineCommandResult = {

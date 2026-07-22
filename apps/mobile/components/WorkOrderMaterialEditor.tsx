@@ -3,6 +3,7 @@ import { ArrowLeft, Save } from "lucide-react-native";
 
 import { WAFL_FONTS } from "@/constants/fonts";
 import type { MaterialDraftFields } from "@/lib/apiTypes";
+import { calculateMaterialAmount, calculateOrderQuantity, formatQuantity, formatWon } from "@/lib/mobileDisplay";
 
 export type MaterialEditorMode = "create" | "edit";
 export type MaterialEditorSaveState = "editing" | "saving" | "validation-error" | "conflict" | "locked" | "save-error" | "refresh-error";
@@ -37,7 +38,7 @@ type FieldProps = {
   readonly field: keyof MaterialDraftFields;
   readonly state: MaterialEditorViewState;
   readonly onChange: Props["onChange"];
-  readonly keyboardType?: "default" | "decimal-pad";
+  readonly keyboardType?: "default" | "decimal-pad" | "number-pad";
   readonly multiline?: boolean;
   readonly placeholder: string;
   readonly maxLength: number;
@@ -69,6 +70,8 @@ export default function WorkOrderMaterialEditor({ state, dirty, onChange, onCanc
   const saving = state.saveState === "saving";
   const saveBlocked = !dirty || saving || state.saveState === "locked" || state.saveState === "conflict" || state.saveState === "refresh-error";
   const reloadAvailable = state.saveState === "conflict" || state.saveState === "locked" || state.saveState === "refresh-error";
+  const calculatedOrderQuantity = calculateOrderQuantity(state.draft);
+  const calculatedAmount = calculateMaterialAmount(calculatedOrderQuantity, state.draft.unitPrice);
 
   return (
     <View testID="material-draft-editor" style={styles.editor}>
@@ -79,7 +82,7 @@ export default function WorkOrderMaterialEditor({ state, dirty, onChange, onCanc
         </Pressable>
         <View style={styles.headerText}>
           <Text style={styles.title}>{state.mode === "create" ? "원단 추가" : "원단 수정"}</Text>
-          <Text style={styles.caption}>draft 제작 카드에 명시적으로 저장합니다.</Text>
+          <Text style={styles.caption}>draft 작업지시서에 명시적으로 저장합니다.</Text>
         </View>
         <Text style={styles.unsavedBadge}>{dirty ? "저장 전" : "변경 없음"}</Text>
       </View>
@@ -91,8 +94,15 @@ export default function WorkOrderMaterialEditor({ state, dirty, onChange, onCanc
         <EditorField field="requiredQuantity" keyboardType="decimal-pad" label="필요수량" maxLength={16} onChange={onChange} placeholder="0" state={state} />
         <EditorField field="allowanceQuantity" keyboardType="decimal-pad" label="로스·여유" maxLength={16} onChange={onChange} placeholder="0" state={state} />
         <EditorField field="inventoryUsageQuantity" keyboardType="decimal-pad" label="재고사용" maxLength={16} onChange={onChange} placeholder="0" state={state} />
-        <EditorField field="orderQuantity" keyboardType="decimal-pad" label="발주수량" maxLength={16} onChange={onChange} placeholder="0" state={state} />
-        <EditorField field="unitPrice" keyboardType="decimal-pad" label="단가" maxLength={16} onChange={onChange} placeholder="0" state={state} />
+        <View accessibilityLabel="발주수량, 자동 계산, 읽기 전용" style={styles.field}>
+          <Text style={styles.label}>발주수량</Text>
+          <View style={styles.calculatedValue}><Text style={styles.calculatedText}>{formatQuantity(calculatedOrderQuantity, state.draft.unitCode)}</Text></View>
+        </View>
+        <EditorField field="unitPrice" keyboardType="number-pad" label="단가" maxLength={16} onChange={onChange} placeholder="0" state={state} />
+        <View accessibilityLabel="금액, 자동 계산, 읽기 전용" style={styles.field}>
+          <Text style={styles.label}>금액</Text>
+          <View style={styles.calculatedValue}><Text style={styles.calculatedText}>{formatWon(calculatedAmount)}</Text></View>
+        </View>
         <EditorField field="usageArea" label="사용부위" maxLength={1000} multiline onChange={onChange} placeholder="사용부위를 입력하세요" state={state} />
         <EditorField field="memo" label="메모" maxLength={2000} multiline onChange={onChange} placeholder="메모를 입력하세요" state={state} />
       </View>
@@ -135,6 +145,8 @@ const styles = StyleSheet.create({
   input: { backgroundColor: "#fff", borderColor: "#d9cdbf", borderRadius: 8, borderWidth: 1, color: "#2f2924", fontFamily: WAFL_FONTS.medium, fontSize: 13, minHeight: 44, paddingHorizontal: 10, paddingVertical: 9 },
   inputMultiline: { minHeight: 68, textAlignVertical: "top" },
   inputInvalid: { borderColor: "#b54b43", backgroundColor: "#fff9f7" },
+  calculatedValue: { backgroundColor: "#f4efe7", borderColor: "#ddd2c5", borderRadius: 8, borderWidth: 1, justifyContent: "center", minHeight: 44, paddingHorizontal: 10 },
+  calculatedText: { color: "#5f554c", fontFamily: WAFL_FONTS.bold, fontSize: 13 },
   fieldError: { color: "#a33b35", fontFamily: WAFL_FONTS.medium, fontSize: 10, lineHeight: 15, marginTop: 3 },
   message: { color: "#8b4526", fontFamily: WAFL_FONTS.semibold, fontSize: 11, lineHeight: 17, paddingVertical: 5 },
   conflictMessage: { color: "#9a352f" },

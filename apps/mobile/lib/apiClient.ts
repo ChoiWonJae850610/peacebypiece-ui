@@ -11,6 +11,7 @@ import type {
   WorkOrderMaterialLine,
   WorkOrderMaterialPage,
   WorkOrderListPage,
+  WorkOrderListStatusFilter,
 } from "@/lib/apiTypes";
 import { MobileApiError } from "@/lib/apiTypes";
 
@@ -77,6 +78,7 @@ async function requestJson<T>(path: string, options: {
 
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
+  const requestStartedAt = Date.now();
   let response: Response;
   try {
     response = await fetch(`${configuredOrigin()}${path}`, {
@@ -116,6 +118,22 @@ async function requestJson<T>(path: string, options: {
   } catch {
     throw new MobileApiError({ code: "MALFORMED_RESPONSE", message: "서버 응답을 읽을 수 없습니다.", status: response.status });
   }
+  if (process.env.EXPO_PUBLIC_WAFL_EXTERNAL_QA?.trim().toLowerCase() === "true") {
+    const requestKind = options.method === "PATCH"
+      ? (path.includes("/materials/") ? "material-patch" : "overview-patch")
+      : path.includes("/materials") ? "materials-get" : path.includes("/work-orders/") ? "detail-get" : "other";
+    const requestBody = isJsonObject(options.body) ? options.body : null;
+    const patchBody = requestBody && isJsonObject(requestBody.patch) ? requestBody.patch : null;
+    console.info("[WAFL_MOBILE_REQUEST_METRIC]", {
+      requestKind,
+      method: options.method,
+      status: response.status,
+      elapsedMs: Date.now() - requestStartedAt,
+      payloadFields: patchBody ? Object.keys(patchBody).sort() : [],
+      statementCount: response.headers.get("x-wafl-command-statement-count"),
+      dbMs: response.headers.get("x-wafl-command-db-ms"),
+    });
+  }
   if (!response.ok) throw readError(body, response.status, response.headers.get("x-wafl-correlation-id"));
   return body as T;
 }
@@ -146,8 +164,16 @@ export async function disconnectMobileSession(): Promise<void> {
   if (!body.ok || body.disconnected !== true) throw new MobileApiError({ code: "MALFORMED_RESPONSE", message: "연결 해제 응답을 확인할 수 없습니다." });
 }
 
-export async function getWorkOrderList(): Promise<WorkOrderListPage> {
-  const body = await requestJson<{ readonly ok: boolean; readonly data?: WorkOrderListPage }>("/api/v2/work-orders?limit=30", { method: "GET" });
+export async function getWorkOrderList(input: {
+  readonly query?: string;
+  readonly status?: WorkOrderListStatusFilter;
+  readonly cursor?: string | null;
+} = {}): Promise<WorkOrderListPage> {
+  const query = new URLSearchParams({ limit: "30" });
+  if (input.query?.trim()) query.set("q", input.query.trim());
+  if (input.status && input.status !== "all") query.set("status", input.status);
+  if (input.cursor) query.set("cursor", input.cursor);
+  const body = await requestJson<{ readonly ok: boolean; readonly data?: WorkOrderListPage }>(`/api/v2/work-orders?${query.toString()}`, { method: "GET" });
   if (!body.ok || !body.data || !Array.isArray(body.data.items)) throw new MobileApiError({ code: "MALFORMED_RESPONSE", message: "제작 카드 목록 응답이 올바르지 않습니다." });
   return body.data;
 }

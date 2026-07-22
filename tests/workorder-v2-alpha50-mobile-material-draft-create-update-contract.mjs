@@ -29,12 +29,12 @@ const start = read("tools/dev/start-wafl-external-qa.ps1");
 const alpha26 = read("tests/workorder-v2-alpha26-material-command-api-contract.mjs");
 const evidence = read("docs/project/app-v2/49-mobile-material-draft-create-update-evidence.md");
 
-assert.match(version, /APP_VERSION = "2\.0\.0-alpha\.51"/);
-assert.match(mobileVersion, /MOBILE_APP_VERSION = "2\.0\.0-alpha\.51"/);
-assert.equal(mobilePackage.version, "2.0.0-alpha.51");
-assert.equal(mobileLock.version, "2.0.0-alpha.51");
-assert.equal(mobileLock.packages[""].version, "2.0.0-alpha.51");
-assert.equal(appJson.expo.extra.appVersion, "2.0.0-alpha.51");
+assert.match(version, /APP_VERSION = "2\.0\.0-alpha\.52"/);
+assert.match(mobileVersion, /MOBILE_APP_VERSION = "2\.0\.0-alpha\.52"/);
+assert.equal(mobilePackage.version, "2.0.0-alpha.52");
+assert.equal(mobileLock.version, "2.0.0-alpha.52");
+assert.equal(mobileLock.packages[""].version, "2.0.0-alpha.52");
+assert.equal(appJson.expo.extra.appVersion, "2.0.0-alpha.52");
 assert.equal(appJson.expo.version, "2.0.0");
 assert.equal(appJson.expo.ios.bundleIdentifier, "com.wafl.app");
 assert.equal(appJson.expo.android.package, "com.wafl.app");
@@ -96,11 +96,14 @@ assert.doesNotMatch(mobileEnvironment, /WAFL_V2_COMMAND_MUTATION_APPROVED|WAFL_E
 
 for (const field of [
   "name", "colorOption", "usageArea", "requiredQuantity", "allowanceQuantity",
-  "inventoryUsageQuantity", "orderQuantity", "unitCode", "unitPrice", "memo",
+  "inventoryUsageQuantity", "unitCode", "unitPrice", "memo",
 ]) {
   assert.match(apiTypes, new RegExp(`readonly ${field}: string`), `mobile material field missing: ${field}`);
   assert.match(editor, new RegExp(`field="${field}"`), `editor field missing: ${field}`);
 }
+assert.match(apiTypes, /readonly orderQuantity: string/);
+assert.doesNotMatch(editor, /field="orderQuantity"/);
+assert.match(editor, /발주수량, 자동 계산, 읽기 전용/);
 assert.doesNotMatch(apiTypes + editor, /partnerId|materialId|supplierPartnerId|applicationColorTarget/);
 assert.match(apiClient, /export async function createWorkOrderMaterial/);
 assert.match(apiClient, /method: "POST"/);
@@ -139,8 +142,10 @@ assert.match(app, /detail\.revision\.status !== "draft"/);
 assert.match(app, /line\.status !== "editing"/);
 assert.doesNotMatch(app + editor, /setInterval|automaticSave|autoSave|order-request|order-cancel|order-complete/);
 
-assert.match(materials, /accessibilityLabel="새 원단 추가"/);
-assert.match(materials, /accessibilityLabel=\{`\$\{line\.name\} 수정`\}/);
+assert.match(materials, /accessibilityLabel="원단 추가"/);
+assert.match(materials, /<Plus /);
+assert.match(materials, /field="name" label="원단명"/);
+assert.doesNotMatch(materials, /PencilLine|editActionButton/);
 assert.match(materials, /line\.status === "editing"/);
 const readOnlyAction = materials.slice(materials.indexOf("function ReadOnlyActionButton"), materials.indexOf("function MaterialCard"));
 assert.match(readOnlyAction, /accessibilityState=\{\{ disabled: true \}\}/);
@@ -149,13 +154,16 @@ assert.doesNotMatch(readOnlyAction, /onPress=/);
 assert.match(materials, /caption: "발주"/);
 assert.match(materials, /caption: "삭제"/);
 assert.match(detail, /canEditMaterials/);
-assert.match(detail, /materialEditor \?/);
+assert.match(detail, /materialEditor\?\.mode === "create"/);
 assert.match(detail, /onRequestSectionChange/);
 assert.match(detail, /WorkOrderMaterialEditor/);
 
 assert.equal(mobilePackage.dependencies["@react-native-async-storage/async-storage"], undefined);
 assert.doesNotMatch(editor + app + apiClient, /mockProductionCard|mockMaterial|productionCards/);
-assert.doesNotMatch(editor + app + apiClient, /console\.(?:log|debug|info|warn|error)/);
+assert.doesNotMatch(editor, /console\.(?:log|debug|info|warn|error)/);
+assert.equal(((app + apiClient).match(/console\.(?:log|debug|info|warn|error)/g) ?? []).length, 3, "only bounded external-QA metrics may log");
+assert.equal(((app + apiClient).match(/console\.info/g) ?? []).length, 3);
+for (const metric of ["WAFL_MATERIAL_SAVE_METRIC", "WAFL_OVERVIEW_SAVE_METRIC", "WAFL_MOBILE_REQUEST_METRIC"]) assert.match(app + apiClient, new RegExp(metric));
 
 for (const token of [
   "material POST create | 1",

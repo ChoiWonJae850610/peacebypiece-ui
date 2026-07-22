@@ -16,6 +16,8 @@ export const WAFL_V2_ALPHA50_MATERIAL_DRAFT_MUTATION_APPROVAL =
   "2.0.0-alpha.50-dev-test-mobile-material-draft-runtime";
 export const WAFL_V2_ALPHA51_MATERIAL_LIFECYCLE_MUTATION_APPROVAL =
   "2.0.0-alpha.51-dev-test-mobile-material-lifecycle-runtime";
+export const WAFL_V2_ALPHA52_CORE_INLINE_MUTATION_APPROVAL =
+  "2.0.0-alpha.52-dev-test-mobile-core-inline-runtime";
 
 const SUPPORTED_MUTATION_APPROVALS = new Set([
   WAFL_V2_ALPHA25_MUTATION_APPROVAL,
@@ -63,6 +65,7 @@ export function getWorkOrderV2BasicInfoMutationRuntimeGuard(): WorkOrderV2Comman
   if (
     configuredApproval !== WAFL_V2_ALPHA25_MUTATION_APPROVAL
     && configuredApproval !== WAFL_V2_ALPHA46_BASIC_INFO_MUTATION_APPROVAL
+    && configuredApproval !== WAFL_V2_ALPHA52_CORE_INLINE_MUTATION_APPROVAL
   ) {
     return { ok: false, reason: "basic-info-mutation-approval-missing" };
   }
@@ -78,6 +81,7 @@ export function getWorkOrderV2MaterialDraftMutationRuntimeGuard(): WorkOrderV2Co
     configuredApproval !== WAFL_V2_ALPHA26_MUTATION_APPROVAL
     && configuredApproval !== WAFL_V2_ALPHA50_MATERIAL_DRAFT_MUTATION_APPROVAL
     && configuredApproval !== WAFL_V2_ALPHA51_MATERIAL_LIFECYCLE_MUTATION_APPROVAL
+    && configuredApproval !== WAFL_V2_ALPHA52_CORE_INLINE_MUTATION_APPROVAL
   ) {
     return { ok: false, reason: "material-draft-mutation-approval-missing" };
   }

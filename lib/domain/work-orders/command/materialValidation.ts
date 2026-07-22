@@ -67,6 +67,22 @@ function parsePrice(value: unknown, field: string): DecimalString {
   return parseDecimal(value, field, PRICE_PATTERN, 2);
 }
 
+function canonicalOrderQuantity(
+  requiredQuantity: DecimalString,
+  allowanceQuantity: DecimalString,
+  inventoryUsageQuantity: DecimalString,
+): DecimalString {
+  const scaled = (value: DecimalString) => {
+    const [whole, fraction = ""] = value.split(".");
+    return BigInt(whole) * BigInt(1000) + BigInt(fraction.padEnd(3, "0"));
+  };
+  const result = scaled(requiredQuantity) + scaled(allowanceQuantity) - scaled(inventoryUsageQuantity);
+  const bounded = result > BigInt(0) ? result : BigInt(0);
+  const whole = bounded / BigInt(1000);
+  const fraction = (bounded % BigInt(1000)).toString().padStart(3, "0").replace(/0+$/, "");
+  return `${whole}${fraction ? `.${fraction}` : ""}` as DecimalString;
+}
+
 function parseOptionalReference(value: unknown, field: string, present: boolean) {
   return parseOptionalText(value, field, 200, present);
 }
@@ -109,8 +125,12 @@ export function validateAddMaterialLine(input: {
     "orderQuantity", "unitCode", "unitPrice", "memo", "usageArea", "displayOrder",
   ]));
 
-  const orderQuantity = parseQuantity(input.body.orderQuantity, "orderQuantity");
+  parseQuantity(input.body.orderQuantity, "orderQuantity");
   const unitPrice = parsePrice(input.body.unitPrice, "unitPrice");
+  const requiredQuantity = parseQuantity(input.body.requiredQuantity, "requiredQuantity");
+  const allowanceQuantity = parseQuantity(input.body.allowanceQuantity, "allowanceQuantity");
+  const inventoryUsageQuantity = parseQuantity(input.body.inventoryUsageQuantity, "inventoryUsageQuantity");
+  const orderQuantity = canonicalOrderQuantity(requiredQuantity, allowanceQuantity, inventoryUsageQuantity);
   assertAmountWithinRange(orderQuantity, unitPrice);
 
   return {
@@ -122,9 +142,9 @@ export function validateAddMaterialLine(input: {
     name: parseRequiredText(input.body.name, "name", 200),
     partnerId: (parseOptionalReference(input.body.partnerId, "partnerId", hasOwn(input.body, "partnerId")) ?? null) as PartnerId | null,
     colorOption: parseOptionalText(input.body.colorOption, "colorOption", 200, hasOwn(input.body, "colorOption")) ?? null,
-    requiredQuantity: parseQuantity(input.body.requiredQuantity, "requiredQuantity"),
-    allowanceQuantity: parseQuantity(input.body.allowanceQuantity, "allowanceQuantity"),
-    inventoryUsageQuantity: parseQuantity(input.body.inventoryUsageQuantity, "inventoryUsageQuantity"),
+    requiredQuantity,
+    allowanceQuantity,
+    inventoryUsageQuantity,
     orderQuantity,
     unitCode: parseRequiredText(input.body.unitCode, "unitCode", 32),
     unitPrice,
@@ -167,10 +187,6 @@ export function validatePatchMaterialLine(body: unknown): ValidatedPatchMaterial
     ...(hasOwn(body.patch, "usageArea") ? { usageArea: parseOptionalText(body.patch.usageArea, "patch.usageArea", 1_000, true) } : {}),
   };
 
-  assertAmountWithinRange(
-    (patch.orderQuantity ?? "0") as DecimalString,
-    (patch.unitPrice ?? "0") as DecimalString,
-  );
   return {
     clientRequestId: parseClientRequestId(body.clientRequestId),
     expectedVersion: parseExpectedVersion(body.expectedVersion),
