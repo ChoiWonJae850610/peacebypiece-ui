@@ -11,9 +11,9 @@ import {
 } from "../apps/mobile/lib/mobileDisplay.ts";
 
 const controlled = fs.readFileSync("apps/mobile/components/ControlledInlineEditValue.tsx", "utf8");
-const materials = fs.readFileSync("apps/mobile/components/WorkOrderMaterialsReadOnly.tsx", "utf8");
-const overview = fs.readFileSync("apps/mobile/components/WorkOrderDetailOverview.tsx", "utf8");
-const app = fs.readFileSync("apps/mobile/components/MobileWorkOrderApp.tsx", "utf8");
+const materials = fs.readFileSync("apps/mobile/features/materials/WorkOrderMaterialsReadOnly.tsx", "utf8");
+const overview = fs.readFileSync("apps/mobile/features/work-orders/overview/WorkOrderDetailOverview.tsx", "utf8");
+const app = fs.readFileSync("apps/mobile/features/MobileWorkOrderExperience.tsx", "utf8");
 const visibilityDate = fs.readFileSync("tests/workorder-v2-alpha52-mobile-inline-visibility-date-picker-contract.mjs", "utf8");
 
 assert.equal(normalizeNumericDraft(""), "");
@@ -46,8 +46,8 @@ assert.match(controlled, /onPress=\{onSave\}/);
 assert.match(controlled, /const saveDisabled = !dirty \|\| saving \|\| emptyNumericDraft/);
 assert.match(controlled, /disabled=\{saveDisabled\}/);
 assert.doesNotMatch(`${controlled}\n${app}`, /setInterval|automatic.?save/i);
-assert.match(app, /saveRequestInFlight\.current/);
-assert.match(app, /materialSaveRequestInFlight\.current/);
+assert.match(app, /overviewMutation\.inFlight/);
+assert.match(app, /materialMutation\.inFlight/);
 assert.doesNotMatch(materials, /field="orderQuantity"/);
 assert.match(materials, /material-order-quantity-calculated/);
 assert.match(overview, /keyboardType="number-pad"/);

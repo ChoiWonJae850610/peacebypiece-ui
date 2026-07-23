@@ -3,7 +3,7 @@ import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, TextInput, 
 import { RefreshCw, Search } from "lucide-react-native";
 
 import { WAFL_FONTS } from "@/constants/fonts";
-import type { WorkOrderListItem, WorkOrderListStatusFilter } from "@/lib/apiTypes";
+import type { WorkOrderListItem, WorkOrderListStatusFilter } from "@/domain/mobileContract";
 
 const STATUS_LABEL: Record<WorkOrderListItem["status"], string> = {
   draft: "작성중",

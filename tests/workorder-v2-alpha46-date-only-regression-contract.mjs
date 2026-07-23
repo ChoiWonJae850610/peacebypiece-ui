@@ -35,7 +35,7 @@ const command = read("lib/domain/work-orders/command/commandRepository.ts");
 const issue = read("lib/domain/work-orders/command/issueRepository.ts");
 const preview = read("lib/domain/work-orders/read/previewRepository.ts");
 const validation = read("lib/domain/work-orders/command/validation.ts");
-const mobile = read("apps/mobile/components/MobileWorkOrderApp.tsx");
+const mobile = read("apps/mobile/features/MobileWorkOrderExperience.tsx");
 
 assert.match(list, /w\.due_date::text AS due_date/);
 assert.match(detail, /w\.due_date::text AS due_date/);

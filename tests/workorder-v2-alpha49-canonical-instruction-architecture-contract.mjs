@@ -4,6 +4,8 @@ import crypto from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
 
+import { assertCanonicalWaflVersionConsistency } from "./helpers/wafl-v2-current-version.mjs";
+
 const root = process.cwd();
 const read = (relativePath) => fs.readFileSync(path.join(root, relativePath), "utf8");
 const sha256 = (relativePath) => crypto.createHash("sha256").update(fs.readFileSync(path.join(root, relativePath))).digest("hex");
@@ -20,10 +22,7 @@ const verification = read("docs/project/app-v2/17-v2-api-contract-test-plan.md")
 const runbook = read("docs/project/app-v2/41-external-mobile-qa-runbook.md");
 const evidence = read("docs/project/app-v2/48-canonical-codex-instruction-architecture-evidence.md");
 
-assert.match(read("lib/constants/version.ts"), /APP_VERSION = "2\.0\.0-alpha\.52"/);
-assert.equal(JSON.parse(read("apps/mobile/package.json")).version, "2.0.0-alpha.52");
-assert.equal(JSON.parse(read("apps/mobile/package-lock.json")).packages[""].version, "2.0.0-alpha.52");
-assert.equal(JSON.parse(read("apps/mobile/app.json")).expo.extra.appVersion, "2.0.0-alpha.52");
+assertCanonicalWaflVersionConsistency();
 assert.equal(JSON.parse(read("apps/mobile/app.json")).expo.version, "2.0.0");
 
 for (const [source, token] of [

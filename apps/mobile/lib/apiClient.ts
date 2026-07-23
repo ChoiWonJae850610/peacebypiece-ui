@@ -12,8 +12,8 @@ import type {
   WorkOrderMaterialPage,
   WorkOrderListPage,
   WorkOrderListStatusFilter,
-} from "@/lib/apiTypes";
-import { MobileApiError } from "@/lib/apiTypes";
+} from "@/domain/mobileContract";
+import { classifyMobileApiErrorCode, MobileApiError } from "@/domain/mobileContract";
 
 const LOCAL_HOSTS = new Set(["localhost", "127.0.0.1", "::1"]);
 const REQUEST_TIMEOUT_MS = 15_000;
@@ -51,7 +51,8 @@ function isJsonObject(value: unknown): value is JsonObject {
 function readError(body: unknown, status: number, correlationHeader: string | null): MobileApiError {
   const root = isJsonObject(body) ? body : {};
   const nested = isJsonObject(root.error) ? root.error : {};
-  const code = String(nested.code ?? root.code ?? (status === 401 ? "AUTH_REQUIRED" : status === 403 ? "FORBIDDEN" : status === 404 ? "NOT_FOUND" : status >= 500 ? "INTERNAL_ERROR" : "NETWORK_ERROR"));
+  const rawCode = String(nested.code ?? root.code ?? (status === 401 ? "AUTH_REQUIRED" : status === 403 ? "FORBIDDEN" : status === 404 ? "NOT_FOUND" : status >= 500 ? "INTERNAL_ERROR" : "NETWORK_ERROR"));
+  const identity = classifyMobileApiErrorCode(rawCode);
   const message = String(nested.message ?? root.message ?? "요청을 처리하지 못했습니다.");
   const correlationId = String(nested.correlationId ?? correlationHeader ?? "").trim() || null;
   const fieldErrors = Array.isArray(nested.fieldErrors)
@@ -64,7 +65,16 @@ function readError(body: unknown, status: number, correlationHeader: string | nu
   const entityVersion = Number.isSafeInteger(nested.entityVersion) && Number(nested.entityVersion) >= 1
     ? Number(nested.entityVersion)
     : null;
-  return new MobileApiError({ code, message, status, correlationId, fieldErrors, entityVersion });
+  return new MobileApiError({
+    code: identity.code,
+    codeKind: identity.kind,
+    rawCode: identity.rawCode,
+    message,
+    status,
+    correlationId,
+    fieldErrors,
+    entityVersion,
+  });
 }
 
 async function requestJson<T>(path: string, options: {

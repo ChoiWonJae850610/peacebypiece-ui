@@ -4,8 +4,8 @@ Document type: **Current Baseline**
 
 Canonical owner: `docs/codex-current-state.md`
 
-Result version: `2.0.0-alpha.52`
-Status: `ALPHA52_MOBILE_CORE_INLINE_UX_CALCULATION_LIST_AND_DATE_COMPLETE`
+Result version: `2.0.0-alpha.53`
+Status: `ALPHA53_MOBILE_ARCHITECTURE_FOUNDATION_COMPLETE`
 
 This file is a compact present-state snapshot. It is not a version history, Permanent Rules owner, runtime process ledger, or evidence archive. Historical implementation details belong to numbered immutable evidence under `docs/project/app-v2/`.
 
@@ -15,24 +15,24 @@ This file is a compact present-state snapshot. It is not a version history, Perm
 | --- | --- |
 | Repository | `C:\CWJ_Project\peacebypiece-2.0` |
 | Branch | `master` |
-| Alpha.52 entry HEAD/origin | `2d808d4db8d7e086a51ba0a4ad21d1f62350bcc1` |
-| Entry commit | `feat: WAFL v2 원단 soft-delete와 복구 lifecycle 완성` |
+| Alpha.53 entry HEAD/origin | `509998e13dfb40fbfa99b201de7031074b5203a4` |
+| Entry commit | `fix: WAFL v2 모바일 숫자 입력과 인라인·납기 UX 완성` |
 | Entry ahead/behind | `0/0` |
 | Entry working tree | clean |
-| APP_VERSION | `2.0.0-alpha.52` |
-| Mobile package version | `2.0.0-alpha.52` |
+| APP_VERSION | `2.0.0-alpha.53` |
+| Mobile package version | `2.0.0-alpha.53` |
 | Root package version | `0.5.637` |
 | Expo public version | `2.0.0` |
 | iOS Development Build | build number `1`, reusable while native inputs remain unchanged |
 | iOS bundle identifier | `com.wafl.app` |
 | Android package | `com.wafl.app` |
 
-The source cannot contain the hash of the commit that contains itself. Final alpha.52 HEAD, origin synchronization, Git cleanliness, ZIP hash/size/entry count, and exact repo-state filename are owned by the matching post-commit alpha.52 repo-state.
+The source cannot contain the hash of the commit that contains itself. Final alpha.53 HEAD, origin synchronization, Git cleanliness, ZIP hash/size/entry count, and exact repo-state filename are owned by the matching post-commit alpha.53 repo-state.
 
 ## Latest delivery boundary
 
-- Target Source ZIP: `peacebypiece-ui-2.0.0-alpha.52.zip`.
-- Target repo-state: `repo-state-2.0.0-alpha.52-<actual timestamp>.txt`.
+- Target Source ZIP: `peacebypiece-ui-2.0.0-alpha.53.zip`.
+- Target repo-state: `repo-state-2.0.0-alpha.53-<actual timestamp>.txt`.
 - `4. Newest` must contain only that matching pair after Finish.
 - The previous accepted handoff is the matching alpha.51 ZIP/repo-state pair recorded in its repo-state.
 
@@ -51,9 +51,20 @@ The source cannot contain the hash of the commit that contains itself. Final alp
 
 Do not record live PID, port ownership, temporary origin, connection code, session/cookie, full identity hash, credentials, or full WorkOrder UUID in this tracked snapshot.
 
-## Latest feature baseline
+## Latest feature and architecture baseline
 
-Alpha.52 aligns the connected mobile core with the approved WAFL inline UX:
+Alpha.53 preserves the accepted alpha.52 mobile behavior while establishing bounded extension points:
+
+- `MobileWorkOrderApp.tsx` is a composition shell; list, overview, and material views live in feature boundaries;
+- session, navigation/app lifecycle, work-order query, explicit mutation gating, and API gateways have application owners;
+- mobile-safe DTO/error contracts, business validation, editability policy, number/money/quantity/date formatting, material cache, and WAFL theme tokens have pure bounded owners;
+- known API errors use an explicit union; unknown server codes remain distinct raw diagnostics and are not treated as known codes;
+- domain/contract modules import no React Native, Next, DB, filesystem, environment, R2, or PDF implementation;
+- behavior tests cover numeric/date formatting, validation, editability, navigation/session/query state, explicit-save request count, duplicate submit, and dependency direction instead of relying only on source location;
+- default DeveloperAutoConnect Runtime remained read-only; physical-iPhone regression passed with Check/save `0`, business/schema/R2/PDF/token/production/native/EAS delta `0`, and canonical stop PASS;
+- Permanent Rules now require measured PC-resource and remote-operation audits at durable checkpoints without service restart, cleanup, kill, reboot, or monitoring-tool installation.
+
+The retained user behavior remains:
 
 - customer copy and list density use the WorkOrder (`작업지시서`) grammar with search/status filtering and no default long document/revision metadata;
 - overview product name, total quantity, and due date plus supported active-draft material values use same-position inline editing with explicit X/Check, dirty guard, expectedVersion, canonical refresh, and automatic-save `0`;
@@ -88,19 +99,19 @@ Final TypeScript, ESLint, Next, Expo, contracts, mutation audit, Canonical Verif
 - Alpha.50 material draft create/update: `docs/project/app-v2/49-mobile-material-draft-create-update-evidence.md`.
 - Alpha.51 material soft-delete/restore lifecycle: `docs/project/app-v2/50-mobile-material-soft-delete-restore-lifecycle-evidence.md`.
 - Alpha.52 mobile core inline UX, calculation, list, and date: `docs/project/app-v2/51-mobile-core-inline-ux-calculation-list-date-evidence.md`.
+- Alpha.53 mobile architecture foundation: `docs/project/app-v2/52-mobile-architecture-foundation-evidence.md`.
 
 Older facts remain in their numbered evidence. They are not recopied here.
 
 ## Next candidate boundary
 
-Candidate: `2.0.0-alpha.53` — `ALPHA53_MOBILE_ARCHITECTURE_FOUNDATION_COMPLETE`.
+Candidate: `2.0.0-alpha.54` — mobile Reel Picker production implementation on the alpha.53 feature/controller/formatter boundaries.
 
 Potential Delta scope:
 
-- split `MobileWorkOrderApp.tsx` orchestration into bounded controllers/hooks;
-- centralize shared WorkOrder/material policy, validation constants, and currency/decimal/quantity/date formatting;
-- establish WAFL theme tokens and bounded reel-input state/component foundations with a limited prototype;
-- preserve API, schema, production, native/EAS, archive/restore, and current user-visible behavior unless the alpha.53 Delta explicitly authorizes a change;
-- defer material order request/cancel/complete to a later separately approved candidate.
+- use the alpha.53 number/unit/formatter and application-controller boundaries rather than adding picker logic to the composition shell;
+- define exact field, value/step/unit model, fallback input, accessibility, visual, device-QA, dependency, and native/EAS boundaries in a separate owner-approved Delta;
+- preserve existing API and explicit-save semantics unless that Delta explicitly changes them;
+- keep material order request/cancel/complete as a separately approved alpha.55 candidate.
 
-The alpha.53 owner work order should be a short Version Delta that references the Permanent Rules instead of repeating them.
+The alpha.54 owner work order should be a short Version Delta that references the Permanent Rules instead of repeating them.

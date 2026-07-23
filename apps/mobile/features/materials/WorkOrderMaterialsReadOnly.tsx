@@ -5,8 +5,8 @@ import { Check, ChevronDown, ChevronUp, FileUp, Plus, RefreshCw, RotateCcw, Tras
 import { WAFL_FONTS } from "@/constants/fonts";
 import ControlledInlineEditValue from "@/components/ControlledInlineEditValue";
 import ExpandedInlineField from "@/components/ExpandedInlineField";
-import type { MaterialEditorViewState } from "@/components/WorkOrderMaterialEditor";
-import type { MaterialDraftFields, WorkOrderMaterialLine } from "@/lib/apiTypes";
+import type { MaterialEditorViewState } from "@/features/materials/WorkOrderMaterialEditor";
+import type { MaterialDraftFields, WorkOrderMaterialLine } from "@/domain/mobileContract";
 import { calculateMaterialAmount, calculateOrderQuantity, formatQuantity, formatWon } from "@/lib/mobileDisplay";
 
 export type MaterialReadStatus = "not-loaded" | "loading" | "loaded" | "empty" | "error" | "retrying" | "loading-more";

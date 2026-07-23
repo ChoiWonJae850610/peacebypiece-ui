@@ -3,6 +3,8 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
 
+import { assertCanonicalWaflVersionConsistency } from "./helpers/wafl-v2-current-version.mjs";
+
 import {
   isExternalQaPathAllowed,
   isTailscaleServePathAllowed,
@@ -24,14 +26,8 @@ const admin = "administrator@example.invalid";
 const loginHash = sha256Hex(login);
 const adminHash = sha256Hex(admin);
 
-assert.match(read("lib/constants/version.ts"), /2\.0\.0-alpha\.52/);
-assert.match(read("apps/mobile/constants/version.ts"), /2\.0\.0-alpha\.52/);
-assert.equal(json("apps/mobile/package.json").version, "2.0.0-alpha.52");
-assert.equal(json("apps/mobile/package-lock.json").version, "2.0.0-alpha.52");
-assert.equal(json("apps/mobile/package-lock.json").packages[""].version, "2.0.0-alpha.52");
+assertCanonicalWaflVersionConsistency();
 const appJson = json("apps/mobile/app.json");
-assert.equal(appJson.expo.version, "2.0.0");
-assert.equal(appJson.expo.extra.appVersion, "2.0.0-alpha.52");
 assert.equal(appJson.expo.extra.dataMode, "dev-test-tailscale-auto-connect");
 assert.equal(appJson.expo.extra.mockOnly, false);
 assert.equal(appJson.expo.ios.bundleIdentifier, "com.wafl.app");
@@ -105,7 +101,7 @@ assert.equal(matchesApprovedLoginHash(login, adminHash), false);
 const proxy = read("proxy.ts");
 const autoRoute = read("app/api/dev/mobile-connect/auto/route.ts");
 const autoService = read("lib/mobile-dev-session/tailscaleAutoConnect.ts");
-const mobileApp = read("apps/mobile/components/MobileWorkOrderApp.tsx");
+const mobileApp = read("apps/mobile/features/MobileWorkOrderExperience.tsx");
 const connectScreen = read("apps/mobile/components/MobileConnectScreen.tsx");
 const apiClient = read("apps/mobile/lib/apiClient.ts");
 const start = read("tools/dev/start-wafl-external-qa.ps1");

@@ -1,0 +1,21 @@
+export const WAFL_THEME = {
+  color: {
+    paper: "#fffdf8",
+    paperMuted: "#f3eee4",
+    deepNavy: "#17263d",
+    navyInk: "#23375a",
+    brickOrange: "#9b4a27",
+    fabricBeige: "#f7f0e5",
+    olive: "#667052",
+    border: "#dfd5c8",
+    disabled: "#8f857b",
+    readOnly: "#75695d",
+    editActive: "#8b5e3c",
+    error: "#a13933",
+    focus: "#23375a",
+  },
+  spacing: { xs: 4, sm: 8, md: 12, lg: 16, xl: 24 },
+  radius: { field: 7, card: 8, sheet: 18, pill: 999 },
+  border: { hairline: 1, active: 2 },
+  typography: { caption: 10, body: 13, title: 17 },
+} as const;

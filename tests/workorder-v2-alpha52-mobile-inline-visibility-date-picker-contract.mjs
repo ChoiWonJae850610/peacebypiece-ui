@@ -9,8 +9,8 @@ const expanded = fs.readFileSync("apps/mobile/components/ExpandedInlineField.tsx
 const visibility = fs.readFileSync("apps/mobile/hooks/useFocusedFieldVisibility.ts", "utf8");
 const dateState = fs.readFileSync("apps/mobile/hooks/useDatePickerState.ts", "utf8");
 const datePicker = fs.readFileSync("apps/mobile/components/InlineDatePicker.tsx", "utf8");
-const overview = fs.readFileSync("apps/mobile/components/WorkOrderDetailOverview.tsx", "utf8");
-const materials = fs.readFileSync("apps/mobile/components/WorkOrderMaterialsReadOnly.tsx", "utf8");
+const overview = fs.readFileSync("apps/mobile/features/work-orders/overview/WorkOrderDetailOverview.tsx", "utf8");
+const materials = fs.readFileSync("apps/mobile/features/materials/WorkOrderMaterialsReadOnly.tsx", "utf8");
 
 for (const source of [controlled, expanded, materials]) assert.doesNotMatch(source, /horizontalScroll|overflowX/);
 assert.match(materials, /material-core-row-expanded/);

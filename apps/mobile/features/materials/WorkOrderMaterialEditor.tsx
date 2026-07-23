@@ -2,12 +2,13 @@ import { ActivityIndicator, Pressable, StyleSheet, Text, TextInput, View } from 
 import { ArrowLeft, Save } from "lucide-react-native";
 
 import { WAFL_FONTS } from "@/constants/fonts";
-import type { MaterialDraftFields } from "@/lib/apiTypes";
+import type { MaterialEditorFieldErrors } from "@/domain/workOrderValidation";
+import type { MaterialDraftFields } from "@/domain/mobileContract";
 import { calculateMaterialAmount, calculateOrderQuantity, formatQuantity, formatWon } from "@/lib/mobileDisplay";
 
 export type MaterialEditorMode = "create" | "edit";
 export type MaterialEditorSaveState = "editing" | "saving" | "validation-error" | "conflict" | "locked" | "save-error" | "refresh-error";
-export type MaterialEditorFieldErrors = Partial<Record<keyof MaterialDraftFields, string>>;
+export type { MaterialEditorFieldErrors } from "@/domain/workOrderValidation";
 
 export type MaterialEditorViewState = {
   readonly token: number;

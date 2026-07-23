@@ -2,8 +2,8 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
 
-const list = fs.readFileSync("apps/mobile/components/WorkOrderListScreen.tsx", "utf8");
-const app = fs.readFileSync("apps/mobile/components/MobileWorkOrderApp.tsx", "utf8");
+const list = fs.readFileSync("apps/mobile/features/work-orders/list/WorkOrderListScreen.tsx", "utf8");
+const app = fs.readFileSync("apps/mobile/features/MobileWorkOrderExperience.tsx", "utf8");
 
 assert.match(list, />작업지시서</);
 assert.match(list, /작업지시서 목록 새로고침/);

@@ -2,17 +2,18 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
 
+import { assertCanonicalWaflVersionConsistency } from "./helpers/wafl-v2-current-version.mjs";
+
 const read = (relativePath) => fs.readFileSync(path.resolve(relativePath), "utf8");
 
-const version = read("lib/constants/version.ts");
-const detail = read("apps/mobile/components/WorkOrderDetailOverview.tsx");
+assertCanonicalWaflVersionConsistency();
+const detail = read("apps/mobile/features/work-orders/overview/WorkOrderDetailOverview.tsx");
 const display = read("apps/mobile/lib/workOrderDisplay.ts");
-const app = read("apps/mobile/components/MobileWorkOrderApp.tsx");
+const app = read("apps/mobile/features/MobileWorkOrderExperience.tsx");
 const apiClient = read("apps/mobile/lib/apiClient.ts");
 const mock = read("apps/mobile/components/ProductionCardMock.tsx");
 const externalQa = read("lib/external-qa/configCore.mjs");
 
-assert.match(version, /APP_VERSION = "2\.0\.0-alpha\.52"/);
 assert.doesNotMatch(detail, /mockProductionCard|productionCards|summaryMetrics|costMetrics|overviewInfo|nextCheckByTab|constants\/mockProductionCard/);
 assert.match(detail, /WorkOrderDetailCore/);
 assert.match(detail, /testID="production-card-sheet"/);

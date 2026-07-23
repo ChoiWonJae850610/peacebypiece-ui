@@ -2,16 +2,17 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
 
+import { assertCanonicalWaflVersionConsistency } from "./helpers/wafl-v2-current-version.mjs";
+
 const read = (relativePath) => fs.readFileSync(path.resolve(relativePath), "utf8");
 
-const version = read("lib/constants/version.ts");
-const detail = read("apps/mobile/components/WorkOrderDetailOverview.tsx");
-const app = read("apps/mobile/components/MobileWorkOrderApp.tsx");
+assertCanonicalWaflVersionConsistency();
+const detail = read("apps/mobile/features/work-orders/overview/WorkOrderDetailOverview.tsx");
+const app = read("apps/mobile/features/MobileWorkOrderExperience.tsx");
 const apiClient = read("apps/mobile/lib/apiClient.ts");
 const externalQa = read("lib/external-qa/configCore.mjs");
 const mock = read("apps/mobile/components/ProductionCardMock.tsx");
 
-assert.match(version, /APP_VERSION = "2\.0\.0-alpha\.52"/);
 assert.match(detail, /testID="production-card-sheet"/);
 assert.match(detail, /styles\.hero[\s\S]*styles\.summaryGrid[\s\S]*styles\.tabRailFrame[\s\S]*ReadinessPanel[\s\S]*title="금액 요약"/);
 

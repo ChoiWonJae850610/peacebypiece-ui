@@ -14,6 +14,7 @@ import {
 import { Check, X } from "lucide-react-native";
 
 import { WAFL_FONTS } from "@/constants/fonts";
+import { WAFL_THEME } from "@/constants/theme";
 import { normalizeNumericDraft, prepareNumericDraftOnFocus } from "@/lib/mobileDisplay";
 
 type Props = {
@@ -164,17 +165,17 @@ export default function ControlledInlineEditValue({
 }
 
 const styles = StyleSheet.create({
-  editable: { backgroundColor: "#fffaf2", borderBottomColor: "#b98c5a", borderBottomWidth: 1, borderRadius: 5, minHeight: 36, paddingHorizontal: 4, paddingVertical: 3 },
+  editable: { backgroundColor: "#fffaf2", borderBottomColor: "#b98c5a", borderBottomWidth: WAFL_THEME.border.hairline, borderRadius: 5, minHeight: 36, paddingHorizontal: WAFL_THEME.spacing.xs, paddingVertical: 3 },
   pressed: { backgroundColor: "#f7ead9", opacity: 0.82 },
   placeholder: { color: "#9b9288" },
-  active: { backgroundColor: "#fff9ed", borderColor: "#8b5e3c", borderRadius: 7, borderWidth: 1, minHeight: 54, minWidth: 0, padding: 4, position: "relative", width: "100%" },
-  input: { color: "#17263d", minHeight: 44, minWidth: 0, paddingHorizontal: 6, paddingVertical: 4 },
+  active: { backgroundColor: "#fff9ed", borderColor: WAFL_THEME.color.editActive, borderRadius: WAFL_THEME.radius.field, borderWidth: WAFL_THEME.border.hairline, minHeight: 54, minWidth: 0, padding: WAFL_THEME.spacing.xs, position: "relative", width: "100%" },
+  input: { color: WAFL_THEME.color.deepNavy, minHeight: 44, minWidth: 0, paddingHorizontal: 6, paddingVertical: 4 },
   inputWithActions: { paddingRight: 98 },
   inputMultiline: { minHeight: 76, paddingTop: 8 },
   inputInvalid: { borderBottomColor: "#b74b43", borderBottomWidth: 1 },
-  error: { color: "#a13933", fontFamily: WAFL_FONTS.regular, fontSize: 10, lineHeight: 14 },
+  error: { color: WAFL_THEME.color.error, fontFamily: WAFL_FONTS.regular, fontSize: WAFL_THEME.typography.caption, lineHeight: 14 },
   actions: { alignItems: "center", flexDirection: "row", gap: 4, position: "absolute", right: 4, top: 4 },
   cancel: { alignItems: "center", backgroundColor: "#fffdf8", borderColor: "#baa997", borderRadius: 7, borderWidth: 1, height: 44, justifyContent: "center", width: 44 },
-  save: { alignItems: "center", backgroundColor: "#23375a", borderRadius: 7, height: 44, justifyContent: "center", width: 44 },
+  save: { alignItems: "center", backgroundColor: WAFL_THEME.color.navyInk, borderRadius: WAFL_THEME.radius.field, height: 44, justifyContent: "center", width: 44 },
   disabled: { opacity: 0.4 },
 });

@@ -2,32 +2,25 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
 
+import { assertCanonicalWaflVersionConsistency } from "./helpers/wafl-v2-current-version.mjs";
+
 const read = (relativePath) => fs.readFileSync(path.resolve(relativePath), "utf8");
 
-const version = read("lib/constants/version.ts");
-const mobileVersion = read("apps/mobile/constants/version.ts");
+assertCanonicalWaflVersionConsistency();
 const mobilePackage = JSON.parse(read("apps/mobile/package.json"));
-const mobileLock = JSON.parse(read("apps/mobile/package-lock.json"));
 const appConfig = JSON.parse(read("apps/mobile/app.json"));
 const easConfig = JSON.parse(read("apps/mobile/eas.json"));
 const appConfigFactory = read("apps/mobile/app.config.js");
 const entry = read("apps/mobile/app/index.tsx");
-const app = read("apps/mobile/components/MobileWorkOrderApp.tsx");
-const list = read("apps/mobile/components/WorkOrderListScreen.tsx");
-const detail = read("apps/mobile/components/WorkOrderDetailOverview.tsx");
+const app = read("apps/mobile/features/MobileWorkOrderExperience.tsx");
+const list = read("apps/mobile/features/work-orders/list/WorkOrderListScreen.tsx");
+const detail = read("apps/mobile/features/work-orders/overview/WorkOrderDetailOverview.tsx");
 const display = read("apps/mobile/lib/workOrderDisplay.ts");
 const apiClient = read("apps/mobile/lib/apiClient.ts");
 const proxy = read("proxy.ts");
 const externalQa = read("lib/external-qa/configCore.mjs");
 const runtime = [entry, app, list, detail, apiClient].join("\n");
 
-assert.match(version, /APP_VERSION = "2\.0\.0-alpha\.52"/);
-assert.match(mobileVersion, /MOBILE_APP_VERSION = "2\.0\.0-alpha\.52"/);
-assert.equal(mobilePackage.version, "2.0.0-alpha.52");
-assert.equal(mobileLock.version, "2.0.0-alpha.52");
-assert.equal(mobileLock.packages[""].version, "2.0.0-alpha.52");
-assert.equal(appConfig.expo.version, "2.0.0");
-assert.equal(appConfig.expo.extra.appVersion, "2.0.0-alpha.52");
 assert.equal(appConfig.expo.extra.mockOnly, false);
 assert.equal(appConfig.expo.extra.dataMode, "dev-test-tailscale-auto-connect");
 assert.equal(appConfig.expo.owner, "lostab");

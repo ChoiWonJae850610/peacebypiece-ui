@@ -4,22 +4,23 @@ import fs from "node:fs";
 import path from "node:path";
 
 import { isTailscaleServePathAllowed } from "../lib/external-qa/configCore.mjs";
+import { assertCanonicalWaflVersionConsistency } from "./helpers/wafl-v2-current-version.mjs";
 
 const read = (relativePath) => fs.readFileSync(path.resolve(relativePath), "utf8");
 const json = (relativePath) => JSON.parse(read(relativePath));
 
-const version = read("lib/constants/version.ts");
-const mobileVersion = read("apps/mobile/constants/version.ts");
+assertCanonicalWaflVersionConsistency();
 const mobilePackage = json("apps/mobile/package.json");
-const mobileLock = json("apps/mobile/package-lock.json");
 const appJson = json("apps/mobile/app.json");
 const easJson = json("apps/mobile/eas.json");
-const app = read("apps/mobile/components/MobileWorkOrderApp.tsx");
-const detail = read("apps/mobile/components/WorkOrderDetailOverview.tsx");
-const materials = read("apps/mobile/components/WorkOrderMaterialsReadOnly.tsx");
-const editor = read("apps/mobile/components/WorkOrderMaterialEditor.tsx");
+const app = read("apps/mobile/features/MobileWorkOrderExperience.tsx");
+const detail = read("apps/mobile/features/work-orders/overview/WorkOrderDetailOverview.tsx");
+const materials = read("apps/mobile/features/materials/WorkOrderMaterialsReadOnly.tsx");
+const editor = read("apps/mobile/features/materials/WorkOrderMaterialEditor.tsx");
 const apiClient = read("apps/mobile/lib/apiClient.ts");
-const apiTypes = read("apps/mobile/lib/apiTypes.ts");
+const apiTypes = read("apps/mobile/domain/mobileContract.ts");
+const mobileValidation = read("apps/mobile/domain/workOrderValidation.ts");
+const mobilePolicy = read("apps/mobile/domain/workOrderPolicy.ts");
 const runtime = read("lib/domain/work-orders/command/runtimeGuard.ts");
 const commandService = read("lib/domain/work-orders/command/commandService.ts");
 const materialService = read("lib/domain/work-orders/command/materialCommandService.ts");
@@ -29,13 +30,6 @@ const start = read("tools/dev/start-wafl-external-qa.ps1");
 const alpha26 = read("tests/workorder-v2-alpha26-material-command-api-contract.mjs");
 const evidence = read("docs/project/app-v2/49-mobile-material-draft-create-update-evidence.md");
 
-assert.match(version, /APP_VERSION = "2\.0\.0-alpha\.52"/);
-assert.match(mobileVersion, /MOBILE_APP_VERSION = "2\.0\.0-alpha\.52"/);
-assert.equal(mobilePackage.version, "2.0.0-alpha.52");
-assert.equal(mobileLock.version, "2.0.0-alpha.52");
-assert.equal(mobileLock.packages[""].version, "2.0.0-alpha.52");
-assert.equal(appJson.expo.extra.appVersion, "2.0.0-alpha.52");
-assert.equal(appJson.expo.version, "2.0.0");
 assert.equal(appJson.expo.ios.bundleIdentifier, "com.wafl.app");
 assert.equal(appJson.expo.android.package, "com.wafl.app");
 assert.deepEqual(easJson, {
@@ -112,8 +106,8 @@ assert.match(apiClient, /export async function patchWorkOrderMaterial/);
 assert.match(apiClient, /method: "PATCH"/);
 assert.doesNotMatch(apiClient, /method: "DELETE"|order-request|order-cancel|order-complete/);
 const saveMaterialSlice = app.slice(app.indexOf("async function saveMaterial"), app.indexOf("function reloadLatestMaterial"));
-assert.match(saveMaterialSlice, /editor\.mode === "create"[\s\S]*createWorkOrderMaterial/);
-assert.match(saveMaterialSlice, /:\s*await patchWorkOrderMaterial/);
+assert.match(saveMaterialSlice, /editor\.mode === "create"[\s\S]*workOrderMutationController\.createMaterial/);
+assert.match(saveMaterialSlice, /:\s*await workOrderMutationController\.updateMaterial/);
 assert.doesNotMatch(saveMaterialSlice, /useEffect|setInterval|setTimeout/);
 
 for (const state of ["editing", "saving", "validation-error", "conflict", "locked", "save-error", "refresh-error"]) {
@@ -127,19 +121,20 @@ assert.match(editor, /계속 편집|최신 내용 불러오기/);
 assert.match(app, /저장하지 않은 변경사항이 있습니다/);
 assert.match(app, /계속 편집/);
 assert.match(app, /변경사항 버리기/);
-assert.match(app, /materialSaveRequestInFlight\.current/);
+assert.match(app, /materialMutation\.inFlight/);
 assert.match(app, /editor\.committedNextVersion !== null/);
 assert.match(app, /selectedWorkOrderId\.current !== input\.workOrderId/);
 assert.match(app, /materialSessionGeneration\.current !== input\.sessionGeneration/);
 assert.match(app, /materialEditorRef\.current\?\.token !== input\.token/);
-assert.match(app, /Promise\.all\(\[[\s\S]{0,300}getWorkOrderDetail[\s\S]{0,300}getWorkOrderMaterials/);
+assert.match(app, /Promise\.all\(\[[\s\S]{0,300}workOrderQueryController\.detail[\s\S]{0,300}workOrderQueryController\.materials/);
+assert.match(mobileValidation, /if \(field === "orderQuantity"\) continue/);
 assert.match(app, /refreshed\.header\.entityVersion !== page\.entityVersion/);
 assert.match(app, /input\.expectedVersion !== null && refreshed\.header\.entityVersion !== input\.expectedVersion/);
 assert.match(app, /putBoundedMaterialEntry/);
 assert.match(app, /entityVersion: page\.entityVersion/);
-assert.match(app, /detail\.header\.status !== "draft"/);
-assert.match(app, /detail\.revision\.status !== "draft"/);
-assert.match(app, /line\.status !== "editing"/);
+assert.match(mobilePolicy, /detail\.header\.status === "draft"/);
+assert.match(mobilePolicy, /detail\.revision\.status === "draft"/);
+assert.match(mobilePolicy, /line\.status === "editing"/);
 assert.doesNotMatch(app + editor, /setInterval|automaticSave|autoSave|order-request|order-cancel|order-complete/);
 
 assert.match(materials, /accessibilityLabel="원단 추가"/);

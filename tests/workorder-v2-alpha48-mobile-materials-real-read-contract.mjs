@@ -3,34 +3,28 @@ import fs from "node:fs";
 import path from "node:path";
 
 import { isExternalQaPathAllowed, isTailscaleServePathAllowed } from "../lib/external-qa/configCore.mjs";
+import { assertCanonicalWaflVersionConsistency } from "./helpers/wafl-v2-current-version.mjs";
 
 const read = (relativePath) => fs.readFileSync(path.resolve(relativePath), "utf8");
 const json = (relativePath) => JSON.parse(read(relativePath));
 
-const version = read("lib/constants/version.ts");
-const mobileVersion = read("apps/mobile/constants/version.ts");
+assertCanonicalWaflVersionConsistency();
 const mobilePackage = json("apps/mobile/package.json");
-const mobileLock = json("apps/mobile/package-lock.json");
 const appJson = json("apps/mobile/app.json");
 const easJson = json("apps/mobile/eas.json");
-const detail = read("apps/mobile/components/WorkOrderDetailOverview.tsx");
-const materials = read("apps/mobile/components/WorkOrderMaterialsReadOnly.tsx");
-const app = read("apps/mobile/components/MobileWorkOrderApp.tsx");
+const detail = read("apps/mobile/features/work-orders/overview/WorkOrderDetailOverview.tsx");
+const materials = read("apps/mobile/features/materials/WorkOrderMaterialsReadOnly.tsx");
+const app = read("apps/mobile/features/MobileWorkOrderExperience.tsx");
 const apiClient = read("apps/mobile/lib/apiClient.ts");
-const apiTypes = read("apps/mobile/lib/apiTypes.ts");
+const apiTypes = read("apps/mobile/domain/mobileContract.ts");
 const mobileDisplay = read("apps/mobile/lib/mobileDisplay.ts");
 const route = read("app/api/v2/work-orders/[workOrderId]/materials/route.ts");
 const detailRead = read("lib/domain/work-orders/read/detailRoute.ts");
 const detailService = read("lib/domain/work-orders/read/detailService.ts");
 const externalQa = read("lib/external-qa/configCore.mjs");
+const materialCache = read("apps/mobile/features/materials/materialCache.ts");
+const errorPresentation = read("apps/mobile/application/errorPresentation.ts");
 
-assert.match(version, /APP_VERSION = "2\.0\.0-alpha\.52"/);
-assert.match(mobileVersion, /MOBILE_APP_VERSION = "2\.0\.0-alpha\.52"/);
-assert.equal(mobilePackage.version, "2.0.0-alpha.52");
-assert.equal(mobileLock.version, "2.0.0-alpha.52");
-assert.equal(mobileLock.packages[""].version, "2.0.0-alpha.52");
-assert.equal(appJson.expo.version, "2.0.0");
-assert.equal(appJson.expo.extra.appVersion, "2.0.0-alpha.52");
 assert.equal(appJson.expo.extra.dataMode, "dev-test-tailscale-auto-connect");
 assert.equal(appJson.expo.extra.mockOnly, false);
 assert.equal(appJson.expo.ios.bundleIdentifier, "com.wafl.app");
@@ -129,7 +123,7 @@ const materialCardBody = materials.slice(materials.indexOf("function MaterialCar
 const materialSummaryBody = materialCardBody.slice(materialCardBody.indexOf("<Pressable"), materialCardBody.indexOf("testID=\"material-order-action-row\""));
 assert.equal((materialSummaryBody.match(/<Pressable/g) ?? []).length, 1, "material summary card must not nest pressable controls");
 
-assert.match(app, /const MATERIAL_CACHE_LIMIT = 6/);
+assert.match(materialCache, /const MATERIAL_CACHE_LIMIT = 6/);
 assert.match(app, /materialCacheRef\.current\[workOrderId\]/);
 assert.match(app, /if \(materialRequests\.current\.has\(workOrderId\)\) return/);
 assert.match(app, /action === "initial" && existing && existing\.status !== "not-loaded"/);
@@ -143,7 +137,7 @@ assert.match(app, /onOpenMaterials=\{\(\) => void loadMaterials\(detail\.header\
 assert.match(app, /onRetryMaterials=\{\(\) => void loadMaterials\(detail\.header\.id, "retry"\)\}/);
 assert.match(app, /onLoadMoreMaterials=\{\(\) => void loadMaterials\(detail\.header\.id, "more"\)\}/);
 for (const errorBoundary of ["status === 401", "status === 403", "status === 404", "status === 409"]) {
-  assert.match(app, new RegExp(errorBoundary.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")), `error boundary missing: ${errorBoundary}`);
+  assert.match(`${app}\n${errorPresentation}`, new RegExp(errorBoundary.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")), `error boundary missing: ${errorBoundary}`);
 }
 assert.doesNotMatch(app + materials, /setInterval|setTimeout\([^)]*getWorkOrderMaterials|polling/i);
 assert.doesNotMatch(app + materials, /mockProductionCard|mockMaterial|productionCards/);

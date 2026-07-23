@@ -1,6 +1,14 @@
 const DECIMAL_PATTERN = /^(-?)(\d+)(?:\.(\d+))?$/;
 
 const NUMERIC_DRAFT_PATTERN = /^(\d*)(?:\.(\d*))?$/;
+const CALENDAR_DATE_PATTERN = /^(\d{4})-(\d{2})-(\d{2})$/;
+
+export function formatKoreanCalendarDate(value: string, fallback = "미정"): string {
+  const matched = CALENDAR_DATE_PATTERN.exec(value);
+  return matched
+    ? `${Number(matched[1])}년 ${Number(matched[2])}월 ${Number(matched[3])}일`
+    : fallback;
+}
 
 export function normalizeNumericDraft(value: string): string {
   if (value === "") return "";

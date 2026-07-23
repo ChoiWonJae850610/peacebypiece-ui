@@ -36,6 +36,50 @@ Before edits, verify:
 
 Unexpected dirty state, wrong branch/HEAD/origin, artifact mismatch, or unknown ownership is a stop condition. Do not reset, checkout, restore, clean, stash, pull, or rebase to force the expected baseline.
 
+## 3A. Mandatory PC Resource and Remote-Operation Audit
+
+Until the owner explicitly changes this rule, every WAFL Codex Version Delta and task includes a read-only PC resource and remote-operation audit. The audit must not interfere with the active Runtime or remote connection.
+
+Required checkpoints for Runtime work are:
+
+1. start-of-work preflight;
+2. immediately before Runtime start;
+3. after automated Runtime QA;
+4. immediately before requesting physical-device QA;
+5. after runner stop and before final verification.
+
+Documentation-only or static-only work requires the audit at start and immediately before final verification. If device QA is delayed materially or resumes on another calendar day, measure again immediately before resuming QA.
+
+Each checkpoint records actual KST and, when available through approved read-only tooling:
+
+- three short-interval total CPU samples, their average/range, and sustained top CPU consumers;
+- total, used, and available physical memory;
+- system-drive and repository-drive free space;
+- disk active time, queue, throughput, or another bounded abnormal-I/O indicator;
+- every runner-owned role's PID, ownership result, CPU use, and memory use, including Next, Metro, Tailscale Serve, and runner-owned cloudflared when present;
+- Tailscale and Chrome Remote Desktop service state;
+- structural Funnel status with `AllowFunnel: true` count;
+- unexpected duplicate or unowned Next, Metro, Node, Serve, or cloudflared processes;
+- remote-access stability risk;
+- reliable CPU, GPU, or system temperature and thermal-throttling state only when available from Windows or an already-installed approved read-only tool.
+
+Do not infer temperature. When no reliable approved sensor path is available, record exactly `Temperature: unavailable with approved read-only tooling`. Do not install a driver, monitoring service, native/BIOS utility, or external program to obtain it.
+
+Do not judge one transient CPU spike in isolation. Use at least three short samples where practical and distinguish a build/test spike from sustained idle or QA-wait load. The audit itself must not run a stress test or benchmark, change fan or power settings, alter process priority, restart a service, kill a process, clear caches/memory, optimize a disk, edit the registry, manipulate Windows Update, or install software.
+
+Investigate conservatively when repeated samples show unexplained excessive idle CPU, abnormally low available memory or disk capacity, sustained abnormal I/O, duplicate or ownership-mismatched WAFL processes, unexpected Node/Next/Metro/cloudflared activity, stopped remote services, enabled Funnel, confirmed thermal throttling, remote-access instability, or an unexplained material change from the prior checkpoint. Fixed thresholds alone do not decide failure; consider the active phase, recent build/test load, process ownership, and repeated samples.
+
+For a clear resource anomaly or remote-operation risk:
+
+1. do not request device QA or restart Runtime;
+2. keep Tailscale and Chrome Remote Desktop running;
+3. preserve source, Runtime, marker, logs, and data;
+4. perform read-only cause analysis;
+5. declare `PC_RESOURCE_OR_REMOTE_OPERATION_RISK_HANDOFF_REQUIRED` and provide a Failure Handoff;
+6. do not clean, kill, reboot, shut down, log off, or otherwise remediate without owner approval.
+
+Version evidence records checkpoint, actual KST, CPU samples and average/range, top CPU consumers, memory totals, drive capacity, disk-I/O assessment, runner role resources and ownership, remote-service/Funnel state, temperature availability, abnormal-finding count, remote-operation risk, and `PASS` or `HANDOFF REQUIRED`. Intermediate and final reports summarize the actual measurements. The final report includes start, pre-Runtime, post-automated-QA, pre-device-QA, and post-stop audits when applicable, peak or notable CPU/memory, final disk capacity, unexpected-process count, remote-operation risk, remote-service preservation, and unrelated-process impact.
+
 ## 4. Canonical authority
 
 Use the precedence in `AGENTS.md`. Read the core set in `00-start-here.md`, then its conservative task routing. Existing `CONFIRMED` policy is not re-asked. If implementation and current policy conflict, report the mismatch; do not rewrite historical evidence to resolve it.

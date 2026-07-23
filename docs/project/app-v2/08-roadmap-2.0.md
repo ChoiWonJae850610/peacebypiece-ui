@@ -2,21 +2,28 @@
 
 Document role: canonical owner for the current result, next candidate, and Version Delta boundary. It is not the historical implementation ledger; completed details live in numbered immutable evidence.
 
-## Current result — 2.0.0-alpha.52
+## Current result — 2.0.0-alpha.53
+
+Status: `ALPHA53_MOBILE_ARCHITECTURE_FOUNDATION_COMPLETE`.
+
+Alpha.53 preserves alpha.52 product behavior while establishing the mobile architecture foundation:
+
+- composition shell separated from list, overview, and material feature views;
+- explicit session, navigation/lifecycle, query, and mutation execution boundaries;
+- mobile-safe DTO/error contracts, business validation, editability policy, formatter, cache, and theme owners;
+- known/unknown API error separation and dependency/import guards;
+- behavior-centered controller, policy, formatter, validation, numeric/date, duplicate-submit, and request-count tests;
+- mandatory measured PC-resource and remote-operation audits added to Permanent Rules;
+- mutation-free Runtime and physical-iPhone regression acceptance with canonical teardown;
+- migration, business data, R2/PDF/token, production, dependency, native, and EAS effects remain zero.
+
+Evidence: `52-mobile-architecture-foundation-evidence.md`.
+
+## Previous product result — 2.0.0-alpha.52
 
 Status: `ALPHA52_MOBILE_CORE_INLINE_UX_CALCULATION_LIST_AND_DATE_COMPLETE`.
 
-Alpha.52 completes the connected mobile core inline UX, calculation, list, and date slice:
-
-- customer-facing WorkOrder naming and bounded list search/status filtering;
-- same-position overview/material inline editing with editable/read-only/locked affordance and explicit X/Check;
-- narrow-field expansion, exact-field keyboard-safe focus, dirty/conflict/save/cancel preservation, and automatic-save `0`;
-- canonical order-quantity/amount calculation plus decimal, currency, and numeric-zero draft correction;
-- compact due-date bottom sheet with date-only preservation and automatic reopen `0`;
-- physical-iPhone UX acceptance, mutation-free final Runtime preflight, and canonical runner teardown;
-- migration, R2/PDF/token, production, native, and EAS effects remain zero.
-
-Evidence: `51-mobile-core-inline-ux-calculation-list-date-evidence.md`.
+Connected mobile list/search/filter, same-position overview/material editing, numeric and currency formatting, calculated order quantity/amount, keyboard-safe narrow inputs, and compact due-date behavior remain complete. Detailed facts are preserved in `51-mobile-core-inline-ux-calculation-list-date-evidence.md`.
 
 ## Previous product result — 2.0.0-alpha.51
 
@@ -44,6 +51,7 @@ Permanent Rules, Current Baseline, Version Delta, Immutable Evidence, responsibi
 | alpha.50 | mobile material draft create/update | `49-mobile-material-draft-create-update-evidence.md` |
 | alpha.51 | mobile material soft-delete/restore lifecycle | `50-mobile-material-soft-delete-restore-lifecycle-evidence.md` |
 | alpha.52 | mobile core inline UX, calculation, list, and date | `51-mobile-core-inline-ux-calculation-list-date-evidence.md` |
+| alpha.53 | mobile architecture foundation | `52-mobile-architecture-foundation-evidence.md` |
 
 Older results remain in numbered evidence files indexed and task-routed by `00-start-here.md`. Their detailed outcomes are not duplicated here.
 
@@ -74,22 +82,22 @@ Standard reference:
 
 The Delta does not repeat Permanent Rules. An omitted exceptional authority remains forbidden.
 
-## Next candidate — 2.0.0-alpha.53
+## Next candidate — 2.0.0-alpha.54
 
-Candidate objective: `ALPHA53_MOBILE_ARCHITECTURE_FOUNDATION_COMPLETE` only after owner approval.
+Candidate objective: mobile Reel Picker production implementation only after owner approval.
 
-Potential included scope, subject to the actual alpha.53 Delta:
+Potential included scope, subject to the actual alpha.54 Delta:
 
-- split mobile orchestration into bounded controllers/hooks;
-- centralize shared API contracts, validation constants, policy functions, and currency/decimal/quantity/date formatters;
-- establish WAFL theme tokens and bounded reel-input state/component foundations;
-- limit any reel prototype to an explicitly approved field and device QA scope.
+- number/unit/step value models using the alpha.53 formatter and feature/controller boundaries;
+- bounded reel/snap/fade/accessibility behavior and a direct-input fallback;
+- an exact approved field connection and physical-device visual/interaction QA;
+- explicit dependency and native/EAS decision before any package or native change.
 
 Explicitly separate later scope:
 
-- material order request/cancel/complete remains a later candidate;
+- material order request/cancel/complete remains a separately approved alpha.55 candidate;
 - hard DELETE and purge remain forbidden;
 - production deployment or mutation, schema changes, and unrelated feature expansion remain excluded;
 - native dependencies/plugins and EAS Build/Update require an explicit boundary.
 
-Alpha.53 does not start merely because it is listed here. It begins only with its owner-approved Version Delta and a matching clean baseline.
+Alpha.54 does not start merely because it is listed here. It begins only with its owner-approved Version Delta and a matching clean baseline.

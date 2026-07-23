@@ -2,20 +2,15 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
 
+import { assertCanonicalWaflVersionConsistency } from "./helpers/wafl-v2-current-version.mjs";
+
 const read = (relativePath) => fs.readFileSync(path.resolve(relativePath), "utf8");
 
-assert.match(read("lib/constants/version.ts"), /2\.0\.0-alpha\.52/);
-assert.match(read("apps/mobile/constants/version.ts"), /2\.0\.0-alpha\.52/);
+assertCanonicalWaflVersionConsistency();
 const mobilePackage = JSON.parse(read("apps/mobile/package.json"));
-const mobileLock = JSON.parse(read("apps/mobile/package-lock.json"));
 const appConfig = JSON.parse(read("apps/mobile/app.json"));
 const easConfig = JSON.parse(read("apps/mobile/eas.json"));
 
-assert.equal(mobilePackage.version, "2.0.0-alpha.52");
-assert.equal(mobileLock.version, "2.0.0-alpha.52");
-assert.equal(mobileLock.packages[""].version, "2.0.0-alpha.52");
-assert.equal(appConfig.expo.version, "2.0.0");
-assert.equal(appConfig.expo.extra.appVersion, "2.0.0-alpha.52");
 assert.equal(appConfig.expo.extra.mockOnly, false);
 assert.equal(appConfig.expo.extra.dataMode, "dev-test-tailscale-auto-connect");
 assert.equal(appConfig.expo.owner, "lostab");
@@ -37,11 +32,12 @@ const expectedDependencies = {
 assert.deepEqual(mobilePackage.dependencies, expectedDependencies, "native/dependency baseline must not change");
 
 const entry = read("apps/mobile/app/index.tsx");
-const app = read("apps/mobile/components/MobileWorkOrderApp.tsx");
+const app = read("apps/mobile/features/MobileWorkOrderExperience.tsx");
 const apiClient = read("apps/mobile/lib/apiClient.ts");
-const list = read("apps/mobile/components/WorkOrderListScreen.tsx");
-const detail = read("apps/mobile/components/WorkOrderDetailOverview.tsx");
-const mobileRuntime = [entry, app, apiClient, list, detail].join("\n");
+const list = read("apps/mobile/features/work-orders/list/WorkOrderListScreen.tsx");
+const detail = read("apps/mobile/features/work-orders/overview/WorkOrderDetailOverview.tsx");
+const errorPresentation = read("apps/mobile/application/errorPresentation.ts");
+const mobileRuntime = [entry, app, apiClient, list, detail, errorPresentation].join("\n");
 
 assert.match(entry, /MobileWorkOrderApp/);
 assert.doesNotMatch(entry, /ProductionCardMock/);
@@ -64,7 +60,7 @@ assert.match(list, /현재 불러온 작업지시서/);
 assert.match(list, /representativeThumbnail \? "이미지 있음" : "이미지 없음"/);
 assert.match(detail, /작업지시서 · 읽기 전용/);
 assert.match(app, /자동으로 다시 요청하지 않습니다/);
-assert.match(app, /목록으로 돌아가 다른 작업지시서를 선택하세요/);
+assert.match(errorPresentation, /목록으로 돌아가 다른 작업지시서를 선택하세요/);
 assert.match(app, /accessibilityLabel="작업지시서 목록으로 돌아가기"/);
 assert.match(app, /accessibilityLabel="작업지시서 목록으로"/);
 assert.match(app, /returnToList/);

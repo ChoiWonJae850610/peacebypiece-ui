@@ -11,11 +11,12 @@ import {
 import { ChevronLeft, ImageIcon, LockKeyhole } from "lucide-react-native";
 
 import { WAFL_FONTS } from "@/constants/fonts";
+import type { BasicInfoDraft, BasicInfoFieldErrors } from "@/domain/workOrderValidation";
 import ControlledInlineEditValue from "@/components/ControlledInlineEditValue";
 import InlineDatePicker from "@/components/InlineDatePicker";
-import WorkOrderMaterialsReadOnly, { type MaterialReadViewState } from "@/components/WorkOrderMaterialsReadOnly";
-import WorkOrderMaterialEditor, { type MaterialEditorViewState } from "@/components/WorkOrderMaterialEditor";
-import type { MaterialDraftFields, WorkOrderDetailCore, WorkOrderMaterialLine } from "@/lib/apiTypes";
+import WorkOrderMaterialsReadOnly, { type MaterialReadViewState } from "@/features/materials/WorkOrderMaterialsReadOnly";
+import WorkOrderMaterialEditor, { type MaterialEditorViewState } from "@/features/materials/WorkOrderMaterialEditor";
+import type { MaterialDraftFields, WorkOrderDetailCore, WorkOrderMaterialLine } from "@/domain/mobileContract";
 import { formatWon } from "@/lib/mobileDisplay";
 import { useFocusedFieldVisibility } from "@/hooks/useFocusedFieldVisibility";
 import {
@@ -81,13 +82,7 @@ function ReadinessPanel({ detail }: { readonly detail: WorkOrderDetailCore }) {
   );
 }
 
-export type BasicInfoDraft = {
-  readonly productName: string;
-  readonly dueDate: string;
-  readonly totalQuantity: string;
-};
-
-export type BasicInfoFieldErrors = Partial<Record<keyof BasicInfoDraft, string>>;
+export type { BasicInfoDraft, BasicInfoFieldErrors } from "@/domain/workOrderValidation";
 export type BasicInfoSaveState = "read-only" | "editing" | "saving" | "saved" | "validation-error" | "conflict" | "locked" | "save-error";
 export type BasicInfoInlineField = keyof BasicInfoDraft;
 

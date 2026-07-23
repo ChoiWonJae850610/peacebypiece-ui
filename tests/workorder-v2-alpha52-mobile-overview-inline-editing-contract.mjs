@@ -2,8 +2,8 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
 
-const detail = fs.readFileSync("apps/mobile/components/WorkOrderDetailOverview.tsx", "utf8");
-const app = fs.readFileSync("apps/mobile/components/MobileWorkOrderApp.tsx", "utf8");
+const detail = fs.readFileSync("apps/mobile/features/work-orders/overview/WorkOrderDetailOverview.tsx", "utf8");
+const app = fs.readFileSync("apps/mobile/features/MobileWorkOrderExperience.tsx", "utf8");
 const datePicker = fs.readFileSync("apps/mobile/components/InlineDatePicker.tsx", "utf8");
 
 assert.doesNotMatch(detail, /BasicInfoEditor|기본정보 수정|editEntry|PencilLine/);
@@ -15,8 +15,8 @@ assert.match(detail, /ControlledInlineEditValue/);
 assert.match(detail, /onSave=\{props\.onSave\}/);
 assert.match(detail, /onCancel=\{props\.onCancelEdit\}/);
 assert.match(app, /expectedVersion: detail\.header\.entityVersion/);
-assert.match(app, /saveRequestInFlight\.current/);
-assert.match(app, /const refreshed = await getWorkOrderDetail/);
+assert.match(app, /overviewMutation\.inFlight/);
+assert.match(app, /const refreshed = await workOrderQueryController\.detail/);
 assert.match(app, /현재 필드 편집을 완료해 주세요/);
 assert.match(app, /저장하지 않은 변경사항이 있습니다/);
 assert.doesNotMatch(`${detail}\n${app}`, /setInterval|auto.?save|automatic.?save/i);

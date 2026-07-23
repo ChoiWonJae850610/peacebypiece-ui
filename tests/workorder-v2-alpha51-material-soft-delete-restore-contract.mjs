@@ -4,6 +4,10 @@ import fs from "node:fs";
 import path from "node:path";
 
 import { isTailscaleServePathAllowed } from "../lib/external-qa/configCore.mjs";
+import {
+  assertCanonicalWaflVersionConsistency,
+  nextWaflAlphaVersion,
+} from "./helpers/wafl-v2-current-version.mjs";
 
 const read = (relativePath) => fs.readFileSync(path.resolve(relativePath), "utf8");
 const json = (relativePath) => JSON.parse(read(relativePath));
@@ -18,24 +22,18 @@ const listRepository = read("lib/domain/work-orders/read/listRepository.ts");
 const issueRepository = read("lib/domain/work-orders/command/issueRepository.ts");
 const previewRepository = read("lib/domain/work-orders/read/previewRepository.ts");
 const apiClient = read("apps/mobile/lib/apiClient.ts");
-const app = read("apps/mobile/components/MobileWorkOrderApp.tsx");
-const materials = read("apps/mobile/components/WorkOrderMaterialsReadOnly.tsx");
+const app = read("apps/mobile/features/MobileWorkOrderExperience.tsx");
+const materials = read("apps/mobile/features/materials/WorkOrderMaterialsReadOnly.tsx");
 const start = read("tools/dev/start-wafl-external-qa.ps1");
 const migrationRunner = read("scripts/run-wafl-v2-alpha51-material-lifecycle-migration.mjs");
 const appliedMigrations = read("tools/pipeline/approved-applied-migrations.psd1");
 const evidence = read("docs/project/app-v2/50-mobile-material-soft-delete-restore-lifecycle-evidence.md");
-const currentState = read("docs/codex-current-state.md");
 const roadmap = read("docs/project/app-v2/08-roadmap-2.0.md");
 const archiveRoute = read("app/api/v2/work-orders/[workOrderId]/materials/[materialLineId]/archive/route.ts");
 const restoreRoute = read("app/api/v2/work-orders/[workOrderId]/materials/[materialLineId]/restore/route.ts");
 const lineRoute = read("app/api/v2/work-orders/[workOrderId]/materials/[materialLineId]/route.ts");
 
-assert.match(read("lib/constants/version.ts"), /APP_VERSION = "2\.0\.0-alpha\.52"/);
-assert.match(read("apps/mobile/constants/version.ts"), /MOBILE_APP_VERSION = "2\.0\.0-alpha\.52"/);
-assert.equal(json("apps/mobile/package.json").version, "2.0.0-alpha.52");
-assert.equal(json("apps/mobile/package-lock.json").packages[""].version, "2.0.0-alpha.52");
-assert.equal(json("apps/mobile/app.json").expo.extra.appVersion, "2.0.0-alpha.52");
-assert.equal(json("apps/mobile/app.json").expo.version, "2.0.0");
+const canonicalVersion = assertCanonicalWaflVersionConsistency();
 
 assert.match(migration, /APPROVED ALPHA\.51 DEV\/TEST GATE/);
 assert.match(migration, /ADD COLUMN archived_at timestamptz/);
@@ -101,9 +99,9 @@ assert.doesNotMatch(apiClient, /method: "DELETE"/);
 assert.match(app, /requestArchiveMaterial/);
 assert.match(app, /requestRestoreMaterial/);
 assert.match(app, /confirmDiscard/);
-assert.match(app, /getWorkOrderMaterials\(currentDetail\.header\.id, null, "active"\)/);
-assert.match(app, /getWorkOrderMaterials\(currentDetail\.header\.id, null, "archived"\)/);
-assert.match(app, /materialLifecycleRequestInFlight\.current/);
+assert.match(app, /workOrderQueryController\.materials\(currentDetail\.header\.id, null, "active"\)/);
+assert.match(app, /workOrderQueryController\.materials\(currentDetail\.header\.id, null, "archived"\)/);
+assert.match(app, /materialLifecycleMutation\.inFlight/);
 assert.doesNotMatch(app, /setInterval|automaticSave|autoSave/);
 assert.match(materials, /삭제된 원단 \{archivedTotalCount\}개/);
 assert.match(materials, /다시 복구할 수 있습니다|삭제된 원단으로 이동/);
@@ -131,8 +129,6 @@ assert.match(evidence, /ALPHA51_MOBILE_MATERIAL_SOFT_DELETE_RESTORE_LIFECYCLE_CO
 assert.match(evidence, /archive success \| 2/);
 assert.match(evidence, /restore success \| 2/);
 assert.match(evidence, /material row delta \| 0/);
-assert.match(currentState, /Result version: `2\.0\.0-alpha\.52`/);
-assert.match(roadmap, /Current result — 2\.0\.0-alpha\.52/);
-assert.match(roadmap, /Next candidate — 2\.0\.0-alpha\.53/);
+assert.ok(roadmap.includes(`Next candidate — ${nextWaflAlphaVersion(canonicalVersion)}`));
 
 console.log("workorder v2 alpha.51 material soft-delete restore lifecycle contract: PASS");

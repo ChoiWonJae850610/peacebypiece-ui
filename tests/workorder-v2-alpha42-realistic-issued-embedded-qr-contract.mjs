@@ -26,7 +26,7 @@ const renderRoute = read("app/dev/workorder-pdf-render/[runToken]/page.tsx");
 const fixture = assertAlpha42RealisticFixture(ALPHA42_REALISTIC_FIXTURE);
 
 const version = read("lib/constants/version.ts").match(/APP_VERSION\s*=\s*"([^"]+)"/)?.[1];
-assert.ok(new Set(["2.0.0-alpha.41", "2.0.0-alpha.42", "2.0.0-alpha.43", "2.0.0-alpha.44", "2.0.0-alpha.45", "2.0.0-alpha.46", "2.0.0-alpha.47", "2.0.0-alpha.48", "2.0.0-alpha.49", "2.0.0-alpha.50", "2.0.0-alpha.51", "2.0.0-alpha.52"]).has(version), "alpha.42 checkpoint/final version invalid");
+assert.ok(new Set(["2.0.0-alpha.41", "2.0.0-alpha.42", "2.0.0-alpha.43", "2.0.0-alpha.44", "2.0.0-alpha.45", "2.0.0-alpha.46", "2.0.0-alpha.47", "2.0.0-alpha.48", "2.0.0-alpha.49", "2.0.0-alpha.50", "2.0.0-alpha.51", "2.0.0-alpha.52", "2.0.0-alpha.53"]).has(version), "alpha.42 checkpoint/final version invalid");
 
 assert.match(migration, /ADD COLUMN token_purpose text NOT NULL DEFAULT 'manual_share'/);
 assert.match(migration, /token_purpose IN \('manual_share', 'embedded_qr'\)/);

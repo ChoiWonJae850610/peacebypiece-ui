@@ -3,8 +3,8 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 
 const field = fs.readFileSync("apps/mobile/components/ControlledInlineEditValue.tsx", "utf8");
-const detail = fs.readFileSync("apps/mobile/components/WorkOrderDetailOverview.tsx", "utf8");
-const app = fs.readFileSync("apps/mobile/components/MobileWorkOrderApp.tsx", "utf8");
+const detail = fs.readFileSync("apps/mobile/features/work-orders/overview/WorkOrderDetailOverview.tsx", "utf8");
+const app = fs.readFileSync("apps/mobile/features/MobileWorkOrderExperience.tsx", "utf8");
 const visibility = fs.readFileSync("apps/mobile/hooks/useFocusedFieldVisibility.ts", "utf8");
 
 assert.match(field, /const inputRef = useRef<TextInput>/);

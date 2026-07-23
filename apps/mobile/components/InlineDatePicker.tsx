@@ -5,6 +5,7 @@ import { Check, ChevronLeft, ChevronRight, X } from "lucide-react-native";
 
 import { WAFL_FONTS } from "@/constants/fonts";
 import { useDatePickerState } from "@/hooks/useDatePickerState";
+import { formatKoreanCalendarDate } from "@/lib/mobileDisplay";
 
 type Props = {
   readonly active: boolean;
@@ -19,15 +20,12 @@ type Props = {
 };
 
 const WEEKDAYS = ["일", "월", "화", "수", "목", "금", "토"] as const;
-const DATE_PATTERN = /^(\d{4})-(\d{2})-(\d{2})$/;
-
 function pad(value: number) {
   return String(value).padStart(2, "0");
 }
 
 export function koreanDate(value: string) {
-  const matched = DATE_PATTERN.exec(value);
-  return matched ? `${Number(matched[1])}년 ${Number(matched[2])}월 ${Number(matched[3])}일` : "미정";
+  return formatKoreanCalendarDate(value);
 }
 
 function currentCalendarDate() {

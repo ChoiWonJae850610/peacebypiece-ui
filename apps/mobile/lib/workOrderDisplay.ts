@@ -1,4 +1,4 @@
-import type { WorkOrderStatus } from "@/lib/apiTypes";
+import type { WorkOrderStatus } from "@/domain/mobileContract";
 
 const WORK_ORDER_STATUS_LABELS: Readonly<Record<WorkOrderStatus, string>> = {
   draft: "작성 중",

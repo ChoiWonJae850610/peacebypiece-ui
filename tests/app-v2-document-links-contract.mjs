@@ -40,12 +40,14 @@ for (const [file, token] of [
   ["docs/project/app-v2/08-roadmap-2.0.md", "49-mobile-material-draft-create-update-evidence.md"],
   ["docs/project/app-v2/08-roadmap-2.0.md", "50-mobile-material-soft-delete-restore-lifecycle-evidence.md"],
   ["docs/project/app-v2/08-roadmap-2.0.md", "51-mobile-core-inline-ux-calculation-list-date-evidence.md"],
+  ["docs/project/app-v2/08-roadmap-2.0.md", "52-mobile-architecture-foundation-evidence.md"],
   ["docs/project/app-v2/09-codex-working-rules.md", "Document type: **Permanent Rules**"],
   ["docs/codex-current-state.md", "Document type: **Current Baseline**"],
-  ["docs/codex-current-state.md", "2.0.0-alpha.52"],
+  ["docs/codex-current-state.md", "2.0.0-alpha.53"],
   ["docs/codex-current-state.md", "49-mobile-material-draft-create-update-evidence.md"],
   ["docs/codex-current-state.md", "50-mobile-material-soft-delete-restore-lifecycle-evidence.md"],
   ["docs/codex-current-state.md", "51-mobile-core-inline-ux-calculation-list-date-evidence.md"],
+  ["docs/codex-current-state.md", "52-mobile-architecture-foundation-evidence.md"],
 ]) {
   assert.ok(fs.readFileSync(path.join(root, file), "utf8").includes(token), `${file} missing ${token}`);
 }

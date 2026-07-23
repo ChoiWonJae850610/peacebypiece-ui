@@ -3,26 +3,19 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
 
+import { assertCanonicalWaflVersionConsistency } from "./helpers/wafl-v2-current-version.mjs";
+
 const read = (relativePath) => fs.readFileSync(path.resolve(relativePath), "utf8");
-const version = read("lib/constants/version.ts");
-const mobileVersion = read("apps/mobile/constants/version.ts");
-const mobilePackage = JSON.parse(read("apps/mobile/package.json"));
-const mobileLock = JSON.parse(read("apps/mobile/package-lock.json"));
+assertCanonicalWaflVersionConsistency();
 const appConfig = JSON.parse(read("apps/mobile/app.json"));
 const easConfig = JSON.parse(read("apps/mobile/eas.json"));
 const appConfigFactory = read("apps/mobile/app.config.js");
-const app = read("apps/mobile/components/MobileWorkOrderApp.tsx");
-const detail = read("apps/mobile/components/WorkOrderDetailOverview.tsx");
+const app = read("apps/mobile/features/MobileWorkOrderExperience.tsx");
+const detail = read("apps/mobile/features/work-orders/overview/WorkOrderDetailOverview.tsx");
 const client = read("apps/mobile/lib/apiClient.ts");
-const types = read("apps/mobile/lib/apiTypes.ts");
+const types = read("apps/mobile/domain/mobileContract.ts");
+const policy = read("apps/mobile/domain/workOrderPolicy.ts");
 
-assert.match(version, /APP_VERSION = "2\.0\.0-alpha\.52"/);
-assert.match(mobileVersion, /MOBILE_APP_VERSION = "2\.0\.0-alpha\.52"/);
-assert.equal(mobilePackage.version, "2.0.0-alpha.52");
-assert.equal(mobileLock.version, "2.0.0-alpha.52");
-assert.equal(mobileLock.packages[""].version, "2.0.0-alpha.52");
-assert.equal(appConfig.expo.version, "2.0.0");
-assert.equal(appConfig.expo.extra.appVersion, "2.0.0-alpha.52");
 assert.equal(appConfig.expo.extra.mockOnly, false);
 assert.equal(appConfig.expo.extra.dataMode, "dev-test-tailscale-auto-connect");
 assert.equal(appConfig.expo.ios.bundleIdentifier, "com.wafl.app");
@@ -44,17 +37,17 @@ for (const forbiddenEditField of ["productTypeCode", "seasonCode", "itemCode", "
   const patchBlock = app.match(/const patch:[\s\S]*?if \(Object\.keys\(patch\)\.length === 0\) return;/)?.[0] ?? "";
   assert.doesNotMatch(patchBlock, new RegExp(forbiddenEditField));
 }
-assert.match(app, /detail\.header\.status === "draft"/);
-assert.match(app, /detail\.revision\.status === "draft"/);
-assert.match(app, /permissionCodes\?\.includes\("workorder\.update"\)/);
+assert.match(policy, /detail\.header\.status === "draft"/);
+assert.match(policy, /detail\.revision\.status === "draft"/);
+assert.match(policy, /permissionCodes\?\.includes\(UPDATE_PERMISSION\)/);
 assert.match(app, /expectedVersion: detail\.header\.entityVersion/);
 assert.match(app, /clientRequestId: nextClientRequestId\(\)/);
 const basicInfoClient = client.slice(client.indexOf("export async function patchWorkOrderBasicInfo"));
 assert.doesNotMatch(basicInfoClient, /idempotencyKey|Idempotency-Key/);
 assert.match(app, /Object\.keys\(patch\)\.length === 0/);
-assert.match(app, /saveRequestInFlight\.current/);
-assert.match(app, /const saved = await patchWorkOrderBasicInfo/);
-assert.match(app, /const refreshed = await getWorkOrderDetail/);
+assert.match(app, /overviewMutation\.inFlight/);
+assert.match(app, /const saved = await workOrderMutationController\.updateOverview/);
+assert.match(app, /const refreshed = await workOrderQueryController\.detail/);
 assert.match(app, /refreshed\.header\.entityVersion !== saved\.nextVersion/);
 assert.match(app, /setItems\(\(current\) => current\.map/);
 assert.doesNotMatch(app.match(/async function saveBasicInfo\(\)[\s\S]*?\n  function reloadLatestBasicInfo/)?.[0] ?? "", /getWorkOrderList\(/);
