@@ -14,11 +14,15 @@ import type {
   WorkOrderListStatusFilter,
 } from "@/domain/mobileContract";
 import { classifyMobileApiErrorCode, MobileApiError } from "@/domain/mobileContract";
+import { classifyNonJsonHttpResponse } from "@/domain/mobileHttpResponse";
+import {
+  isJsonObject,
+  normalizeMaterialCommandResult,
+  normalizeMaterialLine,
+} from "./apiResponseNormalizer";
 
 const LOCAL_HOSTS = new Set(["localhost", "127.0.0.1", "::1"]);
 const REQUEST_TIMEOUT_MS = 15_000;
-
-type JsonObject = Record<string, unknown>;
 
 function configuredOrigin(): string {
   const autoConnect = process.env.EXPO_PUBLIC_WAFL_DEVELOPER_AUTO_CONNECT?.trim().toLowerCase() === "true";
@@ -42,10 +46,6 @@ function configuredOrigin(): string {
   } catch {
     throw new MobileApiError({ code: "API_ORIGIN_INVALID", message: "개발용 연결 주소가 올바르지 않습니다." });
   }
-}
-
-function isJsonObject(value: unknown): value is JsonObject {
-  return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
 function readError(body: unknown, status: number, correlationHeader: string | null): MobileApiError {
@@ -112,22 +112,6 @@ async function requestJson<T>(path: string, options: {
     clearTimeout(timeout);
   }
 
-  const contentType = response.headers.get("content-type")?.toLowerCase() ?? "";
-  if (!contentType.includes("application/json")) {
-    throw new MobileApiError({
-      code: "MALFORMED_RESPONSE",
-      message: "서버 응답 형식이 올바르지 않습니다.",
-      status: response.status,
-      correlationId: response.headers.get("x-wafl-correlation-id"),
-    });
-  }
-
-  let body: unknown;
-  try {
-    body = await response.json();
-  } catch {
-    throw new MobileApiError({ code: "MALFORMED_RESPONSE", message: "서버 응답을 읽을 수 없습니다.", status: response.status });
-  }
   if (process.env.EXPO_PUBLIC_WAFL_EXTERNAL_QA?.trim().toLowerCase() === "true") {
     const requestKind = options.method === "PATCH"
       ? (path.includes("/materials/") ? "material-patch" : "overview-patch")
@@ -143,6 +127,23 @@ async function requestJson<T>(path: string, options: {
       statementCount: response.headers.get("x-wafl-command-statement-count"),
       dbMs: response.headers.get("x-wafl-command-db-ms"),
     });
+  }
+  const contentType = response.headers.get("content-type")?.toLowerCase() ?? "";
+  if (!contentType.includes("application/json")) {
+    const classified = classifyNonJsonHttpResponse(response.status);
+    throw new MobileApiError({
+      code: classified.code,
+      message: classified.message,
+      status: response.status,
+      correlationId: response.headers.get("x-wafl-correlation-id"),
+    });
+  }
+
+  let body: unknown;
+  try {
+    body = await response.json();
+  } catch {
+    throw new MobileApiError({ code: "MALFORMED_RESPONSE", message: "서버 응답을 읽을 수 없습니다.", status: response.status });
   }
   if (!response.ok) throw readError(body, response.status, response.headers.get("x-wafl-correlation-id"));
   return body as T;
@@ -194,63 +195,6 @@ export async function getWorkOrderDetail(workOrderId: string): Promise<WorkOrder
   return body.data;
 }
 
-const MATERIAL_STATUSES = new Set(["editing", "requested", "completed", "cancelled"]);
-const DECIMAL_PATTERN = /^-?(?:0|[1-9]\d*)(?:\.\d+)?$/;
-
-function optionalString(value: unknown): string | null | undefined {
-  if (value === null) return null;
-  return typeof value === "string" ? value : undefined;
-}
-
-function normalizeMaterialLine(value: unknown): WorkOrderMaterialLine | null {
-  if (!isJsonObject(value)) return null;
-  const decimalFields = [
-    value.requiredQuantity,
-    value.allowanceQuantity,
-    value.inventoryUsageQuantity,
-    value.orderQuantity,
-    value.unitPrice,
-    value.amount,
-  ];
-  if (decimalFields.some((field) => typeof field !== "string" || !DECIMAL_PATTERN.test(field))) return null;
-  if (
-    typeof value.id !== "string"
-    || value.materialType !== "fabric"
-    || typeof value.name !== "string"
-    || optionalString(value.colorOption) === undefined
-    || optionalString(value.usageArea) === undefined
-    || typeof value.unitCode !== "string"
-    || typeof value.currency !== "string"
-    || optionalString(value.memo) === undefined
-    || typeof value.status !== "string"
-    || !Number.isSafeInteger(value.displayOrder)
-    || typeof value.locked !== "boolean"
-    || (value.lifecycle !== "active" && value.lifecycle !== "archived")
-    || !(value.archivedAt === null || typeof value.archivedAt === "string")
-  ) return null;
-  return {
-    id: value.id,
-    materialType: "fabric",
-    name: value.name,
-    colorOption: optionalString(value.colorOption) ?? null,
-    usageArea: optionalString(value.usageArea) ?? null,
-    requiredQuantity: value.requiredQuantity as string,
-    allowanceQuantity: value.allowanceQuantity as string,
-    inventoryUsageQuantity: value.inventoryUsageQuantity as string,
-    orderQuantity: value.orderQuantity as string,
-    unitCode: value.unitCode,
-    currency: value.currency,
-    unitPrice: value.unitPrice as string,
-    amount: value.amount as string,
-    memo: optionalString(value.memo) ?? null,
-    status: MATERIAL_STATUSES.has(value.status) ? value.status as WorkOrderMaterialLine["status"] : "unknown",
-    displayOrder: Number(value.displayOrder),
-    locked: value.locked,
-    lifecycle: value.lifecycle,
-    archivedAt: value.archivedAt,
-  };
-}
-
 export async function getWorkOrderMaterials(
   workOrderId: string,
   cursor: string | null = null,
@@ -292,26 +236,6 @@ export async function getWorkOrderMaterials(
     entityVersion: Number(body.data.entityVersion),
     totalCount: Number(body.data.totalCount),
   };
-}
-
-function normalizeMaterialCommandResult(value: unknown, workOrderId: string): MaterialLineCommandResult | null {
-  if (!isJsonObject(value) || !isJsonObject(value.result)) return null;
-  const result = value.result;
-  if (
-    result.workOrderId !== workOrderId
-    || typeof result.materialLineId !== "string"
-    || result.materialType !== "fabric"
-    || typeof result.status !== "string"
-    || !MATERIAL_STATUSES.has(result.status)
-    || !Number.isSafeInteger(result.nextVersion)
-    || !Number.isSafeInteger(result.lineVersion)
-    || (result.lifecycle !== "active" && result.lifecycle !== "archived")
-    || !Number.isSafeInteger(value.nextVersion)
-    || value.nextVersion !== result.nextVersion
-    || Number(value.nextVersion) < 1
-    || Number(result.lineVersion) < 1
-  ) return null;
-  return value as MaterialLineCommandResult;
 }
 
 async function transitionWorkOrderMaterialLifecycle(

@@ -21,6 +21,7 @@ const apiClient = read("apps/mobile/lib/apiClient.ts");
 const apiTypes = read("apps/mobile/domain/mobileContract.ts");
 const mobileValidation = read("apps/mobile/domain/workOrderValidation.ts");
 const mobilePolicy = read("apps/mobile/domain/workOrderPolicy.ts");
+const draftExitPolicy = read("apps/mobile/application/draftExitPolicy.ts");
 const runtime = read("lib/domain/work-orders/command/runtimeGuard.ts");
 const commandService = read("lib/domain/work-orders/command/commandService.ts");
 const materialService = read("lib/domain/work-orders/command/materialCommandService.ts");
@@ -93,7 +94,7 @@ for (const field of [
   "inventoryUsageQuantity", "unitCode", "unitPrice", "memo",
 ]) {
   assert.match(apiTypes, new RegExp(`readonly ${field}: string`), `mobile material field missing: ${field}`);
-  assert.match(editor, new RegExp(`field="${field}"`), `editor field missing: ${field}`);
+  assert.match(editor, new RegExp(`field(?:=|:)\\s*"${field}"`), `editor field missing: ${field}`);
 }
 assert.match(apiTypes, /readonly orderQuantity: string/);
 assert.doesNotMatch(editor, /field="orderQuantity"/);
@@ -118,9 +119,11 @@ assert.match(editor, /원단 수정/);
 assert.match(editor, /추가 취소/);
 assert.match(editor, /저장 전/);
 assert.match(editor, /계속 편집|최신 내용 불러오기/);
-assert.match(app, /저장하지 않은 변경사항이 있습니다/);
-assert.match(app, /계속 편집/);
-assert.match(app, /변경사항 버리기/);
+assert.match(app, /decideDraftExit/);
+assert.match(draftExitPolicy, /intent === "background"[\s\S]*return "preserve"/);
+assert.match(draftExitPolicy, /mutationInFlight[\s\S]*return "blocked-saving"/);
+assert.match(draftExitPolicy, /return "discard"/);
+assert.doesNotMatch(app, /저장하지 않은 변경사항이 있습니다|변경사항 버리기/);
 assert.match(app, /materialMutation\.inFlight/);
 assert.match(app, /editor\.committedNextVersion !== null/);
 assert.match(app, /selectedWorkOrderId\.current !== input\.workOrderId/);

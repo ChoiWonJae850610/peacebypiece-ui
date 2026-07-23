@@ -26,6 +26,30 @@ export const EMPTY_MATERIAL_DRAFT: MaterialDraftFields = {
 const MATERIAL_QUANTITY_PATTERN = /^(?:0|[1-9]\d{0,10})(?:\.\d{1,3})?$/;
 const MATERIAL_PRICE_PATTERN = /^(?:0|[1-9]\d{0,11})$/;
 
+type MaterialDraftInput = Partial<Record<keyof MaterialDraftFields, unknown>>;
+
+function materialDraftString(value: unknown, fallback = ""): string {
+  return typeof value === "string" ? value : fallback;
+}
+
+export function createMaterialDraft(
+  input: MaterialDraftInput,
+  fallback: MaterialDraftFields = EMPTY_MATERIAL_DRAFT,
+): MaterialDraftFields {
+  return {
+    name: materialDraftString(input.name, fallback.name),
+    colorOption: materialDraftString(input.colorOption, fallback.colorOption),
+    usageArea: materialDraftString(input.usageArea, fallback.usageArea),
+    requiredQuantity: materialDraftString(input.requiredQuantity, fallback.requiredQuantity),
+    allowanceQuantity: materialDraftString(input.allowanceQuantity, fallback.allowanceQuantity),
+    inventoryUsageQuantity: materialDraftString(input.inventoryUsageQuantity, fallback.inventoryUsageQuantity),
+    orderQuantity: materialDraftString(input.orderQuantity, fallback.orderQuantity),
+    unitCode: materialDraftString(input.unitCode, fallback.unitCode),
+    unitPrice: materialDraftString(input.unitPrice, fallback.unitPrice),
+    memo: materialDraftString(input.memo, fallback.memo),
+  };
+}
+
 export function basicInfoDraftFromDetail(detail: WorkOrderDetailCore): BasicInfoDraft {
   return {
     productName: detail.header.productName,
@@ -60,7 +84,7 @@ export function validateBasicInfoDraft(draft: BasicInfoDraft): BasicInfoFieldErr
 }
 
 export function materialDraftFromLine(line: WorkOrderMaterialLine): MaterialDraftFields {
-  return {
+  return createMaterialDraft({
     name: line.name,
     colorOption: line.colorOption ?? "",
     usageArea: line.usageArea ?? "",
@@ -71,14 +95,15 @@ export function materialDraftFromLine(line: WorkOrderMaterialLine): MaterialDraf
     unitCode: line.unitCode,
     unitPrice: stripDecimalTrailingZeros(line.unitPrice),
     memo: line.memo ?? "",
-  };
+  });
 }
 
 export function sameMaterialDraft(left: MaterialDraftFields, right: MaterialDraftFields): boolean {
   return (Object.keys(left) as (keyof MaterialDraftFields)[]).every((field) => left[field] === right[field]);
 }
 
-export function validateMaterialDraft(draft: MaterialDraftFields): MaterialEditorFieldErrors {
+export function validateMaterialDraft(input: MaterialDraftInput): MaterialEditorFieldErrors {
+  const draft = createMaterialDraft(input);
   const errors: MaterialEditorFieldErrors = {};
   if (draft.name.trim().length < 1 || draft.name.trim().length > 200) errors.name = "원단명은 1자 이상 200자 이하여야 합니다.";
   if (draft.colorOption.trim().length > 200) errors.colorOption = "색상·옵션은 200자 이하여야 합니다.";
@@ -102,16 +127,19 @@ export function validateMaterialDraft(draft: MaterialDraftFields): MaterialEdito
 }
 
 export function materialPatch(base: MaterialDraftFields, draft: MaterialDraftFields): Partial<MaterialDraftFields> {
+  const normalizedBase = createMaterialDraft(base);
+  const normalizedDraft = createMaterialDraft(draft, normalizedBase);
   const patch: Partial<Record<keyof MaterialDraftFields, string>> = {};
-  for (const field of Object.keys(base) as (keyof MaterialDraftFields)[]) {
+  for (const field of Object.keys(normalizedBase) as (keyof MaterialDraftFields)[]) {
     if (field === "orderQuantity") continue;
-    const normalized = draft[field].trim();
-    if (normalized !== base[field].trim()) patch[field] = normalized;
+    const normalized = normalizedDraft[field].trim();
+    if (normalized !== normalizedBase[field].trim()) patch[field] = normalized;
   }
   return patch;
 }
 
-export function normalizeMaterialDraft(draft: MaterialDraftFields): MaterialDraftFields {
+export function normalizeMaterialDraft(input: MaterialDraftInput, fallback: MaterialDraftFields = EMPTY_MATERIAL_DRAFT): MaterialDraftFields {
+  const draft = createMaterialDraft(input, fallback);
   const requiredQuantity = stripDecimalTrailingZeros(draft.requiredQuantity);
   const allowanceQuantity = stripDecimalTrailingZeros(draft.allowanceQuantity);
   const inventoryUsageQuantity = stripDecimalTrailingZeros(draft.inventoryUsageQuantity);

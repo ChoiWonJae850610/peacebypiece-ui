@@ -18,6 +18,7 @@ import {
   type MobileErrorState,
 } from "@/application/errorPresentation";
 import { createExplicitMutationController } from "@/application/mutationController";
+import { decideDraftExit, type DraftExitIntent } from "@/application/draftExitPolicy";
 import { mobileSessionController } from "@/application/sessionController";
 import { useWorkOrderNavigation } from "@/application/useWorkOrderNavigation";
 import { WAFL_FONTS } from "@/constants/fonts";
@@ -29,6 +30,7 @@ import {
   type BasicInfoFieldErrors,
   type MaterialEditorFieldErrors,
   basicInfoDraftFromDetail,
+  createMaterialDraft,
   materialDraftFromLine,
   materialPatch,
   normalizeMaterialDraft,
@@ -44,7 +46,7 @@ import {
 } from "@/features/materials/materialCache";
 import { workOrderMutationController } from "@/features/work-orders/workOrderMutationController";
 import { workOrderQueryController } from "@/features/work-orders/workOrderQueryController";
-import { MobileApiError, type MaterialDraftFields, type MobileCurrentUser, type WorkOrderDetailCore, type WorkOrderListItem, type WorkOrderListStatusFilter, type WorkOrderMaterialLine } from "@/domain/mobileContract";
+import { MobileApiError, type MaterialDraftFields, type MaterialDraftUpdate, type MobileCurrentUser, type WorkOrderDetailCore, type WorkOrderListItem, type WorkOrderListStatusFilter, type WorkOrderMaterialLine } from "@/domain/mobileContract";
 
 type AppPhase =
   | "booting"
@@ -71,6 +73,7 @@ export default function MobileWorkOrderExperience() {
   const [listQuery, setListQuery] = useState("");
   const [listStatusFilter, setListStatusFilter] = useState<WorkOrderListStatusFilter>("all");
   const [listLoadingMore, setListLoadingMore] = useState(false);
+  const [listSearching, setListSearching] = useState(false);
   const { selected, setSelected, selectedWorkOrderId } = useWorkOrderNavigation();
   const [detail, setDetail] = useState<WorkOrderDetailCore | null>(null);
   const [errorState, setErrorState] = useState<MobileErrorState | null>(null);
@@ -80,7 +83,7 @@ export default function MobileWorkOrderExperience() {
   const [basicInfoErrors, setBasicInfoErrors] = useState<BasicInfoFieldErrors>({});
   const [saveState, setSaveState] = useState<BasicInfoSaveState>("read-only");
   const [saveMessage, setSaveMessage] = useState<string | null>(null);
-  const [conflictVersion, setConflictVersion] = useState<number | null>(null);
+  const [, setConflictVersion] = useState<number | null>(null);
   const [materialCache, setMaterialCache] = useState<Readonly<Record<string, MaterialCacheEntry>>>({});
   const [materialEditor, setMaterialEditor] = useState<MaterialEditorViewState | null>(null);
   const [activeMaterialField, setActiveMaterialField] = useState<keyof MaterialDraftFields | null>(null);
@@ -88,6 +91,7 @@ export default function MobileWorkOrderExperience() {
   const [materialLifecycleBusyId, setMaterialLifecycleBusyId] = useState<string | null>(null);
   const detailRequestInFlight = useRef(false);
   const listRequestInFlight = useRef(false);
+  const pendingListSearch = useRef<{ readonly query: string; readonly status: WorkOrderListStatusFilter } | null>(null);
   const overviewMutation = useRef(createExplicitMutationController()).current;
   const materialMutation = useRef(createExplicitMutationController()).current;
   const materialLifecycleMutation = useRef(createExplicitMutationController()).current;
@@ -109,6 +113,12 @@ export default function MobileWorkOrderExperience() {
       materialEditorRef.current = next;
       return next;
     });
+  }, []);
+
+  const closeMaterialEditorSession = useCallback(() => {
+    materialEditorRef.current = null;
+    setMaterialEditor(null);
+    setActiveMaterialField(null);
   }, []);
 
   const updateMaterialCache = useCallback((updater: (current: Readonly<Record<string, MaterialCacheEntry>>) => Readonly<Record<string, MaterialCacheEntry>>) => {
@@ -164,11 +174,15 @@ export default function MobileWorkOrderExperience() {
     setPhase("recoverable-error");
   }, [resetMaterialSession, selectedWorkOrderId, setSelected]);
 
-  const loadListFor = useCallback(async (query: string, status: WorkOrderListStatusFilter) => {
-    if (listRequestInFlight.current) return;
+  const loadListFor = useCallback(async (query: string, status: WorkOrderListStatusFilter, mode: "blocking" | "search" = "blocking") => {
+    if (listRequestInFlight.current) {
+      if (mode === "search") pendingListSearch.current = { query, status };
+      return;
+    }
     listRequestInFlight.current = true;
     setErrorState(null);
-    setPhase("authenticated-loading-list");
+    if (mode === "search") setListSearching(true);
+    else setPhase("authenticated-loading-list");
     try {
       const page = await workOrderQueryController.list({ query, status });
       setItems(page.items);
@@ -176,14 +190,20 @@ export default function MobileWorkOrderExperience() {
       setListNextCursor(page.nextCursor);
       setListQuery(query);
       setListStatusFilter(status);
-      setSelected(null);
-      selectedWorkOrderId.current = null;
-      setDetail(null);
-      setPhase("list-ready");
+      if (mode === "blocking") {
+        setSelected(null);
+        selectedWorkOrderId.current = null;
+        setDetail(null);
+        setPhase("list-ready");
+      }
     } catch (error) {
       setRequestError(error, "list");
     } finally {
       listRequestInFlight.current = false;
+      if (mode === "search") setListSearching(false);
+      const pending = pendingListSearch.current;
+      pendingListSearch.current = null;
+      if (pending && (pending.query !== query || pending.status !== status)) void loadListFor(pending.query, pending.status, "search");
     }
   }, [selectedWorkOrderId, setRequestError, setSelected]);
 
@@ -305,52 +325,39 @@ export default function MobileWorkOrderExperience() {
     setMaterialSaveNotice(null);
   }
 
-  function confirmDiscard(onDiscard: () => void) {
-    if (overviewMutation.inFlight || materialMutation.inFlight) {
+  function leaveWithDraftPolicy(intent: DraftExitIntent, onProceed: () => void) {
+    const decision = decideDraftExit({ intent, mutationInFlight: overviewMutation.inFlight || materialMutation.inFlight });
+    if (decision === "preserve") return;
+    if (decision === "blocked-saving") {
       Alert.alert("저장 중입니다.", "저장이 끝난 뒤 이동해 주세요.");
       return;
     }
-    if (!dirty) {
-      if (editing || materialEditorRef.current) discardActiveEditors();
-      onDiscard();
-      return;
-    }
-    Alert.alert(
-      "저장하지 않은 변경사항이 있습니다.",
-      "변경사항을 버리면 입력한 내용은 복구되지 않습니다.",
-      [
-        { text: "계속 편집", style: "cancel" },
-        { text: "변경사항 버리기", style: "destructive", onPress: () => {
-          discardActiveEditors();
-          onDiscard();
-        } },
-      ],
-      { cancelable: true },
-    );
+    if (editing || materialEditorRef.current || dirty) discardActiveEditors();
+    onProceed();
   }
 
   function returnToList() {
-    confirmDiscard(clearDetailAndReturnToList);
+    leaveWithDraftPolicy("list", clearDetailAndReturnToList);
   }
 
   function selectItemSafely(item: WorkOrderListItem) {
     if (selected?.workOrderId === item.workOrderId) return;
-    confirmDiscard(() => void selectItem(item));
+    leaveWithDraftPolicy("work-order", () => void selectItem(item));
   }
 
   function loadListSafely() {
-    confirmDiscard(() => void loadList());
+    leaveWithDraftPolicy("list", () => void loadList());
   }
 
   function applyListSearch(query: string) {
     const normalized = query.trim();
     if (normalized === listQuery) return;
-    confirmDiscard(() => void loadListFor(normalized, listStatusFilter));
+    void loadListFor(normalized, listStatusFilter, "search");
   }
 
   function applyListStatusFilter(status: WorkOrderListStatusFilter) {
     if (status === listStatusFilter) return;
-    confirmDiscard(() => void loadListFor(listQuery, status));
+    void loadListFor(listQuery, status, "search");
   }
 
   async function loadMoreList() {
@@ -401,7 +408,7 @@ export default function MobileWorkOrderExperience() {
 
 
   function disconnectSafely() {
-    confirmDiscard(() => void disconnect());
+    leaveWithDraftPolicy("session-loss", () => void disconnect());
   }
 
   async function loadMaterials(workOrderId: string, action: "initial" | "retry" | "more") {
@@ -617,12 +624,8 @@ export default function MobileWorkOrderExperience() {
   }
 
   function cancelMaterialEditor() {
-    confirmDiscard(() => {
-      materialEditorRef.current = null;
-      setMaterialEditor(null);
-      setActiveMaterialField(null);
-      setActiveMaterialField(null);
-    });
+    if (materialMutation.inFlight) return;
+    closeMaterialEditorSession();
   }
 
   function applyRefreshedMaterialSnapshot(
@@ -753,7 +756,7 @@ export default function MobileWorkOrderExperience() {
   }
 
   function requestArchiveMaterial(line: WorkOrderMaterialLine) {
-    confirmDiscard(() => {
+    leaveWithDraftPolicy("feature", () => {
       Alert.alert(
         "원단 삭제",
         `“${line.name}” 원단을 삭제된 원단으로 이동합니다. 다시 복구할 수 있습니다.`,
@@ -766,7 +769,7 @@ export default function MobileWorkOrderExperience() {
   }
 
   function requestRestoreMaterial(line: WorkOrderMaterialLine) {
-    confirmDiscard(() => {
+    leaveWithDraftPolicy("feature", () => {
       Alert.alert(
         "원단 복구",
         `“${line.name}” 원단을 기존 위치로 복구합니다.`,
@@ -778,11 +781,35 @@ export default function MobileWorkOrderExperience() {
     });
   }
 
-  async function saveMaterial() {
+  async function saveMaterial(draftOverride?: MaterialDraftUpdate) {
     const editor = materialEditorRef.current;
     if (!detail || !editor || materialMutation.inFlight || editor.committedNextVersion !== null) return;
     if (selectedWorkOrderId.current !== editor.workOrderId || detail.header.id !== editor.workOrderId) return;
-    const fieldErrors = validateMaterialDraft(editor.draft);
+    const effectiveDraft = createMaterialDraft(draftOverride ?? {}, editor.draft);
+    if (draftOverride) {
+      updateMaterialEditor((current) => current?.token === editor.token ? {
+        ...current,
+        draft: effectiveDraft,
+        fieldErrors: {},
+        saveState: "editing",
+        saveMessage: null,
+      } : current);
+    }
+    let fieldErrors: MaterialEditorFieldErrors;
+    let normalizedDraft: MaterialDraftFields;
+    let patch: MaterialDraftUpdate;
+    try {
+      fieldErrors = validateMaterialDraft(effectiveDraft);
+      normalizedDraft = normalizeMaterialDraft(effectiveDraft, editor.base);
+      patch = materialPatch(editor.base, normalizedDraft);
+    } catch {
+      updateMaterialEditor((current) => current?.token === editor.token ? {
+        ...current,
+        saveState: "save-error",
+        saveMessage: "입력값을 처리하지 못했습니다.",
+      } : current);
+      return;
+    }
     if (Object.keys(fieldErrors).length > 0) {
       updateMaterialEditor((current) => current?.token === editor.token ? {
         ...current,
@@ -792,11 +819,12 @@ export default function MobileWorkOrderExperience() {
       } : current);
       return;
     }
-    const normalizedDraft = normalizeMaterialDraft(editor.draft);
-    const patch = materialPatch(editor.base, normalizedDraft);
-    if (editor.mode === "edit" && Object.keys(patch).length === 0) return;
+    if (editor.mode === "edit" && Object.keys(patch).length === 0) {
+      cancelMaterialEditor();
+      return;
+    }
 
-    materialMutation.tryBegin();
+    if (materialMutation.tryBegin() !== "started") return;
     const saveStartedAt = Date.now();
     const sessionGeneration = materialSessionGeneration.current;
     updateMaterialEditor((current) => current?.token === editor.token ? {
@@ -846,9 +874,7 @@ export default function MobileWorkOrderExperience() {
         canonicalGetCount: 2,
         duplicateCanonicalGetCount: 0,
       });
-      materialEditorRef.current = null;
-      setMaterialEditor(null);
-      setActiveMaterialField(null);
+      closeMaterialEditorSession();
       setMaterialSaveNotice(editor.mode === "create" ? "원단을 추가했습니다." : "원단을 저장했습니다.");
     } catch (error) {
       if (committedNextVersion !== null) {
@@ -864,7 +890,7 @@ export default function MobileWorkOrderExperience() {
         const mapped: MaterialEditorFieldErrors = {};
         for (const fieldError of error.fieldErrors) {
           const field = fieldError.field.replace(/^patch\./, "") as keyof MaterialDraftFields;
-          if (field in editor.draft) mapped[field] = fieldError.message;
+          if (field in effectiveDraft) mapped[field] = fieldError.message;
         }
         updateMaterialEditor((current) => current?.token === editor.token ? { ...current, fieldErrors: mapped, saveState: "validation-error", saveMessage: "입력값을 확인해 주세요." } : current);
       } else if (error instanceof MobileApiError && error.code === "CONFLICT") {
@@ -896,9 +922,7 @@ export default function MobileWorkOrderExperience() {
           sessionGeneration,
         });
         if (!applied) return;
-        materialEditorRef.current = null;
-        setMaterialEditor(null);
-        setActiveMaterialField(null);
+        closeMaterialEditorSession();
         setMaterialSaveNotice(editor.committedNextVersion === null ? null : "저장된 원단을 확인했습니다.");
       } catch (error) {
         updateMaterialEditor((current) => current?.token === editor.token ? {
@@ -910,13 +934,7 @@ export default function MobileWorkOrderExperience() {
         materialMutation.complete();
       }
     };
-    if (editor.committedNextVersion !== null) void load();
-    else {
-      Alert.alert("최신 원단을 불러올까요?", "현재 입력한 변경사항은 버려집니다.", [
-        { text: "계속 편집", style: "cancel" },
-        { text: "변경사항 버리기", style: "destructive", onPress: () => void load() },
-      ]);
-    }
+    void load();
   }
 
   function beginBasicInfoEdit(field: BasicInfoInlineField) {
@@ -954,15 +972,14 @@ export default function MobileWorkOrderExperience() {
   }
 
   function cancelBasicInfoEdit() {
-    confirmDiscard(() => {
-      if (detail) setBasicInfoDraft(basicInfoDraftFromDetail(detail));
-      setBasicInfoErrors({});
-      setConflictVersion(null);
-      setSaveState("read-only");
-      setSaveMessage(null);
-      setEditing(false);
-      setActiveBasicField(null);
-    });
+    if (overviewMutation.inFlight) return;
+    if (detail) setBasicInfoDraft(basicInfoDraftFromDetail(detail));
+    setBasicInfoErrors({});
+    setConflictVersion(null);
+    setSaveState("read-only");
+    setSaveMessage(null);
+    setEditing(false);
+    setActiveBasicField(null);
   }
 
   function nextClientRequestId() {
@@ -976,7 +993,10 @@ export default function MobileWorkOrderExperience() {
     const effectiveDirty = effectiveDraft.productName !== detail.header.productName
       || effectiveDraft.dueDate !== (detail.header.dueDate ?? "")
       || effectiveDraft.totalQuantity !== String(detail.header.totalQuantity);
-    if (!effectiveDirty) return;
+    if (!effectiveDirty) {
+      cancelBasicInfoEdit();
+      return;
+    }
     const fieldErrors = validateBasicInfoDraft(effectiveDraft);
     if (Object.keys(fieldErrors).length > 0) {
       setBasicInfoErrors(fieldErrors);
@@ -1105,12 +1125,7 @@ export default function MobileWorkOrderExperience() {
         detailRequestInFlight.current = false;
       }
     };
-    if (basicInfoDirty || conflictVersion !== null) {
-      Alert.alert("최신 내용을 불러올까요?", "현재 입력한 변경사항은 버려집니다.", [
-        { text: "계속 편집", style: "cancel" },
-        { text: "변경사항 버리기", style: "destructive", onPress: () => void load() },
-      ]);
-    } else void load();
+    void load();
   }
 
   function retry() {
@@ -1186,15 +1201,15 @@ export default function MobileWorkOrderExperience() {
       onLoadMoreMaterials={() => void loadMaterials(detail.header.id, "more")}
       onLoadMoreArchivedMaterials={() => void loadMoreArchivedMaterials(detail.header.id)}
       onOpenMaterials={() => void loadMaterials(detail.header.id, "initial")}
-      onRequestSectionChange={confirmDiscard}
+      onRequestSectionChange={(onProceed) => leaveWithDraftPolicy("feature", onProceed)}
       onRetryMaterials={() => void loadMaterials(detail.header.id, "retry")}
       onRestoreMaterial={requestRestoreMaterial}
-      onSave={() => void saveBasicInfo()}
+      onSave={(override) => void saveBasicInfo(override)}
       onSaveDate={(value) => {
         changeBasicInfoDraft("dueDate", value);
         void saveBasicInfo({ dueDate: value });
       }}
-      onSaveMaterial={() => void saveMaterial()}
+      onSaveMaterial={(draftOverride) => void saveMaterial(draftOverride)}
       phone={!tablet}
       saveMessage={saveMessage}
       saveState={saveState}
@@ -1222,7 +1237,7 @@ export default function MobileWorkOrderExperience() {
         {globalError && errorState ? <ErrorPanel error={errorState} onRetry={retry} /> : tablet ? (
           <View style={styles.split}>
             <View style={styles.listPane}>
-              <WorkOrderListScreen items={items} hasMore={hasMore} selectedId={selected?.workOrderId ?? null} loading={phase === "authenticated-loading-list"} loadingMore={listLoadingMore} query={listQuery} statusFilter={listStatusFilter} onLoadMore={() => void loadMoreList()} onRefresh={loadListSafely} onSearch={applyListSearch} onStatusFilter={applyListStatusFilter} onSelect={selectItemSafely} />
+              <WorkOrderListScreen items={items} hasMore={hasMore} selectedId={selected?.workOrderId ?? null} loading={phase === "authenticated-loading-list"} loadingMore={listLoadingMore} searching={listSearching} query={listQuery} statusFilter={listStatusFilter} onLoadMore={() => void loadMoreList()} onRefresh={loadListSafely} onSearch={applyListSearch} onStatusFilter={applyListStatusFilter} onSelect={selectItemSafely} />
             </View>
             <View style={styles.detailPane}>{detailPane}</View>
           </View>
@@ -1230,7 +1245,7 @@ export default function MobileWorkOrderExperience() {
           <View style={styles.phoneBody}>{detailPane}</View>
         ) : (
           <View style={styles.phoneBody}>
-            <WorkOrderListScreen items={items} hasMore={hasMore} selectedId={null} loading={phase === "authenticated-loading-list"} loadingMore={listLoadingMore} query={listQuery} statusFilter={listStatusFilter} onLoadMore={() => void loadMoreList()} onRefresh={loadListSafely} onSearch={applyListSearch} onStatusFilter={applyListStatusFilter} onSelect={selectItemSafely} />
+            <WorkOrderListScreen items={items} hasMore={hasMore} selectedId={null} loading={phase === "authenticated-loading-list"} loadingMore={listLoadingMore} searching={listSearching} query={listQuery} statusFilter={listStatusFilter} onLoadMore={() => void loadMoreList()} onRefresh={loadListSafely} onSearch={applyListSearch} onStatusFilter={applyListStatusFilter} onSelect={selectItemSafely} />
           </View>
         )}
       </View>

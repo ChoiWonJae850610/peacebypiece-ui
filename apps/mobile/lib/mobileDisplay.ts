@@ -50,13 +50,14 @@ export function stripDecimalTrailingZeros(value: string): string {
   return `${normalizedSign}${whole}${fraction ? `.${fraction}` : ""}`;
 }
 
-export function formatQuantity(value: string | null, unit = ""): string {
-  if (value === null || !DECIMAL_PATTERN.test(value.trim())) return "미입력";
+export function formatQuantity(value: string | null | undefined, unit: string | null | undefined = ""): string {
+  if (typeof value !== "string" || !DECIMAL_PATTERN.test(value.trim())) return "미입력";
   const normalized = stripDecimalTrailingZeros(value);
-  return `${normalized}${unit.trim() ? ` ${unit.trim()}` : ""}`;
+  const normalizedUnit = typeof unit === "string" ? unit.trim() : "";
+  return `${normalized}${normalizedUnit ? ` ${normalizedUnit}` : ""}`;
 }
 
-export function formatWon(value: string | null): string {
+export function formatWon(value: string | null | undefined): string {
   const matched = DECIMAL_PATTERN.exec(value?.trim() ?? "");
   if (!matched) return "미입력";
   const [, sign, rawWhole, rawFraction = ""] = matched;
@@ -68,13 +69,15 @@ export function formatWon(value: string | null): string {
   return `${sign === "-" && rounded !== 0n ? "-" : ""}${grouped}원`;
 }
 
-function quantityToScaled(value: string): bigint | null {
+function quantityToScaled(value: string | null | undefined): bigint | null {
+  if (typeof value !== "string") return null;
   const matched = /^(\d+)(?:\.(\d{1,3}))?$/.exec(value.trim());
   if (!matched) return null;
   return BigInt(matched[1]) * 1000n + BigInt((matched[2] ?? "").padEnd(3, "0"));
 }
 
-function priceToCents(value: string): bigint | null {
+function priceToCents(value: string | null | undefined): bigint | null {
+  if (typeof value !== "string") return null;
   const matched = /^(\d+)(?:\.(\d{1,2}))?$/.exec(value.trim());
   if (!matched) return null;
   return BigInt(matched[1]) * 100n + BigInt((matched[2] ?? "").padEnd(2, "0"));
@@ -87,9 +90,9 @@ function scaledQuantityToString(value: bigint): string {
 }
 
 export function calculateOrderQuantity(input: {
-  readonly requiredQuantity: string;
-  readonly allowanceQuantity: string;
-  readonly inventoryUsageQuantity: string;
+  readonly requiredQuantity?: string | null;
+  readonly allowanceQuantity?: string | null;
+  readonly inventoryUsageQuantity?: string | null;
 }): string | null {
   const required = quantityToScaled(input.requiredQuantity);
   const allowance = quantityToScaled(input.allowanceQuantity);
@@ -99,7 +102,10 @@ export function calculateOrderQuantity(input: {
   return scaledQuantityToString(calculated > 0n ? calculated : 0n);
 }
 
-export function calculateMaterialAmount(orderQuantity: string | null, unitPrice: string): string | null {
+export function calculateMaterialAmount(
+  orderQuantity: string | null | undefined,
+  unitPrice: string | null | undefined,
+): string | null {
   if (orderQuantity === null) return null;
   const quantity = quantityToScaled(orderQuantity);
   const price = priceToCents(unitPrice);

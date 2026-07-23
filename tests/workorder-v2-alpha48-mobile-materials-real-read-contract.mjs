@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
 
+import { normalizeMaterialLine } from "../apps/mobile/lib/apiResponseNormalizer.ts";
 import { isExternalQaPathAllowed, isTailscaleServePathAllowed } from "../lib/external-qa/configCore.mjs";
 import { assertCanonicalWaflVersionConsistency } from "./helpers/wafl-v2-current-version.mjs";
 
@@ -16,6 +17,7 @@ const detail = read("apps/mobile/features/work-orders/overview/WorkOrderDetailOv
 const materials = read("apps/mobile/features/materials/WorkOrderMaterialsReadOnly.tsx");
 const app = read("apps/mobile/features/MobileWorkOrderExperience.tsx");
 const apiClient = read("apps/mobile/lib/apiClient.ts");
+const apiResponseNormalizer = read("apps/mobile/lib/apiResponseNormalizer.ts");
 const apiTypes = read("apps/mobile/domain/mobileContract.ts");
 const mobileDisplay = read("apps/mobile/lib/mobileDisplay.ts");
 const route = read("app/api/v2/work-orders/[workOrderId]/materials/route.ts");
@@ -50,7 +52,34 @@ assert.match(apiClient, /export async function getWorkOrderMaterials/);
 assert.match(apiClient, /type: "fabric", lifecycle, limit: "30"/);
 assert.match(apiClient, /method: "GET"/);
 assert.match(apiClient, /body\.data\.workOrderId !== workOrderId/);
-assert.match(apiClient, /DECIMAL_PATTERN/);
+assert.match(apiResponseNormalizer, /const DECIMAL_PATTERN/);
+assert.match(apiResponseNormalizer, /decimalFields\.some\(\(field\) => typeof field !== "string" \|\| !DECIMAL_PATTERN\.test\(field\)\)/);
+assert.match(apiClient, /from "\.\/apiResponseNormalizer"/);
+assert.match(apiClient, /body\.data\.items\.map\(normalizeMaterialLine\)/);
+assert.doesNotMatch(apiClient, /const DECIMAL_PATTERN/);
+const normalizedMaterial = normalizeMaterialLine({
+  id: "22222222-2222-4222-8222-222222222222",
+  materialType: "fabric",
+  name: "Cotton",
+  requiredQuantity: "10.000",
+  allowanceQuantity: "0.500",
+  inventoryUsageQuantity: "0.000",
+  orderQuantity: "10.500",
+  unitCode: "yd",
+  currency: "KRW",
+  unitPrice: "15000.00",
+  amount: "157500.00",
+  status: "editing",
+  displayOrder: 1,
+  locked: false,
+  lifecycle: "active",
+  archivedAt: null,
+});
+assert.ok(normalizedMaterial);
+assert.equal(normalizedMaterial.colorOption, null);
+assert.equal(normalizedMaterial.usageArea, null);
+assert.equal(normalizedMaterial.memo, null);
+assert.equal(normalizeMaterialLine({ ...normalizedMaterial, requiredQuantity: "10.0.0" }), null);
 assert.match(apiClient, /body\.data\.hasMore &&/);
 assert.match(apiClient, /!body\.data\.hasMore && body\.data\.nextCursor !== null/);
 

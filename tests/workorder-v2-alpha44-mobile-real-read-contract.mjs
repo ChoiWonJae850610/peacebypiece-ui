@@ -56,7 +56,7 @@ assert.match(app, /useWindowDimensions/);
 assert.match(app, /width >= 768/);
 assert.match(app, /"booting"[\s\S]*"session-checking"[\s\S]*"developer-auto-connecting"[\s\S]*"disconnected-auto-failed"[\s\S]*"manual-code-entry"[\s\S]*"connecting-manual"[\s\S]*"authenticated-loading-list"[\s\S]*"list-ready"[\s\S]*"detail-loading"[\s\S]*"detail-ready"[\s\S]*"recoverable-error"[\s\S]*"session-expired"/);
 for (const forbidden of ["저장", "수정", "발주", "삭제"]) assert.doesNotMatch(detail, new RegExp(`>${forbidden}<`));
-assert.match(list, /현재 불러온 작업지시서/);
+assert.match(list, /현재 표시 작업지시서/);
 assert.match(list, /representativeThumbnail \? "이미지 있음" : "이미지 없음"/);
 assert.match(detail, /작업지시서 · 읽기 전용/);
 assert.match(app, /자동으로 다시 요청하지 않습니다/);

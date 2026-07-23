@@ -18,7 +18,8 @@ assert.match(app, /expectedVersion: detail\.header\.entityVersion/);
 assert.match(app, /overviewMutation\.inFlight/);
 assert.match(app, /const refreshed = await workOrderQueryController\.detail/);
 assert.match(app, /현재 필드 편집을 완료해 주세요/);
-assert.match(app, /저장하지 않은 변경사항이 있습니다/);
+assert.match(app, /leaveWithDraftPolicy/);
+assert.doesNotMatch(app, /저장하지 않은 변경사항이 있습니다|변경사항 버리기/);
 assert.doesNotMatch(`${detail}\n${app}`, /setInterval|auto.?save|automatic.?save/i);
 
 console.log("workorder v2 alpha.52 mobile overview inline editing contract: PASS");

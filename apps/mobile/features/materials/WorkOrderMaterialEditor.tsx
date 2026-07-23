@@ -1,9 +1,12 @@
+import { useState } from "react";
 import { ActivityIndicator, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
-import { ArrowLeft, Save } from "lucide-react-native";
+import { ArrowLeft, Save, SlidersVertical } from "lucide-react-native";
 
 import { WAFL_FONTS } from "@/constants/fonts";
 import type { MaterialEditorFieldErrors } from "@/domain/workOrderValidation";
 import type { MaterialDraftFields } from "@/domain/mobileContract";
+import WaflReelPickerSheet from "@/features/inputs/reel-picker/WaflReelPickerSheet";
+import { materialReelDraftPatch, type MaterialReelField } from "@/features/materials/materialReelAdapter";
 import { calculateMaterialAmount, calculateOrderQuantity, formatQuantity, formatWon } from "@/lib/mobileDisplay";
 
 export type MaterialEditorMode = "create" | "edit";
@@ -45,6 +48,8 @@ type FieldProps = {
   readonly maxLength: number;
 };
 
+type ReelEditorTarget = { readonly field: MaterialReelField; readonly label: string; readonly value: string };
+
 function EditorField({ label, field, state, onChange, keyboardType = "default", multiline = false, placeholder, maxLength }: FieldProps) {
   const disabled = state.saveState === "saving" || state.saveState === "locked" || state.saveState === "refresh-error";
   return (
@@ -68,6 +73,7 @@ function EditorField({ label, field, state, onChange, keyboardType = "default", 
 }
 
 export default function WorkOrderMaterialEditor({ state, dirty, onChange, onCancel, onSave, onReloadLatest }: Props) {
+  const [reelTarget, setReelTarget] = useState<ReelEditorTarget | null>(null);
   const saving = state.saveState === "saving";
   const saveBlocked = !dirty || saving || state.saveState === "locked" || state.saveState === "conflict" || state.saveState === "refresh-error";
   const reloadAvailable = state.saveState === "conflict" || state.saveState === "locked" || state.saveState === "refresh-error";
@@ -76,6 +82,22 @@ export default function WorkOrderMaterialEditor({ state, dirty, onChange, onCanc
 
   return (
     <View testID="material-draft-editor" style={styles.editor}>
+      {reelTarget ? (
+        <WaflReelPickerSheet
+          field={reelTarget.field}
+          kind={reelTarget.field === "unitCode" ? "unit" : "quantity"}
+          label={reelTarget.label}
+          onApply={(value, unitCode) => {
+            const patch = materialReelDraftPatch({ field: reelTarget.field, value, unitCode, currentUnitCode: state.draft.unitCode });
+            for (const [field, nextValue] of Object.entries(patch) as [keyof MaterialDraftFields, string][]) onChange(field, nextValue);
+            setReelTarget(null);
+          }}
+          onCancel={() => setReelTarget(null)}
+          unitCode={state.draft.unitCode}
+          value={reelTarget.value}
+          visible
+        />
+      ) : null}
       <View style={styles.header}>
         <Pressable accessibilityLabel="원단 편집 취소" accessibilityRole="button" disabled={saving} onPress={onCancel} style={({ pressed }) => [styles.backButton, pressed && styles.pressed]}>
           <ArrowLeft color="#3f352d" size={18} />
@@ -91,10 +113,27 @@ export default function WorkOrderMaterialEditor({ state, dirty, onChange, onCanc
       <View style={styles.fields}>
         <EditorField field="name" label="원단명" maxLength={200} onChange={onChange} placeholder="원단명을 입력하세요" state={state} />
         <EditorField field="colorOption" label="색상·옵션" maxLength={200} onChange={onChange} placeholder="예: NAVY" state={state} />
-        <EditorField field="unitCode" label="단위" maxLength={32} onChange={onChange} placeholder="예: yd" state={state} />
-        <EditorField field="requiredQuantity" keyboardType="decimal-pad" label="필요수량" maxLength={16} onChange={onChange} placeholder="0" state={state} />
-        <EditorField field="allowanceQuantity" keyboardType="decimal-pad" label="로스·여유" maxLength={16} onChange={onChange} placeholder="0" state={state} />
-        <EditorField field="inventoryUsageQuantity" keyboardType="decimal-pad" label="재고사용" maxLength={16} onChange={onChange} placeholder="0" state={state} />
+        {([
+          { field: "unitCode", label: "단위", value: state.draft.unitCode || "단위 선택", reelValue: state.draft.requiredQuantity },
+          { field: "requiredQuantity", label: "필요수량", value: formatQuantity(state.draft.requiredQuantity, state.draft.unitCode), reelValue: state.draft.requiredQuantity },
+          { field: "allowanceQuantity", label: "로스·여유", value: formatQuantity(state.draft.allowanceQuantity, state.draft.unitCode), reelValue: state.draft.allowanceQuantity },
+          { field: "inventoryUsageQuantity", label: "재고사용", value: formatQuantity(state.draft.inventoryUsageQuantity, state.draft.unitCode), reelValue: state.draft.inventoryUsageQuantity },
+        ] as const).map((item) => (
+          <View key={item.field} style={styles.field}>
+            <Text style={styles.label}>{item.label}</Text>
+            <Pressable
+              accessibilityLabel={`${item.label}, 릴 피커로 수정`}
+              accessibilityRole="button"
+              disabled={saving}
+              onPress={() => setReelTarget({ field: item.field, label: item.label, value: item.reelValue })}
+              style={({ pressed }) => [styles.reelField, pressed && styles.pressed]}
+            >
+              <Text numberOfLines={1} style={styles.reelFieldValue}>{item.value}</Text>
+              <SlidersVertical color="#9b4a27" size={17} />
+            </Pressable>
+            {state.fieldErrors[item.field] ? <Text style={styles.fieldError}>{state.fieldErrors[item.field]}</Text> : null}
+          </View>
+        ))}
         <View accessibilityLabel="발주수량, 자동 계산, 읽기 전용" style={styles.field}>
           <Text style={styles.label}>발주수량</Text>
           <View style={styles.calculatedValue}><Text style={styles.calculatedText}>{formatQuantity(calculatedOrderQuantity, state.draft.unitCode)}</Text></View>
@@ -146,6 +185,8 @@ const styles = StyleSheet.create({
   input: { backgroundColor: "#fff", borderColor: "#d9cdbf", borderRadius: 8, borderWidth: 1, color: "#2f2924", fontFamily: WAFL_FONTS.medium, fontSize: 13, minHeight: 44, paddingHorizontal: 10, paddingVertical: 9 },
   inputMultiline: { minHeight: 68, textAlignVertical: "top" },
   inputInvalid: { borderColor: "#b54b43", backgroundColor: "#fff9f7" },
+  reelField: { alignItems: "center", backgroundColor: "#fffaf2", borderColor: "#d9cdbf", borderRadius: 8, borderWidth: 1, flexDirection: "row", gap: 7, minHeight: 44, paddingHorizontal: 10 },
+  reelFieldValue: { color: "#2f2924", flex: 1, fontFamily: WAFL_FONTS.bold, fontSize: 13, minWidth: 0 },
   calculatedValue: { backgroundColor: "#f4efe7", borderColor: "#ddd2c5", borderRadius: 8, borderWidth: 1, justifyContent: "center", minHeight: 44, paddingHorizontal: 10 },
   calculatedText: { color: "#5f554c", fontFamily: WAFL_FONTS.bold, fontSize: 13 },
   fieldError: { color: "#a33b35", fontFamily: WAFL_FONTS.medium, fontSize: 10, lineHeight: 15, marginTop: 3 },

@@ -104,7 +104,7 @@ assert.match(app, /onReturnToList=\{returnToList\}/);
 assert.match(app, /accessibilityLabel="작업지시서 목록으로 돌아가기"/);
 assert.match(app, /accessibilityLabel="작업지시서 목록으로"/);
 assert.doesNotMatch(app, /returnToList[\s\S]{0,500}getWorkOrderList\(/, "returning to list must not refetch automatically");
-assert.match(list, /현재 불러온 작업지시서/);
+assert.match(list, /현재 표시 작업지시서/);
 assert.match(list, /accessibilityLabel="작업지시서 검색"/);
 
 assert.match(proxy, /isExternalQaPathAllowed/);

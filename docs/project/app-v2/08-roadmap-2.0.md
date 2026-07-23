@@ -2,28 +2,28 @@
 
 Document role: canonical owner for the current result, next candidate, and Version Delta boundary. It is not the historical implementation ledger; completed details live in numbered immutable evidence.
 
-## Current result — 2.0.0-alpha.53
+## Current result — 2.0.0-alpha.54
+
+Status: `ALPHA54_MOBILE_REEL_PICKER_INPUT_UX_COMPLETE`.
+
+Alpha.54 uses the alpha.53 architecture boundaries to complete the production mobile Reel Picker and related list/input polish:
+
+- total quantity uses an integer reel; material quantity fields use quantity plus step reels; unit uses a dedicated stable-order reel;
+- icon-only X/Check owns the complete edit session with explicit save, one-request maximum, duplicate-submit guard, and clean teardown;
+- canonical full-draft normalization, optional-field validation safety, and an alias-free pure response normalizer prevent malformed-response and unhandled-promise regressions;
+- immediate fixed-height search now supports Korean initial consonants and a search-specific empty state;
+- one workflow policy owns filter groups, predicates, card badge labels, and variants;
+- compact due-date layout/date-cell alignment and existing alpha.52-alpha.53 behavior remain accepted on physical iPhone;
+- approved automated and owner-attributed dev/test saves ended at WorkOrder/revision/material `42/42/20`, event/receipt `75/26`; final UI/search QA added mutation `0`;
+- schema/migration, R2/PDF/token, production, dependency, native, and EAS effects remain zero.
+
+Evidence: `53-mobile-reel-picker-input-ux-evidence.md`.
+
+## Previous architecture result — 2.0.0-alpha.53
 
 Status: `ALPHA53_MOBILE_ARCHITECTURE_FOUNDATION_COMPLETE`.
 
-Alpha.53 preserves alpha.52 product behavior while establishing the mobile architecture foundation:
-
-- composition shell separated from list, overview, and material feature views;
-- explicit session, navigation/lifecycle, query, and mutation execution boundaries;
-- mobile-safe DTO/error contracts, business validation, editability policy, formatter, cache, and theme owners;
-- known/unknown API error separation and dependency/import guards;
-- behavior-centered controller, policy, formatter, validation, numeric/date, duplicate-submit, and request-count tests;
-- mandatory measured PC-resource and remote-operation audits added to Permanent Rules;
-- mutation-free Runtime and physical-iPhone regression acceptance with canonical teardown;
-- migration, business data, R2/PDF/token, production, dependency, native, and EAS effects remain zero.
-
-Evidence: `52-mobile-architecture-foundation-evidence.md`.
-
-## Previous product result — 2.0.0-alpha.52
-
-Status: `ALPHA52_MOBILE_CORE_INLINE_UX_CALCULATION_LIST_AND_DATE_COMPLETE`.
-
-Connected mobile list/search/filter, same-position overview/material editing, numeric and currency formatting, calculated order quantity/amount, keyboard-safe narrow inputs, and compact due-date behavior remain complete. Detailed facts are preserved in `51-mobile-core-inline-ux-calculation-list-date-evidence.md`.
+Composition, feature UI, application controller, domain contract/policy/validation, formatter/theme, and API infrastructure boundaries remain complete. Detailed facts are preserved in `52-mobile-architecture-foundation-evidence.md`.
 
 ## Previous product result — 2.0.0-alpha.51
 
@@ -52,6 +52,7 @@ Permanent Rules, Current Baseline, Version Delta, Immutable Evidence, responsibi
 | alpha.51 | mobile material soft-delete/restore lifecycle | `50-mobile-material-soft-delete-restore-lifecycle-evidence.md` |
 | alpha.52 | mobile core inline UX, calculation, list, and date | `51-mobile-core-inline-ux-calculation-list-date-evidence.md` |
 | alpha.53 | mobile architecture foundation | `52-mobile-architecture-foundation-evidence.md` |
+| alpha.54 | mobile Reel Picker input UX | `53-mobile-reel-picker-input-ux-evidence.md` |
 
 Older results remain in numbered evidence files indexed and task-routed by `00-start-here.md`. Their detailed outcomes are not duplicated here.
 
@@ -82,22 +83,21 @@ Standard reference:
 
 The Delta does not repeat Permanent Rules. An omitted exceptional authority remains forbidden.
 
-## Next candidate — 2.0.0-alpha.54
+## Next candidate — 2.0.0-alpha.55
 
-Candidate objective: mobile Reel Picker production implementation only after owner approval.
+Candidate objective: material order request/cancel/complete lifecycle only after owner approval.
 
-Potential included scope, subject to the actual alpha.54 Delta:
+Potential included scope, subject to the actual alpha.55 Delta:
 
-- number/unit/step value models using the alpha.53 formatter and feature/controller boundaries;
-- bounded reel/snap/fade/accessibility behavior and a direct-input fallback;
-- an exact approved field connection and physical-device visual/interaction QA;
-- explicit dependency and native/EAS decision before any package or native change.
+- exact material request/cancel/complete transitions and field locking;
+- permissions, expectedVersion, idempotency, receipts/events, and canonical read-model reflection;
+- reuse of the existing material feature/controller/policy and explicit mutation gate;
+- bounded dev/test effect plan plus physical-device behavior QA.
 
 Explicitly separate later scope:
 
-- material order request/cancel/complete remains a separately approved alpha.55 candidate;
 - hard DELETE and purge remain forbidden;
 - production deployment or mutation, schema changes, and unrelated feature expansion remain excluded;
 - native dependencies/plugins and EAS Build/Update require an explicit boundary.
 
-Alpha.54 does not start merely because it is listed here. It begins only with its owner-approved Version Delta and a matching clean baseline.
+Alpha.55 does not start merely because it is listed here. It begins only with its owner-approved Version Delta and a matching clean baseline.

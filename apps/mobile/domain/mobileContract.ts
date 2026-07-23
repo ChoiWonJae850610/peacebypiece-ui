@@ -129,6 +129,8 @@ export type MaterialDraftFields = {
   readonly memo: string;
 };
 
+export type MaterialDraftUpdate = Partial<Omit<MaterialDraftFields, "orderQuantity">>;
+
 export type CreateMaterialLineInput = MaterialDraftFields & {
   readonly clientRequestId: string;
   readonly expectedVersion: number;
@@ -138,7 +140,7 @@ export type CreateMaterialLineInput = MaterialDraftFields & {
 export type PatchMaterialLineInput = {
   readonly clientRequestId: string;
   readonly expectedVersion: number;
-  readonly patch: Partial<Omit<MaterialDraftFields, "orderQuantity">>;
+  readonly patch: MaterialDraftUpdate;
 };
 
 export type MaterialLineCommandResult = {

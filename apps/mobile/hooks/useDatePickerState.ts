@@ -27,6 +27,16 @@ function monthFor(value: string, fallback: string) {
   return { year: Number(matched?.[1] ?? 2000), month: Number(matched?.[2] ?? 1) - 1 };
 }
 
+export function calendarMonthCells(year: number, month: number): readonly (number | null)[] {
+  const firstWeekday = new Date(year, month, 1).getDay();
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const cellCount = Math.ceil((firstWeekday + daysInMonth) / 7) * 7;
+  return Array.from({ length: cellCount }, (_, index) => {
+    const day = index - firstWeekday + 1;
+    return day >= 1 && day <= daysInMonth ? day : null;
+  });
+}
+
 export function datePickerReducer(state: DatePickerState, action: Action): DatePickerState {
   switch (action.type) {
     case "open": {

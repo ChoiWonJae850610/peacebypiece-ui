@@ -250,3 +250,11 @@ The alpha.13 mobile mock correction makes the alpha.12 rules visible in the actu
 - The six-step production rail is one continuous line with dots placed on top, not separate connector fragments.
 
 This correction remains mock-only and does not connect real inline edit save, camera, file picker, upload, share, PDF generation, API, DB, R2, Worker, push notification, order, delivery, sketch, drag, or long-press behavior.
+
+## 2.0.0-alpha.54 mobile list search and workflow badge policy
+
+- The mobile WorkOrder list supports ordinary completed-text, English, numeric, and document-number search together with Korean initial-consonant search from the first compatibility-jamo character.
+- An initial-consonant query filters the already loaded client list without adding a search request. The established server search and debounce behavior remain authoritative for ordinary queries.
+- A zero-result search uses a search-specific empty state and is distinct from a company with no visible WorkOrders.
+- The one representative status badge on each list card shows the canonical WorkOrder workflow group: `작성 중`, `전달·발행`, `진행 중`, `완료`, or `보류·취소`.
+- Status filter labels, filter predicates, badge labels, and badge variants consume the same mobile presentation policy. Document-generation state such as `발행됨` does not replace the representative workflow badge.

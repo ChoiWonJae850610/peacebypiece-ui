@@ -16,7 +16,9 @@ import ControlledInlineEditValue from "@/components/ControlledInlineEditValue";
 import InlineDatePicker from "@/components/InlineDatePicker";
 import WorkOrderMaterialsReadOnly, { type MaterialReadViewState } from "@/features/materials/WorkOrderMaterialsReadOnly";
 import WorkOrderMaterialEditor, { type MaterialEditorViewState } from "@/features/materials/WorkOrderMaterialEditor";
-import type { MaterialDraftFields, WorkOrderDetailCore, WorkOrderMaterialLine } from "@/domain/mobileContract";
+import ReelInlineEditValue from "@/features/inputs/reel-picker/ReelInlineEditValue";
+import WaflReelPickerSheet from "@/features/inputs/reel-picker/WaflReelPickerSheet";
+import type { MaterialDraftFields, MaterialDraftUpdate, WorkOrderDetailCore, WorkOrderMaterialLine } from "@/domain/mobileContract";
 import { formatWon } from "@/lib/mobileDisplay";
 import { useFocusedFieldVisibility } from "@/hooks/useFocusedFieldVisibility";
 import {
@@ -100,7 +102,7 @@ type Props = {
   readonly onBeginEdit: (field: BasicInfoInlineField) => void;
   readonly onChangeDraft: (field: keyof BasicInfoDraft, value: string) => void;
   readonly onCancelEdit: () => void;
-  readonly onSave: () => void;
+  readonly onSave: (override?: Partial<BasicInfoDraft>) => void;
   readonly onSaveDate: (value: string) => void;
   readonly onReloadLatest: () => void;
   readonly materials: MaterialReadViewState;
@@ -119,7 +121,7 @@ type Props = {
   readonly onRestoreMaterial: (line: WorkOrderMaterialLine) => void;
   readonly onChangeMaterialDraft: (field: keyof MaterialDraftFields, value: string) => void;
   readonly onCancelMaterialEditor: () => void;
-  readonly onSaveMaterial: () => void;
+  readonly onSaveMaterial: (draftOverride?: MaterialDraftUpdate) => void;
   readonly onReloadLatestMaterial: () => void;
   readonly onRequestSectionChange: (onProceed: () => void) => void;
   readonly onOpenMaterials: () => void;
@@ -131,6 +133,7 @@ type Props = {
 export default function WorkOrderDetailOverview(props: Props) {
   const { detail, phone, onBack } = props;
   const [activeSection, setActiveSection] = useState<"overview" | "fabric">("overview");
+  const [totalQuantityReelOpen, setTotalQuantityReelOpen] = useState(false);
   const { width } = useWindowDimensions();
   const { header } = detail;
   const productType = formatProductType(header.productTypeAlias, header.productTypeCode);
@@ -229,30 +232,40 @@ export default function WorkOrderDetailOverview(props: Props) {
               label="총 수량"
               value={`${header.totalQuantity.toLocaleString("ko-KR")}벌`}
               editor={(
-                <ControlledInlineEditValue
+                <ReelInlineEditValue
                   accessibilityLabel="총 수량"
                   active={props.activeBasicField === "totalQuantity"}
-                  dirty={props.dirty}
                   displayStyle={styles.miniValue}
                   displayValue={`${header.totalQuantity.toLocaleString("ko-KR")}벌`}
                   editable={props.canEdit && !basicLocked}
                   errorMessage={props.fieldErrors.totalQuantity ?? null}
-                  invalid={Boolean(props.fieldErrors.totalQuantity)}
-                  keyboardType="number-pad"
-                  maxLength={9}
                   onActivate={() => props.onRequestSectionChange(() => props.onBeginEdit("totalQuantity"))}
-                  onCancel={props.onCancelEdit}
-                  onChange={(value) => props.onChangeDraft("totalQuantity", value)}
-                  onSave={props.onSave}
-                  onFocusTarget={onFieldFocus}
+                  onOpenPicker={() => setTotalQuantityReelOpen(true)}
                   placeholder="0"
                   saving={savingBasic}
-                  selectTextOnFocus
                   testID="overview-inline-total-quantity"
-                  value={props.draft.totalQuantity}
                 />
               )}
             />
+            {totalQuantityReelOpen ? (
+              <WaflReelPickerSheet
+                field="totalQuantity"
+                kind="integer"
+                label="총 수량"
+                onApply={(value) => {
+                  setTotalQuantityReelOpen(false);
+                  props.onChangeDraft("totalQuantity", value);
+                  props.onSave({ totalQuantity: value });
+                }}
+                onCancel={() => {
+                  setTotalQuantityReelOpen(false);
+                  props.onCancelEdit();
+                }}
+                unitCode="벌"
+                value={props.draft.totalQuantity}
+                visible
+              />
+            ) : null}
             <MiniStat
               expanded={props.activeBasicField === "dueDate"}
               label="납기"

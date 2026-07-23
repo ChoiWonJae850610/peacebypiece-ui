@@ -5,8 +5,11 @@ import { Check, ChevronDown, ChevronUp, FileUp, Plus, RefreshCw, RotateCcw, Tras
 import { WAFL_FONTS } from "@/constants/fonts";
 import ControlledInlineEditValue from "@/components/ControlledInlineEditValue";
 import ExpandedInlineField from "@/components/ExpandedInlineField";
+import ReelInlineEditValue from "@/features/inputs/reel-picker/ReelInlineEditValue";
+import WaflReelPickerSheet from "@/features/inputs/reel-picker/WaflReelPickerSheet";
 import type { MaterialEditorViewState } from "@/features/materials/WorkOrderMaterialEditor";
-import type { MaterialDraftFields, WorkOrderMaterialLine } from "@/domain/mobileContract";
+import { materialReelDraftPatch, type MaterialReelField } from "@/features/materials/materialReelAdapter";
+import type { MaterialDraftFields, MaterialDraftUpdate, WorkOrderMaterialLine } from "@/domain/mobileContract";
 import { calculateMaterialAmount, calculateOrderQuantity, formatQuantity, formatWon } from "@/lib/mobileDisplay";
 
 export type MaterialReadStatus = "not-loaded" | "loading" | "loaded" | "empty" | "error" | "retrying" | "loading-more";
@@ -31,7 +34,7 @@ type Props = {
   readonly onEdit: (line: WorkOrderMaterialLine, field: keyof MaterialDraftFields) => void;
   readonly onChangeEdit: (field: keyof MaterialDraftFields, value: string) => void;
   readonly onCancelEdit: () => void;
-  readonly onSaveEdit: () => void;
+  readonly onSaveEdit: (draftOverride?: MaterialDraftUpdate) => void;
   readonly onArchive: (line: WorkOrderMaterialLine) => void;
   readonly onRestore: (line: WorkOrderMaterialLine) => void;
   readonly onRetry: () => void;
@@ -60,6 +63,13 @@ type MaterialInlineFieldProps = {
   readonly containerStyle?: object;
   readonly testID?: string;
   readonly onFieldFocus: Props["onFieldFocus"];
+};
+
+type ReelTarget = {
+  readonly field: MaterialReelField;
+  readonly label: string;
+  readonly value: string;
+  readonly unitCode: string;
 };
 
 function MaterialInlineField({
@@ -93,6 +103,61 @@ function MaterialInlineField({
       selectTextOnFocus={!multiline}
       testID={testID}
       value={active ? editor?.draft[field] ?? "" : ""}
+    />
+  );
+}
+
+function MaterialReelInlineField({
+  field,
+  label,
+  line,
+  editor,
+  activeField,
+  canEdit,
+  onEdit,
+  onOpen,
+  containerStyle,
+  displayStyle,
+  testID,
+}: {
+  readonly field: MaterialReelField;
+  readonly label: string;
+  readonly line: WorkOrderMaterialLine;
+  readonly editor: MaterialEditorViewState | null;
+  readonly activeField: keyof MaterialDraftFields | null;
+  readonly canEdit: boolean;
+  readonly onEdit: (field: keyof MaterialDraftFields) => void;
+  readonly onOpen: (target: ReelTarget) => void;
+  readonly containerStyle?: object;
+  readonly displayStyle?: object;
+  readonly testID?: string;
+}) {
+  const active = editor?.materialLineId === line.id && activeField === field;
+  const editable = canEdit && line.lifecycle === "active" && line.status === "editing" && !line.locked;
+  const draft = editor?.materialLineId === line.id ? editor.draft : null;
+  const unitCode = draft?.unitCode ?? line.unitCode;
+  const value = field === "unitCode" ? unitCode : draft?.[field] ?? line[field];
+  const displayValue = field === "unitCode" ? unitCode : formatQuantity(value, unitCode);
+  const open = () => onOpen({
+    field,
+    label,
+    value: field === "unitCode" ? draft?.requiredQuantity ?? line.requiredQuantity : value,
+    unitCode,
+  });
+  return (
+    <ReelInlineEditValue
+      accessibilityLabel={label}
+      active={active}
+      containerStyle={containerStyle}
+      displayStyle={displayStyle}
+      displayValue={displayValue}
+      editable={editable}
+      errorMessage={active ? editor?.fieldErrors[field] ?? null : null}
+      onActivate={() => onEdit(field)}
+      onOpenPicker={open}
+      placeholder={field === "unitCode" ? "단위 미입력" : "0"}
+      saving={active ? editor?.saveState === "saving" : false}
+      testID={testID}
     />
   );
 }
@@ -185,7 +250,7 @@ function ReadOnlyActionButton({ action, compact }: { readonly action: ReadOnlyAc
   );
 }
 
-function MaterialCard({ line, expanded, canEdit, lifecycleBusy, editor, activeField, onEdit, onChangeEdit, onCancelEdit, onSaveEdit, onArchive, onToggle, onFieldFocus }: {
+function MaterialCard({ line, expanded, canEdit, lifecycleBusy, editor, activeField, onEdit, onChangeEdit, onCancelEdit, onSaveEdit, onArchive, onToggle, onFieldFocus, onOpenReel }: {
   readonly line: WorkOrderMaterialLine;
   readonly expanded: boolean;
   readonly canEdit: boolean;
@@ -199,6 +264,7 @@ function MaterialCard({ line, expanded, canEdit, lifecycleBusy, editor, activeFi
   readonly onArchive: () => void;
   readonly onToggle: () => void;
   readonly onFieldFocus: Props["onFieldFocus"];
+  readonly onOpenReel: (target: ReelTarget) => void;
 }) {
   const { width } = useWindowDimensions();
   const compactActions = width < 760;
@@ -208,6 +274,7 @@ function MaterialCard({ line, expanded, canEdit, lifecycleBusy, editor, activeFi
   const usageArea = line.usageArea?.trim() || "미입력";
   const memo = line.memo?.trim() || "없음";
   const inlineProps = { line, editor, activeField, canEdit, onEdit, onChange: onChangeEdit, onCancel: onCancelEdit, onSave: onSaveEdit, onFieldFocus };
+  const reelProps = { line, editor, activeField, canEdit, onEdit, onOpen: onOpenReel };
   const cardActiveField = editor ? activeField : null;
   const activeHeaderField = cardActiveField === "name" || cardActiveField === "unitCode" ? cardActiveField : null;
   const activeSummaryField = cardActiveField === "colorOption" || cardActiveField === "unitPrice" ? cardActiveField : null;
@@ -230,13 +297,13 @@ function MaterialCard({ line, expanded, canEdit, lifecycleBusy, editor, activeFi
                 {activeHeaderField === "name" ? (
                   <MaterialInlineField {...inlineProps} displayStyle={styles.materialName} displayValue={line.name} field="name" label="원단명" maxLength={200} placeholder="원단명 미입력" testID="material-inline-name" />
                 ) : (
-                  <MaterialInlineField {...inlineProps} displayStyle={styles.compactValue} displayValue={line.unitCode} field="unitCode" label="단위" maxLength={32} placeholder="단위 미입력" testID="material-inline-unit" />
+                  <MaterialReelInlineField {...reelProps} displayStyle={styles.compactValue} field="unitCode" label="단위" testID="material-inline-unit" />
                 )}
               </ExpandedInlineField>
             ) : (
               <View style={styles.materialTitleRow}>
                 <MaterialInlineField {...inlineProps} displayStyle={styles.materialName} displayValue={line.name} field="name" label="원단명" maxLength={200} placeholder="원단명 미입력" testID="material-inline-name" />
-                <MaterialInlineField {...inlineProps} containerStyle={styles.unitInline} displayStyle={styles.unitChip} displayValue={line.unitCode} field="unitCode" label="단위" maxLength={32} placeholder="단위 미입력" testID="material-inline-unit" />
+                <MaterialReelInlineField {...reelProps} containerStyle={styles.unitInline} displayStyle={styles.unitChip} field="unitCode" label="단위" testID="material-inline-unit" />
               </View>
             )}
           </View>
@@ -288,16 +355,16 @@ function MaterialCard({ line, expanded, canEdit, lifecycleBusy, editor, activeFi
           {activeQuantityField ? (
             <View style={styles.coreRowExpanded} testID="material-quantity-row-expanded">
               <ExpandedInlineField label={activeQuantityField === "requiredQuantity" ? "필요수량" : activeQuantityField === "allowanceQuantity" ? "로스·여유" : "재고사용"} testID="material-quantity-expanded-editor">
-                {activeQuantityField === "requiredQuantity" ? <MaterialInlineField {...inlineProps} displayStyle={styles.compactValue} displayValue={formatQuantity(line.requiredQuantity, line.unitCode)} field="requiredQuantity" keyboardType="decimal-pad" label="필요수량" maxLength={16} placeholder="0" testID="material-inline-required-quantity" /> : null}
-                {activeQuantityField === "allowanceQuantity" ? <MaterialInlineField {...inlineProps} displayStyle={styles.compactValue} displayValue={formatQuantity(line.allowanceQuantity, line.unitCode)} field="allowanceQuantity" keyboardType="decimal-pad" label="로스·여유" maxLength={16} placeholder="0" testID="material-inline-allowance-quantity" /> : null}
-                {activeQuantityField === "inventoryUsageQuantity" ? <MaterialInlineField {...inlineProps} displayStyle={styles.compactValue} displayValue={formatQuantity(line.inventoryUsageQuantity, line.unitCode)} field="inventoryUsageQuantity" keyboardType="decimal-pad" label="재고사용" maxLength={16} placeholder="0" testID="material-inline-inventory-usage" /> : null}
+                {activeQuantityField === "requiredQuantity" ? <MaterialReelInlineField {...reelProps} displayStyle={styles.compactValue} field="requiredQuantity" label="필요수량" testID="material-inline-required-quantity" /> : null}
+                {activeQuantityField === "allowanceQuantity" ? <MaterialReelInlineField {...reelProps} displayStyle={styles.compactValue} field="allowanceQuantity" label="로스·여유" testID="material-inline-allowance-quantity" /> : null}
+                {activeQuantityField === "inventoryUsageQuantity" ? <MaterialReelInlineField {...reelProps} displayStyle={styles.compactValue} field="inventoryUsageQuantity" label="재고사용" testID="material-inline-inventory-usage" /> : null}
               </ExpandedInlineField>
             </View>
           ) : (
           <View style={styles.coreRow}>
-            <View style={styles.compactField}><Text style={styles.compactLabel}>필요수량</Text><MaterialInlineField {...inlineProps} containerStyle={styles.compactInline} displayStyle={styles.compactValue} displayValue={formatQuantity(line.requiredQuantity, line.unitCode)} field="requiredQuantity" keyboardType="decimal-pad" label="필요수량" maxLength={16} placeholder="0" testID="material-inline-required-quantity" /></View>
-            <View style={styles.compactField}><Text style={styles.compactLabel}>로스·여유</Text><MaterialInlineField {...inlineProps} containerStyle={styles.compactInline} displayStyle={styles.compactValue} displayValue={formatQuantity(line.allowanceQuantity, line.unitCode)} field="allowanceQuantity" keyboardType="decimal-pad" label="로스·여유" maxLength={16} placeholder="0" testID="material-inline-allowance-quantity" /></View>
-            <View style={styles.compactField}><Text style={styles.compactLabel}>재고사용</Text><MaterialInlineField {...inlineProps} containerStyle={styles.compactInline} displayStyle={styles.compactValue} displayValue={formatQuantity(line.inventoryUsageQuantity, line.unitCode)} field="inventoryUsageQuantity" keyboardType="decimal-pad" label="재고사용" maxLength={16} placeholder="0" testID="material-inline-inventory-usage" /></View>
+            <View style={styles.compactField}><Text style={styles.compactLabel}>필요수량</Text><MaterialReelInlineField {...reelProps} containerStyle={styles.compactInline} displayStyle={styles.compactValue} field="requiredQuantity" label="필요수량" testID="material-inline-required-quantity" /></View>
+            <View style={styles.compactField}><Text style={styles.compactLabel}>로스·여유</Text><MaterialReelInlineField {...reelProps} containerStyle={styles.compactInline} displayStyle={styles.compactValue} field="allowanceQuantity" label="로스·여유" testID="material-inline-allowance-quantity" /></View>
+            <View style={styles.compactField}><Text style={styles.compactLabel}>재고사용</Text><MaterialReelInlineField {...reelProps} containerStyle={styles.compactInline} displayStyle={styles.compactValue} field="inventoryUsageQuantity" label="재고사용" testID="material-inline-inventory-usage" /></View>
           </View>
           )}
           <View style={styles.readOnlyRows}>
@@ -383,6 +450,7 @@ export default function WorkOrderMaterialsReadOnly({
 }: Props) {
   const [expandedIds, setExpandedIds] = useState<ReadonlySet<string>>(() => new Set());
   const [archivedExpanded, setArchivedExpanded] = useState(false);
+  const [reelTarget, setReelTarget] = useState<ReelTarget | null>(null);
   const waiting = state.status === "loading" || state.status === "retrying";
 
   if (waiting && state.items.length === 0) {
@@ -413,6 +481,25 @@ export default function WorkOrderMaterialsReadOnly({
 
   return (
     <View style={styles.list}>
+      {reelTarget ? (
+        <WaflReelPickerSheet
+          field={reelTarget.field}
+          kind={reelTarget.field === "unitCode" ? "unit" : "quantity"}
+          label={reelTarget.label}
+          onApply={(value, unitCode) => {
+            const patch = materialReelDraftPatch({ field: reelTarget.field, value, unitCode, currentUnitCode: reelTarget.unitCode });
+            setReelTarget(null);
+            onSaveEdit(patch);
+          }}
+          onCancel={() => {
+            setReelTarget(null);
+            onCancelEdit();
+          }}
+          unitCode={reelTarget.unitCode}
+          value={reelTarget.value}
+          visible
+        />
+      ) : null}
       {canEdit || saveNotice ? (
         <View style={styles.listToolbar}>
           {saveNotice ? <Text accessibilityRole="alert" style={styles.saveNotice}>{saveNotice}</Text> : <View style={styles.toolbarSpacer} />}
@@ -435,6 +522,7 @@ export default function WorkOrderMaterialsReadOnly({
           onCancelEdit={onCancelEdit}
           onChangeEdit={onChangeEdit}
           onEdit={(field) => onEdit(line, field)}
+          onOpenReel={setReelTarget}
           onSaveEdit={onSaveEdit}
           onFieldFocus={onFieldFocus}
           onToggle={() => setExpandedIds((current) => {

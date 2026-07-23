@@ -10,7 +10,6 @@ import {
 } from "./helpers/wafl-v2-current-version.mjs";
 
 const read = (relativePath) => fs.readFileSync(path.resolve(relativePath), "utf8");
-const json = (relativePath) => JSON.parse(read(relativePath));
 
 const migration = read("db/v2/migrations/013_v2_material_line_archive_lifecycle.sql");
 const repository = read("lib/domain/work-orders/command/materialCommandRepository.ts");
@@ -23,6 +22,7 @@ const issueRepository = read("lib/domain/work-orders/command/issueRepository.ts"
 const previewRepository = read("lib/domain/work-orders/read/previewRepository.ts");
 const apiClient = read("apps/mobile/lib/apiClient.ts");
 const app = read("apps/mobile/features/MobileWorkOrderExperience.tsx");
+const draftExitPolicy = read("apps/mobile/application/draftExitPolicy.ts");
 const materials = read("apps/mobile/features/materials/WorkOrderMaterialsReadOnly.tsx");
 const start = read("tools/dev/start-wafl-external-qa.ps1");
 const migrationRunner = read("scripts/run-wafl-v2-alpha51-material-lifecycle-migration.mjs");
@@ -98,7 +98,9 @@ assert.match(apiClient, /method: "POST"/);
 assert.doesNotMatch(apiClient, /method: "DELETE"/);
 assert.match(app, /requestArchiveMaterial/);
 assert.match(app, /requestRestoreMaterial/);
-assert.match(app, /confirmDiscard/);
+assert.match(app, /decideDraftExit/);
+assert.match(draftExitPolicy, /mutationInFlight[\s\S]*return "blocked-saving"/);
+assert.match(draftExitPolicy, /return "discard"/);
 assert.match(app, /workOrderQueryController\.materials\(currentDetail\.header\.id, null, "active"\)/);
 assert.match(app, /workOrderQueryController\.materials\(currentDetail\.header\.id, null, "archived"\)/);
 assert.match(app, /materialLifecycleMutation\.inFlight/);

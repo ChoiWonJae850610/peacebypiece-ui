@@ -2,9 +2,10 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
 
+import { assertCanonicalWaflVersionConsistency } from "./helpers/wafl-v2-current-version.mjs";
+
 const read = (file) => fs.readFileSync(file, "utf8");
 
-const version = read("lib/constants/version.ts");
 const coreState = read("lib/hooks/workorder/useWorkOrderCoreState.ts");
 const useWorkOrder = read("lib/hooks/useWorkOrder.ts");
 const controller = read("features/workorders/controllers/useWorkOrderWorkspaceController.ts");
@@ -18,9 +19,9 @@ const factoryClient = read("lib/workorder/factoryInstruction/apiClient.ts");
 const roadmap = read("lib/internal/roadmap/roadmap-0.24.34.5.ts");
 const roadmapIndex = read("lib/internal/roadmap/index.ts");
 
-assert.match(version, /APP_VERSION\s*=\s*"0\.24\.34\.5"/);
+assertCanonicalWaflVersionConsistency();
 assert.match(roadmapIndex, /ROADMAP_0_24_34_5/);
-assert.match(roadmapIndex, /currentWorkVersion:\s*"0\.24\.34\.5"/);
+assert.match(roadmapIndex, /currentWorkVersion:\s*"0\.24\.34\.14"/);
 assert.match(roadmapIndex, /nextWorkVersion:\s*"0\.24\.35"/);
 assert.match(roadmap, /PRODUCT_QA_INCOMPLETE/);
 

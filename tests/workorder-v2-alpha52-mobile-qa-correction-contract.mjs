@@ -2,6 +2,13 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
 
+import {
+  getWorkOrderWorkflowPresentation,
+  matchesWorkOrderStatusFilter,
+  WORK_ORDER_STATUS_FILTER_OPTIONS,
+  WORK_ORDER_STATUS_LABEL,
+} from "../apps/mobile/features/work-orders/list/workOrderListStatusPolicy.ts";
+
 const display = fs.readFileSync("apps/mobile/lib/mobileDisplay.ts", "utf8");
 const controlled = fs.readFileSync("apps/mobile/components/ControlledInlineEditValue.tsx", "utf8");
 const datePicker = fs.readFileSync("apps/mobile/components/InlineDatePicker.tsx", "utf8");
@@ -50,7 +57,30 @@ assert.match(datePicker, /다음 달/);
 assert.doesNotMatch(datePicker, /DateTimePicker|toISOString/);
 
 assert.match(list, /작업지시서 검색/);
-for (const label of ["전체", "작성 중", "전달·발행", "진행 중", "완료", "보류·취소"]) assert.match(list, new RegExp(label));
+assert.deepEqual(
+  WORK_ORDER_STATUS_FILTER_OPTIONS.map(({ id, label }) => [id, label]),
+  [
+    ["all", "전체"],
+    ["draft", "작성 중"],
+    ["delivery", "전달·발행"],
+    ["progress", "진행 중"],
+    ["completed", "완료"],
+    ["hold_cancel", "보류·취소"],
+  ],
+);
+assert.equal(matchesWorkOrderStatusFilter("issued", "progress"), true);
+assert.equal(matchesWorkOrderStatusFilter("issued", "delivery"), false);
+assert.deepEqual(getWorkOrderWorkflowPresentation("issued"), {
+  filter: "progress",
+  label: "진행 중",
+  variant: "progress",
+});
+assert.equal(WORK_ORDER_STATUS_LABEL.issued, "진행 중");
+assert.notEqual(WORK_ORDER_STATUS_LABEL.issued, "발행됨");
+assert.match(list, /WORK_ORDER_STATUS_FILTER_OPTIONS\.map/);
+assert.match(list, /matchesWorkOrderStatusFilter\(item\.status, statusFilter\)/);
+assert.match(list, /getWorkOrderWorkflowPresentation\(item\.status\)/);
+assert.doesNotMatch(list, />발행됨</);
 assert.match(listService, /new Set\(\["limit", "cursor", "q", "status"\]\)/);
 assert.match(listService, /query parameter는 한 번만 사용할 수 있습니다/);
 assert.match(listService, /filterHash/);
