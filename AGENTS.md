@@ -10,13 +10,14 @@ For every WAFL App-first `2.0.x` task, read these core authorities before modify
 4. `docs/project/31-pre-codex-integrated-master-plan.md`
 5. `docs/project/app-v2/00-start-here.md`
 6. `docs/project/app-v2/09-codex-working-rules.md`
-7. `docs/project/app-v2/08-roadmap-2.0.md`
+7. the mandatory `09a` through `09d` child documents linked by that entry point
+8. `docs/project/app-v2/08-roadmap-2.0.md`
 
 `docs/project/app-v2/00-start-here.md` owns the conservative task-based additional read set. Read every routed specialist contract and relevant numbered evidence before acting. Do not read every historical evidence file by default, and do not omit cross-domain authorities needed by the task.
 
 Canonical document types are:
 
-- Permanent Rules: `docs/project/app-v2/09-codex-working-rules.md`.
+- Permanent Rules: `docs/project/app-v2/09-codex-working-rules.md` entry point plus its mandatory `09a` through `09d` responsibility owners.
 - Current Baseline: `docs/codex-current-state.md`.
 - Version Delta and current/next roadmap: `docs/project/app-v2/08-roadmap-2.0.md`.
 - Immutable Evidence: numbered `docs/project/app-v2/*-evidence.md` files.

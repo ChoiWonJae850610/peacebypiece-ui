@@ -81,7 +81,9 @@ Final TypeScript, ESLint, Next, Expo, contracts, mutation audit, Canonical Verif
 
 - Repository routing: `AGENTS.md`.
 - Canonical index and task routing: `docs/project/app-v2/00-start-here.md`.
-- Permanent Rules: `docs/project/app-v2/09-codex-working-rules.md`.
+- Permanent Rules entry point: `docs/project/app-v2/09-codex-working-rules.md`.
+- Permanent Rules responsibility owners: `09a` execution lifecycle, `09b` Runtime/data/PC safety, `09c` testing/contracts/handoff, and `09d` Version Delta/finalization.
+- Self-executing concise Delta template: `docs/project/app-v2/09e-codex-version-delta-template.md`.
 - Current Baseline: this file.
 - Current/next roadmap and Version Delta: `docs/project/app-v2/08-roadmap-2.0.md`.
 - Device acceptance: `docs/project/app-v2/05-device-test-plan.md`.
@@ -101,6 +103,7 @@ Final TypeScript, ESLint, Next, Expo, contracts, mutation audit, Canonical Verif
 - Alpha.52 mobile core inline UX, calculation, list, and date: `docs/project/app-v2/51-mobile-core-inline-ux-calculation-list-date-evidence.md`.
 - Alpha.53 mobile architecture foundation: `docs/project/app-v2/52-mobile-architecture-foundation-evidence.md`.
 - Alpha.54 mobile Reel Picker input UX: `docs/project/app-v2/53-mobile-reel-picker-input-ux-evidence.md`.
+- Canonical Codex rules documentation maintenance: `docs/project/app-v2/54-canonical-codex-working-rules-normalization-evidence.md`.
 
 Older facts remain in their numbered evidence. They are not recopied here.
 
@@ -115,4 +118,4 @@ Potential Delta scope:
 - preserve hard-delete prohibition and require an exact dev/test effect budget before any Runtime mutation;
 - keep production, schema, dependency, native/EAS, accessory, lineage, and unrelated feature work outside the Delta.
 
-The alpha.55 owner work order should be a short Version Delta that references the Permanent Rules instead of repeating them.
+The alpha.55 owner work order should use the concise self-executing template, reference the Permanent Rules instead of repeating them, and use the latest synchronized documentation-maintenance HEAD as its Git baseline. The alpha.54 product ZIP/repo-state remains the snapshot of the original alpha.54 release HEAD.

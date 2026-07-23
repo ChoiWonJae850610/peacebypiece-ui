@@ -53,12 +53,13 @@ Permanent Rules, Current Baseline, Version Delta, Immutable Evidence, responsibi
 | alpha.52 | mobile core inline UX, calculation, list, and date | `51-mobile-core-inline-ux-calculation-list-date-evidence.md` |
 | alpha.53 | mobile architecture foundation | `52-mobile-architecture-foundation-evidence.md` |
 | alpha.54 | mobile Reel Picker input UX | `53-mobile-reel-picker-input-ux-evidence.md` |
+| maintenance | canonical Codex rule normalization without APP_VERSION change | `54-canonical-codex-working-rules-normalization-evidence.md` |
 
 Older results remain in numbered evidence files indexed and task-routed by `00-start-here.md`. Their detailed outcomes are not duplicated here.
 
 ## Version Delta owner contract
 
-Every new version begins with a short owner-approved Delta. It must contain:
+Every new version begins with a short owner-approved Delta. Alpha.55 and later use `09e-codex-version-delta-template.md`; the attached or pasted `SELF-EXECUTING HANDOFF` itself authorizes immediate preflight. It must contain:
 
 | Field | Required content |
 | --- | --- |
@@ -81,7 +82,7 @@ Standard reference:
 
 > 실행·보안·Git·Runtime·artifact·실패 정책은 `docs/project/app-v2/09-codex-working-rules.md`를 전부 따른다.
 
-The Delta does not repeat Permanent Rules. An omitted exceptional authority remains forbidden.
+The Delta does not repeat Permanent Rules, PC-audit mechanics, runner internals, generic Failure Handoff fields, or generic Git/artifact procedures. Those remain owned by `09a` through `09d`. An omitted exceptional authority remains forbidden.
 
 ## Next candidate — 2.0.0-alpha.55
 
@@ -100,4 +101,4 @@ Explicitly separate later scope:
 - production deployment or mutation, schema changes, and unrelated feature expansion remain excluded;
 - native dependencies/plugins and EAS Build/Update require an explicit boundary.
 
-Alpha.55 does not start merely because it is listed here. It begins only with its owner-approved Version Delta and a matching clean baseline.
+Alpha.55 does not start merely because it is listed here. It begins only with its owner-approved self-executing Version Delta and a matching clean baseline. After documentation-only canonical maintenance, that baseline is the latest synchronized maintenance commit HEAD, while the alpha.54 product artifact remains the snapshot of its original release HEAD.

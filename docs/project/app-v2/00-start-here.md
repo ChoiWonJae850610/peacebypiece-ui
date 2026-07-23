@@ -18,7 +18,7 @@ Every fact or rule has one canonical owner. Other documents keep only the contex
 | Area | Canonical owner | Main references | Change frequency | Evidence | Mutability | Task routing |
 | --- | --- | --- | --- | --- | --- | --- |
 | Repository routing | `AGENTS.md` | this index | rare | no | mutable | always |
-| Permanent Rules | `09-codex-working-rules.md` | `AGENTS.md`, policy docs | rare | no | mutable | always |
+| Permanent Rules | `09-codex-working-rules.md` entry point | mandatory `09a` through `09d` responsibility owners | rare | no | mutable | always |
 | Current Baseline | `../../codex-current-state.md` | matching repo-state | each completed version | no | replace current snapshot | always |
 | Current/next roadmap and Version Delta | `08-roadmap-2.0.md` | latest work order | each version | no | mutable | always |
 | Product direction | `01-app-first-product-definition.md` | `02`, `03`, `04`, confirmed policy | policy change only | no | mutable | product/UI/auth |
@@ -43,7 +43,8 @@ Read every item before modifying an App-first version:
 4. `docs/project/31-pre-codex-integrated-master-plan.md`
 5. this document
 6. `docs/project/app-v2/09-codex-working-rules.md`
-7. `docs/project/app-v2/08-roadmap-2.0.md`
+7. the mandatory `09a` through `09d` child documents linked by that entry point
+8. `docs/project/app-v2/08-roadmap-2.0.md`
 
 Then read the active owner-approved Version Delta and all task-routed specialist documents below. Core read order is never replaced by task routing.
 
@@ -138,6 +139,7 @@ Read the full core set plus:
 
 - `docs/project/25-korean-unicode-encoding-standard.md`
 - `docs/project/32-product-completion-and-ui-evidence-standard.md`
+- `09e-codex-version-delta-template.md` when authoring or reviewing a Version Delta
 - document/link/owner contracts
 - only the evidence needed to verify links and immutability
 
@@ -178,4 +180,4 @@ Future work orders should be short Version Deltas. Use this standard reference:
 
 > 실행·보안·Git·Runtime·artifact·실패 정책은 `docs/project/app-v2/09-codex-working-rules.md`를 전부 따른다.
 
-The Delta does not repeat Permanent Rules. Its required fields are owned by `08-roadmap-2.0.md` and `09-codex-working-rules.md`.
+The Delta does not repeat Permanent Rules. Its required fields are owned by `08-roadmap-2.0.md`, `09d-codex-version-delta-finalization.md`, and the concise `09e-codex-version-delta-template.md`. An owner-attached or owner-pasted `SELF-EXECUTING HANDOFF` begins at preflight without a second confirmation.

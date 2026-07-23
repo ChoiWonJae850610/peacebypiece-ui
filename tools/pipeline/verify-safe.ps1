@@ -1161,6 +1161,7 @@ $profileCommands = @{
           @{ Name = "workorder v2 alpha.42 standalone renderer import smoke"; Command = "node"; Arguments = @("scripts/run-wafl-v2-alpha42-renderer-import-smoke.mjs") },
           @{ Name = "approved already-applied migration plan guard contract"; Command = "node"; Arguments = @("tests/approved-applied-migration-plan-guard-contract.mjs") },
         @{ Name = "app-v2 document links and Mermaid contract"; Command = "node"; Arguments = @("tests/app-v2-document-links-contract.mjs") },
+        @{ Name = "WAFL Codex working rules normalization contract"; Command = "node"; Arguments = @("tests/wafl-codex-working-rules-normalization-contract.mjs") },
         @{ Name = "unicode encoding contract"; Command = "node"; Arguments = @("tests/unicode-encoding-contract.mjs") },
         @{ Name = "PowerShell encoding contract"; Command = "node"; Arguments = @("tests/pipeline-powershell-encoding-contract.mjs") },
         @{ Name = "internal system routes contract"; Command = "node"; Arguments = @("tests/internal-system-routes-contract.mjs") },
