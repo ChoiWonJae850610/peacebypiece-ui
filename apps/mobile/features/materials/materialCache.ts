@@ -1,5 +1,5 @@
 import type { MaterialReadStatus, MaterialReadViewState } from "./WorkOrderMaterialsReadOnly";
-import type { WorkOrderMaterialLine } from "../../domain/mobileContract";
+import type { MaterialType, WorkOrderMaterialLine } from "../../domain/mobileContract";
 
 export type MaterialCacheEntry = MaterialReadViewState & {
   readonly nextCursor: string | null;
@@ -21,7 +21,11 @@ export const EMPTY_MATERIAL_STATE: MaterialReadViewState = {
   errorMessage: null,
 };
 
-const MATERIAL_CACHE_LIMIT = 6;
+const MATERIAL_CACHE_LIMIT = 12;
+
+export function materialCacheKey(workOrderId: string, materialType: MaterialType) {
+  return `${workOrderId}:${materialType}`;
+}
 
 export function archivedMaterialState(entry: MaterialCacheEntry | undefined): MaterialReadViewState {
   return {
@@ -34,14 +38,14 @@ export function archivedMaterialState(entry: MaterialCacheEntry | undefined): Ma
 
 export function putBoundedMaterialEntry(
   cache: Readonly<Record<string, MaterialCacheEntry>>,
-  workOrderId: string,
+  key: string,
   entry: MaterialCacheEntry,
 ): Readonly<Record<string, MaterialCacheEntry>> {
-  const next: Record<string, MaterialCacheEntry> = { ...cache, [workOrderId]: entry };
+  const next: Record<string, MaterialCacheEntry> = { ...cache, [key]: entry };
   const keys = Object.keys(next);
   if (keys.length <= MATERIAL_CACHE_LIMIT) return next;
   const eviction = keys
-    .filter((key) => key !== workOrderId)
+    .filter((candidate) => candidate !== key)
     .sort((left, right) => next[left].touchedAt - next[right].touchedAt)[0];
   if (eviction) delete next[eviction];
   return next;

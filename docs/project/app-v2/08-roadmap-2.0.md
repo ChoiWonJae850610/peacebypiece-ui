@@ -2,29 +2,27 @@
 
 Document role: canonical owner for the current result, next candidate, and Version Delta boundary. It is not the historical implementation ledger; completed details live in numbered immutable evidence.
 
-## Current result — 2.0.0-alpha.55
+## Current result — 2.0.0-alpha.56
+
+Status: `ALPHA56_ACCESSORY_LIFECYCLE_PARITY_COMPLETE`.
+
+Alpha.56 completes accessory lifecycle parity on the shared alpha.55 material-order boundary:
+
+- the mobile `MaterialType`, response normalizer, query/controller/cache, ProductionCard tabs, create/edit labels, and lifecycle commands now preserve `fabric | accessory` without duplicating a second material stack;
+- accessory request/cancel/re-request/complete, archive/restore, stock-covered zero-order, edit locks, terminal completion, and hard-delete prohibition reuse the canonical fabric semantics;
+- the internal `accessory-lifecycle-parity` Runtime mode verified exact dev/test request/effect budgets, type isolation, fixed header badges, one-line quantity/unit layout, memo disclosure, and Korean IME finalization;
+- physical-iPhone acceptance passed three explicit PATCH actions plus two requests, one cancel, and one completion, with terminal fixture state/version `completed / 9`;
+- V5 authoritative evidence confirms expected/actual memo exact equality `true` and character, Unicode, whitespace, and newline difference `0`; no memo requery or correction was performed during finalization;
+- final retained canonical entity-version baseline is WorkOrder/revision/material `132/132/110`, material rows `11`, event/receipt `165/71`, migration ledger `13/13`, and legacy-cancelled rows `2`;
+- schema/migration, R2/PDF/token, production, dependency, native, and EAS effects remain zero.
+
+Evidence: `56-mobile-accessory-lifecycle-parity-evidence.md`.
+
+## Previous material-order result — 2.0.0-alpha.55
 
 Status: `ALPHA55_MATERIAL_ORDER_CANCELLATION_MEMO_IME_AND_RUNTIME_QA_COMPLETE`.
 
-Alpha.55 completes the fabric material-order lifecycle and the related mobile input/display boundaries:
-
-- request changes `editing -> requested`, cancel returns `requested -> editing` while preserving its timestamp/event/receipt history, and completion is terminal;
-- cancel restores general editing and re-request, while requested/completed/archived and the two retained legacy-cancelled rows remain correctly locked;
-- stock-covered positive demand supports zero external-order quantity and amount without weakening zero-demand or positive-order readiness validation;
-- the mobile header owns a fixed unit/status badge cluster and quantity rows keep numeric value plus unit on one line;
-- iOS IME Check finalizes the latest native text before one explicit PATCH, and overflowing memo text exposes a compact/full disclosure without conflicting with card collapse;
-- the canonical `memo-ime-display` mode verified one create, two requests, one cancel, and one finalized Korean memo PATCH with exact event/receipt deltas and automatic/duplicate/unknown mutation `0`;
-- physical-iPhone Development Build acceptance passed Korean IME save, memo read-back/disclosure, card collapse/re-expansion, header alignment, background/re-entry, and crash/red-screen checks;
-- final retained dev/test baseline is WorkOrder/revision/material `109/109/87`, material rows `8`, event/receipt `142/54`, migration ledger `13/13`, and legacy-cancelled rows `2`;
-- schema/migration, R2/PDF/token, production, dependency, native, and EAS effects remain zero.
-
-Evidence: `55-mobile-material-order-lifecycle-evidence.md`.
-
-## Previous input result — 2.0.0-alpha.54
-
-Status: `ALPHA54_MOBILE_REEL_PICKER_INPUT_UX_COMPLETE`.
-
-Reel Picker, explicit single-save input sessions, immediate Korean-initial search, canonical workflow badges, compact calendar behavior, and their physical-iPhone acceptance remain complete. Detailed facts are preserved in `53-mobile-reel-picker-input-ux-evidence.md`.
+Fabric request/cancel/re-request/complete, stock-covered zero-order, memo IME finalization/disclosure, fixed material headers, and physical-iPhone acceptance remain complete. Detailed facts are preserved in `55-mobile-material-order-lifecycle-evidence.md`.
 
 ## Previous architecture result — 2.0.0-alpha.53
 
@@ -61,6 +59,7 @@ Permanent Rules, Current Baseline, Version Delta, Immutable Evidence, responsibi
 | alpha.53 | mobile architecture foundation | `52-mobile-architecture-foundation-evidence.md` |
 | alpha.54 | mobile Reel Picker input UX | `53-mobile-reel-picker-input-ux-evidence.md` |
 | alpha.55 | material order cancellation, zero-order, memo IME, and Runtime QA | `55-mobile-material-order-lifecycle-evidence.md` |
+| alpha.56 | accessory lifecycle parity and physical-iPhone acceptance | `56-mobile-accessory-lifecycle-parity-evidence.md` |
 | maintenance | canonical Codex rule normalization without APP_VERSION change | `54-canonical-codex-working-rules-normalization-evidence.md` |
 
 Older results remain in numbered evidence files indexed and task-routed by `00-start-here.md`. Their detailed outcomes are not duplicated here.
@@ -92,21 +91,21 @@ Standard reference:
 
 The Delta does not repeat Permanent Rules, PC-audit mechanics, runner internals, generic Failure Handoff fields, or generic Git/artifact procedures. Those remain owned by `09a` through `09d`. An omitted exceptional authority remains forbidden.
 
-## Next candidate — 2.0.0-alpha.56
+## Next candidate — 2.0.0-alpha.57
 
-Candidate objective: accessory lifecycle reuse only after owner approval.
+Candidate objective: Maker WorkOrder image and representative-image foundation only after owner approval.
 
-Potential included scope, subject to the actual alpha.56 Delta:
+Potential included scope, subject to the actual alpha.57 Delta:
 
-- decide which fabric request/cancel/complete policy and UI boundaries are valid for accessories;
-- define exact permission, expectedVersion, idempotency, event/receipt, read-model, and physical-device effects;
-- reuse the existing feature/controller/policy and explicit mutation gate without a speculative generic framework;
-- bounded dev/test effect plan plus physical-device behavior QA.
+- reuse the existing attachment and primary-image structures before adding new storage or domain concepts;
+- define bounded upload, camera, drawing entry, representative-image selection, permission, tenant, and object-lifecycle behavior;
+- define exact mobile/tablet placement and physical-device evidence;
+- keep AI-generated images out of scope.
 
 Explicitly separate later scope:
 
-- hard DELETE and purge remain forbidden;
-- production deployment or mutation, schema changes, and unrelated feature expansion remain excluded;
-- native dependencies/plugins and EAS Build/Update require an explicit boundary.
+- Factory, partner, and supplier image features remain excluded;
+- production deployment or mutation and unrelated feature expansion remain excluded;
+- schema, R2, camera/photo permissions, native dependencies/plugins, and EAS Build/Update require explicit effect authority.
 
-Alpha.56 does not start merely because it is listed here. It begins only with its owner-approved self-executing Version Delta and the final synchronized alpha.55 HEAD.
+Alpha.57 does not start merely because it is listed here. It begins only with its owner-approved self-executing Version Delta and the final synchronized alpha.56 HEAD.

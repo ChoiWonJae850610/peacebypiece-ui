@@ -1,4 +1,4 @@
-param(
+﻿param(
     [ValidateSet("system-admin-storage", "id-control-roadmap", "roadmap-development-contract", "system-admin-internal-access", "repository-cleanup", "source-architecture-cleanup", "automation-infrastructure", "workspace-commonization", "functions-automation", "billing-foundation", "billing-operations", "public-signup-e2e", "public-signup-authenticated-e2e", "workorder-size-pdf", "public-signup-first-draft-fix", "customer-product-ux-cleanup", "workorder-pdf-live-integration", "product-ui-runtime-verification")]
     [string]$Profile = "system-admin-storage",
     [switch]$CheckOnly
@@ -1074,6 +1074,8 @@ $profileCommands = @{
                   "tests/workorder-v2-alpha54-actual-save-remediation-contract.mjs",
                   "tests/workorder-v2-alpha54-final-ui-polish-contract.mjs",
                   "tests/workorder-v2-alpha54-korean-search-status-badge-contract.mjs",
+                  "tests/workorder-v2-alpha56-accessory-lifecycle-parity-contract.mjs",
+                  "scripts/run-wafl-v2-alpha56-accessory-lifecycle-runtime-qa.mjs",
                   "scripts/run-wafl-v2-alpha46-basic-info-preflight.mjs",
                   "scripts/run-wafl-v2-alpha46-basic-info-stale-audit.mjs",
                   "scripts/run-wafl-v2-alpha46-create-qa-draft.mjs",
@@ -1155,6 +1157,7 @@ $profileCommands = @{
           @{ Name = "workorder v2 alpha.54 actual save remediation contract"; Command = "node"; Arguments = @("tests/workorder-v2-alpha54-actual-save-remediation-contract.mjs") },
           @{ Name = "workorder v2 alpha.54 final UI polish contract"; Command = "node"; Arguments = @("tests/workorder-v2-alpha54-final-ui-polish-contract.mjs") },
           @{ Name = "workorder v2 alpha.54 Korean initial search and workflow badge contract"; Command = "node"; Arguments = @("tests/workorder-v2-alpha54-korean-search-status-badge-contract.mjs") },
+          @{ Name = "workorder v2 alpha.56 accessory lifecycle parity contract"; Command = "node"; Arguments = @("tests/workorder-v2-alpha56-accessory-lifecycle-parity-contract.mjs") },
           @{ Name = "WAFL external QA stop-state regression contract"; Command = "node"; Arguments = @("tests/wafl-external-qa-stop-state-contract.mjs") },
           @{ Name = "WAFL external QA Tailscale transport contract"; Command = "node"; Arguments = @("tests/wafl-external-qa-tailscale-transport-contract.mjs") },
           @{ Name = "WAFL external QA Tailscale runtime contract"; Command = "powershell.exe"; Arguments = @("-NoProfile", "-File", "tests/wafl-external-qa-tailscale-runtime-contract.ps1") },

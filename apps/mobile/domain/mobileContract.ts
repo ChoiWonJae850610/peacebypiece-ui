@@ -81,10 +81,11 @@ export type WorkOrderDetailCore = {
 };
 
 export type MaterialLineStatus = "editing" | "requested" | "completed" | "cancelled" | "unknown";
+export type MaterialType = "fabric" | "accessory";
 
 export type WorkOrderMaterialLine = {
   readonly id: string;
-  readonly materialType: "fabric";
+  readonly materialType: MaterialType;
   readonly name: string;
   readonly colorOption: string | null;
   readonly usageArea: string | null;
@@ -106,7 +107,7 @@ export type WorkOrderMaterialLine = {
 
 export type WorkOrderMaterialPage = {
   readonly workOrderId: string;
-  readonly materialType: "fabric";
+  readonly materialType: MaterialType;
   readonly lifecycle: "active" | "archived";
   readonly items: readonly WorkOrderMaterialLine[];
   readonly nextCursor: string | null;
@@ -134,7 +135,7 @@ export type MaterialDraftUpdate = Partial<Omit<MaterialDraftFields, "orderQuanti
 export type CreateMaterialLineInput = MaterialDraftFields & {
   readonly clientRequestId: string;
   readonly expectedVersion: number;
-  readonly materialType: "fabric";
+  readonly materialType: MaterialType;
 };
 
 export type PatchMaterialLineInput = {
@@ -147,7 +148,7 @@ export type MaterialLineCommandResult = {
   readonly result: {
     readonly workOrderId: string;
     readonly materialLineId: string;
-    readonly materialType: "fabric";
+    readonly materialType: MaterialType;
     readonly status: Exclude<MaterialLineStatus, "unknown">;
     readonly nextVersion: number;
     readonly lineVersion: number;

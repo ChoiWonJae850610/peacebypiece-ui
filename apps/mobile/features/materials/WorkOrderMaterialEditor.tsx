@@ -4,7 +4,7 @@ import { ArrowLeft, Save, SlidersVertical } from "lucide-react-native";
 
 import { WAFL_FONTS } from "@/constants/fonts";
 import type { MaterialEditorFieldErrors } from "@/domain/workOrderValidation";
-import type { MaterialDraftFields } from "@/domain/mobileContract";
+import type { MaterialDraftFields, MaterialType } from "@/domain/mobileContract";
 import WaflReelPickerSheet from "@/features/inputs/reel-picker/WaflReelPickerSheet";
 import MaterialQuantityValue from "@/features/materials/MaterialQuantityValue";
 import { materialReelDraftPatch, type MaterialReelField } from "@/features/materials/materialReelAdapter";
@@ -19,6 +19,7 @@ export type MaterialEditorViewState = {
   readonly mode: MaterialEditorMode;
   readonly workOrderId: string;
   readonly materialLineId: string | null;
+  readonly materialType: MaterialType;
   readonly base: MaterialDraftFields;
   readonly draft: MaterialDraftFields;
   readonly fieldErrors: MaterialEditorFieldErrors;
@@ -80,6 +81,8 @@ export default function WorkOrderMaterialEditor({ state, dirty, onChange, onCanc
   const reloadAvailable = state.saveState === "conflict" || state.saveState === "locked" || state.saveState === "refresh-error";
   const calculatedOrderQuantity = calculateOrderQuantity(state.draft);
   const calculatedAmount = calculateMaterialAmount(calculatedOrderQuantity, state.draft.unitPrice);
+  const materialLabel = state.materialType === "accessory" ? "부자재" : "원단";
+  const materialNameLabel = `${materialLabel}명`;
 
   return (
     <View testID="material-draft-editor" style={styles.editor}>
@@ -100,19 +103,19 @@ export default function WorkOrderMaterialEditor({ state, dirty, onChange, onCanc
         />
       ) : null}
       <View style={styles.header}>
-        <Pressable accessibilityLabel="원단 편집 취소" accessibilityRole="button" disabled={saving} onPress={onCancel} style={({ pressed }) => [styles.backButton, pressed && styles.pressed]}>
+        <Pressable accessibilityLabel={`${materialLabel} 편집 취소`} accessibilityRole="button" disabled={saving} onPress={onCancel} style={({ pressed }) => [styles.backButton, pressed && styles.pressed]}>
           <ArrowLeft color="#3f352d" size={18} />
           <Text style={styles.backText}>취소</Text>
         </Pressable>
         <View style={styles.headerText}>
-          <Text style={styles.title}>{state.mode === "create" ? "원단 추가" : "원단 수정"}</Text>
+          <Text style={styles.title}>{state.mode === "create" ? `${materialLabel} 추가` : `${materialLabel} 수정`}</Text>
           <Text style={styles.caption}>draft 작업지시서에 명시적으로 저장합니다.</Text>
         </View>
         <Text style={styles.unsavedBadge}>{dirty ? "저장 전" : "변경 없음"}</Text>
       </View>
 
       <View style={styles.fields}>
-        <EditorField field="name" label="원단명" maxLength={200} onChange={onChange} placeholder="원단명을 입력하세요" state={state} />
+        <EditorField field="name" label={materialNameLabel} maxLength={200} onChange={onChange} placeholder={`${materialNameLabel}을 입력하세요`} state={state} />
         <EditorField field="colorOption" label="색상·옵션" maxLength={200} onChange={onChange} placeholder="예: NAVY" state={state} />
         {([
           { field: "unitCode", label: "단위", value: state.draft.unitCode || "단위 선택", reelValue: state.draft.requiredQuantity },

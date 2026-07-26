@@ -6,23 +6,26 @@
     [int]$NextPort = 3000,
     [int]$ExpoPort = 8081,
     [string]$CloudflaredPath = "",
-    [ValidateSet("external-device", "memo-ime-display")]
+    [ValidateSet("external-device", "memo-ime-display", "accessory-lifecycle-parity")]
     [string]$RuntimeQaMode = "external-device",
     [switch]$EnableAlpha46BasicInfoMutation,
     [switch]$EnableAlpha50MaterialDraftMutation,
     [switch]$EnableAlpha51MaterialLifecycleMutation,
     [switch]$EnableAlpha52CoreInlineMutation,
-    [switch]$EnableAlpha55MaterialOrderLifecycleMutation
+    [switch]$EnableAlpha55MaterialOrderLifecycleMutation,
+    [switch]$EnableAlpha56AccessoryLifecycleParityMutation
 )
 
 $ErrorActionPreference = "Stop"
 . (Join-Path $PSScriptRoot "wafl-external-qa-common.ps1")
 . (Join-Path $PSScriptRoot "..\pipeline\pipeline-common.ps1")
 
-if (@($EnableAlpha46BasicInfoMutation, $EnableAlpha50MaterialDraftMutation, $EnableAlpha51MaterialLifecycleMutation, $EnableAlpha52CoreInlineMutation, $EnableAlpha55MaterialOrderLifecycleMutation).Where({ $_ }).Count -gt 1) {
+if (@($EnableAlpha46BasicInfoMutation, $EnableAlpha50MaterialDraftMutation, $EnableAlpha51MaterialLifecycleMutation, $EnableAlpha52CoreInlineMutation, $EnableAlpha55MaterialOrderLifecycleMutation, $EnableAlpha56AccessoryLifecycleParityMutation).Where({ $_ }).Count -gt 1) {
     throw "EXTERNAL_QA_MUTATION_MODES_ARE_MUTUALLY_EXCLUSIVE"
 }
 $internalMemoImeMode = $RuntimeQaMode -eq "memo-ime-display"
+$internalAccessoryLifecycleMode = $RuntimeQaMode -eq "accessory-lifecycle-parity"
+$internalRuntimeMode = $internalMemoImeMode -or $internalAccessoryLifecycleMode
 if ($internalMemoImeMode -and $MobileTransport -ne "DeveloperAutoConnect") {
     throw "MEMO_IME_DISPLAY_REQUIRES_DEVELOPER_AUTO_CONNECT"
 }
@@ -31,6 +34,15 @@ if ($internalMemoImeMode -and -not $EnableAlpha55MaterialOrderLifecycleMutation)
 }
 if ($internalMemoImeMode -and ($NextPort -ne 3100 -or $ExpoPort -ne 8081)) {
     throw "MEMO_IME_DISPLAY_REQUIRES_CANONICAL_PORTS"
+}
+if ($internalAccessoryLifecycleMode -and $MobileTransport -ne "DeveloperAutoConnect") {
+    throw "ACCESSORY_LIFECYCLE_PARITY_REQUIRES_DEVELOPER_AUTO_CONNECT"
+}
+if ($internalAccessoryLifecycleMode -and -not $EnableAlpha56AccessoryLifecycleParityMutation) {
+    throw "ACCESSORY_LIFECYCLE_PARITY_REQUIRES_ALPHA56_MUTATION_MODE"
+}
+if ($internalAccessoryLifecycleMode -and ($NextPort -ne 3100 -or $ExpoPort -ne 8081)) {
+    throw "ACCESSORY_LIFECYCLE_PARITY_REQUIRES_CANONICAL_PORTS"
 }
 
 function Get-WaflQaDatabaseUrl {
@@ -96,9 +108,9 @@ if ((Get-Location).Path -ne $root) { Set-Location -LiteralPath $root }
 $node = Get-WaflQaExecutablePath -Name "node"
 $npm = Get-WaflQaExecutablePath -Name "npm.cmd"
 $npx = Get-WaflQaExecutablePath -Name "npx.cmd"
-$cloudflared = if ($internalMemoImeMode) { $null } else { Get-WaflQaCloudflaredPath -ExplicitPath $CloudflaredPath }
+$cloudflared = if ($internalRuntimeMode) { $null } else { Get-WaflQaCloudflaredPath -ExplicitPath $CloudflaredPath }
 if (-not $node -or -not $npm -or -not $npx) { throw "Node, npm, and npx must be available on PATH." }
-if (-not $internalMemoImeMode -and -not $cloudflared) {
+if (-not $internalRuntimeMode -and -not $cloudflared) {
     throw "cloudflared was not found. Installation is not automatic. Approval command: winget install --id Cloudflare.cloudflared --exact"
 }
 if (-not (Test-WaflQaPortAvailable -Port $NextPort)) { throw "Next port is already in use: $NextPort" }
@@ -139,7 +151,7 @@ $state = [ordered]@{
     tailscaleIpv4 = $null
     expoUrl = $null
     publicOrigin = $null
-    previewTransport = $(if ($internalMemoImeMode) { "tailscale-serve-internal" } else { "cloudflare-quick-tunnel" })
+    previewTransport = $(if ($internalRuntimeMode) { "tailscale-serve-internal" } else { "cloudflare-quick-tunnel" })
     quickTunnelReady = $false
     startedAtUtc = [DateTime]::UtcNow.ToString("o")
     updatedAtUtc = [DateTime]::UtcNow.ToString("o")
@@ -225,8 +237,8 @@ try {
     }
 
     $originUri = $null
-    if ($internalMemoImeMode) {
-        if (-not $developerAutoConnect -or -not $developerIdentity) { throw "MEMO_IME_DISPLAY_INTERNAL_ORIGIN_UNAVAILABLE" }
+    if ($internalRuntimeMode) {
+        if (-not $developerAutoConnect -or -not $developerIdentity) { throw "INTERNAL_RUNTIME_QA_ORIGIN_UNAVAILABLE" }
         $state.publicOrigin = $developerIdentity.ServeOrigin
         $originUri = [Uri]$state.publicOrigin
         $state.lastSuccessfulStage = "internal-preview-origin-ready"
@@ -316,6 +328,13 @@ try {
         $serverEnvironment.WAFL_EXTERNAL_QA_ALPHA55_MATERIAL_ORDER_LIFECYCLE_MUTATION_ENABLED = "true"
         $state.commandApi = "ready"
         $state.mutationMode = "material-order-request-cancel-complete"
+    }
+    if ($EnableAlpha56AccessoryLifecycleParityMutation) {
+        $serverEnvironment.WAFL_V2_COMMAND_API_ENABLED = "1"
+        $serverEnvironment.WAFL_V2_COMMAND_MUTATION_APPROVED = "2.0.0-alpha.56-dev-test-accessory-lifecycle-parity-runtime"
+        $serverEnvironment.WAFL_EXTERNAL_QA_ALPHA56_ACCESSORY_LIFECYCLE_PARITY_MUTATION_ENABLED = "true"
+        $state.commandApi = "ready"
+        $state.mutationMode = "accessory-lifecycle-parity"
     }
     $nextStdout = Join-Path $stateDir "next.stdout.log"
     $nextStderr = Join-Path $stateDir "next.stderr.log"

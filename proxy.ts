@@ -33,11 +33,6 @@ export function proxy(request: NextRequest) {
   const requestHost = normalizeRequestHost(request.headers.get("host"));
   if (!requestHost) return blocked();
   if (isLocalHost(requestHost)) return NextResponse.next();
-  if (requestHost === qaConfig.hostname && qaConfig.hostAllowlist.has(requestHost)) {
-    return isExternalQaPathAllowed(request.nextUrl.pathname, request.method, process.env)
-      ? NextResponse.next()
-      : blocked();
-  }
   if (
     qaConfig.developerAutoConnectEnabled
     && qaConfig.tailscaleServe
@@ -45,6 +40,11 @@ export function proxy(request: NextRequest) {
     && qaConfig.tailscaleServe.hostAllowlist.has(requestHost)
   ) {
     return isTailscaleServePathAllowed(request.nextUrl.pathname, request.method, process.env)
+      ? NextResponse.next()
+      : blocked();
+  }
+  if (requestHost === qaConfig.hostname && qaConfig.hostAllowlist.has(requestHost)) {
+    return isExternalQaPathAllowed(request.nextUrl.pathname, request.method, process.env)
       ? NextResponse.next()
       : blocked();
   }

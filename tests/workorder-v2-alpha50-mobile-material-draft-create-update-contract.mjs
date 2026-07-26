@@ -120,8 +120,9 @@ assert.doesNotMatch(saveMaterialSlice, /useEffect|setInterval|setTimeout/);
 for (const state of ["editing", "saving", "validation-error", "conflict", "locked", "save-error", "refresh-error"]) {
   assert.match(editor + app, new RegExp(`"${state}"`), `material editor state missing: ${state}`);
 }
-assert.match(editor, /원단 추가/);
-assert.match(editor, /원단 수정/);
+assert.match(editor, /state\.materialType === "accessory" \? "부자재" : "원단"/);
+assert.match(editor, /\$\{materialLabel\} 추가/);
+assert.match(editor, /\$\{materialLabel\} 수정/);
 assert.match(editor, /추가 취소/);
 assert.match(editor, /저장 전/);
 assert.match(editor, /계속 편집|최신 내용 불러오기/);
@@ -147,9 +148,9 @@ assert.match(mobilePolicy, /resolveMaterialOrderPolicy/);
 assert.match(materialOrderPolicy, /status === "editing"/);
 assert.doesNotMatch(app + editor, /setInterval|automaticSave|autoSave|order-request|order-cancel|order-complete/);
 
-assert.match(materials, /accessibilityLabel="원단 추가"/);
+assert.match(materials, /accessibilityLabel=\{`\$\{materialLabel\} 추가`\}/);
 assert.match(materials, /<Plus /);
-assert.match(materials, /field="name" label="원단명"/);
+assert.match(materials, /field="name" label=\{materialNameLabel\}/);
 assert.doesNotMatch(materials, /PencilLine|editActionButton/);
 assert.match(materials, /orderPolicy\.canEdit/);
 const materialOrderAction = materials.slice(materials.indexOf("function MaterialOrderActionButton"), materials.indexOf("function MaterialCard"));

@@ -4,8 +4,8 @@ Document type: **Current Baseline**
 
 Canonical owner: `docs/codex-current-state.md`
 
-Result version: `2.0.0-alpha.55`
-Status: `ALPHA55_MATERIAL_ORDER_CANCELLATION_MEMO_IME_AND_RUNTIME_QA_COMPLETE`
+Result version: `2.0.0-alpha.56`
+Status: `ALPHA56_ACCESSORY_LIFECYCLE_PARITY_COMPLETE`
 
 This file is a compact present-state snapshot. It is not a version history, Permanent Rules owner, runtime process ledger, or evidence archive. Historical implementation details belong to numbered immutable evidence under `docs/project/app-v2/`.
 
@@ -15,26 +15,26 @@ This file is a compact present-state snapshot. It is not a version history, Perm
 | --- | --- |
 | Repository | `C:\CWJ_Project\peacebypiece-2.0` |
 | Branch | `master` |
-| Alpha.55 entry HEAD/origin | `7e4ca03812568ffddda1e74330224aeb97920087` |
-| Entry commit | `docs: WAFL Codex canonical 실행 규칙 정규화` |
+| Alpha.56 entry HEAD/origin | `e36436293c3217f09555135149d9468e3fecf23a` |
+| Entry commit | `feat: WAFL v2 원단 발주취소와 메모 IME lifecycle 완성` |
 | Entry ahead/behind | `0/0` |
 | Entry working tree | clean |
-| APP_VERSION | `2.0.0-alpha.55` |
-| Mobile package version | `2.0.0-alpha.55` |
+| APP_VERSION | `2.0.0-alpha.56` |
+| Mobile package version | `2.0.0-alpha.56` |
 | Root package version | `0.5.637` |
 | Expo public version | `2.0.0` |
 | iOS Development Build | build number `1`, reusable while native inputs remain unchanged |
 | iOS bundle identifier | `com.wafl.app` |
 | Android package | `com.wafl.app` |
 
-The source cannot contain the hash of the commit that contains itself. Final alpha.55 HEAD, origin synchronization, Git cleanliness, ZIP hash/size/entry count, and exact repo-state filename are owned by the matching post-commit alpha.55 repo-state.
+The source cannot contain the hash of the commit that contains itself. Final alpha.56 HEAD, origin synchronization, Git cleanliness, ZIP hash/size/entry count, and exact repo-state filename are owned by the matching post-commit alpha.56 repo-state.
 
 ## Latest delivery boundary
 
-- Target Source ZIP: `peacebypiece-ui-2.0.0-alpha.55.zip`.
-- Target repo-state: `repo-state-2.0.0-alpha.55-<actual timestamp>.txt`.
+- Target Source ZIP: `peacebypiece-ui-2.0.0-alpha.56.zip`.
+- Target repo-state: `repo-state-2.0.0-alpha.56-<actual timestamp>.txt`.
 - `4. Newest` must contain only that matching pair after Finish.
-- The previous accepted handoff is the matching alpha.54 ZIP/repo-state pair recorded in its repo-state.
+- The previous accepted handoff is the matching alpha.55 ZIP/repo-state pair recorded in its repo-state.
 
 ## Current product and transport baseline
 
@@ -53,15 +53,14 @@ Do not record live PID, port ownership, temporary origin, connection code, sessi
 
 ## Latest feature and architecture baseline
 
-Alpha.55 uses the alpha.53-alpha.54 application and input boundaries to complete the fabric material-order and memo-input lifecycle without a dependency, native, or EAS change:
+Alpha.56 reuses the completed alpha.55 material-order policy, controller, shared table, and input boundaries for accessory lifecycle parity without a dependency, schema, native, or EAS change:
 
-- current order transitions are `editing -> requested`, `requested -> editing` on cancel, and `requested -> completed`; cancel history remains in timestamp/event/receipt while current editability follows operational state;
-- requested and completed rows lock general material editing, cancel restores edit and re-request, completed remains terminal, and the two retained historical `cancelled` rows remain `과거 취소` terminal/read-only compatibility data;
-- positive demand fully covered by stock permits a zero external-order quantity and amount without supplier or unit price, while zero demand and incomplete positive-order input remain blocked;
-- the material header fixes unit and canonical status badges in a non-wrapping right cluster, and all quantity displays keep number plus unit on one baseline-aligned row;
-- iOS IME Check finalizes the latest native text before one explicit PATCH, duplicate/automatic save stays zero, and overflowing memo text has an explicit compact/full disclosure;
-- canonical `memo-ime-display` Runtime QA and physical-iPhone Korean IME, memo disclosure, header layout, background/re-entry, and lifecycle acceptance passed;
-- final retained dev/test values are WorkOrder/revision/material `109/109/87`, material rows `8`, event/receipt `142/54`, migration ledger `13/13`, and legacy cancelled rows `2`;
+- mobile material contracts, normalizers, queries, cache keys, tabs, labels, draft/edit flows, archive/restore, and request/cancel/complete actions now preserve the selected `fabric | accessory` type end to end;
+- accessory and fabric continue to share `work_order_material_lines`, calculation, readiness, permission, expectedVersion, receipt/event, current cancellation, zero-order, terminal completion, and hard-delete prohibition;
+- the exact accessory Runtime sequence verified normal and stock-covered-zero request/cancel/re-request/complete, archive/restore, Korean IME finalization, compact/full memo disclosure, fixed unit/status badge order, and quantity/unit one-line layout;
+- physical-iPhone acceptance verified three explicit PATCH actions and request/cancel/re-request/complete with exact effects, terminal `completed / 9`, retained memo/display state, and background/re-entry;
+- authoritative V5 memo evidence confirms expected/actual exact equality `true` with character, Unicode, whitespace, and newline difference `0`; finalization neither requeried nor corrected the memo;
+- final retained canonical entity-version values are WorkOrder/revision/material `132/132/110`, material rows `11`, event/receipt `165/71`, migration ledger `13/13`, and legacy cancelled rows `2`;
 - schema/migration, R2/PDF/token, production, dependency, native, and EAS effects remain zero.
 
 The retained alpha.54 input behavior remains:
@@ -116,18 +115,19 @@ Final TypeScript, ESLint, Next, Expo, contracts, mutation audit, Canonical Verif
 - Alpha.54 mobile Reel Picker input UX: `docs/project/app-v2/53-mobile-reel-picker-input-ux-evidence.md`.
 - Canonical Codex rules documentation maintenance: `docs/project/app-v2/54-canonical-codex-working-rules-normalization-evidence.md`.
 - Alpha.55 material order cancellation, zero-order, memo IME, and Runtime QA: `docs/project/app-v2/55-mobile-material-order-lifecycle-evidence.md`.
+- Alpha.56 accessory lifecycle parity and physical-iPhone acceptance: `docs/project/app-v2/56-mobile-accessory-lifecycle-parity-evidence.md`.
 
 Older facts remain in their numbered evidence. They are not recopied here.
 
 ## Next candidate boundary
 
-Candidate: `2.0.0-alpha.56` — accessory lifecycle reuse on the completed alpha.55 material-order policy/controller boundary.
+Candidate: `2.0.0-alpha.57` — Maker WorkOrder image and representative-image foundation.
 
 Potential Delta scope:
 
-- determine whether accessory order actions reuse or specialize the completed fabric lifecycle;
-- reuse the explicit mutation controller and order policy/gateway boundaries rather than adding Command orchestration to the composition shell;
-- preserve hard-delete prohibition and require an exact dev/test effect budget before any Runtime mutation;
-- keep production, schema, dependency, native/EAS, lineage, and unrelated feature work outside the Delta.
+- reuse the existing attachment and primary-image structures before adding a new model;
+- define bounded upload, camera, drawing entry, representative selection, tenant, permission, object lifecycle, and device evidence;
+- keep AI image generation and Factory scope excluded;
+- require separate approval for any schema, R2, native permission/plugin, EAS, or production effect.
 
-Alpha.56 does not start until a separately owner-approved concise self-executing Delta defines its exact scope, baseline, mutation budget, Runtime, and device acceptance.
+Alpha.57 does not start until a separately owner-approved concise self-executing Delta defines its exact scope, storage/native effect budget, Runtime, and device acceptance.

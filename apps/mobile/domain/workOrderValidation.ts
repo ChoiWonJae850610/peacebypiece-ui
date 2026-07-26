@@ -1,4 +1,4 @@
-import type { MaterialDraftFields, WorkOrderDetailCore, WorkOrderMaterialLine } from "@/domain/mobileContract";
+import type { MaterialDraftFields, MaterialType, WorkOrderDetailCore, WorkOrderMaterialLine } from "@/domain/mobileContract";
 import { calculateOrderQuantity, stripDecimalTrailingZeros } from "../lib/mobileDisplay.ts";
 
 export type BasicInfoDraft = {
@@ -102,10 +102,11 @@ export function sameMaterialDraft(left: MaterialDraftFields, right: MaterialDraf
   return (Object.keys(left) as (keyof MaterialDraftFields)[]).every((field) => left[field] === right[field]);
 }
 
-export function validateMaterialDraft(input: MaterialDraftInput): MaterialEditorFieldErrors {
+export function validateMaterialDraft(input: MaterialDraftInput, materialType: MaterialType = "fabric"): MaterialEditorFieldErrors {
   const draft = createMaterialDraft(input);
   const errors: MaterialEditorFieldErrors = {};
-  if (draft.name.trim().length < 1 || draft.name.trim().length > 200) errors.name = "원단명은 1자 이상 200자 이하여야 합니다.";
+  const nameLabel = materialType === "accessory" ? "부자재명" : "원단명";
+  if (draft.name.trim().length < 1 || draft.name.trim().length > 200) errors.name = `${nameLabel}은 1자 이상 200자 이하여야 합니다.`;
   if (draft.colorOption.trim().length > 200) errors.colorOption = "색상·옵션은 200자 이하여야 합니다.";
   if (draft.usageArea.trim().length > 1000) errors.usageArea = "사용부위는 1,000자 이하여야 합니다.";
   if (draft.memo.trim().length > 2000) errors.memo = "메모는 2,000자 이하여야 합니다.";
@@ -128,7 +129,7 @@ export function validateMaterialDraft(input: MaterialDraftInput): MaterialEditor
 
 export function validateMaterialOrderRequest(line: WorkOrderMaterialLine): MaterialEditorFieldErrors {
   const draft = materialDraftFromLine(line);
-  const draftErrors = validateMaterialDraft(draft);
+  const draftErrors = validateMaterialDraft(draft, line.materialType);
   const errors: MaterialEditorFieldErrors = {};
   for (const field of [
     "requiredQuantity",

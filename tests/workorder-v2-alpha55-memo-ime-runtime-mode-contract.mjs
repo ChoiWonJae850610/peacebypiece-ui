@@ -10,13 +10,13 @@ const runner = read("tools/dev/start-wafl-external-qa.ps1");
 const stop = read("tools/dev/stop-wafl-external-qa.ps1");
 const runtime = read("scripts/run-wafl-v2-alpha55-material-order-runtime-qa.mjs");
 
-assert.match(runner, /\[ValidateSet\("external-device", "memo-ime-display"\)\]/);
+assert.match(runner, /\[ValidateSet\("external-device", "memo-ime-display", "accessory-lifecycle-parity"\)\]/);
 assert.match(runner, /\$internalMemoImeMode = \$RuntimeQaMode -eq "memo-ime-display"/);
 assert.match(runner, /MEMO_IME_DISPLAY_REQUIRES_DEVELOPER_AUTO_CONNECT/);
 assert.match(runner, /MEMO_IME_DISPLAY_REQUIRES_ALPHA55_MUTATION_MODE/);
 assert.match(runner, /MEMO_IME_DISPLAY_REQUIRES_CANONICAL_PORTS/);
-assert.match(runner, /\$cloudflared = if \(\$internalMemoImeMode\) \{ \$null \}/);
-assert.match(runner, /previewTransport = \$\(if \(\$internalMemoImeMode\)/);
+assert.match(runner, /\$cloudflared = if \(\$internalRuntimeMode\) \{ \$null \}/);
+assert.match(runner, /previewTransport = \$\(if \(\$internalRuntimeMode\)/);
 assert.match(runner, /"tailscale-serve-internal" \} else \{ "cloudflare-quick-tunnel"/);
 assert.match(runner, /else \{[\s\S]*?Start-WaflQaOwnedProcess -Role "cloudflared"/);
 assert.match(runner, /RuntimeQaMode = "external-device"/);

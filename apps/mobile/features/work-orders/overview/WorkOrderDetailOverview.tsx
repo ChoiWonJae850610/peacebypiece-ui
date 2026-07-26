@@ -18,7 +18,7 @@ import WorkOrderMaterialsReadOnly, { type MaterialReadViewState } from "@/featur
 import WorkOrderMaterialEditor, { type MaterialEditorViewState } from "@/features/materials/WorkOrderMaterialEditor";
 import ReelInlineEditValue from "@/features/inputs/reel-picker/ReelInlineEditValue";
 import WaflReelPickerSheet from "@/features/inputs/reel-picker/WaflReelPickerSheet";
-import type { MaterialDraftFields, MaterialDraftUpdate, WorkOrderDetailCore, WorkOrderMaterialLine } from "@/domain/mobileContract";
+import type { MaterialDraftFields, MaterialDraftUpdate, MaterialType, WorkOrderDetailCore, WorkOrderMaterialLine } from "@/domain/mobileContract";
 import type { MaterialOrderAction, MaterialOrderPolicy } from "@/domain/materialOrderPolicy";
 import { formatWon } from "@/lib/mobileDisplay";
 import { useFocusedFieldVisibility } from "@/hooks/useFocusedFieldVisibility";
@@ -107,6 +107,7 @@ type Props = {
   readonly onSaveDate: (value: string) => void;
   readonly onReloadLatest: () => void;
   readonly materials: MaterialReadViewState;
+  readonly materialType: MaterialType;
   readonly archivedMaterials: MaterialReadViewState;
   readonly archivedMaterialCount: number;
   readonly materialLifecycleBusyId: string | null;
@@ -129,7 +130,7 @@ type Props = {
   readonly onSaveMaterial: (draftOverride?: MaterialDraftUpdate) => void;
   readonly onReloadLatestMaterial: () => void;
   readonly onRequestSectionChange: (onProceed: () => void) => void;
-  readonly onOpenMaterials: () => void;
+  readonly onOpenMaterials: (materialType: MaterialType) => void;
   readonly onRetryMaterials: () => void;
   readonly onLoadMoreMaterials: () => void;
   readonly onLoadMoreArchivedMaterials: () => void;
@@ -137,7 +138,7 @@ type Props = {
 
 export default function WorkOrderDetailOverview(props: Props) {
   const { detail, phone, onBack } = props;
-  const [activeSection, setActiveSection] = useState<"overview" | "fabric">("overview");
+  const [activeSection, setActiveSection] = useState<"overview" | MaterialType>("overview");
   const [totalQuantityReelOpen, setTotalQuantityReelOpen] = useState(false);
   const { width } = useWindowDimensions();
   const { header } = detail;
@@ -304,23 +305,23 @@ export default function WorkOrderDetailOverview(props: Props) {
                 <Text style={[styles.tabText, activeSection === "overview" && styles.tabTextSelected]}>개요</Text>
                 <View style={[styles.tabUnderline, activeSection === "overview" && styles.tabUnderlineSelected]} />
               </Pressable>
-              {SECTION_TABS.map((tab) => tab.id === "fabric" ? (
+              {SECTION_TABS.map((tab) => tab.id === "fabric" || tab.id === "accessory" ? (
                 <Pressable
                   key={tab.id}
-                  accessibilityLabel={`원단 ${tab.count(detail)}건`}
+                  accessibilityLabel={`${tab.label} ${tab.count(detail)}건`}
                   accessibilityRole="button"
-                  accessibilityState={{ selected: activeSection === "fabric" }}
+                  accessibilityState={{ selected: activeSection === tab.id }}
                   onPress={() => props.onRequestSectionChange(() => {
-                    setActiveSection("fabric");
-                    props.onOpenMaterials();
+                    setActiveSection(tab.id);
+                    props.onOpenMaterials(tab.id);
                   })}
-                  style={[styles.tab, activeSection === "fabric" && styles.tabSelected]}
+                  style={[styles.tab, activeSection === tab.id && styles.tabSelected]}
                 >
                   <View style={styles.tabLabelRow}>
-                    <Text style={[styles.tabText, activeSection === "fabric" && styles.tabTextSelected]}>{tab.label}</Text>
+                    <Text style={[styles.tabText, activeSection === tab.id && styles.tabTextSelected]}>{tab.label}</Text>
                     <Text style={styles.tabCount}>{tab.count(detail)}</Text>
                   </View>
-                  <View style={[styles.tabUnderline, activeSection === "fabric" && styles.tabUnderlineSelected]} />
+                  <View style={[styles.tabUnderline, activeSection === tab.id && styles.tabUnderlineSelected]} />
                 </Pressable>
               ) : (
                 <Pressable
@@ -340,7 +341,7 @@ export default function WorkOrderDetailOverview(props: Props) {
                 </Pressable>
               ))}
             </ScrollView>
-            <Text style={styles.tabNotice}>원단 외 다른 탭은 다음 단계에서 연결 예정입니다.</Text>
+            <Text style={styles.tabNotice}>이미지·첨부, 사이즈·색상, 제작 플로우, 출력·공유는 다음 단계에서 연결 예정입니다.</Text>
           </View>
 
           {activeSection === "overview" ? (
@@ -365,6 +366,7 @@ export default function WorkOrderDetailOverview(props: Props) {
             />
           ) : (
             <WorkOrderMaterialsReadOnly
+              materialType={props.materialType}
               archivedState={props.archivedMaterials}
               archivedTotalCount={props.archivedMaterialCount}
               canEdit={props.canEditMaterials}

@@ -39,6 +39,7 @@ import {
 import {
   WAFL_V2_ALPHA26_MUTATION_APPROVAL,
   WAFL_V2_ALPHA55_MATERIAL_ORDER_LIFECYCLE_MUTATION_APPROVAL,
+  WAFL_V2_ALPHA56_ACCESSORY_LIFECYCLE_PARITY_MUTATION_APPROVAL,
 } from "@/lib/domain/work-orders/command/runtimeGuard";
 
 export type MaterialCommandServiceResult = {
@@ -331,6 +332,8 @@ export async function transitionMaterialOrder(input: {
   requireCommandMutationApproval(
     configuredApproval === WAFL_V2_ALPHA55_MATERIAL_ORDER_LIFECYCLE_MUTATION_APPROVAL
       ? WAFL_V2_ALPHA55_MATERIAL_ORDER_LIFECYCLE_MUTATION_APPROVAL
+      : configuredApproval === WAFL_V2_ALPHA56_ACCESSORY_LIFECYCLE_PARITY_MUTATION_APPROVAL
+        ? WAFL_V2_ALPHA56_ACCESSORY_LIFECYCLE_PARITY_MUTATION_APPROVAL
       : WAFL_V2_ALPHA26_MUTATION_APPROVAL,
   );
   const commandCode = TRANSITION_COMMAND_CODES[input.kind];

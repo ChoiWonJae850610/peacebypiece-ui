@@ -1,5 +1,6 @@
 import type {
   MaterialLineCommandResult,
+  MaterialType,
   WorkOrderMaterialLine,
 } from "../domain/mobileContract.ts";
 
@@ -7,6 +8,10 @@ export type JsonObject = Record<string, unknown>;
 
 const MATERIAL_STATUSES = new Set(["editing", "requested", "completed", "cancelled"]);
 const DECIMAL_PATTERN = /^-?(?:0|[1-9]\d*)(?:\.\d+)?$/;
+
+function isMaterialType(value: unknown): value is MaterialType {
+  return value === "fabric" || value === "accessory";
+}
 
 export function isJsonObject(value: unknown): value is JsonObject {
   return typeof value === "object" && value !== null && !Array.isArray(value);
@@ -30,7 +35,7 @@ export function normalizeMaterialLine(value: unknown): WorkOrderMaterialLine | n
   if (decimalFields.some((field) => typeof field !== "string" || !DECIMAL_PATTERN.test(field))) return null;
   if (
     typeof value.id !== "string"
-    || value.materialType !== "fabric"
+    || !isMaterialType(value.materialType)
     || typeof value.name !== "string"
     || optionalString(value.colorOption) === undefined
     || optionalString(value.usageArea) === undefined
@@ -45,7 +50,7 @@ export function normalizeMaterialLine(value: unknown): WorkOrderMaterialLine | n
   ) return null;
   return {
     id: value.id,
-    materialType: "fabric",
+    materialType: value.materialType,
     name: value.name,
     colorOption: optionalString(value.colorOption) ?? null,
     usageArea: optionalString(value.usageArea) ?? null,
@@ -72,7 +77,7 @@ export function normalizeMaterialCommandResult(value: unknown, workOrderId: stri
   if (
     result.workOrderId !== workOrderId
     || typeof result.materialLineId !== "string"
-    || result.materialType !== "fabric"
+    || !isMaterialType(result.materialType)
     || typeof result.status !== "string"
     || !MATERIAL_STATUSES.has(result.status)
     || !Number.isSafeInteger(result.nextVersion)

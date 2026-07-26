@@ -26,7 +26,7 @@ import {
 } from "@/features/materials/materialHeaderLayoutModel";
 import type { MaterialEditorViewState } from "@/features/materials/WorkOrderMaterialEditor";
 import { materialReelDraftPatch, type MaterialReelField } from "@/features/materials/materialReelAdapter";
-import type { MaterialDraftFields, MaterialDraftUpdate, WorkOrderMaterialLine } from "@/domain/mobileContract";
+import type { MaterialDraftFields, MaterialDraftUpdate, MaterialType, WorkOrderMaterialLine } from "@/domain/mobileContract";
 import type { MaterialOrderAction, MaterialOrderPolicy } from "@/domain/materialOrderPolicy";
 import { calculateMaterialAmount, calculateOrderQuantity, formatQuantity, formatWon } from "@/lib/mobileDisplay";
 
@@ -40,6 +40,7 @@ export type MaterialReadViewState = {
 };
 
 type Props = {
+  readonly materialType: MaterialType;
   readonly state: MaterialReadViewState;
   readonly archivedState: MaterialReadViewState;
   readonly archivedTotalCount: number;
@@ -325,6 +326,8 @@ function MaterialCard({ line, expanded, canEdit, lifecycleBusy, orderBusyAction,
   };
   const calculatedOrderQuantity = calculateOrderQuantity(calculationDraft);
   const calculatedAmount = calculateMaterialAmount(calculatedOrderQuantity, calculationDraft.unitPrice);
+  const materialLabel = line.materialType === "accessory" ? "부자재" : "원단";
+  const materialNameLabel = `${materialLabel}명`;
   const headerPresentation = createMaterialHeaderPresentation({
     name: line.name,
     unitCode: line.unitCode,
@@ -336,9 +339,9 @@ function MaterialCard({ line, expanded, canEdit, lifecycleBusy, orderBusyAction,
         <View style={styles.cardHeader}>
           <View style={styles.materialIdentity}>
             {activeHeaderField ? (
-              <ExpandedInlineField label={activeHeaderField === "name" ? "원단명" : "단위"} testID="material-header-expanded-editor">
+              <ExpandedInlineField label={activeHeaderField === "name" ? materialNameLabel : "단위"} testID="material-header-expanded-editor">
                 {activeHeaderField === "name" ? (
-                  <MaterialInlineField {...inlineProps} displayStyle={styles.materialName} displayValue={line.name} field="name" label="원단명" maxLength={200} placeholder="원단명 미입력" testID="material-inline-name" />
+                  <MaterialInlineField {...inlineProps} displayStyle={styles.materialName} displayValue={line.name} field="name" label={materialNameLabel} maxLength={200} placeholder={`${materialNameLabel} 미입력`} testID="material-inline-name" />
                 ) : (
                   <MaterialReelInlineField {...reelProps} displayStyle={styles.compactValue} field="unitCode" label="단위" testID="material-inline-unit" />
                 )}
@@ -349,10 +352,10 @@ function MaterialCard({ line, expanded, canEdit, lifecycleBusy, orderBusyAction,
                 displayStyle={styles.materialName}
                 displayValue={headerPresentation.name}
                 field="name"
-                label="원단명"
+                label={materialNameLabel}
                 maxLength={200}
                 numberOfLines={MATERIAL_HEADER_NAME_MAX_LINES}
-                placeholder="원단명 미입력"
+                placeholder={`${materialNameLabel} 미입력`}
                 testID="material-inline-name"
               />
             )}
@@ -377,7 +380,7 @@ function MaterialCard({ line, expanded, canEdit, lifecycleBusy, orderBusyAction,
               </Text>
             </View>
             <Pressable
-              accessibilityLabel={`${line.name}, 원단 상세 ${expanded ? "접기" : "펼치기"}`}
+              accessibilityLabel={`${line.name}, ${materialLabel} 상세 ${expanded ? "접기" : "펼치기"}`}
               accessibilityRole="button"
               accessibilityState={{ expanded }}
               hitSlop={8}
@@ -511,7 +514,7 @@ function MaterialCard({ line, expanded, canEdit, lifecycleBusy, orderBusyAction,
           <View testID="material-order-actions" style={styles.materialOrderActions}>
             {orderPolicy.canEdit ? (
               <Pressable
-                accessibilityLabel={`${line.name} 삭제된 원단으로 이동`}
+                accessibilityLabel={`${line.name} 삭제된 ${materialLabel}로 이동`}
                 accessibilityRole="button"
                 accessibilityState={{ disabled: lifecycleBusy }}
                 disabled={lifecycleBusy}
@@ -543,8 +546,9 @@ function ArchivedMaterialCard({ line, busy, onRestore }: {
   readonly busy: boolean;
   readonly onRestore: () => void;
 }) {
+  const materialNameLabel = line.materialType === "accessory" ? "부자재명" : "원단명";
   const headerPresentation = createMaterialHeaderPresentation({
-    name: line.name || "원단명 미입력",
+    name: line.name || `${materialNameLabel} 미입력`,
     unitCode: line.unitCode,
     statusLabel: "삭제됨",
   });
@@ -575,16 +579,17 @@ function ArchivedMaterialCard({ line, busy, onRestore }: {
   );
 }
 
-function AddMaterialButton({ onPress }: { readonly onPress: () => void }) {
+function AddMaterialButton({ materialType, onPress }: { readonly materialType: MaterialType; readonly onPress: () => void }) {
+  const materialLabel = materialType === "accessory" ? "부자재" : "원단";
   return (
-    <Pressable accessibilityHint="새 원단 입력 화면을 엽니다" accessibilityLabel="원단 추가" accessibilityRole="button" onPress={onPress} style={({ pressed }) => [styles.addButton, pressed && styles.pressed]}>
+    <Pressable accessibilityHint={`새 ${materialLabel} 입력 화면을 엽니다`} accessibilityLabel={`${materialLabel} 추가`} accessibilityRole="button" onPress={onPress} style={({ pressed }) => [styles.addButton, pressed && styles.pressed]}>
       <Plus color="#ffffff" size={19} strokeWidth={2.4} />
     </Pressable>
   );
 }
 
 export default function WorkOrderMaterialsReadOnly({
-  state, archivedState, archivedTotalCount, canEdit, lifecycleBusyId, orderBusyId, orderBusyAction, saveNotice,
+  materialType, state, archivedState, archivedTotalCount, canEdit, lifecycleBusyId, orderBusyId, orderBusyAction, saveNotice,
   activeEditor, activeField, onAdd, onEdit, onChangeEdit, onCancelEdit, onSaveEdit,
   onArchive, onOrderAction, onRestore, orderPolicy, onRetry, onLoadMore, onLoadMoreArchived, onFieldFocus,
 }: Props) {
@@ -592,24 +597,27 @@ export default function WorkOrderMaterialsReadOnly({
   const [archivedExpanded, setArchivedExpanded] = useState(false);
   const [reelTarget, setReelTarget] = useState<ReelTarget | null>(null);
   const waiting = state.status === "loading" || state.status === "retrying";
+  const materialLabel = materialType === "accessory" ? "부자재" : "원단";
+  const materialSubject = materialType === "accessory" ? "부자재가" : "원단이";
+  const materialTopic = materialType === "accessory" ? "부자재는" : "원단은";
 
   if (waiting && state.items.length === 0) {
     return (
       <View accessibilityLiveRegion="polite" style={styles.centerState}>
         <ActivityIndicator color="#9b4a27" />
-        <Text style={styles.stateTitle}>{state.status === "retrying" ? "원단 정보를 다시 불러오는 중" : "원단 정보를 불러오는 중"}</Text>
+        <Text style={styles.stateTitle}>{state.status === "retrying" ? `${materialLabel} 정보를 다시 불러오는 중` : `${materialLabel} 정보를 불러오는 중`}</Text>
       </View>
     );
   }
 
   if (state.status === "empty" && (!canEdit || archivedTotalCount === 0)) {
-    return <View style={styles.centerState}><Text style={styles.stateTitle}>등록된 원단이 없습니다</Text><Text style={styles.stateCaption}>이 작업지시서에 연결된 원단 내역이 없습니다.</Text>{canEdit ? <AddMaterialButton onPress={onAdd} /> : null}</View>;
+    return <View style={styles.centerState}><Text style={styles.stateTitle}>등록된 {materialSubject} 없습니다</Text><Text style={styles.stateCaption}>이 작업지시서에 연결된 {materialLabel} 내역이 없습니다.</Text>{canEdit ? <AddMaterialButton materialType={materialType} onPress={onAdd} /> : null}</View>;
   }
 
   if (state.status === "error" && state.items.length === 0) {
     return (
       <View style={styles.errorState}>
-        <Text accessibilityRole="alert" style={styles.errorTitle}>{state.errorMessage ?? "원단 정보를 불러오지 못했습니다"}</Text>
+        <Text accessibilityRole="alert" style={styles.errorTitle}>{state.errorMessage ?? `${materialLabel} 정보를 불러오지 못했습니다`}</Text>
         <Text style={styles.stateCaption}>자동으로 다시 요청하지 않습니다.</Text>
         <Pressable accessibilityRole="button" onPress={onRetry} style={({ pressed }) => [styles.retryButton, pressed && styles.pressed]}>
           <RefreshCw color="#fff" size={15} />
@@ -643,11 +651,11 @@ export default function WorkOrderMaterialsReadOnly({
       {canEdit || saveNotice ? (
         <View style={styles.listToolbar}>
           {saveNotice ? <Text accessibilityRole="alert" style={styles.saveNotice}>{saveNotice}</Text> : <View style={styles.toolbarSpacer} />}
-          {canEdit ? <AddMaterialButton onPress={onAdd} /> : null}
+          {canEdit ? <AddMaterialButton materialType={materialType} onPress={onAdd} /> : null}
         </View>
       ) : null}
       {state.status === "empty" ? (
-        <View style={styles.inlineEmpty}><Text style={styles.stateTitle}>등록된 원단이 없습니다</Text><Text style={styles.stateCaption}>삭제된 원단은 아래에서 복구할 수 있습니다.</Text>{canEdit ? <AddMaterialButton onPress={onAdd} /> : null}</View>
+        <View style={styles.inlineEmpty}><Text style={styles.stateTitle}>등록된 {materialSubject} 없습니다</Text><Text style={styles.stateCaption}>삭제된 {materialTopic} 아래에서 복구할 수 있습니다.</Text>{canEdit ? <AddMaterialButton materialType={materialType} onPress={onAdd} /> : null}</View>
       ) : null}
       {state.items.map((line) => (
         <MaterialCard
@@ -678,7 +686,7 @@ export default function WorkOrderMaterialsReadOnly({
       ))}
       {state.status === "error" ? (
         <View style={styles.inlineError}>
-          <Text accessibilityRole="alert" style={styles.inlineErrorText}>{state.errorMessage ?? "원단 정보를 더 불러오지 못했습니다"}</Text>
+          <Text accessibilityRole="alert" style={styles.inlineErrorText}>{state.errorMessage ?? `${materialLabel} 정보를 더 불러오지 못했습니다`}</Text>
           <Pressable accessibilityRole="button" onPress={onRetry} style={styles.inlineRetry}><Text style={styles.inlineRetryText}>다시 시도</Text></Pressable>
         </View>
       ) : state.hasMore ? (
@@ -695,13 +703,13 @@ export default function WorkOrderMaterialsReadOnly({
       {canEdit && archivedTotalCount > 0 ? (
         <View style={styles.archivedSection}>
           <Pressable
-            accessibilityLabel={`삭제된 원단 ${archivedTotalCount}개 ${archivedExpanded ? "접기" : "펼치기"}`}
+            accessibilityLabel={`삭제된 ${materialLabel} ${archivedTotalCount}개 ${archivedExpanded ? "접기" : "펼치기"}`}
             accessibilityRole="button"
             accessibilityState={{ expanded: archivedExpanded }}
             onPress={() => setArchivedExpanded((current) => !current)}
             style={({ pressed }) => [styles.archivedSectionHeader, pressed && styles.pressed]}
           >
-            <Text style={styles.archivedSectionTitle}>삭제된 원단 {archivedTotalCount}개</Text>
+            <Text style={styles.archivedSectionTitle}>삭제된 {materialLabel} {archivedTotalCount}개</Text>
             {archivedExpanded ? <ChevronUp color="#6b5b4d" size={18} /> : <ChevronDown color="#6b5b4d" size={18} />}
           </Pressable>
           {archivedExpanded ? (
@@ -711,7 +719,7 @@ export default function WorkOrderMaterialsReadOnly({
               ))}
               {archivedState.hasMore ? (
                 <Pressable accessibilityRole="button" disabled={archivedState.status === "loading-more"} onPress={onLoadMoreArchived} style={styles.archivedMoreButton}>
-                  <Text style={styles.archivedMoreText}>{archivedState.status === "loading-more" ? "불러오는 중" : "삭제된 원단 더 보기"}</Text>
+                  <Text style={styles.archivedMoreText}>{archivedState.status === "loading-more" ? "불러오는 중" : `삭제된 ${materialLabel} 더 보기`}</Text>
                 </Pressable>
               ) : null}
             </View>

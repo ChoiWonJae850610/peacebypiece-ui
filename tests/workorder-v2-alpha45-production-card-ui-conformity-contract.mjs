@@ -54,7 +54,8 @@ assert.match(detail, /accessibilityState=\{\{ disabled: true \}\}/);
 assert.match(detail, /disabled\s*\n/);
 assert.match(detail, /setActiveSection/);
 assert.doesNotMatch(detail, /setActiveTab|activeTab/);
-assert.match(detail, /다른 탭은 다음 단계에서 연결 예정입니다/);
+assert.match(detail, /tab\.id === "fabric" \|\| tab\.id === "accessory"/);
+assert.match(detail, /이미지·첨부, 사이즈·색상, 제작 플로우, 출력·공유는 다음 단계에서 연결 예정입니다/);
 
 assert.match(detail, /navigationBar:[^\n]+minHeight: 44/);
 assert.doesNotMatch(detail, /navigationBar:[^\n]+position:/);

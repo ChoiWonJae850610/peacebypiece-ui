@@ -59,6 +59,15 @@ assert.equal(server.tailscaleServe.developerLoginSha256, loginHash);
 assert.equal(server.tailscaleServe.developerSystemAdminEmailSha256, adminHash);
 assert.throws(() => readExternalQaServerConfig({ ...serverEnv, WAFL_SERVER_RUNTIME_MODE: "production" }));
 assert.throws(() => readExternalQaServerConfig({ ...serverEnv, WAFL_TAILSCALE_SERVE_HOST_ALLOWLIST: `${serveHost},other.ts.net` }));
+const internalServerEnv = {
+  ...serverEnv,
+  WAFL_EXTERNAL_QA_ORIGIN: `https://${serveHost}`,
+  WAFL_EXTERNAL_QA_HOST_ALLOWLIST: serveHost,
+};
+const internalServer = readExternalQaServerConfig(internalServerEnv);
+assert.equal(internalServer.hostname, internalServer.tailscaleServe.hostname);
+assert.equal(isTailscaleServePathAllowed("/api/dev/mobile-connect/auto", "POST", internalServerEnv), true);
+assert.equal(isExternalQaPathAllowed("/api/dev/mobile-connect/auto", "POST", internalServerEnv), false);
 
 const mobile = readMobileQaConfig({
   WAFL_SERVER_RUNTIME_MODE: "dev",
@@ -113,6 +122,10 @@ const mapping = read("scripts/resolve-wafl-alpha47-developer-mapping.mjs");
 assert.match(proxy, /request\.headers\.get\("host"\)/);
 assert.doesNotMatch(proxy, /headers\.get\("x-forwarded-host"\)/);
 assert.match(proxy, /isTailscaleServePathAllowed/);
+assert.ok(
+  proxy.indexOf("qaConfig.developerAutoConnectEnabled") < proxy.indexOf("requestHost === qaConfig.hostname"),
+  "overlapping internal QA host must use the tailnet-only Serve allowlist before the external Preview allowlist",
+);
 assert.match(autoRoute, /request\.headers\.get\("tailscale-user-login"\)/);
 assert.doesNotMatch(`${autoRoute}\n${autoService}`, /tailscale-user-name|tailscale-user-profile-pic|x-forwarded-host/i);
 assert.match(autoRoute, /httpOnly: true/);

@@ -1,5 +1,5 @@
 import { getWorkOrderDetail, getWorkOrderList, getWorkOrderMaterials } from "../../lib/apiClient";
-import type { WorkOrderListStatusFilter } from "../../domain/mobileContract";
+import type { MaterialType, WorkOrderListStatusFilter } from "../../domain/mobileContract";
 
 export const workOrderQueryController = {
   list(input: { readonly query?: string; readonly status?: WorkOrderListStatusFilter; readonly cursor?: string | null } = {}) {
@@ -8,7 +8,7 @@ export const workOrderQueryController = {
   detail(workOrderId: string) {
     return getWorkOrderDetail(workOrderId);
   },
-  materials(workOrderId: string, cursor: string | null = null, lifecycle: "active" | "archived" = "active") {
-    return getWorkOrderMaterials(workOrderId, cursor, lifecycle);
+  materials(workOrderId: string, materialType: MaterialType, cursor: string | null = null, lifecycle: "active" | "archived" = "active") {
+    return getWorkOrderMaterials(workOrderId, materialType, cursor, lifecycle);
   },
 } as const;

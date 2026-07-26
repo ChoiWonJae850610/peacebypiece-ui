@@ -4,6 +4,7 @@ import type {
   MaterialLifecycleCommandInput,
   MaterialOrderCommandInput,
   MaterialOrderCommandKind,
+  MaterialType,
   MobileCurrentUser,
   MobileFieldError,
   PatchMaterialLineInput,
@@ -199,24 +200,26 @@ export async function getWorkOrderDetail(workOrderId: string): Promise<WorkOrder
 
 export async function getWorkOrderMaterials(
   workOrderId: string,
+  materialType: MaterialType,
   cursor: string | null = null,
   lifecycle: "active" | "archived" = "active",
 ): Promise<WorkOrderMaterialPage> {
-  const query = new URLSearchParams({ type: "fabric", lifecycle, limit: "30" });
+  const query = new URLSearchParams({ type: materialType, lifecycle, limit: "30" });
   if (cursor) query.set("cursor", cursor);
   const body = await requestJson<{ readonly ok: boolean; readonly data?: unknown }>(
     `/api/v2/work-orders/${encodeURIComponent(workOrderId)}/materials?${query.toString()}`,
     { method: "GET" },
   );
   if (!body.ok || !isJsonObject(body.data) || !Array.isArray(body.data.items)) {
-    throw new MobileApiError({ code: "MALFORMED_RESPONSE", message: "원단 정보 응답이 올바르지 않습니다." });
+    throw new MobileApiError({ code: "MALFORMED_RESPONSE", message: "자재 정보 응답이 올바르지 않습니다." });
   }
   const lines = body.data.items.map(normalizeMaterialLine);
   if (
     body.data.workOrderId !== workOrderId
-    || body.data.materialType !== "fabric"
+    || body.data.materialType !== materialType
     || body.data.lifecycle !== lifecycle
     || lines.some((line) => line === null)
+    || lines.some((line) => line?.materialType !== materialType)
     || !(body.data.nextCursor === null || typeof body.data.nextCursor === "string")
     || typeof body.data.hasMore !== "boolean"
     || (body.data.hasMore && (typeof body.data.nextCursor !== "string" || body.data.nextCursor.length === 0))
@@ -225,11 +228,11 @@ export async function getWorkOrderMaterials(
     || !Number.isSafeInteger(body.data.entityVersion)
     || !Number.isSafeInteger(body.data.totalCount)
   ) {
-    throw new MobileApiError({ code: "MALFORMED_RESPONSE", message: "원단 정보 응답이 올바르지 않습니다." });
+    throw new MobileApiError({ code: "MALFORMED_RESPONSE", message: "자재 정보 응답이 올바르지 않습니다." });
   }
   return {
     workOrderId,
-    materialType: "fabric",
+    materialType,
     lifecycle,
     items: lines as WorkOrderMaterialLine[],
     nextCursor: body.data.nextCursor as string | null,

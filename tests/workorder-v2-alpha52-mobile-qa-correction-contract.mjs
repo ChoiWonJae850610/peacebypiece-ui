@@ -37,7 +37,7 @@ assert.match(controlled, /<Check /);
 assert.doesNotMatch(controlled, />\s*취소\s*</);
 assert.doesNotMatch(controlled, />\s*완료\s*</);
 assert.match(materials, /<Plus /);
-assert.match(materials, /accessibilityLabel="원단 추가"/);
+assert.match(materials, /accessibilityLabel=\{`\$\{materialLabel\} 추가`\}/);
 
 assert.doesNotMatch(materials, /field="orderQuantity"/);
 assert.doesNotMatch(editor, /field="orderQuantity"/);

@@ -20,6 +20,8 @@ export const WAFL_V2_ALPHA52_CORE_INLINE_MUTATION_APPROVAL =
   "2.0.0-alpha.52-dev-test-mobile-core-inline-runtime";
 export const WAFL_V2_ALPHA55_MATERIAL_ORDER_LIFECYCLE_MUTATION_APPROVAL =
   "2.0.0-alpha.55-dev-test-mobile-material-order-lifecycle-runtime";
+export const WAFL_V2_ALPHA56_ACCESSORY_LIFECYCLE_PARITY_MUTATION_APPROVAL =
+  "2.0.0-alpha.56-dev-test-accessory-lifecycle-parity-runtime";
 
 const SUPPORTED_MUTATION_APPROVALS = new Set([
   WAFL_V2_ALPHA25_MUTATION_APPROVAL,
@@ -27,6 +29,7 @@ const SUPPORTED_MUTATION_APPROVALS = new Set([
   WAFL_V2_ALPHA27_MUTATION_APPROVAL,
   WAFL_V2_ALPHA30_MUTATION_APPROVAL,
   WAFL_V2_ALPHA55_MATERIAL_ORDER_LIFECYCLE_MUTATION_APPROVAL,
+  WAFL_V2_ALPHA56_ACCESSORY_LIFECYCLE_PARITY_MUTATION_APPROVAL,
 ]);
 
 export type WorkOrderV2CommandRuntimeGuard =
@@ -86,6 +89,7 @@ export function getWorkOrderV2MaterialDraftMutationRuntimeGuard(): WorkOrderV2Co
     && configuredApproval !== WAFL_V2_ALPHA51_MATERIAL_LIFECYCLE_MUTATION_APPROVAL
     && configuredApproval !== WAFL_V2_ALPHA52_CORE_INLINE_MUTATION_APPROVAL
     && configuredApproval !== WAFL_V2_ALPHA55_MATERIAL_ORDER_LIFECYCLE_MUTATION_APPROVAL
+    && configuredApproval !== WAFL_V2_ALPHA56_ACCESSORY_LIFECYCLE_PARITY_MUTATION_APPROVAL
   ) {
     return { ok: false, reason: "material-draft-mutation-approval-missing" };
   }

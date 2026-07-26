@@ -44,6 +44,7 @@ assert.match(detailService, /materialType !== "fabric" && materialType !== "acce
 assert.match(detailService, /decodeWorkOrderTabCursor/);
 assert.match(detailService, /limit: parseLimit\(input\.searchParams\.get\("limit"\)\)/);
 assert.match(apiTypes, /MaterialLineStatus = "editing" \| "requested" \| "completed" \| "cancelled" \| "unknown"/);
+assert.match(apiTypes, /MaterialType = "fabric" \| "accessory"/);
 for (const field of [
   "name", "colorOption", "usageArea", "requiredQuantity", "allowanceQuantity", "inventoryUsageQuantity",
   "orderQuantity", "unitCode", "currency", "unitPrice", "amount", "memo", "status", "displayOrder", "locked",
@@ -51,7 +52,7 @@ for (const field of [
 assert.doesNotMatch(apiTypes, /\[key:\s*string\]|:\s*any\b/);
 
 assert.match(apiClient, /export async function getWorkOrderMaterials/);
-assert.match(apiClient, /type: "fabric", lifecycle, limit: "30"/);
+assert.match(apiClient, /type: materialType, lifecycle, limit: "30"/);
 assert.match(apiClient, /method: "GET"/);
 assert.match(apiClient, /body\.data\.workOrderId !== workOrderId/);
 assert.match(apiResponseNormalizer, /const DECIMAL_PATTERN/);
@@ -81,6 +82,7 @@ assert.ok(normalizedMaterial);
 assert.equal(normalizedMaterial.colorOption, null);
 assert.equal(normalizedMaterial.usageArea, null);
 assert.equal(normalizedMaterial.memo, null);
+assert.equal(normalizeMaterialLine({ ...normalizedMaterial, materialType: "accessory" })?.materialType, "accessory");
 assert.equal(normalizeMaterialLine({ ...normalizedMaterial, requiredQuantity: "10.0.0" }), null);
 assert.match(apiClient, /body\.data\.hasMore &&/);
 assert.match(apiClient, /!body\.data\.hasMore && body\.data\.nextCursor !== null/);
@@ -95,9 +97,10 @@ assert.doesNotMatch(externalQa, /\/api\/v2\/\*/);
 
 assert.match(detail, /SECTION_TABS/);
 assert.match(detail, /id: "fabric", label: "원단"/);
-assert.match(detail, /setActiveSection\("fabric"\)[\s\S]{0,120}props\.onOpenMaterials\(\)/);
+assert.match(detail, /tab\.id === "fabric" \|\| tab\.id === "accessory"/);
+assert.match(detail, /setActiveSection\(tab\.id\)[\s\S]{0,120}props\.onOpenMaterials\(tab\.id\)/);
 assert.match(detail, /accessibilityState=\{\{ disabled: true \}\}/);
-for (const disabledTab of ["media", "sizes", "accessory", "flow", "output"]) {
+for (const disabledTab of ["media", "sizes", "flow", "output"]) {
   assert.match(detail, new RegExp(`id: "${disabledTab}"`), `future tab missing: ${disabledTab}`);
 }
 assert.match(detail, /WorkOrderMaterialsReadOnly/);
@@ -107,14 +110,15 @@ assert.doesNotMatch(detail, /mockProductionCard|constants\/mockProductionCard/);
 for (const state of ["not-loaded", "loading", "loaded", "empty", "error", "retrying", "loading-more"]) {
   assert.match(materials + app, new RegExp(`"${state}"`), `material state missing: ${state}`);
 }
-assert.match(materials, /원단 정보를 불러오는 중/);
-assert.match(materials, /등록된 원단이 없습니다/);
-assert.match(materials, /원단 정보를 불러오지 못했습니다/);
+assert.match(materials, /materialType === "accessory" \? "부자재" : "원단"/);
+assert.match(materials, /\$\{materialLabel\} 정보를 불러오는 중/);
+assert.match(materials, /등록된 \{materialSubject\}/);
+assert.match(materials, /\$\{materialLabel\} 정보를 불러오지 못했습니다/);
 assert.match(materials, /다시 시도/);
 assert.match(materials, /더 보기/);
 assert.match(materials, /expandedIds\.has\(line\.id\)/);
 assert.match(materials, /exactHexColor\(line\.colorOption\)/);
-for (const label of ["원단명 미입력", "사용부위", "필요수량", "발주수량", "재고사용", "로스·여유", "단가", "금액", "메모"]) {
+for (const label of ["materialNameLabel", "사용부위", "필요수량", "발주수량", "재고사용", "로스·여유", "단가", "금액", "메모"]) {
   assert.match(materials, new RegExp(label), `material display missing: ${label}`);
 }
 for (const status of ["발주 전", "발주요청", "발주완료", "과거 취소", "상태 확인 필요"]) {
@@ -181,19 +185,22 @@ assert.match(materialCardBody, /return \(\s*<View style=\{\[styles\.card, materi
 assert.match(materialSummaryBody, /accessibilityState=\{\{ expanded \}\}[\s\S]{0,240}onPress=\{onToggle\}/);
 assert.match(materialSummaryBody, /testID="material-memo-disclosure"/);
 
-assert.match(materialCache, /const MATERIAL_CACHE_LIMIT = 6/);
-assert.match(app, /materialCacheRef\.current\[workOrderId\]/);
-assert.match(app, /if \(materialRequests\.current\.has\(workOrderId\)\) return/);
+assert.match(materialCache, /const MATERIAL_CACHE_LIMIT = 12/);
+assert.match(materialCache, /materialCacheKey\(workOrderId: string, materialType: MaterialType\)/);
+assert.match(app, /materialCacheRef\.current\[cacheKey\]/);
+assert.match(app, /if \(materialRequests\.current\.has\(cacheKey\)\) return/);
 assert.match(app, /action === "initial" && existing && existing\.status !== "not-loaded"/);
 assert.match(app, /action === "retry" && existing\?\.status !== "error"/);
 assert.match(app, /materialSessionGeneration\.current !== sessionGeneration/);
-assert.match(app, /materialRequests\.current\.get\(workOrderId\) !== requestToken/);
+assert.match(app, /materialRequests\.current\.get\(cacheKey\) !== requestToken/);
 assert.match(app, /page\.workOrderId !== workOrderId/);
+assert.match(app, /page\.materialType !== materialType/);
 assert.match(app, /new Set\(merged\.map\(\(line\) => line\.id\)\)/);
-assert.match(app, /materialCache\[detail\.header\.id\]/);
-assert.match(app, /onOpenMaterials=\{\(\) => void loadMaterials\(detail\.header\.id, "initial"\)\}/);
-assert.match(app, /onRetryMaterials=\{\(\) => void loadMaterials\(detail\.header\.id, "retry"\)\}/);
-assert.match(app, /onLoadMoreMaterials=\{\(\) => void loadMaterials\(detail\.header\.id, "more"\)\}/);
+assert.match(app, /materialCache\[materialCacheKey\(detail\.header\.id, activeMaterialType\)\]/);
+assert.match(app, /onOpenMaterials=\{\(materialType\) =>/);
+assert.match(app, /loadMaterials\(detail\.header\.id, materialType, "initial"\)/);
+assert.match(app, /onRetryMaterials=\{\(\) => void loadMaterials\(detail\.header\.id, activeMaterialType, "retry"\)\}/);
+assert.match(app, /onLoadMoreMaterials=\{\(\) => void loadMaterials\(detail\.header\.id, activeMaterialType, "more"\)\}/);
 for (const errorBoundary of ["status === 401", "status === 403", "status === 404", "status === 409"]) {
   assert.match(`${app}\n${errorPresentation}`, new RegExp(errorBoundary.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")), `error boundary missing: ${errorBoundary}`);
 }
