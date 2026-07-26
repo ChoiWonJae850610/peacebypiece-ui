@@ -20,6 +20,10 @@ import {
   type DbTransactionClient,
 } from "@/lib/db/client";
 import { installTenantClaims } from "@/lib/domain/work-orders/command/commandRepository";
+import {
+  evaluateMaterialOrderReadiness,
+  type MaterialOrderReadinessBlocker,
+} from "@/lib/domain/work-orders/command/materialOrderReadiness";
 
 export const MATERIAL_CREATE_COMMAND_CODE = "work_order.material.create";
 export const MATERIAL_PATCH_COMMAND_CODE = "work_order.material.patch";
@@ -46,12 +50,18 @@ type MaterialCommandFailureReason =
 export class MaterialCommandRepositoryError extends Error {
   readonly reason: MaterialCommandFailureReason;
   readonly entityVersion: number | null;
+  readonly readinessBlockers: readonly MaterialOrderReadinessBlocker[];
 
-  constructor(reason: MaterialCommandFailureReason, entityVersion: number | null = null) {
+  constructor(
+    reason: MaterialCommandFailureReason,
+    entityVersion: number | null = null,
+    readinessBlockers: readonly MaterialOrderReadinessBlocker[] = [],
+  ) {
     super(reason);
     this.name = "MaterialCommandRepositoryError";
     this.reason = reason;
     this.entityVersion = entityVersion;
+    this.readinessBlockers = readinessBlockers;
   }
 }
 
@@ -174,6 +184,25 @@ function canonicalOrderQuantity(input: {
   const whole = bounded / BigInt(1000);
   const fraction = (bounded % BigInt(1000)).toString().padStart(3, "0").replace(/0+$/, "");
   return `${whole}${fraction ? `.${fraction}` : ""}`;
+}
+
+function assertMaterialOrderReady(target: MaterialTargetRow) {
+  const readiness = evaluateMaterialOrderReadiness({
+    requiredQuantity: target.required_quantity,
+    allowanceQuantity: target.allowance_quantity,
+    inventoryUsageQuantity: target.inventory_usage_quantity,
+    orderQuantity: target.order_quantity,
+    unitCode: target.unit_code,
+    supplierPartnerId: target.supplier_partner_id,
+    unitPrice: target.unit_price,
+  });
+  if (!readiness.ready) {
+    throw new MaterialCommandRepositoryError(
+      "order_not_ready",
+      Number(target.work_order_version),
+      readiness.blockers,
+    );
+  }
 }
 
 function isForeignKeyReferenceError(error: unknown): boolean {
@@ -698,7 +727,7 @@ const TRANSITION_CONFIG = {
   cancel: {
     commandCode: MATERIAL_ORDER_CANCEL_COMMAND_CODE,
     from: "requested",
-    to: "cancelled",
+    to: "editing",
     summary: "자재 발주 요청 취소",
   },
   complete: {
@@ -744,10 +773,7 @@ export async function transitionMaterialOrderV2(input: {
     if (target.archived_at !== null || target.material_status !== config.from) {
       throw new MaterialCommandRepositoryError("invalid_state_transition", Number(target.work_order_version));
     }
-    if ((input.kind === "request" || input.kind === "complete")
-      && (!target.supplier_partner_id || Number(target.order_quantity) <= 0)) {
-      throw new MaterialCommandRepositoryError("order_not_ready", Number(target.work_order_version));
-    }
+    if (input.kind === "request" || input.kind === "complete") assertMaterialOrderReady(target);
     if (input.kind === "complete" && !target.requested_at) {
       throw new MaterialCommandRepositoryError("order_not_ready", Number(target.work_order_version));
     }
@@ -756,7 +782,7 @@ export async function transitionMaterialOrderV2(input: {
       UPDATE work_order_material_lines
       SET status = $4,
           requested_at = CASE WHEN $4 = 'requested' THEN now() ELSE requested_at END,
-          cancelled_at = CASE WHEN $4 = 'cancelled' THEN now() ELSE cancelled_at END,
+          cancelled_at = CASE WHEN $10 = 'cancel' THEN now() ELSE cancelled_at END,
           completed_at = CASE WHEN $4 = 'completed' THEN now() ELSE completed_at END,
           entity_version = entity_version + 1,
           updated_at = now()
@@ -773,6 +799,7 @@ export async function transitionMaterialOrderV2(input: {
       input.scope.companyId, input.materialLineId, target.revision_id,
       config.to, config.from, target.line_version,
       target.work_order_id, target.revision_no, target.work_order_version,
+      input.kind,
     ]);
     context.statementCount += 1;
     const row = updated.rows[0];
@@ -787,7 +814,7 @@ export async function transitionMaterialOrderV2(input: {
       materialType, commandCode: config.commandCode, summary: config.summary,
       metadata: {
         clientRequestId: input.clientRequestId,
-        changedFields: ["status"],
+        changedFields: input.kind === "cancel" ? ["status", "cancelledAt"] : ["status"],
         statusTransition: { from: config.from, to: config.to },
         versionTransition: { from: Number(target.work_order_version), to: nextVersion },
         lineVersionTransition: { from: Number(target.line_version), to: Number(row.line_version) },
@@ -805,7 +832,9 @@ export async function transitionMaterialOrderV2(input: {
   return wrapResult({
     result: mapMaterialResult(result.row), context, startedAt,
     idempotentReplay: result.idempotentReplay,
-    changedFields: result.idempotentReplay ? [] : ["status"],
+    changedFields: result.idempotentReplay
+      ? []
+      : input.kind === "cancel" ? ["status", "cancelledAt"] : ["status"],
   });
 }
 

@@ -5,6 +5,7 @@ import path from "node:path";
 
 import { ALPHA42_REALISTIC_FIXTURE, assertAlpha42RealisticFixture } from "../lib/generated-documents/work-order-pdf/realisticIssuedFixture.mjs";
 import { deriveEmbeddedQrOpaqueToken } from "../lib/generated-documents/document-access/tokenDerivation.mjs";
+import { assertCanonicalWaflVersionConsistency } from "./helpers/wafl-v2-current-version.mjs";
 
 const root = process.cwd();
 const read = (file) => fs.readFileSync(path.join(root, file), "utf8");
@@ -25,8 +26,7 @@ const generatedPreview = read("components/workorder/preview/GeneratedIssuedWorkO
 const renderRoute = read("app/dev/workorder-pdf-render/[runToken]/page.tsx");
 const fixture = assertAlpha42RealisticFixture(ALPHA42_REALISTIC_FIXTURE);
 
-const version = read("lib/constants/version.ts").match(/APP_VERSION\s*=\s*"([^"]+)"/)?.[1];
-assert.ok(new Set(["2.0.0-alpha.41", "2.0.0-alpha.42", "2.0.0-alpha.43", "2.0.0-alpha.44", "2.0.0-alpha.45", "2.0.0-alpha.46", "2.0.0-alpha.47", "2.0.0-alpha.48", "2.0.0-alpha.49", "2.0.0-alpha.50", "2.0.0-alpha.51", "2.0.0-alpha.52", "2.0.0-alpha.53", "2.0.0-alpha.54"]).has(version), "alpha.42 checkpoint/final version invalid");
+assertCanonicalWaflVersionConsistency();
 
 assert.match(migration, /ADD COLUMN token_purpose text NOT NULL DEFAULT 'manual_share'/);
 assert.match(migration, /token_purpose IN \('manual_share', 'embedded_qr'\)/);

@@ -454,7 +454,7 @@ export async function getWorkOrderMaterialsV2(input: CommonCollectionInput & {
       memo: row.memo === null ? null : String(row.memo),
       status, displayOrder: asCount(row.display_order),
       editable: input.lifecycle === "active" && status === "editing",
-      locked: input.lifecycle === "archived" || status === "completed",
+      locked: input.lifecycle === "archived" || status !== "editing",
       lifecycle: input.lifecycle,
       archivedAt: row.archived_at === null ? null : new Date(String(row.archived_at)).toISOString() as WorkOrderMaterialLineReadModel["archivedAt"],
     };

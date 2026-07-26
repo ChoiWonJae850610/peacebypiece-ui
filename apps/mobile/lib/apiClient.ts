@@ -2,6 +2,8 @@ import type {
   CreateMaterialLineInput,
   MaterialLineCommandResult,
   MaterialLifecycleCommandInput,
+  MaterialOrderCommandInput,
+  MaterialOrderCommandKind,
   MobileCurrentUser,
   MobileFieldError,
   PatchMaterialLineInput,
@@ -272,6 +274,30 @@ export function restoreWorkOrderMaterial(
   idempotencyKey: string,
 ) {
   return transitionWorkOrderMaterialLifecycle(workOrderId, materialLineId, "restore", command, idempotencyKey);
+}
+
+export async function transitionWorkOrderMaterialOrder(
+  workOrderId: string,
+  materialLineId: string,
+  kind: MaterialOrderCommandKind,
+  command: MaterialOrderCommandInput,
+  idempotencyKey: string,
+): Promise<MaterialLineCommandResult> {
+  const body = await requestJson<{ readonly ok: boolean; readonly data?: unknown }>(
+    `/api/v2/work-orders/${encodeURIComponent(workOrderId)}/materials/${encodeURIComponent(materialLineId)}/order-${kind}`,
+    { method: "POST", body: command, idempotencyKey },
+  );
+  const normalized = body.ok ? normalizeMaterialCommandResult(body.data, workOrderId) : null;
+  const expectedStatus = kind === "request" ? "requested" : kind === "cancel" ? "editing" : "completed";
+  if (
+    !normalized
+    || normalized.result.materialLineId !== materialLineId
+    || normalized.result.status !== expectedStatus
+    || normalized.result.lifecycle !== "active"
+  ) {
+    throw new MobileApiError({ code: "MALFORMED_RESPONSE", message: "원단 발주 상태 응답이 올바르지 않습니다." });
+  }
+  return normalized;
 }
 
 export async function createWorkOrderMaterial(

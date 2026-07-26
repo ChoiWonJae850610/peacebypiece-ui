@@ -64,7 +64,9 @@ assert.doesNotMatch(validation, /"companyId"|"memberId"|"revisionId"|"supplierCo
 
 assert.match(runtimeGuard, /2\.0\.0-alpha\.26-dev-test-material-command-runtime/, "exact alpha.26 mutation approval required");
 assert.match(runtimeGuard, /SUPPORTED_MUTATION_APPROVALS/, "known fixed approvals must remain allowlisted");
-assert.match(service, /requireCommandMutationApproval\(WAFL_V2_ALPHA26_MUTATION_APPROVAL\)/, "service must recheck exact approval before mutation");
+assert.match(service, /WAFL_V2_ALPHA26_MUTATION_APPROVAL/, "historical alpha.26 exact approval must remain supported");
+assert.match(service, /WAFL_V2_ALPHA55_MATERIAL_ORDER_LIFECYCLE_MUTATION_APPROVAL/, "current lifecycle approval must be explicit");
+assert.match(service, /requireCommandMutationApproval\(/, "service must recheck the selected exact approval before mutation");
 assert.match(service, /deterministicUuid/, "create replay must use deterministic line identity without schema change");
 assert.match(service, /material\.order\.request/, "request/cancel permission required");
 assert.match(service, /material\.order\.place/, "complete permission required");
@@ -93,7 +95,8 @@ for (const token of [
 }
 assert.match(repository, /round\(\$\d+::numeric \* \$\d+::numeric, 2\)/, "create amount must remain server-derived");
 assert.match(repository, /request:[\s\S]*from: "editing"[\s\S]*to: "requested"/, "editing to requested transition required");
-assert.match(repository, /cancel:[\s\S]*from: "requested"[\s\S]*to: "cancelled"/, "requested to cancelled transition required");
+assert.match(repository, /cancel:[\s\S]*from: "requested"[\s\S]*to: "editing"/, "current cancel must return requested material to editing");
+assert.match(repository, /cancelled_at = CASE WHEN \$10 = 'cancel' THEN now\(\)/, "cancel must preserve cancellation history without a cancelled operational row");
 assert.match(repository, /complete:[\s\S]*from: "requested"[\s\S]*to: "completed"/, "requested to completed transition required");
 const draftGuard = repository.match(/function assertCurrentDraft[\s\S]*?\n}/)?.[0] ?? "";
 assert.ok(draftGuard, "current draft guard must exist");

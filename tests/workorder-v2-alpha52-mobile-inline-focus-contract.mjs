@@ -8,7 +8,10 @@ const app = fs.readFileSync("apps/mobile/features/MobileWorkOrderExperience.tsx"
 const visibility = fs.readFileSync("apps/mobile/hooks/useFocusedFieldVisibility.ts", "utf8");
 
 assert.match(field, /const inputRef = useRef<TextInput>/);
-assert.match(field, /if \(!active\) return undefined/);
+assert.match(
+  field,
+  /useEffect\(\(\) => \{[\s\S]{0,600}if \(!active\) \{[\s\S]{0,160}return undefined;\s*\}/,
+);
 assert.match(field, /requestAnimationFrame\(\(\) => inputRef\.current\?\.focus\(\)\)/);
 assert.match(field, /cancelAnimationFrame\(prepareFrame\)/);
 assert.match(field, /cancelAnimationFrame\(focusFrame\)/);

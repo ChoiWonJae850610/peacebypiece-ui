@@ -1,5 +1,16 @@
 import { useState } from "react";
-import { ActivityIndicator, Pressable, StyleSheet, Text, View, useWindowDimensions, type TextInput } from "react-native";
+import {
+  ActivityIndicator,
+  Pressable,
+  StyleSheet,
+  Text,
+  View,
+  useWindowDimensions,
+  type StyleProp,
+  type TextInput,
+  type TextStyle,
+  type ViewStyle,
+} from "react-native";
 import { Check, ChevronDown, ChevronUp, FileUp, Plus, RefreshCw, RotateCcw, Trash2, type LucideIcon } from "lucide-react-native";
 
 import { WAFL_FONTS } from "@/constants/fonts";
@@ -7,9 +18,16 @@ import ControlledInlineEditValue from "@/components/ControlledInlineEditValue";
 import ExpandedInlineField from "@/components/ExpandedInlineField";
 import ReelInlineEditValue from "@/features/inputs/reel-picker/ReelInlineEditValue";
 import WaflReelPickerSheet from "@/features/inputs/reel-picker/WaflReelPickerSheet";
+import MaterialQuantityValue from "@/features/materials/MaterialQuantityValue";
+import { createMaterialMemoDisclosureModel } from "@/features/materials/materialMemoDisclosureModel";
+import {
+  createMaterialHeaderPresentation,
+  MATERIAL_HEADER_NAME_MAX_LINES,
+} from "@/features/materials/materialHeaderLayoutModel";
 import type { MaterialEditorViewState } from "@/features/materials/WorkOrderMaterialEditor";
 import { materialReelDraftPatch, type MaterialReelField } from "@/features/materials/materialReelAdapter";
 import type { MaterialDraftFields, MaterialDraftUpdate, WorkOrderMaterialLine } from "@/domain/mobileContract";
+import type { MaterialOrderAction, MaterialOrderPolicy } from "@/domain/materialOrderPolicy";
 import { calculateMaterialAmount, calculateOrderQuantity, formatQuantity, formatWon } from "@/lib/mobileDisplay";
 
 export type MaterialReadStatus = "not-loaded" | "loading" | "loaded" | "empty" | "error" | "retrying" | "loading-more";
@@ -27,6 +45,8 @@ type Props = {
   readonly archivedTotalCount: number;
   readonly canEdit: boolean;
   readonly lifecycleBusyId: string | null;
+  readonly orderBusyId: string | null;
+  readonly orderBusyAction: MaterialOrderAction | null;
   readonly saveNotice: string | null;
   readonly activeEditor: MaterialEditorViewState | null;
   readonly activeField: keyof MaterialDraftFields | null;
@@ -36,7 +56,9 @@ type Props = {
   readonly onCancelEdit: () => void;
   readonly onSaveEdit: (draftOverride?: MaterialDraftUpdate) => void;
   readonly onArchive: (line: WorkOrderMaterialLine) => void;
+  readonly onOrderAction: (line: WorkOrderMaterialLine, action: MaterialOrderAction) => void;
   readonly onRestore: (line: WorkOrderMaterialLine) => void;
+  readonly orderPolicy: (line: WorkOrderMaterialLine) => MaterialOrderPolicy;
   readonly onRetry: () => void;
   readonly onLoadMore: () => void;
   readonly onLoadMoreArchived: () => void;
@@ -59,6 +81,7 @@ type MaterialInlineFieldProps = {
   readonly keyboardType?: "default" | "decimal-pad" | "number-pad";
   readonly maxLength: number;
   readonly multiline?: boolean;
+  readonly numberOfLines?: number | null;
   readonly displayStyle?: object;
   readonly containerStyle?: object;
   readonly testID?: string;
@@ -75,10 +98,10 @@ type ReelTarget = {
 function MaterialInlineField({
   field, label, line, editor, activeField, canEdit, displayValue, placeholder,
   onEdit, onChange, onCancel, onSave, keyboardType = "default", maxLength,
-  multiline = false, displayStyle, containerStyle, testID, onFieldFocus,
+  multiline = false, numberOfLines = 2, displayStyle, containerStyle, testID, onFieldFocus,
 }: MaterialInlineFieldProps) {
   const active = editor?.materialLineId === line.id && activeField === field;
-  const editable = canEdit && line.lifecycle === "active" && line.status === "editing" && !line.locked;
+  const editable = canEdit;
   return (
     <ControlledInlineEditValue
       accessibilityLabel={label}
@@ -93,14 +116,15 @@ function MaterialInlineField({
       keyboardType={keyboardType}
       maxLength={maxLength}
       multiline={multiline}
+      numberOfLines={numberOfLines}
       onActivate={() => onEdit(field)}
       onCancel={onCancel}
       onChange={(value) => onChange(field, value)}
-      onSave={onSave}
+      onSave={(finalizedValue) => onSave({ [field]: finalizedValue } as MaterialDraftUpdate)}
       onFocusTarget={onFieldFocus}
       placeholder={placeholder}
       saving={active ? editor?.saveState === "saving" : false}
-      selectTextOnFocus={!multiline}
+      selectTextOnFocus={field === "memo" || !multiline}
       testID={testID}
       value={active ? editor?.draft[field] ?? "" : ""}
     />
@@ -118,6 +142,7 @@ function MaterialReelInlineField({
   onOpen,
   containerStyle,
   displayStyle,
+  displayNumberOfLines,
   testID,
 }: {
   readonly field: MaterialReelField;
@@ -128,16 +153,20 @@ function MaterialReelInlineField({
   readonly canEdit: boolean;
   readonly onEdit: (field: keyof MaterialDraftFields) => void;
   readonly onOpen: (target: ReelTarget) => void;
-  readonly containerStyle?: object;
-  readonly displayStyle?: object;
+  readonly containerStyle?: StyleProp<ViewStyle>;
+  readonly displayStyle?: StyleProp<TextStyle>;
+  readonly displayNumberOfLines?: number;
   readonly testID?: string;
 }) {
   const active = editor?.materialLineId === line.id && activeField === field;
-  const editable = canEdit && line.lifecycle === "active" && line.status === "editing" && !line.locked;
+  const editable = canEdit;
   const draft = editor?.materialLineId === line.id ? editor.draft : null;
   const unitCode = draft?.unitCode ?? line.unitCode;
   const value = field === "unitCode" ? unitCode : draft?.[field] ?? line[field];
   const displayValue = field === "unitCode" ? unitCode : formatQuantity(value, unitCode);
+  const displayContent = field === "unitCode" ? undefined : (
+    <MaterialQuantityValue textStyle={displayStyle} unitCode={unitCode} value={typeof value === "string" ? value : null} />
+  );
   const open = () => onOpen({
     field,
     label,
@@ -150,6 +179,8 @@ function MaterialReelInlineField({
       active={active}
       containerStyle={containerStyle}
       displayStyle={displayStyle}
+      displayContent={displayContent}
+      displayNumberOfLines={displayNumberOfLines}
       displayValue={displayValue}
       editable={editable}
       errorMessage={active ? editor?.fieldErrors[field] ?? null : null}
@@ -162,29 +193,21 @@ function MaterialReelInlineField({
   );
 }
 
-const STATUS_LABELS = {
-  editing: "입력 중",
-  requested: "발주 요청",
-  completed: "발주 완료",
-  cancelled: "요청 취소",
-  unknown: "상태 확인 필요",
-} as const;
-
-function materialAccent(status: WorkOrderMaterialLine["status"]) {
-  switch (status) {
+function materialAccent(tone: MaterialOrderPolicy["tone"]) {
+  switch (tone) {
     case "requested": return styles.cardRequested;
     case "completed": return styles.cardCompleted;
-    case "cancelled": return styles.cardCancelled;
+    case "legacy-cancelled": return styles.cardCancelled;
     case "unknown": return styles.cardUnknown;
     default: return styles.cardEditing;
   }
 }
 
-function materialBadge(status: WorkOrderMaterialLine["status"]) {
-  switch (status) {
+function materialBadge(tone: MaterialOrderPolicy["tone"]) {
+  switch (tone) {
     case "requested": return styles.statusBadgeRequested;
     case "completed": return styles.statusBadgeCompleted;
-    case "cancelled": return styles.statusBadgeCancelled;
+    case "legacy-cancelled": return styles.statusBadgeCancelled;
     case "unknown": return styles.statusBadgeUnknown;
     default: return styles.statusBadgeEditing;
   }
@@ -204,7 +227,8 @@ function CompactField({ label, value }: { readonly label: string; readonly value
   );
 }
 
-type ReadOnlyAction = {
+type MaterialOrderActionView = {
+  readonly kind: MaterialOrderAction;
   readonly label: string;
   readonly caption: string;
   readonly Icon: LucideIcon;
@@ -212,49 +236,54 @@ type ReadOnlyAction = {
   readonly danger?: boolean;
 };
 
-function materialActions(status: WorkOrderMaterialLine["status"]): readonly ReadOnlyAction[] {
-  if (status === "completed") return [];
-  if (status === "requested") {
-    return [
-      { label: "발주 완료 처리", caption: "완료", Icon: Check, emphasized: true },
-      { label: "발주 요청 취소", caption: "취소", Icon: RotateCcw },
-      { label: "삭제 예정", caption: "삭제", Icon: Trash2, danger: true },
-    ];
-  }
-  return [
-    { label: "발주 요청", caption: "발주", Icon: FileUp, emphasized: true },
-    { label: "삭제 예정", caption: "삭제", Icon: Trash2, danger: true },
-  ];
-}
+const MATERIAL_ORDER_ACTION_VIEW: Record<MaterialOrderAction, MaterialOrderActionView> = {
+  request: { kind: "request", label: "발주요청", caption: "발주", Icon: FileUp, emphasized: true },
+  complete: { kind: "complete", label: "발주완료", caption: "완료", Icon: Check, emphasized: true },
+  cancel: { kind: "cancel", label: "발주취소", caption: "취소", Icon: RotateCcw, danger: true },
+};
 
-function ReadOnlyActionButton({ action, compact }: { readonly action: ReadOnlyAction; readonly compact: boolean }) {
+function MaterialOrderActionButton({
+  action,
+  busy,
+  compact,
+  onPress,
+}: {
+  readonly action: MaterialOrderActionView;
+  readonly busy: boolean;
+  readonly compact: boolean;
+  readonly onPress: () => void;
+}) {
   const { Icon } = action;
   const color = action.emphasized ? "#ffffff" : action.danger ? "#9a4035" : "#17263d";
   return (
     <Pressable
-      accessibilityLabel={`${action.label}, 읽기 전용`}
+      accessibilityLabel={action.label}
       accessibilityRole="button"
-      accessibilityState={{ disabled: true }}
-      disabled
-      style={[
+      accessibilityState={{ busy, disabled: busy }}
+      disabled={busy}
+      onPress={onPress}
+      style={({ pressed }) => [
         styles.iconActionButton,
         compact && styles.iconActionButtonCompact,
         action.emphasized && styles.iconActionEmphasized,
         action.danger && styles.iconActionDanger,
-        styles.disabledAction,
+        busy && styles.disabledAction,
+        pressed && styles.pressed,
       ]}
     >
-      <Icon color={color} size={17} strokeWidth={2.25} />
+      {busy ? <ActivityIndicator color={color} size="small" /> : <Icon color={color} size={17} strokeWidth={2.25} />}
       {!compact ? <Text style={[styles.iconActionCaption, action.emphasized && styles.iconActionCaptionEmphasized, action.danger && styles.iconActionCaptionDanger]}>{action.caption}</Text> : null}
     </Pressable>
   );
 }
 
-function MaterialCard({ line, expanded, canEdit, lifecycleBusy, editor, activeField, onEdit, onChangeEdit, onCancelEdit, onSaveEdit, onArchive, onToggle, onFieldFocus, onOpenReel }: {
+function MaterialCard({ line, expanded, canEdit, lifecycleBusy, orderBusyAction, orderPolicy, editor, activeField, onEdit, onChangeEdit, onCancelEdit, onSaveEdit, onArchive, onOrderAction, onToggle, onFieldFocus, onOpenReel }: {
   readonly line: WorkOrderMaterialLine;
   readonly expanded: boolean;
   readonly canEdit: boolean;
   readonly lifecycleBusy: boolean;
+  readonly orderBusyAction: MaterialOrderAction | null;
+  readonly orderPolicy: MaterialOrderPolicy;
   readonly editor: MaterialEditorViewState | null;
   readonly activeField: keyof MaterialDraftFields | null;
   readonly onEdit: (field: keyof MaterialDraftFields) => void;
@@ -262,23 +291,32 @@ function MaterialCard({ line, expanded, canEdit, lifecycleBusy, editor, activeFi
   readonly onCancelEdit: Props["onCancelEdit"];
   readonly onSaveEdit: Props["onSaveEdit"];
   readonly onArchive: () => void;
+  readonly onOrderAction: (action: MaterialOrderAction) => void;
   readonly onToggle: () => void;
   readonly onFieldFocus: Props["onFieldFocus"];
   readonly onOpenReel: (target: ReelTarget) => void;
 }) {
   const { width } = useWindowDimensions();
   const compactActions = width < 760;
-  const actions = materialActions(line.status);
+  const actions = orderPolicy.actions.map((action) => MATERIAL_ORDER_ACTION_VIEW[action]);
   const swatch = exactHexColor(line.colorOption);
   const colorLabel = line.colorOption?.trim() || "미입력";
   const usageArea = line.usageArea?.trim() || "미입력";
   const memo = line.memo?.trim() || "없음";
-  const inlineProps = { line, editor, activeField, canEdit, onEdit, onChange: onChangeEdit, onCancel: onCancelEdit, onSave: onSaveEdit, onFieldFocus };
-  const reelProps = { line, editor, activeField, canEdit, onEdit, onOpen: onOpenReel };
+  const memoStateKey = `${line.id}\u0000${line.memo ?? ""}`;
+  const [memoExpandedKey, setMemoExpandedKey] = useState<string | null>(null);
+  const [memoMeasurement, setMemoMeasurement] = useState({ key: "", lineCount: 0 });
+  const fieldEditable = canEdit && orderPolicy.canEdit;
+  const inlineProps = { line, editor, activeField, canEdit: fieldEditable, onEdit, onChange: onChangeEdit, onCancel: onCancelEdit, onSave: onSaveEdit, onFieldFocus };
+  const reelProps = { line, editor, activeField, canEdit: fieldEditable, onEdit, onOpen: onOpenReel };
   const cardActiveField = editor ? activeField : null;
   const activeHeaderField = cardActiveField === "name" || cardActiveField === "unitCode" ? cardActiveField : null;
   const activeSummaryField = cardActiveField === "colorOption" || cardActiveField === "unitPrice" ? cardActiveField : null;
   const activeQuantityField = cardActiveField === "requiredQuantity" || cardActiveField === "allowanceQuantity" || cardActiveField === "inventoryUsageQuantity" ? cardActiveField : null;
+  const memoIsActive = editor?.materialLineId === line.id && cardActiveField === "memo";
+  const memoExpanded = expanded && memoExpandedKey === memoStateKey;
+  const memoLineCount = memoMeasurement.key === memoStateKey ? memoMeasurement.lineCount : 0;
+  const memoDisclosure = createMaterialMemoDisclosureModel(memoLineCount, memoExpanded);
   const calculationDraft = editor?.materialLineId === line.id ? editor.draft : {
     requiredQuantity: line.requiredQuantity,
     allowanceQuantity: line.allowanceQuantity,
@@ -287,8 +325,13 @@ function MaterialCard({ line, expanded, canEdit, lifecycleBusy, editor, activeFi
   };
   const calculatedOrderQuantity = calculateOrderQuantity(calculationDraft);
   const calculatedAmount = calculateMaterialAmount(calculatedOrderQuantity, calculationDraft.unitPrice);
+  const headerPresentation = createMaterialHeaderPresentation({
+    name: line.name,
+    unitCode: line.unitCode,
+    statusLabel: orderPolicy.label,
+  });
   return (
-    <View style={[styles.card, materialAccent(line.status)]}>
+    <View style={[styles.card, materialAccent(orderPolicy.tone)]}>
       <View style={styles.summaryButton}>
         <View style={styles.cardHeader}>
           <View style={styles.materialIdentity}>
@@ -301,14 +344,38 @@ function MaterialCard({ line, expanded, canEdit, lifecycleBusy, editor, activeFi
                 )}
               </ExpandedInlineField>
             ) : (
-              <View style={styles.materialTitleRow}>
-                <MaterialInlineField {...inlineProps} displayStyle={styles.materialName} displayValue={line.name} field="name" label="원단명" maxLength={200} placeholder="원단명 미입력" testID="material-inline-name" />
-                <MaterialReelInlineField {...reelProps} containerStyle={styles.unitInline} displayStyle={styles.unitChip} field="unitCode" label="단위" testID="material-inline-unit" />
-              </View>
+              <MaterialInlineField
+                {...inlineProps}
+                displayStyle={styles.materialName}
+                displayValue={headerPresentation.name}
+                field="name"
+                label="원단명"
+                maxLength={200}
+                numberOfLines={MATERIAL_HEADER_NAME_MAX_LINES}
+                placeholder="원단명 미입력"
+                testID="material-inline-name"
+              />
             )}
           </View>
           {!activeHeaderField ? <View style={styles.headerAside}>
-            <Text style={[styles.statusBadge, materialBadge(line.status)]}>{STATUS_LABELS[line.status]}</Text>
+            <View style={styles.headerBadgeCluster} testID="material-header-badge-cluster">
+              <MaterialReelInlineField
+                {...reelProps}
+                containerStyle={styles.unitInline}
+                displayNumberOfLines={1}
+                displayStyle={styles.unitChip}
+                field="unitCode"
+                label="단위"
+                testID="material-inline-unit"
+              />
+              <Text
+                maxFontSizeMultiplier={1.3}
+                numberOfLines={1}
+                style={[styles.statusBadge, materialBadge(orderPolicy.tone)]}
+              >
+                {headerPresentation.badgeCluster[1].text}
+              </Text>
+            </View>
             <Pressable
               accessibilityLabel={`${line.name}, 원단 상세 ${expanded ? "접기" : "펼치기"}`}
               accessibilityRole="button"
@@ -369,7 +436,56 @@ function MaterialCard({ line, expanded, canEdit, lifecycleBusy, editor, activeFi
           )}
           <View style={styles.readOnlyRows}>
             <View style={styles.readOnlyLine}><Text style={styles.readOnlyLabel}>사용부위</Text><MaterialInlineField {...inlineProps} containerStyle={styles.readOnlyInline} displayStyle={styles.readOnlyValue} displayValue={usageArea} field="usageArea" label="사용부위" maxLength={1000} multiline placeholder="미입력" testID="material-inline-usage-area" /></View>
-            <View style={styles.readOnlyLine}><Text style={styles.readOnlyLabel}>메모</Text><MaterialInlineField {...inlineProps} containerStyle={styles.readOnlyInline} displayStyle={styles.readOnlyValue} displayValue={memo} field="memo" label="메모" maxLength={2000} multiline placeholder="없음" testID="material-inline-memo" /></View>
+            <View style={styles.readOnlyLine}>
+              <Text style={styles.readOnlyLabel}>메모</Text>
+              <View style={styles.memoColumn}>
+                <MaterialInlineField
+                  {...inlineProps}
+                  containerStyle={styles.readOnlyInline}
+                  displayStyle={styles.readOnlyValue}
+                  displayValue={memo}
+                  field="memo"
+                  label="메모"
+                  maxLength={2000}
+                  multiline
+                  numberOfLines={memoDisclosure.numberOfLines}
+                  placeholder="없음"
+                  testID="material-inline-memo"
+                />
+                {!memoIsActive ? (
+                  <Text
+                    accessible={false}
+                    importantForAccessibility="no-hide-descendants"
+                    onTextLayout={(event) => {
+                      const lineCount = event.nativeEvent.lines.length;
+                      setMemoMeasurement((current) => (
+                        current.key === memoStateKey && current.lineCount === lineCount
+                          ? current
+                          : { key: memoStateKey, lineCount }
+                      ));
+                    }}
+                    pointerEvents="none"
+                    style={[styles.readOnlyValue, styles.memoMeasure]}
+                  >
+                    {memo}
+                  </Text>
+                ) : null}
+                {!memoIsActive && memoDisclosure.hasOverflow ? (
+                  <Pressable
+                    accessibilityLabel={`메모 전체 내용 ${memoDisclosure.expanded ? "접기" : "펼치기"}`}
+                    accessibilityRole="button"
+                    accessibilityState={{ expanded: memoExpanded }}
+                    hitSlop={8}
+                    onPress={() => setMemoExpandedKey(memoExpanded ? null : memoStateKey)}
+                    style={({ pressed }) => [styles.memoDisclosure, pressed && styles.pressed]}
+                    testID="material-memo-disclosure"
+                  >
+                    <Text style={styles.memoDisclosureText}>{memoDisclosure.label}</Text>
+                    {memoDisclosure.expanded ? <ChevronUp color="#7b4b32" size={14} /> : <ChevronDown color="#7b4b32" size={14} />}
+                  </Pressable>
+                ) : null}
+              </View>
+            </View>
           </View>
         </View>
       ) : null}
@@ -378,16 +494,22 @@ function MaterialCard({ line, expanded, canEdit, lifecycleBusy, editor, activeFi
         <View testID="material-order-summary-lines" style={styles.materialOrderLineStack}>
           <View style={styles.orderInlineRow}>
             <Text style={styles.materialOrderLineText}>발주수량</Text>
-            <Text accessibilityLabel="발주수량, 자동 계산, 읽기 전용" testID="material-order-quantity-calculated" style={styles.materialOrderLineText}>{formatQuantity(calculatedOrderQuantity, line.unitCode)}</Text>
+            <MaterialQuantityValue
+              accessibilityLabel={`발주수량, 자동 계산, 읽기 전용, ${formatQuantity(calculatedOrderQuantity, line.unitCode)}`}
+              testID="material-order-quantity-calculated"
+              textStyle={styles.materialOrderLineText}
+              unitCode={line.unitCode}
+              value={calculatedOrderQuantity}
+            />
             <Text style={styles.materialOrderLineText}>· 단가 {formatWon(calculationDraft.unitPrice)}</Text>
           </View>
           <Text testID="material-order-summary-amount" numberOfLines={1} style={styles.materialOrderLineText}>
             금액 {formatWon(calculatedAmount)}
           </Text>
         </View>
-        {actions.length ? (
+        {actions.length || orderPolicy.canEdit ? (
           <View testID="material-order-actions" style={styles.materialOrderActions}>
-            {canEdit && line.status === "editing" ? (
+            {orderPolicy.canEdit ? (
               <Pressable
                 accessibilityLabel={`${line.name} 삭제된 원단으로 이동`}
                 accessibilityRole="button"
@@ -400,7 +522,15 @@ function MaterialCard({ line, expanded, canEdit, lifecycleBusy, editor, activeFi
                 {!compactActions ? <Text style={styles.iconActionCaptionDanger}>삭제</Text> : null}
               </Pressable>
             ) : null}
-            {actions.filter((action) => !(canEdit && line.status === "editing" && action.danger)).map((action) => <ReadOnlyActionButton action={action} compact={compactActions} key={action.caption} />)}
+            {actions.map((action) => (
+              <MaterialOrderActionButton
+                action={action}
+                busy={orderBusyAction === action.kind}
+                compact={compactActions}
+                key={action.kind}
+                onPress={() => onOrderAction(action.kind)}
+              />
+            ))}
           </View>
         ) : null}
       </View>
@@ -413,12 +543,22 @@ function ArchivedMaterialCard({ line, busy, onRestore }: {
   readonly busy: boolean;
   readonly onRestore: () => void;
 }) {
+  const headerPresentation = createMaterialHeaderPresentation({
+    name: line.name || "원단명 미입력",
+    unitCode: line.unitCode,
+    statusLabel: "삭제됨",
+  });
   return (
     <View style={styles.archivedCard}>
       <View style={styles.archivedIdentity}>
-        <Text numberOfLines={2} style={styles.archivedName}>{line.name || "원단명 미입력"}</Text>
+        <View style={styles.archivedHeader}>
+          <Text numberOfLines={headerPresentation.maxNameLines} style={styles.archivedName}>{headerPresentation.name}</Text>
+          <View style={styles.archivedBadgeCluster}>
+            <Text maxFontSizeMultiplier={1.3} numberOfLines={1} style={styles.archivedUnitChip}>{headerPresentation.badgeCluster[0].text}</Text>
+            <Text maxFontSizeMultiplier={1.3} numberOfLines={1} style={styles.archivedBadge}>{headerPresentation.badgeCluster[1].text}</Text>
+          </View>
+        </View>
         <Text numberOfLines={1} style={styles.archivedMeta}>{line.colorOption?.trim() || "색상 미입력"} · {formatQuantity(line.requiredQuantity, line.unitCode)}</Text>
-        <Text style={styles.archivedBadge}>삭제됨</Text>
       </View>
       <Pressable
         accessibilityLabel={`${line.name} 복구`}
@@ -444,9 +584,9 @@ function AddMaterialButton({ onPress }: { readonly onPress: () => void }) {
 }
 
 export default function WorkOrderMaterialsReadOnly({
-  state, archivedState, archivedTotalCount, canEdit, lifecycleBusyId, saveNotice,
+  state, archivedState, archivedTotalCount, canEdit, lifecycleBusyId, orderBusyId, orderBusyAction, saveNotice,
   activeEditor, activeField, onAdd, onEdit, onChangeEdit, onCancelEdit, onSaveEdit,
-  onArchive, onRestore, onRetry, onLoadMore, onLoadMoreArchived, onFieldFocus,
+  onArchive, onOrderAction, onRestore, orderPolicy, onRetry, onLoadMore, onLoadMoreArchived, onFieldFocus,
 }: Props) {
   const [expandedIds, setExpandedIds] = useState<ReadonlySet<string>>(() => new Set());
   const [archivedExpanded, setArchivedExpanded] = useState(false);
@@ -517,8 +657,11 @@ export default function WorkOrderMaterialsReadOnly({
           key={line.id}
           expanded={expandedIds.has(line.id)}
           lifecycleBusy={lifecycleBusyId === line.id}
+          orderBusyAction={orderBusyId === line.id ? orderBusyAction : null}
+          orderPolicy={orderPolicy(line)}
           line={line}
           onArchive={() => onArchive(line)}
+          onOrderAction={(action) => onOrderAction(line, action)}
           onCancelEdit={onCancelEdit}
           onChangeEdit={onChangeEdit}
           onEdit={(field) => onEdit(line, field)}
@@ -600,17 +743,17 @@ const styles = StyleSheet.create({
   cardCancelled: { borderLeftColor: "#963d34" },
   cardUnknown: { borderLeftColor: "#7c746d" },
   summaryButton: { minHeight: 84, paddingHorizontal: 10, paddingVertical: 9 },
-  cardHeader: { alignItems: "flex-start", flexDirection: "row", gap: 10, justifyContent: "space-between" },
+  cardHeader: { alignItems: "flex-start", flexDirection: "row", gap: 6, justifyContent: "space-between" },
   materialIdentity: { flex: 1, minWidth: 0 },
-  materialTitleRow: { alignItems: "center", flexDirection: "row", flexWrap: "wrap", gap: 7 },
-  materialName: { color: "#17263d", flexShrink: 1, fontFamily: WAFL_FONTS.bold, fontSize: 14, lineHeight: 20, minWidth: 0 },
-  unitInline: { flexShrink: 0 },
-  unitChip: { backgroundColor: "#f2eadf", borderRadius: 999, color: "#6b5b4d", flexShrink: 0, fontFamily: WAFL_FONTS.bold, fontSize: 9, overflow: "hidden", paddingHorizontal: 7, paddingVertical: 3 },
+  materialName: { color: "#17263d", flexShrink: 1, fontFamily: WAFL_FONTS.bold, fontSize: 14, lineHeight: 20, minWidth: 0, width: "100%" },
+  unitInline: { flexShrink: 0, minHeight: 0 },
+  unitChip: { backgroundColor: "#f2eadf", borderRadius: 999, color: "#6b5b4d", flexShrink: 0, fontFamily: WAFL_FONTS.bold, fontSize: 9, lineHeight: 13, overflow: "hidden", paddingHorizontal: 7, paddingVertical: 3 },
   colorRow: { alignItems: "center", flexDirection: "row", gap: 5, minWidth: 0 },
   swatch: { borderColor: "#aa9d90", borderRadius: 4, borderWidth: 1, flexShrink: 0, height: 18, width: 18 },
-  headerAside: { alignItems: "flex-end", gap: 8 },
+  headerAside: { alignItems: "flex-end", flexShrink: 0, gap: 4 },
+  headerBadgeCluster: { alignItems: "center", flexDirection: "row", flexShrink: 0, flexWrap: "nowrap", gap: 6 },
   expandButton: { alignItems: "center", height: 34, justifyContent: "center", width: 34 },
-  statusBadge: { borderRadius: 999, fontFamily: WAFL_FONTS.bold, fontSize: 10, minWidth: 64, overflow: "hidden", paddingHorizontal: 8, paddingVertical: 4, textAlign: "center" },
+  statusBadge: { borderRadius: 999, flexShrink: 0, fontFamily: WAFL_FONTS.bold, fontSize: 10, lineHeight: 14, minWidth: 64, overflow: "hidden", paddingHorizontal: 8, paddingVertical: 4, textAlign: "center" },
   statusBadgeEditing: { backgroundColor: "#ece8e0", color: "#534b43" },
   statusBadgeRequested: { backgroundColor: "#ffe1c8", color: "#9b4a27" },
   statusBadgeCompleted: { backgroundColor: "#e4eadc", color: "#3f5731" },
@@ -628,11 +771,15 @@ const styles = StyleSheet.create({
   readOnlyLabel: { color: "#827568", flexShrink: 0, fontFamily: WAFL_FONTS.medium, fontSize: 10, lineHeight: 17, width: 54 },
   readOnlyValue: { color: "#3f352d", flex: 1, fontFamily: WAFL_FONTS.regular, fontSize: 11, lineHeight: 17, minWidth: 0 },
   readOnlyInline: { flex: 1, minWidth: 0 },
+  memoColumn: { flex: 1, minWidth: 0, position: "relative" },
+  memoMeasure: { left: 0, opacity: 0, position: "absolute", right: 0, top: 0 },
+  memoDisclosure: { alignItems: "center", alignSelf: "flex-start", flexDirection: "row", gap: 3, minHeight: 28, paddingHorizontal: 2 },
+  memoDisclosureText: { color: "#7b4b32", fontFamily: WAFL_FONTS.bold, fontSize: 10, lineHeight: 15 },
   materialOrderActionRow: { alignItems: "center", borderTopColor: "#eee3d5", borderTopWidth: 1, flexDirection: "row", gap: 6, justifyContent: "space-between", marginHorizontal: 10, minHeight: 38, paddingVertical: 4 },
   materialOrderActionSummary: { color: "#7b4b32", flex: 1, flexShrink: 1, fontFamily: WAFL_FONTS.bold, fontSize: 11, fontVariant: ["tabular-nums"], lineHeight: 16, minWidth: 0 },
   materialOrderLineStack: { flex: 1, justifyContent: "center", minWidth: 0 },
   materialOrderLineText: { color: "#7b4b32", flexShrink: 1, fontFamily: WAFL_FONTS.bold, fontSize: 11, fontVariant: ["tabular-nums"], lineHeight: 15, minWidth: 0 },
-  orderInlineRow: { alignItems: "center", flexDirection: "row", flexWrap: "wrap", gap: 3, minWidth: 0 },
+  orderInlineRow: { alignItems: "baseline", flexDirection: "row", flexWrap: "wrap", gap: 3, minWidth: 0 },
   orderInlineValue: { flexShrink: 1, minWidth: 56 },
   materialOrderActions: { flexDirection: "row", flexShrink: 0, gap: 3, marginLeft: "auto" },
   iconActionButton: { alignItems: "center", backgroundColor: "#fff", borderColor: "#d8d0c3", borderRadius: 8, borderWidth: 1, flexDirection: "row", gap: 3, height: 30, justifyContent: "center", minWidth: 58, paddingHorizontal: 8 },
@@ -657,9 +804,12 @@ const styles = StyleSheet.create({
   archivedList: { borderTopColor: "#ddd3c7", borderTopWidth: 1, gap: 7, padding: 8 },
   archivedCard: { alignItems: "center", backgroundColor: "#fbf9f5", borderColor: "#ddd5ca", borderRadius: 8, borderWidth: 1, flexDirection: "row", gap: 8, minHeight: 72, padding: 10 },
   archivedIdentity: { flex: 1, minWidth: 0 },
-  archivedName: { color: "#4f4943", fontFamily: WAFL_FONTS.bold, fontSize: 12, lineHeight: 17 },
+  archivedHeader: { alignItems: "flex-start", flexDirection: "row", gap: 6, justifyContent: "space-between" },
+  archivedName: { color: "#4f4943", flex: 1, fontFamily: WAFL_FONTS.bold, fontSize: 12, lineHeight: 17, minWidth: 0 },
   archivedMeta: { color: "#817970", fontFamily: WAFL_FONTS.regular, fontSize: 10, lineHeight: 15, marginTop: 2 },
-  archivedBadge: { alignSelf: "flex-start", backgroundColor: "#e9e3dc", borderRadius: 999, color: "#746b62", fontFamily: WAFL_FONTS.bold, fontSize: 9, marginTop: 4, overflow: "hidden", paddingHorizontal: 7, paddingVertical: 2 },
+  archivedBadgeCluster: { alignItems: "center", flexDirection: "row", flexShrink: 0, flexWrap: "nowrap", gap: 6 },
+  archivedUnitChip: { backgroundColor: "#f2eadf", borderRadius: 999, color: "#6b5b4d", flexShrink: 0, fontFamily: WAFL_FONTS.bold, fontSize: 9, lineHeight: 13, overflow: "hidden", paddingHorizontal: 7, paddingVertical: 2 },
+  archivedBadge: { backgroundColor: "#e9e3dc", borderRadius: 999, color: "#746b62", flexShrink: 0, fontFamily: WAFL_FONTS.bold, fontSize: 9, lineHeight: 13, overflow: "hidden", paddingHorizontal: 7, paddingVertical: 2 },
   restoreButton: { alignItems: "center", backgroundColor: "#f0f5eb", borderColor: "#b6c4aa", borderRadius: 8, borderWidth: 1, flexDirection: "row", gap: 4, minHeight: 38, paddingHorizontal: 10 },
   restoreButtonText: { color: "#3f5731", fontFamily: WAFL_FONTS.bold, fontSize: 11 },
   archivedMoreButton: { alignItems: "center", justifyContent: "center", minHeight: 38 },

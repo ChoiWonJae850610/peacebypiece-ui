@@ -23,7 +23,13 @@ import { mobileSessionController } from "@/application/sessionController";
 import { useWorkOrderNavigation } from "@/application/useWorkOrderNavigation";
 import { WAFL_FONTS } from "@/constants/fonts";
 import { WAFL_THEME } from "@/constants/theme";
-import { canEditMaterial, canEditWorkOrder } from "@/domain/workOrderPolicy";
+import {
+  canEditMaterial,
+  canEditWorkOrder,
+  canPerformMaterialOrderAction,
+  materialOrderPolicyFor,
+} from "@/domain/workOrderPolicy";
+import type { MaterialOrderAction } from "@/domain/materialOrderPolicy";
 import {
   EMPTY_MATERIAL_DRAFT,
   type BasicInfoDraft,
@@ -37,6 +43,7 @@ import {
   sameMaterialDraft,
   validateBasicInfoDraft,
   validateMaterialDraft,
+  validateMaterialOrderRequest,
 } from "@/domain/workOrderValidation";
 import {
   archivedMaterialState,
@@ -89,12 +96,15 @@ export default function MobileWorkOrderExperience() {
   const [activeMaterialField, setActiveMaterialField] = useState<keyof MaterialDraftFields | null>(null);
   const [materialSaveNotice, setMaterialSaveNotice] = useState<string | null>(null);
   const [materialLifecycleBusyId, setMaterialLifecycleBusyId] = useState<string | null>(null);
+  const [materialOrderBusyId, setMaterialOrderBusyId] = useState<string | null>(null);
+  const [materialOrderBusyAction, setMaterialOrderBusyAction] = useState<MaterialOrderAction | null>(null);
   const detailRequestInFlight = useRef(false);
   const listRequestInFlight = useRef(false);
   const pendingListSearch = useRef<{ readonly query: string; readonly status: WorkOrderListStatusFilter } | null>(null);
   const overviewMutation = useRef(createExplicitMutationController()).current;
   const materialMutation = useRef(createExplicitMutationController()).current;
   const materialLifecycleMutation = useRef(createExplicitMutationController()).current;
+  const materialOrderMutation = useRef(createExplicitMutationController()).current;
   const clientRequestCounter = useRef(0);
   const autoConnectInFlight = useRef(false);
   const manualDisconnectSuppressed = useRef(false);
@@ -106,6 +116,7 @@ export default function MobileWorkOrderExperience() {
   const materialEditorSequence = useRef(0);
   const materialEditorRef = useRef<MaterialEditorViewState | null>(null);
   const materialLifecycleSequence = useRef(0);
+  const materialOrderSequence = useRef(0);
 
   const updateMaterialEditor = useCallback((updater: (current: MaterialEditorViewState | null) => MaterialEditorViewState | null) => {
     setMaterialEditor((current) => {
@@ -140,7 +151,10 @@ export default function MobileWorkOrderExperience() {
     setMaterialSaveNotice(null);
     materialLifecycleMutation.complete();
     setMaterialLifecycleBusyId(null);
-  }, [materialLifecycleMutation]);
+    materialOrderMutation.complete();
+    setMaterialOrderBusyId(null);
+    setMaterialOrderBusyAction(null);
+  }, [materialLifecycleMutation, materialOrderMutation]);
 
   const basicInfoDirty = detail ? (
     basicInfoDraft.productName !== detail.header.productName
@@ -755,6 +769,105 @@ export default function MobileWorkOrderExperience() {
     }
   }
 
+  async function executeMaterialOrder(line: WorkOrderMaterialLine, action: MaterialOrderAction) {
+    const currentDetail = detail;
+    if (
+      !currentDetail
+      || !canPerformMaterialOrderAction(currentDetail, user, line, action)
+      || materialOrderMutation.inFlight
+      || selectedWorkOrderId.current !== currentDetail.header.id
+    ) return;
+    if (action === "request") {
+      const errors = validateMaterialOrderRequest(line);
+      if (Object.keys(errors).length > 0) {
+        Alert.alert("발주 정보를 확인해 주세요.", Object.values(errors)[0] ?? "발주수량과 단위를 확인해 주세요.");
+        return;
+      }
+    }
+
+    if (materialOrderMutation.tryBegin() !== "started") return;
+    const requestToken = ++materialOrderSequence.current;
+    const sessionGeneration = materialSessionGeneration.current;
+    setMaterialOrderBusyId(line.id);
+    setMaterialOrderBusyAction(action);
+    setMaterialSaveNotice(
+      action === "request" ? "발주를 요청하고 있습니다."
+        : action === "cancel" ? "발주요청을 취소하고 있습니다."
+          : "발주완료를 기록하고 있습니다.",
+    );
+    try {
+      const result = await workOrderMutationController.transitionMaterialOrder(
+        currentDetail.header.id,
+        line.id,
+        action,
+        {
+          clientRequestId: nextMaterialRequestIdentity("client"),
+          expectedVersion: currentDetail.header.entityVersion,
+          ...(action === "cancel" ? { reason: "모바일에서 발주요청 취소" } : {}),
+        },
+        nextMaterialRequestIdentity("idempotency"),
+      );
+      const [refreshed, activePage] = await Promise.all([
+        workOrderQueryController.detail(currentDetail.header.id),
+        workOrderQueryController.materials(currentDetail.header.id),
+      ]);
+      const expectedStatus = action === "request" ? "requested" : action === "cancel" ? "editing" : "completed";
+      const refreshedLine = activePage.items.find((item) => item.id === line.id);
+      if (
+        result.nextVersion !== refreshed.header.entityVersion
+        || activePage.entityVersion !== result.nextVersion
+        || result.result.status !== expectedStatus
+        || refreshedLine?.status !== expectedStatus
+        || refreshed.header.id !== currentDetail.header.id
+      ) {
+        throw new MobileApiError({ code: "MALFORMED_RESPONSE", message: "원단 발주 상태를 확인하지 못했습니다." });
+      }
+      if (
+        materialSessionGeneration.current !== sessionGeneration
+        || materialOrderSequence.current !== requestToken
+        || selectedWorkOrderId.current !== currentDetail.header.id
+      ) return;
+      applyRefreshedMaterialSnapshot(currentDetail.header.id, refreshed, activePage);
+      closeMaterialEditorSession();
+      setMaterialSaveNotice(
+        action === "request" ? "발주요청을 기록했습니다."
+          : action === "cancel" ? "발주요청을 취소하고 편집 가능 상태로 복구했습니다."
+            : "발주완료를 기록했습니다.",
+      );
+    } catch (error) {
+      if (materialSessionGeneration.current !== sessionGeneration || materialOrderSequence.current !== requestToken) return;
+      setMaterialSaveNotice(error instanceof MobileApiError ? error.message : "원단 발주 상태를 변경하지 못했습니다.");
+    } finally {
+      if (materialOrderSequence.current === requestToken) {
+        materialOrderMutation.complete();
+        setMaterialOrderBusyId(null);
+        setMaterialOrderBusyAction(null);
+      }
+    }
+  }
+
+  function requestMaterialOrderAction(line: WorkOrderMaterialLine, action: MaterialOrderAction) {
+    if (!canPerformMaterialOrderAction(detail, user, line, action)) return;
+    const title = action === "request" ? "발주요청"
+      : action === "cancel" ? "발주취소"
+        : "발주완료";
+    const message = action === "request"
+      ? "실제 공급처에 주문을 넣은 상태로 기록하고 일반 편집을 잠급니다."
+      : action === "cancel"
+        ? "발주요청을 취소하고 원단 편집을 다시 허용합니다."
+        : "공급처가 주문을 접수한 상태로 기록합니다. 완료 후에는 취소하거나 편집할 수 없습니다.";
+    leaveWithDraftPolicy("feature", () => {
+      Alert.alert(title, message, [
+        { text: "닫기", style: "cancel" },
+        {
+          text: title,
+          style: action === "cancel" ? "destructive" : "default",
+          onPress: () => void executeMaterialOrder(line, action),
+        },
+      ]);
+    });
+  }
+
   function requestArchiveMaterial(line: WorkOrderMaterialLine) {
     leaveWithDraftPolicy("feature", () => {
       Alert.alert(
@@ -1184,11 +1297,15 @@ export default function MobileWorkOrderExperience() {
       archivedMaterials={archivedMaterialState(materialCache[detail.header.id])}
       archivedMaterialCount={materialCache[detail.header.id]?.archivedTotalCount ?? 0}
       materialLifecycleBusyId={materialLifecycleBusyId}
+      materialOrderBusyId={materialOrderBusyId}
+      materialOrderBusyAction={materialOrderBusyAction}
+      materialOrderPolicy={(line) => materialOrderPolicyFor(detail, user, line)}
       onBack={returnToList}
       onBeginEdit={beginBasicInfoEdit}
       onBeginMaterialCreate={beginMaterialCreate}
       onBeginMaterialEdit={beginMaterialEdit}
       onArchiveMaterial={requestArchiveMaterial}
+      onMaterialOrderAction={requestMaterialOrderAction}
       onCancelEdit={cancelBasicInfoEdit}
       onCancelMaterialEditor={cancelMaterialEditor}
       onChangeDraft={changeBasicInfoDraft}

@@ -126,6 +126,58 @@ export function validateMaterialDraft(input: MaterialDraftInput): MaterialEditor
   return errors;
 }
 
+export function validateMaterialOrderRequest(line: WorkOrderMaterialLine): MaterialEditorFieldErrors {
+  const draft = materialDraftFromLine(line);
+  const draftErrors = validateMaterialDraft(draft);
+  const errors: MaterialEditorFieldErrors = {};
+  for (const field of [
+    "requiredQuantity",
+    "allowanceQuantity",
+    "inventoryUsageQuantity",
+    "unitCode",
+  ] as const) {
+    if (draftErrors[field]) errors[field] = draftErrors[field];
+  }
+  const calculated = calculateOrderQuantity(draft);
+  const required = MATERIAL_QUANTITY_PATTERN.test(draft.requiredQuantity.trim())
+    ? Number(draft.requiredQuantity)
+    : null;
+  const allowance = MATERIAL_QUANTITY_PATTERN.test(draft.allowanceQuantity.trim())
+    ? Number(draft.allowanceQuantity)
+    : null;
+  const stock = MATERIAL_QUANTITY_PATTERN.test(draft.inventoryUsageQuantity.trim())
+    ? Number(draft.inventoryUsageQuantity)
+    : null;
+  const demand = required === null || allowance === null ? null : required + allowance;
+  const stockCovered = (
+    demand !== null
+    && demand > 0
+    && stock !== null
+    && stock >= demand
+    && Number(calculated) === 0
+  );
+  if (
+    calculated === null
+    || demand === null
+    || demand <= 0
+    || Number(calculated) !== Number(line.orderQuantity)
+  ) {
+    errors.orderQuantity = "발주수량 계산값을 확인해 주세요.";
+  }
+  const unitPrice = draft.unitPrice.trim();
+  if (stockCovered) {
+    if (unitPrice && !MATERIAL_PRICE_PATTERN.test(unitPrice)) {
+      errors.unitPrice = "단가는 0 이상의 정수 원 단위로 입력해 주세요.";
+    }
+  } else if (
+    !MATERIAL_PRICE_PATTERN.test(unitPrice)
+    || Number(unitPrice) <= 0
+  ) {
+    errors.unitPrice = "외부 발주가 필요한 경우 0보다 큰 단가를 입력해 주세요.";
+  }
+  return errors;
+}
+
 export function materialPatch(base: MaterialDraftFields, draft: MaterialDraftFields): Partial<MaterialDraftFields> {
   const normalizedBase = createMaterialDraft(base);
   const normalizedDraft = createMaterialDraft(draft, normalizedBase);

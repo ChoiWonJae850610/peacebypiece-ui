@@ -40,7 +40,10 @@ assert.doesNotMatch(app.match(/function reloadLatestBasicInfo\(\)[\s\S]*?\n  fun
 assert.match(app, /error\.code === "LOCKED" \|\| error\.code === "REVISION_MISMATCH"/);
 assert.match(app, /현재 상태에서는 수정할 수 없습니다\./);
 assert.match(detail, /발행된 작업지시서는 읽기 전용입니다\./);
-assert.match(inlineField, /const saveDisabled = !dirty \|\| saving \|\| emptyNumericDraft/);
+assert.match(
+  inlineField,
+  /const saveDisabled = \(!dirty && !nativeDirty\) \|\| saving \|\| finalizing \|\| emptyNumericDraft/,
+);
 assert.match(inlineField, /disabled=\{saveDisabled\}/);
 assert.match(detail, /<WaflReelPickerSheet[\s\S]*field="totalQuantity"[\s\S]*kind="integer"/);
 assert.match(detail, /onCancel=\{\(\) => \{[\s\S]*props\.onCancelEdit\(\)/);

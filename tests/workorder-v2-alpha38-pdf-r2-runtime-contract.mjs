@@ -1,6 +1,8 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
 
+import { assertCanonicalWaflVersionConsistency } from "./helpers/wafl-v2-current-version.mjs";
+
 const read = (file) => fs.readFileSync(file, "utf8");
 const migration = read("db/v2/migrations/010_v2_generated_document_receipt_link.sql");
 const migrationRunner = read("scripts/run-wafl-v2-alpha38-document-receipt-migration.mjs");
@@ -12,15 +14,13 @@ const renderInput = read("lib/generated-documents/work-order-pdf/localRenderInpu
 const renderPage = read("app/dev/workorder-pdf-render/[runToken]/page.tsx");
 const renderComponent = read("components/workorder/preview/GeneratedIssuedWorkOrderPreview.tsx");
 const sampleRenderComponent = read("components/workorder/preview/SampleIssuedWorkOrderPreview.tsx");
-const version = read("lib/constants/version.ts").match(/APP_VERSION\s*=\s*"([^"]+)"/)?.[1];
+const version = process.env.WAFL_ALPHA38_PREFINAL_CONTRACT === "1"
+  ? read("lib/constants/version.ts").match(/APP_VERSION\s*=\s*"([^"]+)"/)?.[1]
+  : assertCanonicalWaflVersionConsistency();
 const mobileVersion = read("apps/mobile/constants/version.ts").match(/MOBILE_APP_VERSION\s*=\s*"([^"]+)"/)?.[1];
 const appConfig = JSON.parse(read("apps/mobile/app.json"));
 const publicVersion = version.replace(/-.+$/, "");
-const expectedVersions = process.env.WAFL_ALPHA38_PREFINAL_CONTRACT === "1"
-  ? ["2.0.0-alpha.37"]
-  : ["2.0.0-alpha.38", "2.0.0-alpha.39", "2.0.0-alpha.40", "2.0.0-alpha.41", "2.0.0-alpha.42", "2.0.0-alpha.43", "2.0.0-alpha.44", "2.0.0-alpha.45", "2.0.0-alpha.46", "2.0.0-alpha.47", "2.0.0-alpha.48", "2.0.0-alpha.49", "2.0.0-alpha.50", "2.0.0-alpha.51", "2.0.0-alpha.52", "2.0.0-alpha.53", "2.0.0-alpha.54"];
-
-assert.ok(expectedVersions.includes(version));
+if (process.env.WAFL_ALPHA38_PREFINAL_CONTRACT === "1") assert.equal(version, "2.0.0-alpha.37");
 assert.equal(mobileVersion, version);
 assert.match(publicVersion, /^\d+\.\d+\.\d+$/);
 assert.equal(appConfig.expo.version, publicVersion);

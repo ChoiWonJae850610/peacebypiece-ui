@@ -36,7 +36,10 @@ import {
   transitionMaterialLifecycleV2,
   transitionMaterialOrderV2,
 } from "@/lib/domain/work-orders/command/materialCommandRepository";
-import { WAFL_V2_ALPHA26_MUTATION_APPROVAL } from "@/lib/domain/work-orders/command/runtimeGuard";
+import {
+  WAFL_V2_ALPHA26_MUTATION_APPROVAL,
+  WAFL_V2_ALPHA55_MATERIAL_ORDER_LIFECYCLE_MUTATION_APPROVAL,
+} from "@/lib/domain/work-orders/command/runtimeGuard";
 
 export type MaterialCommandServiceResult = {
   readonly data: {
@@ -103,12 +106,24 @@ function mapRepositoryError(error: MaterialCommandRepositoryError): never {
     });
   }
   if (error.reason === "order_not_ready") {
-    const fieldErrors: readonly WorkOrderFieldError[] = [
-      { field: "partnerId", code: "REQUIRED", message: "발주할 거래처가 필요합니다." },
-      { field: "orderQuantity", code: "REQUIRED", message: "발주수량은 0보다 커야 합니다." },
-    ];
+    const messageByField: Record<string, string> = {
+      requiredQuantity: "필요수량을 확인해 주세요.",
+      allowanceQuantity: "로스·여유 수량을 확인해 주세요.",
+      inventoryUsageQuantity: "재고사용 수량을 확인해 주세요.",
+      orderQuantity: "발주수량 계산값을 확인해 주세요.",
+      unitCode: "단위를 선택해 주세요.",
+      partnerId: "외부 발주가 필요한 경우 거래처를 선택해 주세요.",
+      unitPrice: "외부 발주가 필요한 경우 0보다 큰 단가를 입력해 주세요.",
+    };
+    const fieldErrors: readonly WorkOrderFieldError[] = error.readinessBlockers.length > 0
+      ? error.readinessBlockers.map((blocker) => ({
+        field: blocker.field,
+        code: blocker.code,
+        message: messageByField[blocker.field] ?? "발주 정보를 확인해 주세요.",
+      }))
+      : [{ field: "orderQuantity", code: "REQUIRED", message: "발주 정보를 확인해 주세요." }];
     throw new WorkOrderCommandRequestError({
-      code: "VALIDATION_ERROR", status: 400, message: "발주 필수 정보를 확인해 주세요.", fieldErrors, entityVersion,
+      code: "VALIDATION_ERROR", status: 400, message: "발주 정보를 확인해 주세요.", fieldErrors, entityVersion,
     });
   }
   if (error.reason === "amount_out_of_range") {
@@ -312,7 +327,12 @@ export async function transitionMaterialOrder(input: {
     scope: input.scope, companyMemberId: input.companyMemberId,
     correlationId: input.correlationId, permissionCode,
   });
-  requireCommandMutationApproval(WAFL_V2_ALPHA26_MUTATION_APPROVAL);
+  const configuredApproval = process.env.WAFL_V2_COMMAND_MUTATION_APPROVED;
+  requireCommandMutationApproval(
+    configuredApproval === WAFL_V2_ALPHA55_MATERIAL_ORDER_LIFECYCLE_MUTATION_APPROVAL
+      ? WAFL_V2_ALPHA55_MATERIAL_ORDER_LIFECYCLE_MUTATION_APPROVAL
+      : WAFL_V2_ALPHA26_MUTATION_APPROVAL,
+  );
   const commandCode = TRANSITION_COMMAND_CODES[input.kind];
   const keyHash = scopedKeyHash({
     commandCode,

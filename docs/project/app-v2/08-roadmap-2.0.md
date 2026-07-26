@@ -2,22 +2,29 @@
 
 Document role: canonical owner for the current result, next candidate, and Version Delta boundary. It is not the historical implementation ledger; completed details live in numbered immutable evidence.
 
-## Current result — 2.0.0-alpha.54
+## Current result — 2.0.0-alpha.55
+
+Status: `ALPHA55_MATERIAL_ORDER_CANCELLATION_MEMO_IME_AND_RUNTIME_QA_COMPLETE`.
+
+Alpha.55 completes the fabric material-order lifecycle and the related mobile input/display boundaries:
+
+- request changes `editing -> requested`, cancel returns `requested -> editing` while preserving its timestamp/event/receipt history, and completion is terminal;
+- cancel restores general editing and re-request, while requested/completed/archived and the two retained legacy-cancelled rows remain correctly locked;
+- stock-covered positive demand supports zero external-order quantity and amount without weakening zero-demand or positive-order readiness validation;
+- the mobile header owns a fixed unit/status badge cluster and quantity rows keep numeric value plus unit on one line;
+- iOS IME Check finalizes the latest native text before one explicit PATCH, and overflowing memo text exposes a compact/full disclosure without conflicting with card collapse;
+- the canonical `memo-ime-display` mode verified one create, two requests, one cancel, and one finalized Korean memo PATCH with exact event/receipt deltas and automatic/duplicate/unknown mutation `0`;
+- physical-iPhone Development Build acceptance passed Korean IME save, memo read-back/disclosure, card collapse/re-expansion, header alignment, background/re-entry, and crash/red-screen checks;
+- final retained dev/test baseline is WorkOrder/revision/material `109/109/87`, material rows `8`, event/receipt `142/54`, migration ledger `13/13`, and legacy-cancelled rows `2`;
+- schema/migration, R2/PDF/token, production, dependency, native, and EAS effects remain zero.
+
+Evidence: `55-mobile-material-order-lifecycle-evidence.md`.
+
+## Previous input result — 2.0.0-alpha.54
 
 Status: `ALPHA54_MOBILE_REEL_PICKER_INPUT_UX_COMPLETE`.
 
-Alpha.54 uses the alpha.53 architecture boundaries to complete the production mobile Reel Picker and related list/input polish:
-
-- total quantity uses an integer reel; material quantity fields use quantity plus step reels; unit uses a dedicated stable-order reel;
-- icon-only X/Check owns the complete edit session with explicit save, one-request maximum, duplicate-submit guard, and clean teardown;
-- canonical full-draft normalization, optional-field validation safety, and an alias-free pure response normalizer prevent malformed-response and unhandled-promise regressions;
-- immediate fixed-height search now supports Korean initial consonants and a search-specific empty state;
-- one workflow policy owns filter groups, predicates, card badge labels, and variants;
-- compact due-date layout/date-cell alignment and existing alpha.52-alpha.53 behavior remain accepted on physical iPhone;
-- approved automated and owner-attributed dev/test saves ended at WorkOrder/revision/material `42/42/20`, event/receipt `75/26`; final UI/search QA added mutation `0`;
-- schema/migration, R2/PDF/token, production, dependency, native, and EAS effects remain zero.
-
-Evidence: `53-mobile-reel-picker-input-ux-evidence.md`.
+Reel Picker, explicit single-save input sessions, immediate Korean-initial search, canonical workflow badges, compact calendar behavior, and their physical-iPhone acceptance remain complete. Detailed facts are preserved in `53-mobile-reel-picker-input-ux-evidence.md`.
 
 ## Previous architecture result — 2.0.0-alpha.53
 
@@ -53,6 +60,7 @@ Permanent Rules, Current Baseline, Version Delta, Immutable Evidence, responsibi
 | alpha.52 | mobile core inline UX, calculation, list, and date | `51-mobile-core-inline-ux-calculation-list-date-evidence.md` |
 | alpha.53 | mobile architecture foundation | `52-mobile-architecture-foundation-evidence.md` |
 | alpha.54 | mobile Reel Picker input UX | `53-mobile-reel-picker-input-ux-evidence.md` |
+| alpha.55 | material order cancellation, zero-order, memo IME, and Runtime QA | `55-mobile-material-order-lifecycle-evidence.md` |
 | maintenance | canonical Codex rule normalization without APP_VERSION change | `54-canonical-codex-working-rules-normalization-evidence.md` |
 
 Older results remain in numbered evidence files indexed and task-routed by `00-start-here.md`. Their detailed outcomes are not duplicated here.
@@ -84,15 +92,15 @@ Standard reference:
 
 The Delta does not repeat Permanent Rules, PC-audit mechanics, runner internals, generic Failure Handoff fields, or generic Git/artifact procedures. Those remain owned by `09a` through `09d`. An omitted exceptional authority remains forbidden.
 
-## Next candidate — 2.0.0-alpha.55
+## Next candidate — 2.0.0-alpha.56
 
-Candidate objective: material order request/cancel/complete lifecycle only after owner approval.
+Candidate objective: accessory lifecycle reuse only after owner approval.
 
-Potential included scope, subject to the actual alpha.55 Delta:
+Potential included scope, subject to the actual alpha.56 Delta:
 
-- exact material request/cancel/complete transitions and field locking;
-- permissions, expectedVersion, idempotency, receipts/events, and canonical read-model reflection;
-- reuse of the existing material feature/controller/policy and explicit mutation gate;
+- decide which fabric request/cancel/complete policy and UI boundaries are valid for accessories;
+- define exact permission, expectedVersion, idempotency, event/receipt, read-model, and physical-device effects;
+- reuse the existing feature/controller/policy and explicit mutation gate without a speculative generic framework;
 - bounded dev/test effect plan plus physical-device behavior QA.
 
 Explicitly separate later scope:
@@ -101,4 +109,4 @@ Explicitly separate later scope:
 - production deployment or mutation, schema changes, and unrelated feature expansion remain excluded;
 - native dependencies/plugins and EAS Build/Update require an explicit boundary.
 
-Alpha.55 does not start merely because it is listed here. It begins only with its owner-approved self-executing Version Delta and a matching clean baseline. After documentation-only canonical maintenance, that baseline is the latest synchronized maintenance commit HEAD, while the alpha.54 product artifact remains the snapshot of its original release HEAD.
+Alpha.56 does not start merely because it is listed here. It begins only with its owner-approved self-executing Version Delta and the final synchronized alpha.55 HEAD.

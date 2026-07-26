@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import { ActivityIndicator, Pressable, StyleSheet, Text, View, type StyleProp, type TextStyle, type ViewStyle } from "react-native";
 import { SlidersVertical } from "lucide-react-native";
 
@@ -9,6 +10,8 @@ type Props = {
   readonly active: boolean;
   readonly editable: boolean;
   readonly displayValue: string;
+  readonly displayContent?: ReactNode;
+  readonly displayNumberOfLines?: number;
   readonly placeholder: string;
   readonly saving: boolean;
   readonly errorMessage?: string | null;
@@ -24,6 +27,8 @@ export default function ReelInlineEditValue({
   active,
   editable,
   displayValue,
+  displayContent,
+  displayNumberOfLines = 2,
   placeholder,
   saving,
   errorMessage = null,
@@ -34,7 +39,7 @@ export default function ReelInlineEditValue({
   testID,
 }: Props) {
   if (!active) {
-    if (!editable) return <View style={containerStyle} testID={testID}><Text numberOfLines={2} style={displayStyle}>{displayValue || placeholder}</Text></View>;
+    if (!editable) return <View style={containerStyle} testID={testID}>{displayContent ?? <Text numberOfLines={displayNumberOfLines} style={displayStyle}>{displayValue || placeholder}</Text>}</View>;
     return (
       <Pressable
         accessibilityHint="릴 피커에서 같은 값을 수정합니다"
@@ -48,7 +53,7 @@ export default function ReelInlineEditValue({
         style={({ pressed }) => [styles.editable, containerStyle, pressed && styles.pressed]}
         testID={testID}
       >
-        <Text numberOfLines={2} style={[displayStyle, !displayValue && styles.placeholder]}>{displayValue || placeholder}</Text>
+        {displayContent ?? <Text numberOfLines={displayNumberOfLines} style={[displayStyle, !displayValue && styles.placeholder]}>{displayValue || placeholder}</Text>}
       </Pressable>
     );
   }
@@ -56,7 +61,7 @@ export default function ReelInlineEditValue({
   return (
     <View accessibilityLabel={`${accessibilityLabel} 릴 입력 중`} style={[styles.active, containerStyle]} testID={testID}>
       <Pressable accessibilityLabel={`${accessibilityLabel} 릴 피커 다시 열기`} accessibilityRole="button" disabled={saving} onPress={onOpenPicker} style={styles.valueButton}>
-        <Text numberOfLines={1} style={[styles.activeValue, displayStyle]}>{displayValue || placeholder}</Text>
+        {displayContent ?? <Text numberOfLines={1} style={[styles.activeValue, displayStyle]}>{displayValue || placeholder}</Text>}
         {saving ? <ActivityIndicator color={WAFL_THEME.color.brickOrange} size="small" /> : <SlidersVertical color={WAFL_THEME.color.brickOrange} size={17} />}
       </Pressable>
       {errorMessage ? <Text accessibilityRole="alert" style={styles.error}>{errorMessage}</Text> : null}

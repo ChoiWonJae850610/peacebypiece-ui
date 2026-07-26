@@ -161,6 +161,12 @@ export type MaterialLifecycleCommandInput = {
   readonly expectedVersion: number;
 };
 
+export type MaterialOrderCommandKind = "request" | "cancel" | "complete";
+
+export type MaterialOrderCommandInput = MaterialLifecycleCommandInput & {
+  readonly reason?: string;
+};
+
 export type MobileApiErrorCode =
   | "API_ORIGIN_INVALID"
   | "NETWORK_ERROR"

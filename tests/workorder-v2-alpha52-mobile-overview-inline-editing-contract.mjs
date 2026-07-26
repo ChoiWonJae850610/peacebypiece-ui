@@ -12,7 +12,7 @@ assert.match(datePicker, /testID="overview-inline-due-date"/);
 assert.match(detail, /<InlineDatePicker/);
 for (const field of ["productName", "totalQuantity", "dueDate"]) assert.match(detail, new RegExp(`onBeginEdit\\(\"${field}\"\\)`));
 assert.match(detail, /ControlledInlineEditValue/);
-assert.match(detail, /onSave=\{props\.onSave\}/);
+assert.match(detail, /onSave=\{\(finalizedValue\) => props\.onSave\(\{ productName: finalizedValue \}\)\}/);
 assert.match(detail, /onCancel=\{props\.onCancelEdit\}/);
 assert.match(app, /expectedVersion: detail\.header\.entityVersion/);
 assert.match(app, /overviewMutation\.inFlight/);

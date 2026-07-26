@@ -4,10 +4,13 @@ import {
   patchWorkOrderBasicInfo,
   patchWorkOrderMaterial,
   restoreWorkOrderMaterial,
+  transitionWorkOrderMaterialOrder,
 } from "../../lib/apiClient";
 import type {
   CreateMaterialLineInput,
   MaterialLifecycleCommandInput,
+  MaterialOrderCommandInput,
+  MaterialOrderCommandKind,
   PatchMaterialLineInput,
   PatchWorkOrderBasicInfoInput,
 } from "../../domain/mobileContract";
@@ -27,5 +30,14 @@ export const workOrderMutationController = {
   },
   restoreMaterial(workOrderId: string, materialLineId: string, command: MaterialLifecycleCommandInput, idempotencyKey: string) {
     return restoreWorkOrderMaterial(workOrderId, materialLineId, command, idempotencyKey);
+  },
+  transitionMaterialOrder(
+    workOrderId: string,
+    materialLineId: string,
+    kind: MaterialOrderCommandKind,
+    command: MaterialOrderCommandInput,
+    idempotencyKey: string,
+  ) {
+    return transitionWorkOrderMaterialOrder(workOrderId, materialLineId, kind, command, idempotencyKey);
   },
 } as const;

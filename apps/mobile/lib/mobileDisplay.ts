@@ -57,6 +57,25 @@ export function formatQuantity(value: string | null | undefined, unit: string | 
   return `${normalized}${normalizedUnit ? ` ${normalizedUnit}` : ""}`;
 }
 
+export type QuantityDisplayParts = {
+  readonly value: string;
+  readonly unit: string;
+  readonly combined: string;
+};
+
+export function formatQuantityParts(
+  value: string | null | undefined,
+  unit: string | null | undefined = "",
+): QuantityDisplayParts {
+  const valueText = formatQuantity(value);
+  const unitText = valueText === "미입력" || typeof unit !== "string" ? "" : unit.trim();
+  return {
+    value: valueText,
+    unit: unitText,
+    combined: `${valueText}${unitText ? ` ${unitText}` : ""}`,
+  };
+}
+
 export function formatWon(value: string | null | undefined): string {
   const matched = DECIMAL_PATTERN.exec(value?.trim() ?? "");
   if (!matched) return "미입력";

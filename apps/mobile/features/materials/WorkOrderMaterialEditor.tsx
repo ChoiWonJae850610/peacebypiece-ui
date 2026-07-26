@@ -6,6 +6,7 @@ import { WAFL_FONTS } from "@/constants/fonts";
 import type { MaterialEditorFieldErrors } from "@/domain/workOrderValidation";
 import type { MaterialDraftFields } from "@/domain/mobileContract";
 import WaflReelPickerSheet from "@/features/inputs/reel-picker/WaflReelPickerSheet";
+import MaterialQuantityValue from "@/features/materials/MaterialQuantityValue";
 import { materialReelDraftPatch, type MaterialReelField } from "@/features/materials/materialReelAdapter";
 import { calculateMaterialAmount, calculateOrderQuantity, formatQuantity, formatWon } from "@/lib/mobileDisplay";
 
@@ -136,7 +137,9 @@ export default function WorkOrderMaterialEditor({ state, dirty, onChange, onCanc
         ))}
         <View accessibilityLabel="발주수량, 자동 계산, 읽기 전용" style={styles.field}>
           <Text style={styles.label}>발주수량</Text>
-          <View style={styles.calculatedValue}><Text style={styles.calculatedText}>{formatQuantity(calculatedOrderQuantity, state.draft.unitCode)}</Text></View>
+          <View style={styles.calculatedValue}>
+            <MaterialQuantityValue textStyle={styles.calculatedText} unitCode={state.draft.unitCode} value={calculatedOrderQuantity} />
+          </View>
         </View>
         <EditorField field="unitPrice" keyboardType="number-pad" label="단가" maxLength={16} onChange={onChange} placeholder="0" state={state} />
         <View accessibilityLabel="금액, 자동 계산, 읽기 전용" style={styles.field}>

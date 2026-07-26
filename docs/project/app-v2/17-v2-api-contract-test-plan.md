@@ -2,6 +2,17 @@
 
 Document role: verification owner for the normative contracts in `16-workorder-api-command-read-model-contracts.md`. It defines test layers, gates, budgets, and required evidence; it does not redefine API semantics or authorize Runtime mutation. Version-specific execution authority belongs to the active Delta and `09-codex-working-rules.md`.
 
+## Alpha.55 material order lifecycle additions
+
+- Verify current `editing -> requested`, `requested -> editing` cancellation, re-request, and `requested -> completed`.
+- Verify cancel preserves reason, `cancelled_at`, event, receipt, and version deltas while creating no new `cancelled` operational row.
+- Verify the two retained alpha.26 synthetic `cancelled` rows remain byte-for-byte unchanged, read-only, actionless, and visibly distinct as legacy cancellation history.
+- Verify request locks normal edits, cancel restores them, complete applies terminal lock, archived and permission-denied lines expose no order action, and one user action emits at most one command.
+- Verify canonical calculation readiness, typed errors, stale/conflict/runtime guards, canonical response revalidation, in-flight release, and automatic/duplicate/unknown mutation zero.
+- Verify stock-covered inputs with positive demand and `stockUse >= demand` accept canonical `orderQuantity = 0`, amount `0`, and absent/zero supplier-price inputs while retaining request/cancel/re-request/complete and lock behavior.
+- Verify positive external order quantity still requires supplier and unit price greater than zero, while demand `0`, invalid numeric input, missing unit, formula drift, archived state, permission denial, and invalid transitions remain blocked.
+- Verify a retained zero-order dev/test fixture through exact request/cancel/re-request/complete version, event, and receipt deltas without changing the user-device fixture or the two legacy-cancelled rows.
+
 ## Alpha.46 date-only and bounded mobile update additions
 
 - Verify draft-only product name/due date/quantity PATCH, changed-fields-only payload, `expectedVersion`, one post-save detail GET, local list synchronization, and non-draft read-only behavior.

@@ -56,6 +56,21 @@ The runner must:
 
 The default DeveloperAutoConnect mode is read-only. A bounded mutation switch may be used only when the active Version Delta names it and its exact effect budget.
 
+### Internal controlled Runtime QA mode
+
+An active Version Delta may name an internal automated mode that does not exercise Preview/Viewer. The `memo-ime-display` mode uses the same canonical runner, exact Tailscale developer identity, localhost Next backend, foreground Serve ownership, Metro transport, command guard, and stop contract, while omitting the Cloudflare Quick Tunnel:
+
+```powershell
+.\tools\dev\start-wafl-external-qa.ps1 `
+  -MobileTransport DeveloperAutoConnect `
+  -NextPort 3100 `
+  -ExpoPort 8081 `
+  -RuntimeQaMode memo-ime-display `
+  -EnableAlpha55MaterialOrderLifecycleMutation
+```
+
+This mode is valid only for its owner-approved internal automation budget. It records `runtimeQaMode=memo-ime-display`, `previewTransport=tailscale-serve-internal`, and `quickTunnelReady=false`; the exact owned roles are Next, foreground Serve, and Metro. It must not be presented as external physical-device readiness. After automated QA and exact owned stop, physical-device handoff uses the default `external-device` runner topology, including the process-owned Quick Tunnel required for Preview/Viewer.
+
 ## Readiness
 
 Before user QA, verify the exact checks named by the Delta. The standard read-only set is:

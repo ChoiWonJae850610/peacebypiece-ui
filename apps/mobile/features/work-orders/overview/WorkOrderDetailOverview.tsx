@@ -19,6 +19,7 @@ import WorkOrderMaterialEditor, { type MaterialEditorViewState } from "@/feature
 import ReelInlineEditValue from "@/features/inputs/reel-picker/ReelInlineEditValue";
 import WaflReelPickerSheet from "@/features/inputs/reel-picker/WaflReelPickerSheet";
 import type { MaterialDraftFields, MaterialDraftUpdate, WorkOrderDetailCore, WorkOrderMaterialLine } from "@/domain/mobileContract";
+import type { MaterialOrderAction, MaterialOrderPolicy } from "@/domain/materialOrderPolicy";
 import { formatWon } from "@/lib/mobileDisplay";
 import { useFocusedFieldVisibility } from "@/hooks/useFocusedFieldVisibility";
 import {
@@ -109,6 +110,8 @@ type Props = {
   readonly archivedMaterials: MaterialReadViewState;
   readonly archivedMaterialCount: number;
   readonly materialLifecycleBusyId: string | null;
+  readonly materialOrderBusyId: string | null;
+  readonly materialOrderBusyAction: MaterialOrderAction | null;
   readonly materialIdentityKey: string;
   readonly canEditMaterials: boolean;
   readonly materialEditor: MaterialEditorViewState | null;
@@ -118,7 +121,9 @@ type Props = {
   readonly onBeginMaterialCreate: () => void;
   readonly onBeginMaterialEdit: (line: WorkOrderMaterialLine, field: keyof MaterialDraftFields) => void;
   readonly onArchiveMaterial: (line: WorkOrderMaterialLine) => void;
+  readonly onMaterialOrderAction: (line: WorkOrderMaterialLine, action: MaterialOrderAction) => void;
   readonly onRestoreMaterial: (line: WorkOrderMaterialLine) => void;
+  readonly materialOrderPolicy: (line: WorkOrderMaterialLine) => MaterialOrderPolicy;
   readonly onChangeMaterialDraft: (field: keyof MaterialDraftFields, value: string) => void;
   readonly onCancelMaterialEditor: () => void;
   readonly onSaveMaterial: (draftOverride?: MaterialDraftUpdate) => void;
@@ -201,7 +206,7 @@ export default function WorkOrderDetailOverview(props: Props) {
                 onActivate={() => props.onRequestSectionChange(() => props.onBeginEdit("productName"))}
                 onCancel={props.onCancelEdit}
                 onChange={(value) => props.onChangeDraft("productName", value)}
-                onSave={props.onSave}
+                onSave={(finalizedValue) => props.onSave({ productName: finalizedValue })}
                 onFocusTarget={onFieldFocus}
                 placeholder="제품명 미입력"
                 saving={savingBasic}
@@ -367,8 +372,11 @@ export default function WorkOrderDetailOverview(props: Props) {
               activeField={props.activeMaterialField}
               key={props.materialIdentityKey}
               lifecycleBusyId={props.materialLifecycleBusyId}
+              orderBusyId={props.materialOrderBusyId}
+              orderBusyAction={props.materialOrderBusyAction}
               onAdd={props.onBeginMaterialCreate}
               onArchive={props.onArchiveMaterial}
+              onOrderAction={props.onMaterialOrderAction}
               onEdit={props.onBeginMaterialEdit}
               onCancelEdit={props.onCancelMaterialEditor}
               onChangeEdit={props.onChangeMaterialDraft}
@@ -377,6 +385,7 @@ export default function WorkOrderDetailOverview(props: Props) {
               onLoadMoreArchived={props.onLoadMoreArchivedMaterials}
               onRetry={props.onRetryMaterials}
               onRestore={props.onRestoreMaterial}
+              orderPolicy={props.materialOrderPolicy}
               onFieldFocus={onFieldFocus}
               saveNotice={props.materialSaveNotice}
               state={props.materials}

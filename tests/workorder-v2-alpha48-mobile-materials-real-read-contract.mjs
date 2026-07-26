@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
 
+import { resolveMaterialOrderPolicy } from "../apps/mobile/domain/materialOrderPolicy.ts";
 import { normalizeMaterialLine } from "../apps/mobile/lib/apiResponseNormalizer.ts";
 import { isExternalQaPathAllowed, isTailscaleServePathAllowed } from "../lib/external-qa/configCore.mjs";
 import { assertCanonicalWaflVersionConsistency } from "./helpers/wafl-v2-current-version.mjs";
@@ -26,6 +27,7 @@ const detailService = read("lib/domain/work-orders/read/detailService.ts");
 const externalQa = read("lib/external-qa/configCore.mjs");
 const materialCache = read("apps/mobile/features/materials/materialCache.ts");
 const errorPresentation = read("apps/mobile/application/errorPresentation.ts");
+const materialOrderPolicy = read("apps/mobile/domain/materialOrderPolicy.ts");
 
 assert.equal(appJson.expo.extra.dataMode, "dev-test-tailscale-auto-connect");
 assert.equal(appJson.expo.extra.mockOnly, false);
@@ -115,8 +117,8 @@ assert.match(materials, /exactHexColor\(line\.colorOption\)/);
 for (const label of ["원단명 미입력", "사용부위", "필요수량", "발주수량", "재고사용", "로스·여유", "단가", "금액", "메모"]) {
   assert.match(materials, new RegExp(label), `material display missing: ${label}`);
 }
-for (const status of ["입력 중", "발주 요청", "발주 완료", "요청 취소", "상태 확인 필요"]) {
-  assert.match(materials, new RegExp(status), `material status label missing: ${status}`);
+for (const status of ["발주 전", "발주요청", "발주완료", "과거 취소", "상태 확인 필요"]) {
+  assert.match(materialOrderPolicy, new RegExp(status), `material status label missing: ${status}`);
 }
 assert.match(materials, /card: \{[^\n]*borderLeftWidth: 4[^\n]*borderRadius: 8/);
 for (const accent of ["cardEditing", "cardRequested", "cardCompleted", "cardCancelled", "cardUnknown"]) {
@@ -125,21 +127,46 @@ for (const accent of ["cardEditing", "cardRequested", "cardCompleted", "cardCanc
 for (const badge of ["statusBadgeEditing", "statusBadgeRequested", "statusBadgeCompleted", "statusBadgeCancelled", "statusBadgeUnknown"]) {
   assert.match(materials, new RegExp(`${badge}: \\{[^\\n]*backgroundColor`), `material status badge tone missing: ${badge}`);
 }
-assert.match(materials, /materialTitleRow[\s\S]{0,500}unitChip/);
+assert.match(materials, /materialIdentity[\s\S]{0,1800}headerBadgeCluster[\s\S]{0,500}unitChip[\s\S]{0,500}statusBadge/);
 assert.match(materials, /testID="material-core-row"[\s\S]{0,900}label="거래처" value="—"[\s\S]{0,900}>색상·옵션<[\s\S]{0,900}label="단가"/);
 assert.equal((materials.match(/label="필요수량"/g) ?? []).length, 2, "compact and expanded 필요수량 source slots must both exist");
 assert.match(materials, /activeQuantityField \? \([\s\S]*material-quantity-row-expanded[\s\S]*\) : \([\s\S]*styles\.coreRow/, "compact and expanded quantity slots must be mutually exclusive");
 assert.match(materials, /expandedPanel[\s\S]{0,900}label="필요수량"[\s\S]{0,900}label="로스·여유"[\s\S]{0,900}label="재고사용"/);
-assert.match(materials, /readOnlyRows[\s\S]{0,1600}field="usageArea" label="사용부위"[\s\S]{0,1600}field="memo" label="메모"/);
+const usageAreaFieldIndex = materials.search(
+  /field\s*=\s*["']usageArea["']\s+label\s*=\s*["']사용부위["']/,
+);
+const memoFieldIndex = materials.search(
+  /field\s*=\s*["']memo["']\s+label\s*=\s*["']메모["']/,
+);
+assert.ok(usageAreaFieldIndex >= 0, "material usage-area field must remain present");
+assert.ok(memoFieldIndex >= 0, "material memo field must remain present");
+assert.ok(usageAreaFieldIndex < memoFieldIndex, "material usage-area field must precede the memo field");
 assert.match(materials, /testID="material-order-action-row"[\s\S]{0,1200}testID="material-order-summary-lines"[\s\S]{0,800}발주수량[\s\S]{0,500}단가[\s\S]{0,500}testID="material-order-summary-amount"[\s\S]{0,300}금액/);
 assert.match(materials, /materialOrderActionRow: \{[^\n]*flexDirection: "row"[^\n]*minHeight: 38[^\n]*paddingVertical: 4/);
 assert.match(materials, /materialOrderLineStack: \{[^\n]*flex: 1[^\n]*minWidth: 0/);
 assert.match(materials, /materialOrderActions: \{[^\n]*flexDirection: "row"[^\n]*flexShrink: 0/);
-assert.match(materials, /function materialActions[\s\S]{0,1200}caption: "완료"[\s\S]{0,300}caption: "취소"[\s\S]{0,300}caption: "삭제"[\s\S]{0,600}caption: "발주"[\s\S]{0,300}caption: "삭제"/);
-const readOnlyActionButton = materials.slice(materials.indexOf("function ReadOnlyActionButton"), materials.indexOf("function MaterialCard"));
-assert.match(readOnlyActionButton, /accessibilityState=\{\{ disabled: true \}\}/);
-assert.match(readOnlyActionButton, /\n\s+disabled\n/);
-assert.doesNotMatch(readOnlyActionButton, /onPress=/);
+assert.match(materials, /MATERIAL_ORDER_ACTION_VIEW[\s\S]{0,900}request:[\s\S]{0,240}caption: "발주"[\s\S]{0,300}complete:[\s\S]{0,240}caption: "완료"[\s\S]{0,300}cancel:[\s\S]{0,240}caption: "취소"/);
+const materialOrderActionButton = materials.slice(materials.indexOf("function MaterialOrderActionButton"), materials.indexOf("function MaterialCard"));
+assert.match(materialOrderActionButton, /accessibilityRole="button"/);
+assert.match(materialOrderActionButton, /accessibilityState=\{\{ busy, disabled: busy \}\}/);
+assert.match(materialOrderActionButton, /disabled=\{busy\}/);
+assert.match(materialOrderActionButton, /onPress=\{onPress\}/);
+assert.match(materials, /orderPolicy\.actions\.map/);
+assert.match(materials, /actions\.map\(\(action\) =>/);
+assert.match(materials, /onPress=\{\(\) => onOrderAction\(action\.kind\)\}/);
+const legacyCancelledPolicy = resolveMaterialOrderPolicy({
+  status: "cancelled",
+  lifecycle: "active",
+  currentDraft: true,
+  serverLocked: true,
+  canUpdate: true,
+  canRequestOrder: true,
+  canCompleteOrder: true,
+});
+assert.equal(legacyCancelledPolicy.label, "과거 취소");
+assert.equal(legacyCancelledPolicy.locked, true);
+assert.equal(legacyCancelledPolicy.canEdit, false);
+assert.deepEqual(legacyCancelledPolicy.actions, []);
 assert.doesNotMatch(materials, /\bKRW\b|line\.currency/);
 assert.match(mobileDisplay, /if \(!matched\) return "미입력"/);
 assert.match(mobileDisplay, /\$\{grouped\}원/);
@@ -150,7 +177,9 @@ assert.match(mobileDisplay, /const DECIMAL_PATTERN = \/\^\(-\?\)\(\\d\+\)/);
 assert.doesNotMatch(materials, /Number\(line\.|parseFloat\(line\.|parseInt\(line\./);
 const materialCardBody = materials.slice(materials.indexOf("function MaterialCard"), materials.indexOf("export default function WorkOrderMaterialsReadOnly"));
 const materialSummaryBody = materialCardBody.slice(materialCardBody.indexOf("<Pressable"), materialCardBody.indexOf("testID=\"material-order-action-row\""));
-assert.equal((materialSummaryBody.match(/<Pressable/g) ?? []).length, 1, "material summary card must not nest pressable controls");
+assert.match(materialCardBody, /return \(\s*<View style=\{\[styles\.card, materialAccent\(orderPolicy\.tone\)\]\}>/);
+assert.match(materialSummaryBody, /accessibilityState=\{\{ expanded \}\}[\s\S]{0,240}onPress=\{onToggle\}/);
+assert.match(materialSummaryBody, /testID="material-memo-disclosure"/);
 
 assert.match(materialCache, /const MATERIAL_CACHE_LIMIT = 6/);
 assert.match(app, /materialCacheRef\.current\[workOrderId\]/);

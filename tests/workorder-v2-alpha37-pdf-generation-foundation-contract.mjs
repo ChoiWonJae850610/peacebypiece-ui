@@ -1,6 +1,8 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
 
+import { assertCanonicalWaflVersionConsistency } from "./helpers/wafl-v2-current-version.mjs";
+
 const read = (file) => fs.readFileSync(file, "utf8");
 
 const version = read("lib/constants/version.ts");
@@ -33,8 +35,7 @@ const evidence = read("docs/project/app-v2/34-issued-revision-pdf-generation-fou
 const verifySafe = read("tools/pipeline/verify-safe.ps1");
 const pipeline = read("tools/pipeline/peacebypiece-auto-pipeline.ps1");
 
-const currentVersion = version.match(/APP_VERSION\s*=\s*"([^"]+)"/)?.[1];
-assert.ok(["2.0.0-alpha.37", "2.0.0-alpha.38", "2.0.0-alpha.39", "2.0.0-alpha.40", "2.0.0-alpha.41", "2.0.0-alpha.42", "2.0.0-alpha.43", "2.0.0-alpha.44", "2.0.0-alpha.45", "2.0.0-alpha.46", "2.0.0-alpha.47", "2.0.0-alpha.48", "2.0.0-alpha.49", "2.0.0-alpha.50", "2.0.0-alpha.51", "2.0.0-alpha.52", "2.0.0-alpha.53", "2.0.0-alpha.54"].includes(currentVersion));
+const currentVersion = assertCanonicalWaflVersionConsistency();
 assert.match(mobileVersion, new RegExp(currentVersion.replaceAll(".", "\\.")));
 const appConfig = JSON.parse(appJson);
 const publicVersion = currentVersion.replace(/-.+$/, "");

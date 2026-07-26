@@ -17,8 +17,11 @@ if ($state.PSObject.Properties.Name -contains "developerIdentityVerified") { Wri
 if ($state.PSObject.Properties.Name -contains "developerLoginHashPrefix" -and $state.developerLoginHashPrefix) { Write-Host ("Developer login hash prefix: {0}" -f $state.developerLoginHashPrefix) }
 if ($state.PSObject.Properties.Name -contains "serveConfigOwnership") { Write-Host ("Serve ownership: {0}" -f $state.serveConfigOwnership) }
 if ($state.PSObject.Properties.Name -contains "mobileTransport" -and $state.mobileTransport) { Write-Host ("Mobile transport: {0}" -f $state.mobileTransport) }
-if ($state.publicOrigin) { Write-Host ("Viewer base origin: {0}" -f $state.publicOrigin) }
-if ($state.PSObject.Properties.Name -contains "expoUrl" -and $state.expoUrl) { Write-Host ("Development Client Metro URL (same tailnet only): {0}" -f $state.expoUrl) }
+if ($state.PSObject.Properties.Name -contains "runtimeQaMode") { Write-Host ("Runtime QA mode: {0}" -f $state.runtimeQaMode) }
+if ($state.PSObject.Properties.Name -contains "previewTransport") { Write-Host ("Preview transport: {0}" -f $state.previewTransport) }
+if ($state.PSObject.Properties.Name -contains "quickTunnelReady") { Write-Host ("Quick Tunnel ready: {0}" -f $state.quickTunnelReady) }
+if ($state.publicOrigin) { Write-Host "Viewer base origin configured: true" }
+if ($state.PSObject.Properties.Name -contains "expoUrl" -and $state.expoUrl) { Write-Host "Development Client Metro endpoint configured: true" }
 foreach ($record in @($state.processes)) {
     $process = Get-Process -Id $record.pid -ErrorAction SilentlyContinue
     Write-Host ("{0}: PID {1}, alive={2}" -f $record.role, $record.pid, [bool]$process)

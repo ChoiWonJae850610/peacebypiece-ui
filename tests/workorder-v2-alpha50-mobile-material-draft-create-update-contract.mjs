@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
 
+import { resolveMaterialOrderPolicy } from "../apps/mobile/domain/materialOrderPolicy.ts";
 import { isTailscaleServePathAllowed } from "../lib/external-qa/configCore.mjs";
 import { assertCanonicalWaflVersionConsistency } from "./helpers/wafl-v2-current-version.mjs";
 
@@ -21,6 +22,7 @@ const apiClient = read("apps/mobile/lib/apiClient.ts");
 const apiTypes = read("apps/mobile/domain/mobileContract.ts");
 const mobileValidation = read("apps/mobile/domain/workOrderValidation.ts");
 const mobilePolicy = read("apps/mobile/domain/workOrderPolicy.ts");
+const materialOrderPolicy = read("apps/mobile/domain/materialOrderPolicy.ts");
 const draftExitPolicy = read("apps/mobile/application/draftExitPolicy.ts");
 const runtime = read("lib/domain/work-orders/command/runtimeGuard.ts");
 const commandService = read("lib/domain/work-orders/command/commandService.ts");
@@ -57,7 +59,10 @@ const patchSlice = materialService.slice(materialService.indexOf("export async f
 const transitionSlice = materialService.slice(materialService.indexOf("export async function transitionMaterialOrder"));
 assert.match(createSlice, /requireMaterialDraftMutationApproval\(\)/);
 assert.match(patchSlice, /requireMaterialDraftMutationApproval\(\)/);
-assert.match(transitionSlice, /requireCommandMutationApproval\(WAFL_V2_ALPHA26_MUTATION_APPROVAL\)/);
+assert.match(transitionSlice, /const configuredApproval = process\.env\.WAFL_V2_COMMAND_MUTATION_APPROVED/);
+assert.match(transitionSlice, /requireCommandMutationApproval\(/);
+assert.match(transitionSlice, /WAFL_V2_ALPHA55_MATERIAL_ORDER_LIFECYCLE_MUTATION_APPROVAL/);
+assert.match(transitionSlice, /WAFL_V2_ALPHA26_MUTATION_APPROVAL/);
 
 const workOrderId = "11111111-1111-1111-1111-111111111111";
 const materialLineId = "22222222-2222-2222-2222-222222222222";
@@ -105,7 +110,8 @@ assert.match(apiClient, /method: "POST"/);
 assert.match(apiClient, /"Idempotency-Key"/);
 assert.match(apiClient, /export async function patchWorkOrderMaterial/);
 assert.match(apiClient, /method: "PATCH"/);
-assert.doesNotMatch(apiClient, /method: "DELETE"|order-request|order-cancel|order-complete/);
+assert.doesNotMatch(apiClient, /method: "DELETE"/);
+assert.match(apiClient, /export async function transitionWorkOrderMaterialOrder[\s\S]*\/order-\$\{kind\}[\s\S]*method: "POST"/);
 const saveMaterialSlice = app.slice(app.indexOf("async function saveMaterial"), app.indexOf("function reloadLatestMaterial"));
 assert.match(saveMaterialSlice, /editor\.mode === "create"[\s\S]*workOrderMutationController\.createMaterial/);
 assert.match(saveMaterialSlice, /:\s*await workOrderMutationController\.updateMaterial/);
@@ -137,20 +143,44 @@ assert.match(app, /putBoundedMaterialEntry/);
 assert.match(app, /entityVersion: page\.entityVersion/);
 assert.match(mobilePolicy, /detail\.header\.status === "draft"/);
 assert.match(mobilePolicy, /detail\.revision\.status === "draft"/);
-assert.match(mobilePolicy, /line\.status === "editing"/);
+assert.match(mobilePolicy, /resolveMaterialOrderPolicy/);
+assert.match(materialOrderPolicy, /status === "editing"/);
 assert.doesNotMatch(app + editor, /setInterval|automaticSave|autoSave|order-request|order-cancel|order-complete/);
 
 assert.match(materials, /accessibilityLabel="원단 추가"/);
 assert.match(materials, /<Plus /);
 assert.match(materials, /field="name" label="원단명"/);
 assert.doesNotMatch(materials, /PencilLine|editActionButton/);
-assert.match(materials, /line\.status === "editing"/);
-const readOnlyAction = materials.slice(materials.indexOf("function ReadOnlyActionButton"), materials.indexOf("function MaterialCard"));
-assert.match(readOnlyAction, /accessibilityState=\{\{ disabled: true \}\}/);
-assert.match(readOnlyAction, /\n\s+disabled\n/);
-assert.doesNotMatch(readOnlyAction, /onPress=/);
+assert.match(materials, /orderPolicy\.canEdit/);
+const materialOrderAction = materials.slice(materials.indexOf("function MaterialOrderActionButton"), materials.indexOf("function MaterialCard"));
+assert.match(materialOrderAction, /accessibilityRole="button"/);
+assert.match(materialOrderAction, /accessibilityState=\{\{ busy, disabled: busy \}\}/);
+assert.match(materialOrderAction, /disabled=\{busy\}/);
+assert.match(materialOrderAction, /onPress=\{onPress\}/);
+const editableOrderPolicy = resolveMaterialOrderPolicy({
+  status: "editing",
+  lifecycle: "active",
+  currentDraft: true,
+  serverLocked: false,
+  canUpdate: true,
+  canRequestOrder: true,
+  canCompleteOrder: true,
+});
+assert.equal(editableOrderPolicy.canEdit, true);
+assert.deepEqual(editableOrderPolicy.actions, ["request"]);
+const legacyCancelledPolicy = resolveMaterialOrderPolicy({
+  status: "cancelled",
+  lifecycle: "active",
+  currentDraft: true,
+  serverLocked: true,
+  canUpdate: true,
+  canRequestOrder: true,
+  canCompleteOrder: true,
+});
+assert.equal(legacyCancelledPolicy.canEdit, false);
+assert.deepEqual(legacyCancelledPolicy.actions, []);
 assert.match(materials, /caption: "발주"/);
-assert.match(materials, /caption: "삭제"/);
+assert.match(materials, /orderPolicy\.canEdit[\s\S]{0,500}onPress=\{onArchive\}[\s\S]{0,500}<Trash2/);
 assert.match(detail, /canEditMaterials/);
 assert.match(detail, /materialEditor\?\.mode === "create"/);
 assert.match(detail, /onRequestSectionChange/);

@@ -76,7 +76,8 @@ Rules:
 ### Material line
 
 - `editing -> requested -> completed`.
-- `requested -> cancelled -> editing`은 사유가 있는 취소 흐름.
+- current command의 취소는 `requested -> editing`이며 사유, `cancelled_at`, event를 이력으로 보존한다.
+- alpha.26에서 이미 저장된 `cancelled` row는 migration하지 않는 legacy terminal/read-only compatibility data다.
 - completed는 수정/reopen하지 않는다.
 
 ### Process
@@ -394,6 +395,10 @@ Actual p95 is confirmed in alpha.22 benchmark. `SELECT *`, full child JSON aggre
 ## 14. Runtime boundary
 
 Alpha.26 specializes the material contract against the applied schema. Fabric/accessory share `work_order_material_lines`; create and request/cancel/complete use actor-scoped hashed receipts, while scalar PATCH uses WorkOrder `expectedVersion`. WorkOrder, current draft revision, and line versions advance atomically. Only `editing -> requested` and `requested -> cancelled|completed` are allowed. Amount is server-derived, cross-tenant material/supplier references are generic `NOT_FOUND`, and no DELETE is exposed because no soft-delete lifecycle exists.
+
+Alpha.55 supersedes only the current cancellation transition while preserving alpha.26 evidence and stored rows. New order-cancel commands perform `requested -> editing`, retain cancellation reason/timestamp/event, and immediately restore normal edit/request eligibility. New commands never create a `cancelled` operational row. The two retained alpha.26 synthetic `cancelled` rows remain unchanged, read-only, actionless legacy records; any additional persisted `cancelled` row is a compatibility anomaly requiring a read-only handoff rather than normalization. `requested` and `completed` read models are locked, `completed` is terminal, archived lines expose no edit/order action, and request/cancel/complete retain exact permission, expectedVersion, hashed receipt, one-event, and single-transaction semantics.
+
+Alpha.55 also distinguishes a valid stock-covered zero-order request from incomplete order input. When `demand = requiredQuantity + allowanceQuantity` is positive, `inventoryUsageQuantity >= demand`, the canonical `orderQuantity` is `0`, and the unit is valid, request/cancel/re-request/complete follow the same lifecycle even when supplier and unit price are absent or zero; amount `0` is canonical. When `orderQuantity > 0`, supplier and a unit price greater than zero remain required. Demand `0`, invalid or negative numeric input, missing unit, formula drift, archive, permission denial, and invalid transitions remain blockers. The server is the canonical readiness authority and returns structured field errors rather than treating every zero order quantity as invalid.
 
 Alpha.20에서는 어떤 runtime도 이 계약을 import하지 않았다. Alpha.23은 `GET /api/v2/work-orders` 목록 vertical slice를 채택했고, alpha.24는 core detail과 일곱 tab-specific lazy Read endpoint만 추가한다. `apps/mobile`, command route, PDF/QR route는 여전히 연결하지 않는다.
 

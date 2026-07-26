@@ -2,6 +2,8 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
 
+import { resolveMaterialOrderPolicy } from "../apps/mobile/domain/materialOrderPolicy.ts";
+
 const materials = fs.readFileSync("apps/mobile/features/materials/WorkOrderMaterialsReadOnly.tsx", "utf8");
 const overview = fs.readFileSync("apps/mobile/features/work-orders/overview/WorkOrderDetailOverview.tsx", "utf8");
 const app = fs.readFileSync("apps/mobile/features/MobileWorkOrderExperience.tsx", "utf8");
@@ -21,11 +23,32 @@ assert.doesNotMatch(materials, /field="orderQuantity"/);
 assert.match(materials, /material-order-quantity-calculated/);
 assert.match(materials, /발주수량, 자동 계산, 읽기 전용/);
 assert.match(validation, /if \(field === "orderQuantity"\) continue/);
-assert.match(materials, /line\.lifecycle === "active"/);
-assert.match(materials, /line\.status === "editing"/);
-assert.match(materials, /!line\.locked/);
-assert.match(policy, /line\.lifecycle === "active"/);
-assert.match(policy, /!line\.locked/);
+assert.match(materials, /const fieldEditable = canEdit && orderPolicy\.canEdit/);
+assert.match(policy, /resolveMaterialOrderPolicy/);
+const editablePolicy = resolveMaterialOrderPolicy({
+  status: "editing",
+  lifecycle: "active",
+  currentDraft: true,
+  serverLocked: false,
+  canUpdate: true,
+  canRequestOrder: true,
+  canCompleteOrder: true,
+});
+assert.equal(editablePolicy.canEdit, true);
+for (const input of [
+  { status: "requested", lifecycle: "active", serverLocked: true },
+  { status: "completed", lifecycle: "active", serverLocked: true },
+  { status: "cancelled", lifecycle: "active", serverLocked: true },
+  { status: "editing", lifecycle: "archived", serverLocked: false },
+]) {
+  assert.equal(resolveMaterialOrderPolicy({
+    ...input,
+    currentDraft: true,
+    canUpdate: true,
+    canRequestOrder: true,
+    canCompleteOrder: true,
+  }).canEdit, false);
+}
 assert.match(app, /await workOrderMutationController\.updateMaterial/);
 assert.match(app, /await workOrderMutationController\.createMaterial/);
 assert.match(app, /requestArchiveMaterial/);

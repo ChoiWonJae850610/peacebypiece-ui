@@ -16,6 +16,7 @@ import {
   assertPdfViewerOriginPolicy,
   TEMPORARY_EXTERNAL_QA_ONLY,
 } from "../lib/generated-documents/work-order-pdf/viewerOriginPolicyCore.mjs";
+import { assertCanonicalWaflVersionConsistency } from "./helpers/wafl-v2-current-version.mjs";
 
 const read = (relativePath) => fs.readFileSync(path.resolve(relativePath), "utf8");
 const quickHost = `alpha43-unit.${"trycloudflare.com"}`;
@@ -109,10 +110,11 @@ for (const [dependency, version] of Object.entries({
 assert.equal(Object.hasOwn(mobilePackage.dependencies, "expo-updates"), false);
 
 const mobileConfig = JSON.parse(read("apps/mobile/app.json"));
+const currentAppVersion = assertCanonicalWaflVersionConsistency();
 assert.equal(mobileConfig.expo.owner, "lostab");
 assert.equal(mobileConfig.expo.slug, "wafl-mobile");
 assert.equal(mobileConfig.expo.version, "2.0.0");
-assert.equal(mobileConfig.expo.extra.appVersion, "2.0.0-alpha.54");
+assert.equal(mobileConfig.expo.extra.appVersion, currentAppVersion);
 assert.equal(mobileConfig.expo.extra.eas.projectId, "6cc3b260-a2cc-4c97-9c15-764bda530836");
 assert.equal(mobileConfig.expo.ios.bundleIdentifier, "com.wafl.app");
 assert.equal(mobileConfig.expo.ios.config.usesNonExemptEncryption, false);
@@ -156,7 +158,7 @@ for (const config of [defaultMobileConfig, productionMobileConfig, developmentMo
   assert.equal(config.owner, "lostab");
   assert.equal(config.slug, "wafl-mobile");
   assert.equal(config.version, "2.0.0");
-  assert.equal(config.extra.appVersion, "2.0.0-alpha.54");
+  assert.equal(config.extra.appVersion, currentAppVersion);
   assert.equal(config.extra.eas.projectId, "6cc3b260-a2cc-4c97-9c15-764bda530836");
   assert.equal(config.ios.bundleIdentifier, "com.wafl.app");
   assert.equal(config.ios.config.usesNonExemptEncryption, false);

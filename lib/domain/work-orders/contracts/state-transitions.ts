@@ -24,10 +24,10 @@ export const WORK_ORDER_TRANSITIONS = [
 ] as const satisfies readonly TransitionContract<WorkOrderStatus>[];
 
 export const MATERIAL_LINE_TRANSITIONS = [
-  { from: "editing", allowedTo: ["requested", "cancelled"], editable: true, createsRevision: false, auditEvent: "material_line.updated", documentEffect: "none" },
-  { from: "requested", allowedTo: ["completed", "cancelled"], editable: false, createsRevision: false, auditEvent: "material_line.order_requested", documentEffect: "none" },
+  { from: "editing", allowedTo: ["requested"], editable: true, createsRevision: false, auditEvent: "material_line.updated", documentEffect: "none" },
+  { from: "requested", allowedTo: ["editing", "completed"], editable: false, createsRevision: false, auditEvent: "material_line.order_requested", documentEffect: "none" },
   { from: "completed", allowedTo: [], editable: false, createsRevision: false, auditEvent: "material_line.order_completed", documentEffect: "none" },
-  { from: "cancelled", allowedTo: ["editing"], editable: false, createsRevision: false, auditEvent: "material_line.order_cancelled", documentEffect: "none" },
+  { from: "cancelled", allowedTo: [], editable: false, createsRevision: false, auditEvent: "material_line.legacy_order_cancelled", documentEffect: "none" },
 ] as const satisfies readonly TransitionContract<MaterialLineStatus>[];
 
 export const PROCESS_TRANSITIONS = [

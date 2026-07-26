@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
   Pressable,
@@ -7,7 +7,10 @@ import {
   TextInput,
   View,
   type KeyboardTypeOptions,
+  type NativeSyntheticEvent,
   type StyleProp,
+  type TextInputChangeEventData,
+  type TextInputEndEditingEventData,
   type TextStyle,
   type ViewStyle,
 } from "react-native";
@@ -15,6 +18,7 @@ import { Check, X } from "lucide-react-native";
 
 import { WAFL_FONTS } from "@/constants/fonts";
 import { WAFL_THEME } from "@/constants/theme";
+import { createInlineEditFinalizationController } from "@/lib/inlineEditFinalization";
 import { normalizeNumericDraft, prepareNumericDraftOnFocus } from "@/lib/mobileDisplay";
 
 type Props = {
@@ -26,7 +30,7 @@ type Props = {
   readonly placeholder: string;
   readonly onActivate: () => void;
   readonly onChange: (value: string) => void;
-  readonly onSave: () => void;
+  readonly onSave: (finalizedValue: string) => void;
   readonly onCancel: () => void;
   readonly saving?: boolean;
   readonly dirty?: boolean;
@@ -39,7 +43,7 @@ type Props = {
   readonly containerStyle?: StyleProp<ViewStyle>;
   readonly displayStyle?: StyleProp<TextStyle>;
   readonly inputStyle?: StyleProp<TextStyle>;
-  readonly numberOfLines?: number;
+  readonly numberOfLines?: number | null;
   readonly testID?: string;
   readonly onFocusTarget?: (target: TextInput) => void;
 };
@@ -71,15 +75,32 @@ export default function ControlledInlineEditValue({
   onFocusTarget,
 }: Props) {
   const inputRef = useRef<TextInput>(null);
+  const finalizationRef = useRef(createInlineEditFinalizationController(value));
+  const cancelingRef = useRef(false);
+  const wasSavingRef = useRef(saving);
+  const activationValueRef = useRef(value);
+  const [finalizing, setFinalizing] = useState(false);
+  const [nativeDirty, setNativeDirty] = useState(false);
   const numeric = keyboardType === "number-pad" || keyboardType === "decimal-pad" || keyboardType === "numeric";
   const activationRef = useRef({ numeric, onChange, value });
 
   useEffect(() => {
     activationRef.current = { numeric, onChange, value };
+    finalizationRef.current.observe(value);
   }, [numeric, onChange, value]);
 
   useEffect(() => {
-    if (!active) return undefined;
+    if (wasSavingRef.current && !saving && active) {
+      finalizationRef.current.reset(value);
+    }
+    wasSavingRef.current = saving;
+  }, [active, saving, value]);
+
+  useEffect(() => {
+    if (!active) {
+      cancelingRef.current = false;
+      return undefined;
+    }
     let focusFrame: number | null = null;
     const prepareFrame = requestAnimationFrame(() => {
       const activation = activationRef.current;
@@ -98,13 +119,69 @@ export default function ControlledInlineEditValue({
   }, [active]);
 
   const emptyNumericDraft = numeric && value.trim() === "";
-  const saveDisabled = !dirty || saving || emptyNumericDraft;
+  const saveDisabled = (!dirty && !nativeDirty) || saving || finalizing || emptyNumericDraft;
+  const displayLineLimit = numberOfLines === null ? undefined : numberOfLines;
+
+  function normalizedNativeText(nextValue: string) {
+    return numeric ? normalizeNumericDraft(nextValue) : nextValue;
+  }
+
+  function finalizePendingSave(nativeValue: string) {
+    const finalizedValue = normalizedNativeText(nativeValue);
+    finalizationRef.current.observe(finalizedValue);
+    if (finalizedValue !== value) onChange(finalizedValue);
+    const result = finalizationRef.current.finalize(finalizedValue);
+    setFinalizing(false);
+    if (result.shouldSave) onSave(result.value);
+  }
+
+  function handleNativeChange(event: NativeSyntheticEvent<TextInputChangeEventData>) {
+    const nativeValue = normalizedNativeText(event.nativeEvent.text);
+    finalizationRef.current.observe(nativeValue);
+    setNativeDirty(nativeValue !== activationValueRef.current);
+  }
+
+  function handleEndEditing(event: NativeSyntheticEvent<TextInputEndEditingEventData>) {
+    if (cancelingRef.current) {
+      cancelingRef.current = false;
+      return;
+    }
+    finalizePendingSave(event.nativeEvent.text);
+  }
+
+  function handleSaveRequest() {
+    if (!finalizationRef.current.requestSave()) return;
+    setFinalizing(true);
+    if (inputRef.current?.isFocused()) {
+      inputRef.current.blur();
+      return;
+    }
+    finalizePendingSave(value);
+  }
+
+  function handleCancel() {
+    cancelingRef.current = true;
+    finalizationRef.current.cancel();
+    setFinalizing(false);
+    setNativeDirty(false);
+    inputRef.current?.blur();
+    onCancel();
+  }
+
+  function handleActivate() {
+    activationValueRef.current = value;
+    finalizationRef.current.reset(value);
+    cancelingRef.current = false;
+    setFinalizing(false);
+    setNativeDirty(false);
+    onActivate();
+  }
 
   if (!active) {
     if (!editable) {
       return (
         <View style={containerStyle} testID={testID}>
-          <Text numberOfLines={numberOfLines} style={displayStyle}>{displayValue || placeholder}</Text>
+          <Text numberOfLines={displayLineLimit} style={displayStyle}>{displayValue || placeholder}</Text>
         </View>
       );
     }
@@ -114,11 +191,11 @@ export default function ControlledInlineEditValue({
         accessibilityLabel={`${accessibilityLabel}, 수정 가능`}
         accessibilityRole="button"
         hitSlop={8}
-        onPress={onActivate}
+        onPress={handleActivate}
         style={({ pressed }) => [styles.editable, containerStyle, pressed && styles.pressed]}
         testID={testID}
       >
-        <Text numberOfLines={numberOfLines} style={[displayStyle, !displayValue && styles.placeholder]}>{displayValue || placeholder}</Text>
+        <Text numberOfLines={displayLineLimit} style={[displayStyle, !displayValue && styles.placeholder]}>{displayValue || placeholder}</Text>
       </Pressable>
     );
   }
@@ -132,7 +209,13 @@ export default function ControlledInlineEditValue({
         keyboardType={keyboardType}
         maxLength={maxLength}
         multiline={multiline}
-        onChangeText={(nextValue) => onChange(numeric ? normalizeNumericDraft(nextValue) : nextValue)}
+        onChange={handleNativeChange}
+        onChangeText={(nextValue) => {
+          const normalizedValue = normalizedNativeText(nextValue);
+          finalizationRef.current.observe(normalizedValue);
+          onChange(normalizedValue);
+        }}
+        onEndEditing={handleEndEditing}
         onFocus={() => {
           if (inputRef.current) onFocusTarget?.(inputRef.current);
         }}
@@ -145,7 +228,7 @@ export default function ControlledInlineEditValue({
       />
       {errorMessage ? <Text accessibilityRole="alert" style={styles.error}>{errorMessage}</Text> : null}
       <View style={styles.actions}>
-        <Pressable accessibilityHint={`${accessibilityLabel} 입력을 취소합니다`} accessibilityLabel="변경 취소" accessibilityRole="button" disabled={saving} onPress={onCancel} style={styles.cancel}>
+        <Pressable accessibilityHint={`${accessibilityLabel} 입력을 취소합니다`} accessibilityLabel="변경 취소" accessibilityRole="button" disabled={saving || finalizing} onPress={handleCancel} style={styles.cancel}>
           <X color="#554a40" size={18} strokeWidth={2.4} />
         </Pressable>
         <Pressable
@@ -154,10 +237,10 @@ export default function ControlledInlineEditValue({
           accessibilityRole="button"
           accessibilityState={{ disabled: saveDisabled }}
           disabled={saveDisabled}
-          onPress={onSave}
+          onPress={handleSaveRequest}
           style={[styles.save, saveDisabled && styles.disabled]}
         >
-          {saving ? <ActivityIndicator color="#fff" size="small" /> : <Check color="#fff" size={18} strokeWidth={2.5} />}
+          {saving || finalizing ? <ActivityIndicator color="#fff" size="small" /> : <Check color="#fff" size={18} strokeWidth={2.5} />}
         </Pressable>
       </View>
     </View>

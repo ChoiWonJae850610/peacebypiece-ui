@@ -6,18 +6,31 @@
     [int]$NextPort = 3000,
     [int]$ExpoPort = 8081,
     [string]$CloudflaredPath = "",
+    [ValidateSet("external-device", "memo-ime-display")]
+    [string]$RuntimeQaMode = "external-device",
     [switch]$EnableAlpha46BasicInfoMutation,
     [switch]$EnableAlpha50MaterialDraftMutation,
     [switch]$EnableAlpha51MaterialLifecycleMutation,
-    [switch]$EnableAlpha52CoreInlineMutation
+    [switch]$EnableAlpha52CoreInlineMutation,
+    [switch]$EnableAlpha55MaterialOrderLifecycleMutation
 )
 
 $ErrorActionPreference = "Stop"
 . (Join-Path $PSScriptRoot "wafl-external-qa-common.ps1")
 . (Join-Path $PSScriptRoot "..\pipeline\pipeline-common.ps1")
 
-if (@($EnableAlpha46BasicInfoMutation, $EnableAlpha50MaterialDraftMutation, $EnableAlpha51MaterialLifecycleMutation, $EnableAlpha52CoreInlineMutation).Where({ $_ }).Count -gt 1) {
+if (@($EnableAlpha46BasicInfoMutation, $EnableAlpha50MaterialDraftMutation, $EnableAlpha51MaterialLifecycleMutation, $EnableAlpha52CoreInlineMutation, $EnableAlpha55MaterialOrderLifecycleMutation).Where({ $_ }).Count -gt 1) {
     throw "EXTERNAL_QA_MUTATION_MODES_ARE_MUTUALLY_EXCLUSIVE"
+}
+$internalMemoImeMode = $RuntimeQaMode -eq "memo-ime-display"
+if ($internalMemoImeMode -and $MobileTransport -ne "DeveloperAutoConnect") {
+    throw "MEMO_IME_DISPLAY_REQUIRES_DEVELOPER_AUTO_CONNECT"
+}
+if ($internalMemoImeMode -and -not $EnableAlpha55MaterialOrderLifecycleMutation) {
+    throw "MEMO_IME_DISPLAY_REQUIRES_ALPHA55_MUTATION_MODE"
+}
+if ($internalMemoImeMode -and ($NextPort -ne 3100 -or $ExpoPort -ne 8081)) {
+    throw "MEMO_IME_DISPLAY_REQUIRES_CANONICAL_PORTS"
 }
 
 function Get-WaflQaDatabaseUrl {
@@ -83,9 +96,9 @@ if ((Get-Location).Path -ne $root) { Set-Location -LiteralPath $root }
 $node = Get-WaflQaExecutablePath -Name "node"
 $npm = Get-WaflQaExecutablePath -Name "npm.cmd"
 $npx = Get-WaflQaExecutablePath -Name "npx.cmd"
-$cloudflared = Get-WaflQaCloudflaredPath -ExplicitPath $CloudflaredPath
+$cloudflared = if ($internalMemoImeMode) { $null } else { Get-WaflQaCloudflaredPath -ExplicitPath $CloudflaredPath }
 if (-not $node -or -not $npm -or -not $npx) { throw "Node, npm, and npx must be available on PATH." }
-if (-not $cloudflared) {
+if (-not $internalMemoImeMode -and -not $cloudflared) {
     throw "cloudflared was not found. Installation is not automatic. Approval command: winget install --id Cloudflare.cloudflared --exact"
 }
 if (-not (Test-WaflQaPortAvailable -Port $NextPort)) { throw "Next port is already in use: $NextPort" }
@@ -120,11 +133,14 @@ $state = [ordered]@{
     workingTreeEntryCount = $gitStatus.Count
     nextMode = $NextMode
     mobileTransport = $MobileTransport
+    runtimeQaMode = $RuntimeQaMode
     nextPort = $NextPort
     expoPort = $ExpoPort
     tailscaleIpv4 = $null
     expoUrl = $null
     publicOrigin = $null
+    previewTransport = $(if ($internalMemoImeMode) { "tailscale-serve-internal" } else { "cloudflare-quick-tunnel" })
+    quickTunnelReady = $false
     startedAtUtc = [DateTime]::UtcNow.ToString("o")
     updatedAtUtc = [DateTime]::UtcNow.ToString("o")
     lastSuccessfulStage = "preflight"
@@ -208,31 +224,42 @@ try {
         }
     }
 
-    $cloudflareStdout = Join-Path $stateDir "cloudflared.stdout.log"
-    $cloudflareStderr = Join-Path $stateDir "cloudflared.stderr.log"
-    $cloudflare = Start-WaflQaOwnedProcess -Role "cloudflared" -FilePath $cloudflared -ArgumentList @("tunnel", "--no-autoupdate", "--url", "http://127.0.0.1:$NextPort") -WorkingDirectory $root -OwnerMarker $ownerMarker -Environment @{} -StdoutPath $cloudflareStdout -StderrPath $cloudflareStderr
-    $state.processes += $cloudflare
-    $state.lastSuccessfulStage = "cloudflared-started"
-    Write-WaflQaJson -Path (Get-WaflQaStatePath) -Value $state
-
-    $deadline = [DateTime]::UtcNow.AddSeconds(45)
-    $publicOrigin = $null
-    while ([DateTime]::UtcNow -lt $deadline -and -not $publicOrigin) {
-        foreach ($path in @($cloudflareStdout, $cloudflareStderr)) {
-            if (Test-Path -LiteralPath $path -PathType Leaf) {
-                $bounded = (Get-Content -LiteralPath $path -Tail 120 -Encoding UTF8) -join "`n"
-                $match = [regex]::Match($bounded, 'https://[a-z0-9-]+\.trycloudflare\.com')
-                if ($match.Success) { $publicOrigin = $match.Value; break }
-            }
-        }
-        if (-not $publicOrigin) { Start-Sleep -Milliseconds 250 }
+    $originUri = $null
+    if ($internalMemoImeMode) {
+        if (-not $developerAutoConnect -or -not $developerIdentity) { throw "MEMO_IME_DISPLAY_INTERNAL_ORIGIN_UNAVAILABLE" }
+        $state.publicOrigin = $developerIdentity.ServeOrigin
+        $originUri = [Uri]$state.publicOrigin
+        $state.lastSuccessfulStage = "internal-preview-origin-ready"
+        Write-WaflQaJson -Path (Get-WaflQaStatePath) -Value $state
     }
-    if (-not $publicOrigin) { throw "QUICK_TUNNEL_URL_NOT_FOUND" }
-    $originUri = [Uri]$publicOrigin
-    if ($originUri.Scheme -ne "https" -or $originUri.AbsolutePath -ne "/" -or -not $originUri.Host.EndsWith(".trycloudflare.com")) { throw "QUICK_TUNNEL_URL_INVALID" }
-    $state.publicOrigin = $originUri.GetLeftPart([UriPartial]::Authority)
-    $state.lastSuccessfulStage = "quick-tunnel-origin-validated"
-    Write-WaflQaJson -Path (Get-WaflQaStatePath) -Value $state
+    else {
+        $cloudflareStdout = Join-Path $stateDir "cloudflared.stdout.log"
+        $cloudflareStderr = Join-Path $stateDir "cloudflared.stderr.log"
+        $cloudflare = Start-WaflQaOwnedProcess -Role "cloudflared" -FilePath $cloudflared -ArgumentList @("tunnel", "--no-autoupdate", "--url", "http://127.0.0.1:$NextPort") -WorkingDirectory $root -OwnerMarker $ownerMarker -Environment @{} -StdoutPath $cloudflareStdout -StderrPath $cloudflareStderr
+        $state.processes += $cloudflare
+        $state.lastSuccessfulStage = "cloudflared-started"
+        Write-WaflQaJson -Path (Get-WaflQaStatePath) -Value $state
+
+        $deadline = [DateTime]::UtcNow.AddSeconds(45)
+        $publicOrigin = $null
+        while ([DateTime]::UtcNow -lt $deadline -and -not $publicOrigin) {
+            foreach ($path in @($cloudflareStdout, $cloudflareStderr)) {
+                if (Test-Path -LiteralPath $path -PathType Leaf) {
+                    $bounded = (Get-Content -LiteralPath $path -Tail 120 -Encoding UTF8) -join "`n"
+                    $match = [regex]::Match($bounded, 'https://[a-z0-9-]+\.trycloudflare\.com')
+                    if ($match.Success) { $publicOrigin = $match.Value; break }
+                }
+            }
+            if (-not $publicOrigin) { Start-Sleep -Milliseconds 250 }
+        }
+        if (-not $publicOrigin) { throw "QUICK_TUNNEL_URL_NOT_FOUND" }
+        $originUri = [Uri]$publicOrigin
+        if ($originUri.Scheme -ne "https" -or $originUri.AbsolutePath -ne "/" -or -not $originUri.Host.EndsWith(".trycloudflare.com")) { throw "QUICK_TUNNEL_URL_INVALID" }
+        $state.publicOrigin = $originUri.GetLeftPart([UriPartial]::Authority)
+        $state.quickTunnelReady = $true
+        $state.lastSuccessfulStage = "quick-tunnel-origin-validated"
+        Write-WaflQaJson -Path (Get-WaflQaStatePath) -Value $state
+    }
 
     $serverEnvironment = @{
         WAFL_SERVER_RUNTIME_MODE = "dev"
@@ -282,6 +309,13 @@ try {
         $serverEnvironment.WAFL_EXTERNAL_QA_ALPHA52_CORE_INLINE_MUTATION_ENABLED = "true"
         $state.commandApi = "ready"
         $state.mutationMode = "core-inline-overview-material-patch"
+    }
+    if ($EnableAlpha55MaterialOrderLifecycleMutation) {
+        $serverEnvironment.WAFL_V2_COMMAND_API_ENABLED = "1"
+        $serverEnvironment.WAFL_V2_COMMAND_MUTATION_APPROVED = "2.0.0-alpha.55-dev-test-mobile-material-order-lifecycle-runtime"
+        $serverEnvironment.WAFL_EXTERNAL_QA_ALPHA55_MATERIAL_ORDER_LIFECYCLE_MUTATION_ENABLED = "true"
+        $state.commandApi = "ready"
+        $state.mutationMode = "material-order-request-cancel-complete"
     }
     $nextStdout = Join-Path $stateDir "next.stdout.log"
     $nextStderr = Join-Path $stateDir "next.stderr.log"
@@ -400,10 +434,10 @@ try {
     Write-WaflQaJson -Path (Get-WaflQaStatePath) -Value $state
 
     Write-Host "WAFL external QA processes are running."
-    Write-Host ("Viewer base origin: {0}" -f $state.publicOrigin)
+    Write-Host ("Preview transport: {0}; origin configured={1}" -f $state.previewTransport, [bool]$state.publicOrigin)
     Write-Host ("Process IDs: {0}" -f (($state.processes | ForEach-Object { "{0}={1}" -f $_.role, $_.pid }) -join ", "))
     if ($state.expoUrl) {
-        Write-Host ("Expo Go URL (same tailnet only): {0}" -f $state.expoUrl)
+        Write-Host "Development Client Metro endpoint configured (same tailnet only)."
     } else {
         Write-Host "Open Expo Go on the same LAN and use the LAN connection shown in the Expo log."
     }
