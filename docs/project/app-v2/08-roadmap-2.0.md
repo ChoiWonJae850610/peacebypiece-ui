@@ -4,19 +4,26 @@ Document role: canonical owner for the current result, next candidate, and Versi
 
 ## Current result — 2.0.0-alpha.57
 
+Status: `ALPHA57_MOBILE_OVERVIEW_CATEGORY_INLINE_INPUT_COMPLETE`.
+
+Alpha.57 completes the Maker mobile WorkOrder image, overview, Category, and inline-input boundary on the accepted alpha.56 lifecycle baseline:
+
+- real WorkOrder images and attachments reuse the existing model and controlled Worker/proxy transport for read, upload completion, camera/file acquisition, preview, representative selection, and delete lifecycle;
+- AI image generation and Factory image features remain excluded, and tenant, permission, storage-key, expected-version, and object-lifecycle guards remain authoritative;
+- the common detail header is simplified, tabs precede overview content, and the overview presents total quantity, due date, Category, and amount summaries;
+- 대상 and 대분류 use the shared option Reel Picker; 세부 품목, 시즌, factory-delivery memo, and fabric/accessory usage-location and memo fields use bounded button-free inline save;
+- zero-first numeric editing and leading-zero normalization are shared while canonical order calculation and formatting remain unchanged;
+- normal Maker presentation removes archive recovery UI while preserving internal soft-delete/history and the established fabric/accessory lifecycle; default units are fabric `yd` and accessory `개`;
+- automated verification and Runtime evidence plus later owner physical-iPhone smoke confirmation cover the accepted scope, without converting the earlier `NOT_RUN` V10 checklist into individual formal PASS claims;
+- schema/migration and production mutation remain zero. Finalization added no Runtime, DB, R2, dependency, native, or EAS effect.
+
+Evidence: `57-mobile-overview-category-inline-input-evidence.md`.
+
+## Previous accessory result — 2.0.0-alpha.56
+
 Status: `ALPHA56_ACCESSORY_LIFECYCLE_PARITY_COMPLETE`.
 
-Alpha.56 completes accessory lifecycle parity on the shared alpha.55 material-order boundary:
-
-- the mobile `MaterialType`, response normalizer, query/controller/cache, ProductionCard tabs, create/edit labels, and lifecycle commands now preserve `fabric | accessory` without duplicating a second material stack;
-- accessory request/cancel/re-request/complete, archive/restore, stock-covered zero-order, edit locks, terminal completion, and hard-delete prohibition reuse the canonical fabric semantics;
-- the internal `accessory-lifecycle-parity` Runtime mode verified exact dev/test request/effect budgets, type isolation, fixed header badges, one-line quantity/unit layout, memo disclosure, and Korean IME finalization;
-- physical-iPhone acceptance passed three explicit PATCH actions plus two requests, one cancel, and one completion, with terminal fixture state/version `completed / 9`;
-- V5 authoritative evidence confirms expected/actual memo exact equality `true` and character, Unicode, whitespace, and newline difference `0`; no memo requery or correction was performed during finalization;
-- final retained canonical entity-version baseline is WorkOrder/revision/material `132/132/110`, material rows `11`, event/receipt `165/71`, migration ledger `13/13`, and legacy-cancelled rows `2`;
-- schema/migration, R2/PDF/token, production, dependency, native, and EAS effects remain zero.
-
-Evidence: `56-mobile-accessory-lifecycle-parity-evidence.md`.
+Accessory Read/create/update/archive/restore and request/cancel/re-request/complete parity, physical-iPhone acceptance, and the shared fabric lifecycle remain complete. Detailed facts are preserved in `56-mobile-accessory-lifecycle-parity-evidence.md`.
 
 ## Previous material-order result — 2.0.0-alpha.55
 
@@ -60,6 +67,7 @@ Permanent Rules, Current Baseline, Version Delta, Immutable Evidence, responsibi
 | alpha.54 | mobile Reel Picker input UX | `53-mobile-reel-picker-input-ux-evidence.md` |
 | alpha.55 | material order cancellation, zero-order, memo IME, and Runtime QA | `55-mobile-material-order-lifecycle-evidence.md` |
 | alpha.56 | accessory lifecycle parity and physical-iPhone acceptance | `56-mobile-accessory-lifecycle-parity-evidence.md` |
+| alpha.57 | mobile overview, Category, image, and inline input | `57-mobile-overview-category-inline-input-evidence.md` |
 | maintenance | canonical Codex rule normalization without APP_VERSION change | `54-canonical-codex-working-rules-normalization-evidence.md` |
 
 Older results remain in numbered evidence files indexed and task-routed by `00-start-here.md`. Their detailed outcomes are not duplicated here.
@@ -91,21 +99,19 @@ Standard reference:
 
 The Delta does not repeat Permanent Rules, PC-audit mechanics, runner internals, generic Failure Handoff fields, or generic Git/artifact procedures. Those remain owned by `09a` through `09d`. An omitted exceptional authority remains forbidden.
 
-## Next candidate — 2.0.0-alpha.57
+## Next candidate — 2.0.0-alpha.58
 
-Candidate objective: Maker WorkOrder image and representative-image foundation only after owner approval.
+Candidate objective: Maker mobile size/color read-only foundation only after owner approval.
 
-Potential included scope, subject to the actual alpha.57 Delta:
+Potential included scope, subject to the actual alpha.58 Delta:
 
-- reuse the existing attachment and primary-image structures before adding new storage or domain concepts;
-- define bounded upload, camera, drawing entry, representative-image selection, permission, tenant, and object-lifecycle behavior;
-- define exact mobile/tablet placement and physical-device evidence;
-- keep AI-generated images out of scope.
+- reuse the existing `/size-color`, `/size-spec`, and v2 read model before introducing a new model;
+- present loading, error, empty, and read states for sizes, colors, the quantity matrix, and finished measurements;
+- keep the candidate Maker-only.
 
 Explicitly separate later scope:
 
-- Factory, partner, and supplier image features remain excluded;
-- production deployment or mutation and unrelated feature expansion remain excluded;
-- schema, R2, camera/photo permissions, native dependencies/plugins, and EAS Build/Update require explicit effect authority.
+- create, update, delete, quantity or measurement mutation, template save, and automatic total-quantity changes remain excluded;
+- schema/migration, Factory, production deployment/mutation, dependency/native/EAS, and unrelated feature expansion remain excluded.
 
-Alpha.57 does not start merely because it is listed here. It begins only with its owner-approved self-executing Version Delta and the final synchronized alpha.56 HEAD.
+Alpha.58 does not start merely because it is listed here. It begins only with its owner-approved self-executing Version Delta and the final synchronized alpha.57 HEAD.

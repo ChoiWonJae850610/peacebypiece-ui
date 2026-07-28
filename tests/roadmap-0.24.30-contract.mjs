@@ -1,16 +1,15 @@
 #!/usr/bin/env node
 import assert from "node:assert/strict";
 import fs from "node:fs";
+import { assertHistoricalRoadmapContract } from "./helpers/wafl-historical-roadmap-contract.mjs";
 
 const read = (file) => fs.readFileSync(file, "utf8");
 
 const roadmap = read("lib/internal/roadmap/roadmap-0.24.30.ts");
 const index = read("lib/internal/roadmap/index.ts");
-const currentState = read("docs/codex-current-state.md");
 const productRoadmap = read("docs/productization-roadmap.md");
-const version = read("lib/constants/version.ts");
 
-assert.match(version, /APP_VERSION = "0\.24\.30"/);
+assertHistoricalRoadmapContract("0.24.30", { nextVersion: "0.24.31" });
 assert.match(roadmap, /version: "0\.24\.30"/);
 assert.match(roadmap, /Storage Capacity Profiles/);
 assert.match(roadmap, /status: "completed"/);
@@ -22,19 +21,9 @@ assert.match(roadmap, /PG Billing and Subscription Operations/);
 assert.doesNotMatch(roadmap, /payment method implementation completed|raw card storage implemented|Kakao external API sending.*implemented/i);
 
 assert.match(index, /ROADMAP_0_24_30/);
-assert.match(index, /currentWorkVersion: "0\.24\.30"/);
-assert.match(index, /nextWorkVersion: "0\.24\.31"/);
 
-assert.match(currentState, /Current version: `0\.24\.30`/);
-assert.match(currentState, /Next official version: `0\.24\.31` PG Billing and Subscription Operations/);
-assert.match(currentState, /Trial: 100MB storage, 3 members/);
-assert.match(currentState, /Workorder attachment upload target creation/);
-assert.match(currentState, /Generated workorder PDF storage/);
-assert.match(currentState, /DB migration this version: none/);
-
-assert.match(productRoadmap, /Active baseline: `0\.24\.30`/);
 assert.match(productRoadmap, /0\.24\.30` - Storage Capacity Profiles/);
-assert.match(productRoadmap, /0\.24\.31` - PG Billing and Subscription Operations/);
-assert.match(productRoadmap, /Usage data keeps actual percent separate from display-clamped percent/);
+assert.match(roadmap, /0\.24\.31 - PG Billing and Subscription Operations/);
+assert.match(roadmap, /Actual usage percent, display-clamped percent/);
 
 console.log("roadmap 0.24.30 contract passed");

@@ -1,12 +1,13 @@
 #!/usr/bin/env node
 import assert from "node:assert/strict";
 import fs from "node:fs";
+import { assertHistoricalRoadmapContract } from "./helpers/wafl-historical-roadmap-contract.mjs";
 
 const roadmap = fs.readFileSync("lib/internal/roadmap/roadmap-0.24.34.4.ts", "utf8");
 const index = fs.readFileSync("lib/internal/roadmap/index.ts", "utf8");
-const currentState = fs.readFileSync("docs/codex-current-state.md", "utf8");
 const productizationRoadmap = fs.readFileSync("docs/productization-roadmap.md", "utf8");
 
+assertHistoricalRoadmapContract("0.24.34.4", { nextVersion: "0.24.35" });
 for (const token of [
   'version: "0.24.34.4"',
   "Workorder Runtime Recovery, Canonical WAFL Size Panel, and Signup Product E2E",
@@ -27,12 +28,8 @@ for (const token of [
 }
 
 assert.match(index, /import \{ ROADMAP_0_24_34_4 \}/);
-assert.match(index, /currentWorkVersion:\s*"0\.24\.34\.4"/);
-assert.match(index, /nextWorkVersion:\s*"0\.24\.35"/);
 assert.match(index, /ROADMAP_0_24_34_4/);
 
-assert.match(currentState, /Current version:\s*`0\.24\.34\.4`/);
-assert.match(currentState, /Current detail:\s*`lib\/internal\/roadmap\/roadmap-0\.24\.34\.4\.ts`/);
-assert.match(productizationRoadmap, /APP_VERSION:\s*`0\.24\.34\.4`/);
+assert.match(productizationRoadmap, /0\.24\.34\.4/);
 
 console.log("roadmap 0.24.34.4 contract: PASS");

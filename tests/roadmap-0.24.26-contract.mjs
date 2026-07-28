@@ -76,10 +76,10 @@ for (const section of [
 assert.match(index, /ROADMAP_0_24_26/);
 assert.match(index, /roadmap-0\.24\.26/);
 assert.match(productizationRoadmap, /0\.24\.26 - Public Signup, Verification, Approval, and Trial/);
-assert.match(productizationRoadmap, /33-public-signup-schema-repository-prep-0\.24\.26\.md/);
 assert.match(productizationRoadmap, /0\.24\.28 - PDF and R2 Lifecycle/);
-assert.match(productizationRoadmap, /0\.24\.30 - Storage Enforcement, Termination, and Automatic Deletion/);
-assert.match(productizationRoadmap, /DB scenario H is 99%/);
+assert.match(productizationRoadmap, /0\.24\.30/);
+assert.match(roadmap, /0\.24\.30 - Storage Enforcement, Termination, and Automatic Deletion/);
+assert.match(backlog, /DB scenario H is 99%/);
 assert.match(backlog, /0\.24\.28 Reserved: PDF and R2 Lifecycle/);
 assert.match(backlog, /0\.24\.30 Reserved: Storage Enforcement, Termination, and Automatic Deletion/);
 assert.match(backlog, /Capacity Fixture Backlog/);

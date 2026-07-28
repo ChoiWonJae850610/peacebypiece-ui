@@ -1,14 +1,12 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
+import { assertHistoricalRoadmapContract } from "./helpers/wafl-historical-roadmap-contract.mjs";
 
 const roadmap = readFileSync("lib/internal/roadmap/roadmap-0.24.27.ts", "utf8");
 const index = readFileSync("lib/internal/roadmap/index.ts", "utf8");
-const version = readFileSync("lib/constants/version.ts", "utf8");
 
-assert.match(version, /APP_VERSION = "0\.24\.27"/);
+assertHistoricalRoadmapContract("0.24.27", { nextVersion: "0.24.28" });
 assert.match(index, /ROADMAP_0_24_27/);
-assert.match(index, /currentWorkVersion: "0\.24\.27"/);
-assert.match(index, /nextWorkVersion: "0\.24\.28"/);
 assert.match(roadmap, /System Catalog, Sizes, and POM/);
 
 for (const criterion of [

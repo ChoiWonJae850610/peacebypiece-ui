@@ -5,7 +5,7 @@ Document type: **Current Baseline**
 Canonical owner: `docs/codex-current-state.md`
 
 Result version: `2.0.0-alpha.57`
-Status: `ALPHA56_ACCESSORY_LIFECYCLE_PARITY_COMPLETE`
+Status: `ALPHA57_MOBILE_OVERVIEW_CATEGORY_INLINE_INPUT_COMPLETE`
 
 This file is a compact present-state snapshot. It is not a version history, Permanent Rules owner, runtime process ledger, or evidence archive. Historical implementation details belong to numbered immutable evidence under `docs/project/app-v2/`.
 
@@ -15,8 +15,8 @@ This file is a compact present-state snapshot. It is not a version history, Perm
 | --- | --- |
 | Repository | `C:\CWJ_Project\peacebypiece-2.0` |
 | Branch | `master` |
-| Alpha.56 entry HEAD/origin | `e36436293c3217f09555135149d9468e3fecf23a` |
-| Entry commit | `feat: WAFL v2 원단 발주취소와 메모 IME lifecycle 완성` |
+| Alpha.57 entry HEAD/origin | `592bf8d054bd13956616eb780a1dec5e812a8204` |
+| Entry commit | `feat: WAFL v2 부자재 lifecycle parity 완성` |
 | Entry ahead/behind | `0/0` |
 | Entry working tree | clean |
 | APP_VERSION | `2.0.0-alpha.57` |
@@ -27,14 +27,14 @@ This file is a compact present-state snapshot. It is not a version history, Perm
 | iOS bundle identifier | `com.wafl.app` |
 | Android package | `com.wafl.app` |
 
-The source cannot contain the hash of the commit that contains itself. Final alpha.56 HEAD, origin synchronization, Git cleanliness, ZIP hash/size/entry count, and exact repo-state filename are owned by the matching post-commit alpha.56 repo-state.
+The source cannot contain the hash of the commit that contains itself. Final alpha.57 product and documentation-sync HEAD, origin synchronization, Git cleanliness, ZIP hash/size/entry count, and exact repo-state filename are owned by the matching post-push alpha.57 repo-state.
 
 ## Latest delivery boundary
 
 - Target Source ZIP: `peacebypiece-ui-2.0.0-alpha.57.zip`.
 - Target repo-state: `repo-state-2.0.0-alpha.57-<actual timestamp>.txt`.
 - `4. Newest` must contain only that matching pair after Finish.
-- The previous accepted handoff is the matching alpha.55 ZIP/repo-state pair recorded in its repo-state.
+- The accepted handoff is the matching alpha.57 ZIP/repo-state pair generated from the final synchronized pushed HEAD.
 
 ## Current product and transport baseline
 
@@ -53,37 +53,18 @@ Do not record live PID, port ownership, temporary origin, connection code, sessi
 
 ## Latest feature and architecture baseline
 
-Alpha.56 reuses the completed alpha.55 material-order policy, controller, shared table, and input boundaries for accessory lifecycle parity without a dependency, schema, native, or EAS change:
+Alpha.57 extends the completed alpha.56 Maker mobile WorkOrder baseline without a schema migration or production mutation:
 
-- mobile material contracts, normalizers, queries, cache keys, tabs, labels, draft/edit flows, archive/restore, and request/cancel/complete actions now preserve the selected `fabric | accessory` type end to end;
-- accessory and fabric continue to share `work_order_material_lines`, calculation, readiness, permission, expectedVersion, receipt/event, current cancellation, zero-order, terminal completion, and hard-delete prohibition;
-- the exact accessory Runtime sequence verified normal and stock-covered-zero request/cancel/re-request/complete, archive/restore, Korean IME finalization, compact/full memo disclosure, fixed unit/status badge order, and quantity/unit one-line layout;
-- physical-iPhone acceptance verified three explicit PATCH actions and request/cancel/re-request/complete with exact effects, terminal `completed / 9`, retained memo/display state, and background/re-entry;
-- authoritative V5 memo evidence confirms expected/actual exact equality `true` with character, Unicode, whitespace, and newline difference `0`; finalization neither requeried nor corrected the memo;
-- final retained canonical entity-version values are WorkOrder/revision/material `132/132/110`, material rows `11`, event/receipt `165/71`, migration ledger `13/13`, and legacy cancelled rows `2`;
-- schema/migration, R2/PDF/token, production, dependency, native, and EAS effects remain zero.
-
-The retained alpha.54 input behavior remains:
-
-- total quantity uses an integer Reel Picker with direct-input fallback;
-- editable material quantities use quantity plus step reels, while unit uses a dedicated unit reel;
-- picker X/Check is icon-only and owns one complete edit session; X sends no PATCH and Check sends at most one explicit PATCH before returning to display state;
-- material drafts are normalized as full canonical shapes, optional text is safe, valid API responses share one alias-free pure normalizer, and save failures cannot escape as unhandled promise rejections;
-- search is immediate and fixed-height, Korean initial-consonant matching is client-side, and search-specific empty state is distinct from a company with no WorkOrders;
-- list filters and the single representative card badge use one canonical workflow-status presentation policy; document state such as `발행됨` does not replace the workflow badge;
-- due-date bottom-sheet density and date-cell centering retain date-only and explicit-save behavior;
-- the installed Development Build was reused with dependency, native, and EAS delta `0`.
-
-The retained user behavior remains:
-
-- customer copy and list density use the WorkOrder (`작업지시서`) grammar with completed-text/English/number/document-number/Korean-initial search and canonical workflow-status filtering;
-- overview product name, total quantity, and due date plus supported active-draft material values use same-position inline editing with explicit X/Check, dirty guard, expectedVersion, canonical refresh, and automatic-save `0`;
-- archived, ordered/locked, non-draft, revision/status, order quantity, amount, and other calculated values remain read-only;
-- narrow numeric rows expand within the card, exact-field focus uses measured keyboard-safe scroll, and the due-date picker is a compact single-source bottom sheet with date-only preservation and reopen `0`;
-- canonical order quantity/amount calculations, decimal/currency formatting, and numeric leading-zero correction are shared and bounded; canonical zero becomes an empty edit draft so first input `5` renders `5`, not `05`;
-- alpha.54 automated save QA performed exactly four approved dev/test PATCH actions, followed by exactly four owner-attributed physical-iPhone Check saves. Final retained dev/test versions are WorkOrder/revision/material `42/42/20`, event/receipt `75/26`, migration ledger `13/13`;
-- final search/status/UI-polish Runtime and physical-iPhone QA performed Check/save `0` and retained that baseline with automatic, duplicate, unknown, order, archive, and delete mutation `0`;
-- physical-iPhone Reel Picker, total/material/unit/memo save, search, calendar, workflow badge, background/re-entry, and canonical runner-stop acceptance passed within the recorded evidence scope.
+- WorkOrder images and attachments use the existing attachment/primary-image model and controlled Worker/proxy transport for real reads, bounded upload completion, camera or file acquisition, representative-image selection, preview, and delete lifecycle;
+- image and attachment commands preserve tenant, permission, expected-version, storage-key, and object-lifecycle boundaries; AI image generation and Factory image features remain excluded;
+- the common detail header is simplified, the tab row is placed before overview information, and the overview tab owns total quantity, due date, Category, and amount summaries;
+- the saved Category fields are 대상, 대분류, 세부 품목, and 시즌; 대상 and 대분류 use the shared option Reel Picker while 세부 품목 and 시즌 use button-free inline save;
+- 공장 전달 메모 and fabric/accessory usage-location and memo fields use the same bounded button-free inline save lifecycle with canonical refresh and duplicate-save prevention;
+- numeric drafts replace canonical zero on the first input and normalize leading zeroes without changing canonical calculation or formatting rules;
+- normal Maker mobile presentation no longer exposes archive recovery sections, while server-side soft-delete/history, lifecycle locks, and hard-delete prohibition remain intact;
+- fabric defaults to `yd` and accessory defaults to `개`; the established request/cancel/re-request/complete, stock-covered zero-order, memo IME, unit/status badge, and calculation behavior remains preserved;
+- automated contracts and Runtime evidence plus later owner physical-iPhone smoke confirmation cover the accepted alpha.57 scope. The earlier V10 checklist was `NOT_RUN` when generated and is not rewritten as individual formal PASS results;
+- alpha.57 finalization introduced no Runtime, DB, R2, production, schema/migration, or additional native/EAS mutation. The approved picker dependencies are the only mobile dependency additions in the product result.
 
 Final TypeScript, ESLint, Next, Expo, contracts, mutation audit, Canonical Verify, Git, and artifact identities are recorded by the final workflow and matching repo-state.
 
@@ -116,18 +97,18 @@ Final TypeScript, ESLint, Next, Expo, contracts, mutation audit, Canonical Verif
 - Canonical Codex rules documentation maintenance: `docs/project/app-v2/54-canonical-codex-working-rules-normalization-evidence.md`.
 - Alpha.55 material order cancellation, zero-order, memo IME, and Runtime QA: `docs/project/app-v2/55-mobile-material-order-lifecycle-evidence.md`.
 - Alpha.56 accessory lifecycle parity and physical-iPhone acceptance: `docs/project/app-v2/56-mobile-accessory-lifecycle-parity-evidence.md`.
+- Alpha.57 mobile overview, Category, image, and inline input: `docs/project/app-v2/57-mobile-overview-category-inline-input-evidence.md`.
 
 Older facts remain in their numbered evidence. They are not recopied here.
 
 ## Next candidate boundary
 
-Candidate: `2.0.0-alpha.57` — Maker WorkOrder image and representative-image foundation.
+Candidate: `2.0.0-alpha.58` — mobile size/color read-only foundation.
 
 Potential Delta scope:
 
-- reuse the existing attachment and primary-image structures before adding a new model;
-- define bounded upload, camera, drawing entry, representative selection, tenant, permission, object lifecycle, and device evidence;
-- keep AI image generation and Factory scope excluded;
-- require separate approval for any schema, R2, native permission/plugin, EAS, or production effect.
+- reuse the existing `/size-color`, `/size-spec`, and v2 read model before adding a new model;
+- show Maker mobile loading, error, empty, and read states for sizes, colors, the quantity matrix, and finished measurements;
+- keep create/update/delete, quantity or measurement mutation, template save, migration, automatic total-quantity changes, and Factory scope excluded.
 
-Alpha.57 does not start until a separately owner-approved concise self-executing Delta defines its exact scope, storage/native effect budget, Runtime, and device acceptance.
+Alpha.58 does not start until a separately owner-approved concise self-executing Delta defines its exact scope, effect budget, Runtime, and acceptance.
