@@ -1,6 +1,6 @@
 {
   "name": "@wafl/mobile",
-  "version": "2.0.0-alpha.56",
+  "version": "2.0.0-alpha.57",
   "private": true,
   "main": "expo-router/entry",
   "scripts": {
@@ -16,7 +16,9 @@
     "expo": "~55.0.28",
     "expo-constants": "~55.0.17",
     "expo-dev-client": "~55.0.37",
+    "expo-document-picker": "~55.0.15",
     "expo-font": "~55.0.8",
+    "expo-image-picker": "~55.0.22",
     "expo-linking": "~55.0.16",
     "expo-router": "~55.0.17",
     "lucide-react-native": "^1.24.0",

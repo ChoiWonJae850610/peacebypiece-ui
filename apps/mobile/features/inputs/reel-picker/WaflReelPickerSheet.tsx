@@ -17,7 +17,10 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { WAFL_FONTS } from "@/constants/fonts";
 import { WAFL_THEME } from "@/constants/theme";
-import { normalizeNumericDraft } from "@/lib/mobileDisplay";
+import {
+  normalizeNumericDraft,
+  prepareNumericDraftOnFocus,
+} from "@/lib/mobileDisplay";
 import {
   createReelWindow,
   defaultReelStep,
@@ -36,7 +39,7 @@ const ITEM_HEIGHT = 44;
 const VISIBLE_ROWS = 5;
 const REEL_HEIGHT = ITEM_HEIGHT * VISIBLE_ROWS;
 
-export type ReelPickerKind = "quantity" | "unit" | "integer";
+export type ReelPickerKind = "quantity" | "unit" | "integer" | "option";
 
 type Props = {
   readonly visible: boolean;
@@ -45,6 +48,7 @@ type Props = {
   readonly value: string;
   readonly unitCode: string;
   readonly kind?: ReelPickerKind;
+  readonly options?: readonly string[];
   readonly onCancel: () => void;
   readonly onApply: (value: string, unitCode: string) => void;
 };
@@ -68,8 +72,10 @@ function ReelColumn({
 }) {
   const ref = useRef<FlatList<ReelOption>>(null);
   const selectedIndexRef = useRef(selectedIndex);
+  const lastCommittedIndexRef = useRef(selectedIndex);
   useEffect(() => {
     selectedIndexRef.current = selectedIndex;
+    lastCommittedIndexRef.current = selectedIndex;
   }, [selectedIndex]);
   useEffect(() => {
     const frame = requestAnimationFrame(() => ref.current?.scrollToIndex({
@@ -78,6 +84,12 @@ function ReelColumn({
     }));
     return () => cancelAnimationFrame(frame);
   }, [options]);
+  function commitScrollIndex(event: NativeSyntheticEvent<NativeScrollEvent>) {
+    const nextIndex = scrollIndex(event, options.length);
+    if (lastCommittedIndexRef.current === nextIndex) return;
+    lastCommittedIndexRef.current = nextIndex;
+    onSelect(nextIndex);
+  }
   return (
     <View accessibilityLabel={accessibilityLabel} style={[styles.reelColumn, compact && styles.unitColumn]}>
       <FlatList
@@ -85,21 +97,20 @@ function ReelColumn({
         accessibilityRole="adjustable"
         contentContainerStyle={styles.reelContent}
         data={options}
-        decelerationRate="fast"
-        disableIntervalMomentum
+        decelerationRate="normal"
         extraData={selectedIndex}
         getItemLayout={(_data, index) => ({ index, length: ITEM_HEIGHT, offset: ITEM_HEIGHT * index })}
         initialScrollIndex={selectedIndex}
         keyExtractor={(item) => item.key}
-        onMomentumScrollEnd={(event) => onSelect(scrollIndex(event, options.length))}
+        onMomentumScrollEnd={commitScrollIndex}
         onScrollEndDrag={(event) => {
-          if (Math.abs(event.nativeEvent.velocity?.y ?? 0) < 0.05) onSelect(scrollIndex(event, options.length));
+          if (Math.abs(event.nativeEvent.velocity?.y ?? 0) < 0.08) commitScrollIndex(event);
         }}
         renderItem={({ item, index }) => {
           const distance = Math.abs(index - selectedIndex);
           return (
             <View style={styles.reelItem}>
-              <Text numberOfLines={1} style={[styles.reelText, distance === 0 ? styles.reelTextSelected : distance === 1 ? styles.reelTextNear : styles.reelTextFar]}>{item.value}</Text>
+              <Text numberOfLines={1} style={[styles.reelText, distance === 0 ? styles.reelTextSelected : distance === 1 ? styles.reelTextNear : styles.reelTextFar]}>{item.label ?? item.value}</Text>
             </View>
           );
         }}
@@ -116,9 +127,10 @@ function ReelColumn({
   );
 }
 
-export default function WaflReelPickerSheet({ visible, field, label, value, unitCode, kind = "quantity", onCancel, onApply }: Props) {
+export default function WaflReelPickerSheet({ visible, field, label, value, unitCode, kind = "quantity", options = [], onCancel, onApply }: Props) {
   const insets = useSafeAreaInsets();
   const integerOnly = kind === "integer";
+  const optionOnly = kind === "option";
   const [state, dispatch] = useReducer(reelPickerReducer, INITIAL_REEL_PICKER_STATE, (initial) => reelPickerReducer(initial, {
     type: "open",
     field,
@@ -134,11 +146,26 @@ export default function WaflReelPickerSheet({ visible, field, label, value, unit
     [state.selectedUnit, unitCode],
   );
   const unitIndex = Math.max(0, unitOptions.findIndex((option) => option.value === state.selectedUnit));
+  const optionItems = useMemo<readonly ReelOption[]>(
+    () => options.map((option, index) => ({
+      key: `option-${index}`,
+      label: option || "미지정",
+      value: option,
+    })),
+    [options],
+  );
+  const optionIndex = Math.max(0, optionItems.findIndex((option) => option.value === state.selectedValue));
   const stepOptions = useMemo(() => reelStepOptions(integerOnly), [integerOnly]);
   const stepIndex = Math.max(0, stepOptions.findIndex((option) => option.value === state.step));
   const numberIndex = reelIndexForValue(numberWindow, state.selectedValue);
-  const normalized = normalizeReelValue(state.selectedValue);
-  const applyDisabled = kind === "unit" ? !state.selectedUnit.trim() : normalized === null;
+  const normalized = optionOnly
+    ? state.selectedValue
+    : normalizeReelValue(state.selectedValue.trim() || "0");
+  const applyDisabled = kind === "unit"
+    ? !state.selectedUnit.trim()
+    : optionOnly
+      ? !optionItems.some((option) => option.value === state.selectedValue)
+      : normalized === null;
 
   function cancel() {
     dispatch({ type: "cancel" });
@@ -172,9 +199,17 @@ export default function WaflReelPickerSheet({ visible, field, label, value, unit
     dispatch({ type: "select-step", step });
   }
 
+  function selectOption(index: number) {
+    const next = optionItems[index]?.value;
+    if (next === undefined || next === state.selectedValue) return;
+    noOpReelHaptics.selectionChanged(index);
+    dispatch({ type: "select-value", value: next });
+  }
+
   function toggleMode() {
     const nextMode = state.mode === "reel" ? "keypad" : "reel";
-    if (nextMode === "reel") setWindowAnchor(state.selectedValue);
+    if (nextMode === "reel") setWindowAnchor(state.selectedValue.trim() || "0");
+    else dispatch({ type: "select-value", value: prepareNumericDraftOnFocus(state.selectedValue) });
     dispatch({ type: "set-mode", mode: nextMode });
   }
 
@@ -192,7 +227,12 @@ export default function WaflReelPickerSheet({ visible, field, label, value, unit
             </View>
           </View>
 
-          {state.mode === "reel" ? (
+          {optionOnly ? (
+            <View style={styles.optionReel}>
+              <Text style={styles.reelLabel}>{label}</Text>
+              <ReelColumn accessibilityLabel={`${label} 선택 목록`} onSelect={selectOption} options={optionItems} selectedIndex={optionIndex} />
+            </View>
+          ) : state.mode === "reel" ? (
             <View style={styles.reels}>
               {kind !== "unit" ? <View style={styles.numberReel}>
                 <Text style={styles.reelLabel}>{kind === "integer" ? "수량" : "수량"}</Text>
@@ -225,7 +265,7 @@ export default function WaflReelPickerSheet({ visible, field, label, value, unit
             </View>
           )}
 
-          {kind !== "unit" ? <Pressable
+          {kind !== "unit" && !optionOnly ? <Pressable
             accessibilityLabel={state.mode === "reel" ? "숫자 키패드로 직접 입력" : "릴 피커로 입력"}
             accessibilityRole="button"
             onPress={toggleMode}
@@ -267,6 +307,7 @@ const styles = StyleSheet.create({
   title: { color: WAFL_THEME.color.deepNavy, fontFamily: WAFL_FONTS.black, fontSize: 19, marginTop: 2 },
   caption: { color: "#75695d", fontFamily: WAFL_FONTS.regular, fontSize: 10, lineHeight: 15, marginTop: 3 },
   reels: { alignItems: "flex-end", flexDirection: "row", gap: 12, marginTop: 14 },
+  optionReel: { marginTop: 14 },
   numberReel: { flex: 1, minWidth: 0 },
   intervalReel: { flexBasis: 108, flexGrow: 0, flexShrink: 1, minWidth: 84 },
   unitOnlyReel: { flex: 1, minWidth: 0 },

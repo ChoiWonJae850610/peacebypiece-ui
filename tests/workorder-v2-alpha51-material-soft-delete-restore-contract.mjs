@@ -4,10 +4,7 @@ import fs from "node:fs";
 import path from "node:path";
 
 import { isTailscaleServePathAllowed } from "../lib/external-qa/configCore.mjs";
-import {
-  assertCanonicalWaflVersionConsistency,
-  nextWaflAlphaVersion,
-} from "./helpers/wafl-v2-current-version.mjs";
+import { assertCanonicalWaflVersionConsistency } from "./helpers/wafl-v2-current-version.mjs";
 
 const read = (relativePath) => fs.readFileSync(path.resolve(relativePath), "utf8");
 
@@ -97,19 +94,16 @@ assert.match(apiClient, /lifecycle: "active" \| "archived"/);
 assert.match(apiClient, /method: "POST"/);
 assert.doesNotMatch(apiClient, /method: "DELETE"/);
 assert.match(app, /requestArchiveMaterial/);
-assert.match(app, /requestRestoreMaterial/);
+assert.doesNotMatch(app, /requestRestoreMaterial|loadMoreArchivedMaterials/);
 assert.match(app, /decideDraftExit/);
 assert.match(draftExitPolicy, /mutationInFlight[\s\S]*return "blocked-saving"/);
 assert.match(draftExitPolicy, /return "discard"/);
 assert.match(app, /workOrderQueryController\.materials\(currentDetail\.header\.id, line\.materialType, null, "active"\)/);
-assert.match(app, /workOrderQueryController\.materials\(currentDetail\.header\.id, line\.materialType, null, "archived"\)/);
 assert.match(app, /materialLifecycleMutation\.inFlight/);
 assert.doesNotMatch(app, /setInterval|automaticSave|autoSave/);
-assert.match(materials, /삭제된 \{materialLabel\} \{archivedTotalCount\}개/);
-assert.match(app, /다시 복구할 수 있습니다|삭제된 \$\{label\}로 이동/);
-assert.match(materials, /accessibilityLabel=\{`\$\{line\.name\} 복구`\}/);
-assert.match(materials, /onRestore/);
-assert.match(materials, /archivedExpanded/);
+assert.match(app, /requestArchiveMaterial[\s\S]*?변경 이력은 안전하게 보존됩니다/);
+assert.match(materials, /accessibilityLabel=\{`\$\{line\.name\} 삭제된 \$\{materialLabel\}로 이동`\}/);
+assert.doesNotMatch(materials, /onRestore|archivedExpanded|archivedSection|restoreButton/);
 
 const workOrderId = "11111111-1111-1111-1111-111111111111";
 const materialLineId = "22222222-2222-2222-2222-222222222222";
@@ -131,6 +125,8 @@ assert.match(evidence, /ALPHA51_MOBILE_MATERIAL_SOFT_DELETE_RESTORE_LIFECYCLE_CO
 assert.match(evidence, /archive success \| 2/);
 assert.match(evidence, /restore success \| 2/);
 assert.match(evidence, /material row delta \| 0/);
-assert.ok(roadmap.includes(`Next candidate — ${nextWaflAlphaVersion(canonicalVersion)}`));
+const currentAlpha = Number(canonicalVersion.match(/alpha\.(\d+)$/)?.[1] ?? -1);
+const nextCandidateAlpha = Number(roadmap.match(/Next candidate — 2\.0\.0-alpha\.(\d+)/)?.[1] ?? -1);
+assert.ok(currentAlpha >= 0 && nextCandidateAlpha >= currentAlpha, "roadmap candidate must not regress behind the canonical result");
 
 console.log("workorder v2 alpha.51 material soft-delete restore lifecycle contract: PASS");

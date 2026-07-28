@@ -2,9 +2,13 @@ import "server-only";
 
 import { NextRequest, NextResponse } from "next/server";
 
-import { getR2Object } from "@/lib/storage/r2/r2Client";
-import { isR2Configured } from "@/lib/storage/r2/r2Config";
-import { getCompanyIdFromWorkOrderAttachmentStorageKey, isSupportedWorkOrderAttachmentStorageKey } from "@/lib/storage/r2/r2Keys";
+import {
+  createWorkOrderImageDerivativeKeys,
+  getCompanyIdFromWorkOrderAttachmentStorageKey,
+  isSupportedWorkOrderAttachmentStorageKey,
+  isWorkOrderImageDerivativeStorageKey,
+  parseWorkOrderAttachmentStorageKey,
+} from "@/lib/storage/r2/r2Keys";
 import { getOrSetCachedR2Url, type R2UrlCacheState } from "@/lib/storage/r2/r2UrlCache";
 import { createR2WorkerFileUrl, isR2WorkerUploadConfigured } from "@/lib/storage/r2/r2WorkerUpload";
 import { getCurrentWaflSession } from "@/lib/auth/currentSession";
@@ -44,29 +48,48 @@ async function requireAttachmentFileCompanyAccess(key: string): Promise<NextResp
   if (blockedResponse) return blockedResponse;
 
   const attachmentRow = await queryDb<{ id: string }>(
-    `SELECT id
-      FROM attachments
+    `SELECT id::text
+       FROM attachments
       WHERE company_id = $1
         AND (storage_key = $2 OR thumbnail_key = $2)
         AND is_active = true
+        AND deleted_at IS NULL
+      UNION ALL
+     SELECT id::text
+       FROM work_order_images
+      WHERE company_id = $1
+        AND (storage_object_key = $2 OR thumbnail_object_key = $2)
+        AND deleted_at IS NULL
+      UNION ALL
+     SELECT id::text
+       FROM work_order_attachments
+      WHERE company_id = $1
+        AND storage_object_key = $2
         AND deleted_at IS NULL
       LIMIT 1`,
     [companyId, key],
   );
 
-  return attachmentRow.rows[0] ? null : createWaflNotFoundResponse();
-}
-function createReadableStream(body: Buffer | Uint8Array | ArrayBuffer): ReadableStream {
-  const chunk = body instanceof ArrayBuffer ? new Uint8Array(body) : new Uint8Array(body);
+  if (attachmentRow.rows[0]) return null;
+  if (!isWorkOrderImageDerivativeStorageKey(key)) return createWaflNotFoundResponse();
 
-  return new ReadableStream({
-    start(controller) {
-      controller.enqueue(chunk);
-      controller.close();
-    },
+  const parsed = parseWorkOrderAttachmentStorageKey(key);
+  if (!parsed || parsed.companyId !== companyId) return createWaflNotFoundResponse();
+  const imageRows = await queryDb<{ storage_object_key: string; thumbnail_object_key: string | null }>(
+    `SELECT storage_object_key, thumbnail_object_key
+       FROM work_order_images
+      WHERE company_id = $1
+        AND work_order_id = $2::uuid
+        AND deleted_at IS NULL
+        AND thumbnail_object_key IS NOT NULL`,
+    [companyId, parsed.workOrderId],
+  );
+  const authorized = imageRows.rows.some((row) => {
+    const derivatives = createWorkOrderImageDerivativeKeys(row.storage_object_key);
+    return key === derivatives.thumbnail || key === derivatives.medium || key === derivatives.large;
   });
+  return authorized ? null : createWaflNotFoundResponse();
 }
-
 function createWorkerRedirectResponse(url: string, cacheState: R2UrlCacheState): NextResponse {
   const response = NextResponse.redirect(url, { status: 307 });
   response.headers.set("cache-control", "no-store");
@@ -80,12 +103,6 @@ function sanitizeDownloadFileName(value: string | null): string {
   const safeName = normalized.replace(/[\\/\r\n\0"]/g, "_");
 
   return safeName || "attachment";
-}
-
-function createContentDisposition(fileName: string): string {
-  const fallback = fileName.replace(/[^\x20-\x7E]/g, "_");
-
-  return `attachment; filename="${fallback}"; filename*=UTF-8''${encodeURIComponent(fileName)}`;
 }
 
 function appendWorkerDownloadParams(url: string, fileName: string): string {
@@ -119,24 +136,28 @@ function createWorkerFileRedirectUrl(input: { key: string; isDownloadRequest: bo
   };
 }
 
-async function createR2SdkFileResponse(input: {
-  key: string;
-  isDownloadRequest: boolean;
-  downloadName: string;
-}): Promise<NextResponse> {
-  const object = await getR2Object(input.key);
-  const headers = new Headers();
-
-  if (object.contentType) headers.set("content-type", object.contentType);
-  if (object.contentLength) headers.set("content-length", String(object.contentLength));
-
-  headers.set("cache-control", input.isDownloadRequest ? "no-store" : "private, max-age=300, stale-while-revalidate=60");
-
-  if (input.isDownloadRequest) {
-    headers.set("content-disposition", createContentDisposition(input.downloadName));
+export function createWorkOrderAttachmentWorkerFileResponse(input: {
+  readonly key: string;
+  readonly download?: boolean;
+  readonly fileName?: string | null;
+}): NextResponse {
+  if (!isR2WorkerUploadConfigured()) {
+    return NextResponse.json(
+      { error: "R2_WORKER_UPLOAD_NOT_CONFIGURED" },
+      { status: 503, headers: { "Cache-Control": "no-store" } },
+    );
   }
-
-  return new NextResponse(createReadableStream(object.body), { status: 200, headers });
+  try {
+    const workerRedirect = createWorkerFileRedirectUrl({
+      key: input.key,
+      isDownloadRequest: input.download === true,
+      downloadName: sanitizeDownloadFileName(input.fileName ?? null),
+    });
+    return createWorkerRedirectResponse(workerRedirect.url, workerRedirect.cacheState);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Worker file URL creation failed.";
+    return NextResponse.json({ error: "WORKER_FILE_URL_CREATE_FAILED", message }, { status: 500 });
+  }
 }
 
 export async function handleWorkOrderAttachmentFileGet(request: NextRequest) {
@@ -156,27 +177,9 @@ export async function handleWorkOrderAttachmentFileGet(request: NextRequest) {
   const blockedResponse = await requireAttachmentFileCompanyAccess(key);
   if (blockedResponse) return blockedResponse;
 
-  if (isR2WorkerUploadConfigured()) {
-    try {
-      const workerRedirect = createWorkerFileRedirectUrl({ key, isDownloadRequest, downloadName });
-
-      return createWorkerRedirectResponse(workerRedirect.url, workerRedirect.cacheState);
-    } catch (error) {
-      const message = error instanceof Error ? error.message : "Worker file URL creation failed.";
-
-      return NextResponse.json({ error: "WORKER_FILE_URL_CREATE_FAILED", message }, { status: 500 });
-    }
-  }
-
-  if (!isR2Configured()) {
-    return NextResponse.json({ error: "R2_NOT_CONFIGURED" }, { status: 503 });
-  }
-
-  try {
-    return await createR2SdkFileResponse({ key, isDownloadRequest, downloadName });
-  } catch (error) {
-    const message = error instanceof Error ? error.message : "Attachment file read failed.";
-
-    return NextResponse.json({ error: "ATTACHMENT_FILE_READ_FAILED", message }, { status: 404 });
-  }
+  return createWorkOrderAttachmentWorkerFileResponse({
+    key,
+    download: isDownloadRequest,
+    fileName: downloadName,
+  });
 }

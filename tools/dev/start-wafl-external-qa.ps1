@@ -6,26 +6,28 @@
     [int]$NextPort = 3000,
     [int]$ExpoPort = 8081,
     [string]$CloudflaredPath = "",
-    [ValidateSet("external-device", "memo-ime-display", "accessory-lifecycle-parity")]
+    [ValidateSet("external-device", "memo-ime-display", "accessory-lifecycle-parity", "work-order-image")]
     [string]$RuntimeQaMode = "external-device",
     [switch]$EnableAlpha46BasicInfoMutation,
     [switch]$EnableAlpha50MaterialDraftMutation,
     [switch]$EnableAlpha51MaterialLifecycleMutation,
     [switch]$EnableAlpha52CoreInlineMutation,
     [switch]$EnableAlpha55MaterialOrderLifecycleMutation,
-    [switch]$EnableAlpha56AccessoryLifecycleParityMutation
+    [switch]$EnableAlpha56AccessoryLifecycleParityMutation,
+    [switch]$EnableAlpha57WorkOrderImageMutation
 )
 
 $ErrorActionPreference = "Stop"
 . (Join-Path $PSScriptRoot "wafl-external-qa-common.ps1")
 . (Join-Path $PSScriptRoot "..\pipeline\pipeline-common.ps1")
 
-if (@($EnableAlpha46BasicInfoMutation, $EnableAlpha50MaterialDraftMutation, $EnableAlpha51MaterialLifecycleMutation, $EnableAlpha52CoreInlineMutation, $EnableAlpha55MaterialOrderLifecycleMutation, $EnableAlpha56AccessoryLifecycleParityMutation).Where({ $_ }).Count -gt 1) {
+if (@($EnableAlpha46BasicInfoMutation, $EnableAlpha50MaterialDraftMutation, $EnableAlpha51MaterialLifecycleMutation, $EnableAlpha52CoreInlineMutation, $EnableAlpha55MaterialOrderLifecycleMutation, $EnableAlpha56AccessoryLifecycleParityMutation, $EnableAlpha57WorkOrderImageMutation).Where({ $_ }).Count -gt 1) {
     throw "EXTERNAL_QA_MUTATION_MODES_ARE_MUTUALLY_EXCLUSIVE"
 }
 $internalMemoImeMode = $RuntimeQaMode -eq "memo-ime-display"
 $internalAccessoryLifecycleMode = $RuntimeQaMode -eq "accessory-lifecycle-parity"
-$internalRuntimeMode = $internalMemoImeMode -or $internalAccessoryLifecycleMode
+$internalWorkOrderImageMode = $RuntimeQaMode -eq "work-order-image"
+$internalRuntimeMode = $internalMemoImeMode -or $internalAccessoryLifecycleMode -or $internalWorkOrderImageMode
 if ($internalMemoImeMode -and $MobileTransport -ne "DeveloperAutoConnect") {
     throw "MEMO_IME_DISPLAY_REQUIRES_DEVELOPER_AUTO_CONNECT"
 }
@@ -43,6 +45,15 @@ if ($internalAccessoryLifecycleMode -and -not $EnableAlpha56AccessoryLifecyclePa
 }
 if ($internalAccessoryLifecycleMode -and ($NextPort -ne 3100 -or $ExpoPort -ne 8081)) {
     throw "ACCESSORY_LIFECYCLE_PARITY_REQUIRES_CANONICAL_PORTS"
+}
+if ($internalWorkOrderImageMode -and $MobileTransport -ne "DeveloperAutoConnect") {
+    throw "WORK_ORDER_IMAGE_REQUIRES_DEVELOPER_AUTO_CONNECT"
+}
+if ($internalWorkOrderImageMode -and -not $EnableAlpha57WorkOrderImageMutation) {
+    throw "WORK_ORDER_IMAGE_REQUIRES_ALPHA57_MUTATION_MODE"
+}
+if ($internalWorkOrderImageMode -and ($NextPort -ne 3100 -or $ExpoPort -ne 8081)) {
+    throw "WORK_ORDER_IMAGE_REQUIRES_CANONICAL_PORTS"
 }
 
 function Get-WaflQaDatabaseUrl {
@@ -108,9 +119,10 @@ if ((Get-Location).Path -ne $root) { Set-Location -LiteralPath $root }
 $node = Get-WaflQaExecutablePath -Name "node"
 $npm = Get-WaflQaExecutablePath -Name "npm.cmd"
 $npx = Get-WaflQaExecutablePath -Name "npx.cmd"
-$cloudflared = if ($internalRuntimeMode) { $null } else { Get-WaflQaCloudflaredPath -ExplicitPath $CloudflaredPath }
+$usesTailscaleServeOrigin = $internalRuntimeMode -or $MobileTransport -eq "DeveloperAutoConnect"
+$cloudflared = if ($usesTailscaleServeOrigin) { $null } else { Get-WaflQaCloudflaredPath -ExplicitPath $CloudflaredPath }
 if (-not $node -or -not $npm -or -not $npx) { throw "Node, npm, and npx must be available on PATH." }
-if (-not $internalRuntimeMode -and -not $cloudflared) {
+if (-not $usesTailscaleServeOrigin -and -not $cloudflared) {
     throw "cloudflared was not found. Installation is not automatic. Approval command: winget install --id Cloudflare.cloudflared --exact"
 }
 if (-not (Test-WaflQaPortAvailable -Port $NextPort)) { throw "Next port is already in use: $NextPort" }
@@ -151,7 +163,7 @@ $state = [ordered]@{
     tailscaleIpv4 = $null
     expoUrl = $null
     publicOrigin = $null
-    previewTransport = $(if ($internalRuntimeMode) { "tailscale-serve-internal" } else { "cloudflare-quick-tunnel" })
+    previewTransport = $(if ($usesTailscaleServeOrigin) { "tailscale-serve-internal" } else { "cloudflare-quick-tunnel" })
     quickTunnelReady = $false
     startedAtUtc = [DateTime]::UtcNow.ToString("o")
     updatedAtUtc = [DateTime]::UtcNow.ToString("o")
@@ -237,7 +249,7 @@ try {
     }
 
     $originUri = $null
-    if ($internalRuntimeMode) {
+    if ($usesTailscaleServeOrigin) {
         if (-not $developerAutoConnect -or -not $developerIdentity) { throw "INTERNAL_RUNTIME_QA_ORIGIN_UNAVAILABLE" }
         $state.publicOrigin = $developerIdentity.ServeOrigin
         $originUri = [Uri]$state.publicOrigin
@@ -335,6 +347,13 @@ try {
         $serverEnvironment.WAFL_EXTERNAL_QA_ALPHA56_ACCESSORY_LIFECYCLE_PARITY_MUTATION_ENABLED = "true"
         $state.commandApi = "ready"
         $state.mutationMode = "accessory-lifecycle-parity"
+    }
+    if ($EnableAlpha57WorkOrderImageMutation) {
+        $serverEnvironment.WAFL_V2_COMMAND_API_ENABLED = "1"
+        $serverEnvironment.WAFL_V2_COMMAND_MUTATION_APPROVED = "2.0.0-alpha.57-dev-test-work-order-image-runtime"
+        $serverEnvironment.WAFL_EXTERNAL_QA_ALPHA57_WORK_ORDER_IMAGE_MUTATION_ENABLED = "true"
+        $state.commandApi = "ready"
+        $state.mutationMode = "work-order-image-upload-primary-delete"
     }
     $nextStdout = Join-Path $stateDir "next.stdout.log"
     $nextStderr = Join-Path $stateDir "next.stderr.log"

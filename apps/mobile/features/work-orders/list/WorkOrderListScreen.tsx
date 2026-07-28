@@ -1,9 +1,10 @@
 import { useEffect, useRef, useState } from "react";
-import { ActivityIndicator, Keyboard, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
+import { ActivityIndicator, Image, Keyboard, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 import { RefreshCw, Search, X } from "lucide-react-native";
 
 import { WAFL_FONTS } from "@/constants/fonts";
 import type { WorkOrderListItem, WorkOrderListStatusFilter } from "@/domain/mobileContract";
+import { resolveMobileApiUrl } from "@/lib/apiClient";
 import {
   WORK_ORDER_SEARCH_DEBOUNCE_MS,
   WORK_ORDER_SEARCH_LAYOUT,
@@ -125,6 +126,8 @@ export default function WorkOrderListScreen({
           {visibleItems.map((item) => {
             const selected = selectedId === item.workOrderId;
             const workflowStatus = getWorkOrderWorkflowPresentation(item.status);
+            const representativeLabel = item.representativeThumbnail ? "이미지 있음" : "이미지 없음";
+            const representativeUrl = resolveMobileApiUrl(item.representativeThumbnail?.thumbnailUrl ?? null);
             return (
               <Pressable
                 accessibilityLabel={`${item.productName}, ${WORK_ORDER_STATUS_LABEL[item.status]}, 수량 ${item.totalQuantity}`}
@@ -137,7 +140,17 @@ export default function WorkOrderListScreen({
                 style={({ pressed }) => [styles.card, selected && styles.cardSelected, pressed && styles.pressed]}
               >
                 <View style={styles.cardTop}>
-                  <View style={styles.imagePlaceholder}><Text style={styles.imageMark}>{item.representativeThumbnail ? "이미지 있음" : "이미지 없음"}</Text></View>
+                  <View accessibilityLabel={representativeLabel} style={styles.imagePlaceholder}>
+                    {representativeUrl ? (
+                      <Image
+                        alt={item.representativeThumbnail?.altText ?? item.productName}
+                        accessibilityLabel={item.representativeThumbnail?.altText}
+                        resizeMode="cover"
+                        source={{ uri: representativeUrl }}
+                        style={styles.representativeImage}
+                      />
+                    ) : <Text style={styles.imageMark}>이미지 없음</Text>}
+                  </View>
                   <View style={styles.cardMain}>
                     <Text numberOfLines={2} style={styles.productName}>{item.productName}</Text>
                   </View>
@@ -186,6 +199,7 @@ const styles = StyleSheet.create({
   cardSelected: { borderColor: "#9b4a27", borderWidth: 2, padding: 13 },
   cardTop: { alignItems: "flex-start", flexDirection: "row", gap: 10 },
   imagePlaceholder: { alignItems: "center", backgroundColor: "#eee7dc", borderRadius: 10, height: 48, justifyContent: "center", width: 48 },
+  representativeImage: { borderRadius: 10, height: 48, width: 48 },
   imageMark: { color: "#75695d", fontFamily: WAFL_FONTS.medium, fontSize: 9, textAlign: "center" },
   cardMain: { flex: 1, minWidth: 0 },
   productName: { color: "#17263d", fontFamily: WAFL_FONTS.bold, fontSize: 16, lineHeight: 21 },

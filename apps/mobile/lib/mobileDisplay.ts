@@ -30,6 +30,10 @@ export function canonicalizeNumericInput(value: string): string {
   return `${whole}${fraction ? `.${fraction}` : ""}`;
 }
 
+export function normalizeNumericCommitValue(value: string): string {
+  return canonicalizeNumericInput(value) || "0";
+}
+
 export function shouldSelectNumericValueOnFocus(value: string): boolean {
   const canonical = canonicalizeNumericInput(value);
   return canonical === "0" && value.trim() !== "";

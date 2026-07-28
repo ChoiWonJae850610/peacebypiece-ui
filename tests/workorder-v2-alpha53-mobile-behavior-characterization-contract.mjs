@@ -36,9 +36,18 @@ assert.equal(calculateMaterialAmount("11.5", "15000"), "172500.00");
 const detail = {
   header: { productName: "A", dueDate: "2026-07-30", totalQuantity: 10 },
 };
-assert.deepEqual(basicInfoDraftFromDetail(detail), { productName: "A", dueDate: "2026-07-30", totalQuantity: "10" });
-assert.deepEqual(validateBasicInfoDraft({ productName: "A", dueDate: "2026-07-30", totalQuantity: "10" }), {});
-assert.ok(validateBasicInfoDraft({ productName: "", dueDate: "2026-02-30", totalQuantity: "1.5" }).productName);
+const basicInfoDraft = basicInfoDraftFromDetail(detail);
+assert.deepEqual(basicInfoDraft, {
+  productName: "A",
+  dueDate: "2026-07-30",
+  totalQuantity: "10",
+  targetAudience: "",
+  categoryMajor: "",
+  categoryDetail: "",
+  seasonCode: "",
+});
+assert.deepEqual(validateBasicInfoDraft(basicInfoDraft), {});
+assert.ok(validateBasicInfoDraft({ ...basicInfoDraft, productName: "", dueDate: "2026-02-30", totalQuantity: "1.5" }).productName);
 
 const material = {
   name: "Cotton",

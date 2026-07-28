@@ -20,7 +20,9 @@ const workingRules = read("docs/project/app-v2/09-codex-working-rules.md");
 assert.ok(shell.split(/\r?\n/).length <= 10, "MobileWorkOrderApp must remain a composition shell");
 assert.match(shell, /<MobileWorkOrderExperience/);
 assert.doesNotMatch(shell, /apiClient|fetch\(|PATCH|validation|status ===/);
-assert.doesNotMatch(experience, /from "@\/lib\/apiClient"/);
+const apiClientImports = experience.match(/^import .* from "@\/lib\/apiClient";$/gm) ?? [];
+assert.deepEqual(apiClientImports, ['import { resolveMobileApiUrl } from "@/lib/apiClient";']);
+assert.doesNotMatch(experience, /(?:get|update|create|delete|prepare|complete|archive|restore)WorkOrder[A-Za-z]*\(/, "experience must keep API mutations and queries behind application controllers");
 for (const boundary of ["mobileSessionController", "useWorkOrderNavigation", "workOrderQueryController", "workOrderMutationController", "createExplicitMutationController"]) {
   assert.match(experience, new RegExp(boundary), `missing application boundary: ${boundary}`);
 }

@@ -1,6 +1,7 @@
 import { useRef, useState, type ReactNode } from "react";
 import {
   Platform,
+  Image as NativeImage,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -16,24 +17,28 @@ import ControlledInlineEditValue from "@/components/ControlledInlineEditValue";
 import InlineDatePicker from "@/components/InlineDatePicker";
 import WorkOrderMaterialsReadOnly, { type MaterialReadViewState } from "@/features/materials/WorkOrderMaterialsReadOnly";
 import WorkOrderMaterialEditor, { type MaterialEditorViewState } from "@/features/materials/WorkOrderMaterialEditor";
+import WorkOrderImageGallery from "@/features/work-orders/images/WorkOrderImageGallery";
+import type { WorkOrderImageAcquisitionSource } from "@/features/work-orders/images/workOrderImageAcquisition";
 import ReelInlineEditValue from "@/features/inputs/reel-picker/ReelInlineEditValue";
 import WaflReelPickerSheet from "@/features/inputs/reel-picker/WaflReelPickerSheet";
-import type { MaterialDraftFields, MaterialDraftUpdate, MaterialType, WorkOrderDetailCore, WorkOrderMaterialLine } from "@/domain/mobileContract";
+import type { MaterialDraftFields, MaterialDraftUpdate, MaterialType, WorkOrderAttachmentAsset, WorkOrderDetailCore, WorkOrderImageAsset, WorkOrderMaterialLine } from "@/domain/mobileContract";
 import type { MaterialOrderAction, MaterialOrderPolicy } from "@/domain/materialOrderPolicy";
 import { formatWon } from "@/lib/mobileDisplay";
+import { resolveMobileApiUrl } from "@/lib/apiClient";
 import { useFocusedFieldVisibility } from "@/hooks/useFocusedFieldVisibility";
+import { formatWorkOrderStatus } from "@/lib/workOrderDisplay";
 import {
-  formatProductType,
-  formatWorkOrderStatus,
-} from "@/lib/workOrderDisplay";
+  WORK_ORDER_CATEGORY_MAJORS,
+  WORK_ORDER_TARGET_AUDIENCES,
+} from "@/domain/workOrderCategoryPolicy";
 
 const SECTION_TABS = [
   { id: "media", label: "이미지·첨부", count: (detail: WorkOrderDetailCore) => detail.tabCounts.images + detail.tabCounts.attachments },
   { id: "sizes", label: "사이즈·색상", count: (detail: WorkOrderDetailCore) => detail.tabCounts.sizes + detail.tabCounts.colors },
   { id: "fabric", label: "원단", count: (detail: WorkOrderDetailCore) => detail.tabCounts.fabric },
   { id: "accessory", label: "부자재", count: (detail: WorkOrderDetailCore) => detail.tabCounts.accessory },
-  { id: "flow", label: "제작 플로우", count: (detail: WorkOrderDetailCore) => detail.tabCounts.processes },
-  { id: "output", label: "출력·공유", count: (detail: WorkOrderDetailCore) => detail.tabCounts.documents },
+  { id: "flow", label: "제작", count: (detail: WorkOrderDetailCore) => detail.tabCounts.processes },
+  { id: "output", label: "문서", count: (detail: WorkOrderDetailCore) => detail.tabCounts.documents },
 ] as const;
 
 function MiniStat({ label, value, editor, expanded = false }: { readonly label: string; readonly value: string; readonly editor?: ReactNode; readonly expanded?: boolean }) {
@@ -108,8 +113,6 @@ type Props = {
   readonly onReloadLatest: () => void;
   readonly materials: MaterialReadViewState;
   readonly materialType: MaterialType;
-  readonly archivedMaterials: MaterialReadViewState;
-  readonly archivedMaterialCount: number;
   readonly materialLifecycleBusyId: string | null;
   readonly materialOrderBusyId: string | null;
   readonly materialOrderBusyAction: MaterialOrderAction | null;
@@ -123,7 +126,6 @@ type Props = {
   readonly onBeginMaterialEdit: (line: WorkOrderMaterialLine, field: keyof MaterialDraftFields) => void;
   readonly onArchiveMaterial: (line: WorkOrderMaterialLine) => void;
   readonly onMaterialOrderAction: (line: WorkOrderMaterialLine, action: MaterialOrderAction) => void;
-  readonly onRestoreMaterial: (line: WorkOrderMaterialLine) => void;
   readonly materialOrderPolicy: (line: WorkOrderMaterialLine) => MaterialOrderPolicy;
   readonly onChangeMaterialDraft: (field: keyof MaterialDraftFields, value: string) => void;
   readonly onCancelMaterialEditor: () => void;
@@ -133,21 +135,34 @@ type Props = {
   readonly onOpenMaterials: (materialType: MaterialType) => void;
   readonly onRetryMaterials: () => void;
   readonly onLoadMoreMaterials: () => void;
-  readonly onLoadMoreArchivedMaterials: () => void;
+  readonly images: readonly WorkOrderImageAsset[];
+  readonly attachments: readonly WorkOrderAttachmentAsset[];
+  readonly imageBusy: boolean;
+  readonly imageBusyId: string | null;
+  readonly imageMessage: string | null;
+  readonly onAcquireImage: (source: WorkOrderImageAcquisitionSource) => void;
+  readonly onAcquireAttachment: () => void;
+  readonly onDeleteImage: (image: WorkOrderImageAsset) => void;
+  readonly onDeleteAttachment: (attachment: WorkOrderAttachmentAsset) => void;
+  readonly onOpenAttachment: (attachment: WorkOrderAttachmentAsset) => void;
+  readonly onSaveFactoryDeliveryMemo: (memo: string) => Promise<boolean>;
+  readonly onSetRepresentativeImage: (image: WorkOrderImageAsset) => void;
 };
 
 export default function WorkOrderDetailOverview(props: Props) {
   const { detail, phone, onBack } = props;
-  const [activeSection, setActiveSection] = useState<"overview" | MaterialType>("overview");
+  const [activeSection, setActiveSection] = useState<"overview" | "media" | MaterialType>("overview");
   const [totalQuantityReelOpen, setTotalQuantityReelOpen] = useState(false);
+  const [categoryReelField, setCategoryReelField] = useState<"targetAudience" | "categoryMajor" | null>(null);
   const { width } = useWindowDimensions();
   const { header } = detail;
-  const productType = formatProductType(header.productTypeAlias, header.productTypeCode);
   const compactPhoneHero = phone && width < 390;
   const savingBasic = props.saveState === "saving";
   const basicLocked = props.saveState === "locked";
   const detailScrollRef = useRef<ScrollView>(null);
   const { onFieldFocus, onScroll } = useFocusedFieldVisibility(detailScrollRef);
+  const representative = props.images.find((image) => image.isRepresentative) ?? null;
+  const representativeUrl = resolveMobileApiUrl(representative?.viewUrl ?? header.representativeImage?.thumbnailUrl ?? null);
 
   return (
     <View style={styles.container}>
@@ -180,14 +195,21 @@ export default function WorkOrderDetailOverview(props: Props) {
       >
         <View testID="production-card-sheet" style={styles.productionCardSheet}>
           <View style={[styles.hero, compactPhoneHero && styles.heroCompactPhone]}>
-            <View
-              accessibilityLabel={`대표 이미지 준비 중, 이미지 ${detail.tabCounts.images}건`}
+            <Pressable
+              accessibilityLabel={representative ? `대표 이미지 ${representative.filename}, 이미지 ${props.images.length}건` : `대표 이미지 없음, 이미지 ${props.images.length}건`}
+              accessibilityRole="button"
+              onPress={() => props.onRequestSectionChange(() => setActiveSection("media"))}
               style={[styles.mediaFrame, compactPhoneHero && styles.mediaFrameCompactPhone, !phone && styles.mediaFrameTablet]}
             >
-              <ImageIcon color="#6f6255" size={phone ? 26 : 34} strokeWidth={1.5} />
-              <Text style={styles.mediaLabel}>대표 이미지 준비 중</Text>
-              <Text style={styles.mediaCount}>이미지 {detail.tabCounts.images}</Text>
-            </View>
+              {representativeUrl ? (
+                <NativeImage resizeMode="cover" source={{ uri: representativeUrl }} style={styles.heroMediaImage} />
+              ) : (
+                <>
+                  <ImageIcon color="#6f6255" size={phone ? 26 : 34} strokeWidth={1.5} />
+                  <Text style={styles.mediaLabel}>대표 이미지 없음</Text>
+                </>
+              )}
+            </Pressable>
 
             <View style={styles.heroText}>
               <View style={styles.statusRow}>
@@ -215,83 +237,7 @@ export default function WorkOrderDetailOverview(props: Props) {
                 testID="overview-inline-product-name"
                 value={props.draft.productName}
               />
-              <Text numberOfLines={2} style={styles.meta}>{productType} · {header.seasonCode ?? "미지정"} · {header.itemCode ?? "미지정"}</Text>
             </View>
-          </View>
-
-          {props.saveState === "saved" && props.saveMessage ? (
-            <Text accessibilityRole="alert" style={styles.savedBanner}>{props.saveMessage}</Text>
-          ) : (props.saveState === "locked" || props.saveState === "conflict" || props.saveState === "save-error") && props.saveMessage ? (
-            <View style={styles.lockedBanner}>
-              <Text accessibilityRole="alert" style={styles.lockedBannerText}>{props.saveMessage}</Text>
-              <Pressable accessibilityRole="button" onPress={props.onReloadLatest} style={styles.reloadLatest}>
-                <Text style={styles.reloadLatestText}>최신 내용 불러오기</Text>
-              </Pressable>
-            </View>
-          ) : !props.canEdit && (header.status !== "draft" || detail.revision.status !== "draft") ? (
-            <Text style={styles.lockedNotice}>발행된 작업지시서는 읽기 전용입니다.</Text>
-          ) : null}
-
-          <View style={[styles.summaryGrid, !phone && styles.summaryGridTablet]}>
-            <MiniStat
-              expanded={props.activeBasicField === "totalQuantity"}
-              label="총 수량"
-              value={`${header.totalQuantity.toLocaleString("ko-KR")}벌`}
-              editor={(
-                <ReelInlineEditValue
-                  accessibilityLabel="총 수량"
-                  active={props.activeBasicField === "totalQuantity"}
-                  displayStyle={styles.miniValue}
-                  displayValue={`${header.totalQuantity.toLocaleString("ko-KR")}벌`}
-                  editable={props.canEdit && !basicLocked}
-                  errorMessage={props.fieldErrors.totalQuantity ?? null}
-                  onActivate={() => props.onRequestSectionChange(() => props.onBeginEdit("totalQuantity"))}
-                  onOpenPicker={() => setTotalQuantityReelOpen(true)}
-                  placeholder="0"
-                  saving={savingBasic}
-                  testID="overview-inline-total-quantity"
-                />
-              )}
-            />
-            {totalQuantityReelOpen ? (
-              <WaflReelPickerSheet
-                field="totalQuantity"
-                kind="integer"
-                label="총 수량"
-                onApply={(value) => {
-                  setTotalQuantityReelOpen(false);
-                  props.onChangeDraft("totalQuantity", value);
-                  props.onSave({ totalQuantity: value });
-                }}
-                onCancel={() => {
-                  setTotalQuantityReelOpen(false);
-                  props.onCancelEdit();
-                }}
-                unitCode="벌"
-                value={props.draft.totalQuantity}
-                visible
-              />
-            ) : null}
-            <MiniStat
-              expanded={props.activeBasicField === "dueDate"}
-              label="납기"
-              value={header.dueDate ?? "미정"}
-              editor={(
-                <InlineDatePicker
-                  active={props.activeBasicField === "dueDate"}
-                  displayValue={header.dueDate ?? ""}
-                  editable={props.canEdit && !basicLocked}
-                  errorMessage={props.fieldErrors.dueDate ?? null}
-                  onActivate={() => props.onRequestSectionChange(() => props.onBeginEdit("dueDate"))}
-                  onCancel={props.onCancelEdit}
-                  onCommit={props.onSaveDate}
-                  saving={savingBasic}
-                  value={props.draft.dueDate}
-                />
-              )}
-            />
-            <MiniStat label="한벌 단가" value={formatWon(detail.amounts.unitPrice)} />
-            <MiniStat label="총 예상" value={formatWon(detail.amounts.estimatedTotal)} />
           </View>
 
           <View style={styles.tabRailFrame}>
@@ -305,7 +251,22 @@ export default function WorkOrderDetailOverview(props: Props) {
                 <Text style={[styles.tabText, activeSection === "overview" && styles.tabTextSelected]}>개요</Text>
                 <View style={[styles.tabUnderline, activeSection === "overview" && styles.tabUnderlineSelected]} />
               </Pressable>
-              {SECTION_TABS.map((tab) => tab.id === "fabric" || tab.id === "accessory" ? (
+              {SECTION_TABS.map((tab) => tab.id === "media" ? (
+                <Pressable
+                  key={tab.id}
+                  accessibilityLabel={`${tab.label} ${props.images.length}건`}
+                  accessibilityRole="button"
+                  accessibilityState={{ selected: activeSection === tab.id }}
+                  onPress={() => props.onRequestSectionChange(() => setActiveSection("media"))}
+                  style={[styles.tab, activeSection === tab.id && styles.tabSelected]}
+                >
+                  <View style={styles.tabLabelRow}>
+                    <Text style={[styles.tabText, activeSection === tab.id && styles.tabTextSelected]}>{tab.label}</Text>
+                    <Text style={styles.tabCount}>{props.images.length}</Text>
+                  </View>
+                  <View style={[styles.tabUnderline, activeSection === tab.id && styles.tabUnderlineSelected]} />
+                </Pressable>
+              ) : tab.id === "fabric" || tab.id === "accessory" ? (
                 <Pressable
                   key={tab.id}
                   accessibilityLabel={`${tab.label} ${tab.count(detail)}건`}
@@ -341,11 +302,215 @@ export default function WorkOrderDetailOverview(props: Props) {
                 </Pressable>
               ))}
             </ScrollView>
-            <Text style={styles.tabNotice}>이미지·첨부, 사이즈·색상, 제작 플로우, 출력·공유는 다음 단계에서 연결 예정입니다.</Text>
+            <Text style={styles.tabNotice}>작업지시서 이미지와 일반 첨부는 여기서 관리합니다. 사이즈·색상, 제작, 문서는 이번 범위에 포함되지 않습니다.</Text>
           </View>
 
           {activeSection === "overview" ? (
             <View style={styles.overviewSection}>
+              {(props.saveState === "locked" || props.saveState === "conflict" || props.saveState === "save-error") && props.saveMessage ? (
+                <Pressable accessibilityRole="button" onPress={props.onReloadLatest} style={styles.reloadLatest}>
+                  <Text style={styles.reloadLatestText}>최신 내용 불러오기</Text>
+                </Pressable>
+              ) : !props.canEdit && (header.status !== "draft" || detail.revision.status !== "draft") ? (
+                <Text style={styles.lockedNotice}>발행된 작업지시서는 읽기 전용입니다.</Text>
+              ) : null}
+              <Section title="기본정보">
+                <View style={[styles.summaryGrid, !phone && styles.summaryGridTablet]}>
+                  <MiniStat
+                    expanded={props.activeBasicField === "totalQuantity"}
+                    label="총 수량"
+                    value={`${header.totalQuantity.toLocaleString("ko-KR")}벌`}
+                    editor={(
+                      <ReelInlineEditValue
+                        accessibilityLabel="총 수량"
+                        active={props.activeBasicField === "totalQuantity"}
+                        displayStyle={styles.miniValue}
+                        displayValue={`${header.totalQuantity.toLocaleString("ko-KR")}벌`}
+                        editable={props.canEdit && !basicLocked}
+                        errorMessage={props.fieldErrors.totalQuantity ?? null}
+                        onActivate={() => props.onRequestSectionChange(() => props.onBeginEdit("totalQuantity"))}
+                        onOpenPicker={() => setTotalQuantityReelOpen(true)}
+                        placeholder="0"
+                        saving={savingBasic}
+                        testID="overview-inline-total-quantity"
+                      />
+                    )}
+                  />
+                  {totalQuantityReelOpen ? (
+                    <WaflReelPickerSheet
+                      field="totalQuantity"
+                      kind="integer"
+                      label="총 수량"
+                      onApply={(value) => {
+                        setTotalQuantityReelOpen(false);
+                        props.onChangeDraft("totalQuantity", value);
+                        props.onSave({ totalQuantity: value });
+                      }}
+                      onCancel={() => {
+                        setTotalQuantityReelOpen(false);
+                        props.onCancelEdit();
+                      }}
+                      unitCode="벌"
+                      value={props.draft.totalQuantity}
+                      visible
+                    />
+                  ) : null}
+                  <MiniStat
+                    expanded={props.activeBasicField === "dueDate"}
+                    label="납기"
+                    value={header.dueDate ?? "미정"}
+                    editor={(
+                      <InlineDatePicker
+                        active={props.activeBasicField === "dueDate"}
+                        displayValue={header.dueDate ?? ""}
+                        editable={props.canEdit && !basicLocked}
+                        errorMessage={props.fieldErrors.dueDate ?? null}
+                        onActivate={() => props.onRequestSectionChange(() => props.onBeginEdit("dueDate"))}
+                        onCancel={props.onCancelEdit}
+                        onCommit={props.onSaveDate}
+                        saving={savingBasic}
+                        value={props.draft.dueDate}
+                      />
+                    )}
+                  />
+                  <MiniStat
+                    expanded={props.activeBasicField === "targetAudience"}
+                    label="대상"
+                    value={props.draft.targetAudience || "미지정"}
+                    editor={(
+                      <ReelInlineEditValue
+                        accessibilityLabel="대상"
+                        active={props.activeBasicField === "targetAudience"}
+                        displayStyle={styles.miniValue}
+                        displayValue={props.draft.targetAudience}
+                        editable={props.canEdit && !basicLocked}
+                        errorMessage={props.fieldErrors.targetAudience ?? null}
+                        onActivate={() => props.onRequestSectionChange(() => props.onBeginEdit("targetAudience"))}
+                        onOpenPicker={() => setCategoryReelField("targetAudience")}
+                        placeholder="미지정"
+                        saving={savingBasic}
+                        testID="overview-inline-target-audience"
+                      />
+                    )}
+                  />
+                  {categoryReelField === "targetAudience" ? (
+                    <WaflReelPickerSheet
+                      field="targetAudience"
+                      kind="option"
+                      label="대상"
+                      onApply={(value) => {
+                        setCategoryReelField(null);
+                        props.onChangeDraft("targetAudience", value);
+                        props.onSave({ targetAudience: value });
+                      }}
+                      onCancel={() => {
+                        setCategoryReelField(null);
+                        props.onCancelEdit();
+                      }}
+                      options={["", ...WORK_ORDER_TARGET_AUDIENCES]}
+                      unitCode=""
+                      value={props.draft.targetAudience}
+                      visible
+                    />
+                  ) : null}
+                  <MiniStat
+                    expanded={props.activeBasicField === "categoryMajor"}
+                    label="대분류"
+                    value={props.draft.categoryMajor || "미지정"}
+                    editor={(
+                      <ReelInlineEditValue
+                        accessibilityLabel="대분류"
+                        active={props.activeBasicField === "categoryMajor"}
+                        displayStyle={styles.miniValue}
+                        displayValue={props.draft.categoryMajor}
+                        editable={props.canEdit && !basicLocked}
+                        errorMessage={props.fieldErrors.categoryMajor ?? null}
+                        onActivate={() => props.onRequestSectionChange(() => props.onBeginEdit("categoryMajor"))}
+                        onOpenPicker={() => setCategoryReelField("categoryMajor")}
+                        placeholder="미지정"
+                        saving={savingBasic}
+                        testID="overview-inline-category-major"
+                      />
+                    )}
+                  />
+                  {categoryReelField === "categoryMajor" ? (
+                    <WaflReelPickerSheet
+                      field="categoryMajor"
+                      kind="option"
+                      label="대분류"
+                      onApply={(value) => {
+                        setCategoryReelField(null);
+                        props.onChangeDraft("categoryMajor", value);
+                        props.onSave({ categoryMajor: value });
+                      }}
+                      onCancel={() => {
+                        setCategoryReelField(null);
+                        props.onCancelEdit();
+                      }}
+                      options={["", ...WORK_ORDER_CATEGORY_MAJORS]}
+                      unitCode=""
+                      value={props.draft.categoryMajor}
+                      visible
+                    />
+                  ) : null}
+                  <MiniStat
+                    expanded={props.activeBasicField === "categoryDetail"}
+                    label="세부 품목"
+                    value={props.draft.categoryDetail || "미지정"}
+                    editor={(
+                    <ControlledInlineEditValue
+                      accessibilityLabel="세부 품목"
+                      active={props.activeBasicField === "categoryDetail"}
+                      commitMode="blur-submit"
+                      dirty={props.dirty}
+                      displayValue={props.draft.categoryDetail || "미지정"}
+                      editable={props.canEdit && !basicLocked}
+                      errorMessage={props.fieldErrors.categoryDetail ?? null}
+                      invalid={Boolean(props.fieldErrors.categoryDetail)}
+                      maxLength={24}
+                      onActivate={() => props.onRequestSectionChange(() => props.onBeginEdit("categoryDetail"))}
+                      onCancel={props.onCancelEdit}
+                      onChange={(value) => props.onChangeDraft("categoryDetail", value)}
+                      onSave={(value) => props.onSave({ categoryDetail: value })}
+                      onFocusTarget={onFieldFocus}
+                      placeholder="예: 반팔 티셔츠"
+                      saving={savingBasic}
+                      selectTextOnFocus
+                      testID="overview-inline-category-detail"
+                      value={props.draft.categoryDetail}
+                    />
+                    )}
+                  />
+                  <MiniStat
+                    expanded={props.activeBasicField === "seasonCode"}
+                    label="시즌"
+                    value={props.draft.seasonCode || "미지정"}
+                    editor={(
+                    <ControlledInlineEditValue
+                      accessibilityLabel="시즌"
+                      active={props.activeBasicField === "seasonCode"}
+                      commitMode="blur-submit"
+                      dirty={props.dirty}
+                      displayValue={props.draft.seasonCode || "미지정"}
+                      editable={props.canEdit && !basicLocked}
+                      errorMessage={props.fieldErrors.seasonCode ?? null}
+                      invalid={Boolean(props.fieldErrors.seasonCode)}
+                      maxLength={16}
+                      onActivate={() => props.onRequestSectionChange(() => props.onBeginEdit("seasonCode"))}
+                      onCancel={props.onCancelEdit}
+                      onChange={(value) => props.onChangeDraft("seasonCode", value)}
+                      onSave={(value) => props.onSave({ seasonCode: value })}
+                      onFocusTarget={onFieldFocus}
+                      placeholder="예: 26FW"
+                      saving={savingBasic}
+                      selectTextOnFocus
+                      testID="overview-inline-season"
+                      value={props.draft.seasonCode}
+                    />
+                    )}
+                  />
+                </View>
+              </Section>
               <ReadinessPanel detail={detail} />
               <Section title="금액 요약">
                 <MetricLine label="원단 총액" value={formatWon(detail.amounts.fabricTotal)} />
@@ -355,6 +520,24 @@ export default function WorkOrderDetailOverview(props: Props) {
                 <MetricLine emphasized label="총 예상" value={formatWon(detail.amounts.estimatedTotal)} />
               </Section>
             </View>
+          ) : activeSection === "media" ? (
+            <WorkOrderImageGallery
+              busy={props.imageBusy}
+              busyImageId={props.imageBusyId}
+              canEdit={props.canEdit}
+              images={props.images}
+              attachments={props.attachments}
+              factoryDeliveryMemo={detail.revision.factoryDeliveryMemo}
+                message={props.imageMessage}
+                onAcquire={props.onAcquireImage}
+                onAcquireAttachment={props.onAcquireAttachment}
+                onDelete={props.onDeleteImage}
+                onDeleteAttachment={props.onDeleteAttachment}
+                onOpenAttachment={props.onOpenAttachment}
+                onFocusTarget={onFieldFocus}
+                onSaveMemo={props.onSaveFactoryDeliveryMemo}
+                onSetRepresentative={props.onSetRepresentativeImage}
+            />
           ) : props.materialEditor?.mode === "create" ? (
             <WorkOrderMaterialEditor
               dirty={props.materialEditorDirty}
@@ -367,8 +550,6 @@ export default function WorkOrderDetailOverview(props: Props) {
           ) : (
             <WorkOrderMaterialsReadOnly
               materialType={props.materialType}
-              archivedState={props.archivedMaterials}
-              archivedTotalCount={props.archivedMaterialCount}
               canEdit={props.canEditMaterials}
               activeEditor={props.materialEditor?.mode === "edit" ? props.materialEditor : null}
               activeField={props.activeMaterialField}
@@ -384,9 +565,7 @@ export default function WorkOrderDetailOverview(props: Props) {
               onChangeEdit={props.onChangeMaterialDraft}
               onSaveEdit={props.onSaveMaterial}
               onLoadMore={props.onLoadMoreMaterials}
-              onLoadMoreArchived={props.onLoadMoreArchivedMaterials}
               onRetry={props.onRetryMaterials}
-              onRestore={props.onRestoreMaterial}
               orderPolicy={props.materialOrderPolicy}
               onFieldFocus={onFieldFocus}
               saveNotice={props.materialSaveNotice}
@@ -414,8 +593,8 @@ const styles = StyleSheet.create({
   mediaFrame: { alignItems: "center", backgroundColor: "#efe4d3", borderRadius: 12, flexShrink: 0, height: 96, justifyContent: "center", overflow: "hidden", padding: 7, position: "relative", width: 80 },
   mediaFrameCompactPhone: { height: 90, width: 72 },
   mediaFrameTablet: { height: 148, width: 132 },
+  heroMediaImage: { height: "100%", width: "100%" },
   mediaLabel: { bottom: 7, color: "#51483e", fontFamily: WAFL_FONTS.semibold, fontSize: 8, left: 5, lineHeight: 11, position: "absolute", right: 5, textAlign: "center" },
-  mediaCount: { backgroundColor: "rgba(255, 250, 242, 0.86)", borderRadius: 999, color: "#17263d", fontFamily: WAFL_FONTS.bold, fontSize: 9, overflow: "hidden", paddingHorizontal: 5, paddingVertical: 2, position: "absolute", right: 6, top: 6 },
   heroText: { flex: 1, flexGrow: 1, flexShrink: 1, gap: 6, justifyContent: "center", minWidth: 0 },
   statusRow: { alignItems: "center", flexDirection: "row", flexWrap: "wrap", gap: 7 },
   statusBadge: { backgroundColor: "#23375a", borderRadius: 999, color: "#ffffff", fontFamily: WAFL_FONTS.bold, fontSize: 11, overflow: "hidden", paddingHorizontal: 9, paddingVertical: 4 },
@@ -447,9 +626,6 @@ const styles = StyleSheet.create({
   saveButton: { alignItems: "center", backgroundColor: "#23375a", borderRadius: 10, flexDirection: "row", gap: 6, justifyContent: "center", minHeight: 44, minWidth: 100, paddingHorizontal: 16 },
   saveButtonDisabled: { opacity: 0.42 },
   saveButtonText: { color: "#fff", fontFamily: WAFL_FONTS.bold, fontSize: 12 },
-  savedBanner: { backgroundColor: "#edf2e7", color: "#405b34", fontFamily: WAFL_FONTS.bold, fontSize: 11, marginBottom: 10, marginHorizontal: 12, paddingHorizontal: 10, paddingVertical: 8 },
-  lockedBanner: { alignItems: "flex-start", backgroundColor: "#fff1d3", gap: 7, marginBottom: 10, marginHorizontal: 12, padding: 10 },
-  lockedBannerText: { color: "#8a4330", fontFamily: WAFL_FONTS.bold, fontSize: 11 },
   lockedNotice: { color: "#75695e", fontFamily: WAFL_FONTS.regular, fontSize: 10, marginBottom: 8, marginHorizontal: 12 },
   summaryGrid: { flexDirection: "row", flexWrap: "wrap", gap: 6, paddingBottom: 12, paddingHorizontal: 12 },
   summaryGridTablet: { flexWrap: "nowrap" },
@@ -457,6 +633,21 @@ const styles = StyleSheet.create({
   miniStatExpanded: { flexBasis: "100%", minWidth: "100%" },
   miniLabel: { color: "#7a6c5c", fontFamily: WAFL_FONTS.medium, fontSize: 9 },
   miniValue: { color: "#17263d", fontFamily: WAFL_FONTS.bold, fontSize: 11, lineHeight: 15, marginTop: 2 },
+  categoryDisplay: { backgroundColor: "#f7f0e5", borderRadius: 9, flexBasis: "47%", flexGrow: 1, minHeight: 56, minWidth: 112, paddingHorizontal: 9, paddingVertical: 7 },
+  categoryDisplayDisabled: { opacity: 0.72 },
+  categoryLabel: { color: "#7a6c5c", fontFamily: WAFL_FONTS.medium, fontSize: 9, lineHeight: 14 },
+  categoryValue: { color: "#17263d", fontFamily: WAFL_FONTS.bold, fontSize: 11, lineHeight: 17, marginTop: 2 },
+  categoryPlaceholder: { color: "#978b7f", fontFamily: WAFL_FONTS.medium, fontSize: 11, lineHeight: 17, marginTop: 2 },
+  categoryEditor: { backgroundColor: "#fffaf2", borderColor: "#d7c8b7", borderRadius: 10, borderWidth: 1, flexBasis: "100%", gap: 7, padding: 9, width: "100%" },
+  categoryChoices: { flexDirection: "row", flexWrap: "wrap", gap: 6 },
+  categoryChoice: { alignItems: "center", backgroundColor: "#f4ede3", borderColor: "#d7cabc", borderRadius: 999, borderWidth: 1, minHeight: 36, justifyContent: "center", paddingHorizontal: 11 },
+  categoryChoiceSelected: { backgroundColor: "#23375a", borderColor: "#23375a" },
+  categoryChoiceText: { color: "#5d5147", fontFamily: WAFL_FONTS.semibold, fontSize: 11 },
+  categoryChoiceTextSelected: { color: "#fff" },
+  categoryActions: { flexDirection: "row", gap: 7, justifyContent: "flex-end" },
+  categoryCancel: { alignItems: "center", borderColor: "#cdbfae", borderRadius: 8, borderWidth: 1, height: 38, justifyContent: "center", width: 44 },
+  categorySave: { alignItems: "center", backgroundColor: "#23375a", borderRadius: 8, height: 38, justifyContent: "center", width: 48 },
+  categoryTextField: { backgroundColor: "#f7f0e5", borderRadius: 9, flexBasis: "47%", flexGrow: 1, gap: 2, minHeight: 56, minWidth: 112, paddingHorizontal: 9, paddingVertical: 5 },
   tabRailFrame: { backgroundColor: "rgba(255, 250, 242, 0.72)", borderBottomColor: "#eadfce", borderBottomWidth: 1, borderTopColor: "#eadfce", borderTopWidth: 1 },
   tabRail: { alignItems: "stretch", gap: 8, minHeight: 48, paddingHorizontal: 10, paddingVertical: 3 },
   tab: { alignItems: "center", backgroundColor: "transparent", borderRadius: 9, justifyContent: "center", minWidth: 74, opacity: 0.54, paddingHorizontal: 2, paddingVertical: 5 },

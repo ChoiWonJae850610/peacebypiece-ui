@@ -1,10 +1,23 @@
 import type { MaterialDraftFields, MaterialType, WorkOrderDetailCore, WorkOrderMaterialLine } from "@/domain/mobileContract";
-import { calculateOrderQuantity, stripDecimalTrailingZeros } from "../lib/mobileDisplay.ts";
+import {
+  decodeWorkOrderCategory,
+  WORK_ORDER_CATEGORY_MAJORS,
+  WORK_ORDER_TARGET_AUDIENCES,
+} from "./workOrderCategoryPolicy.ts";
+import {
+  calculateOrderQuantity,
+  normalizeNumericCommitValue,
+  stripDecimalTrailingZeros,
+} from "../lib/mobileDisplay.ts";
 
 export type BasicInfoDraft = {
   readonly productName: string;
   readonly dueDate: string;
   readonly totalQuantity: string;
+  readonly targetAudience: string;
+  readonly categoryMajor: string;
+  readonly categoryDetail: string;
+  readonly seasonCode: string;
 };
 
 export type BasicInfoFieldErrors = Partial<Record<keyof BasicInfoDraft, string>>;
@@ -22,6 +35,13 @@ export const EMPTY_MATERIAL_DRAFT: MaterialDraftFields = {
   unitPrice: "0",
   memo: "",
 };
+
+export function materialCreateDraft(materialType: MaterialType): MaterialDraftFields {
+  return {
+    ...EMPTY_MATERIAL_DRAFT,
+    unitCode: materialType === "accessory" ? "개" : "yd",
+  };
+}
 
 const MATERIAL_QUANTITY_PATTERN = /^(?:0|[1-9]\d{0,10})(?:\.\d{1,3})?$/;
 const MATERIAL_PRICE_PATTERN = /^(?:0|[1-9]\d{0,11})$/;
@@ -51,15 +71,21 @@ export function createMaterialDraft(
 }
 
 export function basicInfoDraftFromDetail(detail: WorkOrderDetailCore): BasicInfoDraft {
+  const category = decodeWorkOrderCategory(detail.header);
   return {
     productName: detail.header.productName,
     dueDate: detail.header.dueDate ?? "",
     totalQuantity: String(detail.header.totalQuantity),
+    targetAudience: category.targetAudience,
+    categoryMajor: category.categoryMajor,
+    categoryDetail: category.categoryDetail,
+    seasonCode: category.seasonCode,
   };
 }
 
 export function validateBasicInfoDraft(draft: BasicInfoDraft): BasicInfoFieldErrors {
   const errors: BasicInfoFieldErrors = {};
+  const totalQuantity = normalizeNumericCommitValue(draft.totalQuantity);
   const productName = draft.productName.trim();
   if (productName.length < 1 || productName.length > 200) errors.productName = "제품명은 1자 이상 200자 이하여야 합니다.";
   if (draft.dueDate) {
@@ -73,13 +99,21 @@ export function validateBasicInfoDraft(draft: BasicInfoDraft): BasicInfoFieldErr
       errors.dueDate = "납기는 YYYY-MM-DD 형식의 유효한 날짜여야 합니다.";
     }
   }
-  if (!/^\d+$/.test(draft.totalQuantity)) errors.totalQuantity = "총수량은 쉼표 없는 정수로 입력해 주세요.";
+  if (!/^\d+$/.test(totalQuantity)) errors.totalQuantity = "총수량은 쉼표 없는 정수로 입력해 주세요.";
   else {
-    const quantity = Number(draft.totalQuantity);
+    const quantity = Number(totalQuantity);
     if (!Number.isSafeInteger(quantity) || quantity < 0 || quantity > 100_000_000) {
       errors.totalQuantity = "총수량은 0 이상 100,000,000 이하의 정수여야 합니다.";
     }
   }
+  if (draft.targetAudience && !WORK_ORDER_TARGET_AUDIENCES.includes(draft.targetAudience as (typeof WORK_ORDER_TARGET_AUDIENCES)[number])) {
+    errors.targetAudience = "대상을 목록에서 선택해 주세요.";
+  }
+  if (draft.categoryMajor && !WORK_ORDER_CATEGORY_MAJORS.includes(draft.categoryMajor as (typeof WORK_ORDER_CATEGORY_MAJORS)[number])) {
+    errors.categoryMajor = "대분류를 목록에서 선택해 주세요.";
+  }
+  if (draft.categoryDetail.trim().length > 24) errors.categoryDetail = "세부 품목은 24자 이하여야 합니다.";
+  if (draft.seasonCode.trim().length > 16) errors.seasonCode = "시즌은 16자 이하여야 합니다.";
   return errors;
 }
 
@@ -104,6 +138,13 @@ export function sameMaterialDraft(left: MaterialDraftFields, right: MaterialDraf
 
 export function validateMaterialDraft(input: MaterialDraftInput, materialType: MaterialType = "fabric"): MaterialEditorFieldErrors {
   const draft = createMaterialDraft(input);
+  const numericDraft = {
+    ...draft,
+    requiredQuantity: normalizeNumericCommitValue(draft.requiredQuantity),
+    allowanceQuantity: normalizeNumericCommitValue(draft.allowanceQuantity),
+    inventoryUsageQuantity: normalizeNumericCommitValue(draft.inventoryUsageQuantity),
+    unitPrice: normalizeNumericCommitValue(draft.unitPrice),
+  };
   const errors: MaterialEditorFieldErrors = {};
   const nameLabel = materialType === "accessory" ? "부자재명" : "원단명";
   if (draft.name.trim().length < 1 || draft.name.trim().length > 200) errors.name = `${nameLabel}은 1자 이상 200자 이하여야 합니다.`;
@@ -112,13 +153,13 @@ export function validateMaterialDraft(input: MaterialDraftInput, materialType: M
   if (draft.memo.trim().length > 2000) errors.memo = "메모는 2,000자 이하여야 합니다.";
   if (draft.unitCode.trim().length < 1 || draft.unitCode.trim().length > 32) errors.unitCode = "단위는 1자 이상 32자 이하여야 합니다.";
   for (const field of ["requiredQuantity", "allowanceQuantity", "inventoryUsageQuantity"] as const) {
-    if (!MATERIAL_QUANTITY_PATTERN.test(draft[field].trim())) errors[field] = "0 이상의 소수점 3자리 이하 숫자를 입력해 주세요.";
+    if (!MATERIAL_QUANTITY_PATTERN.test(numericDraft[field])) errors[field] = "0 이상의 소수점 3자리 이하 숫자를 입력해 주세요.";
   }
-  if (!MATERIAL_PRICE_PATTERN.test(draft.unitPrice.trim())) errors.unitPrice = "단가는 0 이상의 정수 원 단위로 입력해 주세요.";
-  const calculatedOrderQuantity = calculateOrderQuantity(draft);
+  if (!MATERIAL_PRICE_PATTERN.test(numericDraft.unitPrice)) errors.unitPrice = "단가는 0 이상의 정수 원 단위로 입력해 주세요.";
+  const calculatedOrderQuantity = calculateOrderQuantity(numericDraft);
   if (calculatedOrderQuantity !== null && !errors.unitPrice) {
     const [quantityWhole, quantityFraction = ""] = calculatedOrderQuantity.split(".");
-    const [priceWhole, priceFraction = ""] = draft.unitPrice.trim().split(".");
+    const [priceWhole, priceFraction = ""] = numericDraft.unitPrice.split(".");
     const quantityScaled = BigInt(quantityWhole) * 1000n + BigInt(quantityFraction.padEnd(3, "0"));
     const priceScaled = BigInt(priceWhole) * 100n + BigInt(priceFraction.padEnd(2, "0"));
     const amountCents = (quantityScaled * priceScaled + 500n) / 1000n;
@@ -193,9 +234,9 @@ export function materialPatch(base: MaterialDraftFields, draft: MaterialDraftFie
 
 export function normalizeMaterialDraft(input: MaterialDraftInput, fallback: MaterialDraftFields = EMPTY_MATERIAL_DRAFT): MaterialDraftFields {
   const draft = createMaterialDraft(input, fallback);
-  const requiredQuantity = stripDecimalTrailingZeros(draft.requiredQuantity);
-  const allowanceQuantity = stripDecimalTrailingZeros(draft.allowanceQuantity);
-  const inventoryUsageQuantity = stripDecimalTrailingZeros(draft.inventoryUsageQuantity);
+  const requiredQuantity = stripDecimalTrailingZeros(normalizeNumericCommitValue(draft.requiredQuantity));
+  const allowanceQuantity = stripDecimalTrailingZeros(normalizeNumericCommitValue(draft.allowanceQuantity));
+  const inventoryUsageQuantity = stripDecimalTrailingZeros(normalizeNumericCommitValue(draft.inventoryUsageQuantity));
   return {
     name: draft.name.trim(),
     colorOption: draft.colorOption.trim(),
@@ -205,7 +246,7 @@ export function normalizeMaterialDraft(input: MaterialDraftInput, fallback: Mate
     inventoryUsageQuantity,
     orderQuantity: calculateOrderQuantity({ requiredQuantity, allowanceQuantity, inventoryUsageQuantity }) ?? "0",
     unitCode: draft.unitCode.trim(),
-    unitPrice: stripDecimalTrailingZeros(draft.unitPrice),
+    unitPrice: stripDecimalTrailingZeros(normalizeNumericCommitValue(draft.unitPrice)),
     memo: draft.memo.trim(),
   };
 }

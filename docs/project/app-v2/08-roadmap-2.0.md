@@ -2,7 +2,7 @@
 
 Document role: canonical owner for the current result, next candidate, and Version Delta boundary. It is not the historical implementation ledger; completed details live in numbered immutable evidence.
 
-## Current result — 2.0.0-alpha.56
+## Current result — 2.0.0-alpha.57
 
 Status: `ALPHA56_ACCESSORY_LIFECYCLE_PARITY_COMPLETE`.
 

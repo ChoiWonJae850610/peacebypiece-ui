@@ -19,7 +19,11 @@ import { Check, X } from "lucide-react-native";
 import { WAFL_FONTS } from "@/constants/fonts";
 import { WAFL_THEME } from "@/constants/theme";
 import { createInlineEditFinalizationController } from "@/lib/inlineEditFinalization";
-import { normalizeNumericDraft, prepareNumericDraftOnFocus } from "@/lib/mobileDisplay";
+import {
+  normalizeNumericCommitValue,
+  normalizeNumericDraft,
+  prepareNumericDraftOnFocus,
+} from "@/lib/mobileDisplay";
 
 type Props = {
   readonly accessibilityLabel: string;
@@ -46,6 +50,7 @@ type Props = {
   readonly numberOfLines?: number | null;
   readonly testID?: string;
   readonly onFocusTarget?: (target: TextInput) => void;
+  readonly commitMode?: "explicit" | "blur-submit";
 };
 
 export default function ControlledInlineEditValue({
@@ -73,6 +78,7 @@ export default function ControlledInlineEditValue({
   numberOfLines = 2,
   testID,
   onFocusTarget,
+  commitMode = "explicit",
 }: Props) {
   const inputRef = useRef<TextInput>(null);
   const finalizationRef = useRef(createInlineEditFinalizationController(value));
@@ -82,6 +88,7 @@ export default function ControlledInlineEditValue({
   const [finalizing, setFinalizing] = useState(false);
   const [nativeDirty, setNativeDirty] = useState(false);
   const numeric = keyboardType === "number-pad" || keyboardType === "decimal-pad" || keyboardType === "numeric";
+  const inlineCommit = commitMode === "blur-submit";
   const activationRef = useRef({ numeric, onChange, value });
 
   useEffect(() => {
@@ -119,7 +126,7 @@ export default function ControlledInlineEditValue({
   }, [active]);
 
   const emptyNumericDraft = numeric && value.trim() === "";
-  const saveDisabled = (!dirty && !nativeDirty) || saving || finalizing || emptyNumericDraft;
+  const saveDisabled = (!dirty && !nativeDirty) || saving || finalizing;
   const displayLineLimit = numberOfLines === null ? undefined : numberOfLines;
 
   function normalizedNativeText(nextValue: string) {
@@ -127,7 +134,7 @@ export default function ControlledInlineEditValue({
   }
 
   function finalizePendingSave(nativeValue: string) {
-    const finalizedValue = normalizedNativeText(nativeValue);
+    const finalizedValue = numeric ? normalizeNumericCommitValue(nativeValue) : nativeValue;
     finalizationRef.current.observe(finalizedValue);
     if (finalizedValue !== value) onChange(finalizedValue);
     const result = finalizationRef.current.finalize(finalizedValue);
@@ -146,12 +153,23 @@ export default function ControlledInlineEditValue({
       cancelingRef.current = false;
       return;
     }
+    if (inlineCommit) finalizationRef.current.requestSave();
     finalizePendingSave(event.nativeEvent.text);
   }
 
   function handleSaveRequest() {
     if (!finalizationRef.current.requestSave()) return;
     setFinalizing(true);
+    if (inputRef.current?.isFocused()) {
+      inputRef.current.blur();
+      return;
+    }
+    finalizePendingSave(value);
+  }
+
+  function handleSubmitEditing() {
+    if (!inlineCommit || multiline) return;
+    if (!finalizationRef.current.requestSave()) return;
     if (inputRef.current?.isFocused()) {
       inputRef.current.blur();
       return;
@@ -219,15 +237,17 @@ export default function ControlledInlineEditValue({
         onFocus={() => {
           if (inputRef.current) onFocusTarget?.(inputRef.current);
         }}
+        onSubmitEditing={inlineCommit && !multiline ? handleSubmitEditing : undefined}
         placeholder={emptyNumericDraft ? "0" : placeholder}
         returnKeyType={multiline ? "default" : "done"}
         selectTextOnFocus={selectTextOnFocus}
-        style={[styles.input, styles.inputWithActions, multiline && styles.inputMultiline, displayStyle, inputStyle, invalid && styles.inputInvalid]}
+        submitBehavior={multiline ? "newline" : inlineCommit ? "blurAndSubmit" : "submit"}
+        style={[styles.input, !inlineCommit && styles.inputWithActions, multiline && styles.inputMultiline, displayStyle, inputStyle, invalid && styles.inputInvalid]}
         textAlignVertical={multiline ? "top" : "center"}
         value={value}
       />
       {errorMessage ? <Text accessibilityRole="alert" style={styles.error}>{errorMessage}</Text> : null}
-      <View style={styles.actions}>
+      {!inlineCommit ? <View style={styles.actions}>
         <Pressable accessibilityHint={`${accessibilityLabel} 입력을 취소합니다`} accessibilityLabel="변경 취소" accessibilityRole="button" disabled={saving || finalizing} onPress={handleCancel} style={styles.cancel}>
           <X color="#554a40" size={18} strokeWidth={2.4} />
         </Pressable>
@@ -242,7 +262,7 @@ export default function ControlledInlineEditValue({
         >
           {saving || finalizing ? <ActivityIndicator color="#fff" size="small" /> : <Check color="#fff" size={18} strokeWidth={2.5} />}
         </Pressable>
-      </View>
+      </View> : null}
     </View>
   );
 }

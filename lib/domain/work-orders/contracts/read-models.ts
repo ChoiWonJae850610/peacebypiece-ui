@@ -99,6 +99,7 @@ export type WorkOrderDetailCoreReadModel = {
   readonly revision: {
     readonly status: WorkOrderRevisionStatus;
     readonly finalizedAt: IsoDateTime | null;
+    readonly factoryDeliveryMemo: string | null;
   };
   readonly amounts: {
     readonly currency: CurrencyCode;
@@ -350,6 +351,10 @@ export type WorkOrderAssetReadModel = {
   readonly isRepresentative: boolean;
   readonly includeInDocument: boolean;
   readonly state: ImageAssetState;
+  readonly thumbnailUrl: ControlledFileUrl | null;
+  readonly previewUrl: ControlledFileUrl | null;
+  readonly fullscreenUrl: ControlledFileUrl | null;
+  readonly originalUrl: ControlledFileUrl | null;
   readonly viewUrl: ControlledFileUrl | null;
   readonly uploadedAt: IsoDateTime;
 };

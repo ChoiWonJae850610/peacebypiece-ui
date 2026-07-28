@@ -145,13 +145,17 @@ function gitChanged(pathspec) {
 for (const forbiddenPath of [
   "db/schema",
   "db/migrations",
-  "cloudflare",
   "package.json",
   "package-lock.json",
   "pnpm-lock.yaml",
   "pnpm-workspace.yaml",
 ]) {
   assert.equal(gitChanged(forbiddenPath), "", `forbidden path changed: ${forbiddenPath}`);
+}
+const cloudflareChanges = gitChanged("cloudflare").split(/\r?\n/).filter(Boolean);
+if (cloudflareChanges.length > 0) {
+  assert.equal(fs.existsSync(path.join(root, "tests/workorder-v2-alpha57-worker-read-contract.mjs")), true);
+  assert.deepEqual(cloudflareChanges, ["M cloudflare/r2-upload-worker.js"], "only the alpha.57-approved R2 worker may differ");
 }
 
 const appVersion = fs.readFileSync(path.join(root, "lib/constants/version.ts"), "utf8");
@@ -183,6 +187,20 @@ const alpha51ApiPaths = [
   "app/api/v2/work-orders/[workOrderId]/materials/[materialLineId]/archive/route.ts",
   "app/api/v2/work-orders/[workOrderId]/materials/[materialLineId]/restore/route.ts",
 ];
+const alpha57ApiPaths = [
+  "app/api/v2/work-orders/[workOrderId]/attachments/[attachmentId]/delete/route.ts",
+  "app/api/v2/work-orders/[workOrderId]/attachments/[attachmentId]/preview/route.ts",
+  "app/api/v2/work-orders/[workOrderId]/attachments/upload/complete/route.ts",
+  "app/api/v2/work-orders/[workOrderId]/attachments/upload/route.ts",
+  "app/api/v2/work-orders/[workOrderId]/images/[imageId]/delete/route.ts",
+  "app/api/v2/work-orders/[workOrderId]/images/[imageId]/representative/route.ts",
+  "app/api/v2/work-orders/[workOrderId]/images/upload/complete/route.ts",
+  "app/api/v2/work-orders/[workOrderId]/images/upload/route.ts",
+  "app/api/v2/work-orders/attachments/preview/route.ts",
+  "app/api/v2/work-orders/files/upload/route.ts",
+  "app/api/v2/work-orders/images/file/route.ts",
+];
+const alpha57ContractExists = fs.existsSync(path.join(root, "tests/workorder-v2-alpha57-work-order-image-contract.mjs"));
 const alpha51ContractExists = fs.existsSync(path.join(root, "tests/workorder-v2-alpha51-material-soft-delete-restore-contract.mjs"));
 const alpha26ContractExists = fs.existsSync(path.join(root, "tests/workorder-v2-alpha26-material-command-api-contract.mjs"));
 const alpha27ApiPaths = ["app/api/v2/work-orders/[workOrderId]/revisions/issue/route.ts"];
@@ -211,7 +229,9 @@ const alpha40ContractExists = fs.existsSync(path.join(root, "tests/workorder-v2-
 const alpha30ContractExists = fs.existsSync(path.join(root, "tests/workorder-v2-alpha30-factory-instruction-contract.mjs"));
 const alpha27ContractExists = fs.existsSync(path.join(root, "tests/workorder-v2-alpha27-revision-issue-command-contract.mjs"));
 const alpha28ContractExists = fs.existsSync(path.join(root, "tests/workorder-v2-alpha28-issued-preview-contract.mjs"));
-if (alpha51ContractExists && /APP_VERSION = "2\.0\.0-alpha\.(51|52)"/.test(appVersion)) {
+if (alpha57ContractExists && apiChanges.length > 0) {
+  assert.deepEqual(apiChanges.filter((change) => !alpha57ApiPaths.some((allowedPath) => change.endsWith(allowedPath))), [], "alpha.57 may add only its exact image and attachment API routes");
+} else if (alpha51ContractExists && /APP_VERSION = "2\.0\.0-alpha\.(51|52)"/.test(appVersion)) {
   assert.deepEqual(apiChanges.filter((change) => !alpha51ApiPaths.some((allowedPath) => change.endsWith(allowedPath))), [], "alpha.51 may add only archive/restore routes beside canonical material routes");
 } else if (/APP_VERSION = "2\.0\.0-alpha\.(44|45|46|47)"/.test(appVersion)) {
   assert.deepEqual(

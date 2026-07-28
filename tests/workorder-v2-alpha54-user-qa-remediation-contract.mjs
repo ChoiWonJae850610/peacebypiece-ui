@@ -60,7 +60,15 @@ const datePicker = fs.readFileSync("apps/mobile/components/InlineDatePicker.tsx"
 assert.match(picker, /selectedIndexRef/);
 assert.match(picker, /\}, \[options\]\);/);
 assert.doesNotMatch(picker, /\}, \[options, selectedIndex\]\);/);
-assert.match(picker, /disableIntervalMomentum/);
+const commitScrollIndex = picker.match(/function commitScrollIndex\([\s\S]*?\n  \}/)?.[0] ?? "";
+assert.match(commitScrollIndex, /const nextIndex = scrollIndex\(event, options\.length\)/);
+assert.match(commitScrollIndex, /if \(lastCommittedIndexRef\.current === nextIndex\) return/);
+assert.match(commitScrollIndex, /lastCommittedIndexRef\.current = nextIndex/);
+assert.equal((commitScrollIndex.match(/onSelect\(nextIndex\)/g) ?? []).length, 1, "one final index may select only once");
+assert.match(picker, /onMomentumScrollEnd=\{commitScrollIndex\}/);
+assert.match(picker, /onScrollEndDrag=\{\(event\) => \{[\s\S]*?commitScrollIndex\(event\)/);
+assert.match(picker, /snapToAlignment="start"/);
+assert.match(picker, /snapToInterval=\{ITEM_HEIGHT\}/);
 assert.match(picker, /extraData=\{selectedIndex\}/);
 assert.match(materials, /setReelTarget\(null\);\s+onSaveEdit\(patch\)/);
 assert.doesNotMatch(materials, /if \(!activeEditor\) return;\s+onSaveEdit/, "picker save must resolve the live editor in the controller");

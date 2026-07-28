@@ -25,6 +25,7 @@ assert.deepEqual(easConfig, {
 
 const expectedDependencies = {
   expo: "~55.0.28", "expo-constants": "~55.0.17", "expo-dev-client": "~55.0.37", "expo-font": "~55.0.8",
+  "expo-document-picker": "~55.0.15", "expo-image-picker": "~55.0.22",
   "expo-linking": "~55.0.16", "expo-router": "~55.0.17", "lucide-react-native": "^1.24.0", react: "19.2.0",
   "react-dom": "19.2.0", "react-native": "0.83.6", "react-native-safe-area-context": "~5.6.2",
   "react-native-screens": "~4.23.0", "react-native-svg": "15.15.3", "react-native-web": "0.21.0",
@@ -48,9 +49,19 @@ assert.match(apiClient, /`\/api\/v2\/work-orders\?\$\{query\.toString\(\)\}`/);
 assert.match(apiClient, /\/api\/v2\/work-orders\/\$\{encodeURIComponent\(workOrderId\)\}/);
 assert.match(apiClient, /\/api\/dev\/mobile-connect\/exchange/);
 assert.match(apiClient, /\/api\/dev\/mobile-connect\/disconnect/);
-assert.doesNotMatch(apiClient, /method: "(PUT|DELETE)"/);
-assert.doesNotMatch(apiClient, /\/processes|\/assets|\/documents|\/history|\/size-color|\/size-spec/);
-assert.doesNotMatch(mobileRuntime, /<Image\b|Image\s*from\s*["']react-native/);
+const alpha44ReadClient = apiClient.slice(0, apiClient.indexOf("export async function getWorkOrderImages"));
+assert.doesNotMatch(alpha44ReadClient, /method: "(PUT|DELETE)"/);
+assert.doesNotMatch(apiClient, /\/processes|\/documents|\/history|\/size-color|\/size-spec/);
+const imageReadClient = apiClient.slice(
+  apiClient.indexOf("export async function getWorkOrderImages"),
+  apiClient.indexOf("export async function prepareWorkOrderImageUpload"),
+);
+assert.match(imageReadClient, /\/assets\?limit=50/);
+assert.match(list, /import \{[^}]*\bImage\b[^}]*\} from "react-native"/);
+assert.match(list, /const representativeUrl = resolveMobileApiUrl\(item\.representativeThumbnail\?\.thumbnailUrl \?\? null\)/);
+assert.match(list, /<Image[\s\S]*?source=\{\{ uri: representativeUrl \}\}/);
+assert.match(detail, /Image as NativeImage/);
+assert.match(detail, /<NativeImage[\s\S]*?representativeUrl/);
 assert.doesNotMatch(app, /setInterval|setTimeout\s*\(.*getWorkOrder|poll/i);
 assert.match(app, /useWindowDimensions/);
 assert.match(app, /width >= 768/);

@@ -185,6 +185,11 @@ export function createAttachmentFileProxyUrl(key: string): string {
   return `/api/workorders/attachments/file?key=${encodeURIComponent(cleanKey)}`;
 }
 
+export function createV2WorkOrderImageFileProxyUrl(key: string): string {
+  const cleanKey = cleanStorageKey(key);
+  return `/api/v2/work-orders/images/file?key=${encodeURIComponent(cleanKey)}`;
+}
+
 export function createR2PresignedPutUrl(input: CreateR2PresignedPutUrlInput): R2PresignedPutUrlResult {
   const config = getR2Config();
   const key = cleanStorageKey(input.key);

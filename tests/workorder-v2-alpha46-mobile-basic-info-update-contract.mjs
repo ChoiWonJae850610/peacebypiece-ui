@@ -60,7 +60,7 @@ assert.match(client, /"Cache-Control": "no-store"/);
 assert.match(client, /Content-Type/);
 assert.match(types, /fieldErrors: readonly MobileFieldError\[\]/);
 assert.match(types, /entityVersion: number \| null/);
-assert.doesNotMatch(client, /method: "(?:PUT|DELETE)"/);
+assert.doesNotMatch(basicInfoClient, /method: "(?:PUT|DELETE)"/);
 assert.doesNotMatch(client, /function requestMutation|arbitrary/i);
 assert.doesNotMatch(`${app}\n${detail}`, /setInterval|polling/i);
 assert.doesNotMatch(detail, /constants\/mockProductionCard|mockProductionCard/);

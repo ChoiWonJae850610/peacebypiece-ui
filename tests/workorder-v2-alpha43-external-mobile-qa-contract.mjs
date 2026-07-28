@@ -119,7 +119,15 @@ assert.equal(mobileConfig.expo.extra.eas.projectId, "6cc3b260-a2cc-4c97-9c15-764
 assert.equal(mobileConfig.expo.ios.bundleIdentifier, "com.wafl.app");
 assert.equal(mobileConfig.expo.ios.config.usesNonExemptEncryption, false);
 assert.equal(mobileConfig.expo.android.package, "com.wafl.app");
-assert.deepEqual(mobileConfig.expo.plugins, ["expo-router"]);
+assert.deepEqual(
+  mobileConfig.expo.plugins.map((plugin) => Array.isArray(plugin) ? plugin[0] : plugin),
+  ["expo-router", "expo-image-picker", "expo-document-picker"],
+);
+const imagePickerPlugin = mobileConfig.expo.plugins.find((plugin) => Array.isArray(plugin) && plugin[0] === "expo-image-picker");
+assert.ok(imagePickerPlugin);
+assert.equal(typeof imagePickerPlugin[1].photosPermission, "string");
+assert.equal(typeof imagePickerPlugin[1].cameraPermission, "string");
+assert.equal(imagePickerPlugin[1].microphonePermission, false);
 assert.equal(Object.hasOwn(mobileConfig.expo, "newArchEnabled"), false);
 assert.equal(Object.hasOwn(mobileConfig.expo, "runtimeVersion"), false);
 

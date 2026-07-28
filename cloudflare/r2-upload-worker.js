@@ -6,10 +6,11 @@ const CORS_HEADERS = {
 };
 
 const TEXT_ENCODER = new TextEncoder();
-const WORKER_VERSION = "0.13.71";
+const WORKER_VERSION = "0.13.74";
 const ATTACHMENT_KEY_PATTERN = /^companies\/[^/]+\/workorders\/[^/]+\/(design|attachments)\/[^/]+$/i;
 const WORK_ORDER_PDF_KEY_PATTERN = /^companies\/[^/]+\/workorders\/[^/]+\/pdf\/[^/]+\.pdf$/i;
 const SCOPED_THUMBNAIL_KEY_PATTERN = /^companies\/[^/]+\/workorders\/[^/]+\/thumbnails\/(design|attachments)\/[^/]+\.webp$/i;
+const WORK_ORDER_IMAGE_PREVIEW_KEY_PATTERN = /^companies\/[^/]+\/workorders\/[^/]+\/previews\/design\/[^/]+-(medium|large)\.webp$/i;
 const COMPANY_ONBOARDING_KEY_PATTERN = /^companies\/[^/]+\/onboarding\/(logo|business-license)\/[^/]+\.(jpg|png|webp|pdf)$/i;
 const COMPANY_FILE_KEY_PATTERN = /^companies\/[^/]+\/company-files\/(representative_image|business_registration)\/[^/]+\.(jpg|png|webp|pdf)$/i;
 const SIGNUP_APPLICATION_CERTIFICATE_KEY_PATTERN = /^signup-applications\/[^/]+\/business-registration\/[^/]+\.(png|jpg|pdf)$/i;
@@ -68,7 +69,11 @@ function hasUnsafeStorageKeySyntax(key) {
 
 function getScopeFromKey(key) {
   const normalized = normalizeStorageKey(key);
-  if (normalized.includes("/design/") || normalized.includes("/thumbnails/design/")) return "design";
+  if (
+    normalized.includes("/design/")
+    || normalized.includes("/thumbnails/design/")
+    || normalized.includes("/previews/design/")
+  ) return "design";
   return "attachment";
 }
 
@@ -165,6 +170,7 @@ function isSafeStorageKey(key) {
     ATTACHMENT_KEY_PATTERN.test(normalized) ||
     WORK_ORDER_PDF_KEY_PATTERN.test(normalized) ||
     SCOPED_THUMBNAIL_KEY_PATTERN.test(normalized) ||
+    WORK_ORDER_IMAGE_PREVIEW_KEY_PATTERN.test(normalized) ||
     COMPANY_ONBOARDING_KEY_PATTERN.test(normalized) ||
     COMPANY_FILE_KEY_PATTERN.test(normalized) ||
     SIGNUP_APPLICATION_CERTIFICATE_KEY_PATTERN.test(normalized)
@@ -190,6 +196,19 @@ function getEffectiveMethod(request, url) {
   return request.method;
 }
 
+function createImageDerivativeKeys(storageObjectKey) {
+  const match = normalizeStorageKey(storageObjectKey).match(
+    /^companies\/([^/]+)\/workorders\/([^/]+)\/design\/([^/.]+)(?:\.[^/]+)?$/i,
+  );
+  if (!match) return null;
+  const [, companyId, workOrderId, objectId] = match;
+  return {
+    thumbnail: `companies/${companyId}/workorders/${workOrderId}/thumbnails/design/${objectId}.webp`,
+    medium: `companies/${companyId}/workorders/${workOrderId}/previews/design/${objectId}-medium.webp`,
+    large: `companies/${companyId}/workorders/${workOrderId}/previews/design/${objectId}-large.webp`,
+  };
+}
+
 function sanitizeDownloadFileName(value) {
   const normalized = typeof value === "string" ? value.trim() : "";
   const safeName = normalized.replace(/[\\/\r\n\0"]/g, "_");
@@ -203,8 +222,7 @@ function createContentDisposition(fileName) {
 
 function createSignaturePayload(method, key, contentType, expires) {
   if (method === "PUT") return ["PUT", key, contentType || "application/octet-stream", String(expires)].join("\n");
-  if (method === "DELETE") return ["DELETE", key, String(expires)].join("\n");
-  return ["GET", key, String(expires)].join("\n");
+  return [method, key, String(expires)].join("\n");
 }
 
 function toHex(buffer) {
@@ -274,6 +292,64 @@ function createFileHeaders(object, url) {
   return headers;
 }
 
+async function createDerivativeResponse(env, sourceBytes, width, quality) {
+  if (!env.IMAGES) throw new Error("WORKER_IMAGES_BINDING_NOT_CONFIGURED");
+  return (
+    await env.IMAGES
+      .input(sourceBytes.slice(0))
+      .transform({ width, fit: "scale-down" })
+      .output({ format: "image/webp", quality, anim: false })
+  ).response();
+}
+
+async function createImageDerivatives(env, sourceKey) {
+  const keys = createImageDerivativeKeys(sourceKey);
+  if (!keys) return { ok: false, status: 400, error: "INVALID_DERIVATIVE_SOURCE_KEY" };
+  if (!env.IMAGES) return { ok: false, status: 503, error: "WORKER_IMAGES_BINDING_NOT_CONFIGURED" };
+
+  const source = await (env.R2_BUCKET || env.BUCKET).get(sourceKey);
+  if (!source) return { ok: false, status: 404, error: "WORKER_FILE_NOT_FOUND" };
+  const expectedSourceEtag = source.etag || "";
+  const existing = await Promise.all(
+    Object.values(keys).map((key) => (env.R2_BUCKET || env.BUCKET).head(key)),
+  );
+  const reusable = existing.every((object) => (
+    object
+    && object.httpMetadata?.contentType === "image/webp"
+    && object.customMetadata?.sourceEtag === expectedSourceEtag
+  ));
+  if (reusable) return { ok: true, keys, reused: true };
+  const sourceBytes = await source.arrayBuffer();
+  const specifications = [
+    { key: keys.thumbnail, width: 192, quality: 76 },
+    { key: keys.medium, width: 1280, quality: 82 },
+    { key: keys.large, width: 2048, quality: 86 },
+  ];
+  const written = [];
+  try {
+    for (const specification of specifications) {
+      const transformed = await createDerivativeResponse(
+        env,
+        sourceBytes,
+        specification.width,
+        specification.quality,
+      );
+      if (!transformed.ok || !transformed.body) {
+        throw new Error(`WORKER_IMAGE_TRANSFORM_FAILED_${transformed.status}`);
+      }
+      await (env.R2_BUCKET || env.BUCKET).put(specification.key, transformed.body, {
+        httpMetadata: { contentType: "image/webp" },
+        customMetadata: { sourceEtag: expectedSourceEtag },
+      });
+      written.push(specification.key);
+    }
+  } catch (error) {
+    await Promise.allSettled(written.map((key) => (env.R2_BUCKET || env.BUCKET).delete(key)));
+    throw error;
+  }
+  return { ok: true, keys, reused: false };
+}
+
 const r2UploadWorker = {
   async fetch(request, env) {
     if (request.method === "OPTIONS") {
@@ -282,8 +358,14 @@ const r2UploadWorker = {
 
     const url = new URL(request.url);
     const effectiveMethod = getEffectiveMethod(request, url);
+    const action = (url.searchParams.get("action") || "").toLowerCase();
 
-    if (effectiveMethod !== "PUT" && effectiveMethod !== "GET" && effectiveMethod !== "DELETE") {
+    if (
+      effectiveMethod !== "PUT"
+      && effectiveMethod !== "GET"
+      && effectiveMethod !== "DELETE"
+      && !(effectiveMethod === "POST" && action === "derive")
+    ) {
       return json({ error: "METHOD_NOT_ALLOWED" }, { status: 405 });
     }
 
@@ -302,6 +384,28 @@ const r2UploadWorker = {
     const verification = await verifyRequest({ env, url, method: effectiveMethod, key, contentType });
     if (!verification.ok) {
       return json({ error: verification.error }, { status: verification.status });
+    }
+
+    if (effectiveMethod === "POST" && action === "derive") {
+      try {
+        const derivativeResult = await createImageDerivatives(env, key);
+        if (!derivativeResult.ok) {
+          return json({ error: derivativeResult.error }, { status: derivativeResult.status });
+        }
+        return json({
+          ok: true,
+          method: "POST",
+          action: "derive",
+          sourceKey: key,
+          keys: derivativeResult.keys,
+          reused: derivativeResult.reused,
+        });
+      } catch (error) {
+        return json(
+          { error: error instanceof Error ? error.message : "WORKER_IMAGE_TRANSFORM_FAILED" },
+          { status: 500 },
+        );
+      }
     }
 
     if (effectiveMethod === "PUT") {

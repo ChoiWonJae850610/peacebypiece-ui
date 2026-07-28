@@ -55,10 +55,19 @@ export type WorkOrderDetailCore = {
       readonly displayDocumentNumber: string | null;
       readonly generatedAt: string | null;
     };
+    readonly representativeImage: {
+      readonly imageId: string;
+      readonly thumbnailUrl: string | null;
+      readonly altText: string;
+    } | null;
     readonly entityVersion: number;
     readonly updatedAt: string;
   };
-  readonly revision: { readonly status: string; readonly finalizedAt: string | null };
+  readonly revision: {
+    readonly status: string;
+    readonly finalizedAt: string | null;
+    readonly factoryDeliveryMemo: string | null;
+  };
   readonly amounts: {
     readonly currency: string;
     readonly unitPrice: string;
@@ -78,6 +87,74 @@ export type WorkOrderDetailCore = {
     readonly documents: number;
     readonly history: number;
   };
+};
+
+export type WorkOrderImageAsset = {
+  readonly assetType: "image";
+  readonly id: string;
+  readonly filename: string;
+  readonly optionalTitle: string | null;
+  readonly mimeType: string;
+  readonly sizeBytes: number;
+  readonly displayOrder: number;
+  readonly isRepresentative: boolean;
+  readonly state: "active";
+  readonly thumbnailUrl: string | null;
+  readonly previewUrl: string | null;
+  readonly fullscreenUrl: string | null;
+  readonly originalUrl: string | null;
+  readonly viewUrl: string | null;
+  readonly uploadedAt: string;
+};
+
+export type WorkOrderAttachmentAsset = {
+  readonly assetType: "attachment";
+  readonly id: string;
+  readonly filename: string;
+  readonly mimeType: string;
+  readonly sizeBytes: number;
+  readonly displayOrder: number;
+  readonly includeInDocument: boolean;
+  readonly state: "active";
+  readonly viewUrl: string | null;
+  readonly uploadedAt: string;
+};
+
+export type WorkOrderImagePage = {
+  readonly workOrderId: string;
+  readonly revisionId: string;
+  readonly items: readonly WorkOrderImageAsset[];
+  readonly attachments: readonly WorkOrderAttachmentAsset[];
+  readonly nextCursor: string | null;
+  readonly hasMore: boolean;
+  readonly limit: number;
+  readonly entityVersion: number;
+};
+
+export type WorkOrderImageUploadTarget = {
+  readonly storageKey: string;
+  readonly fileName: string;
+  readonly contentType: string;
+  readonly fileSize: number;
+  readonly uploadUrl: string;
+  readonly method: "PUT";
+  readonly headers: Readonly<Record<string, string>>;
+  readonly expiresInSeconds: number;
+};
+
+export type WorkOrderImageCommandResult = {
+  readonly workOrderId: string;
+  readonly imageId: string;
+  readonly nextVersion: number;
+  readonly isRepresentative: boolean;
+  readonly deleted: boolean;
+};
+
+export type WorkOrderAttachmentCommandResult = {
+  readonly workOrderId: string;
+  readonly attachmentId: string;
+  readonly nextVersion: number;
+  readonly deleted: boolean;
 };
 
 export type MaterialLineStatus = "editing" | "requested" | "completed" | "cancelled" | "unknown";
@@ -242,14 +319,21 @@ export type PatchWorkOrderBasicInfoInput = {
   readonly expectedVersion: number;
   readonly patch: {
     readonly productName?: string;
+    readonly productTypeCode?: string | null;
+    readonly seasonCode?: string | null;
+    readonly itemCode?: string | null;
     readonly dueDate?: string | null;
     readonly totalQuantity?: number;
+    readonly factoryDeliveryMemo?: string | null;
   };
 };
 
 export type PatchWorkOrderBasicInfoResult = {
   readonly result: {
     readonly productName: string;
+    readonly productTypeCode?: string | null;
+    readonly seasonCode?: string | null;
+    readonly itemCode?: string | null;
     readonly dueDate: string | null;
     readonly totalQuantity: number;
   };

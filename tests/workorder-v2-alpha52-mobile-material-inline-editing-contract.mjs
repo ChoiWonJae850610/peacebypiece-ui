@@ -52,7 +52,7 @@ for (const input of [
 assert.match(app, /await workOrderMutationController\.updateMaterial/);
 assert.match(app, /await workOrderMutationController\.createMaterial/);
 assert.match(app, /requestArchiveMaterial/);
-assert.match(app, /requestRestoreMaterial/);
+assert.doesNotMatch(materials, /onRestore|restoreButton|archivedSection/);
 assert.match(app, /materialMutation\.inFlight/);
 assert.doesNotMatch(materials, /onPress=\{onEdit\}/);
 for (const source of [runtimeGuard, qaConfig, runner]) assert.match(source, /2\.0\.0-alpha\.52-dev-test-mobile-core-inline-runtime/);

@@ -12,8 +12,12 @@
   },
   "include": [
     "app",
+    "application",
     "components",
     "constants",
+    "domain",
+    "features",
+    "hooks",
     "lib",
     "expo-env.d.ts",
     ".expo/types/**/*.ts"

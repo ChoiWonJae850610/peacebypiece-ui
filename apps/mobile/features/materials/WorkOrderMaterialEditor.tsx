@@ -8,7 +8,15 @@ import type { MaterialDraftFields, MaterialType } from "@/domain/mobileContract"
 import WaflReelPickerSheet from "@/features/inputs/reel-picker/WaflReelPickerSheet";
 import MaterialQuantityValue from "@/features/materials/MaterialQuantityValue";
 import { materialReelDraftPatch, type MaterialReelField } from "@/features/materials/materialReelAdapter";
-import { calculateMaterialAmount, calculateOrderQuantity, formatQuantity, formatWon } from "@/lib/mobileDisplay";
+import {
+  calculateMaterialAmount,
+  calculateOrderQuantity,
+  formatQuantity,
+  formatWon,
+  normalizeNumericCommitValue,
+  normalizeNumericDraft,
+  prepareNumericDraftOnFocus,
+} from "@/lib/mobileDisplay";
 
 export type MaterialEditorMode = "create" | "edit";
 export type MaterialEditorSaveState = "editing" | "saving" | "validation-error" | "conflict" | "locked" | "save-error" | "refresh-error";
@@ -54,6 +62,7 @@ type ReelEditorTarget = { readonly field: MaterialReelField; readonly label: str
 
 function EditorField({ label, field, state, onChange, keyboardType = "default", multiline = false, placeholder, maxLength }: FieldProps) {
   const disabled = state.saveState === "saving" || state.saveState === "locked" || state.saveState === "refresh-error";
+  const numeric = keyboardType === "number-pad" || keyboardType === "decimal-pad";
   return (
     <View style={[styles.field, multiline && styles.fieldWide]}>
       <Text style={styles.label}>{label}</Text>
@@ -63,7 +72,13 @@ function EditorField({ label, field, state, onChange, keyboardType = "default", 
         keyboardType={keyboardType}
         maxLength={maxLength}
         multiline={multiline}
-        onChangeText={(value) => onChange(field, value)}
+        onBlur={() => {
+          if (numeric && !state.draft[field].trim()) onChange(field, normalizeNumericCommitValue(state.draft[field]));
+        }}
+        onChangeText={(value) => onChange(field, numeric ? normalizeNumericDraft(value) : value)}
+        onFocus={() => {
+          if (numeric) onChange(field, prepareNumericDraftOnFocus(state.draft[field]));
+        }}
         placeholder={placeholder}
         placeholderTextColor="#a09387"
         style={[styles.input, multiline && styles.inputMultiline, state.fieldErrors[field] && styles.inputInvalid]}
@@ -153,9 +168,6 @@ export default function WorkOrderMaterialEditor({ state, dirty, onChange, onCanc
         <EditorField field="memo" label="메모" maxLength={2000} multiline onChange={onChange} placeholder="메모를 입력하세요" state={state} />
       </View>
 
-      {state.saveMessage ? (
-        <Text accessibilityRole="alert" style={[styles.message, state.saveState === "conflict" && styles.conflictMessage]}>{state.saveMessage}</Text>
-      ) : null}
       {reloadAvailable ? (
         <Pressable accessibilityRole="button" onPress={onReloadLatest} style={styles.reloadButton}>
           <Text style={styles.reloadText}>{state.saveState === "refresh-error" ? "저장 결과 다시 확인" : "최신 내용 불러오기"}</Text>
@@ -196,8 +208,6 @@ const styles = StyleSheet.create({
   calculatedValue: { backgroundColor: "#f4efe7", borderColor: "#ddd2c5", borderRadius: 8, borderWidth: 1, justifyContent: "center", minHeight: 44, paddingHorizontal: 10 },
   calculatedText: { color: "#5f554c", fontFamily: WAFL_FONTS.bold, fontSize: 13 },
   fieldError: { color: "#a33b35", fontFamily: WAFL_FONTS.medium, fontSize: 10, lineHeight: 15, marginTop: 3 },
-  message: { color: "#8b4526", fontFamily: WAFL_FONTS.semibold, fontSize: 11, lineHeight: 17, paddingVertical: 5 },
-  conflictMessage: { color: "#9a352f" },
   reloadButton: { alignItems: "center", alignSelf: "flex-start", borderColor: "#b9aa9a", borderRadius: 8, borderWidth: 1, justifyContent: "center", minHeight: 40, paddingHorizontal: 12 },
   reloadText: { color: "#584b41", fontFamily: WAFL_FONTS.bold, fontSize: 11 },
   actions: { flexDirection: "row", gap: 8, justifyContent: "flex-end", paddingTop: 10 },

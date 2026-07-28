@@ -1,10 +1,19 @@
 import {
   archiveWorkOrderMaterial,
+  completeWorkOrderImageUpload,
   createWorkOrderMaterial,
+  deleteWorkOrderImage,
+  deleteWorkOrderAttachment,
   patchWorkOrderBasicInfo,
+  completeWorkOrderAttachmentUpload,
   patchWorkOrderMaterial,
+  prepareWorkOrderImageUpload,
+  prepareWorkOrderAttachmentUpload,
+  putWorkOrderImageBlob,
   restoreWorkOrderMaterial,
+  setRepresentativeWorkOrderImage,
   transitionWorkOrderMaterialOrder,
+  issueWorkOrderAttachmentPreview,
 } from "../../lib/apiClient";
 import type {
   CreateMaterialLineInput,
@@ -39,5 +48,32 @@ export const workOrderMutationController = {
     idempotencyKey: string,
   ) {
     return transitionWorkOrderMaterialOrder(workOrderId, materialLineId, kind, command, idempotencyKey);
+  },
+  prepareImageUpload(workOrderId: string, file: { readonly name: string; readonly type: string; readonly size: number }) {
+    return prepareWorkOrderImageUpload(workOrderId, file);
+  },
+  putImageBlob(target: Parameters<typeof putWorkOrderImageBlob>[0], blob: Blob) {
+    return putWorkOrderImageBlob(target, blob);
+  },
+  completeImageUpload(workOrderId: string, input: Parameters<typeof completeWorkOrderImageUpload>[1]) {
+    return completeWorkOrderImageUpload(workOrderId, input);
+  },
+  setRepresentativeImage(workOrderId: string, imageId: string, input: Parameters<typeof setRepresentativeWorkOrderImage>[2]) {
+    return setRepresentativeWorkOrderImage(workOrderId, imageId, input);
+  },
+  deleteImage(workOrderId: string, imageId: string, input: Parameters<typeof deleteWorkOrderImage>[2]) {
+    return deleteWorkOrderImage(workOrderId, imageId, input);
+  },
+  prepareAttachmentUpload(workOrderId: string, file: { readonly name: string; readonly type: string; readonly size: number }) {
+    return prepareWorkOrderAttachmentUpload(workOrderId, file);
+  },
+  completeAttachmentUpload(workOrderId: string, input: Parameters<typeof completeWorkOrderAttachmentUpload>[1]) {
+    return completeWorkOrderAttachmentUpload(workOrderId, input);
+  },
+  deleteAttachment(workOrderId: string, attachmentId: string, input: Parameters<typeof deleteWorkOrderAttachment>[2]) {
+    return deleteWorkOrderAttachment(workOrderId, attachmentId, input);
+  },
+  issueAttachmentPreview(workOrderId: string, attachmentId: string) {
+    return issueWorkOrderAttachmentPreview(workOrderId, attachmentId);
   },
 } as const;

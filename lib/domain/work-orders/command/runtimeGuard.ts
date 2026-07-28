@@ -22,6 +22,8 @@ export const WAFL_V2_ALPHA55_MATERIAL_ORDER_LIFECYCLE_MUTATION_APPROVAL =
   "2.0.0-alpha.55-dev-test-mobile-material-order-lifecycle-runtime";
 export const WAFL_V2_ALPHA56_ACCESSORY_LIFECYCLE_PARITY_MUTATION_APPROVAL =
   "2.0.0-alpha.56-dev-test-accessory-lifecycle-parity-runtime";
+export const WAFL_V2_ALPHA57_WORK_ORDER_IMAGE_MUTATION_APPROVAL =
+  "2.0.0-alpha.57-dev-test-work-order-image-runtime";
 
 const SUPPORTED_MUTATION_APPROVALS = new Set([
   WAFL_V2_ALPHA25_MUTATION_APPROVAL,
@@ -30,6 +32,7 @@ const SUPPORTED_MUTATION_APPROVALS = new Set([
   WAFL_V2_ALPHA30_MUTATION_APPROVAL,
   WAFL_V2_ALPHA55_MATERIAL_ORDER_LIFECYCLE_MUTATION_APPROVAL,
   WAFL_V2_ALPHA56_ACCESSORY_LIFECYCLE_PARITY_MUTATION_APPROVAL,
+  WAFL_V2_ALPHA57_WORK_ORDER_IMAGE_MUTATION_APPROVAL,
 ]);
 
 export type WorkOrderV2CommandRuntimeGuard =
@@ -72,6 +75,7 @@ export function getWorkOrderV2BasicInfoMutationRuntimeGuard(): WorkOrderV2Comman
     configuredApproval !== WAFL_V2_ALPHA25_MUTATION_APPROVAL
     && configuredApproval !== WAFL_V2_ALPHA46_BASIC_INFO_MUTATION_APPROVAL
     && configuredApproval !== WAFL_V2_ALPHA52_CORE_INLINE_MUTATION_APPROVAL
+    && configuredApproval !== WAFL_V2_ALPHA57_WORK_ORDER_IMAGE_MUTATION_APPROVAL
   ) {
     return { ok: false, reason: "basic-info-mutation-approval-missing" };
   }
@@ -90,12 +94,20 @@ export function getWorkOrderV2MaterialDraftMutationRuntimeGuard(): WorkOrderV2Co
     && configuredApproval !== WAFL_V2_ALPHA52_CORE_INLINE_MUTATION_APPROVAL
     && configuredApproval !== WAFL_V2_ALPHA55_MATERIAL_ORDER_LIFECYCLE_MUTATION_APPROVAL
     && configuredApproval !== WAFL_V2_ALPHA56_ACCESSORY_LIFECYCLE_PARITY_MUTATION_APPROVAL
+    && configuredApproval !== WAFL_V2_ALPHA57_WORK_ORDER_IMAGE_MUTATION_APPROVAL
   ) {
     return { ok: false, reason: "material-draft-mutation-approval-missing" };
   }
   return getWorkOrderV2CommandRuntimeGuard({
     requireMutationApproval: true,
     requiredMutationApproval: configuredApproval,
+  });
+}
+
+export function getWorkOrderV2ImageMutationRuntimeGuard(): WorkOrderV2CommandRuntimeGuard {
+  return getWorkOrderV2CommandRuntimeGuard({
+    requireMutationApproval: true,
+    requiredMutationApproval: WAFL_V2_ALPHA57_WORK_ORDER_IMAGE_MUTATION_APPROVAL,
   });
 }
 

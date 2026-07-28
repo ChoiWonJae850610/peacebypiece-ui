@@ -8,7 +8,16 @@
     "orientation": "default",
     "userInterfaceStyle": "light",
     "plugins": [
-      "expo-router"
+      "expo-router",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "WAFL 작업지시서에 사용할 사진을 선택하기 위해 사진 보관함 접근이 필요합니다.",
+          "cameraPermission": "WAFL 작업지시서 이미지를 촬영하기 위해 카메라 접근이 필요합니다.",
+          "microphonePermission": false
+        }
+      ],
+      "expo-document-picker"
     ],
     "experiments": {
       "typedRoutes": true
@@ -27,7 +36,7 @@
       }
     },
     "extra": {
-      "appVersion": "2.0.0-alpha.56",
+      "appVersion": "2.0.0-alpha.57",
       "mockOnly": false,
       "dataMode": "dev-test-tailscale-auto-connect",
       "router": {},

@@ -8,6 +8,7 @@ const WORK_ORDER_ATTACHMENT_KEY_PATTERN = /^companies\/[^/]+\/workorders\/[^/]+\
 const WORK_ORDER_PDF_KEY_PATTERN = /^companies\/[^/]+\/workorders\/[^/]+\/pdf\/[^/]+\.pdf$/i;
 const WORK_ORDER_GENERATED_DOCUMENT_KEY_PATTERN = /^companies\/[^/]+\/workorders\/[^/]+\/generated\/order-request\/[^/]+\.pdf$/i;
 const WORK_ORDER_ATTACHMENT_THUMBNAIL_KEY_PATTERN = /^companies\/[^/]+\/workorders\/[^/]+\/thumbnails\/(design|attachments)\/[^/]+\.webp$/i;
+const WORK_ORDER_IMAGE_PREVIEW_KEY_PATTERN = /^companies\/[^/]+\/workorders\/[^/]+\/previews\/design\/[^/]+-(medium|large)\.webp$/i;
 
 function getFileExtension(filename: string): string {
   const [, extension = ""] = filename.match(/\.([a-z0-9]+)$/i) ?? [];
@@ -84,8 +85,35 @@ export function isSupportedWorkOrderAttachmentStorageKey(key: string): boolean {
     WORK_ORDER_ATTACHMENT_KEY_PATTERN.test(normalized) ||
     WORK_ORDER_PDF_KEY_PATTERN.test(normalized) ||
     WORK_ORDER_GENERATED_DOCUMENT_KEY_PATTERN.test(normalized) ||
-    WORK_ORDER_ATTACHMENT_THUMBNAIL_KEY_PATTERN.test(normalized)
+    WORK_ORDER_ATTACHMENT_THUMBNAIL_KEY_PATTERN.test(normalized) ||
+    WORK_ORDER_IMAGE_PREVIEW_KEY_PATTERN.test(normalized)
   );
+}
+
+export type WorkOrderImageDerivativeKeys = {
+  readonly thumbnail: string;
+  readonly medium: string;
+  readonly large: string;
+};
+
+export function createWorkOrderImageDerivativeKeys(storageObjectKey: string): WorkOrderImageDerivativeKeys {
+  const normalized = normalizeStorageKey(storageObjectKey);
+  const match = normalized.match(
+    /^companies\/([^/]+)\/workorders\/([^/]+)\/design\/([^/.]+)(?:\.[^/]+)?$/i,
+  );
+  if (!match) throw new Error("WORK_ORDER_IMAGE_DERIVATIVE_SOURCE_KEY_INVALID");
+  const [, companyId, workOrderId, objectId] = match;
+  return {
+    thumbnail: `companies/${companyId}/workorders/${workOrderId}/thumbnails/design/${objectId}.webp`,
+    medium: `companies/${companyId}/workorders/${workOrderId}/previews/design/${objectId}-medium.webp`,
+    large: `companies/${companyId}/workorders/${workOrderId}/previews/design/${objectId}-large.webp`,
+  };
+}
+
+export function isWorkOrderImageDerivativeStorageKey(key: string): boolean {
+  const normalized = normalizeStorageKey(key);
+  return WORK_ORDER_ATTACHMENT_THUMBNAIL_KEY_PATTERN.test(normalized)
+    || WORK_ORDER_IMAGE_PREVIEW_KEY_PATTERN.test(normalized);
 }
 
 export type ParsedWorkOrderAttachmentStorageKey = {
@@ -94,6 +122,7 @@ export type ParsedWorkOrderAttachmentStorageKey = {
   directory: "design" | "attachments" | "pdf" | "generated/order-request";
   fileName: string;
   isThumbnail: boolean;
+  derivativeKind: "thumbnail" | "medium" | "large" | null;
 };
 
 export function parseWorkOrderAttachmentStorageKey(key: string): ParsedWorkOrderAttachmentStorageKey | null {
@@ -118,6 +147,7 @@ export function parseWorkOrderAttachmentStorageKey(key: string): ParsedWorkOrder
         directory: "generated/order-request",
         fileName,
         isThumbnail: false,
+        derivativeKind: null,
       };
     }
   }
@@ -139,6 +169,7 @@ export function parseWorkOrderAttachmentStorageKey(key: string): ParsedWorkOrder
         directory,
         fileName,
         isThumbnail: false,
+        derivativeKind: null,
       };
     }
 
@@ -153,16 +184,20 @@ export function parseWorkOrderAttachmentStorageKey(key: string): ParsedWorkOrder
       directory,
       fileName,
       isThumbnail: false,
+      derivativeKind: null,
     };
   }
 
   if (segments.length === 7) {
-    const [root, companyId, workorders, workOrderId, thumbnails, directory, fileName] = segments;
+    const [root, companyId, workorders, workOrderId, derivativeDirectory, directory, fileName] = segments;
     const isSupportedDirectory = directory === "design" || directory === "attachments";
+    const previewKind = fileName?.match(/-(medium|large)\.webp$/i)?.[1]?.toLowerCase() ?? null;
+    const isThumbnail = derivativeDirectory === "thumbnails";
+    const isPreview = derivativeDirectory === "previews" && directory === "design" && previewKind !== null;
     if (
       root !== "companies" ||
       workorders !== "workorders" ||
-      thumbnails !== "thumbnails" ||
+      (!isThumbnail && !isPreview) ||
       !companyId ||
       !workOrderId ||
       !isSupportedDirectory ||
@@ -177,7 +212,8 @@ export function parseWorkOrderAttachmentStorageKey(key: string): ParsedWorkOrder
       workOrderId,
       directory,
       fileName,
-      isThumbnail: true,
+      isThumbnail,
+      derivativeKind: isThumbnail ? "thumbnail" : previewKind as "medium" | "large",
     };
   }
 

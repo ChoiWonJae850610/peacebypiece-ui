@@ -51,9 +51,13 @@ assert.match(materials, /headerBadgeCluster: \{[^\n]*flexDirection: "row"[^\n]*f
 assert.match(materials, /materialName: \{[^\n]*minWidth: 0[^\n]*width: "100%"/);
 assert.match(materials, /statusBadge: \{[^\n]*flexShrink: 0[^\n]*lineHeight: 14/);
 assert.doesNotMatch(materials, /materialTitleRow/);
-assert.match(materials, /function ArchivedMaterialCard[\s\S]*?createMaterialHeaderPresentation/);
-assert.match(materials, /styles\.archivedBadgeCluster[\s\S]*?styles\.archivedUnitChip[\s\S]*?styles\.archivedBadge/);
-assert.match(materials, /archivedBadgeCluster: \{[^\n]*flexShrink: 0[^\n]*flexWrap: "nowrap"/);
+const materialCard = materials.slice(
+  materials.indexOf("function MaterialCard("),
+  materials.indexOf("function AddMaterialButton("),
+);
+assert.match(materialCard, /const headerPresentation = createMaterialHeaderPresentation/);
+assert.match(materialCard, /styles\.headerBadgeCluster[\s\S]*?field="unitCode"[\s\S]*?styles\.statusBadge[\s\S]*?headerPresentation\.badgeCluster\[1\]\.text/);
+assert.doesNotMatch(materials, /function ArchivedMaterialCard|archivedBadgeCluster|archivedUnitChip|archivedBadge/);
 assert.match(reelValue, /readonly displayNumberOfLines\?: number/);
 assert.match(reelValue, /displayNumberOfLines = 2/);
 assert.match(runtimeQa, /--header-layout-readonly/);

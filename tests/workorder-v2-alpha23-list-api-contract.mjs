@@ -118,7 +118,10 @@ assert.match(repository, /\(w\.updated_at, w\.id\) < \(\$2::timestamptz, \$3::uu
 assert.doesNotMatch(repository, /SELECT\s+\*/i, "v2 list repository must not use SELECT *");
 assert.doesNotMatch(repository, /\bLATERAL\b/i, "row-wise lateral aggregation is forbidden");
 assert.doesNotMatch(repository, /JSONB?_AGG|JSON_AGG/i, "full child JSON aggregation is forbidden");
-assert.doesNotMatch(repository, /storage_object_key|thumbnail_object_key/i, "storage keys must not enter list SQL");
+assert.match(repository, /COALESCE\(i\.thumbnail_object_key, i\.storage_object_key\) AS image_key/, "representative image proxy input must be selected");
+assert.match(repository, /createV2WorkOrderImageFileProxyUrl\(row\.image_key\)/, "representative image keys must become controlled proxy URLs");
+const listMapper = repository.slice(repository.indexOf("function mapRow("), repository.indexOf("export async function listWorkOrdersV2"));
+assert.doesNotMatch(listMapper, /storage_object_key|thumbnail_object_key/i, "raw storage key names must not enter the list response mapper");
 
 for (const token of [
   "WAFL_V2_READ_API_ENABLED",

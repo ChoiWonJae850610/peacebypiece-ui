@@ -42,7 +42,7 @@ assert.match(app, /현재 상태에서는 수정할 수 없습니다\./);
 assert.match(detail, /발행된 작업지시서는 읽기 전용입니다\./);
 assert.match(
   inlineField,
-  /const saveDisabled = \(!dirty && !nativeDirty\) \|\| saving \|\| finalizing \|\| emptyNumericDraft/,
+  /const saveDisabled = \(!dirty && !nativeDirty\) \|\| saving \|\| finalizing/,
 );
 assert.match(inlineField, /disabled=\{saveDisabled\}/);
 assert.match(detail, /<WaflReelPickerSheet[\s\S]*field="totalQuantity"[\s\S]*kind="integer"/);

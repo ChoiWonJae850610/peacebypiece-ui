@@ -6,6 +6,7 @@ import {
   GENERATED_DOCUMENT_STATUSES,
   WORK_ORDER_STATUSES,
   type CompanyMemberId,
+  type ControlledFileUrl,
   type CurrencyCode,
   type DecimalString,
   type DisplayDocumentNumber,
@@ -19,6 +20,7 @@ import {
 } from "@/lib/domain/work-orders/contracts";
 import { serializePostgresDateOnly } from "@/lib/domain/work-orders/dateOnly.mjs";
 import { withWaflV2TenantReadOnlyTransaction, type DbQueryResultRow } from "@/lib/db/client";
+import { createV2WorkOrderImageFileProxyUrl } from "@/lib/storage/r2/r2Client";
 
 // Counts bounded statements inside the repository callback, not all endpoint protocol round trips.
 export const WORK_ORDER_V2_LIST_REPOSITORY_QUERY_COUNT = 2;
@@ -84,6 +86,7 @@ export const WORK_ORDER_V2_LIST_SQL = `
   SELECT p.id, p.document_number_base, p.product_name, p.status, p.due_date,
          p.total_quantity, p.revision_no, p.estimated_total, p.updated_at,
          i.id AS image_id, i.title AS image_title,
+         COALESCE(i.thumbnail_object_key, i.storage_object_key) AS image_key,
          COALESCE(m.incomplete_fabric_count, 0)::integer AS incomplete_fabric_count,
          COALESCE(m.incomplete_accessory_count, 0)::integer AS incomplete_accessory_count,
          COALESCE(pc.process_count, 0)::integer AS process_count,
@@ -109,6 +112,7 @@ type WorkOrderListRow = DbQueryResultRow & {
   readonly updated_at: string | Date;
   readonly image_id: string | null;
   readonly image_title: string | null;
+  readonly image_key: string | null;
   readonly incomplete_fabric_count: number | string;
   readonly incomplete_accessory_count: number | string;
   readonly process_count: number | string;
@@ -168,7 +172,9 @@ function mapRow(row: WorkOrderListRow): WorkOrderListItem {
     representativeThumbnail: row.image_id
       ? {
           imageId: row.image_id as ImageId,
-          thumbnailUrl: null,
+          thumbnailUrl: row.image_key
+            ? createV2WorkOrderImageFileProxyUrl(row.image_key) as ControlledFileUrl
+            : null,
           altText: row.image_title?.trim() || `${row.product_name} 대표 이미지`,
         }
       : null,

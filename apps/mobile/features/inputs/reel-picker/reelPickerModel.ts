@@ -16,6 +16,7 @@ const COUNT_UNITS = new Set(["개", "장", "벌", "ea", "set"]);
 export type ReelOption = {
   readonly key: string;
   readonly value: string;
+  readonly label?: string;
 };
 
 export type ReelWindow = {

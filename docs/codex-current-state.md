@@ -4,7 +4,7 @@ Document type: **Current Baseline**
 
 Canonical owner: `docs/codex-current-state.md`
 
-Result version: `2.0.0-alpha.56`
+Result version: `2.0.0-alpha.57`
 Status: `ALPHA56_ACCESSORY_LIFECYCLE_PARITY_COMPLETE`
 
 This file is a compact present-state snapshot. It is not a version history, Permanent Rules owner, runtime process ledger, or evidence archive. Historical implementation details belong to numbered immutable evidence under `docs/project/app-v2/`.
@@ -19,8 +19,8 @@ This file is a compact present-state snapshot. It is not a version history, Perm
 | Entry commit | `feat: WAFL v2 원단 발주취소와 메모 IME lifecycle 완성` |
 | Entry ahead/behind | `0/0` |
 | Entry working tree | clean |
-| APP_VERSION | `2.0.0-alpha.56` |
-| Mobile package version | `2.0.0-alpha.56` |
+| APP_VERSION | `2.0.0-alpha.57` |
+| Mobile package version | `2.0.0-alpha.57` |
 | Root package version | `0.5.637` |
 | Expo public version | `2.0.0` |
 | iOS Development Build | build number `1`, reusable while native inputs remain unchanged |
@@ -31,8 +31,8 @@ The source cannot contain the hash of the commit that contains itself. Final alp
 
 ## Latest delivery boundary
 
-- Target Source ZIP: `peacebypiece-ui-2.0.0-alpha.56.zip`.
-- Target repo-state: `repo-state-2.0.0-alpha.56-<actual timestamp>.txt`.
+- Target Source ZIP: `peacebypiece-ui-2.0.0-alpha.57.zip`.
+- Target repo-state: `repo-state-2.0.0-alpha.57-<actual timestamp>.txt`.
 - `4. Newest` must contain only that matching pair after Finish.
 - The previous accepted handoff is the matching alpha.55 ZIP/repo-state pair recorded in its repo-state.
 

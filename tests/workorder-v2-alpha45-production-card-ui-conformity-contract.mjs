@@ -32,7 +32,7 @@ assert.doesNotMatch(detail, /core detail에 포함된 실제 건수만 표시합
 assert.doesNotMatch(detail, />\s*Entity version\s*</);
 assert.doesNotMatch(detail, /value=\{detail\.revision\.status\}/);
 assert.doesNotMatch(detail, /\?\?\s*status/);
-assert.match(detail, /formatProductType\(header\.productTypeAlias, header\.productTypeCode\)/);
+assert.doesNotMatch(detail, /formatProductType\(header\.productTypeAlias, header\.productTypeCode\)/);
 assert.doesNotMatch(detail, /formatRevisionStatus|formatDocumentStatus/);
 assert.match(display, /"apparel\.onepiece_set": "원피스·세트"/);
 assert.match(display, /finalized: "확정됨"/);
@@ -44,18 +44,20 @@ for (const field of ["header.productName", "header.totalQuantity", "header.dueDa
 }
 assert.doesNotMatch(detail, /Revision\s*R/);
 assert.doesNotMatch(detail, /header\.id/);
-assert.match(detail, /대표 이미지 준비 중/);
-assert.doesNotMatch(detail, /<Image\b|Image\s*from\s*["']react-native/);
-assert.doesNotMatch(apiClient, /\/processes|\/assets|\/documents|\/history|\/size-color|\/size-spec/);
-assert.doesNotMatch(apiClient, /method: "(?:PUT|DELETE)"/);
+assert.match(detail, /대표 이미지 없음/);
+assert.match(detail, /WorkOrderImageGallery/);
+assert.match(apiClient, /\/assets\?limit=50/);
+assert.doesNotMatch(apiClient, /\/processes|\/documents|\/history|\/size-color|\/size-spec/);
+assert.match(apiClient, /target\.method/);
+assert.doesNotMatch(apiClient, /method: "DELETE"/);
 
-for (const tab of ["개요", "이미지·첨부", "사이즈·색상", "원단", "부자재", "제작 플로우", "출력·공유"]) assert.match(detail, new RegExp(tab));
+for (const tab of ["개요", "이미지·첨부", "사이즈·색상", "원단", "부자재", "제작", "문서"]) assert.match(detail, new RegExp(tab));
 assert.match(detail, /accessibilityState=\{\{ disabled: true \}\}/);
 assert.match(detail, /disabled\s*\n/);
 assert.match(detail, /setActiveSection/);
 assert.doesNotMatch(detail, /setActiveTab|activeTab/);
 assert.match(detail, /tab\.id === "fabric" \|\| tab\.id === "accessory"/);
-assert.match(detail, /이미지·첨부, 사이즈·색상, 제작 플로우, 출력·공유는 다음 단계에서 연결 예정입니다/);
+assert.match(detail, /activeSection === "media"[\s\S]*WorkOrderImageGallery/);
 
 assert.match(detail, /navigationBar:[^\n]+minHeight: 44/);
 assert.doesNotMatch(detail, /navigationBar:[^\n]+position:/);
@@ -65,7 +67,7 @@ assert.match(detail, /heroText:[^\n]+flexGrow: 1[^\n]+flexShrink: 1[^\n]+minWidt
 assert.match(detail, /title:[^\n]+flexShrink: 1[^\n]+minWidth: 0/);
 assert.match(detail, /useWindowDimensions/);
 assert.match(detail, /width < 390/);
-for (const removedSection of ["기본 정보", "문서 요약", "구성 요약", "Revision 상태", "Revision 확정", "최종 수정", "문서 상태", "문서번호", "생성 시각"]) {
+for (const removedSection of ["문서 요약", "구성 요약", "Revision 상태", "Revision 확정", "최종 수정", "문서 상태", "문서번호", "생성 시각"]) {
   assert.doesNotMatch(detail, new RegExp(removedSection), `overview must not contain ${removedSection}`);
 }
 assert.match(app, /numberOfLines=\{1\} style=\{styles\.context\}/);

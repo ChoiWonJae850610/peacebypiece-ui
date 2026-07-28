@@ -4,6 +4,7 @@ import fs from "node:fs";
 
 import {
   canonicalizeNumericInput,
+  normalizeNumericCommitValue,
   normalizeNumericDraft,
   prepareNumericDraftOnFocus,
   shouldSelectNumericValueOnFocus,
@@ -36,6 +37,8 @@ assert.equal(shouldSelectNumericValueOnFocus("0.05"), false);
 assert.equal(prepareNumericDraftOnFocus("0"), "");
 assert.equal(prepareNumericDraftOnFocus("0.000"), "");
 assert.equal(prepareNumericDraftOnFocus("0.05"), "0.05");
+assert.equal(normalizeNumericCommitValue(""), "0");
+assert.equal(normalizeNumericCommitValue("00081"), "81");
 
 assert.match(controlled, /numeric \? normalizeNumericDraft\(nextValue\) : nextValue/);
 assert.match(controlled, /prepareNumericDraftOnFocus\(activation\.value\)/);
@@ -44,7 +47,7 @@ assert.match(controlled, /focusFrame = requestAnimationFrame/);
 assert.doesNotMatch(controlled, /selection=\{selection\}/);
 assert.match(controlled, /placeholder=\{emptyNumericDraft \? "0" : placeholder\}/);
 assert.match(controlled, /onPress=\{handleSaveRequest\}/);
-assert.match(controlled, /const saveDisabled = \(!dirty && !nativeDirty\) \|\| saving \|\| finalizing \|\| emptyNumericDraft/);
+assert.match(controlled, /const saveDisabled = \(!dirty && !nativeDirty\) \|\| saving \|\| finalizing/);
 assert.match(controlled, /disabled=\{saveDisabled\}/);
 assert.doesNotMatch(`${controlled}\n${app}`, /setInterval|automatic.?save/i);
 assert.match(app, /overviewMutation\.inFlight/);

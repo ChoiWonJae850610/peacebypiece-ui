@@ -42,8 +42,6 @@ export type MaterialReadViewState = {
 type Props = {
   readonly materialType: MaterialType;
   readonly state: MaterialReadViewState;
-  readonly archivedState: MaterialReadViewState;
-  readonly archivedTotalCount: number;
   readonly canEdit: boolean;
   readonly lifecycleBusyId: string | null;
   readonly orderBusyId: string | null;
@@ -58,11 +56,9 @@ type Props = {
   readonly onSaveEdit: (draftOverride?: MaterialDraftUpdate) => void;
   readonly onArchive: (line: WorkOrderMaterialLine) => void;
   readonly onOrderAction: (line: WorkOrderMaterialLine, action: MaterialOrderAction) => void;
-  readonly onRestore: (line: WorkOrderMaterialLine) => void;
   readonly orderPolicy: (line: WorkOrderMaterialLine) => MaterialOrderPolicy;
   readonly onRetry: () => void;
   readonly onLoadMore: () => void;
-  readonly onLoadMoreArchived: () => void;
   readonly onFieldFocus: (target: TextInput) => void;
 };
 
@@ -108,6 +104,7 @@ function MaterialInlineField({
       accessibilityLabel={label}
       active={active}
       containerStyle={containerStyle}
+      commitMode={field === "usageArea" || field === "memo" ? "blur-submit" : "explicit"}
       dirty={active ? editor?.draft[field] !== editor?.base[field] : false}
       displayStyle={displayStyle}
       displayValue={displayValue}
@@ -512,6 +509,15 @@ function MaterialCard({ line, expanded, canEdit, lifecycleBusy, orderBusyAction,
         </View>
         {actions.length || orderPolicy.canEdit ? (
           <View testID="material-order-actions" style={styles.materialOrderActions}>
+            {actions.map((action) => (
+              <MaterialOrderActionButton
+                action={action}
+                busy={orderBusyAction === action.kind}
+                compact={compactActions}
+                key={action.kind}
+                onPress={() => onOrderAction(action.kind)}
+              />
+            ))}
             {orderPolicy.canEdit ? (
               <Pressable
                 accessibilityLabel={`${line.name} 삭제된 ${materialLabel}로 이동`}
@@ -525,15 +531,6 @@ function MaterialCard({ line, expanded, canEdit, lifecycleBusy, orderBusyAction,
                 {!compactActions ? <Text style={styles.iconActionCaptionDanger}>삭제</Text> : null}
               </Pressable>
             ) : null}
-            {actions.map((action) => (
-              <MaterialOrderActionButton
-                action={action}
-                busy={orderBusyAction === action.kind}
-                compact={compactActions}
-                key={action.kind}
-                onPress={() => onOrderAction(action.kind)}
-              />
-            ))}
           </View>
         ) : null}
       </View>
@@ -541,65 +538,33 @@ function MaterialCard({ line, expanded, canEdit, lifecycleBusy, orderBusyAction,
   );
 }
 
-function ArchivedMaterialCard({ line, busy, onRestore }: {
-  readonly line: WorkOrderMaterialLine;
-  readonly busy: boolean;
-  readonly onRestore: () => void;
-}) {
-  const materialNameLabel = line.materialType === "accessory" ? "부자재명" : "원단명";
-  const headerPresentation = createMaterialHeaderPresentation({
-    name: line.name || `${materialNameLabel} 미입력`,
-    unitCode: line.unitCode,
-    statusLabel: "삭제됨",
-  });
-  return (
-    <View style={styles.archivedCard}>
-      <View style={styles.archivedIdentity}>
-        <View style={styles.archivedHeader}>
-          <Text numberOfLines={headerPresentation.maxNameLines} style={styles.archivedName}>{headerPresentation.name}</Text>
-          <View style={styles.archivedBadgeCluster}>
-            <Text maxFontSizeMultiplier={1.3} numberOfLines={1} style={styles.archivedUnitChip}>{headerPresentation.badgeCluster[0].text}</Text>
-            <Text maxFontSizeMultiplier={1.3} numberOfLines={1} style={styles.archivedBadge}>{headerPresentation.badgeCluster[1].text}</Text>
-          </View>
-        </View>
-        <Text numberOfLines={1} style={styles.archivedMeta}>{line.colorOption?.trim() || "색상 미입력"} · {formatQuantity(line.requiredQuantity, line.unitCode)}</Text>
-      </View>
-      <Pressable
-        accessibilityLabel={`${line.name} 복구`}
-        accessibilityRole="button"
-        accessibilityState={{ disabled: busy }}
-        disabled={busy}
-        onPress={onRestore}
-        style={({ pressed }) => [styles.restoreButton, busy && styles.disabledAction, pressed && styles.pressed]}
-      >
-        {busy ? <ActivityIndicator color="#3f5731" size="small" /> : <RotateCcw color="#3f5731" size={16} strokeWidth={2.25} />}
-        <Text style={styles.restoreButtonText}>복구</Text>
-      </Pressable>
-    </View>
-  );
-}
-
 function AddMaterialButton({ materialType, onPress }: { readonly materialType: MaterialType; readonly onPress: () => void }) {
   const materialLabel = materialType === "accessory" ? "부자재" : "원단";
   return (
-    <Pressable accessibilityHint={`새 ${materialLabel} 입력 화면을 엽니다`} accessibilityLabel={`${materialLabel} 추가`} accessibilityRole="button" onPress={onPress} style={({ pressed }) => [styles.addButton, pressed && styles.pressed]}>
+    <Pressable
+      accessibilityHint={`새 ${materialLabel} 입력 화면을 엽니다`}
+      accessibilityLabel={`${materialLabel} 추가`}
+      accessibilityRole="button"
+      onPress={onPress}
+      style={({ pressed }) => [styles.addButton, pressed && styles.pressed]}
+      testID={`material-add-${materialType}`}
+    >
       <Plus color="#ffffff" size={19} strokeWidth={2.4} />
+      <Text style={styles.addButtonText}>{materialLabel} 추가</Text>
     </Pressable>
   );
 }
 
 export default function WorkOrderMaterialsReadOnly({
-  materialType, state, archivedState, archivedTotalCount, canEdit, lifecycleBusyId, orderBusyId, orderBusyAction, saveNotice,
+  materialType, state, canEdit, lifecycleBusyId, orderBusyId, orderBusyAction,
   activeEditor, activeField, onAdd, onEdit, onChangeEdit, onCancelEdit, onSaveEdit,
-  onArchive, onOrderAction, onRestore, orderPolicy, onRetry, onLoadMore, onLoadMoreArchived, onFieldFocus,
+  onArchive, onOrderAction, orderPolicy, onRetry, onLoadMore, onFieldFocus,
 }: Props) {
   const [expandedIds, setExpandedIds] = useState<ReadonlySet<string>>(() => new Set());
-  const [archivedExpanded, setArchivedExpanded] = useState(false);
   const [reelTarget, setReelTarget] = useState<ReelTarget | null>(null);
   const waiting = state.status === "loading" || state.status === "retrying";
   const materialLabel = materialType === "accessory" ? "부자재" : "원단";
   const materialSubject = materialType === "accessory" ? "부자재가" : "원단이";
-  const materialTopic = materialType === "accessory" ? "부자재는" : "원단은";
 
   if (waiting && state.items.length === 0) {
     return (
@@ -610,7 +575,7 @@ export default function WorkOrderMaterialsReadOnly({
     );
   }
 
-  if (state.status === "empty" && (!canEdit || archivedTotalCount === 0)) {
+  if (state.status === "empty") {
     return <View style={styles.centerState}><Text style={styles.stateTitle}>등록된 {materialSubject} 없습니다</Text><Text style={styles.stateCaption}>이 작업지시서에 연결된 {materialLabel} 내역이 없습니다.</Text>{canEdit ? <AddMaterialButton materialType={materialType} onPress={onAdd} /> : null}</View>;
   }
 
@@ -648,14 +613,10 @@ export default function WorkOrderMaterialsReadOnly({
           visible
         />
       ) : null}
-      {canEdit || saveNotice ? (
+      {canEdit ? (
         <View style={styles.listToolbar}>
-          {saveNotice ? <Text accessibilityRole="alert" style={styles.saveNotice}>{saveNotice}</Text> : <View style={styles.toolbarSpacer} />}
-          {canEdit ? <AddMaterialButton materialType={materialType} onPress={onAdd} /> : null}
+          <AddMaterialButton materialType={materialType} onPress={onAdd} />
         </View>
-      ) : null}
-      {state.status === "empty" ? (
-        <View style={styles.inlineEmpty}><Text style={styles.stateTitle}>등록된 {materialSubject} 없습니다</Text><Text style={styles.stateCaption}>삭제된 {materialTopic} 아래에서 복구할 수 있습니다.</Text>{canEdit ? <AddMaterialButton materialType={materialType} onPress={onAdd} /> : null}</View>
       ) : null}
       {state.items.map((line) => (
         <MaterialCard
@@ -700,32 +661,6 @@ export default function WorkOrderMaterialsReadOnly({
           <Text style={styles.moreText}>{state.status === "loading-more" ? "더 불러오는 중" : "더 보기"}</Text>
         </Pressable>
       ) : null}
-      {canEdit && archivedTotalCount > 0 ? (
-        <View style={styles.archivedSection}>
-          <Pressable
-            accessibilityLabel={`삭제된 ${materialLabel} ${archivedTotalCount}개 ${archivedExpanded ? "접기" : "펼치기"}`}
-            accessibilityRole="button"
-            accessibilityState={{ expanded: archivedExpanded }}
-            onPress={() => setArchivedExpanded((current) => !current)}
-            style={({ pressed }) => [styles.archivedSectionHeader, pressed && styles.pressed]}
-          >
-            <Text style={styles.archivedSectionTitle}>삭제된 {materialLabel} {archivedTotalCount}개</Text>
-            {archivedExpanded ? <ChevronUp color="#6b5b4d" size={18} /> : <ChevronDown color="#6b5b4d" size={18} />}
-          </Pressable>
-          {archivedExpanded ? (
-            <View style={styles.archivedList}>
-              {archivedState.items.map((line) => (
-                <ArchivedMaterialCard busy={lifecycleBusyId === line.id} key={line.id} line={line} onRestore={() => onRestore(line)} />
-              ))}
-              {archivedState.hasMore ? (
-                <Pressable accessibilityRole="button" disabled={archivedState.status === "loading-more"} onPress={onLoadMoreArchived} style={styles.archivedMoreButton}>
-                  <Text style={styles.archivedMoreText}>{archivedState.status === "loading-more" ? "불러오는 중" : `삭제된 ${materialLabel} 더 보기`}</Text>
-                </Pressable>
-              ) : null}
-            </View>
-          ) : null}
-        </View>
-      ) : null}
     </View>
   );
 }
@@ -740,10 +675,9 @@ const styles = StyleSheet.create({
   retryText: { color: "#fff", fontFamily: WAFL_FONTS.bold, fontSize: 13 },
   pressed: { opacity: 0.7 },
   list: { gap: 10, padding: 12, paddingBottom: 16 },
-  listToolbar: { alignItems: "center", flexDirection: "row", gap: 8, justifyContent: "space-between", minHeight: 44 },
-  toolbarSpacer: { flex: 1 },
-  saveNotice: { color: "#4d6a3a", flex: 1, fontFamily: WAFL_FONTS.bold, fontSize: 11, lineHeight: 16, minWidth: 0 },
-  addButton: { alignItems: "center", backgroundColor: "#17263d", borderRadius: 8, height: 40, justifyContent: "center", width: 40 },
+  listToolbar: { gap: 8, minHeight: 44, width: "100%" },
+  addButton: { alignItems: "center", alignSelf: "stretch", backgroundColor: "#17263d", borderRadius: 8, flexDirection: "row", gap: 7, justifyContent: "center", minHeight: 44, paddingHorizontal: 14, width: "100%" },
+  addButtonText: { color: "#ffffff", fontFamily: WAFL_FONTS.bold, fontSize: 12 },
   card: { backgroundColor: "#fffdf8", borderColor: "#e7ded1", borderLeftWidth: 4, borderRadius: 8, borderWidth: 1, overflow: "hidden" },
   cardEditing: { borderLeftColor: "#a89d90" },
   cardRequested: { borderLeftColor: "#c75f35" },
@@ -806,20 +740,4 @@ const styles = StyleSheet.create({
   inlineRetryText: { color: "#8b4526", fontFamily: WAFL_FONTS.bold, fontSize: 12 },
   moreButton: { alignItems: "center", borderColor: "#cdbdad", borderRadius: 10, borderWidth: 1, flexDirection: "row", gap: 7, justifyContent: "center", minHeight: 44 },
   moreText: { color: "#6b4a36", fontFamily: WAFL_FONTS.bold, fontSize: 12 },
-  archivedSection: { backgroundColor: "#f5f1eb", borderColor: "#ddd3c7", borderRadius: 8, borderWidth: 1, marginTop: 4, overflow: "hidden" },
-  archivedSectionHeader: { alignItems: "center", flexDirection: "row", justifyContent: "space-between", minHeight: 44, paddingHorizontal: 12 },
-  archivedSectionTitle: { color: "#5d544c", fontFamily: WAFL_FONTS.bold, fontSize: 12 },
-  archivedList: { borderTopColor: "#ddd3c7", borderTopWidth: 1, gap: 7, padding: 8 },
-  archivedCard: { alignItems: "center", backgroundColor: "#fbf9f5", borderColor: "#ddd5ca", borderRadius: 8, borderWidth: 1, flexDirection: "row", gap: 8, minHeight: 72, padding: 10 },
-  archivedIdentity: { flex: 1, minWidth: 0 },
-  archivedHeader: { alignItems: "flex-start", flexDirection: "row", gap: 6, justifyContent: "space-between" },
-  archivedName: { color: "#4f4943", flex: 1, fontFamily: WAFL_FONTS.bold, fontSize: 12, lineHeight: 17, minWidth: 0 },
-  archivedMeta: { color: "#817970", fontFamily: WAFL_FONTS.regular, fontSize: 10, lineHeight: 15, marginTop: 2 },
-  archivedBadgeCluster: { alignItems: "center", flexDirection: "row", flexShrink: 0, flexWrap: "nowrap", gap: 6 },
-  archivedUnitChip: { backgroundColor: "#f2eadf", borderRadius: 999, color: "#6b5b4d", flexShrink: 0, fontFamily: WAFL_FONTS.bold, fontSize: 9, lineHeight: 13, overflow: "hidden", paddingHorizontal: 7, paddingVertical: 2 },
-  archivedBadge: { backgroundColor: "#e9e3dc", borderRadius: 999, color: "#746b62", flexShrink: 0, fontFamily: WAFL_FONTS.bold, fontSize: 9, lineHeight: 13, overflow: "hidden", paddingHorizontal: 7, paddingVertical: 2 },
-  restoreButton: { alignItems: "center", backgroundColor: "#f0f5eb", borderColor: "#b6c4aa", borderRadius: 8, borderWidth: 1, flexDirection: "row", gap: 4, minHeight: 38, paddingHorizontal: 10 },
-  restoreButtonText: { color: "#3f5731", fontFamily: WAFL_FONTS.bold, fontSize: 11 },
-  archivedMoreButton: { alignItems: "center", justifyContent: "center", minHeight: 38 },
-  archivedMoreText: { color: "#6b5b4d", fontFamily: WAFL_FONTS.bold, fontSize: 11 },
 });

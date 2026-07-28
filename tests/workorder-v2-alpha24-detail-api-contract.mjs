@@ -94,7 +94,14 @@ const assetsSql = sqlBlock("WORK_ORDER_V2_ASSETS_SQL");
 const documentsSql = sqlBlock("WORK_ORDER_V2_DOCUMENTS_SQL");
 const historySql = sqlBlock("WORK_ORDER_V2_HISTORY_SQL");
 
-assert.doesNotMatch(coreSql, /snapshot|storage_object_key|token_hash|document_access_tokens/i, "core payload SQL must not read document/file/token internals");
+assert.doesNotMatch(coreSql, /snapshot|token_hash|document_access_tokens/i, "core payload SQL must not read document or token internals");
+assert.match(coreSql, /COALESCE\(i\.thumbnail_object_key, i\.storage_object_key\) AS image_key/, "core payload may select only the representative image proxy input");
+const coreMapper = repository.slice(
+  repository.indexOf("export async function getWorkOrderDetailCoreV2"),
+  repository.indexOf("export async function getWorkOrderMaterialsV2"),
+);
+assert.match(coreMapper, /createV2WorkOrderImageFileProxyUrl\(String\(row\.image_key\)\)/, "representative image keys must become controlled proxy URLs");
+assert.doesNotMatch(coreMapper, /storage_object_key|thumbnail_object_key/i, "raw storage key names must not enter the core response mapper");
 assert.match(materialsSql, /work_order_material_lines/, "materials endpoint must read material lines");
 assert.doesNotMatch(materialsSql, /\bpartners\b/, "v2 tenant material read must not depend on ungranted legacy partner tables");
 assert.doesNotMatch(materialsSql, /work_order_processes|work_order_images|generated_documents|domain_events|color_size_quantities/, "materials endpoint must not eager-load other tabs");
@@ -104,7 +111,14 @@ assert.match(sizeSpecSql, /work_order_size_specs[\s\S]*work_order_size_spec_size
 assert.match(processesSql, /work_order_processes/, "process endpoint must read process rows");
 assert.doesNotMatch(processesSql, /work_order_material_lines|work_order_images|generated_documents|domain_events/, "process endpoint must not eager-load other tabs");
 assert.match(assetsSql, /work_order_revision_images[\s\S]*work_order_revision_attachments/, "assets endpoint must read revision-linked metadata");
-assert.doesNotMatch(assetsSql, /storage_object_key|thumbnail_object_key/, "asset endpoint must not select storage keys");
+assert.match(assetsSql, /storage_object_key[\s\S]*thumbnail_object_key/, "asset endpoint must select internal keys for controlled proxy generation");
+const assetMapper = repository.slice(
+  repository.indexOf("export async function getWorkOrderAssetsV2"),
+  repository.indexOf("export async function getWorkOrderDocumentsV2"),
+);
+assert.match(assetMapper, /createV2WorkOrderImageFileProxyUrl\(key\)/, "asset keys must become controlled proxy URLs");
+const assetResponse = assetMapper.match(/return \{\s+assetType,[\s\S]*?uploadedAt:[\s\S]*?\n    \};/)?.[0] ?? "";
+assert.doesNotMatch(assetResponse, /storageObjectKey|thumbnailObjectKey|originalKey/, "raw storage keys must not enter the asset response");
 assert.match(documentsSql, /generated_documents/, "documents endpoint must read generated document metadata");
 assert.doesNotMatch(documentsSql, /snapshot|storage_object_key|token_hash/, "documents endpoint must not select snapshot, object key, or token hash");
 assert.match(historySql, /domain_events/, "history endpoint must read domain events");

@@ -7,6 +7,7 @@ import type {
   PatchWorkOrderBasicInfoCommand,
   WorkOrderFieldError,
 } from "@/lib/domain/work-orders/contracts";
+import { FACTORY_DELIVERY_MEMO_MAX_LENGTH } from "@/lib/domain/work-orders/factoryDeliveryMemoPolicy";
 import { isIsoCalendarDate } from "@/lib/domain/work-orders/dateOnly.mjs";
 
 const CLIENT_REQUEST_ID_PATTERN = /^[A-Za-z0-9._:-]{1,128}$/;
@@ -142,7 +143,12 @@ export function validateCreateWorkOrderDraft(input: {
     dueDate: parseOptionalDate(input.body.dueDate, "dueDate", hasOwn(input.body, "dueDate")) ?? null,
     totalQuantity: parseOptionalQuantity(input.body.totalQuantity, "totalQuantity", hasOwn(input.body, "totalQuantity")) ?? 0,
     memo: parseOptionalText(input.body.memo, "memo", 5_000, hasOwn(input.body, "memo")) ?? null,
-    factoryDeliveryMemo: parseOptionalText(input.body.factoryDeliveryMemo, "factoryDeliveryMemo", 5_000, hasOwn(input.body, "factoryDeliveryMemo")) ?? null,
+    factoryDeliveryMemo: parseOptionalText(
+      input.body.factoryDeliveryMemo,
+      "factoryDeliveryMemo",
+      FACTORY_DELIVERY_MEMO_MAX_LENGTH,
+      hasOwn(input.body, "factoryDeliveryMemo"),
+    ) ?? null,
   };
 }
 
@@ -214,7 +220,14 @@ export function validatePatchWorkOrderBasicInfo(
       ? { memo: parseOptionalText(body.patch.memo, "patch.memo", 5_000, true) }
       : {}),
     ...(hasOwn(body.patch, "factoryDeliveryMemo")
-      ? { factoryDeliveryMemo: parseOptionalText(body.patch.factoryDeliveryMemo, "patch.factoryDeliveryMemo", 5_000, true) }
+      ? {
+          factoryDeliveryMemo: parseOptionalText(
+            body.patch.factoryDeliveryMemo,
+            "patch.factoryDeliveryMemo",
+            FACTORY_DELIVERY_MEMO_MAX_LENGTH,
+            true,
+          ),
+        }
       : {}),
   };
 

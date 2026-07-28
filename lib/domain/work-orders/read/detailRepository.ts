@@ -19,13 +19,10 @@ import {
   type GeneratedDocumentId,
   type GeneratedDocumentStatus,
   type ImageId,
-  type IsoDate,
   type IsoDateTime,
   type MaterialId,
   type MaterialLineId,
-  type MaterialLineStatus,
   type MaterialType,
-  type OpaqueCursor,
   type PartnerId,
   type PomColumnId,
   type ProcessId,
@@ -45,13 +42,13 @@ import {
   type WorkOrderMaterialPage,
   type WorkOrderProcessesReadModel,
   type WorkOrderRevisionId,
-  type WorkOrderRevisionStatus,
   type WorkOrderSizeColorMatrixReadModel,
   type WorkOrderSizeSpecReadModel,
-  type WorkOrderStatus,
 } from "@/lib/domain/work-orders/contracts";
 import { serializePostgresDateOnly } from "@/lib/domain/work-orders/dateOnly.mjs";
 import { withWaflV2TenantReadOnlyTransaction, type DbQueryResultRow } from "@/lib/db/client";
+import { createV2WorkOrderImageFileProxyUrl } from "@/lib/storage/r2/r2Client";
+import { createWorkOrderImageDerivativeKeys } from "@/lib/storage/r2/r2Keys";
 
 export const WORK_ORDER_V2_DETAIL_REPOSITORY_STATEMENT_COUNT = 2;
 
@@ -69,7 +66,7 @@ export const WORK_ORDER_V2_DETAIL_CORE_SQL = `
     SELECT w.id, w.product_name, w.product_type_code, w.season_code, w.item_code,
            w.status, w.due_date::text AS due_date, w.total_quantity, w.document_number_base,
            w.current_revision_id, w.representative_image_id, w.entity_version, w.updated_at,
-           r.revision_no, r.revision_status, r.finalized_at, r.unit_price,
+           r.revision_no, r.revision_status, r.finalized_at, r.factory_delivery_memo, r.unit_price,
            r.fabric_total, r.accessory_total, r.process_total, r.estimated_total
     FROM work_orders w
     JOIN work_order_revisions r
@@ -88,9 +85,10 @@ export const WORK_ORDER_V2_DETAIL_CORE_SQL = `
   SELECT t.id, t.product_name, t.product_type_code, t.season_code, t.item_code,
          t.status, t.due_date, t.total_quantity, t.document_number_base,
          t.current_revision_id, t.entity_version, t.updated_at, t.revision_no,
-         t.revision_status, t.finalized_at, t.unit_price, t.fabric_total,
+         t.revision_status, t.finalized_at, t.factory_delivery_memo, t.unit_price, t.fabric_total,
          t.accessory_total, t.process_total, t.estimated_total,
          i.id AS image_id, i.title AS image_title,
+         COALESCE(i.thumbnail_object_key, i.storage_object_key) AS image_key,
          (SELECT count(*)::integer FROM work_order_material_lines m
           WHERE m.company_id = $1 AND m.revision_id = t.current_revision_id AND m.material_type = 'fabric'
             AND m.archived_at IS NULL) AS fabric_count,
@@ -216,21 +214,23 @@ export const WORK_ORDER_V2_ASSETS_SQL = `
     SELECT ri.revision_id, ri.image_id AS id, 'image'::text AS asset_type,
            ri.filename_snapshot AS filename, i.title AS optional_title,
            ri.mime_type_snapshot AS mime_type, i.size_bytes, ri.display_order,
-           ri.is_representative, false AS include_in_document, i.created_at AS uploaded_at
+           ri.is_representative, false AS include_in_document, i.created_at AS uploaded_at,
+           i.storage_object_key, i.thumbnail_object_key
     FROM target t
     JOIN work_order_revision_images ri ON ri.company_id = $1 AND ri.revision_id = t.current_revision_id
     JOIN work_order_images i ON i.company_id = $1 AND i.id = ri.image_id AND i.deleted_at IS NULL
     UNION ALL
     SELECT ra.revision_id, ra.attachment_id, 'attachment', ra.filename_snapshot, NULL,
            ra.mime_type_snapshot, a.size_bytes, ra.display_order,
-           false, ra.output_include, a.created_at
+           false, ra.output_include, a.created_at, a.storage_object_key, NULL::text
     FROM target t
     JOIN work_order_revision_attachments ra ON ra.company_id = $1 AND ra.revision_id = t.current_revision_id
     JOIN work_order_attachments a ON a.company_id = $1 AND a.id = ra.attachment_id AND a.deleted_at IS NULL
   )
   SELECT t.id AS work_order_id, t.current_revision_id, t.entity_version,
          a.id, a.asset_type, a.filename, a.optional_title, a.mime_type, a.size_bytes,
-         a.display_order, a.is_representative, a.include_in_document, a.uploaded_at
+         a.display_order, a.is_representative, a.include_in_document, a.uploaded_at,
+         a.storage_object_key, a.thumbnail_object_key
   FROM target t
   LEFT JOIN assets a
     ON ($4::integer IS NULL OR (a.display_order, a.asset_type, a.id) > ($4::integer, $5::text, $6::uuid))
@@ -365,7 +365,13 @@ export async function getWorkOrderDetailCoreV2(input: {
       currentRevisionId: String(row.current_revision_id) as WorkOrderRevisionId,
       currentRevisionNumber: revisionNo,
       representativeImage: row.image_id
-        ? { imageId: String(row.image_id) as ImageId, thumbnailUrl: null, altText: String(row.image_title ?? row.product_name) }
+        ? {
+            imageId: String(row.image_id) as ImageId,
+            thumbnailUrl: row.image_key
+              ? createV2WorkOrderImageFileProxyUrl(String(row.image_key)) as ControlledFileUrl
+              : null,
+            altText: String(row.image_title ?? row.product_name),
+          }
         : null,
       readiness: {
         canIssue: hardBlockers.length === 0,
@@ -389,6 +395,7 @@ export async function getWorkOrderDetailCoreV2(input: {
     revision: {
       status: asEnum(row.revision_status, WORK_ORDER_REVISION_STATUSES, "WORK_ORDER_DETAIL_INVALID_REVISION_STATUS"),
       finalizedAt: asIsoDateTime(row.finalized_at),
+      factoryDeliveryMemo: row.factory_delivery_memo === null ? null : String(row.factory_delivery_memo),
     },
     amounts: {
       currency: "KRW" as CurrencyCode,
@@ -581,15 +588,35 @@ export async function getWorkOrderAssetsV2(input: CommonCollectionInput): Promis
   if (!meta) return { data: null, ...timing(result) };
   const available = result.rows.filter((row) => row.id !== null);
   const rows = available.slice(0, input.limit);
-  const items: WorkOrderAssetReadModel[] = rows.map((row) => ({
-    assetType: row.asset_type === "attachment" ? "attachment" : "image",
-    id: String(row.id) as ImageId | AttachmentId,
-    filename: String(row.filename), optionalTitle: row.optional_title === null ? null : String(row.optional_title),
-    mimeType: String(row.mime_type), sizeBytes: asCount(row.size_bytes), displayOrder: asCount(row.display_order),
-    isRepresentative: Boolean(row.is_representative), includeInDocument: Boolean(row.include_in_document),
-    state: "active", viewUrl: null as ControlledFileUrl | null,
-    uploadedAt: asIsoDateTime(row.uploaded_at) as IsoDateTime,
-  }));
+  const items: WorkOrderAssetReadModel[] = rows.map((row) => {
+    const assetType = row.asset_type === "attachment" ? "attachment" : "image";
+    const originalKey = row.storage_object_key ? String(row.storage_object_key) : null;
+    const hasDerivatives = assetType === "image" && row.thumbnail_object_key !== null && originalKey !== null;
+    const derivatives = hasDerivatives ? createWorkOrderImageDerivativeKeys(originalKey) : null;
+    const proxy = (key: string | null): ControlledFileUrl | null => key
+      ? createV2WorkOrderImageFileProxyUrl(key) as ControlledFileUrl
+      : null;
+    const originalUrl = proxy(originalKey);
+    const thumbnailUrl = assetType === "image"
+      ? proxy(derivatives?.thumbnail ?? (row.thumbnail_object_key ? String(row.thumbnail_object_key) : null))
+      : null;
+    const previewUrl = assetType === "image" ? proxy(derivatives?.medium ?? null) : originalUrl;
+    const fullscreenUrl = assetType === "image" ? proxy(derivatives?.large ?? null) : originalUrl;
+    return {
+      assetType,
+      id: String(row.id) as ImageId | AttachmentId,
+      filename: String(row.filename), optionalTitle: row.optional_title === null ? null : String(row.optional_title),
+      mimeType: String(row.mime_type), sizeBytes: asCount(row.size_bytes), displayOrder: asCount(row.display_order),
+      isRepresentative: Boolean(row.is_representative), includeInDocument: Boolean(row.include_in_document),
+      state: "active",
+      thumbnailUrl,
+      previewUrl,
+      fullscreenUrl,
+      originalUrl,
+      viewUrl: previewUrl ?? originalUrl,
+      uploadedAt: asIsoDateTime(row.uploaded_at) as IsoDateTime,
+    };
+  });
   const hasMore = available.length > input.limit;
   const last = rows.at(-1);
   return {

@@ -1,8 +1,13 @@
-import { isSupportedWorkOrderAttachmentStorageKey } from "@/lib/storage/r2/r2Keys";
+import {
+  createWorkOrderImageDerivativeKeys,
+  isSupportedWorkOrderAttachmentStorageKey,
+  type WorkOrderImageDerivativeKeys,
+} from "@/lib/storage/r2/r2Keys";
 import { isSupportedCompanyOnboardingFileStorageKey } from "@/lib/admin/settings/companyOnboardingFilePolicy";
 import { isSupportedCompanyFileStorageKey } from "@/lib/admin/settings/companyFilePolicy";
 import { isSupportedSignupApplicationCertificateStorageKey } from "@/lib/signup/signupApplicationFilePolicy";
 import { createR2WorkerSignature, createR2WorkerSignedUrl, normalizeWorkerBaseUrl } from "@/lib/storage/r2/r2WorkerSignature.mjs";
+import { timingSafeEqual } from "crypto";
 
 export type R2WorkerUploadConfig = {
   uploadUrl: string;
@@ -31,6 +36,8 @@ export type R2WorkerUploadUrlResult = {
   headers: Record<string, string>;
   expiresInSeconds: number;
 };
+
+export type R2WorkerUploadProxyUrlResult = R2WorkerUploadUrlResult;
 
 export type R2WorkerFileUrlResult = {
   url: string;
@@ -61,6 +68,7 @@ export class R2WorkerRequestError extends Error {
 const DEFAULT_WORKER_UPLOAD_EXPIRES_SECONDS = 10 * 60;
 const DEFAULT_WORKER_FILE_EXPIRES_SECONDS = 5 * 60;
 const DEFAULT_WORKER_DELETE_EXPIRES_SECONDS = 5 * 60;
+const DEFAULT_WORKER_DERIVATIVE_EXPIRES_SECONDS = 5 * 60;
 
 function readEnv(name: string): string | null {
   const value = process.env[name];
@@ -82,9 +90,22 @@ function assertSafeWorkerStorageKey(key: string): string {
 
 async function readWorkerError(response: Response): Promise<{ body: string; code: string; status: number; retryable: boolean }> {
   const body = await response.text().catch(() => "");
+  let workerCode = "";
+  try {
+    const parsed = JSON.parse(body) as { error?: unknown };
+    if (typeof parsed.error === "string") {
+      workerCode = parsed.error
+        .toUpperCase()
+        .replace(/[^A-Z0-9]+/g, "_")
+        .replace(/^_+|_+$/g, "")
+        .slice(0, 120);
+    }
+  } catch {
+    // Non-JSON Worker failures keep the bounded status-derived code below.
+  }
   return {
     body,
-    code: `R2_WORKER_REQUEST_FAILED_${response.status}`,
+    code: workerCode || `R2_WORKER_REQUEST_FAILED_${response.status}`,
     status: response.status,
     retryable: response.status === 408 || response.status === 429 || response.status >= 500,
   };
@@ -178,6 +199,62 @@ export function createR2WorkerUploadUrl(input: CreateR2WorkerUploadUrlInput): R2
   return { url, method: "PUT", headers: { "Content-Type": contentType }, expiresInSeconds };
 }
 
+export function createR2WorkerUploadProxyUrl(
+  input: CreateR2WorkerUploadUrlInput,
+): R2WorkerUploadProxyUrlResult {
+  const config = getR2WorkerUploadConfig();
+  if (!config) throw new Error("R2_WORKER_UPLOAD_NOT_CONFIGURED");
+  const key = assertSafeWorkerStorageKey(input.key);
+  const contentType = input.contentType || "application/octet-stream";
+  const expiresInSeconds = input.expiresInSeconds ?? DEFAULT_WORKER_UPLOAD_EXPIRES_SECONDS;
+  const expiresAt = Math.floor(Date.now() / 1000) + expiresInSeconds;
+  const signature = createR2WorkerUploadSignature({
+    secret: config.secret,
+    key,
+    contentType,
+    expiresAt,
+  });
+  const query = new URLSearchParams({
+    key,
+    contentType,
+    expires: String(expiresAt),
+    signature,
+  });
+  return {
+    url: `/api/v2/work-orders/files/upload?${query.toString()}`,
+    method: "PUT",
+    headers: { "Content-Type": contentType },
+    expiresInSeconds,
+  };
+}
+
+export function verifyR2WorkerUploadProxyCapability(input: {
+  key: string;
+  contentType: string;
+  expiresAt: number;
+  signature: string;
+}): { key: string; contentType: string } | null {
+  const config = getR2WorkerUploadConfig();
+  if (!config || !Number.isSafeInteger(input.expiresAt) || input.expiresAt < Math.floor(Date.now() / 1000)) return null;
+  let key: string;
+  try {
+    key = assertSafeWorkerStorageKey(input.key);
+  } catch {
+    return null;
+  }
+  const contentType = input.contentType || "application/octet-stream";
+  const expected = createR2WorkerUploadSignature({
+    secret: config.secret,
+    key,
+    contentType,
+    expiresAt: input.expiresAt,
+  });
+  const actualBytes = Buffer.from(input.signature);
+  const expectedBytes = Buffer.from(expected);
+  if (actualBytes.length !== expectedBytes.length || !timingSafeEqual(actualBytes, expectedBytes)) return null;
+  return { key, contentType };
+}
+
 export function createR2WorkerFileUrl(input: CreateR2WorkerFileUrlInput): R2WorkerFileUrlResult {
   const config = getR2WorkerUploadConfig();
   if (!config) throw new Error("R2_WORKER_UPLOAD_NOT_CONFIGURED");
@@ -234,5 +311,58 @@ export async function deleteR2ObjectViaWorker(input: CreateR2WorkerDeleteUrlInpu
     const fallbackError = await readWorkerError(fallbackResponse);
     if (isR2WorkerObjectNotFound(fallbackResponse.status, fallbackError.body)) return;
     throw createR2WorkerRequestError(fallbackError);
+  }
+}
+
+export async function createWorkOrderImageDerivativesViaWorker(input: {
+  key: string;
+  expiresInSeconds?: number;
+}): Promise<WorkOrderImageDerivativeKeys> {
+  const config = getR2WorkerUploadConfig();
+  if (!config) throw new Error("R2_WORKER_UPLOAD_NOT_CONFIGURED");
+  const key = assertSafeWorkerStorageKey(input.key);
+  const expectedKeys = createWorkOrderImageDerivativeKeys(key);
+  const expiresInSeconds = input.expiresInSeconds ?? DEFAULT_WORKER_DERIVATIVE_EXPIRES_SECONDS;
+  const expiresAt = Math.floor(Date.now() / 1000) + expiresInSeconds;
+  const signed = createR2WorkerSignedUrl({
+    uploadUrl: config.uploadUrl,
+    secret: config.secret,
+    method: "POST",
+    key,
+    expiresAt,
+  });
+  const url = new URL(signed);
+  url.searchParams.set("action", "derive");
+  const response = await fetch(url, { method: "POST" });
+  if (!response.ok) {
+    const workerError = await readWorkerError(response);
+    throw new R2WorkerRequestError(workerError);
+  }
+  const body = await response.json().catch(() => null) as {
+    readonly ok?: boolean;
+    readonly keys?: Partial<WorkOrderImageDerivativeKeys>;
+  } | null;
+  if (
+    body?.ok !== true
+    || body.keys?.thumbnail !== expectedKeys.thumbnail
+    || body.keys?.medium !== expectedKeys.medium
+    || body.keys?.large !== expectedKeys.large
+  ) {
+    throw new R2WorkerRequestError({
+      code: "R2_WORKER_DERIVATIVE_RESPONSE_INVALID",
+      status: 502,
+      retryable: false,
+    });
+  }
+  return expectedKeys;
+}
+
+export async function deleteWorkOrderImageFamilyViaWorker(input: {
+  storageObjectKey: string;
+}): Promise<void> {
+  const original = assertSafeWorkerStorageKey(input.storageObjectKey);
+  const derivatives = createWorkOrderImageDerivativeKeys(original);
+  for (const key of [derivatives.thumbnail, derivatives.medium, derivatives.large, original]) {
+    await deleteR2ObjectViaWorker({ key });
   }
 }
