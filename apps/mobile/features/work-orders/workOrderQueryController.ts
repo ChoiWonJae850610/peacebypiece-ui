@@ -1,4 +1,11 @@
-import { getWorkOrderDetail, getWorkOrderImages, getWorkOrderList, getWorkOrderMaterials } from "../../lib/apiClient";
+import {
+  getWorkOrderDetail,
+  getWorkOrderImages,
+  getWorkOrderList,
+  getWorkOrderMaterials,
+  getWorkOrderSizeColor,
+  getWorkOrderSizeSpec,
+} from "../../lib/apiClient";
 import type { MaterialType, WorkOrderListStatusFilter } from "../../domain/mobileContract";
 
 export const workOrderQueryController = {
@@ -10,6 +17,12 @@ export const workOrderQueryController = {
   },
   images(workOrderId: string) {
     return getWorkOrderImages(workOrderId);
+  },
+  sizeColor(workOrderId: string) {
+    return getWorkOrderSizeColor(workOrderId);
+  },
+  sizeSpec(workOrderId: string) {
+    return getWorkOrderSizeSpec(workOrderId);
   },
   materials(workOrderId: string, materialType: MaterialType, cursor: string | null = null, lifecycle: "active" | "archived" = "active") {
     return getWorkOrderMaterials(workOrderId, materialType, cursor, lifecycle);

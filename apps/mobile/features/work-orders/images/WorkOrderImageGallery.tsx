@@ -150,14 +150,6 @@ export default function WorkOrderImageGallery(props: Props) {
 
   return (
     <View style={styles.container} testID="work-order-image-gallery">
-      <View style={styles.headingRow}>
-        <View style={styles.headingText}>
-          <Text style={styles.title}>작업지시서 이미지</Text>
-          <Text style={styles.caption}>첫 이미지만 자동 대표가 됩니다. 대표 삭제 뒤 자동 승격은 없습니다.</Text>
-        </View>
-        <Text style={styles.count}>{props.images.length}장</Text>
-      </View>
-
       <View style={styles.compactActions} testID="work-order-image-compact-actions">
         <Pressable
           accessibilityLabel="사진 보관함에서 작업지시서 이미지 선택"
@@ -352,11 +344,6 @@ export default function WorkOrderImageGallery(props: Props) {
 
 const styles = StyleSheet.create({
   container: { gap: 12, padding: 12, paddingBottom: 22 },
-  headingRow: { alignItems: "flex-start", flexDirection: "row", gap: 12, justifyContent: "space-between" },
-  headingText: { flex: 1, minWidth: 0 },
-  title: { color: "#17263d", fontFamily: WAFL_FONTS.bold, fontSize: 16 },
-  caption: { color: "#75695e", fontFamily: WAFL_FONTS.regular, fontSize: 10, lineHeight: 16, marginTop: 3 },
-  count: { backgroundColor: "#eee4d7", borderRadius: 999, color: "#5d5147", fontFamily: WAFL_FONTS.bold, fontSize: 10, overflow: "hidden", paddingHorizontal: 8, paddingVertical: 4 },
   compactActions: { flexDirection: "row", gap: 6 },
   compactAction: { alignItems: "center", backgroundColor: "#fffdf8", borderColor: "#d3c5b6", borderRadius: 10, borderWidth: 1, flex: 1, gap: 3, justifyContent: "center", minHeight: 54, paddingHorizontal: 3, paddingVertical: 7 },
   compactActionText: { color: "#23375a", fontFamily: WAFL_FONTS.bold, fontSize: 10 },

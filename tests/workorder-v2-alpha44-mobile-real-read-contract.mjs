@@ -3,6 +3,7 @@ import fs from "node:fs";
 import path from "node:path";
 
 import { assertCanonicalWaflVersionConsistency } from "./helpers/wafl-v2-current-version.mjs";
+import { readOnlyBadgeLabel } from "../apps/mobile/features/work-orders/overview/workOrderDetailPresentation.ts";
 
 const read = (relativePath) => fs.readFileSync(path.resolve(relativePath), "utf8");
 
@@ -51,7 +52,7 @@ assert.match(apiClient, /\/api\/dev\/mobile-connect\/exchange/);
 assert.match(apiClient, /\/api\/dev\/mobile-connect\/disconnect/);
 const alpha44ReadClient = apiClient.slice(0, apiClient.indexOf("export async function getWorkOrderImages"));
 assert.doesNotMatch(alpha44ReadClient, /method: "(PUT|DELETE)"/);
-assert.doesNotMatch(apiClient, /\/processes|\/documents|\/history|\/size-color|\/size-spec/);
+assert.doesNotMatch(apiClient, /\/processes|\/documents|\/history/, "later mobile reads must not unlock process/document/history");
 const imageReadClient = apiClient.slice(
   apiClient.indexOf("export async function getWorkOrderImages"),
   apiClient.indexOf("export async function prepareWorkOrderImageUpload"),
@@ -69,7 +70,10 @@ assert.match(app, /"booting"[\s\S]*"session-checking"[\s\S]*"developer-auto-conn
 for (const forbidden of ["저장", "수정", "발주", "삭제"]) assert.doesNotMatch(detail, new RegExp(`>${forbidden}<`));
 assert.match(list, /현재 표시 작업지시서/);
 assert.match(list, /representativeThumbnail \? "이미지 있음" : "이미지 없음"/);
-assert.match(detail, /작업지시서 · 읽기 전용/);
+assert.equal(readOnlyBadgeLabel(false), "읽기 전용");
+assert.equal(readOnlyBadgeLabel(true), null);
+assert.match(detail, /readOnlyBadgeLabel\(props\.canEdit\)/);
+assert.doesNotMatch(detail, /작업지시서 · 읽기 전용/);
 assert.match(app, /자동으로 다시 요청하지 않습니다/);
 assert.match(errorPresentation, /목록으로 돌아가 다른 작업지시서를 선택하세요/);
 assert.match(app, /accessibilityLabel="작업지시서 목록으로 돌아가기"/);

@@ -3,6 +3,8 @@ import fs from "node:fs";
 import path from "node:path";
 
 import { resolveMaterialOrderPolicy } from "../apps/mobile/domain/materialOrderPolicy.ts";
+import { WORK_ORDER_LOADING_MESSAGES } from "../apps/mobile/features/work-orders/loading/delayedLoadingPolicy.ts";
+import { resolveWorkOrderTabVisualState } from "../apps/mobile/features/work-orders/overview/workOrderDetailPresentation.ts";
 import { normalizeMaterialLine } from "../apps/mobile/lib/apiResponseNormalizer.ts";
 import { isExternalQaPathAllowed, isTailscaleServePathAllowed } from "../lib/external-qa/configCore.mjs";
 import { assertCanonicalWaflVersionConsistency } from "./helpers/wafl-v2-current-version.mjs";
@@ -99,7 +101,9 @@ assert.match(detail, /SECTION_TABS/);
 assert.match(detail, /id: "fabric", label: "원단"/);
 assert.match(detail, /tab\.id === "fabric" \|\| tab\.id === "accessory"/);
 assert.match(detail, /setActiveSection\(tab\.id\)[\s\S]{0,120}props\.onOpenMaterials\(tab\.id\)/);
-assert.match(detail, /accessibilityState=\{\{ disabled: true \}\}/);
+assert.equal(resolveWorkOrderTabVisualState({ selected: false, locked: true }), "locked");
+assert.equal(resolveWorkOrderTabVisualState({ selected: false, locked: false }), "inactive");
+assert.match(detail, /disabled=\{disabled\}/);
 for (const disabledTab of ["media", "sizes", "flow", "output"]) {
   assert.match(detail, new RegExp(`id: "${disabledTab}"`), `future tab missing: ${disabledTab}`);
 }
@@ -111,7 +115,9 @@ for (const state of ["not-loaded", "loading", "loaded", "empty", "error", "retry
   assert.match(materials + app, new RegExp(`"${state}"`), `material state missing: ${state}`);
 }
 assert.match(materials, /materialType === "accessory" \? "부자재" : "원단"/);
-assert.match(materials, /\$\{materialLabel\} 정보를 불러오는 중/);
+assert.equal(WORK_ORDER_LOADING_MESSAGES.fabric, "원단 정보를 불러오는 중입니다.");
+assert.equal(WORK_ORDER_LOADING_MESSAGES.accessory, "부자재 정보를 불러오는 중입니다.");
+assert.match(materials, /scope=\{materialType\}/);
 assert.match(materials, /등록된 \{materialSubject\}/);
 assert.match(materials, /\$\{materialLabel\} 정보를 불러오지 못했습니다/);
 assert.match(materials, /다시 시도/);

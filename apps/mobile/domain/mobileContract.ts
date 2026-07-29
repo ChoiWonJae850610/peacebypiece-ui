@@ -131,6 +131,71 @@ export type WorkOrderImagePage = {
   readonly entityVersion: number;
 };
 
+export type WorkOrderSizeRow = {
+  readonly id: string;
+  readonly code: string;
+  readonly displayLabel: string;
+  readonly displayOrder: number;
+};
+
+export type WorkOrderColorRow = {
+  readonly id: string;
+  readonly displayName: string;
+  readonly hexValue: string | null;
+  readonly displayOrder: number;
+};
+
+export type WorkOrderQuantityCell = {
+  readonly colorId: string;
+  readonly sizeRowId: string;
+  readonly quantity: string;
+};
+
+export type WorkOrderSizeColorMatrix = {
+  readonly workOrderId: string;
+  readonly revisionId: string;
+  readonly sizes: readonly WorkOrderSizeRow[];
+  readonly colors: readonly WorkOrderColorRow[];
+  readonly quantityCells: readonly WorkOrderQuantityCell[];
+  readonly matrixTotal: string;
+  readonly expectedTotal: string;
+  readonly totalsMatch: boolean;
+  readonly memoFallback: string | null;
+  readonly entityVersion: number;
+};
+
+export type WorkOrderPomColumn = {
+  readonly id: string;
+  readonly code: string;
+  readonly displayName: string;
+  readonly displayOrder: number;
+};
+
+export type WorkOrderSizeSpecCell = {
+  readonly sizeRowId: string;
+  readonly pomColumnId: string;
+  readonly displayValue: string | null;
+  readonly decimalValue: string | null;
+};
+
+export type WorkOrderSizeSpec = {
+  readonly workOrderId: string;
+  readonly revisionId: string;
+  readonly genderCode: string | null;
+  readonly categoryCode: string | null;
+  readonly measurementUnit: "cm" | "inch";
+  readonly templateId: string | null;
+  readonly sizes: readonly WorkOrderSizeRow[];
+  readonly pomColumns: readonly WorkOrderPomColumn[];
+  readonly cells: readonly WorkOrderSizeSpecCell[];
+  readonly entityVersion: number;
+};
+
+export type WorkOrderSizeColorBundle = {
+  readonly matrix: WorkOrderSizeColorMatrix;
+  readonly specifications: WorkOrderSizeSpec;
+};
+
 export type WorkOrderImageUploadTarget = {
   readonly storageKey: string;
   readonly fileName: string;

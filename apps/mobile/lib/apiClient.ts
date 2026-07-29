@@ -19,6 +19,9 @@ import type {
   WorkOrderMaterialPage,
   WorkOrderListPage,
   WorkOrderListStatusFilter,
+  WorkOrderSizeColorMatrix,
+  WorkOrderSizeRow,
+  WorkOrderSizeSpec,
 } from "@/domain/mobileContract";
 import { classifyMobileApiErrorCode, MobileApiError } from "@/domain/mobileContract";
 import { classifyNonJsonHttpResponse } from "@/domain/mobileHttpResponse";
@@ -156,6 +159,206 @@ async function requestJson<T>(path: string, options: {
   return body as T;
 }
 
+const NON_NEGATIVE_DECIMAL_PATTERN = /^(?:0|[1-9]\d*)(?:\.\d+)?$/;
+const COLOR_HEX_PATTERN = /^#[0-9a-fA-F]{6}$/;
+
+function isNonEmptyString(value: unknown): value is string {
+  return typeof value === "string" && value.trim().length > 0;
+}
+
+function isNullableString(value: unknown): value is string | null {
+  return value === null || typeof value === "string";
+}
+
+function isNonNegativeSafeInteger(value: unknown): value is number {
+  return Number.isSafeInteger(value) && Number(value) >= 0;
+}
+
+function isDecimalString(value: unknown): value is string {
+  return typeof value === "string" && NON_NEGATIVE_DECIMAL_PATTERN.test(value);
+}
+
+function normalizeSizeRows(value: unknown): readonly WorkOrderSizeRow[] | null {
+  if (!Array.isArray(value)) return null;
+  const rows: WorkOrderSizeRow[] = [];
+  const ids = new Set<string>();
+  const codes = new Set<string>();
+  for (const candidate of value) {
+    if (
+      !isJsonObject(candidate)
+      || !isNonEmptyString(candidate.id)
+      || !isNonEmptyString(candidate.code)
+      || !isNonEmptyString(candidate.displayLabel)
+      || !isNonNegativeSafeInteger(candidate.displayOrder)
+      || ids.has(candidate.id)
+      || codes.has(candidate.code)
+    ) return null;
+    ids.add(candidate.id);
+    codes.add(candidate.code);
+    rows.push({
+      id: candidate.id,
+      code: candidate.code,
+      displayLabel: candidate.displayLabel,
+      displayOrder: candidate.displayOrder,
+    });
+  }
+  return rows;
+}
+
+function malformedSizeColorResponse(): never {
+  throw new MobileApiError({ code: "MALFORMED_RESPONSE", message: "사이즈·색상 응답이 올바르지 않습니다." });
+}
+
+function malformedSizeSpecResponse(): never {
+  throw new MobileApiError({ code: "MALFORMED_RESPONSE", message: "완성 치수 응답이 올바르지 않습니다." });
+}
+
+function normalizeWorkOrderSizeColor(workOrderId: string, value: unknown): WorkOrderSizeColorMatrix {
+  if (
+    !isJsonObject(value)
+    || value.workOrderId !== workOrderId
+    || !isNonEmptyString(value.revisionId)
+    || !isNonNegativeSafeInteger(value.entityVersion)
+    || !isDecimalString(value.matrixTotal)
+    || !isDecimalString(value.expectedTotal)
+    || typeof value.totalsMatch !== "boolean"
+    || !isNullableString(value.memoFallback)
+  ) return malformedSizeColorResponse();
+
+  const sizes = normalizeSizeRows(value.sizes);
+  if (!sizes || !Array.isArray(value.colors) || !Array.isArray(value.quantityCells)) return malformedSizeColorResponse();
+  const sizeIds = new Set(sizes.map((row) => row.id));
+  const colorIds = new Set<string>();
+  const colors = [];
+  for (const candidate of value.colors) {
+    if (
+      !isJsonObject(candidate)
+      || !isNonEmptyString(candidate.id)
+      || !isNonEmptyString(candidate.displayName)
+      || !(candidate.hexValue === null || (typeof candidate.hexValue === "string" && COLOR_HEX_PATTERN.test(candidate.hexValue)))
+      || !isNonNegativeSafeInteger(candidate.displayOrder)
+      || colorIds.has(candidate.id)
+    ) return malformedSizeColorResponse();
+    colorIds.add(candidate.id);
+    colors.push({
+      id: candidate.id,
+      displayName: candidate.displayName,
+      hexValue: candidate.hexValue,
+      displayOrder: candidate.displayOrder,
+    });
+  }
+
+  const quantityCells = [];
+  const cellKeys = new Set<string>();
+  for (const candidate of value.quantityCells) {
+    if (
+      !isJsonObject(candidate)
+      || !isNonEmptyString(candidate.colorId)
+      || !isNonEmptyString(candidate.sizeRowId)
+      || !isDecimalString(candidate.quantity)
+      || !colorIds.has(candidate.colorId)
+      || !sizeIds.has(candidate.sizeRowId)
+    ) return malformedSizeColorResponse();
+    const key = `${candidate.colorId}:${candidate.sizeRowId}`;
+    if (cellKeys.has(key)) return malformedSizeColorResponse();
+    cellKeys.add(key);
+    quantityCells.push({
+      colorId: candidate.colorId,
+      sizeRowId: candidate.sizeRowId,
+      quantity: candidate.quantity,
+    });
+  }
+  const computedTotal = quantityCells.reduce((sum, cell) => sum + Number(cell.quantity), 0);
+  if (computedTotal !== Number(value.matrixTotal)) return malformedSizeColorResponse();
+  if (value.totalsMatch !== (Number(value.matrixTotal) === Number(value.expectedTotal))) return malformedSizeColorResponse();
+  return {
+    workOrderId,
+    revisionId: value.revisionId,
+    sizes,
+    colors,
+    quantityCells,
+    matrixTotal: value.matrixTotal,
+    expectedTotal: value.expectedTotal,
+    totalsMatch: value.totalsMatch,
+    memoFallback: value.memoFallback,
+    entityVersion: value.entityVersion,
+  };
+}
+
+function normalizeWorkOrderSizeSpec(workOrderId: string, value: unknown): WorkOrderSizeSpec {
+  if (
+    !isJsonObject(value)
+    || value.workOrderId !== workOrderId
+    || !isNonEmptyString(value.revisionId)
+    || !isNonNegativeSafeInteger(value.entityVersion)
+    || !(value.measurementUnit === "cm" || value.measurementUnit === "inch")
+    || !isNullableString(value.genderCode)
+    || !isNullableString(value.categoryCode)
+    || !isNullableString(value.templateId)
+  ) return malformedSizeSpecResponse();
+
+  const sizes = normalizeSizeRows(value.sizes);
+  if (!sizes || !Array.isArray(value.pomColumns) || !Array.isArray(value.cells)) return malformedSizeSpecResponse();
+  const sizeIds = new Set(sizes.map((row) => row.id));
+  const pomIds = new Set<string>();
+  const pomCodes = new Set<string>();
+  const pomColumns = [];
+  for (const candidate of value.pomColumns) {
+    if (
+      !isJsonObject(candidate)
+      || !isNonEmptyString(candidate.id)
+      || !isNonEmptyString(candidate.code)
+      || !isNonEmptyString(candidate.displayName)
+      || !isNonNegativeSafeInteger(candidate.displayOrder)
+      || pomIds.has(candidate.id)
+      || pomCodes.has(candidate.code)
+    ) return malformedSizeSpecResponse();
+    pomIds.add(candidate.id);
+    pomCodes.add(candidate.code);
+    pomColumns.push({
+      id: candidate.id,
+      code: candidate.code,
+      displayName: candidate.displayName,
+      displayOrder: candidate.displayOrder,
+    });
+  }
+
+  const cells = [];
+  const cellKeys = new Set<string>();
+  for (const candidate of value.cells) {
+    if (
+      !isJsonObject(candidate)
+      || !isNonEmptyString(candidate.sizeRowId)
+      || !isNonEmptyString(candidate.pomColumnId)
+      || !isNullableString(candidate.displayValue)
+      || !(candidate.decimalValue === null || isDecimalString(candidate.decimalValue))
+      || !sizeIds.has(candidate.sizeRowId)
+      || !pomIds.has(candidate.pomColumnId)
+    ) return malformedSizeSpecResponse();
+    const key = `${candidate.pomColumnId}:${candidate.sizeRowId}`;
+    if (cellKeys.has(key)) return malformedSizeSpecResponse();
+    cellKeys.add(key);
+    cells.push({
+      sizeRowId: candidate.sizeRowId,
+      pomColumnId: candidate.pomColumnId,
+      displayValue: candidate.displayValue,
+      decimalValue: candidate.decimalValue,
+    });
+  }
+  return {
+    workOrderId,
+    revisionId: value.revisionId,
+    genderCode: value.genderCode,
+    categoryCode: value.categoryCode,
+    measurementUnit: value.measurementUnit,
+    templateId: value.templateId,
+    sizes,
+    pomColumns,
+    cells,
+    entityVersion: value.entityVersion,
+  };
+}
+
 export async function getCurrentMobileUser(): Promise<MobileCurrentUser> {
   const body = await requestJson<{ readonly authenticated: boolean; readonly user?: MobileCurrentUser }>("/api/auth/me", { method: "GET" });
   if (!body.authenticated || !body.user) throw new MobileApiError({ code: "AUTH_REQUIRED", message: "연결이 필요합니다.", status: 401 });
@@ -200,6 +403,24 @@ export async function getWorkOrderDetail(workOrderId: string): Promise<WorkOrder
   const body = await requestJson<{ readonly ok: boolean; readonly data?: WorkOrderDetailCore }>(`/api/v2/work-orders/${encodeURIComponent(workOrderId)}`, { method: "GET" });
   if (!body.ok || !body.data?.header) throw new MobileApiError({ code: "MALFORMED_RESPONSE", message: "제작 카드 상세 응답이 올바르지 않습니다." });
   return body.data;
+}
+
+export async function getWorkOrderSizeColor(workOrderId: string): Promise<WorkOrderSizeColorMatrix> {
+  const body = await requestJson<{ readonly ok: boolean; readonly data?: unknown }>(
+    `/api/v2/work-orders/${encodeURIComponent(workOrderId)}/size-color`,
+    { method: "GET" },
+  );
+  if (!body.ok) return malformedSizeColorResponse();
+  return normalizeWorkOrderSizeColor(workOrderId, body.data);
+}
+
+export async function getWorkOrderSizeSpec(workOrderId: string): Promise<WorkOrderSizeSpec> {
+  const body = await requestJson<{ readonly ok: boolean; readonly data?: unknown }>(
+    `/api/v2/work-orders/${encodeURIComponent(workOrderId)}/size-spec`,
+    { method: "GET" },
+  );
+  if (!body.ok) return malformedSizeSpecResponse();
+  return normalizeWorkOrderSizeSpec(workOrderId, body.data);
 }
 
 export function resolveMobileApiUrl(path: string | null): string | null {

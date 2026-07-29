@@ -2,22 +2,29 @@
 
 Document role: canonical owner for the current result, next candidate, and Version Delta boundary. It is not the historical implementation ledger; completed details live in numbered immutable evidence.
 
-## Current result — 2.0.0-alpha.57
+## Current result — 2.0.0-alpha.58
+
+Status: `ALPHA58_MOBILE_SIZE_COLOR_READONLY_COMPLETE`.
+
+Alpha.58 completes the Maker mobile size/color read-only foundation and final UX on the accepted alpha.57 WorkOrder baseline:
+
+- the existing `/size-color` and `/size-spec` routes remain strict GET-only reads with UUID, method, tenant, anonymous, foreign-workspace, and unsupported-query boundaries;
+- mobile response normalization and the feature-owned controller verify WorkOrder/revision/entityVersion consistency, dedupe in-flight reads, prevent stale commits, isolate WorkOrder/session transitions, and use version-aware bounded cache entries;
+- the read-only screen presents the size/color quantity matrix, totals, POM-based finished measurements, rich and empty states, retry, and local-only `cm | inch` display;
+- cm/inch conversion, nearest one-eighth-inch display, same-unit cm trailing-zero normalization, stored value preservation, matrix totals, and zero mutation actions are behaviorally contracted;
+- final visual alignment, common gutter/typography, one canonical read-only badge, shared tab states, and delayed loading remove development copy without changing the accepted matrix or measurement design;
+- automated and read-only Runtime QA verifies the rich `3/3/9/5/15` fixture, read/security boundaries, compiled mobile bundle, deterministic before/after snapshots, and zero observed domain/migration/size-table delta;
+- source-quality audit and bounded refactor findings were resolved without widening the Experience/Overview surface or starting edit behavior;
+- owner physical-iPhone QA accepted the read behavior, unit display, visual alignment, refactor regression, and final UX cleanup;
+- size/color/quantity/measurement CRUD, automatic total-quantity mutation, Factory, migration, fixture mutation, dependency/native/EAS, R2, and production remain excluded.
+
+Evidence: `58-mobile-size-color-readonly-evidence.md`.
+
+## Previous overview result — 2.0.0-alpha.57
 
 Status: `ALPHA57_MOBILE_OVERVIEW_CATEGORY_INLINE_INPUT_COMPLETE`.
 
-Alpha.57 completes the Maker mobile WorkOrder image, overview, Category, and inline-input boundary on the accepted alpha.56 lifecycle baseline:
-
-- real WorkOrder images and attachments reuse the existing model and controlled Worker/proxy transport for read, upload completion, camera/file acquisition, preview, representative selection, and delete lifecycle;
-- AI image generation and Factory image features remain excluded, and tenant, permission, storage-key, expected-version, and object-lifecycle guards remain authoritative;
-- the common detail header is simplified, tabs precede overview content, and the overview presents total quantity, due date, Category, and amount summaries;
-- 대상 and 대분류 use the shared option Reel Picker; 세부 품목, 시즌, factory-delivery memo, and fabric/accessory usage-location and memo fields use bounded button-free inline save;
-- zero-first numeric editing and leading-zero normalization are shared while canonical order calculation and formatting remain unchanged;
-- normal Maker presentation removes archive recovery UI while preserving internal soft-delete/history and the established fabric/accessory lifecycle; default units are fabric `yd` and accessory `개`;
-- automated verification and Runtime evidence plus later owner physical-iPhone smoke confirmation cover the accepted scope, without converting the earlier `NOT_RUN` V10 checklist into individual formal PASS claims;
-- schema/migration and production mutation remain zero. Finalization added no Runtime, DB, R2, dependency, native, or EAS effect.
-
-Evidence: `57-mobile-overview-category-inline-input-evidence.md`.
+Maker mobile WorkOrder images/attachments, overview and Category structure, button-free inline input, numeric-draft correction, and accepted material/accessory presentation remain complete. Detailed facts are preserved in `57-mobile-overview-category-inline-input-evidence.md`.
 
 ## Previous accessory result — 2.0.0-alpha.56
 
@@ -68,6 +75,7 @@ Permanent Rules, Current Baseline, Version Delta, Immutable Evidence, responsibi
 | alpha.55 | material order cancellation, zero-order, memo IME, and Runtime QA | `55-mobile-material-order-lifecycle-evidence.md` |
 | alpha.56 | accessory lifecycle parity and physical-iPhone acceptance | `56-mobile-accessory-lifecycle-parity-evidence.md` |
 | alpha.57 | mobile overview, Category, image, and inline input | `57-mobile-overview-category-inline-input-evidence.md` |
+| alpha.58 | mobile size/color read-only foundation and final UX | `58-mobile-size-color-readonly-evidence.md` |
 | maintenance | canonical Codex rule normalization without APP_VERSION change | `54-canonical-codex-working-rules-normalization-evidence.md` |
 
 Older results remain in numbered evidence files indexed and task-routed by `00-start-here.md`. Their detailed outcomes are not duplicated here.
@@ -99,19 +107,19 @@ Standard reference:
 
 The Delta does not repeat Permanent Rules, PC-audit mechanics, runner internals, generic Failure Handoff fields, or generic Git/artifact procedures. Those remain owned by `09a` through `09d`. An omitted exceptional authority remains forbidden.
 
-## Next candidate — 2.0.0-alpha.58
+## Next candidate — 2.0.0-alpha.59
 
-Candidate objective: Maker mobile size/color read-only foundation only after owner approval.
+Candidate objective: Maker mobile size/color structure editing only after owner approval.
 
 Potential included scope, subject to the actual alpha.58 Delta:
 
-- reuse the existing `/size-color`, `/size-spec`, and v2 read model before introducing a new model;
-- present loading, error, empty, and read states for sizes, colors, the quantity matrix, and finished measurements;
-- keep the candidate Maker-only.
+- add, rename, archive, restore, and reorder size and color structure on draft WorkOrders;
+- require canonical expectedVersion, conflict handling, failed-save restore, tenant/permission enforcement, and one-action/one-request behavior;
+- preserve the completed read-only screen as a sibling boundary instead of folding write state back into it.
 
 Explicitly separate later scope:
 
-- create, update, delete, quantity or measurement mutation, template save, and automatic total-quantity changes remain excluded;
-- schema/migration, Factory, production deployment/mutation, dependency/native/EAS, and unrelated feature expansion remain excluded.
+- quantity-matrix editing, finished-measurement editing, templates, and automatic total-quantity changes remain excluded;
+- schema/migration, Factory, production deployment/mutation, dependency/native/EAS, and unrelated feature expansion remain excluded unless the future Delta explicitly establishes a separate authority.
 
-Alpha.58 does not start merely because it is listed here. It begins only with its owner-approved self-executing Version Delta and the final synchronized alpha.57 HEAD.
+Alpha.59 does not start merely because it is listed here. It begins only with its owner-approved self-executing Version Delta and the final synchronized alpha.58 HEAD.

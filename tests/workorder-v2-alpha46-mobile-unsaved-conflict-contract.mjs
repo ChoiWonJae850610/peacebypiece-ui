@@ -5,6 +5,7 @@ import path from "node:path";
 
 import { decideDraftExit } from "../apps/mobile/application/draftExitPolicy.ts";
 import { createExplicitMutationController } from "../apps/mobile/application/mutationController.ts";
+import { readOnlyBadgeLabel } from "../apps/mobile/features/work-orders/overview/workOrderDetailPresentation.ts";
 
 const read = (relativePath) => fs.readFileSync(path.resolve(relativePath), "utf8");
 const app = read("apps/mobile/features/MobileWorkOrderExperience.tsx");
@@ -39,7 +40,10 @@ assert.match(app, /const refreshed = await workOrderQueryController\.detail\(sel
 assert.doesNotMatch(app.match(/function reloadLatestBasicInfo\(\)[\s\S]*?\n  function retry/)?.[0] ?? "", /workOrderMutationController\.updateOverview/);
 assert.match(app, /error\.code === "LOCKED" \|\| error\.code === "REVISION_MISMATCH"/);
 assert.match(app, /현재 상태에서는 수정할 수 없습니다\./);
-assert.match(detail, /발행된 작업지시서는 읽기 전용입니다\./);
+assert.equal(readOnlyBadgeLabel(false), "읽기 전용");
+assert.equal(readOnlyBadgeLabel(true), null);
+assert.match(detail, /readOnlyBadgeLabel\(props\.canEdit\)/);
+assert.doesNotMatch(detail, /발행된 작업지시서는 읽기 전용입니다\./);
 assert.match(
   inlineField,
   /const saveDisabled = \(!dirty && !nativeDirty\) \|\| saving \|\| finalizing/,

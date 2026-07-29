@@ -4,8 +4,8 @@ Document type: **Current Baseline**
 
 Canonical owner: `docs/codex-current-state.md`
 
-Result version: `2.0.0-alpha.57`
-Status: `ALPHA57_MOBILE_OVERVIEW_CATEGORY_INLINE_INPUT_COMPLETE`
+Result version: `2.0.0-alpha.58`
+Status: `ALPHA58_MOBILE_SIZE_COLOR_READONLY_COMPLETE`
 
 This file is a compact present-state snapshot. It is not a version history, Permanent Rules owner, runtime process ledger, or evidence archive. Historical implementation details belong to numbered immutable evidence under `docs/project/app-v2/`.
 
@@ -15,26 +15,26 @@ This file is a compact present-state snapshot. It is not a version history, Perm
 | --- | --- |
 | Repository | `C:\CWJ_Project\peacebypiece-2.0` |
 | Branch | `master` |
-| Alpha.57 entry HEAD/origin | `592bf8d054bd13956616eb780a1dec5e812a8204` |
-| Entry commit | `feat: WAFL v2 부자재 lifecycle parity 완성` |
+| Alpha.58 entry HEAD/origin | `51f4f9370b8472af749e6bb3a10b37514bfb5367` |
+| Entry commit | `docs: WAFL v2 alpha.57 canonical 상태 동기화` |
 | Entry ahead/behind | `0/0` |
 | Entry working tree | clean |
-| APP_VERSION | `2.0.0-alpha.57` |
-| Mobile package version | `2.0.0-alpha.57` |
+| APP_VERSION | `2.0.0-alpha.58` |
+| Mobile package version | `2.0.0-alpha.58` |
 | Root package version | `0.5.637` |
 | Expo public version | `2.0.0` |
 | iOS Development Build | build number `1`, reusable while native inputs remain unchanged |
 | iOS bundle identifier | `com.wafl.app` |
 | Android package | `com.wafl.app` |
 
-The source cannot contain the hash of the commit that contains itself. Final alpha.57 product and documentation-sync HEAD, origin synchronization, Git cleanliness, ZIP hash/size/entry count, and exact repo-state filename are owned by the matching post-push alpha.57 repo-state.
+The source cannot contain the hash of the commit that contains itself. Final alpha.58 HEAD, origin synchronization, Git cleanliness, ZIP hash/size/entry count, and exact repo-state filename are owned by the matching post-push alpha.58 repo-state.
 
 ## Latest delivery boundary
 
-- Target Source ZIP: `peacebypiece-ui-2.0.0-alpha.57.zip`.
-- Target repo-state: `repo-state-2.0.0-alpha.57-<actual timestamp>.txt`.
+- Target Source ZIP: `peacebypiece-ui-2.0.0-alpha.58.zip`.
+- Target repo-state: `repo-state-2.0.0-alpha.58-<actual timestamp>.txt`.
 - `4. Newest` must contain only that matching pair after Finish.
-- The accepted handoff is the matching alpha.57 ZIP/repo-state pair generated from the final synchronized pushed HEAD.
+- The accepted handoff is the matching alpha.58 ZIP/repo-state pair generated from the final synchronized pushed HEAD.
 
 ## Current product and transport baseline
 
@@ -53,18 +53,18 @@ Do not record live PID, port ownership, temporary origin, connection code, sessi
 
 ## Latest feature and architecture baseline
 
-Alpha.57 extends the completed alpha.56 Maker mobile WorkOrder baseline without a schema migration or production mutation:
+Alpha.58 extends the completed alpha.57 Maker mobile WorkOrder baseline without a schema migration, dependency/native change, or production mutation:
 
-- WorkOrder images and attachments use the existing attachment/primary-image model and controlled Worker/proxy transport for real reads, bounded upload completion, camera or file acquisition, representative-image selection, preview, and delete lifecycle;
-- image and attachment commands preserve tenant, permission, expected-version, storage-key, and object-lifecycle boundaries; AI image generation and Factory image features remain excluded;
-- the common detail header is simplified, the tab row is placed before overview information, and the overview tab owns total quantity, due date, Category, and amount summaries;
-- the saved Category fields are 대상, 대분류, 세부 품목, and 시즌; 대상 and 대분류 use the shared option Reel Picker while 세부 품목 and 시즌 use button-free inline save;
-- 공장 전달 메모 and fabric/accessory usage-location and memo fields use the same bounded button-free inline save lifecycle with canonical refresh and duplicate-save prevention;
-- numeric drafts replace canonical zero on the first input and normalize leading zeroes without changing canonical calculation or formatting rules;
-- normal Maker mobile presentation no longer exposes archive recovery sections, while server-side soft-delete/history, lifecycle locks, and hard-delete prohibition remain intact;
-- fabric defaults to `yd` and accessory defaults to `개`; the established request/cancel/re-request/complete, stock-covered zero-order, memo IME, unit/status badge, and calculation behavior remains preserved;
-- automated contracts and Runtime evidence plus later owner physical-iPhone smoke confirmation cover the accepted alpha.57 scope. The earlier V10 checklist was `NOT_RUN` when generated and is not rewritten as individual formal PASS results;
-- alpha.57 finalization introduced no Runtime, DB, R2, production, schema/migration, or additional native/EAS mutation. The approved picker dependencies are the only mobile dependency additions in the product result.
+- the Maker mobile `사이즈·색상` tab reuses the existing strict GET-only `/size-color` and `/size-spec` v2 read models rather than introducing another API or data model;
+- response normalization verifies WorkOrder, revision, entityVersion, size, color, quantity, POM, measurement cell, decimal, and total semantics before committing data to the screen;
+- a feature-owned, entityVersion-aware read controller provides bounded cache entries, in-flight dedupe, stale-response rejection, WorkOrder isolation, session reset, retry, and canonical version-transition refresh;
+- the read-only screen presents the color-by-size quantity matrix, totals consistency, finished measurements, empty/error/retry states, and local-only `cm | inch` display without adding size, color, quantity, or measurement persistence;
+- cm-to-inch display rounds to the nearest one-eighth inch, inch-to-cm display uses one decimal without a trailing zero, and same-unit cm display removes only insignificant trailing zeroes while preserving stored source values;
+- the final UX uses the established content gutter and typography, a single policy-driven `읽기 전용` badge, shared active/inactive/locked tab styling, and one shared 400ms delayed-loading policy with stale-timer cleanup;
+- the bounded source-quality refactor keeps query/cache lifecycle out of the Experience/Overview composition boundary and separates deterministic Runtime snapshots, compiled marker normalization, and observed/`NOT_OBSERVED` evidence serialization;
+- Runtime evidence verified the accepted rich fixture with three sizes, three colors, nine quantity cells, five POM columns, fifteen measurement cells, stored unit cm, tenant isolation, and zero observed WorkOrder/revision/event/receipt/migration/size-table delta;
+- owner physical-iPhone function, visual alignment, display formatting, refactor regression, and final cleanup acceptance establish the product checkpoint;
+- alpha.58 adds no CRUD/edit path, automatic total-quantity update, Factory scope, schema/migration, fixture mutation, dependency/native/EAS change, R2 mutation, or production access.
 
 Final TypeScript, ESLint, Next, Expo, contracts, mutation audit, Canonical Verify, Git, and artifact identities are recorded by the final workflow and matching repo-state.
 
@@ -98,17 +98,18 @@ Final TypeScript, ESLint, Next, Expo, contracts, mutation audit, Canonical Verif
 - Alpha.55 material order cancellation, zero-order, memo IME, and Runtime QA: `docs/project/app-v2/55-mobile-material-order-lifecycle-evidence.md`.
 - Alpha.56 accessory lifecycle parity and physical-iPhone acceptance: `docs/project/app-v2/56-mobile-accessory-lifecycle-parity-evidence.md`.
 - Alpha.57 mobile overview, Category, image, and inline input: `docs/project/app-v2/57-mobile-overview-category-inline-input-evidence.md`.
+- Alpha.58 mobile size/color read-only foundation and final UX: `docs/project/app-v2/58-mobile-size-color-readonly-evidence.md`.
 
 Older facts remain in their numbered evidence. They are not recopied here.
 
 ## Next candidate boundary
 
-Candidate: `2.0.0-alpha.58` — mobile size/color read-only foundation.
+Candidate: `2.0.0-alpha.59` — mobile size/color structure editing.
 
 Potential Delta scope:
 
-- reuse the existing `/size-color`, `/size-spec`, and v2 read model before adding a new model;
-- show Maker mobile loading, error, empty, and read states for sizes, colors, the quantity matrix, and finished measurements;
-- keep create/update/delete, quantity or measurement mutation, template save, migration, automatic total-quantity changes, and Factory scope excluded.
+- add, rename, archive, restore, and order size/color structure only through an owner-approved draft editing contract;
+- preserve expectedVersion, conflict recovery, failed-save restore, tenant/permission checks, and the completed read/edit sibling boundary;
+- keep quantity-matrix editing, finished-measurement editing, templates, Factory scope, migration, and production effects excluded unless separately approved.
 
-Alpha.58 does not start until a separately owner-approved concise self-executing Delta defines its exact scope, effect budget, Runtime, and acceptance.
+Alpha.59 does not start until a separately owner-approved concise self-executing Delta defines its exact scope, effect budget, Runtime, and acceptance.

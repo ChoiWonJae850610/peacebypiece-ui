@@ -20,6 +20,7 @@ import ReelInlineEditValue from "@/features/inputs/reel-picker/ReelInlineEditVal
 import WaflReelPickerSheet from "@/features/inputs/reel-picker/WaflReelPickerSheet";
 import MaterialQuantityValue from "@/features/materials/MaterialQuantityValue";
 import { createMaterialMemoDisclosureModel } from "@/features/materials/materialMemoDisclosureModel";
+import DelayedLoadingMessage from "@/features/work-orders/loading/DelayedLoadingMessage";
 import {
   createMaterialHeaderPresentation,
   MATERIAL_HEADER_NAME_MAX_LINES,
@@ -568,10 +569,11 @@ export default function WorkOrderMaterialsReadOnly({
 
   if (waiting && state.items.length === 0) {
     return (
-      <View accessibilityLiveRegion="polite" style={styles.centerState}>
-        <ActivityIndicator color="#9b4a27" />
-        <Text style={styles.stateTitle}>{state.status === "retrying" ? `${materialLabel} 정보를 다시 불러오는 중` : `${materialLabel} 정보를 불러오는 중`}</Text>
-      </View>
+      <DelayedLoadingMessage
+        identity={`materials:${materialType}`}
+        loading
+        scope={materialType}
+      />
     );
   }
 

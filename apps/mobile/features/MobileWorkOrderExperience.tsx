@@ -12,6 +12,7 @@ import WorkOrderDetailOverview, {
 import type { MaterialReadStatus } from "@/features/materials/WorkOrderMaterialsReadOnly";
 import type { MaterialEditorViewState } from "@/features/materials/WorkOrderMaterialEditor";
 import WorkOrderListScreen from "@/features/work-orders/list/WorkOrderListScreen";
+import DelayedLoadingMessage from "@/features/work-orders/loading/DelayedLoadingMessage";
 import {
   customerGuidance,
   customerMessage,
@@ -56,6 +57,7 @@ import {
   putBoundedMaterialEntry,
   type MaterialCacheEntry,
 } from "@/features/materials/materialCache";
+import { useSizeColorReadController } from "@/features/work-orders/size-color/useSizeColorReadController";
 import { workOrderMutationController } from "@/features/work-orders/workOrderMutationController";
 import { workOrderQueryController } from "@/features/work-orders/workOrderQueryController";
 import {
@@ -157,7 +159,20 @@ export default function MobileWorkOrderExperience() {
   const materialEditorRef = useRef<MaterialEditorViewState | null>(null);
   const materialLifecycleSequence = useRef(0);
   const materialOrderSequence = useRef(0);
+  const sizeColorAuthenticationError = useRef<(error: MobileApiError) => void>(() => undefined);
   const toastSequence = useRef(0);
+  const forwardSizeColorAuthenticationError = useCallback((error: MobileApiError) => {
+    sizeColorAuthenticationError.current(error);
+  }, []);
+  const {
+    boundary: sizeColor,
+    resetSession: resetSizeColorSession,
+  } = useSizeColorReadController({
+    workOrderId: detail?.header.id ?? null,
+    entityVersion: detail?.header.entityVersion ?? null,
+    selectedWorkOrderId,
+    onAuthenticationError: forwardSizeColorAuthenticationError,
+  });
 
   const showToast = useCallback((message: string, tone: WaflToastMessage["tone"] = transientToneFor(message)) => {
     toastSequence.current += 1;
@@ -239,6 +254,7 @@ export default function MobileWorkOrderExperience() {
       setAttachments([]);
       setImageMessage(null);
       resetMaterialSession();
+      resetSizeColorSession();
       setEditing(false);
       setActiveBasicField(null);
       setSaveState("read-only");
@@ -253,7 +269,8 @@ export default function MobileWorkOrderExperience() {
       retryTarget,
     });
     setPhase("recoverable-error");
-  }, [resetMaterialSession, selectedWorkOrderId, setImageMessage, setSelected]);
+  }, [resetMaterialSession, resetSizeColorSession, selectedWorkOrderId, setImageMessage, setSelected]);
+  sizeColorAuthenticationError.current = (error) => setRequestError(error, "boot");
 
   const loadListFor = useCallback(async (query: string, status: WorkOrderListStatusFilter, mode: "blocking" | "search" = "blocking") => {
     if (listRequestInFlight.current) {
@@ -494,6 +511,7 @@ export default function MobileWorkOrderExperience() {
       setAttachments([]);
       setImageMessage(null);
       resetMaterialSession();
+      resetSizeColorSession();
       setEditing(false);
       setSaveState("read-only");
       materialEditorRef.current = null;
@@ -1668,7 +1686,11 @@ export default function MobileWorkOrderExperience() {
   }
 
   const detailPane = phase === "detail-loading" ? (
-    <View style={styles.center}><ActivityIndicator color={WAFL_THEME.color.brickOrange} /><Text style={styles.loadingText}>작업지시서 상세를 불러오고 있습니다.</Text></View>
+    <DelayedLoadingMessage
+      identity={`detail:${selected?.workOrderId ?? "none"}`}
+      loading
+      scope="detail"
+    />
   ) : phase === "recoverable-error" && errorState?.retryTarget === "detail" ? (
     <ErrorPanel error={errorState} onRetry={retry} onReturnToList={returnToList} />
   ) : detail ? (
@@ -1717,6 +1739,7 @@ export default function MobileWorkOrderExperience() {
         setMaterialSaveNotice(null);
         void loadMaterials(detail.header.id, materialType, "initial");
       }}
+      sizeColor={sizeColor}
       onRequestSectionChange={(onProceed) => leaveWithDraftPolicy("feature", onProceed)}
       onRetryMaterials={() => void loadMaterials(detail.header.id, activeMaterialType, "retry")}
         onDeleteImage={requestDeleteImage}

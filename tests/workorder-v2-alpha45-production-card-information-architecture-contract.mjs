@@ -3,6 +3,7 @@ import fs from "node:fs";
 import path from "node:path";
 
 import { assertCanonicalWaflVersionConsistency } from "./helpers/wafl-v2-current-version.mjs";
+import { resolveWorkOrderTabVisualState } from "../apps/mobile/features/work-orders/overview/workOrderDetailPresentation.ts";
 
 const read = (relativePath) => fs.readFileSync(path.resolve(relativePath), "utf8");
 
@@ -45,7 +46,9 @@ assert.match(detail, /scrollContent: \{ paddingBottom: 42 \}/);
 for (const label of ["개요", "이미지·첨부", "사이즈·색상", "원단", "부자재", "제작", "문서"]) {
   assert.match(detail, new RegExp(label), `tab label/count location missing: ${label}`);
 }
-assert.match(detail, /accessibilityState=\{\{ disabled: true \}\}/);
+assert.equal(resolveWorkOrderTabVisualState({ selected: false, locked: true }), "locked");
+assert.equal(resolveWorkOrderTabVisualState({ selected: false, locked: false }), "inactive");
+assert.match(detail, /disabled=\{disabled\}/);
 assert.match(detail, /tab\.count\(detail\)/);
 assert.match(detail, /setActiveSection/);
 assert.doesNotMatch(detail, /setActiveTab|activeTab/);
@@ -56,7 +59,7 @@ assert.doesNotMatch(detail, /value=\{detail\.revision\.status\}/, "revision stat
 assert.doesNotMatch(detail, /core detail|server calculated|internal status/i);
 assert.match(detail, /WorkOrderImageGallery/);
 assert.match(apiClient, /\/assets\?limit=50/);
-assert.doesNotMatch(apiClient, /\/processes|\/documents|\/history|\/size-color|\/size-spec/);
+assert.doesNotMatch(apiClient, /\/processes|\/documents|\/history/, "process/document/history remain locked");
 assert.match(apiClient, /target\.method/);
 assert.doesNotMatch(apiClient, /method: "DELETE"/);
 assert.doesNotMatch(app, /setInterval|polling/i);

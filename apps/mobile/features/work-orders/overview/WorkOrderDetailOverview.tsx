@@ -18,7 +18,13 @@ import InlineDatePicker from "@/components/InlineDatePicker";
 import WorkOrderMaterialsReadOnly, { type MaterialReadViewState } from "@/features/materials/WorkOrderMaterialsReadOnly";
 import WorkOrderMaterialEditor, { type MaterialEditorViewState } from "@/features/materials/WorkOrderMaterialEditor";
 import WorkOrderImageGallery from "@/features/work-orders/images/WorkOrderImageGallery";
+import WorkOrderSizeColorReadOnly from "@/features/work-orders/size-color/WorkOrderSizeColorReadOnly";
+import type { SizeColorReadBoundary } from "@/features/work-orders/size-color/useSizeColorReadController";
 import type { WorkOrderImageAcquisitionSource } from "@/features/work-orders/images/workOrderImageAcquisition";
+import {
+  readOnlyBadgeLabel,
+  resolveWorkOrderTabVisualState,
+} from "@/features/work-orders/overview/workOrderDetailPresentation";
 import ReelInlineEditValue from "@/features/inputs/reel-picker/ReelInlineEditValue";
 import WaflReelPickerSheet from "@/features/inputs/reel-picker/WaflReelPickerSheet";
 import type { MaterialDraftFields, MaterialDraftUpdate, MaterialType, WorkOrderAttachmentAsset, WorkOrderDetailCore, WorkOrderImageAsset, WorkOrderMaterialLine } from "@/domain/mobileContract";
@@ -59,12 +65,52 @@ function MetricLine({ label, value, emphasized = false }: { readonly label: stri
   );
 }
 
-function Section({ title, children }: { readonly title: string; readonly children: ReactNode }) {
+function Section({ title, children }: { readonly title?: string; readonly children: ReactNode }) {
   return (
     <View style={styles.sectionBlock}>
-      <Text style={styles.sectionTitle}>{title}</Text>
+      {title ? <Text style={styles.sectionTitle}>{title}</Text> : null}
       {children}
     </View>
+  );
+}
+
+function DetailTab({
+  label,
+  count,
+  selected,
+  locked = false,
+  onPress,
+}: {
+  readonly label: string;
+  readonly count?: number;
+  readonly selected: boolean;
+  readonly locked?: boolean;
+  readonly onPress?: () => void;
+}) {
+  const visualState = resolveWorkOrderTabVisualState({ selected, locked });
+  const active = visualState === "active";
+  const disabled = visualState === "locked";
+
+  return (
+    <Pressable
+      accessibilityLabel={`${label}${count === undefined ? "" : ` ${count}건`}${disabled ? ", 잠김" : ""}`}
+      accessibilityRole="button"
+      accessibilityState={{ disabled, selected: active }}
+      disabled={disabled}
+      onPress={onPress}
+      style={[
+        styles.tab,
+        active && styles.tabSelected,
+        disabled && styles.tabLocked,
+      ]}
+    >
+      <View style={styles.tabLabelRow}>
+        <Text style={[styles.tabText, active && styles.tabTextSelected]}>{label}</Text>
+        {count === undefined ? null : <Text style={styles.tabCount}>{count}</Text>}
+        {disabled ? <LockKeyhole color="#8f857b" size={11} /> : null}
+      </View>
+      <View style={[styles.tabUnderline, active && styles.tabUnderlineSelected]} />
+    </Pressable>
   );
 }
 
@@ -133,6 +179,7 @@ type Props = {
   readonly onReloadLatestMaterial: () => void;
   readonly onRequestSectionChange: (onProceed: () => void) => void;
   readonly onOpenMaterials: (materialType: MaterialType) => void;
+  readonly sizeColor: SizeColorReadBoundary;
   readonly onRetryMaterials: () => void;
   readonly onLoadMoreMaterials: () => void;
   readonly images: readonly WorkOrderImageAsset[];
@@ -151,7 +198,7 @@ type Props = {
 
 export default function WorkOrderDetailOverview(props: Props) {
   const { detail, phone, onBack } = props;
-  const [activeSection, setActiveSection] = useState<"overview" | "media" | MaterialType>("overview");
+  const [activeSection, setActiveSection] = useState<"overview" | "media" | "sizes" | MaterialType>("overview");
   const [totalQuantityReelOpen, setTotalQuantityReelOpen] = useState(false);
   const [categoryReelField, setCategoryReelField] = useState<"targetAudience" | "categoryMajor" | null>(null);
   const { width } = useWindowDimensions();
@@ -163,6 +210,7 @@ export default function WorkOrderDetailOverview(props: Props) {
   const { onFieldFocus, onScroll } = useFocusedFieldVisibility(detailScrollRef);
   const representative = props.images.find((image) => image.isRepresentative) ?? null;
   const representativeUrl = resolveMobileApiUrl(representative?.viewUrl ?? header.representativeImage?.thumbnailUrl ?? null);
+  const readOnlyLabel = readOnlyBadgeLabel(props.canEdit);
 
   return (
     <View style={styles.container}>
@@ -179,7 +227,11 @@ export default function WorkOrderDetailOverview(props: Props) {
           </Pressable>
         ) : <View />}
         <View style={styles.navigationActions}>
-          <Text style={styles.readOnly}>{props.canEdit ? "작업지시서" : "작업지시서 · 읽기 전용"}</Text>
+          {readOnlyLabel ? (
+            <View style={styles.readOnlyBadge}>
+              <Text style={styles.readOnlyBadgeText}>{readOnlyLabel}</Text>
+            </View>
+          ) : null}
         </View>
       </View>
 
@@ -242,67 +294,39 @@ export default function WorkOrderDetailOverview(props: Props) {
 
           <View style={styles.tabRailFrame}>
             <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.tabRail}>
-              <Pressable
-                accessibilityRole="button"
-                accessibilityState={{ selected: activeSection === "overview" }}
+              <DetailTab
+                label="개요"
                 onPress={() => props.onRequestSectionChange(() => setActiveSection("overview"))}
-                style={[styles.tab, activeSection === "overview" && styles.tabSelected]}
-              >
-                <Text style={[styles.tabText, activeSection === "overview" && styles.tabTextSelected]}>개요</Text>
-                <View style={[styles.tabUnderline, activeSection === "overview" && styles.tabUnderlineSelected]} />
-              </Pressable>
-              {SECTION_TABS.map((tab) => tab.id === "media" ? (
-                <Pressable
-                  key={tab.id}
-                  accessibilityLabel={`${tab.label} ${props.images.length}건`}
-                  accessibilityRole="button"
-                  accessibilityState={{ selected: activeSection === tab.id }}
-                  onPress={() => props.onRequestSectionChange(() => setActiveSection("media"))}
-                  style={[styles.tab, activeSection === tab.id && styles.tabSelected]}
-                >
-                  <View style={styles.tabLabelRow}>
-                    <Text style={[styles.tabText, activeSection === tab.id && styles.tabTextSelected]}>{tab.label}</Text>
-                    <Text style={styles.tabCount}>{props.images.length}</Text>
-                  </View>
-                  <View style={[styles.tabUnderline, activeSection === tab.id && styles.tabUnderlineSelected]} />
-                </Pressable>
-              ) : tab.id === "fabric" || tab.id === "accessory" ? (
-                <Pressable
-                  key={tab.id}
-                  accessibilityLabel={`${tab.label} ${tab.count(detail)}건`}
-                  accessibilityRole="button"
-                  accessibilityState={{ selected: activeSection === tab.id }}
-                  onPress={() => props.onRequestSectionChange(() => {
-                    setActiveSection(tab.id);
-                    props.onOpenMaterials(tab.id);
-                  })}
-                  style={[styles.tab, activeSection === tab.id && styles.tabSelected]}
-                >
-                  <View style={styles.tabLabelRow}>
-                    <Text style={[styles.tabText, activeSection === tab.id && styles.tabTextSelected]}>{tab.label}</Text>
-                    <Text style={styles.tabCount}>{tab.count(detail)}</Text>
-                  </View>
-                  <View style={[styles.tabUnderline, activeSection === tab.id && styles.tabUnderlineSelected]} />
-                </Pressable>
-              ) : (
-                <Pressable
-                  key={tab.id}
-                  accessibilityLabel={`${tab.label}, 다음 단계에서 연결 예정`}
-                  accessibilityRole="button"
-                  accessibilityState={{ disabled: true }}
-                  disabled
-                  style={styles.tab}
-                >
-                  <View style={styles.tabLabelRow}>
-                    <Text style={styles.tabText}>{tab.label}</Text>
-                    <Text style={styles.tabCount}>{tab.count(detail)}</Text>
-                    <LockKeyhole color="#8f857b" size={11} />
-                  </View>
-                  <View style={styles.tabUnderline} />
-                </Pressable>
-              ))}
+                selected={activeSection === "overview"}
+              />
+              {SECTION_TABS.map((tab) => {
+                const count = tab.id === "media" ? props.images.length : tab.count(detail);
+                const locked = tab.id === "flow" || tab.id === "output";
+                const onPress = tab.id === "media"
+                  ? () => props.onRequestSectionChange(() => setActiveSection("media"))
+                  : tab.id === "sizes"
+                    ? () => props.onRequestSectionChange(() => {
+                      setActiveSection("sizes");
+                      props.sizeColor.onOpen();
+                    })
+                    : tab.id === "fabric" || tab.id === "accessory"
+                      ? () => props.onRequestSectionChange(() => {
+                        setActiveSection(tab.id);
+                        props.onOpenMaterials(tab.id);
+                      })
+                      : undefined;
+                return (
+                  <DetailTab
+                    count={count}
+                    key={tab.id}
+                    label={tab.label}
+                    locked={locked}
+                    onPress={onPress}
+                    selected={activeSection === tab.id}
+                  />
+                );
+              })}
             </ScrollView>
-            <Text style={styles.tabNotice}>작업지시서 이미지와 일반 첨부는 여기서 관리합니다. 사이즈·색상, 제작, 문서는 이번 범위에 포함되지 않습니다.</Text>
           </View>
 
           {activeSection === "overview" ? (
@@ -311,10 +335,8 @@ export default function WorkOrderDetailOverview(props: Props) {
                 <Pressable accessibilityRole="button" onPress={props.onReloadLatest} style={styles.reloadLatest}>
                   <Text style={styles.reloadLatestText}>최신 내용 불러오기</Text>
                 </Pressable>
-              ) : !props.canEdit && (header.status !== "draft" || detail.revision.status !== "draft") ? (
-                <Text style={styles.lockedNotice}>발행된 작업지시서는 읽기 전용입니다.</Text>
               ) : null}
-              <Section title="기본정보">
+              <Section>
                 <View style={[styles.summaryGrid, !phone && styles.summaryGridTablet]}>
                   <MiniStat
                     expanded={props.activeBasicField === "totalQuantity"}
@@ -536,7 +558,13 @@ export default function WorkOrderDetailOverview(props: Props) {
                 onOpenAttachment={props.onOpenAttachment}
                 onFocusTarget={onFieldFocus}
                 onSaveMemo={props.onSaveFactoryDeliveryMemo}
-                onSetRepresentative={props.onSetRepresentativeImage}
+              onSetRepresentative={props.onSetRepresentativeImage}
+            />
+          ) : activeSection === "sizes" ? (
+            <WorkOrderSizeColorReadOnly
+              identity={props.sizeColor.identity}
+              onRetry={props.sizeColor.onRetry}
+              state={props.sizeColor.state}
             />
           ) : props.materialEditor?.mode === "create" ? (
             <WorkOrderMaterialEditor
@@ -584,7 +612,8 @@ const styles = StyleSheet.create({
   navigationActions: { alignItems: "center", flexDirection: "row", gap: 8 },
   backButton: { alignItems: "center", flexDirection: "row", minHeight: 44, paddingRight: 8 },
   backText: { color: "#3f352d", fontFamily: WAFL_FONTS.semibold, fontSize: 14 },
-  readOnly: { color: "#6d6257", fontFamily: WAFL_FONTS.semibold, fontSize: 11 },
+  readOnlyBadge: { backgroundColor: "#edf0f5", borderColor: "#cbd3df", borderRadius: 999, borderWidth: 1, paddingHorizontal: 9, paddingVertical: 4 },
+  readOnlyBadgeText: { color: "#334561", fontFamily: WAFL_FONTS.semibold, fontSize: 10, lineHeight: 14 },
   pressed: { opacity: 0.68 },
   scrollContent: { paddingBottom: 42 },
   productionCardSheet: { backgroundColor: "#fffdf8", borderColor: "#eadfce", borderRadius: 14, borderWidth: 1, overflow: "hidden" },
@@ -626,7 +655,6 @@ const styles = StyleSheet.create({
   saveButton: { alignItems: "center", backgroundColor: "#23375a", borderRadius: 10, flexDirection: "row", gap: 6, justifyContent: "center", minHeight: 44, minWidth: 100, paddingHorizontal: 16 },
   saveButtonDisabled: { opacity: 0.42 },
   saveButtonText: { color: "#fff", fontFamily: WAFL_FONTS.bold, fontSize: 12 },
-  lockedNotice: { color: "#75695e", fontFamily: WAFL_FONTS.regular, fontSize: 10, marginBottom: 8, marginHorizontal: 12 },
   summaryGrid: { flexDirection: "row", flexWrap: "wrap", gap: 6, paddingBottom: 12, paddingHorizontal: 12 },
   summaryGridTablet: { flexWrap: "nowrap" },
   miniStat: { backgroundColor: "#f7f0e5", borderRadius: 9, flexBasis: "47%", flexGrow: 1, minWidth: 112, paddingHorizontal: 9, paddingVertical: 7 },
@@ -652,13 +680,13 @@ const styles = StyleSheet.create({
   tabRail: { alignItems: "stretch", gap: 8, minHeight: 48, paddingHorizontal: 10, paddingVertical: 3 },
   tab: { alignItems: "center", backgroundColor: "transparent", borderRadius: 9, justifyContent: "center", minWidth: 74, opacity: 0.54, paddingHorizontal: 2, paddingVertical: 5 },
   tabSelected: { backgroundColor: "#fffdf8", opacity: 1 },
+  tabLocked: { backgroundColor: "transparent", opacity: 0.4 },
   tabLabelRow: { alignItems: "center", flexDirection: "row", gap: 4, justifyContent: "center" },
   tabText: { color: "#5d544b", fontFamily: WAFL_FONTS.semibold, fontSize: 11, lineHeight: 17, textAlign: "center" },
   tabTextSelected: { color: "#17263d", fontFamily: WAFL_FONTS.bold },
   tabUnderline: { backgroundColor: "transparent", borderRadius: 999, height: 2, marginTop: 4, width: 28 },
   tabUnderlineSelected: { backgroundColor: "#17263d" },
   tabCount: { backgroundColor: "#e2d8ca", borderRadius: 999, color: "#5d544b", fontFamily: WAFL_FONTS.bold, fontSize: 9, minWidth: 18, overflow: "hidden", paddingHorizontal: 5, paddingVertical: 2, textAlign: "center" },
-  tabNotice: { color: "#756b62", fontFamily: WAFL_FONTS.regular, fontSize: 10, paddingBottom: 8, paddingHorizontal: 12, paddingTop: 3 },
   overviewSection: { padding: 12, paddingBottom: 16 },
   nextCheckPanel: { alignItems: "flex-start", borderLeftWidth: 4, borderRadius: 11, flexDirection: "row", gap: 10, marginBottom: 8, paddingHorizontal: 11, paddingVertical: 10 },
   nextCheckReady: { backgroundColor: "#edf2e7", borderLeftColor: "#4d6a3a" },

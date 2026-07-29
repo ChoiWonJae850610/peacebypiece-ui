@@ -42,7 +42,7 @@ for (const label of [
 assert.match(gallery, /selectedIndex \+ 1/);
 assert.match(gallery, /props\.onSetRepresentative\(selected\)/);
 assert.match(gallery, /props\.onDelete\(selected\)/);
-assert.match(gallery, /첫 이미지만 자동 대표/);
+assert.doesNotMatch(gallery, /첫 이미지만 자동 대표/, "historical implementation help copy must not be required in the customer UI");
 assert.match(experience, /첫 이미지를 등록하고 대표이미지로 지정했습니다/);
 assert.match(experience, /다른 이미지가 자동으로 대표 지정되지는 않습니다/);
 assert.match(overview, /attachments=\{props\.attachments\}/);

@@ -3,6 +3,7 @@ import fs from "node:fs";
 import path from "node:path";
 
 import { assertCanonicalWaflVersionConsistency } from "./helpers/wafl-v2-current-version.mjs";
+import { resolveWorkOrderTabVisualState } from "../apps/mobile/features/work-orders/overview/workOrderDetailPresentation.ts";
 
 const read = (relativePath) => fs.readFileSync(path.resolve(relativePath), "utf8");
 
@@ -50,7 +51,7 @@ assert.match(apiClient, /`\/api\/v2\/work-orders\?\$\{query\.toString\(\)\}`/);
 assert.match(apiClient, /\/api\/v2\/work-orders\/\$\{encodeURIComponent\(workOrderId\)\}/);
 assert.match(apiClient, /credentials: "include"/);
 assert.match(apiClient, /\/assets\?limit=50/);
-assert.doesNotMatch(apiClient, /\/processes|\/documents|\/history|\/size-color|\/size-spec/);
+assert.doesNotMatch(apiClient, /\/processes|\/documents|\/history/, "process/document/history remain outside the connected mobile detail");
 assert.match(apiClient, /target\.method/);
 assert.doesNotMatch(apiClient, /method: "DELETE"/);
 
@@ -84,10 +85,12 @@ for (const removedOverviewLabel of ["문서 요약", "구성 요약", "Revision 
 }
 
 for (const label of ["개요", "이미지·첨부", "사이즈·색상", "원단", "부자재", "제작", "문서"]) {
-  assert.match(detail, new RegExp(`(?:label: |>)["']?${label}`), `tab must be visible: ${label}`);
+  assert.match(detail, new RegExp(`(?:label=|label: )["']${label}["']`), `tab must be visible: ${label}`);
 }
-assert.match(detail, /accessibilityState=\{\{ disabled: true \}\}/);
-assert.match(detail, /disabled\s*\n/);
+assert.equal(resolveWorkOrderTabVisualState({ selected: false, locked: true }), "locked");
+assert.equal(resolveWorkOrderTabVisualState({ selected: true, locked: false }), "active");
+assert.match(detail, /const locked = tab\.id === "flow" \|\| tab\.id === "output"/);
+assert.match(detail, /disabled=\{disabled\}/);
 assert.match(detail, /tab\.id === "fabric" \|\| tab\.id === "accessory"/);
 assert.match(detail, /activeSection === "media"[\s\S]*WorkOrderImageGallery/);
 assert.match(detail, /setActiveSection/);
