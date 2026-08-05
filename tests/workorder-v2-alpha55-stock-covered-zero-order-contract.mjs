@@ -80,8 +80,25 @@ const mobileStockCovered = {
   lifecycle: "active",
   archivedAt: null,
 };
-assert.deepEqual(validateMaterialOrderRequest(mobileStockCovered), {});
-assert.deepEqual(validateMaterialOrderRequest({ ...mobileStockCovered, inventoryUsageQuantity: "4" }), {});
+assert.ok(validateMaterialOrderRequest(mobileStockCovered).orderQuantity);
+assert.ok(validateMaterialOrderRequest(mobileStockCovered).unitPrice);
+assert.deepEqual(
+  validateMaterialOrderRequest({
+    ...mobileStockCovered,
+    orderQuantity: "3.5",
+    unitPrice: "10000",
+  }),
+  {},
+);
+assert.deepEqual(
+  validateMaterialOrderRequest({
+    ...mobileStockCovered,
+    inventoryUsageQuantity: "4",
+    orderQuantity: "3.5",
+    unitPrice: "10000",
+  }),
+  {},
+);
 assert.ok(validateMaterialOrderRequest({
   ...mobileStockCovered,
   requiredQuantity: "0",

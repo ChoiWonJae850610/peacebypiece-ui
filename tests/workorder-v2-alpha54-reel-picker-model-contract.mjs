@@ -4,8 +4,14 @@ import assert from "node:assert/strict";
 import { createSelectionTickGate } from "../apps/mobile/features/inputs/reel-picker/reelPickerHaptics.ts";
 import {
   MATERIAL_QUANTITY_MAX,
+  QUARTER_FRACTION_VALUES,
   REEL_STEPS,
+  circularLogicalIndex,
+  circularRecenterIndex,
+  composeQuarterQuantity,
+  createCircularReelWindow,
   createReelWindow,
+  decomposeQuarterQuantity,
   defaultReelStep,
   materialUnitOptions,
   normalizeReelValue,
@@ -42,6 +48,23 @@ assert.equal(maxWindow.selectedIndex, maxWindow.options.length - 1);
 assert.ok(maxWindow.options.length <= 101, "reel window must stay bounded");
 assert.equal(normalizeReelValue("0005.500"), "5.5");
 assert.equal(normalizeReelValue("999999999999"), null);
+
+const circular = createCircularReelWindow(
+  [{ key: "a", value: "a" }, { key: "b", value: "b" }],
+  "b",
+);
+assert.equal(circular.circular, true);
+assert.equal(circularLogicalIndex(circular, circular.selectedIndex), 1);
+assert.equal(circularLogicalIndex(circular, circular.selectedIndex + 1), 0);
+assert.equal(circularLogicalIndex(circular, circular.selectedIndex - 2), 1);
+const recentered = circularRecenterIndex(circular, 0);
+assert.notEqual(recentered, null);
+assert.equal(circularLogicalIndex(circular, recentered), 0);
+assert.deepEqual(QUARTER_FRACTION_VALUES, ["0", "0.25", "0.5", "0.75"]);
+assert.equal(composeQuarterQuantity("2", "0.75"), "2.75");
+assert.deepEqual(decomposeQuarterQuantity("2.125"), {
+  integerPart: "2", fractionPart: "0", exactQuarter: false, preservedValue: "2.125",
+});
 
 let picker = reelPickerReducer(INITIAL_REEL_PICKER_STATE, { type: "open", field: "requiredQuantity", label: "필요수량", value: "10", unit: "yd" });
 assert.equal(picker.openCount, 1);

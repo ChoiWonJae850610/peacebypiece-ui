@@ -93,7 +93,7 @@ const validLine = {
   requiredQuantity: "2.000",
   allowanceQuantity: "0.500",
   inventoryUsageQuantity: "0.500",
-  orderQuantity: "2.000",
+  orderQuantity: "2.500",
   unitCode: "yd",
   unitPrice: "15000.00",
   memo: undefined,

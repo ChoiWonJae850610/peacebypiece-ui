@@ -75,11 +75,11 @@ assert.match(display, /finalized: "확정됨"/);
 assert.match(display, /generated: "생성 완료"/);
 assert.match(detail, /대표 이미지 없음/);
 assert.match(detail, /WorkOrderImageGallery/);
-assert.match(detail, /한벌 단가/);
+assert.match(detail, /1벌 원가/);
 assert.doesNotMatch(detail, /한 벌 예상/);
 assert.match(detail, /발행 준비 가능/);
 assert.match(detail, /발행 전 확인/);
-assert.match(detail, /금액 요약/);
+assert.match(detail, /비용 구성/);
 for (const removedOverviewLabel of ["문서 요약", "구성 요약", "Revision 상태", "Revision 확정", "최종 수정", "문서 상태", "문서번호", "생성 시각"]) {
   assert.doesNotMatch(detail, new RegExp(`>[\\s\\S]*?${removedOverviewLabel}[\\s\\S]*?<`), `overview must not render ${removedOverviewLabel}`);
 }

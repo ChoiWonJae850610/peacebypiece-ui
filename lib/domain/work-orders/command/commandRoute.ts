@@ -20,6 +20,7 @@ import {
 import {
   getWorkOrderV2CommandRuntimeGuard,
   isAlpha46BasicInfoMutationRuntime,
+  isAlpha59SizeColorStructureMutationRuntime,
 } from "@/lib/domain/work-orders/command/runtimeGuard";
 import {
   validateCreateWorkOrderDraft,
@@ -139,6 +140,7 @@ async function handleCommand(input: {
 
     const command = validatePatchWorkOrderBasicInfo(body, {
       mobileBasicInfoOnly: isAlpha46BasicInfoMutationRuntime(),
+      matrixTotalOwned: isAlpha59SizeColorStructureMutationRuntime(),
     });
     const result = await patchWorkOrderBasicInfo({
       workOrderId: input.workOrderId ?? "",

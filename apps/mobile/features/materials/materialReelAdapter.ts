@@ -1,6 +1,6 @@
 import type { MaterialDraftFields } from "@/domain/mobileContract";
 
-export type MaterialReelField = "requiredQuantity" | "allowanceQuantity" | "inventoryUsageQuantity" | "unitCode";
+export type MaterialReelField = "requiredQuantity" | "allowanceQuantity" | "unitCode";
 
 export function materialReelDraftPatch(input: {
   readonly field: MaterialReelField;

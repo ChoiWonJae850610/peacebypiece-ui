@@ -54,7 +54,7 @@ const tabsIndex = overview.indexOf("<View style={styles.tabRailFrame}>");
 const overviewSummaryIndex = overview.indexOf("<View style={[styles.summaryGrid");
 assert.ok(tabsIndex >= 0 && overviewSummaryIndex > tabsIndex, "tabs must render above overview totals");
 assert.equal((overview.match(/<View style=\{\[styles\.summaryGrid/g) ?? []).length, 1);
-assert.match(overview, /activeSection === "overview"[\s\S]*label="총 수량"[\s\S]*label="납기"[\s\S]*한벌 단가[\s\S]*총 예상/);
+assert.match(overview, /activeSection === "overview"[\s\S]*label="총 수량"[\s\S]*label="납기"[\s\S]*1벌 원가[\s\S]*예상 총원가/);
 assert.doesNotMatch(overview, /mediaCount|formatProductType|productTypeAlias/);
 assert.match(overview, /\{ id: "flow", label: "제작"/);
 assert.match(overview, /\{ id: "output", label: "문서"/);

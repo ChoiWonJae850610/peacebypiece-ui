@@ -152,7 +152,7 @@ export function validateMaterialDraft(input: MaterialDraftInput, materialType: M
   if (draft.usageArea.trim().length > 1000) errors.usageArea = "사용부위는 1,000자 이하여야 합니다.";
   if (draft.memo.trim().length > 2000) errors.memo = "메모는 2,000자 이하여야 합니다.";
   if (draft.unitCode.trim().length < 1 || draft.unitCode.trim().length > 32) errors.unitCode = "단위는 1자 이상 32자 이하여야 합니다.";
-  for (const field of ["requiredQuantity", "allowanceQuantity", "inventoryUsageQuantity"] as const) {
+  for (const field of ["requiredQuantity", "allowanceQuantity"] as const) {
     if (!MATERIAL_QUANTITY_PATTERN.test(numericDraft[field])) errors[field] = "0 이상의 소수점 3자리 이하 숫자를 입력해 주세요.";
   }
   if (!MATERIAL_PRICE_PATTERN.test(numericDraft.unitPrice)) errors.unitPrice = "단가는 0 이상의 정수 원 단위로 입력해 주세요.";
@@ -187,17 +187,7 @@ export function validateMaterialOrderRequest(line: WorkOrderMaterialLine): Mater
   const allowance = MATERIAL_QUANTITY_PATTERN.test(draft.allowanceQuantity.trim())
     ? Number(draft.allowanceQuantity)
     : null;
-  const stock = MATERIAL_QUANTITY_PATTERN.test(draft.inventoryUsageQuantity.trim())
-    ? Number(draft.inventoryUsageQuantity)
-    : null;
   const demand = required === null || allowance === null ? null : required + allowance;
-  const stockCovered = (
-    demand !== null
-    && demand > 0
-    && stock !== null
-    && stock >= demand
-    && Number(calculated) === 0
-  );
   if (
     calculated === null
     || demand === null
@@ -207,11 +197,7 @@ export function validateMaterialOrderRequest(line: WorkOrderMaterialLine): Mater
     errors.orderQuantity = "발주수량 계산값을 확인해 주세요.";
   }
   const unitPrice = draft.unitPrice.trim();
-  if (stockCovered) {
-    if (unitPrice && !MATERIAL_PRICE_PATTERN.test(unitPrice)) {
-      errors.unitPrice = "단가는 0 이상의 정수 원 단위로 입력해 주세요.";
-    }
-  } else if (
+  if (
     !MATERIAL_PRICE_PATTERN.test(unitPrice)
     || Number(unitPrice) <= 0
   ) {
@@ -225,7 +211,7 @@ export function materialPatch(base: MaterialDraftFields, draft: MaterialDraftFie
   const normalizedDraft = createMaterialDraft(draft, normalizedBase);
   const patch: Partial<Record<keyof MaterialDraftFields, string>> = {};
   for (const field of Object.keys(normalizedBase) as (keyof MaterialDraftFields)[]) {
-    if (field === "orderQuantity") continue;
+    if (field === "orderQuantity" || field === "inventoryUsageQuantity") continue;
     const normalized = normalizedDraft[field].trim();
     if (normalized !== normalizedBase[field].trim()) patch[field] = normalized;
   }

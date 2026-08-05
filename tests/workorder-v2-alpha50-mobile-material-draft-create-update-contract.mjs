@@ -18,6 +18,7 @@ const app = read("apps/mobile/features/MobileWorkOrderExperience.tsx");
 const detail = read("apps/mobile/features/work-orders/overview/WorkOrderDetailOverview.tsx");
 const materials = read("apps/mobile/features/materials/WorkOrderMaterialsReadOnly.tsx");
 const editor = read("apps/mobile/features/materials/WorkOrderMaterialEditor.tsx");
+const materialFieldPolicy = read("apps/mobile/features/materials/materialFieldPolicy.ts");
 const apiClient = read("apps/mobile/lib/apiClient.ts");
 const apiTypes = read("apps/mobile/domain/mobileContract.ts");
 const mobileValidation = read("apps/mobile/domain/workOrderValidation.ts");
@@ -99,8 +100,16 @@ for (const field of [
   "inventoryUsageQuantity", "unitCode", "unitPrice", "memo",
 ]) {
   assert.match(apiTypes, new RegExp(`readonly ${field}: string`), `mobile material field missing: ${field}`);
+}
+for (const field of [
+  "name", "colorOption", "usageArea", "requiredQuantity", "allowanceQuantity",
+  "unitCode", "unitPrice", "memo",
+]) {
   assert.match(editor, new RegExp(`field(?:=|:)\\s*"${field}"`), `editor field missing: ${field}`);
 }
+assert.doesNotMatch(editor, /field(?:=|:)\s*"inventoryUsageQuantity"/);
+assert.match(materialFieldPolicy, /MOBILE_MATERIAL_INVENTORY_USAGE_VISIBLE = false/);
+assert.ok(evidence.includes("inventory usage"), "immutable alpha.50 evidence must retain the historical inventory field");
 assert.match(apiTypes, /readonly orderQuantity: string/);
 assert.doesNotMatch(editor, /field="orderQuantity"/);
 assert.match(editor, /발주수량, 자동 계산, 읽기 전용/);
@@ -137,7 +146,7 @@ assert.match(app, /selectedWorkOrderId\.current !== input\.workOrderId/);
 assert.match(app, /materialSessionGeneration\.current !== input\.sessionGeneration/);
 assert.match(app, /materialEditorRef\.current\?\.token !== input\.token/);
 assert.match(app, /Promise\.all\(\[[\s\S]{0,300}workOrderQueryController\.detail[\s\S]{0,300}workOrderQueryController\.materials/);
-assert.match(mobileValidation, /if \(field === "orderQuantity"\) continue/);
+assert.match(mobileValidation, /if \(field === "orderQuantity" \|\| field === "inventoryUsageQuantity"\) continue/);
 assert.match(app, /refreshed\.header\.entityVersion !== page\.entityVersion/);
 assert.match(app, /input\.expectedVersion !== null && refreshed\.header\.entityVersion !== input\.expectedVersion/);
 assert.match(app, /putBoundedMaterialEntry/);
@@ -150,7 +159,7 @@ assert.doesNotMatch(app + editor, /setInterval|automaticSave|autoSave|order-requ
 
 assert.match(materials, /accessibilityLabel=\{`\$\{materialLabel\} 추가`\}/);
 assert.match(materials, /<Plus /);
-assert.match(materials, /field="name" label=\{materialNameLabel\}/);
+assert.match(materials, /field="name"[\s\S]{0,120}label=\{materialNameLabel\}/);
 assert.doesNotMatch(materials, /PencilLine|editActionButton/);
 assert.match(materials, /orderPolicy\.canEdit/);
 const materialOrderAction = materials.slice(materials.indexOf("function MaterialOrderActionButton"), materials.indexOf("function MaterialCard"));

@@ -53,7 +53,7 @@ import { createWorkOrderImageDerivativeKeys } from "@/lib/storage/r2/r2Keys";
 export const WORK_ORDER_V2_DETAIL_REPOSITORY_STATEMENT_COUNT = 2;
 
 const TARGET_SQL = `
-  SELECT w.id, w.current_revision_id, w.entity_version
+  SELECT w.id, w.current_revision_id, w.entity_version, w.total_quantity AS work_order_total
   FROM work_orders w
   WHERE w.company_id = $1
     AND w.id = $2::uuid
@@ -64,7 +64,11 @@ const TARGET_SQL = `
 export const WORK_ORDER_V2_DETAIL_CORE_SQL = `
   WITH target AS MATERIALIZED (
     SELECT w.id, w.product_name, w.product_type_code, w.season_code, w.item_code,
-           w.status, w.due_date::text AS due_date, w.total_quantity, w.document_number_base,
+           w.status, w.due_date::text AS due_date,
+           (SELECT COALESCE(sum(q.quantity), 0)::integer
+            FROM color_size_quantities q
+            WHERE q.company_id = w.company_id AND q.revision_id = w.current_revision_id) AS total_quantity,
+           w.document_number_base,
            w.current_revision_id, w.representative_image_id, w.entity_version, w.updated_at,
            r.revision_no, r.revision_status, r.finalized_at, r.factory_delivery_memo, r.unit_price,
            r.fabric_total, r.accessory_total, r.process_total, r.estimated_total
@@ -141,24 +145,25 @@ export const WORK_ORDER_V2_SIZE_COLOR_SQL = `
     SELECT t.id AS work_order_id, t.current_revision_id, t.entity_version,
            'meta'::text AS row_kind, NULL::text AS id_a, NULL::text AS id_b,
            NULL::text AS value_a, NULL::text AS value_b, NULL::integer AS order_value,
-           r.quantity_matrix_note AS memo_value, r.total_quantity_snapshot::text AS quantity_value
+           r.quantity_matrix_note AS memo_value, r.total_quantity_snapshot::text AS quantity_value,
+           t.work_order_total::text AS work_order_quantity_value
     FROM target t
     JOIN work_order_revisions r ON r.company_id = $1 AND r.id = t.current_revision_id
     UNION ALL
     SELECT t.id, t.current_revision_id, t.entity_version, 'color', c.id::text, NULL,
-           c.display_name, c.hex_value, c.display_order, NULL, NULL
+           c.display_name, c.hex_value, c.display_order, NULL, NULL, NULL
     FROM target t JOIN work_order_colors c ON c.company_id = $1 AND c.revision_id = t.current_revision_id
     UNION ALL
     SELECT t.id, t.current_revision_id, t.entity_version, 'size', s.id::text, NULL,
-           s.size_code, s.display_label, s.display_order, NULL, NULL
+           s.size_code, s.display_label, s.display_order, NULL, NULL, NULL
     FROM target t JOIN work_order_sizes s ON s.company_id = $1 AND s.revision_id = t.current_revision_id
     UNION ALL
     SELECT t.id, t.current_revision_id, t.entity_version, 'cell', q.color_id::text, q.size_id::text,
-           NULL, NULL, NULL, NULL, q.quantity::text
+           NULL, NULL, NULL, NULL, q.quantity::text, NULL
     FROM target t JOIN color_size_quantities q ON q.company_id = $1 AND q.revision_id = t.current_revision_id
   )
   SELECT work_order_id, current_revision_id, entity_version, row_kind, id_a, id_b,
-         value_a, value_b, order_value, memo_value, quantity_value
+         value_a, value_b, order_value, memo_value, quantity_value, work_order_quantity_value
   FROM rows
   ORDER BY CASE row_kind WHEN 'meta' THEN 0 WHEN 'color' THEN 1 WHEN 'size' THEN 2 ELSE 3 END,
            order_value ASC NULLS LAST, id_a ASC NULLS LAST, id_b ASC NULLS LAST
@@ -497,15 +502,20 @@ export async function getWorkOrderSizeColorV2(input: Omit<CommonCollectionInput,
     colorId: String(row.id_a) as ColorId, sizeRowId: String(row.id_b) as SizeRowId, quantity: asDecimal(row.quantity_value),
   }));
   const matrixTotal = quantityCells.reduce((sum, cell) => sum + Number(cell.quantity), 0);
-  const expectedTotal = Number(meta.quantity_value ?? 0);
+  const revisionTotal = Number(meta.quantity_value ?? 0);
+  const workOrderTotal = Number(meta.work_order_quantity_value ?? 0);
+  const projectionsMatch = matrixTotal === workOrderTotal && matrixTotal === revisionTotal;
   return {
     data: {
       workOrderId: String(meta.work_order_id) as WorkOrderId,
       revisionId: String(meta.current_revision_id) as WorkOrderRevisionId,
       sizes, colors, quantityCells,
       matrixTotal: String(matrixTotal) as DecimalString,
-      expectedTotal: String(expectedTotal) as DecimalString,
-      totalsMatch: matrixTotal === expectedTotal,
+      expectedTotal: String(revisionTotal) as DecimalString,
+      workOrderTotal: String(workOrderTotal) as DecimalString,
+      revisionTotal: String(revisionTotal) as DecimalString,
+      projectionsMatch,
+      totalsMatch: projectionsMatch,
       memoFallback: meta.memo_value === null ? null : String(meta.memo_value),
       entityVersion: asCount(meta.entity_version) as EntityVersion,
     },

@@ -7,6 +7,7 @@ import type { MaterialEditorFieldErrors } from "@/domain/workOrderValidation";
 import type { MaterialDraftFields, MaterialType } from "@/domain/mobileContract";
 import WaflReelPickerSheet from "@/features/inputs/reel-picker/WaflReelPickerSheet";
 import MaterialQuantityValue from "@/features/materials/MaterialQuantityValue";
+import { MOBILE_MATERIAL_FIELD_LABELS } from "@/features/materials/materialFieldPolicy";
 import { materialReelDraftPatch, type MaterialReelField } from "@/features/materials/materialReelAdapter";
 import {
   calculateMaterialAmount,
@@ -131,12 +132,12 @@ export default function WorkOrderMaterialEditor({ state, dirty, onChange, onCanc
 
       <View style={styles.fields}>
         <EditorField field="name" label={materialNameLabel} maxLength={200} onChange={onChange} placeholder={`${materialNameLabel}을 입력하세요`} state={state} />
-        <EditorField field="colorOption" label="색상·옵션" maxLength={200} onChange={onChange} placeholder="예: NAVY" state={state} />
+        <EditorField field="colorOption" label={MOBILE_MATERIAL_FIELD_LABELS.colorOption} maxLength={200} onChange={onChange} placeholder="예: NAVY" state={state} />
+        <EditorField field="unitPrice" keyboardType="number-pad" label={MOBILE_MATERIAL_FIELD_LABELS.unitPrice} maxLength={16} onChange={onChange} placeholder="0" state={state} />
         {([
           { field: "unitCode", label: "단위", value: state.draft.unitCode || "단위 선택", reelValue: state.draft.requiredQuantity },
-          { field: "requiredQuantity", label: "필요수량", value: formatQuantity(state.draft.requiredQuantity, state.draft.unitCode), reelValue: state.draft.requiredQuantity },
-          { field: "allowanceQuantity", label: "로스·여유", value: formatQuantity(state.draft.allowanceQuantity, state.draft.unitCode), reelValue: state.draft.allowanceQuantity },
-          { field: "inventoryUsageQuantity", label: "재고사용", value: formatQuantity(state.draft.inventoryUsageQuantity, state.draft.unitCode), reelValue: state.draft.inventoryUsageQuantity },
+          { field: "requiredQuantity", label: MOBILE_MATERIAL_FIELD_LABELS.requiredQuantity, value: formatQuantity(state.draft.requiredQuantity, state.draft.unitCode), reelValue: state.draft.requiredQuantity },
+          { field: "allowanceQuantity", label: MOBILE_MATERIAL_FIELD_LABELS.allowanceQuantity, value: formatQuantity(state.draft.allowanceQuantity, state.draft.unitCode), reelValue: state.draft.allowanceQuantity },
         ] as const).map((item) => (
           <View key={item.field} style={styles.field}>
             <Text style={styles.label}>{item.label}</Text>
@@ -159,7 +160,6 @@ export default function WorkOrderMaterialEditor({ state, dirty, onChange, onCanc
             <MaterialQuantityValue textStyle={styles.calculatedText} unitCode={state.draft.unitCode} value={calculatedOrderQuantity} />
           </View>
         </View>
-        <EditorField field="unitPrice" keyboardType="number-pad" label="단가" maxLength={16} onChange={onChange} placeholder="0" state={state} />
         <View accessibilityLabel="금액, 자동 계산, 읽기 전용" style={styles.field}>
           <Text style={styles.label}>금액</Text>
           <View style={styles.calculatedValue}><Text style={styles.calculatedText}>{formatWon(calculatedAmount)}</Text></View>

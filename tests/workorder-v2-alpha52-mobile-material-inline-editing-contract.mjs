@@ -12,17 +12,22 @@ const qaConfig = fs.readFileSync("lib/external-qa/configCore.mjs", "utf8");
 const runner = fs.readFileSync("tools/dev/start-wafl-external-qa.ps1", "utf8");
 const validation = fs.readFileSync("apps/mobile/domain/workOrderValidation.ts", "utf8");
 const policy = fs.readFileSync("apps/mobile/domain/workOrderPolicy.ts", "utf8");
+const fieldPolicy = fs.readFileSync("apps/mobile/features/materials/materialFieldPolicy.ts", "utf8");
+const historicalEvidence = fs.readFileSync("docs/project/app-v2/51-mobile-core-inline-ux-calculation-list-date-evidence.md", "utf8");
 
 assert.doesNotMatch(materials, /PencilLine|editActionButton|>수정</);
 assert.match(overview, /materialEditor\?\.mode === "create"/);
 assert.doesNotMatch(overview, /props\.materialEditor \? \(/);
-for (const field of ["name", "colorOption", "usageArea", "requiredQuantity", "allowanceQuantity", "inventoryUsageQuantity", "unitCode", "unitPrice", "memo"]) {
+for (const field of ["name", "colorOption", "usageArea", "requiredQuantity", "allowanceQuantity", "unitCode", "unitPrice", "memo"]) {
   assert.match(materials, new RegExp(`field=\"${field}\"`), `inline material field missing ${field}`);
 }
+assert.doesNotMatch(materials, /field="inventoryUsageQuantity"/);
+assert.match(fieldPolicy, /MOBILE_MATERIAL_INVENTORY_USAGE_VISIBLE = false/);
+assert.match(historicalEvidence, /required\/allowance\/inventory quantities/);
 assert.doesNotMatch(materials, /field="orderQuantity"/);
 assert.match(materials, /material-order-quantity-calculated/);
 assert.match(materials, /발주수량, 자동 계산, 읽기 전용/);
-assert.match(validation, /if \(field === "orderQuantity"\) continue/);
+assert.match(validation, /if \(field === "orderQuantity" \|\| field === "inventoryUsageQuantity"\) continue/);
 assert.match(materials, /const fieldEditable = canEdit && orderPolicy\.canEdit/);
 assert.match(policy, /resolveMaterialOrderPolicy/);
 const editablePolicy = resolveMaterialOrderPolicy({

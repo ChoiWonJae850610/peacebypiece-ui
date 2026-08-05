@@ -121,10 +121,11 @@ const draft = {
 };
 assert.deepEqual(validateMaterialDraft(draft, "accessory"), {});
 assert.match(validateMaterialDraft({ ...draft, name: "" }, "accessory").name, /부자재명/);
-assert.equal(calculateOrderQuantity(draft), "3");
-assert.equal(calculateMaterialAmount("3", draft.unitPrice), "3600.00");
+assert.equal(calculateOrderQuantity(draft), "3.5");
+assert.equal(calculateMaterialAmount("3.5", draft.unitPrice), "4200.00");
+draft.orderQuantity = "3.500";
 assert.deepEqual(validateMaterialOrderRequest({ ...baseLine, ...draft }), {});
-assert.deepEqual(validateMaterialOrderRequest({
+assert.ok(validateMaterialOrderRequest({
   ...baseLine,
   materialType: "accessory",
   requiredQuantity: "2",
@@ -132,7 +133,7 @@ assert.deepEqual(validateMaterialOrderRequest({
   inventoryUsageQuantity: "2",
   orderQuantity: "0",
   unitPrice: "0",
-}), {});
+}).orderQuantity);
 assert.ok(validateMaterialOrderRequest({
   ...baseLine,
   materialType: "accessory",

@@ -10,7 +10,11 @@ const runner = read("tools/dev/start-wafl-external-qa.ps1");
 const stop = read("tools/dev/stop-wafl-external-qa.ps1");
 const runtime = read("scripts/run-wafl-v2-alpha55-material-order-runtime-qa.mjs");
 
-assert.match(runner, /\[ValidateSet\("external-device", "memo-ime-display", "accessory-lifecycle-parity", "work-order-image"\)\]/);
+const runtimeModeDeclaration = runner.match(/\[ValidateSet\(([^)]*)\)\]\s*\r?\n\s*\[string\]\$RuntimeQaMode/);
+assert.ok(runtimeModeDeclaration, "RuntimeQaMode ValidateSet must remain explicit");
+for (const requiredMode of ["external-device", "memo-ime-display", "accessory-lifecycle-parity", "work-order-image"]) {
+  assert.match(runtimeModeDeclaration[1], new RegExp(`"${requiredMode}"`), `historical runtime mode missing: ${requiredMode}`);
+}
 assert.match(runner, /\$internalMemoImeMode = \$RuntimeQaMode -eq "memo-ime-display"/);
 assert.match(runner, /MEMO_IME_DISPLAY_REQUIRES_DEVELOPER_AUTO_CONNECT/);
 assert.match(runner, /MEMO_IME_DISPLAY_REQUIRES_ALPHA55_MUTATION_MODE/);

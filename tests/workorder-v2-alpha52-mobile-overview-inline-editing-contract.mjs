@@ -7,10 +7,12 @@ const app = fs.readFileSync("apps/mobile/features/MobileWorkOrderExperience.tsx"
 const datePicker = fs.readFileSync("apps/mobile/components/InlineDatePicker.tsx", "utf8");
 
 assert.doesNotMatch(detail, /BasicInfoEditor|기본정보 수정|editEntry|PencilLine/);
-for (const testId of ["overview-inline-product-name", "overview-inline-total-quantity"]) assert.match(detail, new RegExp(testId));
+assert.match(detail, /overview-inline-product-name/);
+assert.doesNotMatch(detail, /overview-inline-total-quantity/);
 assert.match(datePicker, /testID="overview-inline-due-date"/);
 assert.match(detail, /<InlineDatePicker/);
-for (const field of ["productName", "totalQuantity", "dueDate"]) assert.match(detail, new RegExp(`onBeginEdit\\(\"${field}\"\\)`));
+for (const field of ["productName", "dueDate"]) assert.match(detail, new RegExp(`onBeginEdit\\(\"${field}\"\\)`));
+assert.doesNotMatch(detail, /onBeginEdit\("totalQuantity"\)/);
 assert.match(detail, /ControlledInlineEditValue/);
 assert.match(detail, /onSave=\{\(finalizedValue\) => props\.onSave\(\{ productName: finalizedValue \}\)\}/);
 assert.match(detail, /onCancel=\{props\.onCancelEdit\}/);

@@ -124,9 +124,11 @@ assert.match(materials, /다시 시도/);
 assert.match(materials, /더 보기/);
 assert.match(materials, /expandedIds\.has\(line\.id\)/);
 assert.match(materials, /exactHexColor\(line\.colorOption\)/);
-for (const label of ["materialNameLabel", "사용부위", "필요수량", "발주수량", "재고사용", "로스·여유", "단가", "금액", "메모"]) {
+for (const label of ["materialNameLabel", "사용부위", "필요수량", "발주수량", "로스·여유", "단가", "금액", "메모"]) {
   assert.match(materials, new RegExp(label), `material display missing: ${label}`);
 }
+assert.doesNotMatch(materials, /재고사용/);
+assert.match(read("docs/project/app-v2/47-mobile-materials-real-read-evidence.md"), /재고사용/);
 for (const status of ["발주 전", "발주요청", "발주완료", "과거 취소", "상태 확인 필요"]) {
   assert.match(materialOrderPolicy, new RegExp(status), `material status label missing: ${status}`);
 }
@@ -138,10 +140,10 @@ for (const badge of ["statusBadgeEditing", "statusBadgeRequested", "statusBadgeC
   assert.match(materials, new RegExp(`${badge}: \\{[^\\n]*backgroundColor`), `material status badge tone missing: ${badge}`);
 }
 assert.match(materials, /materialIdentity[\s\S]{0,1800}headerBadgeCluster[\s\S]{0,500}unitChip[\s\S]{0,500}statusBadge/);
-assert.match(materials, /testID="material-core-row"[\s\S]{0,900}label="거래처" value="—"[\s\S]{0,900}>색상·옵션<[\s\S]{0,900}label="단가"/);
+assert.match(materials, /testID="material-core-row"[\s\S]{0,1200}label=\{MOBILE_MATERIAL_FIELD_LABELS\.partner\} value="—"[\s\S]{0,1200}>색상·옵션</);
 assert.equal((materials.match(/label="필요수량"/g) ?? []).length, 2, "compact and expanded 필요수량 source slots must both exist");
 assert.match(materials, /activeQuantityField \? \([\s\S]*material-quantity-row-expanded[\s\S]*\) : \([\s\S]*styles\.coreRow/, "compact and expanded quantity slots must be mutually exclusive");
-assert.match(materials, /expandedPanel[\s\S]{0,900}label="필요수량"[\s\S]{0,900}label="로스·여유"[\s\S]{0,900}label="재고사용"/);
+assert.match(materials, /expandedPanel[\s\S]{0,1800}label="필요수량"[\s\S]{0,1800}label="단가"[\s\S]{0,1800}label="로스·여유"/);
 const usageAreaFieldIndex = materials.search(
   /field\s*=\s*["']usageArea["']\s+label\s*=\s*["']사용부위["']/,
 );

@@ -94,10 +94,10 @@ for (const validationMeaning of [
 
 const sizeReadClient = apiClient.slice(
   apiClient.indexOf("export async function getWorkOrderSizeColor"),
-  apiClient.indexOf("export function resolveMobileApiUrl"),
+  apiClient.indexOf("async function mutateSizeColorStructure"),
 );
 assert.doesNotMatch(sizeReadClient, /method: "(POST|PATCH|PUT|DELETE)"/);
-assert.doesNotMatch(apiClient, /\/size-(?:color|spec)[^`"']*\/(?:create|update|delete|save)|patchWorkOrderSize|deleteWorkOrderSize|createWorkOrderSize/i);
+assert.doesNotMatch(sizeReadClient, /patchWorkOrderSize|deleteWorkOrderSize|createWorkOrderSize/i);
 
 assert.match(controller, /sizeColor\(workOrderId: string\)[\s\S]*getWorkOrderSizeColor/);
 assert.match(controller, /sizeSpec\(workOrderId: string\)[\s\S]*getWorkOrderSizeSpec/);
@@ -156,12 +156,14 @@ for (let index = 0; index < 7; index += 1) {
 }
 assert.equal(Object.keys(boundedCache).length, 6);
 assert.equal("key-0" in boundedCache, false);
-assert.match(cache, /"not-loaded" \| "loading" \| "retrying" \| "empty" \| "loaded" \| "error"/);
+assert.match(cache, /"not-loaded" \| "loading" \| "retrying" \| "refreshing" \| "empty" \| "loaded" \| "error"/);
 
 assert.match(detail, /tab\.id === "sizes"/);
 assert.match(detail, /setActiveSection\("sizes"\)/);
 assert.match(detail, /props\.sizeColor\.onOpen\(\)/);
-assert.match(detail, /import WorkOrderSizeColorReadOnly from/);
+assert.match(detail, /import WorkOrderSizeColorStructureEditor from/);
+const sizeColorEditor = read("apps/mobile/features/work-orders/size-color/WorkOrderSizeColorStructureEditor.tsx");
+assert.match(sizeColorEditor, /import WorkOrderSizeColorReadOnly from/);
 assert.equal(resolveWorkOrderTabVisualState({ selected: false, locked: true }), "locked");
 assert.equal(resolveWorkOrderTabVisualState({ selected: true, locked: false }), "active");
 assert.equal(readOnlyBadgeLabel(false), "읽기 전용");
@@ -176,16 +178,14 @@ for (const stateMeaning of [
   "색상은 있지만 등록된 사이즈",
   "사이즈는 있지만 등록된 색상",
   "등록된 수량 셀이 없어",
-  "합계 일치",
-  "합계 불일치",
-  "색상×사이즈 생산수량",
+  "색상×사이즈",
   "행 합계",
   "열 합계",
-  "개요 총수량",
-  "총수량을 변경하지 않습니다",
-  "완성 치수",
+  "저장된 총수량",
+  "완성 치수표",
   "기존 수량 메모",
 ]) assert.ok(component.includes(stateMeaning), `read-only UI meaning missing: ${stateMeaning}`);
+assert.doesNotMatch(component, /합계 일치|색상×사이즈 생산수량 · 총/);
 assert.match(component, /<ScrollView horizontal/);
 
 const measurementCell = (decimalValue, displayValue = decimalValue) => ({
@@ -222,8 +222,9 @@ assert.ok(component.includes("완성 치수 표시 단위"));
 assert.ok(component.includes("표시만 변경하며 저장되지 않습니다"));
 const componentImports = component.match(/^import .*$/gm)?.join("\n") ?? "";
 assert.doesNotMatch(componentImports, /apiClient|Mutation|workOrderQueryController|fetch|axios/i);
-assert.doesNotMatch(component, /TextInput|onSave|onDelete|onAdd|onEdit|accessibilityLabel="(?:저장|추가|삭제|수정)"/);
-assert.doesNotMatch(component, /AsyncStorage|SecureStore|apiClient|fetch\(|axios|mutation/i);
+assert.match(component, /edit\?\.canEdit/);
+assert.match(component, /edit\?\.canEdit \? \([\s\S]*QuantityCellEditor[\s\S]*\) : <Text/);
+assert.doesNotMatch(component, /AsyncStorage|SecureStore|apiClient|fetch\(|axios/i);
 const boundarySource = sizeColorController.slice(
   sizeColorController.indexOf("export type SizeColorReadBoundary"),
   sizeColorController.indexOf("type ActiveIdentity"),

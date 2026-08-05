@@ -43,7 +43,6 @@ type Props = {
   readonly keyboardType?: KeyboardTypeOptions;
   readonly maxLength?: number;
   readonly multiline?: boolean;
-  readonly selectTextOnFocus?: boolean;
   readonly containerStyle?: StyleProp<ViewStyle>;
   readonly displayStyle?: StyleProp<TextStyle>;
   readonly inputStyle?: StyleProp<TextStyle>;
@@ -71,7 +70,6 @@ export default function ControlledInlineEditValue({
   keyboardType = "default",
   maxLength,
   multiline = false,
-  selectTextOnFocus = false,
   containerStyle,
   displayStyle,
   inputStyle,
@@ -130,7 +128,9 @@ export default function ControlledInlineEditValue({
   const displayLineLimit = numberOfLines === null ? undefined : numberOfLines;
 
   function normalizedNativeText(nextValue: string) {
-    return numeric ? normalizeNumericDraft(nextValue) : nextValue;
+    if (!numeric) return nextValue;
+    const normalized = normalizeNumericDraft(nextValue);
+    return /^\d*(?:\.\d*)?$/u.test(normalized) ? normalized : value;
   }
 
   function finalizePendingSave(nativeValue: string) {
@@ -139,7 +139,13 @@ export default function ControlledInlineEditValue({
     if (finalizedValue !== value) onChange(finalizedValue);
     const result = finalizationRef.current.finalize(finalizedValue);
     setFinalizing(false);
-    if (result.shouldSave) onSave(result.value);
+    setNativeDirty(false);
+    if (!result.shouldSave) return;
+    if (result.value === activationValueRef.current) {
+      onCancel();
+      return;
+    }
+    onSave(result.value);
   }
 
   function handleNativeChange(event: NativeSyntheticEvent<TextInputChangeEventData>) {
@@ -240,7 +246,6 @@ export default function ControlledInlineEditValue({
         onSubmitEditing={inlineCommit && !multiline ? handleSubmitEditing : undefined}
         placeholder={emptyNumericDraft ? "0" : placeholder}
         returnKeyType={multiline ? "default" : "done"}
-        selectTextOnFocus={selectTextOnFocus}
         submitBehavior={multiline ? "newline" : inlineCommit ? "blurAndSubmit" : "submit"}
         style={[styles.input, !inlineCommit && styles.inputWithActions, multiline && styles.inputMultiline, displayStyle, inputStyle, invalid && styles.inputInvalid]}
         textAlignVertical={multiline ? "top" : "center"}

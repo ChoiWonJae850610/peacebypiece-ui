@@ -17,6 +17,8 @@ import {
 } from "@/features/work-orders/size-color/sizeColorQueryPolicy";
 import { workOrderQueryController } from "@/features/work-orders/workOrderQueryController";
 import { MobileApiError } from "@/domain/mobileContract";
+import type { WorkOrderSizeColorBundle } from "@/domain/mobileContract";
+import { promoteSizeColorBundleVersion } from "./sizeColorReconciliation";
 
 export type SizeColorReadBoundary = {
   readonly identity: string;
@@ -94,7 +96,7 @@ export function useSizeColorReadController(input: ControllerInput) {
     };
     requests.current.set(cacheKey, requestToken);
     updateCache((current) => putBoundedSizeColorEntry(current, cacheKey, {
-      status: action === "retry" ? "retrying" : "loading",
+      status: action === "retry" ? "retrying" : action === "refresh" ? "refreshing" : "loading",
       bundle: existing.bundle,
       errorMessage: null,
       touchedAt: Date.now(),
@@ -158,6 +160,32 @@ export function useSizeColorReadController(input: ControllerInput) {
     }
   }, [load]);
 
+  const reconcileMutation = useCallback((
+    updater: (bundle: WorkOrderSizeColorBundle) => WorkOrderSizeColorBundle,
+    nextVersion: number,
+  ) => {
+    const current = activeIdentity.current;
+    if (current.workOrderId === null || current.entityVersion === null) return;
+    const currentKey = sizeColorRequestKey(current.workOrderId, current.entityVersion);
+    const entry = cacheRef.current[currentKey];
+    if (!entry?.bundle) return;
+    const bundle = promoteSizeColorBundleVersion(updater(entry.bundle), nextVersion);
+    const nextKey = sizeColorRequestKey(current.workOrderId, nextVersion);
+    updateCache((cache) => putBoundedSizeColorEntry(cache, nextKey, {
+      status: isSizeColorBundleEmpty(bundle) ? "empty" : "loaded",
+      bundle,
+      errorMessage: null,
+      touchedAt: Date.now(),
+    }));
+  }, [updateCache]);
+
+  const refreshWithData = useCallback(() => {
+    const current = activeIdentity.current;
+    if (current.workOrderId !== null && current.entityVersion !== null) {
+      void load(current.workOrderId, current.entityVersion, "refresh");
+    }
+  }, [load]);
+
   useEffect(() => {
     if (openedWorkOrderId.current !== workOrderId || workOrderId === null || entityVersion === null) return;
     void load(workOrderId, entityVersion, "initial");
@@ -177,5 +205,5 @@ export function useSizeColorReadController(input: ControllerInput) {
     onRetry,
   }), [identity, onOpen, onRetry, state]);
 
-  return { boundary, resetSession };
+  return { boundary, resetSession, reconcileMutation, refreshWithData };
 }

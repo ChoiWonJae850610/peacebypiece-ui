@@ -17,9 +17,11 @@ import ControlledInlineEditValue from "@/components/ControlledInlineEditValue";
 import InlineDatePicker from "@/components/InlineDatePicker";
 import WorkOrderMaterialsReadOnly, { type MaterialReadViewState } from "@/features/materials/WorkOrderMaterialsReadOnly";
 import WorkOrderMaterialEditor, { type MaterialEditorViewState } from "@/features/materials/WorkOrderMaterialEditor";
+import type { MaterialInlineEditSession } from "@/features/materials/materialInlineEditSession";
 import WorkOrderImageGallery from "@/features/work-orders/images/WorkOrderImageGallery";
-import WorkOrderSizeColorReadOnly from "@/features/work-orders/size-color/WorkOrderSizeColorReadOnly";
+import WorkOrderSizeColorStructureEditor from "@/features/work-orders/size-color/WorkOrderSizeColorStructureEditor";
 import type { SizeColorReadBoundary } from "@/features/work-orders/size-color/useSizeColorReadController";
+import type { SizeColorStructureEditBoundary } from "@/features/work-orders/size-color/useSizeColorStructureEditController";
 import type { WorkOrderImageAcquisitionSource } from "@/features/work-orders/images/workOrderImageAcquisition";
 import {
   readOnlyBadgeLabel,
@@ -138,7 +140,7 @@ function ReadinessPanel({ detail }: { readonly detail: WorkOrderDetailCore }) {
 
 export type { BasicInfoDraft, BasicInfoFieldErrors } from "@/domain/workOrderValidation";
 export type BasicInfoSaveState = "read-only" | "editing" | "saving" | "saved" | "validation-error" | "conflict" | "locked" | "save-error";
-export type BasicInfoInlineField = keyof BasicInfoDraft;
+export type BasicInfoInlineField = Exclude<keyof BasicInfoDraft, "totalQuantity">;
 
 type Props = {
   readonly detail: WorkOrderDetailCore;
@@ -166,6 +168,7 @@ type Props = {
   readonly canEditMaterials: boolean;
   readonly materialEditor: MaterialEditorViewState | null;
   readonly activeMaterialField: keyof MaterialDraftFields | null;
+  readonly activeMaterialInlineSession: MaterialInlineEditSession | null;
   readonly materialEditorDirty: boolean;
   readonly materialSaveNotice: string | null;
   readonly onBeginMaterialCreate: () => void;
@@ -174,12 +177,16 @@ type Props = {
   readonly onMaterialOrderAction: (line: WorkOrderMaterialLine, action: MaterialOrderAction) => void;
   readonly materialOrderPolicy: (line: WorkOrderMaterialLine) => MaterialOrderPolicy;
   readonly onChangeMaterialDraft: (field: keyof MaterialDraftFields, value: string) => void;
+  readonly onChangeMaterialInlineDraft: (field: keyof MaterialDraftFields, value: string, owner: MaterialInlineEditSession) => void;
   readonly onCancelMaterialEditor: () => void;
+  readonly onCancelMaterialInlineEditor: (owner: MaterialInlineEditSession) => void;
   readonly onSaveMaterial: (draftOverride?: MaterialDraftUpdate) => void;
+  readonly onSaveMaterialInline: (draftOverride: MaterialDraftUpdate, owner: MaterialInlineEditSession) => void;
   readonly onReloadLatestMaterial: () => void;
   readonly onRequestSectionChange: (onProceed: () => void) => void;
   readonly onOpenMaterials: (materialType: MaterialType) => void;
   readonly sizeColor: SizeColorReadBoundary;
+  readonly sizeColorEdit: SizeColorStructureEditBoundary;
   readonly onRetryMaterials: () => void;
   readonly onLoadMoreMaterials: () => void;
   readonly images: readonly WorkOrderImageAsset[];
@@ -199,7 +206,6 @@ type Props = {
 export default function WorkOrderDetailOverview(props: Props) {
   const { detail, phone, onBack } = props;
   const [activeSection, setActiveSection] = useState<"overview" | "media" | "sizes" | MaterialType>("overview");
-  const [totalQuantityReelOpen, setTotalQuantityReelOpen] = useState(false);
   const [categoryReelField, setCategoryReelField] = useState<"targetAudience" | "categoryMajor" | null>(null);
   const { width } = useWindowDimensions();
   const { header } = detail;
@@ -270,6 +276,7 @@ export default function WorkOrderDetailOverview(props: Props) {
               <ControlledInlineEditValue
                 accessibilityLabel="제품명"
                 active={props.activeBasicField === "productName"}
+                commitMode="blur-submit"
                 containerStyle={styles.heroInlineField}
                 dirty={props.dirty}
                 displayStyle={[styles.title, compactPhoneHero && styles.titleCompactPhone]}
@@ -285,7 +292,6 @@ export default function WorkOrderDetailOverview(props: Props) {
                 onFocusTarget={onFieldFocus}
                 placeholder="제품명 미입력"
                 saving={savingBasic}
-                selectTextOnFocus
                 testID="overview-inline-product-name"
                 value={props.draft.productName}
               />
@@ -339,44 +345,9 @@ export default function WorkOrderDetailOverview(props: Props) {
               <Section>
                 <View style={[styles.summaryGrid, !phone && styles.summaryGridTablet]}>
                   <MiniStat
-                    expanded={props.activeBasicField === "totalQuantity"}
                     label="총 수량"
                     value={`${header.totalQuantity.toLocaleString("ko-KR")}벌`}
-                    editor={(
-                      <ReelInlineEditValue
-                        accessibilityLabel="총 수량"
-                        active={props.activeBasicField === "totalQuantity"}
-                        displayStyle={styles.miniValue}
-                        displayValue={`${header.totalQuantity.toLocaleString("ko-KR")}벌`}
-                        editable={props.canEdit && !basicLocked}
-                        errorMessage={props.fieldErrors.totalQuantity ?? null}
-                        onActivate={() => props.onRequestSectionChange(() => props.onBeginEdit("totalQuantity"))}
-                        onOpenPicker={() => setTotalQuantityReelOpen(true)}
-                        placeholder="0"
-                        saving={savingBasic}
-                        testID="overview-inline-total-quantity"
-                      />
-                    )}
                   />
-                  {totalQuantityReelOpen ? (
-                    <WaflReelPickerSheet
-                      field="totalQuantity"
-                      kind="integer"
-                      label="총 수량"
-                      onApply={(value) => {
-                        setTotalQuantityReelOpen(false);
-                        props.onChangeDraft("totalQuantity", value);
-                        props.onSave({ totalQuantity: value });
-                      }}
-                      onCancel={() => {
-                        setTotalQuantityReelOpen(false);
-                        props.onCancelEdit();
-                      }}
-                      unitCode="벌"
-                      value={props.draft.totalQuantity}
-                      visible
-                    />
-                  ) : null}
                   <MiniStat
                     expanded={props.activeBasicField === "dueDate"}
                     label="납기"
@@ -497,7 +468,6 @@ export default function WorkOrderDetailOverview(props: Props) {
                       onFocusTarget={onFieldFocus}
                       placeholder="예: 반팔 티셔츠"
                       saving={savingBasic}
-                      selectTextOnFocus
                       testID="overview-inline-category-detail"
                       value={props.draft.categoryDetail}
                     />
@@ -525,7 +495,6 @@ export default function WorkOrderDetailOverview(props: Props) {
                       onFocusTarget={onFieldFocus}
                       placeholder="예: 26FW"
                       saving={savingBasic}
-                      selectTextOnFocus
                       testID="overview-inline-season"
                       value={props.draft.seasonCode}
                     />
@@ -534,12 +503,18 @@ export default function WorkOrderDetailOverview(props: Props) {
                 </View>
               </Section>
               <ReadinessPanel detail={detail} />
-              <Section title="금액 요약">
-                <MetricLine label="원단 총액" value={formatWon(detail.amounts.fabricTotal)} />
-                <MetricLine label="부자재 총액" value={formatWon(detail.amounts.accessoryTotal)} />
-                <MetricLine label="공정 총액" value={formatWon(detail.amounts.processTotal)} />
-                <MetricLine label="한벌 단가" value={formatWon(detail.amounts.unitPrice)} />
-                <MetricLine emphasized label="총 예상" value={formatWon(detail.amounts.estimatedTotal)} />
+              <Section title="비용 구성">
+                <View style={styles.costComponents}>
+                  <MetricLine label="원단" value={formatWon(detail.amounts.fabricTotal)} />
+                  <MetricLine label="부자재" value={formatWon(detail.amounts.accessoryTotal)} />
+                  <MetricLine label="공정" value={formatWon(detail.amounts.processTotal)} />
+                </View>
+                <View style={styles.costResult}>
+                  <MetricLine label="1벌 원가" value={formatWon(detail.amounts.unitPrice)} />
+                </View>
+                <View style={styles.costFinalResult}>
+                  <MetricLine emphasized label="예상 총원가" value={formatWon(detail.amounts.estimatedTotal)} />
+                </View>
               </Section>
             </View>
           ) : activeSection === "media" ? (
@@ -561,7 +536,8 @@ export default function WorkOrderDetailOverview(props: Props) {
               onSetRepresentative={props.onSetRepresentativeImage}
             />
           ) : activeSection === "sizes" ? (
-            <WorkOrderSizeColorReadOnly
+            <WorkOrderSizeColorStructureEditor
+              edit={props.sizeColorEdit}
               identity={props.sizeColor.identity}
               onRetry={props.sizeColor.onRetry}
               state={props.sizeColor.state}
@@ -581,6 +557,7 @@ export default function WorkOrderDetailOverview(props: Props) {
               canEdit={props.canEditMaterials}
               activeEditor={props.materialEditor?.mode === "edit" ? props.materialEditor : null}
               activeField={props.activeMaterialField}
+              activeInlineSession={props.activeMaterialInlineSession}
               key={props.materialIdentityKey}
               lifecycleBusyId={props.materialLifecycleBusyId}
               orderBusyId={props.materialOrderBusyId}
@@ -590,8 +567,11 @@ export default function WorkOrderDetailOverview(props: Props) {
               onOrderAction={props.onMaterialOrderAction}
               onEdit={props.onBeginMaterialEdit}
               onCancelEdit={props.onCancelMaterialEditor}
+              onCancelInlineEdit={props.onCancelMaterialInlineEditor}
               onChangeEdit={props.onChangeMaterialDraft}
+              onChangeInlineEdit={props.onChangeMaterialInlineDraft}
               onSaveEdit={props.onSaveMaterial}
+              onSaveInlineEdit={props.onSaveMaterialInline}
               onLoadMore={props.onLoadMoreMaterials}
               onRetry={props.onRetryMaterials}
               orderPolicy={props.materialOrderPolicy}
@@ -705,4 +685,7 @@ const styles = StyleSheet.create({
   metricLabel: { color: "#7a6c5c", flexShrink: 0, fontFamily: WAFL_FONTS.medium, fontSize: 11 },
   metricValue: { color: "#17263d", flex: 1, flexShrink: 1, fontFamily: WAFL_FONTS.bold, fontSize: 13, lineHeight: 18, minWidth: 0, textAlign: "right" },
   metricValueEmphasized: { color: "#23375a", fontFamily: WAFL_FONTS.black, fontSize: 15 },
+  costComponents: { backgroundColor: "#f7f9fc", borderRadius: 9, paddingHorizontal: 9 },
+  costResult: { borderTopColor: "#d8e0ea", borderTopWidth: 1, marginTop: 7, paddingHorizontal: 9 },
+  costFinalResult: { backgroundColor: "#edf1f7", borderColor: "#cbd5e2", borderRadius: 9, borderWidth: 1, marginTop: 7, paddingHorizontal: 9 },
 });

@@ -1,10 +1,12 @@
 import { useState } from "react";
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
-import { AlertTriangle, RefreshCw } from "lucide-react-native";
+import { AlertTriangle, ChevronDown, ChevronRight, RefreshCw } from "lucide-react-native";
 
 import { WAFL_FONTS } from "@/constants/fonts";
+import ControlledInlineEditValue from "@/components/ControlledInlineEditValue";
 import DelayedLoadingMessage from "@/features/work-orders/loading/DelayedLoadingMessage";
 import type { SizeColorCacheEntry } from "./sizeColorCache";
+import type { SizeColorStructureEditBoundary } from "./useSizeColorStructureEditController";
 import {
   displayMeasurement,
   formatDecimal,
@@ -18,6 +20,7 @@ type Props = {
   readonly identity: string;
   readonly state: SizeColorCacheEntry;
   readonly onRetry: () => void;
+  readonly edit?: SizeColorStructureEditBoundary;
 };
 
 type UnitSelection = {
@@ -35,16 +38,56 @@ function EmptyNotice({ children }: { readonly children: string }) {
   );
 }
 
-function SummaryItem({ label, value }: { readonly label: string; readonly value: string }) {
+function QuantityCellEditor(props: {
+  readonly colorId: string;
+  readonly sizeRowId: string;
+  readonly colorName: string;
+  readonly sizeLabel: string;
+  readonly value: string;
+  readonly edit: SizeColorStructureEditBoundary;
+  readonly onEditingChange: (active: boolean) => void;
+}) {
+  const [active, setActive] = useState(false);
+  const [draft, setDraft] = useState(props.value);
   return (
-    <View style={styles.summaryItem}>
-      <Text style={styles.summaryLabel}>{label}</Text>
-      <Text style={styles.summaryValue}>{value}</Text>
-    </View>
+    <ControlledInlineEditValue
+      accessibilityLabel={`${props.colorName} ${props.sizeLabel} 수량`}
+      active={active}
+      commitMode="blur-submit"
+      dirty={draft !== props.value}
+      displayStyle={styles.cellText}
+      displayValue={formatDecimal(props.value)}
+      editable={!props.edit.busy}
+      keyboardType="number-pad"
+      maxLength={9}
+      onActivate={() => {
+        setDraft(props.value);
+        setActive(true);
+        props.onEditingChange(true);
+      }}
+      onCancel={() => {
+        setDraft(props.value);
+        setActive(false);
+        props.onEditingChange(false);
+      }}
+      onChange={setDraft}
+      onSave={(value) => {
+        const quantity = /^\d+$/.test(value) ? Number(value) : -1;
+        void props.edit.onSetQuantity(props.colorId, props.sizeRowId, quantity).then((saved) => {
+          if (!saved) setDraft(props.value);
+          setActive(false);
+          props.onEditingChange(false);
+        });
+      }}
+      placeholder="0"
+      saving={props.edit.busy}
+      testID={`size-color-quantity-${props.colorId}-${props.sizeRowId}`}
+      value={draft}
+    />
   );
 }
 
-export default function WorkOrderSizeColorReadOnly({ identity, state, onRetry }: Props) {
+export default function WorkOrderSizeColorReadOnly({ identity, state, onRetry, edit }: Props) {
   const availableSpecifications = state.bundle?.specifications;
   const storedMeasurementUnit = availableSpecifications?.measurementUnit ?? "cm";
   const measurementIdentity = availableSpecifications
@@ -57,8 +100,13 @@ export default function WorkOrderSizeColorReadOnly({ identity, state, onRetry }:
   const displayUnit = unitSelection.identity === measurementIdentity
     ? unitSelection.unit
     : storedMeasurementUnit;
+  const [sectionSessions, setSectionSessions] = useState<Record<string, { readonly quantityExpanded: boolean; readonly measurementExpanded: boolean }>>({});
+  const sectionState = sectionSessions[identity] ?? { quantityExpanded: false, measurementExpanded: false };
+  const setSectionState = (patch: Partial<typeof sectionState>) => {
+    setSectionSessions((current) => ({ ...current, [identity]: { ...sectionState, ...patch } }));
+  };
 
-  if (state.status === "not-loaded" || state.status === "loading" || state.status === "retrying") {
+  if (!state.bundle && (state.status === "not-loaded" || state.status === "loading" || state.status === "retrying" || state.status === "refreshing")) {
     return (
       <DelayedLoadingMessage
         identity={`${identity}:size-color`}
@@ -89,35 +137,29 @@ export default function WorkOrderSizeColorReadOnly({ identity, state, onRetry }:
 
   return (
     <View accessibilityLabel="사이즈·색상 읽기 전용 정보" style={styles.container}>
-      <View style={styles.contentStack}>
-        <View style={styles.badgeRow}>
-          <View style={[styles.matchBadge, !matrix.totalsMatch && styles.mismatchBadge]}>
-            <Text style={[styles.matchText, !matrix.totalsMatch && styles.mismatchText]}>
-              {matrix.totalsMatch ? "합계 일치" : "합계 불일치"}
-            </Text>
-          </View>
-        </View>
-
-        <View style={styles.summaryGrid}>
-          <SummaryItem label="사이즈" value={`${matrix.sizes.length}개`} />
-          <SummaryItem label="색상" value={`${matrix.colors.length}개`} />
-          <SummaryItem label="수량표 합계" value={formatDecimal(matrix.matrixTotal)} />
-          <SummaryItem label="개요 총수량" value={formatDecimal(matrix.expectedTotal)} />
-        </View>
-
-        {!matrix.totalsMatch ? (
+      {!matrix.projectionsMatch ? (
+        <View style={styles.contentStack}>
           <View style={styles.warning}>
             <AlertTriangle color="#9a4d2f" size={16} />
-            <Text style={styles.warningText}>수량표 합계와 개요 총수량이 다릅니다. 이 화면에서는 총수량을 변경하지 않습니다.</Text>
+            <Text style={styles.warningText}>저장된 총수량과 색상×사이즈 합계가 다릅니다. 수량 셀을 저장하면 합계가 함께 정리됩니다.</Text>
           </View>
-        ) : null}
-      </View>
+        </View>
+      ) : null}
 
       <View style={styles.section}>
         <View style={styles.contentInset}>
-          <Text style={styles.sectionTitle}>색상×사이즈 생산수량</Text>
+          <Pressable
+            accessibilityLabel={`색상×사이즈 ${sectionState.quantityExpanded ? "접기" : "펼치기"}`}
+            accessibilityRole="button"
+            accessibilityState={{ expanded: sectionState.quantityExpanded }}
+            onPress={() => setSectionState({ quantityExpanded: !sectionState.quantityExpanded })}
+            style={styles.collapsibleHeader}
+          >
+            <Text style={styles.sectionTitle}>색상×사이즈</Text>
+            {sectionState.quantityExpanded ? <ChevronDown color="#23375a" size={18} /> : <ChevronRight color="#23375a" size={18} />}
+          </Pressable>
         </View>
-        {matrix.sizes.length === 0 && matrix.colors.length === 0 ? (
+        {sectionState.quantityExpanded ? matrix.sizes.length === 0 && matrix.colors.length === 0 ? (
           <EmptyNotice>등록된 사이즈와 색상이 없습니다.</EmptyNotice>
         ) : matrix.sizes.length === 0 ? (
           <EmptyNotice>색상은 있지만 등록된 사이즈가 없어 수량표를 만들 수 없습니다.</EmptyNotice>
@@ -143,9 +185,26 @@ export default function WorkOrderSizeColorReadOnly({ identity, state, onRetry }:
                         <View style={[styles.swatch, { backgroundColor: color.hexValue ?? "#e7dfd3" }]} />
                         <Text numberOfLines={2} style={styles.cellText}>{color.displayName}</Text>
                       </View>
-                      {rowValues.map((value, index) => (
-                        <View key={matrix.sizes[index].id} style={[styles.cell, styles.numberCell]}><Text style={styles.cellText}>{formatDecimal(value)}</Text></View>
-                      ))}
+                      {rowValues.map((value, index) => {
+                        const size = matrix.sizes[index];
+                        return (
+                          <View key={size.id} style={[styles.cell, styles.numberCell]}>
+                            {edit?.canEdit ? (
+                              <QuantityCellEditor
+                                colorId={color.id}
+                                colorName={color.displayName}
+                                edit={edit}
+                              sizeLabel={size.displayLabel}
+                              sizeRowId={size.id}
+                              onEditingChange={(active) => {
+                                if (active) setSectionState({ quantityExpanded: true });
+                              }}
+                              value={value}
+                              />
+                            ) : <Text style={styles.cellText}>{formatDecimal(value)}</Text>}
+                          </View>
+                        );
+                      })}
                       <View style={[styles.cell, styles.numberCell, styles.totalCell]}><Text style={styles.totalText}>{formatDecimal(String(sumQuantities(rowValues)))}</Text></View>
                     </View>
                   );
@@ -161,8 +220,8 @@ export default function WorkOrderSizeColorReadOnly({ identity, state, onRetry }:
               </View>
             </ScrollView>
           </>
-        )}
-        {structuredMatrixEmpty && matrix.memoFallback?.trim() ? (
+        ) : null}
+        {sectionState.quantityExpanded && structuredMatrixEmpty && matrix.memoFallback?.trim() ? (
           <View style={styles.contentInset}>
             <View style={styles.memo}>
               <Text style={styles.memoLabel}>기존 수량 메모</Text>
@@ -175,8 +234,17 @@ export default function WorkOrderSizeColorReadOnly({ identity, state, onRetry }:
       <View style={styles.section}>
         <View style={styles.contentInset}>
           <View style={styles.sectionHeadingRow}>
-            <Text style={styles.sectionTitle}>완성 치수</Text>
-            <View accessibilityLabel="완성 치수 표시 단위" style={styles.unitSegment}>
+            <Pressable
+              accessibilityLabel={`완성 치수표 ${sectionState.measurementExpanded ? "접기" : "펼치기"}`}
+              accessibilityRole="button"
+              accessibilityState={{ expanded: sectionState.measurementExpanded }}
+              onPress={() => setSectionState({ measurementExpanded: !sectionState.measurementExpanded })}
+              style={styles.measurementToggle}
+            >
+              <Text style={styles.sectionTitle}>완성 치수표</Text>
+              {sectionState.measurementExpanded ? <ChevronDown color="#23375a" size={18} /> : <ChevronRight color="#23375a" size={18} />}
+            </Pressable>
+            {sectionState.measurementExpanded ? <View accessibilityLabel="완성 치수 표시 단위" style={styles.unitSegment}>
               {(["cm", "inch"] as const).map((unit) => {
                 const selected = displayUnit === unit;
                 return (
@@ -198,10 +266,10 @@ export default function WorkOrderSizeColorReadOnly({ identity, state, onRetry }:
                   </Pressable>
                 );
               })}
-            </View>
+            </View> : null}
           </View>
         </View>
-        {specifications.pomColumns.length === 0 || specifications.sizes.length === 0 ? (
+        {sectionState.measurementExpanded ? specifications.pomColumns.length === 0 || specifications.sizes.length === 0 ? (
           <EmptyNotice>등록된 완성 치수 정보가 없습니다.</EmptyNotice>
         ) : (
           <>
@@ -233,7 +301,7 @@ export default function WorkOrderSizeColorReadOnly({ identity, state, onRetry }:
               </View>
             </ScrollView>
           </>
-        )}
+        ) : null}
       </View>
     </View>
   );
@@ -243,19 +311,12 @@ const styles = StyleSheet.create({
   container: { paddingBottom: 22 },
   contentStack: { gap: 12, paddingHorizontal: CONTENT_INSET, paddingTop: CONTENT_INSET },
   contentInset: { paddingHorizontal: CONTENT_INSET },
-  badgeRow: { alignItems: "center", flexDirection: "row", justifyContent: "flex-end" },
-  matchBadge: { backgroundColor: "#e8f3ea", borderRadius: 999, paddingHorizontal: 8, paddingVertical: 4 },
-  mismatchBadge: { backgroundColor: "#fff0e7" },
-  matchText: { color: "#337047", fontFamily: WAFL_FONTS.bold, fontSize: 9, lineHeight: 13 },
-  mismatchText: { color: "#9a4d2f" },
-  summaryGrid: { flexDirection: "row", flexWrap: "wrap", gap: 6 },
-  summaryItem: { backgroundColor: "#f7f0e5", borderRadius: 9, flexBasis: "47%", flexGrow: 1, minWidth: 112, paddingHorizontal: 9, paddingVertical: 7 },
-  summaryLabel: { color: "#7a6c5c", fontFamily: WAFL_FONTS.medium, fontSize: 9, lineHeight: 14 },
-  summaryValue: { color: "#17263d", fontFamily: WAFL_FONTS.bold, fontSize: 11, lineHeight: 15, marginTop: 2 },
   warning: { alignItems: "flex-start", backgroundColor: "#fff3e9", borderColor: "#efd0bc", borderRadius: 10, borderWidth: 1, flexDirection: "row", gap: 7, padding: 11 },
   warningText: { color: "#744531", flex: 1, fontFamily: WAFL_FONTS.medium, fontSize: 12, lineHeight: 18 },
   section: { borderTopColor: "#eee3d5", borderTopWidth: 1, gap: 10, marginTop: 18, paddingTop: 11 },
   sectionHeadingRow: { alignItems: "center", flexDirection: "row", justifyContent: "space-between" },
+  collapsibleHeader: { alignItems: "center", flexDirection: "row", justifyContent: "space-between", minHeight: 44 },
+  measurementToggle: { alignItems: "center", flex: 1, flexDirection: "row", gap: 7, minHeight: 44 },
   sectionTitle: { color: "#17263d", fontFamily: WAFL_FONTS.bold, fontSize: 12, lineHeight: 18 },
   unitSegment: { backgroundColor: "#f4ede4", borderColor: "#ded2c4", borderRadius: 9, borderWidth: 1, flexDirection: "row", padding: 2 },
   unitOption: { alignItems: "center", borderRadius: 7, justifyContent: "center", minHeight: 32, minWidth: 44, paddingHorizontal: 9 },

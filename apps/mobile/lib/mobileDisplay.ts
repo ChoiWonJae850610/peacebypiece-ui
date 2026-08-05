@@ -119,10 +119,8 @@ export function calculateOrderQuantity(input: {
 }): string | null {
   const required = quantityToScaled(input.requiredQuantity);
   const allowance = quantityToScaled(input.allowanceQuantity);
-  const inventory = quantityToScaled(input.inventoryUsageQuantity);
-  if (required === null || allowance === null || inventory === null) return null;
-  const calculated = required + allowance - inventory;
-  return scaledQuantityToString(calculated > 0n ? calculated : 0n);
+  if (required === null || allowance === null) return null;
+  return scaledQuantityToString(required + allowance);
 }
 
 export function calculateMaterialAmount(

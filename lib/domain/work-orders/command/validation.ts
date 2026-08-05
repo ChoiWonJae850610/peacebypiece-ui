@@ -159,7 +159,7 @@ export type ValidatedPatchWorkOrderBasicInfoBody = Omit<
 
 export function validatePatchWorkOrderBasicInfo(
   body: unknown,
-  options: { readonly mobileBasicInfoOnly?: boolean } = {},
+  options: { readonly mobileBasicInfoOnly?: boolean; readonly matrixTotalOwned?: boolean } = {},
 ): ValidatedPatchWorkOrderBasicInfoBody {
   if (!isJsonObject(body)) {
     throw new WorkOrderCommandValidationError([
@@ -190,6 +190,7 @@ export function validatePatchWorkOrderBasicInfo(
       "memo",
       "factoryDeliveryMemo",
     ]);
+  if (options.matrixTotalOwned) allowedPatchKeys.delete("totalQuantity");
   assertAllowedKeys(body.patch, allowedPatchKeys, "patch.");
   if (Object.keys(body.patch).length === 0) {
     throw new WorkOrderCommandValidationError([

@@ -5,6 +5,7 @@ import { spawn } from "node:child_process";
 import net from "node:net";
 import path from "node:path";
 import process from "node:process";
+import { pathToFileURL } from "node:url";
 
 import pg from "pg";
 
@@ -12,18 +13,44 @@ const { Client } = pg;
 const VERSION = "2.0.0-alpha.46";
 const REQUIRED_PREFIX = "wafl-fn";
 const REQUIRED_CONFIRMATION = "EXECUTE WAFL V2 ALPHA46 QA DRAFT CREATE";
+const REQUIRED_ALPHA59_ISOLATED_CONFIRMATION = "EXECUTE WAFL V2 ALPHA59 ISOLATED QA DRAFT CREATE";
 const REQUIRED_CREATE_APPROVAL = "2.0.0-alpha.25-dev-test-command-runtime";
 const ALLOWED_RUNTIMES = new Set(["development", "dev", "local", "test", "demo"]);
 const COMPANY_A = "wafl-fn-company-a";
-const IDEMPOTENCY_KEY = "alpha46-qa-draft-a-create-v1";
-const TARGET = Object.freeze({
-  productName: "QA 기본정보 저장 검증 A - 저장 전",
-  dueDate: "2026-09-29",
-  totalQuantity: 136,
-});
 
 function fail(message) {
   throw new Error(message);
+}
+
+export function resolveApprovedDraftTarget(environment = process.env) {
+  const temporaryName = String(environment.WAFL_V2_TEMPORARY_DRAFT_NAME ?? "").trim();
+  if (!temporaryName) {
+    if (environment.WAFL_V2_CONFIRMATION !== REQUIRED_CONFIRMATION) fail("confirmation-mismatch");
+    return Object.freeze({
+      mode: "alpha46-retained",
+      productName: "QA 기본정보 저장 검증 A - 저장 전",
+      dueDate: "2026-09-29",
+      totalQuantity: 136,
+      clientRequestId: "alpha46-qa-draft-a-create-v1",
+      idempotencyKey: "alpha46-qa-draft-a-create-v1",
+    });
+  }
+
+  if (environment.WAFL_V2_CONFIRMATION !== REQUIRED_ALPHA59_ISOLATED_CONFIRMATION) fail("isolated-confirmation-mismatch");
+  if (!/^QA A59 picker drag isolated [0-9]{8}-[A-F0-9]{8}$/.test(temporaryName)) fail("isolated-name-prefix-mismatch");
+  if (String(environment.WAFL_V2_TEMPORARY_DRAFT_MARKER ?? "").trim() !== temporaryName) fail("isolated-marker-mismatch");
+  const clientRequestId = String(environment.WAFL_V2_TEMPORARY_DRAFT_CLIENT_REQUEST_ID ?? "").trim();
+  const idempotencyKey = String(environment.WAFL_V2_TEMPORARY_DRAFT_IDEMPOTENCY_KEY ?? "").trim();
+  if (!/^a59-isolated-create-[a-f0-9]{8}$/.test(clientRequestId)) fail("isolated-client-request-id-invalid");
+  if (idempotencyKey !== clientRequestId) fail("isolated-idempotency-key-mismatch");
+  return Object.freeze({
+    mode: "alpha59-isolated",
+    productName: temporaryName,
+    dueDate: null,
+    totalQuantity: 0,
+    clientRequestId,
+    idempotencyKey,
+  });
 }
 
 function sha256(value) {
@@ -37,14 +64,15 @@ function databaseFingerprint(connectionString) {
   return sha256(`${parsed.hostname}/${databaseName}`).slice(0, 12);
 }
 
-function assertGuard() {
+function assertGuard(target) {
   const runtime = String(process.env.WAFL_V2_RUNTIME ?? "").trim().toLowerCase();
   const connectionString = process.env.DATABASE_URL?.trim();
   const approvedFingerprint = String(process.env.WAFL_V2_APPROVED_DB_FINGERPRINT ?? "").trim().toLowerCase();
   if (!ALLOWED_RUNTIMES.has(runtime)) fail("runtime-not-dev-test");
   if (!connectionString) fail("database-url-missing");
   if (String(process.env.WAFL_V2_TEST_PREFIX ?? "").trim() !== REQUIRED_PREFIX) fail("fixture-prefix-mismatch");
-  if (process.env.WAFL_V2_CONFIRMATION !== REQUIRED_CONFIRMATION) fail("confirmation-mismatch");
+  if (target.mode === "alpha46-retained" && process.env.WAFL_V2_CONFIRMATION !== REQUIRED_CONFIRMATION) fail("confirmation-mismatch");
+  if (target.mode === "alpha59-isolated" && process.env.WAFL_V2_CONFIRMATION !== REQUIRED_ALPHA59_ISOLATED_CONFIRMATION) fail("isolated-confirmation-mismatch");
   if (process.env.WAFL_V2_READ_API_ENABLED !== "1" || process.env.WAFL_V2_READ_APPROVED !== "1") fail("read-api-guard-missing");
   if (process.env.WAFL_V2_COMMAND_API_ENABLED !== "1") fail("command-api-disabled");
   if (process.env.WAFL_V2_COMMAND_MUTATION_APPROVED !== REQUIRED_CREATE_APPROVAL) fail("create-approval-mismatch");
@@ -123,7 +151,7 @@ async function readActor(client) {
   }
 }
 
-async function snapshot(client) {
+async function snapshot(client, target) {
   await client.query("BEGIN READ ONLY");
   try {
     const totals = await client.query(`
@@ -151,10 +179,10 @@ async function snapshot(client) {
                WHERE a.company_id=w.company_id AND a.work_order_id=w.id AND a.deleted_at IS NULL) AS attachment_count
       FROM public.work_orders w
       JOIN public.work_order_revisions r ON r.company_id=w.company_id AND r.id=w.current_revision_id
-      WHERE w.company_id=$1 AND w.product_name=$2 AND w.due_date=$3::date
+      WHERE w.company_id=$1 AND w.product_name=$2 AND w.due_date IS NOT DISTINCT FROM $3::date
         AND w.total_quantity=$4 AND w.deleted_at IS NULL
       ORDER BY w.created_at,w.id
-    `, [COMPANY_A, TARGET.productName, TARGET.dueDate, TARGET.totalQuantity]);
+    `, [COMPANY_A, target.productName, target.dueDate, target.totalQuantity]);
     await client.query("COMMIT");
     return {
       totals: Object.fromEntries(Object.entries(totals.rows[0] ?? {}).map(([key, value]) => [key, Number(value)])),
@@ -166,17 +194,19 @@ async function snapshot(client) {
   }
 }
 
-async function createExactlyOnce(baseUrl, actor) {
+async function createExactlyOnce(baseUrl, actor, target) {
   const response = await fetch(`${baseUrl}/api/v2/work-orders`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      "Idempotency-Key": IDEMPOTENCY_KEY,
+      "Idempotency-Key": target.idempotencyKey,
       Cookie: createSessionCookie(actor),
     },
     body: JSON.stringify({
-      clientRequestId: "alpha46-qa-draft-a-create-v1",
-      ...TARGET,
+      clientRequestId: target.clientRequestId,
+      productName: target.productName,
+      dueDate: target.dueDate,
+      totalQuantity: target.totalQuantity,
     }),
     redirect: "manual",
   });
@@ -189,9 +219,9 @@ async function createExactlyOnce(baseUrl, actor) {
   assert.equal(body?.data?.result?.revisionStatus, "draft");
 }
 
-function assertDelta(before, after) {
-  assert.equal(before.totals.ledger, 12);
-  assert.equal(after.totals.ledger, 12);
+function assertDelta(before, after, targetDefinition) {
+  if (targetDefinition.mode === "alpha46-retained") assert.equal(before.totals.ledger, 12);
+  assert.equal(after.totals.ledger, before.totals.ledger);
   assert.equal(before.targets.length, 0, "qa-draft-a-must-not-exist-before-create");
   assert.equal(after.targets.length, 1, "qa-draft-a-must-exist-exactly-once");
   assert.equal(after.totals.work_orders, before.totals.work_orders + 1);
@@ -205,9 +235,9 @@ function assertDelta(before, after) {
   assert.equal(target.revision_status, "draft");
   assert.equal(Number(target.entity_version), 1);
   assert.equal(Number(target.revision_version), 1);
-  assert.equal(target.product_name, TARGET.productName);
-  assert.equal(target.due_date, TARGET.dueDate);
-  assert.equal(Number(target.total_quantity), TARGET.totalQuantity);
+  assert.equal(target.product_name, targetDefinition.productName);
+  assert.equal(target.due_date, targetDefinition.dueDate);
+  assert.equal(Number(target.total_quantity), targetDefinition.totalQuantity);
   assert.equal(Number(target.document_count), 0);
   assert.equal(Number(target.token_count), 0);
   assert.equal(Number(target.image_count), 0);
@@ -215,13 +245,14 @@ function assertDelta(before, after) {
 }
 
 async function run() {
-  const guard = assertGuard();
+  const target = resolveApprovedDraftTarget();
+  const guard = assertGuard(target);
   const client = new Client({ connectionString: guard.connectionString, application_name: "wafl-v2-alpha46-qa-draft-create" });
   await client.connect();
   let child;
   try {
     const actor = await readActor(client);
-    const before = await snapshot(client);
+    const before = await snapshot(client, target);
     assert.equal(before.targets.length, 0, "qa-draft-a-already-exists");
 
     const port = await getFreePort();
@@ -233,19 +264,19 @@ async function run() {
       windowsHide: true,
     });
     await waitForServer(baseUrl, child);
-    await createExactlyOnce(baseUrl, actor);
+    await createExactlyOnce(baseUrl, actor, target);
     if (child.exitCode === null) {
       child.kill();
       await new Promise((resolve) => child.once("exit", resolve));
     }
     child = undefined;
 
-    const after = await snapshot(client);
-    assertDelta(before, after);
+    const after = await snapshot(client, target);
+    assertDelta(before, after, target);
     console.log(`WAFL v2 alpha.46 QA draft create: ${VERSION}`);
-    console.log("Target alias: QA_DRAFT_A");
+    console.log(`Target mode: ${target.mode}`);
     console.log(`Approved dev/test fingerprint prefix: ${guard.fingerprint.slice(0, 6)}`);
-    console.log(`Created values: ${TARGET.productName} / ${TARGET.dueDate} / ${TARGET.totalQuantity}`);
+    console.log(`Created values: ${target.productName} / ${target.dueDate ?? "null"} / ${target.totalQuantity}`);
     console.log("Delta: WorkOrder +1 / revision +1 / receipt +1 / event +1");
     console.log("Generated document/token/R2 delta: 0/0/0");
     console.log("Cleanup/rollback/delete: 0/0/0");
@@ -260,10 +291,15 @@ async function run() {
   }
 }
 
-run().catch((error) => {
-  console.error("WAFL v2 alpha.46 QA draft create failed", {
-    errorName: error instanceof Error ? error.name : "UnknownError",
-    errorCode: error instanceof Error ? error.message.split(":", 1)[0] : "UNKNOWN",
+const isDirectExecution = process.argv[1]
+  && import.meta.url === pathToFileURL(path.resolve(process.argv[1])).href;
+
+if (isDirectExecution) {
+  run().catch((error) => {
+    console.error("WAFL v2 approved QA draft create failed", {
+      errorName: error instanceof Error ? error.name : "UnknownError",
+      errorCode: error instanceof Error ? error.message.split(":", 1)[0] : "UNKNOWN",
+    });
+    process.exitCode = 1;
   });
-  process.exitCode = 1;
-});
+}

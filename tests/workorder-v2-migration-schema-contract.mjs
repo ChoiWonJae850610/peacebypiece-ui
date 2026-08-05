@@ -267,6 +267,16 @@ const alpha57ApiPaths = [
   "app/api/v2/work-orders/images/file/route.ts",
 ];
 const alpha57ContractExists = fs.existsSync(path.join(root, "tests/workorder-v2-alpha57-work-order-image-contract.mjs"));
+const alpha59ContractExists = fs.existsSync(path.join(root, "tests/workorder-v2-alpha59-mobile-size-color-structure-edit-contract.mjs"));
+const alpha59ApiPaths = [
+  "app/api/v2/work-orders/[workOrderId]/size-color/sizes/route.ts",
+  "app/api/v2/work-orders/[workOrderId]/size-color/sizes/[sizeRowId]/route.ts",
+  "app/api/v2/work-orders/[workOrderId]/size-color/sizes/reorder/route.ts",
+  "app/api/v2/work-orders/[workOrderId]/size-color/colors/route.ts",
+  "app/api/v2/work-orders/[workOrderId]/size-color/colors/[colorId]/route.ts",
+  "app/api/v2/work-orders/[workOrderId]/size-color/colors/reorder/route.ts",
+  "app/api/v2/work-orders/[workOrderId]/size-color/quantities/[colorId]/[sizeRowId]/route.ts",
+];
 const alpha27ApiPaths = ["app/api/v2/work-orders/[workOrderId]/revisions/issue/route.ts"];
 const alpha28ApiPaths = ["app/api/v2/work-orders/[workOrderId]/revisions/[revisionId]/preview/route.ts"];
 const alpha29ApiPaths = ["app/api/v2/work-orders/documents/[documentRef]/preview-target/route.ts"];
@@ -296,7 +306,13 @@ const alpha25ContractExists = fs.existsSync(path.join(root, "tests/workorder-v2-
 const alpha26ContractExists = fs.existsSync(path.join(root, "tests/workorder-v2-alpha26-material-command-api-contract.mjs"));
 const alpha27ContractExists = fs.existsSync(path.join(root, "tests/workorder-v2-alpha27-revision-issue-command-contract.mjs"));
 const alpha28ContractExists = fs.existsSync(path.join(root, "tests/workorder-v2-alpha28-issued-preview-contract.mjs"));
-if (alpha57ContractExists && apiChanges.length > 0) {
+if (alpha59ContractExists && apiChanges.length > 0) {
+  assert.deepEqual(
+    apiChanges.filter((change) => !alpha59ApiPaths.some((allowedPath) => change.endsWith(allowedPath))),
+    [],
+    "alpha.59 may add only its exact size/color structure command API routes",
+  );
+} else if (alpha57ContractExists && apiChanges.length > 0) {
   assert.deepEqual(apiChanges.filter((change) => !alpha57ApiPaths.some((allowedPath) => change.endsWith(allowedPath))), [], "alpha.57 may add only its exact image and attachment API routes");
 } else if (alpha51ContractExists && /APP_VERSION = "2\.0\.0-alpha\.(51|52)"/.test(appVersion)) {
   assert.deepEqual(

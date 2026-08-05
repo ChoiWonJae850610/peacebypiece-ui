@@ -15,7 +15,7 @@ const externalQa = read("lib/external-qa/configCore.mjs");
 const mock = read("apps/mobile/components/ProductionCardMock.tsx");
 
 assert.match(detail, /testID="production-card-sheet"/);
-assert.match(detail, /styles\.hero[\s\S]*styles\.tabRailFrame[\s\S]*styles\.summaryGrid[\s\S]*ReadinessPanel[\s\S]*title="금액 요약"/);
+assert.match(detail, /styles\.hero[\s\S]*styles\.tabRailFrame[\s\S]*styles\.summaryGrid[\s\S]*ReadinessPanel[\s\S]*title="비용 구성"/);
 
 for (const removedSection of ["문서 요약", "구성 요약"]) {
   assert.doesNotMatch(detail, new RegExp(removedSection), `removed section remains: ${removedSection}`);

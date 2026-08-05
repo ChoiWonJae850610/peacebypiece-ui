@@ -8,6 +8,8 @@ export const MATERIAL_REEL_UNITS = ["개", "장", "벌", "m", "yd", "kg"] as con
 export const MATERIAL_QUANTITY_MIN = "0";
 export const MATERIAL_QUANTITY_MAX = "99999999999.999";
 export const MATERIAL_REEL_WINDOW_RADIUS = 50;
+export const CIRCULAR_REEL_COPY_COUNT = 9;
+export const QUARTER_FRACTION_VALUES = ["0", "0.25", "0.5", "0.75"] as const;
 
 const SCALE = 1000n;
 const MAX_SCALED = 99_999_999_999_999n;
@@ -17,11 +19,31 @@ export type ReelOption = {
   readonly key: string;
   readonly value: string;
   readonly label?: string;
+  readonly swatchHex?: string | null;
 };
 
 export type ReelWindow = {
   readonly options: readonly ReelOption[];
   readonly selectedIndex: number;
+};
+
+export type CircularReelOption = ReelOption & {
+  readonly logicalIndex: number;
+  readonly logicalPosition: number;
+};
+
+export type CircularReelWindow = {
+  readonly options: readonly CircularReelOption[];
+  readonly optionCount: number;
+  readonly selectedIndex: number;
+  readonly circular: boolean;
+};
+
+export type QuarterQuantityParts = {
+  readonly integerPart: string;
+  readonly fractionPart: (typeof QUARTER_FRACTION_VALUES)[number];
+  readonly exactQuarter: boolean;
+  readonly preservedValue: string | null;
 };
 
 function scaled(value: string): bigint | null {
@@ -36,6 +58,87 @@ function displayValue(value: bigint): string {
   const whole = bounded / SCALE;
   const fraction = (bounded % SCALE).toString().padStart(3, "0").replace(/0+$/u, "");
   return `${whole}${fraction ? `.${fraction}` : ""}`;
+}
+
+function modulo(value: number, divisor: number): number {
+  if (divisor <= 0) return 0;
+  return ((value % divisor) + divisor) % divisor;
+}
+
+export function createCircularReelWindow(
+  options: readonly ReelOption[],
+  selectedValue: string,
+  copyCount = CIRCULAR_REEL_COPY_COUNT,
+): CircularReelWindow {
+  const optionCount = options.length;
+  const selectedLogicalIndex = Math.max(0, options.findIndex((option) => option.value === selectedValue));
+  if (optionCount <= 1) {
+    return {
+      options: options.map((option, logicalIndex) => ({ ...option, logicalIndex, logicalPosition: logicalIndex + 1 })),
+      optionCount,
+      selectedIndex: selectedLogicalIndex,
+      circular: false,
+    };
+  }
+  const safeCopies = Math.max(5, Math.trunc(copyCount) | 1);
+  const middleCopy = Math.floor(safeCopies / 2);
+  const repeated: CircularReelOption[] = [];
+  for (let copy = 0; copy < safeCopies; copy += 1) {
+    options.forEach((option, logicalIndex) => repeated.push({
+      ...option,
+      key: `${copy}:${option.key}`,
+      logicalIndex,
+      logicalPosition: logicalIndex + 1,
+    }));
+  }
+  return {
+    options: repeated,
+    optionCount,
+    selectedIndex: middleCopy * optionCount + selectedLogicalIndex,
+    circular: true,
+  };
+}
+
+export function circularLogicalIndex(window: CircularReelWindow, visualIndex: number): number {
+  return modulo(Math.round(visualIndex), window.optionCount);
+}
+
+export function circularRecenterIndex(window: CircularReelWindow, visualIndex: number): number | null {
+  if (!window.circular || window.optionCount <= 1) return null;
+  const bounded = Math.max(0, Math.min(window.options.length - 1, Math.round(visualIndex)));
+  const edgeSize = window.optionCount * 2;
+  if (bounded >= edgeSize && bounded < window.options.length - edgeSize) return null;
+  const logicalIndex = circularLogicalIndex(window, bounded);
+  const middleCopy = Math.floor((window.options.length / window.optionCount) / 2);
+  return middleCopy * window.optionCount + logicalIndex;
+}
+
+export function decomposeQuarterQuantity(value: string): QuarterQuantityParts {
+  const canonical = normalizeReelValue(value);
+  if (canonical === null) {
+    return { integerPart: "0", fractionPart: "0", exactQuarter: false, preservedValue: value };
+  }
+  const [integerPart = "0", rawFraction = ""] = canonical.split(".");
+  const thousandths = rawFraction.padEnd(3, "0");
+  const quarter = thousandths === "000" ? "0"
+    : thousandths === "250" ? "0.25"
+      : thousandths === "500" ? "0.5"
+        : thousandths === "750" ? "0.75"
+          : null;
+  return quarter === null
+    ? { integerPart, fractionPart: "0", exactQuarter: false, preservedValue: canonical }
+    : { integerPart, fractionPart: quarter, exactQuarter: true, preservedValue: null };
+}
+
+export function composeQuarterQuantity(integerPart: string, fractionPart: string): string | null {
+  const normalizedInteger = normalizeReelValue(integerPart);
+  if (normalizedInteger === null || normalizedInteger.includes(".")) return null;
+  if (!QUARTER_FRACTION_VALUES.includes(fractionPart as (typeof QUARTER_FRACTION_VALUES)[number])) return null;
+  return fractionPart === "0" ? normalizedInteger : `${normalizedInteger}${fractionPart.slice(1)}`;
+}
+
+export function quarterFractionOptions(): readonly ReelOption[] {
+  return QUARTER_FRACTION_VALUES.map((value) => ({ key: `quarter-${value}`, value }));
 }
 
 export function defaultReelStep(unitCode: string): ReelStep {

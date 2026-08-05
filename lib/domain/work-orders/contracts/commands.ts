@@ -197,6 +197,54 @@ export type AddSizeRowCommand = VersionedWorkOrderCommand & {
   readonly displayLabel: string;
 };
 
+export type AddSizeStructureCommand = IdempotentWorkOrderCommand & {
+  readonly displayLabel: string;
+};
+
+export type RenameSizeStructureCommand = IdempotentWorkOrderCommand & {
+  readonly sizeRowId: SizeRowId;
+  readonly displayLabel: string;
+};
+
+export type ReorderSizeStructuresCommand = IdempotentWorkOrderCommand & {
+  readonly orderedSizeRowIds: readonly SizeRowId[];
+};
+
+export type AddColorStructureCommand = IdempotentWorkOrderCommand & {
+  readonly displayName: string;
+  readonly hexValue: string | null;
+};
+
+export type PatchColorStructureCommand = IdempotentWorkOrderCommand & {
+  readonly colorId: ColorId;
+  readonly patch: {
+    readonly displayName?: string;
+    readonly hexValue?: string | null;
+  };
+};
+
+export type ReorderColorStructuresCommand = IdempotentWorkOrderCommand & {
+  readonly orderedColorIds: readonly ColorId[];
+};
+
+export type UpsertColorSizeQuantityCommand = IdempotentWorkOrderCommand & {
+  readonly colorId: ColorId;
+  readonly sizeRowId: SizeRowId;
+  readonly quantity: number;
+};
+
+export type SizeColorStructureCommandResult = {
+  readonly workOrderId: WorkOrderId;
+  readonly revisionId: WorkOrderRevisionId;
+  readonly targetKind: "size" | "color" | "quantity";
+  readonly targetId: SizeRowId | ColorId | null;
+  readonly colorId?: ColorId;
+  readonly sizeRowId?: SizeRowId;
+  readonly quantity?: number;
+  readonly totalQuantity?: number;
+  readonly nextVersion: EntityVersion;
+};
+
 export type AddPomColumnCommand = VersionedWorkOrderCommand & {
   readonly pomCode: string;
   readonly displayName: string;

@@ -40,7 +40,8 @@ assert.equal(prepareNumericDraftOnFocus("0.05"), "0.05");
 assert.equal(normalizeNumericCommitValue(""), "0");
 assert.equal(normalizeNumericCommitValue("00081"), "81");
 
-assert.match(controlled, /numeric \? normalizeNumericDraft\(nextValue\) : nextValue/);
+assert.match(controlled, /const normalized = normalizeNumericDraft\(nextValue\)/);
+assert.match(controlled, /\^\\d\*\(\?:\\\.\\d\*\)\?\$\/u\.test\(normalized\) \? normalized : value/);
 assert.match(controlled, /prepareNumericDraftOnFocus\(activation\.value\)/);
 assert.match(controlled, /activation\.onChange\(preparedValue\)/);
 assert.match(controlled, /focusFrame = requestAnimationFrame/);
@@ -54,9 +55,12 @@ assert.match(app, /overviewMutation\.inFlight/);
 assert.match(app, /materialMutation\.inFlight/);
 assert.doesNotMatch(materials, /field="orderQuantity"/);
 assert.match(materials, /material-order-quantity-calculated/);
-assert.match(overview, /kind="integer"/);
-assert.match(materials, /keyboardType="number-pad"/);
-assert.match(reelSheet, /keyboardType=\{kind === "integer" \? "number-pad" : "decimal-pad"\}/);
+assert.match(overview, /label="총 수량"[\s\S]{0,140}header\.totalQuantity\.toLocaleString/);
+assert.doesNotMatch(overview, /field="totalQuantity"|kind="integer"/);
+assert.match(materials, /MaterialInlineField[^\n]+field="unitPrice"[^\n]+label="단가"[^\n]+testID="material-inline-unit-price"/);
+assert.match(materials, /MaterialInlineField[^\n]+field="unitPrice"[^\n]+keyboardType="number-pad"/);
+assert.doesNotMatch(materials, /reelTarget\.field === "unitPrice"/);
+assert.match(reelSheet, /keyboardType=\{integerOnly \? "number-pad" : "decimal-pad"\}/);
 assert.match(visibilityDate, /material-quantity-row-expanded/);
 assert.match(visibilityDate, /an open picker must not reopen/);
 

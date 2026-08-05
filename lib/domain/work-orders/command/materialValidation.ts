@@ -70,14 +70,12 @@ function parsePrice(value: unknown, field: string): DecimalString {
 function canonicalOrderQuantity(
   requiredQuantity: DecimalString,
   allowanceQuantity: DecimalString,
-  inventoryUsageQuantity: DecimalString,
 ): DecimalString {
   const scaled = (value: DecimalString) => {
     const [whole, fraction = ""] = value.split(".");
     return BigInt(whole) * BigInt(1000) + BigInt(fraction.padEnd(3, "0"));
   };
-  const result = scaled(requiredQuantity) + scaled(allowanceQuantity) - scaled(inventoryUsageQuantity);
-  const bounded = result > BigInt(0) ? result : BigInt(0);
+  const bounded = scaled(requiredQuantity) + scaled(allowanceQuantity);
   const whole = bounded / BigInt(1000);
   const fraction = (bounded % BigInt(1000)).toString().padStart(3, "0").replace(/0+$/, "");
   return `${whole}${fraction ? `.${fraction}` : ""}` as DecimalString;
@@ -130,7 +128,7 @@ export function validateAddMaterialLine(input: {
   const requiredQuantity = parseQuantity(input.body.requiredQuantity, "requiredQuantity");
   const allowanceQuantity = parseQuantity(input.body.allowanceQuantity, "allowanceQuantity");
   const inventoryUsageQuantity = parseQuantity(input.body.inventoryUsageQuantity, "inventoryUsageQuantity");
-  const orderQuantity = canonicalOrderQuantity(requiredQuantity, allowanceQuantity, inventoryUsageQuantity);
+  const orderQuantity = canonicalOrderQuantity(requiredQuantity, allowanceQuantity);
   assertAmountWithinRange(orderQuantity, unitPrice);
 
   return {

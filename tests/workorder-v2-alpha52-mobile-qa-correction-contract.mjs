@@ -23,6 +23,7 @@ const listRepository = fs.readFileSync("lib/domain/work-orders/read/listReposito
 const validation = fs.readFileSync("lib/domain/work-orders/command/materialValidation.ts", "utf8");
 const repository = fs.readFileSync("lib/domain/work-orders/command/materialCommandRepository.ts", "utf8");
 const mobileValidation = fs.readFileSync("apps/mobile/domain/workOrderValidation.ts", "utf8");
+const historicalEvidence = fs.readFileSync("docs/project/app-v2/51-mobile-core-inline-ux-calculation-list-date-evidence.md", "utf8");
 
 for (const source of [overview, materials, editor]) assert.doesNotMatch(source, /\bKRW\b/);
 assert.match(display, /stripDecimalTrailingZeros/);
@@ -42,9 +43,11 @@ assert.match(materials, /accessibilityLabel=\{`\$\{materialLabel\} 추가`\}/);
 assert.doesNotMatch(materials, /field="orderQuantity"/);
 assert.doesNotMatch(editor, /field="orderQuantity"/);
 assert.match(materials, /material-order-quantity-calculated/);
-assert.match(mobileValidation, /if \(field === "orderQuantity"\) continue/);
+assert.match(mobileValidation, /if \(field === "orderQuantity" \|\| field === "inventoryUsageQuantity"\) continue/);
 assert.match(repository, /function canonicalOrderQuantity/);
-assert.match(repository, /scaled\(input\.requiredQuantity\) \+ scaled\(input\.allowanceQuantity\) - scaled\(input\.inventoryUsageQuantity\)/);
+assert.match(repository, /scaled\(input\.requiredQuantity\) \+ scaled\(input\.allowanceQuantity\)/);
+assert.doesNotMatch(repository.slice(repository.indexOf("function canonicalOrderQuantity"), repository.indexOf("function assertMaterialOrderReady")), /- scaled\(input\.inventoryUsageQuantity\)/);
+assert.match(historicalEvidence, /max\(required \+ allowance - inventory, 0\)/);
 assert.match(repository, /order_quantity = \$20::numeric/);
 assert.match(repository, /amount = round\([\s\S]*\$20::numeric \* \(CASE WHEN \$23 THEN \$24::numeric ELSE unit_price END\)/);
 assert.match(validation, /canonicalOrderQuantity/);

@@ -6,7 +6,7 @@
     [int]$NextPort = 3000,
     [int]$ExpoPort = 8081,
     [string]$CloudflaredPath = "",
-    [ValidateSet("external-device", "memo-ime-display", "accessory-lifecycle-parity", "work-order-image")]
+    [ValidateSet("external-device", "memo-ime-display", "accessory-lifecycle-parity", "work-order-image", "size-color-structure")]
     [string]$RuntimeQaMode = "external-device",
     [switch]$EnableAlpha46BasicInfoMutation,
     [switch]$EnableAlpha50MaterialDraftMutation,
@@ -14,20 +14,22 @@
     [switch]$EnableAlpha52CoreInlineMutation,
     [switch]$EnableAlpha55MaterialOrderLifecycleMutation,
     [switch]$EnableAlpha56AccessoryLifecycleParityMutation,
-    [switch]$EnableAlpha57WorkOrderImageMutation
+    [switch]$EnableAlpha57WorkOrderImageMutation,
+    [switch]$EnableAlpha59SizeColorStructureMutation
 )
 
 $ErrorActionPreference = "Stop"
 . (Join-Path $PSScriptRoot "wafl-external-qa-common.ps1")
 . (Join-Path $PSScriptRoot "..\pipeline\pipeline-common.ps1")
 
-if (@($EnableAlpha46BasicInfoMutation, $EnableAlpha50MaterialDraftMutation, $EnableAlpha51MaterialLifecycleMutation, $EnableAlpha52CoreInlineMutation, $EnableAlpha55MaterialOrderLifecycleMutation, $EnableAlpha56AccessoryLifecycleParityMutation, $EnableAlpha57WorkOrderImageMutation).Where({ $_ }).Count -gt 1) {
+if (@($EnableAlpha46BasicInfoMutation, $EnableAlpha50MaterialDraftMutation, $EnableAlpha51MaterialLifecycleMutation, $EnableAlpha52CoreInlineMutation, $EnableAlpha55MaterialOrderLifecycleMutation, $EnableAlpha56AccessoryLifecycleParityMutation, $EnableAlpha57WorkOrderImageMutation, $EnableAlpha59SizeColorStructureMutation).Where({ $_ }).Count -gt 1) {
     throw "EXTERNAL_QA_MUTATION_MODES_ARE_MUTUALLY_EXCLUSIVE"
 }
 $internalMemoImeMode = $RuntimeQaMode -eq "memo-ime-display"
 $internalAccessoryLifecycleMode = $RuntimeQaMode -eq "accessory-lifecycle-parity"
 $internalWorkOrderImageMode = $RuntimeQaMode -eq "work-order-image"
-$internalRuntimeMode = $internalMemoImeMode -or $internalAccessoryLifecycleMode -or $internalWorkOrderImageMode
+$internalSizeColorStructureMode = $RuntimeQaMode -eq "size-color-structure"
+$internalRuntimeMode = $internalMemoImeMode -or $internalAccessoryLifecycleMode -or $internalWorkOrderImageMode -or $internalSizeColorStructureMode
 if ($internalMemoImeMode -and $MobileTransport -ne "DeveloperAutoConnect") {
     throw "MEMO_IME_DISPLAY_REQUIRES_DEVELOPER_AUTO_CONNECT"
 }
@@ -54,6 +56,15 @@ if ($internalWorkOrderImageMode -and -not $EnableAlpha57WorkOrderImageMutation) 
 }
 if ($internalWorkOrderImageMode -and ($NextPort -ne 3100 -or $ExpoPort -ne 8081)) {
     throw "WORK_ORDER_IMAGE_REQUIRES_CANONICAL_PORTS"
+}
+if ($internalSizeColorStructureMode -and $MobileTransport -ne "DeveloperAutoConnect") {
+    throw "SIZE_COLOR_STRUCTURE_REQUIRES_DEVELOPER_AUTO_CONNECT"
+}
+if ($internalSizeColorStructureMode -and -not $EnableAlpha59SizeColorStructureMutation) {
+    throw "SIZE_COLOR_STRUCTURE_REQUIRES_ALPHA59_MUTATION_MODE"
+}
+if ($internalSizeColorStructureMode -and ($NextPort -ne 3100 -or $ExpoPort -ne 8081)) {
+    throw "SIZE_COLOR_STRUCTURE_REQUIRES_CANONICAL_PORTS"
 }
 
 function Get-WaflQaDatabaseUrl {
@@ -354,6 +365,13 @@ try {
         $serverEnvironment.WAFL_EXTERNAL_QA_ALPHA57_WORK_ORDER_IMAGE_MUTATION_ENABLED = "true"
         $state.commandApi = "ready"
         $state.mutationMode = "work-order-image-upload-primary-delete"
+    }
+    if ($EnableAlpha59SizeColorStructureMutation) {
+        $serverEnvironment.WAFL_V2_COMMAND_API_ENABLED = "1"
+        $serverEnvironment.WAFL_V2_COMMAND_MUTATION_APPROVED = "2.0.0-alpha.59-dev-test-size-color-structure-runtime"
+        $serverEnvironment.WAFL_EXTERNAL_QA_ALPHA59_SIZE_COLOR_STRUCTURE_MUTATION_ENABLED = "true"
+        $state.commandApi = "ready"
+        $state.mutationMode = "alpha59-qa-remediation"
     }
     $nextStdout = Join-Path $stateDir "next.stdout.log"
     $nextStderr = Join-Path $stateDir "next.stderr.log"

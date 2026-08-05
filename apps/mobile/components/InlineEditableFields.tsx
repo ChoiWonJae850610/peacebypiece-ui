@@ -94,7 +94,6 @@ export function InlineEditableValue(props: InlineFieldProps) {
           onSubmitEditing={finish}
           placeholder={props.placeholder}
           returnKeyType="done"
-          selectTextOnFocus
           multiline={false}
           style={[styles.value, styles.inlineInput]}
           value={draft}
@@ -164,7 +163,6 @@ export function CompactInlineEditableField(props: CompactInlineFieldProps) {
           onSubmitEditing={finish}
           placeholder={props.placeholder}
           returnKeyType="done"
-          selectTextOnFocus
           style={[styles.compactValue, styles.compactInput, props.invalid && styles.invalidUnderline]}
           value={draft}
         />

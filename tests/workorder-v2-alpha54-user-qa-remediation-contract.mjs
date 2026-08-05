@@ -26,7 +26,7 @@ assert.equal(calculateOrderQuantity({
   requiredQuantity: "10",
   allowanceQuantity: "0.5",
   inventoryUsageQuantity: undefined,
-}), null);
+}), "10.5", "inventory usage is no longer part of the current draft calculation");
 assert.equal(calculateMaterialAmount(undefined, "12000"), null);
 assert.equal(calculateMaterialAmount("10", undefined), null);
 assert.equal(formatQuantity(undefined, "yd"), "미입력");
@@ -69,7 +69,7 @@ assert.match(picker, /onMomentumScrollEnd=\{commitScrollIndex\}/);
 assert.match(picker, /onScrollEndDrag=\{\(event\) => \{[\s\S]*?commitScrollIndex\(event\)/);
 assert.match(picker, /snapToAlignment="start"/);
 assert.match(picker, /snapToInterval=\{ITEM_HEIGHT\}/);
-assert.match(picker, /extraData=\{selectedIndex\}/);
+assert.match(picker, /extraData=\{visibleSelectedIndex\}/);
 assert.match(materials, /setReelTarget\(null\);\s+onSaveEdit\(patch\)/);
 assert.doesNotMatch(materials, /if \(!activeEditor\) return;\s+onSaveEdit/, "picker save must resolve the live editor in the controller");
 assert.match(materials, /setReelTarget\(null\);\s+onCancelEdit\(\)/);

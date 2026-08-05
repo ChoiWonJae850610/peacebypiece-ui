@@ -14,6 +14,13 @@ import {
   setRepresentativeWorkOrderImage,
   transitionWorkOrderMaterialOrder,
   issueWorkOrderAttachmentPreview,
+  addWorkOrderColor,
+  addWorkOrderSize,
+  patchWorkOrderColor,
+  renameWorkOrderSize,
+  reorderWorkOrderColors,
+  reorderWorkOrderSizes,
+  upsertWorkOrderColorSizeQuantity,
 } from "../../lib/apiClient";
 import type {
   CreateMaterialLineInput,
@@ -28,6 +35,13 @@ export const workOrderMutationController = {
   updateOverview(workOrderId: string, command: PatchWorkOrderBasicInfoInput) {
     return patchWorkOrderBasicInfo(workOrderId, command);
   },
+  addSize: addWorkOrderSize,
+  renameSize: renameWorkOrderSize,
+  reorderSizes: reorderWorkOrderSizes,
+  addColor: addWorkOrderColor,
+  patchColor: patchWorkOrderColor,
+  reorderColors: reorderWorkOrderColors,
+  upsertQuantity: upsertWorkOrderColorSizeQuantity,
   createMaterial(workOrderId: string, command: CreateMaterialLineInput, idempotencyKey: string) {
     return createWorkOrderMaterial(workOrderId, command, idempotencyKey);
   },

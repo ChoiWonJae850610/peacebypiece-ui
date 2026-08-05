@@ -13,11 +13,11 @@ const overview = fs.readFileSync("apps/mobile/features/work-orders/overview/Work
 const materials = fs.readFileSync("apps/mobile/features/materials/WorkOrderMaterialsReadOnly.tsx", "utf8");
 
 for (const source of [controlled, expanded, materials]) assert.doesNotMatch(source, /horizontalScroll|overflowX/);
-assert.match(materials, /material-core-row-expanded/);
+assert.doesNotMatch(materials, /material-core-row-expanded/, "same-position name/color/price editing must not expand the core row");
 assert.match(materials, /material-quantity-row-expanded/);
 assert.match(materials, /material-header-expanded-editor/);
 assert.match(materials, /activeQuantityField/);
-assert.match(materials, /activeSummaryField/);
+assert.doesNotMatch(materials, /activeSummaryField/, "same-position summary editing must not create a displaced summary row");
 assert.match(materials, /activeHeaderField/);
 assert.match(expanded, /width: "100%"/);
 assert.match(controlled, /paddingRight: 98/);

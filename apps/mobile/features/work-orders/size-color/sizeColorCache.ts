@@ -1,6 +1,6 @@
 import type { WorkOrderSizeColorBundle } from "@/domain/mobileContract";
 
-export type SizeColorReadStatus = "not-loaded" | "loading" | "retrying" | "empty" | "loaded" | "error";
+export type SizeColorReadStatus = "not-loaded" | "loading" | "retrying" | "refreshing" | "empty" | "loaded" | "error";
 
 export type SizeColorCacheEntry = {
   readonly status: SizeColorReadStatus;

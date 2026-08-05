@@ -22,6 +22,8 @@ import type {
   WorkOrderSizeColorMatrix,
   WorkOrderSizeRow,
   WorkOrderSizeSpec,
+  SizeColorStructureCommandBase,
+  SizeColorStructureCommandResult,
 } from "@/domain/mobileContract";
 import { classifyMobileApiErrorCode, MobileApiError } from "@/domain/mobileContract";
 import { classifyNonJsonHttpResponse } from "@/domain/mobileHttpResponse";
@@ -221,6 +223,9 @@ function normalizeWorkOrderSizeColor(workOrderId: string, value: unknown): WorkO
     || !isNonNegativeSafeInteger(value.entityVersion)
     || !isDecimalString(value.matrixTotal)
     || !isDecimalString(value.expectedTotal)
+    || !isDecimalString(value.workOrderTotal)
+    || !isDecimalString(value.revisionTotal)
+    || typeof value.projectionsMatch !== "boolean"
     || typeof value.totalsMatch !== "boolean"
     || !isNullableString(value.memoFallback)
   ) return malformedSizeColorResponse();
@@ -270,7 +275,9 @@ function normalizeWorkOrderSizeColor(workOrderId: string, value: unknown): WorkO
   }
   const computedTotal = quantityCells.reduce((sum, cell) => sum + Number(cell.quantity), 0);
   if (computedTotal !== Number(value.matrixTotal)) return malformedSizeColorResponse();
-  if (value.totalsMatch !== (Number(value.matrixTotal) === Number(value.expectedTotal))) return malformedSizeColorResponse();
+  const projectionsMatch = Number(value.matrixTotal) === Number(value.workOrderTotal)
+    && Number(value.matrixTotal) === Number(value.revisionTotal);
+  if (value.projectionsMatch !== projectionsMatch || value.totalsMatch !== projectionsMatch) return malformedSizeColorResponse();
   return {
     workOrderId,
     revisionId: value.revisionId,
@@ -279,6 +286,9 @@ function normalizeWorkOrderSizeColor(workOrderId: string, value: unknown): WorkO
     quantityCells,
     matrixTotal: value.matrixTotal,
     expectedTotal: value.expectedTotal,
+    workOrderTotal: value.workOrderTotal,
+    revisionTotal: value.revisionTotal,
+    projectionsMatch: value.projectionsMatch,
     totalsMatch: value.totalsMatch,
     memoFallback: value.memoFallback,
     entityVersion: value.entityVersion,
@@ -421,6 +431,106 @@ export async function getWorkOrderSizeSpec(workOrderId: string): Promise<WorkOrd
   );
   if (!body.ok) return malformedSizeSpecResponse();
   return normalizeWorkOrderSizeSpec(workOrderId, body.data);
+}
+
+async function mutateSizeColorStructure(
+  workOrderId: string,
+  path: string,
+  method: "POST" | "PATCH",
+  command: SizeColorStructureCommandBase & Readonly<Record<string, unknown>>,
+  idempotencyKey: string,
+): Promise<SizeColorStructureCommandResult> {
+  const body = await requestJson<{
+    readonly ok: boolean;
+    readonly data?: { readonly result?: SizeColorStructureCommandResult; readonly nextVersion?: number };
+  }>(
+    `/api/v2/work-orders/${encodeURIComponent(workOrderId)}/size-color/${path}`,
+    { method, body: command, idempotencyKey },
+  );
+  const result = body.data?.result;
+  if (
+    !body.ok
+    || !result
+    || result.workOrderId !== workOrderId
+    || !isNonEmptyString(result.revisionId)
+    || !(result.targetKind === "size" || result.targetKind === "color" || result.targetKind === "quantity")
+    || (result.targetKind === "quantity" && !isNonNegativeSafeInteger(result.totalQuantity))
+    || !(result.targetId === null || isNonEmptyString(result.targetId))
+    || !Number.isSafeInteger(result.nextVersion)
+    || result.nextVersion < 1
+    || body.data?.nextVersion !== result.nextVersion
+  ) {
+    throw new MobileApiError({ code: "MALFORMED_RESPONSE", message: "사이즈·색상 변경 응답이 올바르지 않습니다." });
+  }
+  return result;
+}
+
+export function addWorkOrderSize(
+  workOrderId: string,
+  command: SizeColorStructureCommandBase & { readonly displayLabel: string },
+  idempotencyKey: string,
+) {
+  return mutateSizeColorStructure(workOrderId, "sizes", "POST", command, idempotencyKey);
+}
+
+export function renameWorkOrderSize(
+  workOrderId: string,
+  sizeRowId: string,
+  command: SizeColorStructureCommandBase & { readonly displayLabel: string },
+  idempotencyKey: string,
+) {
+  return mutateSizeColorStructure(workOrderId, `sizes/${encodeURIComponent(sizeRowId)}`, "PATCH", command, idempotencyKey);
+}
+
+export function reorderWorkOrderSizes(
+  workOrderId: string,
+  command: SizeColorStructureCommandBase & { readonly orderedSizeRowIds: readonly string[] },
+  idempotencyKey: string,
+) {
+  return mutateSizeColorStructure(workOrderId, "sizes/reorder", "POST", command, idempotencyKey);
+}
+
+export function addWorkOrderColor(
+  workOrderId: string,
+  command: SizeColorStructureCommandBase & { readonly displayName: string; readonly hexValue: string | null },
+  idempotencyKey: string,
+) {
+  return mutateSizeColorStructure(workOrderId, "colors", "POST", command, idempotencyKey);
+}
+
+export function patchWorkOrderColor(
+  workOrderId: string,
+  colorId: string,
+  command: SizeColorStructureCommandBase & {
+    readonly patch: { readonly displayName?: string; readonly hexValue?: string | null };
+  },
+  idempotencyKey: string,
+) {
+  return mutateSizeColorStructure(workOrderId, `colors/${encodeURIComponent(colorId)}`, "PATCH", command, idempotencyKey);
+}
+
+export function reorderWorkOrderColors(
+  workOrderId: string,
+  command: SizeColorStructureCommandBase & { readonly orderedColorIds: readonly string[] },
+  idempotencyKey: string,
+) {
+  return mutateSizeColorStructure(workOrderId, "colors/reorder", "POST", command, idempotencyKey);
+}
+
+export function upsertWorkOrderColorSizeQuantity(
+  workOrderId: string,
+  colorId: string,
+  sizeRowId: string,
+  command: SizeColorStructureCommandBase & { readonly quantity: number },
+  idempotencyKey: string,
+) {
+  return mutateSizeColorStructure(
+    workOrderId,
+    `quantities/${encodeURIComponent(colorId)}/${encodeURIComponent(sizeRowId)}`,
+    "PATCH",
+    command,
+    idempotencyKey,
+  );
 }
 
 export function resolveMobileApiUrl(path: string | null): string | null {

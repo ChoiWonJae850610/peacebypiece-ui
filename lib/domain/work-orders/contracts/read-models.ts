@@ -290,6 +290,9 @@ export type WorkOrderSizeColorMatrixReadModel = {
   readonly quantityCells: readonly ColorSizeQuantityCellReadModel[];
   readonly matrixTotal: DecimalString;
   readonly expectedTotal: DecimalString;
+  readonly workOrderTotal: DecimalString;
+  readonly revisionTotal: DecimalString;
+  readonly projectionsMatch: boolean;
   readonly totalsMatch: boolean;
   readonly memoFallback: string | null;
   readonly entityVersion: EntityVersion;

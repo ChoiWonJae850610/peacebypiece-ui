@@ -2,23 +2,28 @@
 
 Document role: canonical owner for the current result, next candidate, and Version Delta boundary. It is not the historical implementation ledger; completed details live in numbered immutable evidence.
 
-## Current result — 2.0.0-alpha.58
+## Current result — 2.0.0-alpha.59
+
+Status: `ALPHA59_MOBILE_WORK_ORDER_INPUT_EXPANSION_COMPLETE`.
+
+Alpha.59 completes the Maker mobile WorkOrder input expansion on the accepted alpha.58 size/color read-only baseline:
+
+- draft-only size, color, and quantity commands preserve tenant, permission, expectedVersion, idempotency, conflict, event/receipt, and stable-identity boundaries;
+- compact size/color actions, sequential multi-add, deterministic automatic sorting, color palette selection, stable row selection, and parent/child editor lifecycle extend the read model without duplicating it;
+- quantity updates transactionally synchronize matrix totals, WorkOrder integer total quantity, and revision snapshots while unchanged updates remain no-ops;
+- circular finite-option reels provide modulo identity, central recentering, logical callback/haptic dedupe, and stable selection for target, category, size, color, and unit;
+- material and accessory fields use one same-position inline implementation with exact session ownership, stale-blur protection, one-action/one-request behavior, recovery, and quarter-decimal required/allowance input;
+- final caret, label, compact-action, cost/image/memo, same-item session, and nested palette corrections were accepted on a physical iPhone;
+- automated Runtime QA used one isolated dev/test draft, preserved user products as GET-only, verified the `3/3/9/5/15` read-only projection, and left temporary residuals and user/migration/R2/production mutations at zero;
+- size/color archive/restore, fractional total quantity, finished-measurement editing, company common colors, Factory, schema/migration, dependency/native/EAS, R2, and production remain excluded.
+
+Evidence: `59-mobile-work-order-input-expansion-evidence.md`.
+
+## Previous result — 2.0.0-alpha.58
 
 Status: `ALPHA58_MOBILE_SIZE_COLOR_READONLY_COMPLETE`.
 
-Alpha.58 completes the Maker mobile size/color read-only foundation and final UX on the accepted alpha.57 WorkOrder baseline:
-
-- the existing `/size-color` and `/size-spec` routes remain strict GET-only reads with UUID, method, tenant, anonymous, foreign-workspace, and unsupported-query boundaries;
-- mobile response normalization and the feature-owned controller verify WorkOrder/revision/entityVersion consistency, dedupe in-flight reads, prevent stale commits, isolate WorkOrder/session transitions, and use version-aware bounded cache entries;
-- the read-only screen presents the size/color quantity matrix, totals, POM-based finished measurements, rich and empty states, retry, and local-only `cm | inch` display;
-- cm/inch conversion, nearest one-eighth-inch display, same-unit cm trailing-zero normalization, stored value preservation, matrix totals, and zero mutation actions are behaviorally contracted;
-- final visual alignment, common gutter/typography, one canonical read-only badge, shared tab states, and delayed loading remove development copy without changing the accepted matrix or measurement design;
-- automated and read-only Runtime QA verifies the rich `3/3/9/5/15` fixture, read/security boundaries, compiled mobile bundle, deterministic before/after snapshots, and zero observed domain/migration/size-table delta;
-- source-quality audit and bounded refactor findings were resolved without widening the Experience/Overview surface or starting edit behavior;
-- owner physical-iPhone QA accepted the read behavior, unit display, visual alignment, refactor regression, and final UX cleanup;
-- size/color/quantity/measurement CRUD, automatic total-quantity mutation, Factory, migration, fixture mutation, dependency/native/EAS, R2, and production remain excluded.
-
-Evidence: `58-mobile-size-color-readonly-evidence.md`.
+Maker mobile size/color and finished-measurement read models, bounded read controller/cache, matrix and measurement presentation, local-only unit conversion, read-only policy, and accepted physical-iPhone UX remain complete. Detailed facts are preserved in `58-mobile-size-color-readonly-evidence.md`.
 
 ## Previous overview result — 2.0.0-alpha.57
 
@@ -76,6 +81,7 @@ Permanent Rules, Current Baseline, Version Delta, Immutable Evidence, responsibi
 | alpha.56 | accessory lifecycle parity and physical-iPhone acceptance | `56-mobile-accessory-lifecycle-parity-evidence.md` |
 | alpha.57 | mobile overview, Category, image, and inline input | `57-mobile-overview-category-inline-input-evidence.md` |
 | alpha.58 | mobile size/color read-only foundation and final UX | `58-mobile-size-color-readonly-evidence.md` |
+| alpha.59 | mobile WorkOrder input expansion and editor lifecycle | `59-mobile-work-order-input-expansion-evidence.md` |
 | maintenance | canonical Codex rule normalization without APP_VERSION change | `54-canonical-codex-working-rules-normalization-evidence.md` |
 
 Older results remain in numbered evidence files indexed and task-routed by `00-start-here.md`. Their detailed outcomes are not duplicated here.
@@ -107,19 +113,15 @@ Standard reference:
 
 The Delta does not repeat Permanent Rules, PC-audit mechanics, runner internals, generic Failure Handoff fields, or generic Git/artifact procedures. Those remain owned by `09a` through `09d`. An omitted exceptional authority remains forbidden.
 
-## Next candidate — 2.0.0-alpha.59
+## Next candidate — 2.0.0-alpha.60
 
-Candidate objective: Maker mobile size/color structure editing only after owner approval.
+Alpha.60 is not started. Separate owner-approved packages may consider one bounded objective at a time:
 
-Potential included scope, subject to the actual alpha.58 Delta:
+- size/color archive/restore lifecycle, including schema, impact counts, read-model, conflict, and restore-name/code policy;
+- fractional total-quantity policy, including matrix compatibility, historical data, list/overview/PDF/issue behavior, and migration;
+- finished-measurement editing with stable size/POM identity and explicit persistence policy;
+- company common color library with tenant ownership and WorkOrder snapshot rules.
 
-- add, rename, archive, restore, and reorder size and color structure on draft WorkOrders;
-- require canonical expectedVersion, conflict handling, failed-save restore, tenant/permission enforcement, and one-action/one-request behavior;
-- preserve the completed read-only screen as a sibling boundary instead of folding write state back into it.
+None of these candidates is implied by alpha.59 completion. Factory, AI image generation, production mutation, R2 mutation, dependency/native/EAS work, and unrelated expansion remain outside the boundary unless a future owner-approved Delta explicitly includes them.
 
-Explicitly separate later scope:
-
-- quantity-matrix editing, finished-measurement editing, templates, and automatic total-quantity changes remain excluded;
-- schema/migration, Factory, production deployment/mutation, dependency/native/EAS, and unrelated feature expansion remain excluded unless the future Delta explicitly establishes a separate authority.
-
-Alpha.59 does not start merely because it is listed here. It begins only with its owner-approved self-executing Version Delta and the final synchronized alpha.58 HEAD.
+Alpha.60 begins only with an owner-approved self-executing Version Delta based on the final synchronized alpha.59 HEAD.

@@ -45,12 +45,18 @@ export const WORK_ORDER_V2_LIST_SQL = `
     LIMIT $7
   ), page_rows AS MATERIALIZED (
     SELECT w.id, w.document_number_base, w.product_name, w.status, w.due_date::text AS due_date,
-           w.total_quantity, w.current_revision_id, w.representative_image_id,
+           w.current_revision_id, w.representative_image_id,
            w.updated_at, r.revision_no, r.estimated_total
     FROM page_ids p
     JOIN work_orders w ON w.id = p.id AND w.company_id = $1
     LEFT JOIN work_order_revisions r
       ON r.id = w.current_revision_id AND r.company_id = w.company_id
+  ), quantity_totals AS (
+    SELECT q.revision_id, COALESCE(sum(q.quantity), 0)::integer AS total_quantity
+    FROM color_size_quantities q
+    WHERE q.company_id = $1
+      AND q.revision_id IN (SELECT current_revision_id FROM page_rows WHERE current_revision_id IS NOT NULL)
+    GROUP BY q.revision_id
   ), material_counts AS (
     SELECT m.revision_id,
            count(*) FILTER (
@@ -84,7 +90,8 @@ export const WORK_ORDER_V2_LIST_SQL = `
     WHERE row_number = 1
   )
   SELECT p.id, p.document_number_base, p.product_name, p.status, p.due_date,
-         p.total_quantity, p.revision_no, p.estimated_total, p.updated_at,
+         COALESCE(qt.total_quantity, 0)::integer AS total_quantity,
+         p.revision_no, p.estimated_total, p.updated_at,
          i.id AS image_id, i.title AS image_title,
          COALESCE(i.thumbnail_object_key, i.storage_object_key) AS image_key,
          COALESCE(m.incomplete_fabric_count, 0)::integer AS incomplete_fabric_count,
@@ -94,6 +101,7 @@ export const WORK_ORDER_V2_LIST_SQL = `
   FROM page_rows p
   LEFT JOIN work_order_images i
     ON i.id = p.representative_image_id AND i.company_id = $1 AND i.deleted_at IS NULL
+  LEFT JOIN quantity_totals qt ON qt.revision_id = p.current_revision_id
   LEFT JOIN material_counts m ON m.revision_id = p.current_revision_id
   LEFT JOIN process_counts pc ON pc.revision_id = p.current_revision_id
   LEFT JOIN latest_documents ld ON ld.work_order_id = p.id

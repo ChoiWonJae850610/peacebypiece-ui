@@ -61,6 +61,8 @@ type IssueTargetRow = DbQueryResultRow & {
   readonly item_code: string | null;
   readonly due_date: string | null;
   readonly total_quantity: number | string;
+  readonly revision_total_quantity: number | string;
+  readonly matrix_total_quantity: number | string;
   readonly document_number_base: string | null;
   readonly company_code: string | null;
   readonly business_timezone: string;
@@ -179,7 +181,12 @@ export async function issueWorkOrderRevisionV2(input: {
              w.status AS work_order_status, r.revision_status,
              w.entity_version AS work_order_version, r.entity_version AS revision_version,
              w.product_name, w.product_type_code, w.season_code, w.item_code,
-             w.due_date::text AS due_date, w.total_quantity, w.document_number_base,
+             w.due_date::text AS due_date, w.total_quantity,
+             r.total_quantity_snapshot AS revision_total_quantity,
+             (SELECT COALESCE(sum(q.quantity), 0)::integer
+              FROM color_size_quantities q
+              WHERE q.company_id = w.company_id AND q.revision_id = r.id) AS matrix_total_quantity,
+             w.document_number_base,
              settings.document_code AS company_code,
              settings.business_timezone,
              timezone(settings.business_timezone, now())::date::text AS business_date,
@@ -217,8 +224,12 @@ export async function issueWorkOrderRevisionV2(input: {
     const companyCode = normalizedCode(target.company_code);
     const seasonCode = normalizedCode(target.season_code);
     const itemCode = normalizedCode(target.item_code);
+    const matrixTotalQuantity = integer(target.matrix_total_quantity);
     if (!target.product_name.trim() || !target.product_type_code?.trim() || !target.due_date
-      || integer(target.total_quantity) < 1 || !companyCode || !seasonCode || !itemCode
+      || matrixTotalQuantity < 1
+      || integer(target.total_quantity) !== matrixTotalQuantity
+      || integer(target.revision_total_quantity) !== matrixTotalQuantity
+      || !companyCode || !seasonCode || !itemCode
       || integer(target.fabric_count) < 1 || integer(target.accessory_count) < 1) {
       throw new WorkOrderIssueRepositoryError("precondition_failed", workOrderVersion);
     }

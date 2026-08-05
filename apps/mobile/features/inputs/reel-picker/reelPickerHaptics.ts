@@ -13,8 +13,15 @@ export function createSelectionTickGate(minimumIntervalMs = 70) {
   };
 }
 
+export function createSelectionHapticAdapter(vibrate: (durationMs: number) => void): ReelHapticAdapter {
+  const selectionTickAllowed = createSelectionTickGate();
+  return {
+    selectionChanged(index, at) {
+      if (selectionTickAllowed(index, at)) vibrate(8);
+    },
+  };
+}
+
 export const noOpReelHaptics: ReelHapticAdapter = {
-  selectionChanged() {
-    // The installed Development Build has no approved haptics module.
-  },
+  selectionChanged() {},
 };

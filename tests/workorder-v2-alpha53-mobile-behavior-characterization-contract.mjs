@@ -20,6 +20,7 @@ import {
   validateBasicInfoDraft,
   validateMaterialDraft,
 } from "../apps/mobile/domain/workOrderValidation.ts";
+import fs from "node:fs";
 
 assert.equal(prepareNumericDraftOnFocus("0"), "");
 assert.equal(normalizeNumericDraft("05"), "5");
@@ -30,8 +31,12 @@ assert.equal(formatKoreanCalendarDate("2026-07-30"), "2026년 7월 30일");
 assert.equal(formatKoreanCalendarDate("not-a-date"), "미정");
 assert.equal(formatQuantity("0.500", "yd"), "0.5 yd");
 assert.equal(formatWon("15000.00"), "15,000원");
-assert.equal(calculateOrderQuantity({ requiredQuantity: "12", allowanceQuantity: "1.5", inventoryUsageQuantity: "2" }), "11.5");
-assert.equal(calculateMaterialAmount("11.5", "15000"), "172500.00");
+assert.equal(calculateOrderQuantity({ requiredQuantity: "12", allowanceQuantity: "1.5", inventoryUsageQuantity: "2" }), "13.5");
+assert.equal(calculateMaterialAmount("13.5", "15000"), "202500.00");
+assert.match(
+  fs.readFileSync("docs/project/app-v2/51-mobile-core-inline-ux-calculation-list-date-evidence.md", "utf8"),
+  /max\(required \+ allowance - inventory, 0\)/,
+);
 
 const detail = {
   header: { productName: "A", dueDate: "2026-07-30", totalQuantity: 10 },
@@ -65,7 +70,7 @@ assert.deepEqual(validateMaterialDraft(material), {});
 const normalized = normalizeMaterialDraft(material);
 assert.equal(normalized.requiredQuantity, "12");
 assert.equal(normalized.allowanceQuantity, "1.5");
-assert.equal(normalized.orderQuantity, "11.5");
+assert.equal(normalized.orderQuantity, "13.5");
 assert.deepEqual(materialPatch(normalized, { ...normalized, memo: "changed", orderQuantity: "999" }), { memo: "changed" });
 assert.deepEqual(materialPatch(normalized, normalized), {});
 

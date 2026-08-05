@@ -193,7 +193,7 @@ export default function WorkOrderImageGallery(props: Props) {
             <Text style={styles.carouselIndex}>{selectedIndex + 1} / {props.images.length}</Text>
             {selected.isRepresentative ? (
               <View style={styles.badge}><Star color="#fff" fill="#fff" size={11} /><Text style={styles.badgeText}>대표</Text></View>
-            ) : <Text style={styles.notRepresentative}>대표 아님</Text>}
+            ) : null}
           </View>
           <View {...swipeResponder.panHandlers} style={styles.preview} testID="work-order-image-swipe-surface">
             <Pressable accessibilityLabel="이미지 전체화면으로 보기" onPress={() => setFullscreen(true)} style={styles.previewPressable}>
@@ -311,7 +311,7 @@ export default function WorkOrderImageGallery(props: Props) {
               value={memoDraft}
             />
             <Text style={styles.memoCounter} testID="work-order-factory-delivery-memo-counter">
-              {memoLength} / {FACTORY_DELIVERY_MEMO_MAX_LENGTH}
+              {memoLength}자 / {FACTORY_DELIVERY_MEMO_MAX_LENGTH}자
             </Text>
           </>
         ) : (
@@ -356,7 +356,6 @@ const styles = StyleSheet.create({
   carouselIndex: { color: "#4d5563", fontFamily: WAFL_FONTS.bold, fontSize: 11 },
   badge: { alignItems: "center", backgroundColor: "#9b4a27", borderRadius: 999, flexDirection: "row", gap: 3, paddingHorizontal: 7, paddingVertical: 4 },
   badgeText: { color: "#fff", fontFamily: WAFL_FONTS.bold, fontSize: 9 },
-  notRepresentative: { color: "#8a7d70", fontFamily: WAFL_FONTS.medium, fontSize: 9 },
   preview: { backgroundColor: "#eee7dc", borderRadius: 11, height: 248, overflow: "hidden", position: "relative", width: "100%" },
   previewPressable: { height: "100%", width: "100%" },
   image: { height: "100%", width: "100%" },

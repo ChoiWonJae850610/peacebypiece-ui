@@ -1,5 +1,5 @@
-export type SizeColorRequestAction = "initial" | "retry";
-export type SizeColorRequestStatus = "not-loaded" | "loading" | "retrying" | "empty" | "loaded" | "error";
+export type SizeColorRequestAction = "initial" | "retry" | "refresh";
+export type SizeColorRequestStatus = "not-loaded" | "loading" | "retrying" | "refreshing" | "empty" | "loaded" | "error";
 
 export type SizeColorRequestIdentity = {
   readonly workOrderId: string;
@@ -42,6 +42,7 @@ export function shouldStartSizeColorRequest(
 ) {
   if (inFlight) return false;
   if (action === "retry") return status === "error";
+  if (action === "refresh") return status === "loaded" || status === "empty" || status === "error";
   return status === "not-loaded";
 }
 

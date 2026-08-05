@@ -179,15 +179,17 @@ function canonicalOrderQuantity(input: {
     const [whole, fraction = ""] = String(value).split(".");
     return BigInt(whole) * BigInt(1000) + BigInt(fraction.padEnd(3, "0").slice(0, 3));
   };
-  const result = scaled(input.requiredQuantity) + scaled(input.allowanceQuantity) - scaled(input.inventoryUsageQuantity);
-  const bounded = result > BigInt(0) ? result : BigInt(0);
+  const bounded = scaled(input.requiredQuantity) + scaled(input.allowanceQuantity);
   const whole = bounded / BigInt(1000);
   const fraction = (bounded % BigInt(1000)).toString().padStart(3, "0").replace(/0+$/, "");
   return `${whole}${fraction ? `.${fraction}` : ""}`;
 }
 
-function assertMaterialOrderReady(target: MaterialTargetRow) {
-  const readiness = evaluateMaterialOrderReadiness({
+function assertMaterialOrderReady(
+  target: MaterialTargetRow,
+  calculationPolicy: "legacy-inventory" | "draft-required-plus-allowance" | "compatible-completion",
+) {
+  const evaluate = (policy: "legacy-inventory" | "draft-required-plus-allowance") => evaluateMaterialOrderReadiness({
     requiredQuantity: target.required_quantity,
     allowanceQuantity: target.allowance_quantity,
     inventoryUsageQuantity: target.inventory_usage_quantity,
@@ -195,7 +197,12 @@ function assertMaterialOrderReady(target: MaterialTargetRow) {
     unitCode: target.unit_code,
     supplierPartnerId: target.supplier_partner_id,
     unitPrice: target.unit_price,
+    calculationPolicy: policy,
   });
+  const readiness = calculationPolicy === "compatible-completion"
+    ? [evaluate("draft-required-plus-allowance"), evaluate("legacy-inventory")].find((candidate) => candidate.ready)
+      ?? evaluate("draft-required-plus-allowance")
+    : evaluate(calculationPolicy);
   if (!readiness.ready) {
     throw new MaterialCommandRepositoryError(
       "order_not_ready",
@@ -773,7 +780,8 @@ export async function transitionMaterialOrderV2(input: {
     if (target.archived_at !== null || target.material_status !== config.from) {
       throw new MaterialCommandRepositoryError("invalid_state_transition", Number(target.work_order_version));
     }
-    if (input.kind === "request" || input.kind === "complete") assertMaterialOrderReady(target);
+    if (input.kind === "request") assertMaterialOrderReady(target, "draft-required-plus-allowance");
+    if (input.kind === "complete") assertMaterialOrderReady(target, "compatible-completion");
     if (input.kind === "complete" && !target.requested_at) {
       throw new MaterialCommandRepositoryError("order_not_ready", Number(target.work_order_version));
     }

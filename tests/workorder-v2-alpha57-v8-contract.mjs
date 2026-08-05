@@ -29,7 +29,7 @@ const gallery = read("apps/mobile/features/work-orders/images/WorkOrderImageGall
 assert.match(gallery, /work-order-factory-delivery-memo-input/);
 assert.match(gallery, /onEndEditing=.*saveMemoInline/s);
 assert.match(gallery, /clampFactoryDeliveryMemo/);
-assert.match(gallery, /memoLength\}\s*\/\s*\{FACTORY_DELIVERY_MEMO_MAX_LENGTH\}/);
+assert.match(gallery, /\{memoLength\}자\s*\/\s*\{FACTORY_DELIVERY_MEMO_MAX_LENGTH\}자/);
 assert.match(gallery, /onSaveMemo:\s*\(memo: string\) => Promise<boolean>/);
 assert.doesNotMatch(gallery, /공장 전달 메모 편집 취소|공장 전달 메모 저장|styles\.memoAction\b|>편집</);
 

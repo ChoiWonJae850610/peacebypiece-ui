@@ -159,6 +159,9 @@ export type WorkOrderSizeColorMatrix = {
   readonly quantityCells: readonly WorkOrderQuantityCell[];
   readonly matrixTotal: string;
   readonly expectedTotal: string;
+  readonly workOrderTotal: string;
+  readonly revisionTotal: string;
+  readonly projectionsMatch: boolean;
   readonly totalsMatch: boolean;
   readonly memoFallback: string | null;
   readonly entityVersion: number;
@@ -194,6 +197,23 @@ export type WorkOrderSizeSpec = {
 export type WorkOrderSizeColorBundle = {
   readonly matrix: WorkOrderSizeColorMatrix;
   readonly specifications: WorkOrderSizeSpec;
+};
+
+export type SizeColorStructureCommandBase = {
+  readonly clientRequestId: string;
+  readonly expectedVersion: number;
+};
+
+export type SizeColorStructureCommandResult = {
+  readonly workOrderId: string;
+  readonly revisionId: string;
+  readonly targetKind: "size" | "color" | "quantity";
+  readonly targetId: string | null;
+  readonly colorId?: string;
+  readonly sizeRowId?: string;
+  readonly quantity?: number;
+  readonly totalQuantity?: number;
+  readonly nextVersion: number;
 };
 
 export type WorkOrderImageUploadTarget = {

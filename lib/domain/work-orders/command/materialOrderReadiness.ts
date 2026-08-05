@@ -57,6 +57,7 @@ export function evaluateMaterialOrderReadiness(input: {
   readonly unitCode: unknown;
   readonly supplierPartnerId: unknown;
   readonly unitPrice: DecimalInput;
+  readonly calculationPolicy?: "legacy-inventory" | "draft-required-plus-allowance";
 }): MaterialOrderReadiness {
   const blockers: MaterialOrderReadinessBlocker[] = [];
   const required = parseScaled(input.requiredQuantity, 3);
@@ -77,7 +78,9 @@ export function evaluateMaterialOrderReadiness(input: {
   }
 
   const demand = required + allowance;
-  const calculatedOrderQuantity = demand > stock ? demand - stock : BigInt(0);
+  const calculatedOrderQuantity = input.calculationPolicy === "draft-required-plus-allowance"
+    ? demand
+    : demand > stock ? demand - stock : BigInt(0);
   if (demand === BigInt(0)) addBlocker(blockers, "orderQuantity", "DEMAND_REQUIRED");
   if (storedOrderQuantity !== null && storedOrderQuantity !== calculatedOrderQuantity) {
     addBlocker(blockers, "orderQuantity", "CALCULATION_MISMATCH");
@@ -87,7 +90,10 @@ export function evaluateMaterialOrderReadiness(input: {
     ? String(input.unitPrice).trim()
     : "";
   const unitPrice = unitPriceText ? parseScaled(unitPriceText, 2) : null;
-  const stockCovered = demand > BigInt(0) && stock >= demand && calculatedOrderQuantity === BigInt(0);
+  const stockCovered = input.calculationPolicy !== "draft-required-plus-allowance"
+    && demand > BigInt(0)
+    && stock >= demand
+    && calculatedOrderQuantity === BigInt(0);
 
   if (stockCovered) {
     if (unitPriceText && unitPrice === null) addBlocker(blockers, "unitPrice", "INVALID");

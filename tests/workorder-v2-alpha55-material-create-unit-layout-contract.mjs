@@ -64,7 +64,7 @@ assert.match(quantityComponent, /flexWrap: "nowrap"/);
 assert.match(quantityComponent, /value:[\s\S]*?flexShrink: 0/);
 assert.match(quantityComponent, /unit:[\s\S]*?flexShrink: 0/);
 assert.match(reelValue, /readonly displayContent\?: ReactNode/);
-assert.match(materials, /field === "unitCode" \? undefined : \([\s\S]*?<MaterialQuantityValue/);
+assert.match(materials, /const displayContent = field === "unitCode" \? undefined : \([\s\S]*?<MaterialQuantityValue/);
 assert.match(materials, /testID="material-order-quantity-calculated"[\s\S]*?unitCode=\{line\.unitCode\}/);
 assert.match(editor, /<MaterialQuantityValue[\s\S]*?value=\{calculatedOrderQuantity\}/);
 

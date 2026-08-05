@@ -121,8 +121,8 @@ assert.equal(images.includes(">작업지시서 이미지</Text>"), false);
 assert.equal(sizeColor.includes(">사이즈·색상</Text>"), false);
 assert.equal(overview.includes('<Section title="기본정보">'), false);
 for (const retainedMeaning of [
-  "색상×사이즈 생산수량",
-  "완성 치수",
+  "색상×사이즈",
+  "완성 치수표",
   "등록된 사이즈와 색상이 없습니다.",
   "다시 시도",
 ]) assert.ok(renderedSources.includes(retainedMeaning), `operational UI meaning missing: ${retainedMeaning}`);

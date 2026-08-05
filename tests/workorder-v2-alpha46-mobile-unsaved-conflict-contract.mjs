@@ -15,6 +15,7 @@ const datePicker = read("apps/mobile/components/InlineDatePicker.tsx");
 const focusedVisibility = read("apps/mobile/hooks/useFocusedFieldVisibility.ts");
 const client = read("apps/mobile/lib/apiClient.ts");
 const reelPicker = read("apps/mobile/features/inputs/reel-picker/WaflReelPickerSheet.tsx");
+const inputShell = read("apps/mobile/features/inputs/WaflInputSheet.tsx");
 
 assert.doesNotMatch(app, /저장하지 않은 변경사항이 있습니다\.|계속 편집|변경사항 버리기|function confirmDiscard/);
 assert.match(app, /function leaveWithDraftPolicy\(intent: DraftExitIntent, onProceed: \(\) => void\)/);
@@ -49,12 +50,12 @@ assert.match(
   /const saveDisabled = \(!dirty && !nativeDirty\) \|\| saving \|\| finalizing/,
 );
 assert.match(inlineField, /disabled=\{saveDisabled\}/);
-assert.match(detail, /<WaflReelPickerSheet[\s\S]*field="totalQuantity"[\s\S]*kind="integer"/);
+assert.match(detail, /label="총 수량"[\s\S]{0,140}header\.totalQuantity\.toLocaleString/);
+assert.doesNotMatch(detail, /field="totalQuantity"|overview-inline-total-quantity/);
 assert.match(detail, /onCancel=\{\(\) => \{[\s\S]*props\.onCancelEdit\(\)/);
-assert.match(detail, /onApply=\{\(value\) => \{[\s\S]*props\.onSave\(\{ totalQuantity: value \}\)/);
-assert.match(reelPicker, /keyboardType=\{kind === "integer" \? "number-pad" : "decimal-pad"\}/);
-assert.match(reelPicker, /accessibilityLabel="변경 취소"/);
-assert.match(reelPicker, /accessibilityLabel="변경 저장"/);
+assert.match(reelPicker, /keyboardType=\{integerOnly \? "number-pad" : "decimal-pad"\}/);
+assert.match(inputShell, /cancelAccessibilityLabel = "변경 취소"/);
+assert.match(inputShell, /confirmAccessibilityLabel = "변경 저장"/);
 assert.match(detail, /<InlineDatePicker/);
 assert.match(datePicker, /testID="overview-inline-due-date"/);
 assert.match(detail, /automaticallyAdjustKeyboardInsets/);
