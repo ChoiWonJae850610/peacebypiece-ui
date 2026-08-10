@@ -12,21 +12,28 @@ import {
   addColorStructureV2,
   addSizeStructureV2,
   COLOR_STRUCTURE_CREATE_COMMAND_CODE,
+  COLOR_STRUCTURE_DELETE_COMMAND_CODE,
   COLOR_STRUCTURE_PATCH_COMMAND_CODE,
   COLOR_STRUCTURE_REORDER_COMMAND_CODE,
   COLOR_SIZE_QUANTITY_UPSERT_COMMAND_CODE,
+  deleteColorStructureV2,
+  deleteSizeStructureV2,
   patchColorStructureV2,
   renameSizeStructureV2,
   reorderColorStructuresV2,
   reorderSizeStructuresV2,
   upsertColorSizeQuantityV2,
   SIZE_STRUCTURE_CREATE_COMMAND_CODE,
+  SIZE_STRUCTURE_DELETE_COMMAND_CODE,
   SIZE_STRUCTURE_RENAME_COMMAND_CODE,
   SIZE_STRUCTURE_REORDER_COMMAND_CODE,
   SizeColorStructureRepositoryError,
   type SizeColorStructureRepositoryResult,
 } from "@/lib/domain/work-orders/command/sizeColorStructureCommandRepository";
-import { WAFL_V2_ALPHA59_SIZE_COLOR_STRUCTURE_MUTATION_APPROVAL } from "@/lib/domain/work-orders/command/runtimeGuard";
+import {
+  WAFL_V2_ALPHA59_SIZE_COLOR_STRUCTURE_MUTATION_APPROVAL,
+  WAFL_V2_ALPHA60_DRAFT_CHILD_HARD_DELETE_MUTATION_APPROVAL,
+} from "@/lib/domain/work-orders/command/runtimeGuard";
 import type {
   ColorId,
   CompanyMemberId,
@@ -125,7 +132,12 @@ function prepare(input: CommonInput, commandCode: string, request: unknown) {
     correlationId: input.correlationId,
     permissionCode: "workorder.update",
   });
-  requireCommandMutationApproval(WAFL_V2_ALPHA59_SIZE_COLOR_STRUCTURE_MUTATION_APPROVAL);
+  const configuredApproval = process.env.WAFL_V2_COMMAND_MUTATION_APPROVED;
+  requireCommandMutationApproval(
+    configuredApproval === WAFL_V2_ALPHA60_DRAFT_CHILD_HARD_DELETE_MUTATION_APPROVAL
+      ? WAFL_V2_ALPHA60_DRAFT_CHILD_HARD_DELETE_MUTATION_APPROVAL
+      : WAFL_V2_ALPHA59_SIZE_COLOR_STRUCTURE_MUTATION_APPROVAL,
+  );
   const scopedIdempotencyKeyHash = sha256([
     commandCode,
     tenantScope.companyId,
@@ -182,6 +194,18 @@ export function renameSizeStructure(input: CommonInput & {
   }));
 }
 
+export function deleteSizeStructure(input: CommonInput & {
+  readonly sizeRowId: string;
+}) {
+  assertUuid(input.sizeRowId);
+  const common = prepare(input, SIZE_STRUCTURE_DELETE_COMMAND_CODE, {
+    workOrderId: input.workOrderId,
+    sizeRowId: input.sizeRowId,
+    expectedVersion: input.command.expectedVersion,
+  });
+  return mapped(() => deleteSizeStructureV2({ ...common, sizeRowId: input.sizeRowId as SizeRowId }));
+}
+
 export function reorderSizeStructures(input: CommonInput & {
   readonly command: CommonInput["command"] & { readonly orderedSizeRowIds: readonly SizeRowId[] };
 }) {
@@ -229,6 +253,18 @@ export function patchColorStructure(input: CommonInput & {
     colorId: input.colorId as ColorId,
     patch: input.command.patch,
   }));
+}
+
+export function deleteColorStructure(input: CommonInput & {
+  readonly colorId: string;
+}) {
+  assertUuid(input.colorId);
+  const common = prepare(input, COLOR_STRUCTURE_DELETE_COMMAND_CODE, {
+    workOrderId: input.workOrderId,
+    colorId: input.colorId,
+    expectedVersion: input.command.expectedVersion,
+  });
+  return mapped(() => deleteColorStructureV2({ ...common, colorId: input.colorId as ColorId }));
 }
 
 export function reorderColorStructures(input: CommonInput & {

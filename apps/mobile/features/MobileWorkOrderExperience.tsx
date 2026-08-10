@@ -5,6 +5,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 
 import MobileConnectScreen from "@/components/MobileConnectScreen";
 import WaflToastHost, { type WaflToastMessage } from "@/components/WaflToastHost";
+import { confirmWaflDestructiveAction } from "@/features/feedback/confirmWaflDestructiveAction";
 import WorkOrderDetailOverview, {
   type BasicInfoInlineField,
   type BasicInfoSaveState,
@@ -763,10 +764,11 @@ export default function MobileWorkOrderExperience() {
 
   function requestDeleteAttachment(attachment: WorkOrderAttachmentAsset) {
     if (imageBusy) return;
-    Alert.alert("첨부파일을 삭제할까요?", attachment.filename, [
-      { text: "취소", style: "cancel" },
-      { text: "삭제", style: "destructive", onPress: () => void deleteAttachment(attachment) },
-    ]);
+    confirmWaflDestructiveAction({
+      title: "첨부파일을 삭제할까요?",
+      message: attachment.filename,
+      onConfirm: () => void deleteAttachment(attachment),
+    });
   }
 
   async function openAttachment(attachment: WorkOrderAttachmentAsset) {
@@ -866,16 +868,13 @@ export default function MobileWorkOrderExperience() {
 
   function requestDeleteImage(image: WorkOrderImageAsset) {
     if (imageBusy) return;
-    Alert.alert(
-      "이미지를 삭제할까요?",
-      image.isRepresentative
+    confirmWaflDestructiveAction({
+      title: "이미지를 삭제할까요?",
+      message: image.isRepresentative
         ? "대표이미지를 삭제하면 대표가 없는 상태로 돌아갑니다."
         : "삭제한 이미지는 앱에서 더 이상 표시되지 않습니다.",
-      [
-        { text: "취소", style: "cancel" },
-        { text: "삭제", style: "destructive", onPress: () => void deleteImage(image) },
-      ],
-    );
+      onConfirm: () => void deleteImage(image),
+    });
   }
 
   async function loadMaterials(workOrderId: string, materialType: MaterialType, action: "initial" | "retry" | "more") {
@@ -909,10 +908,7 @@ export default function MobileWorkOrderExperience() {
     }));
 
     try {
-      const [page, archivedPage] = await Promise.all([
-        workOrderQueryController.materials(workOrderId, materialType, cursor, "active"),
-        action === "more" ? Promise.resolve(null) : workOrderQueryController.materials(workOrderId, materialType, null, "archived"),
-      ]);
+      const page = await workOrderQueryController.materials(workOrderId, materialType, cursor, "active");
       if (
         materialSessionGeneration.current !== sessionGeneration
         || materialRequests.current.get(cacheKey) !== requestToken
@@ -936,12 +932,6 @@ export default function MobileWorkOrderExperience() {
         hasMore: page.hasMore,
         errorMessage: null,
         touchedAt: Date.now(),
-        archivedStatus: archivedPage ? (archivedPage.items.length === 0 ? "empty" : "loaded") : existing?.archivedStatus,
-        archivedItems: archivedPage?.items ?? existing?.archivedItems,
-        archivedNextCursor: archivedPage?.nextCursor ?? existing?.archivedNextCursor,
-        archivedHasMore: archivedPage?.hasMore ?? existing?.archivedHasMore,
-        archivedTotalCount: archivedPage?.totalCount ?? existing?.archivedTotalCount,
-        archivedErrorMessage: null,
       }));
     } catch (error) {
       if (
@@ -1150,7 +1140,7 @@ export default function MobileWorkOrderExperience() {
     return true;
   }
 
-  async function executeMaterialLifecycle(line: WorkOrderMaterialLine) {
+  async function executeMaterialDelete(line: WorkOrderMaterialLine) {
     const currentDetail = detail;
     const label = materialLabel(line.materialType);
     if (
@@ -1167,7 +1157,7 @@ export default function MobileWorkOrderExperience() {
         clientRequestId: nextMaterialRequestIdentity("client"),
         expectedVersion: currentDetail.header.entityVersion,
       };
-      const result = await workOrderMutationController.archiveMaterial(
+      const result = await workOrderMutationController.deleteMaterial(
         currentDetail.header.id,
         line.id,
         command,
@@ -1181,6 +1171,7 @@ export default function MobileWorkOrderExperience() {
         result.nextVersion !== refreshed.header.entityVersion
         || activePage.entityVersion !== result.nextVersion
         || result.result.materialType !== line.materialType
+        || result.result.deleted !== true
         || activePage.materialType !== line.materialType
         || refreshed.header.id !== currentDetail.header.id
       ) throw new MobileApiError({ code: "MALFORMED_RESPONSE", message: `${label} lifecycle 최신 상태를 확인할 수 없습니다.` });
@@ -1190,6 +1181,7 @@ export default function MobileWorkOrderExperience() {
         || selectedWorkOrderId.current !== currentDetail.header.id
       ) return;
       applyRefreshedMaterialSnapshot(currentDetail.header.id, line.materialType, refreshed, activePage);
+      if (materialEditorRef.current?.materialLineId === line.id) closeMaterialEditorSession();
       setMaterialSaveNotice(`${label}를 삭제했습니다.`);
     } catch (error) {
       if (materialSessionGeneration.current !== sessionGeneration || materialLifecycleSequence.current !== requestToken) return;
@@ -1300,17 +1292,15 @@ export default function MobileWorkOrderExperience() {
     });
   }
 
-  function requestArchiveMaterial(line: WorkOrderMaterialLine) {
+  function requestDeleteMaterial(line: WorkOrderMaterialLine) {
+    if (!line.deletable) return;
     const label = materialLabel(line.materialType);
     leaveWithDraftPolicy("feature", () => {
-      Alert.alert(
-        `${label} 삭제`,
-        `“${line.name}” ${label}를 작업 목록에서 제거합니다. 변경 이력은 안전하게 보존됩니다.`,
-        [
-          { text: "취소", style: "cancel" },
-          { text: "삭제", style: "destructive", onPress: () => void executeMaterialLifecycle(line) },
-        ],
-      );
+      confirmWaflDestructiveAction({
+        title: `${label} 영구 삭제`,
+        message: `“${line.name}” ${label}를 이 작업지시서 초안에서 영구 삭제합니다. 발주 이력이 없는 항목만 삭제할 수 있습니다.`,
+        onConfirm: () => void executeMaterialDelete(line),
+      });
     });
   }
 
@@ -1822,7 +1812,7 @@ export default function MobileWorkOrderExperience() {
       onBeginEdit={beginBasicInfoEdit}
       onBeginMaterialCreate={beginMaterialCreate}
       onBeginMaterialEdit={beginMaterialEdit}
-      onArchiveMaterial={requestArchiveMaterial}
+      onDeleteMaterial={requestDeleteMaterial}
       onMaterialOrderAction={requestMaterialOrderAction}
       onCancelEdit={cancelBasicInfoEdit}
       onCancelMaterialEditor={cancelMaterialEditor}

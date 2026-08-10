@@ -2,6 +2,9 @@ import {
   archiveWorkOrderMaterial,
   completeWorkOrderImageUpload,
   createWorkOrderMaterial,
+  deleteWorkOrderColor,
+  deleteWorkOrderMaterial,
+  deleteWorkOrderSize,
   deleteWorkOrderImage,
   deleteWorkOrderAttachment,
   patchWorkOrderBasicInfo,
@@ -37,9 +40,11 @@ export const workOrderMutationController = {
   },
   addSize: addWorkOrderSize,
   renameSize: renameWorkOrderSize,
+  deleteSize: deleteWorkOrderSize,
   reorderSizes: reorderWorkOrderSizes,
   addColor: addWorkOrderColor,
   patchColor: patchWorkOrderColor,
+  deleteColor: deleteWorkOrderColor,
   reorderColors: reorderWorkOrderColors,
   upsertQuantity: upsertWorkOrderColorSizeQuantity,
   createMaterial(workOrderId: string, command: CreateMaterialLineInput, idempotencyKey: string) {
@@ -47,6 +52,9 @@ export const workOrderMutationController = {
   },
   updateMaterial(workOrderId: string, materialLineId: string, command: PatchMaterialLineInput) {
     return patchWorkOrderMaterial(workOrderId, materialLineId, command);
+  },
+  deleteMaterial(workOrderId: string, materialLineId: string, command: MaterialLifecycleCommandInput, idempotencyKey: string) {
+    return deleteWorkOrderMaterial(workOrderId, materialLineId, command, idempotencyKey);
   },
   archiveMaterial(workOrderId: string, materialLineId: string, command: MaterialLifecycleCommandInput, idempotencyKey: string) {
     return archiveWorkOrderMaterial(workOrderId, materialLineId, command, idempotencyKey);

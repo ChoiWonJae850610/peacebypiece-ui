@@ -14,6 +14,7 @@ const VERSION = "2.0.0-alpha.46";
 const REQUIRED_PREFIX = "wafl-fn";
 const REQUIRED_CONFIRMATION = "EXECUTE WAFL V2 ALPHA46 QA DRAFT CREATE";
 const REQUIRED_ALPHA59_ISOLATED_CONFIRMATION = "EXECUTE WAFL V2 ALPHA59 ISOLATED QA DRAFT CREATE";
+const REQUIRED_ALPHA60_ISOLATED_CONFIRMATION = "EXECUTE WAFL V2 ALPHA60 ISOLATED QA DRAFT CREATE";
 const REQUIRED_CREATE_APPROVAL = "2.0.0-alpha.25-dev-test-command-runtime";
 const ALLOWED_RUNTIMES = new Set(["development", "dev", "local", "test", "demo"]);
 const COMPANY_A = "wafl-fn-company-a";
@@ -36,15 +37,18 @@ export function resolveApprovedDraftTarget(environment = process.env) {
     });
   }
 
-  if (environment.WAFL_V2_CONFIRMATION !== REQUIRED_ALPHA59_ISOLATED_CONFIRMATION) fail("isolated-confirmation-mismatch");
-  if (!/^QA A59 picker drag isolated [0-9]{8}-[A-F0-9]{8}$/.test(temporaryName)) fail("isolated-name-prefix-mismatch");
+  const alpha59 = /^QA A59 picker drag isolated [0-9]{8}-[A-F0-9]{8}$/.test(temporaryName);
+  const alpha60 = /^QA A60 draft child hard delete [0-9]{8}-[A-F0-9]{8}$/.test(temporaryName);
+  if (!alpha59 && !alpha60) fail("isolated-name-prefix-mismatch");
+  const requiredConfirmation = alpha60 ? REQUIRED_ALPHA60_ISOLATED_CONFIRMATION : REQUIRED_ALPHA59_ISOLATED_CONFIRMATION;
+  if (environment.WAFL_V2_CONFIRMATION !== requiredConfirmation) fail("isolated-confirmation-mismatch");
   if (String(environment.WAFL_V2_TEMPORARY_DRAFT_MARKER ?? "").trim() !== temporaryName) fail("isolated-marker-mismatch");
   const clientRequestId = String(environment.WAFL_V2_TEMPORARY_DRAFT_CLIENT_REQUEST_ID ?? "").trim();
   const idempotencyKey = String(environment.WAFL_V2_TEMPORARY_DRAFT_IDEMPOTENCY_KEY ?? "").trim();
-  if (!/^a59-isolated-create-[a-f0-9]{8}$/.test(clientRequestId)) fail("isolated-client-request-id-invalid");
+  if (!(alpha60 ? /^a60-isolated-create-[a-f0-9]{8}$/ : /^a59-isolated-create-[a-f0-9]{8}$/).test(clientRequestId)) fail("isolated-client-request-id-invalid");
   if (idempotencyKey !== clientRequestId) fail("isolated-idempotency-key-mismatch");
   return Object.freeze({
-    mode: "alpha59-isolated",
+    mode: alpha60 ? "alpha60-isolated" : "alpha59-isolated",
     productName: temporaryName,
     dueDate: null,
     totalQuantity: 0,
@@ -73,6 +77,7 @@ function assertGuard(target) {
   if (String(process.env.WAFL_V2_TEST_PREFIX ?? "").trim() !== REQUIRED_PREFIX) fail("fixture-prefix-mismatch");
   if (target.mode === "alpha46-retained" && process.env.WAFL_V2_CONFIRMATION !== REQUIRED_CONFIRMATION) fail("confirmation-mismatch");
   if (target.mode === "alpha59-isolated" && process.env.WAFL_V2_CONFIRMATION !== REQUIRED_ALPHA59_ISOLATED_CONFIRMATION) fail("isolated-confirmation-mismatch");
+  if (target.mode === "alpha60-isolated" && process.env.WAFL_V2_CONFIRMATION !== REQUIRED_ALPHA60_ISOLATED_CONFIRMATION) fail("isolated-confirmation-mismatch");
   if (process.env.WAFL_V2_READ_API_ENABLED !== "1" || process.env.WAFL_V2_READ_APPROVED !== "1") fail("read-api-guard-missing");
   if (process.env.WAFL_V2_COMMAND_API_ENABLED !== "1") fail("command-api-disabled");
   if (process.env.WAFL_V2_COMMAND_MUTATION_APPROVED !== REQUIRED_CREATE_APPROVAL) fail("create-approval-mismatch");

@@ -23,7 +23,9 @@ import {
 } from "@/lib/domain/work-orders/command/commandService";
 import {
   addMaterialLineV2,
+  deleteMaterialLineV2,
   MATERIAL_CREATE_COMMAND_CODE,
+  MATERIAL_DELETE_COMMAND_CODE,
   MATERIAL_ARCHIVE_COMMAND_CODE,
   MATERIAL_RESTORE_COMMAND_CODE,
   MATERIAL_ORDER_CANCEL_COMMAND_CODE,
@@ -42,6 +44,7 @@ import {
   WAFL_V2_ALPHA56_ACCESSORY_LIFECYCLE_PARITY_MUTATION_APPROVAL,
   WAFL_V2_ALPHA57_WORK_ORDER_IMAGE_MUTATION_APPROVAL,
   WAFL_V2_ALPHA59_SIZE_COLOR_STRUCTURE_MUTATION_APPROVAL,
+  WAFL_V2_ALPHA60_DRAFT_CHILD_HARD_DELETE_MUTATION_APPROVAL,
 } from "@/lib/domain/work-orders/command/runtimeGuard";
 
 export type MaterialCommandServiceResult = {
@@ -254,6 +257,53 @@ export async function patchMaterialLine(input: {
   }
 }
 
+export async function deleteMaterialLine(input: {
+  readonly workOrderId: string;
+  readonly materialLineId: string;
+  readonly command: {
+    readonly clientRequestId: string;
+    readonly expectedVersion: EntityVersion;
+    readonly idempotencyKey: string;
+  };
+  readonly scope: WorkspaceApiCompanyScope;
+  readonly companyMemberId: string | null;
+  readonly correlationId: CorrelationId;
+}): Promise<MaterialCommandServiceResult> {
+  assertUuid(input.workOrderId);
+  assertUuid(input.materialLineId);
+  const tenantScope = createCommandTenantScope({
+    scope: input.scope, companyMemberId: input.companyMemberId,
+    correlationId: input.correlationId, permissionCode: "workorder.update",
+  });
+  requireMaterialDraftMutationApproval();
+  const keyHash = scopedKeyHash({
+    commandCode: MATERIAL_DELETE_COMMAND_CODE,
+    companyId: tenantScope.companyId,
+    companyMemberId: tenantScope.companyMemberId,
+    idempotencyKey: input.command.idempotencyKey,
+  });
+  const requestHash = sha256(JSON.stringify({
+    workOrderId: input.workOrderId,
+    materialLineId: input.materialLineId,
+    expectedVersion: input.command.expectedVersion,
+  }));
+  try {
+    return toServiceResult(await deleteMaterialLineV2({
+      scope: tenantScope,
+      assignedCompanyMemberId: assignedMemberId(input.scope),
+      workOrderId: input.workOrderId as WorkOrderId,
+      materialLineId: input.materialLineId as MaterialLineId,
+      expectedVersion: input.command.expectedVersion,
+      clientRequestId: input.command.clientRequestId,
+      scopedIdempotencyKeyHash: keyHash,
+      requestHash,
+    }));
+  } catch (error) {
+    if (error instanceof MaterialCommandRepositoryError) mapRepositoryError(error);
+    throw error;
+  }
+}
+
 export async function transitionMaterialLifecycle(input: {
   readonly workOrderId: string;
   readonly materialLineId: string;
@@ -340,6 +390,8 @@ export async function transitionMaterialOrder(input: {
         ? WAFL_V2_ALPHA57_WORK_ORDER_IMAGE_MUTATION_APPROVAL
       : configuredApproval === WAFL_V2_ALPHA59_SIZE_COLOR_STRUCTURE_MUTATION_APPROVAL
         ? WAFL_V2_ALPHA59_SIZE_COLOR_STRUCTURE_MUTATION_APPROVAL
+      : configuredApproval === WAFL_V2_ALPHA60_DRAFT_CHILD_HARD_DELETE_MUTATION_APPROVAL
+        ? WAFL_V2_ALPHA60_DRAFT_CHILD_HARD_DELETE_MUTATION_APPROVAL
       : WAFL_V2_ALPHA26_MUTATION_APPROVAL,
   );
   const commandCode = TRANSITION_COMMAND_CODES[input.kind];

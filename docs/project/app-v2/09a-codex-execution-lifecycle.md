@@ -48,6 +48,20 @@ Do not postpone all feedback until one large rewrite. Run bounded checks at mean
 - Do not add dependencies, migrations, broad abstractions, or future features without exact scope.
 - If completion needs a materially wider authority, stop and request that authority through a Failure Handoff.
 
+### 4.1 Shared architecture and canonical ownership gate
+
+Before creating a helper, utility, hook, component, constant, enum or union, command, service, repository method, adapter, normalizer, validator, policy, or contract, search the relevant repository layers for the existing canonical owner and supported extension point.
+
+For architecture-impacting work, record each responsibility as `reuse`, `extend`, `extract`, `new canonical owner`, or `intentionally local`, with the reason. When semantics and lifecycle match, reuse or extend the typed owner instead of copying the behavior under another feature or entity name. Paired entities such as fabric/accessory or size/color use one shared implementation with typed configuration or adapters when their behavior is materially identical; entity-specific policy stays explicit and typed.
+
+Shared status names, command codes, route/action identifiers, field keys, units, limits, labels, version literals, and other cross-path magic values have one typed canonical owner. Reusable WAFL interaction grammar belongs in common components or hooks; do not duplicate alerts, destructive actions, inline editors, reels, cards, buttons, or loading/error patterns in a screen when a matching primitive exists.
+
+Keep shared deterministic domain logic alias-free and framework-free where practical so Node contracts and React Native Runtime can consume the same implementation. Common modules must have a clear owner and obey dependency direction: a feature must not depend on another feature's private implementation, and infrastructure or permission policy must not move into UI helpers.
+
+Do not extract merely because two fragments look alike. One-off presentation detail may remain local when lifecycle, policy, or change cadence differs. Do not introduce a speculative framework, generic registry, or future-facing abstraction without a current bounded need. Shared rules are tested at their canonical owner; tests must not duplicate product logic to preserve an obsolete source-location assertion.
+
+Unexplained duplicate product logic, repeated canonical magic values, or a new local primitive that bypasses an existing owner is a completion blocker until it is reused, extracted, or explicitly justified in the Result.
+
 ## 5. Static and Canonical verification
 
 Follow `17-v2-api-contract-test-plan.md`, repository scripts, and the Delta. Applicable gates include:

@@ -53,7 +53,8 @@ assert.match(apiClient, /credentials: "include"/);
 assert.match(apiClient, /\/assets\?limit=50/);
 assert.doesNotMatch(apiClient, /\/processes|\/documents|\/history/, "process/document/history remain outside the connected mobile detail");
 assert.match(apiClient, /target\.method/);
-assert.doesNotMatch(apiClient, /method: "DELETE"/);
+assert.match(apiClient, /export async function deleteWorkOrderMaterial/);
+assert.match(apiClient, /method: "DELETE"/);
 
 assert.doesNotMatch(detail, /mockProductionCard|productionCards|summaryMetrics|costMetrics|overviewInfo|nextCheckByTab/);
 assert.doesNotMatch(detail, /constants\/mockProductionCard/);

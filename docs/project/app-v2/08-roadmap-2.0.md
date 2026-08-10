@@ -2,7 +2,25 @@
 
 Document role: canonical owner for the current result, next candidate, and Version Delta boundary. It is not the historical implementation ledger; completed details live in numbered immutable evidence.
 
-## Current result — 2.0.0-alpha.59
+## Current result — 2.0.0-alpha.60
+
+Status: `ALPHA60_DRAFT_COMPONENT_HARD_DELETE_AND_SHARED_ARCHITECTURE_RULES_COMPLETE`.
+
+Alpha.60 replaces only the current normal delete path for eligible WorkOrder-local rows in an editable, unissued draft:
+
+- eligible size, color, fabric, and accessory rows are physically deleted rather than archived;
+- deleting a size or color removes its dependent quantity cells and synchronizes WorkOrder/Revision total quantity from the surviving matrix sum in the same transaction;
+- requested, cancelled-after-request, completed, issued-revision, and legacy archived rows remain protected by order history and Revision/Event evidence;
+- normal mobile material deletion does not create a new `archived_at` tombstone;
+- system/company/master library lifecycle remains separate and receives no mutation from this WorkOrder-local flow;
+- legacy archive schema/routes remain bounded compatibility debt and are not purged or dropped;
+- the shared-architecture working rule is owned once by the canonical Permanent Rules owner and verified by its canonical contract.
+
+The single automated Runtime, canonical shared-architecture contract, owner-approved equivalent isolation evidence, bundled Node 24 Canonical Verify, and physical-iPhone QA passed. The owner confirmed the `250→150→250→200` quantity sequence, size/color and fabric/accessory hard deletes, cancel-preserved material, background/re-entry, and one Development Client Reload without blocking UI failure. Finalization captured that exact state, removed only the isolated QA fixture with mutable residual zero, preserved append-only Event/Receipt evidence, synchronized `APP_VERSION` to `2.0.0-alpha.60`, and produced the normal Git/artifact delivery. Alpha.51 and alpha.56 remain immutable historical evidence.
+
+Evidence: `60-draft-child-hard-delete-and-shared-architecture-evidence.md`.
+
+## Previous result — 2.0.0-alpha.59
 
 Status: `ALPHA59_MOBILE_WORK_ORDER_INPUT_EXPANSION_COMPLETE`.
 
@@ -82,6 +100,7 @@ Permanent Rules, Current Baseline, Version Delta, Immutable Evidence, responsibi
 | alpha.57 | mobile overview, Category, image, and inline input | `57-mobile-overview-category-inline-input-evidence.md` |
 | alpha.58 | mobile size/color read-only foundation and final UX | `58-mobile-size-color-readonly-evidence.md` |
 | alpha.59 | mobile WorkOrder input expansion and editor lifecycle | `59-mobile-work-order-input-expansion-evidence.md` |
+| alpha.60 | draft-child hard delete and shared-architecture completion | `60-draft-child-hard-delete-and-shared-architecture-evidence.md` |
 | maintenance | canonical Codex rule normalization without APP_VERSION change | `54-canonical-codex-working-rules-normalization-evidence.md` |
 
 Older results remain in numbered evidence files indexed and task-routed by `00-start-here.md`. Their detailed outcomes are not duplicated here.
@@ -113,15 +132,17 @@ Standard reference:
 
 The Delta does not repeat Permanent Rules, PC-audit mechanics, runner internals, generic Failure Handoff fields, or generic Git/artifact procedures. Those remain owned by `09a` through `09d`. An omitted exceptional authority remains forbidden.
 
-## Next candidate — 2.0.0-alpha.60
+## Next candidate — 2.0.0-alpha.61
 
-Alpha.60 is not started. Separate owner-approved packages may consider one bounded objective at a time:
+Status: `not started`.
 
-- size/color archive/restore lifecycle, including schema, impact counts, read-model, conflict, and restore-name/code policy;
+This heading is canonical routing metadata only. It grants no alpha.61 product authority; alpha.60 finalization remains the only active work.
+
+Separate owner-approved packages may consider one bounded adjacent objective at a time after alpha.60 finalization:
+
+- any broader archive/restore lifecycle beyond the preserved legacy compatibility surface, including schema, impact counts, read-model, conflict, and restore-name/code policy;
 - fractional total-quantity policy, including matrix compatibility, historical data, list/overview/PDF/issue behavior, and migration;
 - finished-measurement editing with stable size/POM identity and explicit persistence policy;
 - company common color library with tenant ownership and WorkOrder snapshot rules.
 
-None of these candidates is implied by alpha.59 completion. Factory, AI image generation, production mutation, R2 mutation, dependency/native/EAS work, and unrelated expansion remain outside the boundary unless a future owner-approved Delta explicitly includes them.
-
-Alpha.60 begins only with an owner-approved self-executing Version Delta based on the final synchronized alpha.59 HEAD.
+None of these candidates is implied by the alpha.60 hard-delete scope. Factory, AI image generation, production mutation, R2 mutation, dependency/native/EAS work, and unrelated expansion remain outside the boundary unless a future owner-approved Delta explicitly includes them.

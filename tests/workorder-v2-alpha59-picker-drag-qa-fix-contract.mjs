@@ -27,7 +27,7 @@ assert.ok(CUSTOM_COLOR_GRID.every((cell) => /^#[0-9A-F]{6}$/.test(cell.hex)));
 
 const editor = read("apps/mobile/features/work-orders/size-color/WorkOrderSizeColorStructureEditor.tsx");
 const controller = read("apps/mobile/features/work-orders/size-color/useSizeColorStructureEditController.ts");
-const policy = read("apps/mobile/features/work-orders/size-color/sizeColorAutoSortPolicy.ts");
+const policy = read("apps/mobile/domain/sizeColorStructurePolicy.ts");
 const readOnly = read("apps/mobile/features/work-orders/size-color/WorkOrderSizeColorReadOnly.tsx");
 const packageJson = read("package.json");
 const lockfile = read("package-lock.json");
@@ -39,7 +39,8 @@ assert.doesNotMatch(editor, /PanResponder|dragging|accessibilityActions|onReorde
 assert.doesNotMatch(editor, /숫자 사이즈|선택 목록 수|SIZE_NUMERIC_REEL_RANGE/);
 assert.doesNotMatch(editor, /H 값|S 값|L 값|manualHex|setManualHex/);
 assert.doesNotMatch(editor, /placeholder="HEX|placeholder="RGB|placeholder="HSL/);
-assert.doesNotMatch(editor, /archive|restore|delete/i);
+assert.match(editor, /confirmWaflDestructiveAction/);
+assert.doesNotMatch(editor, /archive|restore/i);
 assert.ok(
   editor.indexOf("const immutableSelection") < editor.indexOf("props.onAdd(immutableSelection)")
     && editor.indexOf("props.onAdd(immutableSelection)") < editor.indexOf("if (!result.failed) props.onClose()"),
@@ -56,7 +57,8 @@ assert.match(controller, /retryError/);
 assert.doesNotMatch(controller, /reorderSizes|reorderColors|onReorderSizeIds|onReorderColorIds/);
 assert.match(policy, /Object\.freeze/);
 assert.doesNotMatch(readOnly, /onAddSizes|onPatchColor|onReorder/);
-assert.doesNotMatch(`${editor}\n${readOnly}`, /삭제|보관|복원/);
+assert.match(editor, /영구 삭제/);
+assert.doesNotMatch(`${editor}\n${readOnly}`, /보관|복원/);
 
 const packageDependencies = Object.keys(JSON.parse(packageJson).dependencies ?? {}).sort();
 const lockDependencies = Object.keys(JSON.parse(lockfile).packages?.[""]?.dependencies ?? {}).sort();

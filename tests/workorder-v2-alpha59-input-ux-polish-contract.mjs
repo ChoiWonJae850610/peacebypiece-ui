@@ -74,7 +74,7 @@ assert.match(migration006, /color_size_quantities_size_company_fk[\s\S]{0,220}ON
 assert.match(migration006, /work_order_size_spec_values_size_company_fk[\s\S]{0,240}ON DELETE RESTRICT/);
 assert.match(migration005, /CREATE TRIGGER domain_events_append_only_guard[\s\S]{0,120}BEFORE UPDATE OR DELETE ON domain_events/);
 assert.match(sizeColorRepository, /function assertCurrentDraft[\s\S]{0,280}work_order_status !== "draft"[\s\S]{0,180}revision_status !== "draft"/);
-assert.doesNotMatch(sizeColorRepository, /DELETE FROM work_order_(?:sizes|colors)/);
+assert.match(sizeColorRepository, /DELETE FROM \$\{config\.table\}/);
 assert.equal(fs.existsSync(path.join(root, "app/api/v2/work-orders/[workOrderId]/size-color/sizes/[sizeRowId]/delete/route.ts")), false);
 assert.equal(fs.existsSync(path.join(root, "app/api/v2/work-orders/[workOrderId]/size-color/colors/[colorId]/delete/route.ts")), false);
 assert.doesNotMatch(migration003, /work_order_(?:sizes|colors)[\s\S]{0,240}(?:archived_at|deleted_at)/);

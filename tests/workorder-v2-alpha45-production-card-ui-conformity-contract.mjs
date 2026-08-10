@@ -50,7 +50,8 @@ assert.match(detail, /WorkOrderImageGallery/);
 assert.match(apiClient, /\/assets\?limit=50/);
 assert.doesNotMatch(apiClient, /\/processes|\/documents|\/history/, "later work must not unlock process/document/history");
 assert.match(apiClient, /target\.method/);
-assert.doesNotMatch(apiClient, /method: "DELETE"/);
+assert.match(apiClient, /export async function deleteWorkOrderMaterial/);
+assert.match(apiClient, /method: "DELETE"/);
 
 for (const tab of ["개요", "이미지·첨부", "사이즈·색상", "원단", "부자재", "제작", "문서"]) assert.match(detail, new RegExp(tab));
 assert.equal(resolveWorkOrderTabVisualState({ selected: false, locked: true }), "locked");

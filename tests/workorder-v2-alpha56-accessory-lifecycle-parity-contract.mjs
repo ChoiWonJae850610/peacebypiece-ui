@@ -67,6 +67,7 @@ const baseLine = {
   status: "editing",
   displayOrder: 1,
   locked: false,
+  deletable: true,
   lifecycle: "active",
   archivedAt: null,
 };

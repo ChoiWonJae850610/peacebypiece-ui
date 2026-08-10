@@ -40,6 +40,21 @@ for (const token of [
   assert.ok(entry.includes(token), `entry point missing semantic token: ${token}`);
 }
 
+for (const token of [
+  "search the relevant repository layers",
+  "`reuse`, `extend`, `extract`, `new canonical owner`, or `intentionally local`",
+  "one shared implementation with typed configuration or adapters",
+  "cross-path magic values have one typed canonical owner",
+  "Reusable WAFL interaction grammar belongs in common components or hooks",
+  "alias-free and framework-free",
+  "must not depend on another feature's private implementation",
+  "speculative framework",
+  "Shared rules are tested at their canonical owner",
+  "completion blocker",
+]) {
+  assert.ok(lifecycle.includes(token), `shared architecture gate missing ${token}`);
+}
+
 for (const child of [
   "09a-codex-execution-lifecycle.md",
   "09b-codex-runtime-data-pc-safety.md",

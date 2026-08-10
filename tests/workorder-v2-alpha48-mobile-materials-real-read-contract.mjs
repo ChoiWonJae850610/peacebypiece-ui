@@ -76,7 +76,9 @@ const normalizedMaterial = normalizeMaterialLine({
   amount: "157500.00",
   status: "editing",
   displayOrder: 1,
+  editable: true,
   locked: false,
+  deletable: true,
   lifecycle: "active",
   archivedAt: null,
 });

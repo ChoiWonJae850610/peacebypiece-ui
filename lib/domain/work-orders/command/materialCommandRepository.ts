@@ -20,18 +20,20 @@ import {
   type DbTransactionClient,
 } from "@/lib/db/client";
 import { installTenantClaims } from "@/lib/domain/work-orders/command/commandRepository";
+import { WORK_ORDER_COMMAND_CODES } from "@/lib/domain/work-orders/command/workOrderCommandCodes";
 import {
   evaluateMaterialOrderReadiness,
   type MaterialOrderReadinessBlocker,
 } from "@/lib/domain/work-orders/command/materialOrderReadiness";
 
-export const MATERIAL_CREATE_COMMAND_CODE = "work_order.material.create";
-export const MATERIAL_PATCH_COMMAND_CODE = "work_order.material.patch";
-export const MATERIAL_ORDER_REQUEST_COMMAND_CODE = "work_order.material.order_request";
-export const MATERIAL_ORDER_CANCEL_COMMAND_CODE = "work_order.material.order_cancel";
-export const MATERIAL_ORDER_COMPLETE_COMMAND_CODE = "work_order.material.order_complete";
-export const MATERIAL_ARCHIVE_COMMAND_CODE = "work_order.material.archive";
-export const MATERIAL_RESTORE_COMMAND_CODE = "work_order.material.restore";
+export const MATERIAL_CREATE_COMMAND_CODE = WORK_ORDER_COMMAND_CODES.material.create;
+export const MATERIAL_PATCH_COMMAND_CODE = WORK_ORDER_COMMAND_CODES.material.patch;
+export const MATERIAL_DELETE_COMMAND_CODE = WORK_ORDER_COMMAND_CODES.material.delete;
+export const MATERIAL_ORDER_REQUEST_COMMAND_CODE = WORK_ORDER_COMMAND_CODES.material.orderRequest;
+export const MATERIAL_ORDER_CANCEL_COMMAND_CODE = WORK_ORDER_COMMAND_CODES.material.orderCancel;
+export const MATERIAL_ORDER_COMPLETE_COMMAND_CODE = WORK_ORDER_COMMAND_CODES.material.orderComplete;
+export const MATERIAL_ARCHIVE_COMMAND_CODE = WORK_ORDER_COMMAND_CODES.material.legacyArchive;
+export const MATERIAL_RESTORE_COMMAND_CODE = WORK_ORDER_COMMAND_CODES.material.legacyRestore;
 
 export type MaterialOrderTransitionKind = "request" | "cancel" | "complete";
 export type MaterialLifecycleTransitionKind = "archive" | "restore";
@@ -92,6 +94,8 @@ type MaterialTargetRow = WorkOrderTargetRow & {
   readonly unit_price: string | number;
   readonly memo: string | null;
   readonly requested_at: string | Date | null;
+  readonly cancelled_at: string | Date | null;
+  readonly completed_at: string | Date | null;
   readonly archived_at: string | Date | null;
 };
 
@@ -100,6 +104,7 @@ type ReceiptRow = DbQueryResultRow & {
   readonly work_order_id: string | null;
   readonly result_revision_id: string | null;
   readonly result_entity_version: number | string | null;
+  readonly correlation_id: string;
 };
 
 export type MaterialCommandRepositoryResult = {
@@ -134,7 +139,7 @@ function toMaterialType(value: string): MaterialType {
   return value;
 }
 
-function mapMaterialResult(row: MaterialTargetRow, nextVersion?: number): MaterialLineCommandResult {
+function mapMaterialResult(row: MaterialTargetRow, nextVersion?: number, deleted = false): MaterialLineCommandResult {
   const workOrderVersion = nextVersion ?? toInteger(row.work_order_version);
   return {
     workOrderId: row.work_order_id as WorkOrderId,
@@ -145,6 +150,7 @@ function mapMaterialResult(row: MaterialTargetRow, nextVersion?: number): Materi
     nextVersion: workOrderVersion as EntityVersion,
     lineVersion: toInteger(row.line_version) as EntityVersion,
     lifecycle: row.archived_at === null ? "active" : "archived",
+    ...(deleted ? { deleted: true } : {}),
   };
 }
 
@@ -233,7 +239,7 @@ async function reserveReceipt(input: {
       company_id, command_code, idempotency_key, request_sha256, correlation_id
     ) VALUES ($1, $2, $3, $4, $5)
     ON CONFLICT (company_id, command_code, idempotency_key) DO NOTHING
-    RETURNING request_sha256, work_order_id, result_revision_id, result_entity_version
+    RETURNING request_sha256, work_order_id, result_revision_id, result_entity_version, correlation_id
   `, [
     input.scope.companyId,
     input.commandCode,
@@ -245,13 +251,41 @@ async function reserveReceipt(input: {
   if (inserted.rows[0]) return null;
 
   const existing = await input.client.query<ReceiptRow>(`
-    SELECT request_sha256, work_order_id, result_revision_id, result_entity_version
+    SELECT request_sha256, work_order_id, result_revision_id, result_entity_version, correlation_id
     FROM work_order_command_receipts
     WHERE company_id = $1 AND command_code = $2 AND idempotency_key = $3
   `, [input.scope.companyId, input.commandCode, input.scopedIdempotencyKeyHash]);
   input.context.statementCount += 1;
   const receipt = existing.rows[0];
   if (!receipt) throw new MaterialCommandRepositoryError("idempotency_incomplete");
+  if (receipt.request_sha256 !== input.requestHash) {
+    throw new MaterialCommandRepositoryError(
+      "idempotency_conflict",
+      receipt.result_entity_version === null ? null : Number(receipt.result_entity_version),
+    );
+  }
+  if (!receipt.work_order_id || !receipt.result_revision_id || receipt.result_entity_version === null) {
+    throw new MaterialCommandRepositoryError("idempotency_incomplete");
+  }
+  return receipt;
+}
+
+async function readExistingReceipt(input: {
+  readonly client: DbTransactionClient;
+  readonly context: RepositoryContext;
+  readonly scope: TenantMemberScope;
+  readonly commandCode: string;
+  readonly scopedIdempotencyKeyHash: string;
+  readonly requestHash: string;
+}): Promise<ReceiptRow | null> {
+  const existing = await input.client.query<ReceiptRow>(`
+    SELECT request_sha256, work_order_id, result_revision_id, result_entity_version, correlation_id
+    FROM work_order_command_receipts
+    WHERE company_id = $1 AND command_code = $2 AND idempotency_key = $3
+  `, [input.scope.companyId, input.commandCode, input.scopedIdempotencyKeyHash]);
+  input.context.statementCount += 1;
+  const receipt = existing.rows[0];
+  if (!receipt) return null;
   if (receipt.request_sha256 !== input.requestHash) {
     throw new MaterialCommandRepositoryError(
       "idempotency_conflict",
@@ -329,7 +363,7 @@ async function lockMaterialTarget(input: {
            m.entity_version AS line_version, m.material_id, m.name, m.color_option, m.usage_area,
            m.supplier_partner_id, m.required_quantity, m.allowance_quantity,
            m.inventory_usage_quantity, m.order_quantity, m.unit_code,
-           m.unit_price, m.memo, m.requested_at, m.archived_at
+           m.unit_price, m.memo, m.requested_at, m.cancelled_at, m.completed_at, m.archived_at
     FROM work_orders w
     JOIN work_order_revisions r
       ON r.company_id = w.company_id AND r.id = w.current_revision_id
@@ -450,7 +484,7 @@ async function readReplayMaterial(input: {
            m.entity_version AS line_version, m.material_id, m.name, m.color_option, m.usage_area,
            m.supplier_partner_id, m.required_quantity, m.allowance_quantity,
            m.inventory_usage_quantity, m.order_quantity, m.unit_code,
-           m.unit_price, m.memo, m.requested_at, m.archived_at
+           m.unit_price, m.memo, m.requested_at, m.cancelled_at, m.completed_at, m.archived_at
     FROM work_orders w
     JOIN work_order_revisions r
       ON r.company_id = w.company_id AND r.id = $3::uuid AND r.work_order_id = w.id
@@ -722,6 +756,142 @@ export async function patchMaterialLineV2(input: {
     if (isForeignKeyReferenceError(error)) throw new MaterialCommandRepositoryError("not_found");
     throw error;
   }
+}
+
+export async function deleteMaterialLineV2(input: {
+  readonly scope: TenantMemberScope;
+  readonly assignedCompanyMemberId: CompanyMemberId | null;
+  readonly workOrderId: WorkOrderId;
+  readonly materialLineId: MaterialLineId;
+  readonly expectedVersion: EntityVersion;
+  readonly clientRequestId: string;
+  readonly scopedIdempotencyKeyHash: string;
+  readonly requestHash: string;
+}): Promise<MaterialCommandRepositoryResult> {
+  const startedAt = performance.now();
+  const context: RepositoryContext = { statementCount: 0 };
+  const result = await withWaflV2TenantWriteTransaction(async (client) => {
+    await installTenantClaims(client, input.scope);
+    context.statementCount += 1;
+    const workOrderTarget = await lockWorkOrderTarget({
+      client, context, scope: input.scope, workOrderId: input.workOrderId,
+      assignedCompanyMemberId: input.assignedCompanyMemberId,
+    });
+    const receipt = await readExistingReceipt({
+      client, context, scope: input.scope, commandCode: MATERIAL_DELETE_COMMAND_CODE,
+      scopedIdempotencyKeyHash: input.scopedIdempotencyKeyHash, requestHash: input.requestHash,
+    });
+    if (receipt) {
+      const replay = await client.query<DbQueryResultRow & { readonly metadata: unknown }>(`
+        SELECT metadata
+        FROM domain_events
+        WHERE company_id = $1 AND entity_type = 'work_order' AND entity_id = $2
+          AND command_code = $3 AND correlation_id = $4
+        ORDER BY occurred_at DESC, id DESC
+        LIMIT 1
+      `, [input.scope.companyId, receipt.work_order_id, MATERIAL_DELETE_COMMAND_CODE, receipt.correlation_id]);
+      context.statementCount += 1;
+      const metadata = replay.rows[0]?.metadata;
+      if (!metadata || typeof metadata !== "object" || Array.isArray(metadata)) {
+        throw new MaterialCommandRepositoryError("idempotency_incomplete");
+      }
+      const values = metadata as Record<string, unknown>;
+      if (
+        values.materialLineId !== input.materialLineId
+        || (values.materialType !== "fabric" && values.materialType !== "accessory")
+        || !Number.isSafeInteger(values.deletedLineVersion)
+      ) throw new MaterialCommandRepositoryError("idempotency_incomplete");
+      const nextVersion = toInteger(receipt.result_entity_version as number | string);
+      const replayResult: MaterialLineCommandResult = {
+        workOrderId: workOrderTarget.work_order_id as WorkOrderId,
+        revisionId: receipt.result_revision_id as MaterialLineCommandResult["revisionId"],
+        materialLineId: input.materialLineId,
+        materialType: values.materialType,
+        status: "editing",
+        nextVersion: nextVersion as EntityVersion,
+        lineVersion: Number(values.deletedLineVersion) as EntityVersion,
+        lifecycle: "active",
+        deleted: true,
+      };
+      return { result: replayResult, idempotentReplay: true };
+    }
+
+    assertCurrentDraft(workOrderTarget, input.expectedVersion);
+    const target = await lockMaterialTarget({
+      client, context, scope: input.scope, workOrderId: input.workOrderId,
+      materialLineId: input.materialLineId, assignedCompanyMemberId: input.assignedCompanyMemberId,
+    });
+    if (
+      target.material_status !== "editing"
+      || target.archived_at !== null
+      || target.requested_at !== null
+      || target.cancelled_at !== null
+      || target.completed_at !== null
+    ) throw new MaterialCommandRepositoryError("invalid_state_transition", Number(target.work_order_version));
+    const orderHistory = await client.query<DbQueryResultRow & { readonly has_history: boolean }>(`
+      SELECT EXISTS (
+        SELECT 1
+        FROM domain_events
+        WHERE company_id = $1 AND entity_type = 'work_order' AND entity_id = $2
+          AND metadata->>'materialLineId' = $3
+          AND command_code = ANY($4::text[])
+      ) AS has_history
+    `, [
+      input.scope.companyId,
+      target.work_order_id,
+      input.materialLineId,
+      [MATERIAL_ORDER_REQUEST_COMMAND_CODE, MATERIAL_ORDER_CANCEL_COMMAND_CODE, MATERIAL_ORDER_COMPLETE_COMMAND_CODE],
+    ]);
+    context.statementCount += 1;
+    if (orderHistory.rows[0]?.has_history) {
+      throw new MaterialCommandRepositoryError("invalid_state_transition", Number(target.work_order_version));
+    }
+    const reserved = await reserveReceipt({
+      client, context, scope: input.scope, commandCode: MATERIAL_DELETE_COMMAND_CODE,
+      scopedIdempotencyKeyHash: input.scopedIdempotencyKeyHash, requestHash: input.requestHash,
+    });
+    if (reserved) throw new MaterialCommandRepositoryError("idempotency_incomplete");
+    const deleted = await client.query(`
+      DELETE FROM work_order_material_lines
+      WHERE company_id = $1 AND revision_id = $2::uuid AND id = $3::uuid
+        AND status = 'editing' AND archived_at IS NULL
+        AND requested_at IS NULL AND cancelled_at IS NULL AND completed_at IS NULL
+      RETURNING id
+    `, [input.scope.companyId, target.revision_id, input.materialLineId]);
+    context.statementCount += 1;
+    if (!deleted.rows[0]) throw new MaterialCommandRepositoryError("conflict", Number(target.work_order_version));
+    const nextVersion = await advanceParentVersions({
+      client, context, scope: input.scope, target,
+      expectedVersion: input.expectedVersion, recalculateMaterialTotals: true,
+    });
+    const materialType = toMaterialType(target.material_type);
+    await appendMaterialEvent({
+      client, context, scope: input.scope, target,
+      materialLineId: target.material_line_id,
+      materialType,
+      commandCode: MATERIAL_DELETE_COMMAND_CODE,
+      summary: materialType === "fabric" ? "초안 원단 line 영구 삭제" : "초안 부자재 line 영구 삭제",
+      metadata: {
+        clientRequestId: input.clientRequestId,
+        changedFields: ["materialLine.delete"],
+        deletedLineVersion: Number(target.line_version),
+        statusTransition: { from: "editing", to: null },
+        versionTransition: { from: Number(target.work_order_version), to: nextVersion },
+        lineVersionTransition: { from: Number(target.line_version), to: null },
+      },
+    });
+    await completeReceipt({
+      client, context, scope: input.scope, commandCode: MATERIAL_DELETE_COMMAND_CODE,
+      scopedIdempotencyKeyHash: input.scopedIdempotencyKeyHash,
+      workOrderId: target.work_order_id, revisionId: target.revision_id, nextVersion,
+    });
+    return { result: mapMaterialResult(target, nextVersion, true), idempotentReplay: false };
+  });
+  return wrapResult({
+    result: result.result,
+    context, startedAt, idempotentReplay: result.idempotentReplay,
+    changedFields: result.idempotentReplay ? [] : ["materialLine.delete"],
+  });
 }
 
 const TRANSITION_CONFIG = {

@@ -211,6 +211,12 @@ const alpha59ApiPaths = [
   "app/api/v2/work-orders/[workOrderId]/size-color/colors/reorder/route.ts",
   "app/api/v2/work-orders/[workOrderId]/size-color/quantities/[colorId]/[sizeRowId]/route.ts",
 ];
+const alpha60ContractExists = fs.existsSync(path.join(root, "tests/workorder-v2-alpha60-draft-child-hard-delete-contract.mjs"));
+const alpha60ApiPaths = [
+  "app/api/v2/work-orders/[workOrderId]/size-color/sizes/[sizeRowId]/route.ts",
+  "app/api/v2/work-orders/[workOrderId]/size-color/colors/[colorId]/route.ts",
+  "app/api/v2/work-orders/[workOrderId]/materials/[materialLineId]/route.ts",
+];
 const alpha51ContractExists = fs.existsSync(path.join(root, "tests/workorder-v2-alpha51-material-soft-delete-restore-contract.mjs"));
 const alpha26ContractExists = fs.existsSync(path.join(root, "tests/workorder-v2-alpha26-material-command-api-contract.mjs"));
 const alpha27ApiPaths = ["app/api/v2/work-orders/[workOrderId]/revisions/issue/route.ts"];
@@ -239,7 +245,13 @@ const alpha40ContractExists = fs.existsSync(path.join(root, "tests/workorder-v2-
 const alpha30ContractExists = fs.existsSync(path.join(root, "tests/workorder-v2-alpha30-factory-instruction-contract.mjs"));
 const alpha27ContractExists = fs.existsSync(path.join(root, "tests/workorder-v2-alpha27-revision-issue-command-contract.mjs"));
 const alpha28ContractExists = fs.existsSync(path.join(root, "tests/workorder-v2-alpha28-issued-preview-contract.mjs"));
-if (alpha59ContractExists && apiChanges.length > 0) {
+if (alpha60ContractExists && apiChanges.length > 0) {
+  assert.deepEqual(
+    apiChanges.filter((change) => !alpha60ApiPaths.some((allowedPath) => change.endsWith(allowedPath))),
+    [],
+    "alpha.60 may change only its exact draft-child hard-delete API routes",
+  );
+} else if (alpha59ContractExists && apiChanges.length > 0) {
   assert.deepEqual(
     apiChanges.filter((change) => !alpha59ApiPaths.some((allowedPath) => change.endsWith(allowedPath))),
     [],

@@ -29,7 +29,9 @@ assert.match(collectionRoute, /export async function GET\(/, "material lazy GET 
 assert.match(collectionRoute, /export async function POST\(/, "material create POST must be mounted");
 assert.doesNotMatch(collectionRoute, /export async function (PUT|PATCH|DELETE)/, "material collection exposes only GET and POST");
 assert.match(lineRoute, /export async function PATCH\(/, "material line PATCH must be mounted");
-assert.doesNotMatch(lineRoute, /export async function (GET|POST|PUT|DELETE)/, "material line deletion is deferred without soft-delete schema");
+assert.match(lineRoute, /export async function DELETE\(/, "alpha.60 material hard delete must be mounted on the exact item route");
+assert.match(lineRoute, /handleDeleteMaterialLineV2/, "alpha.60 material delete must use the canonical command boundary");
+assert.doesNotMatch(lineRoute, /export async function (GET|POST|PUT)/, "material item route exposes only PATCH and DELETE");
 for (const route of [requestRoute, cancelRoute, completeRoute]) {
   assert.match(route, /export async function POST\(/, "order transition route must expose POST");
   assert.doesNotMatch(route, /export async function (GET|PUT|PATCH|DELETE)/, "order transition route must expose only POST");
@@ -122,7 +124,8 @@ for (const token of transitionOrder) {
 }
 assert.match(service, /if \(error\.reason === "locked"\)[\s\S]*code: "LOCKED", status: 409/, "issued lock must map to typed LOCKED");
 assert.match(dbClient, /catch \(error\) \{[\s\S]*await client\.query\("ROLLBACK"\)[\s\S]*throw error/, "failed material transition must roll back provisional receipt and all writes");
-assert.doesNotMatch(repository, /DELETE\s+FROM\s+work_order_material_lines/i, "hard delete is forbidden without canonical lifecycle");
+assert.match(repository, /export async function deleteMaterialLineV2[\s\S]*DELETE FROM work_order_material_lines/, "alpha.60 owns a bounded current-draft material hard delete");
+assert.match(repository, /requested_at IS NULL AND cancelled_at IS NULL AND completed_at IS NULL/, "hard delete must preserve every ordered material lifecycle");
 assert.doesNotMatch(repository, /input\.command\.idempotencyKey/, "repository must not receive raw idempotency keys");
 assert.match(repository, /assertAmountWithinDatabaseRange/, "partial PATCH must validate the final derived amount against the DB numeric range");
 assert.match(service, /amount_out_of_range/, "derived amount overflow must retain a typed validation envelope");

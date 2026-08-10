@@ -87,6 +87,7 @@ assert.equal(isStructureMutationCommitAllowed({
 }), false);
 
 const repository = read("lib/domain/work-orders/command/sizeColorStructureCommandRepository.ts");
+const commandCodes = read("lib/domain/work-orders/command/workOrderCommandCodes.ts");
 const service = read("lib/domain/work-orders/command/sizeColorStructureCommandService.ts");
 const route = read("lib/domain/work-orders/command/sizeColorStructureCommandRoute.ts");
 const validation = read("lib/domain/work-orders/command/sizeColorStructureValidation.ts");
@@ -105,7 +106,7 @@ for (const code of [
   "work_order.color_structure.create",
   "work_order.color_structure.patch",
   "work_order.color_structure.reorder",
-]) assert.ok(repository.includes(code));
+]) assert.ok(commandCodes.includes(code));
 assert.match(repository, /FOR UPDATE OF w, r/);
 assert.match(repository, /w\.status AS work_order_status/);
 assert.match(repository, /r\.revision_status/);
@@ -113,12 +114,12 @@ assert.match(repository, /entity_version = entity_version \+ 1/);
 assert.match(repository, /INSERT INTO domain_events/);
 assert.match(repository, /INSERT INTO work_order_command_receipts/);
 assert.match(repository, /RETURNING request_sha256/);
-assert.doesNotMatch(repository, /RETURNING id\s*[\r\n]/);
+assert.doesNotMatch(repository, /INSERT INTO work_order_command_receipts[\s\S]{0,280}RETURNING id/);
 assert.doesNotMatch(repository, /'work_order', \$2::uuid/);
 assert.match(repository, /assertExactSet/);
 assert.match(repository, /size_code/);
 assert.match(repository, /color_code/);
-assert.doesNotMatch(repository, /DELETE FROM work_order_(?:sizes|colors)/);
+assert.match(repository, /DELETE FROM \$\{config\.table\}/);
 assert.doesNotMatch(repository, /archiv|restore/i);
 assert.match(service, /permissionCode: "workorder\.update"/);
 assert.match(service, /WAFL_V2_ALPHA59_SIZE_COLOR_STRUCTURE_MUTATION_APPROVAL/);
@@ -136,7 +137,8 @@ assert.match(editor, /WaflOptionReel/);
 assert.match(editor, /ExistingStructureEditor/);
 assert.doesNotMatch(editor, /PanResponder|onLongPress|accessibilityActions|onReorderSizeIds|onReorderColorIds/);
 assert.doesNotMatch(editor, /ChevronUp|ChevronDown/);
-assert.doesNotMatch(editor, /archive|restore|delete/i);
+assert.match(editor, /confirmWaflDestructiveAction/);
+assert.doesNotMatch(editor, /archive|restore/i);
 assert.match(controller, /createExplicitMutationController/);
 assert.match(controller, /isStructureMutationCommitAllowed/);
 assert.match(controller, /onCommitted/);

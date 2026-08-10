@@ -148,7 +148,7 @@ export type ReorderMaterialLinesCommand = VersionedWorkOrderCommand & {
   readonly orderedMaterialLineIds: readonly MaterialLineId[];
 };
 
-export type RemoveMaterialLineCommand = VersionedWorkOrderCommand & {
+export type RemoveMaterialLineCommand = IdempotentWorkOrderCommand & {
   readonly materialLineId: MaterialLineId;
 };
 
@@ -182,6 +182,7 @@ export type MaterialLineCommandResult = {
   readonly nextVersion: EntityVersion;
   readonly lineVersion: EntityVersion;
   readonly lifecycle: "active" | "archived";
+  readonly deleted?: boolean;
 };
 
 export type PatchSizeSpecCellCommand = VersionedWorkOrderCommand & {
@@ -210,6 +211,10 @@ export type ReorderSizeStructuresCommand = IdempotentWorkOrderCommand & {
   readonly orderedSizeRowIds: readonly SizeRowId[];
 };
 
+export type DeleteSizeStructureCommand = IdempotentWorkOrderCommand & {
+  readonly sizeRowId: SizeRowId;
+};
+
 export type AddColorStructureCommand = IdempotentWorkOrderCommand & {
   readonly displayName: string;
   readonly hexValue: string | null;
@@ -227,6 +232,10 @@ export type ReorderColorStructuresCommand = IdempotentWorkOrderCommand & {
   readonly orderedColorIds: readonly ColorId[];
 };
 
+export type DeleteColorStructureCommand = IdempotentWorkOrderCommand & {
+  readonly colorId: ColorId;
+};
+
 export type UpsertColorSizeQuantityCommand = IdempotentWorkOrderCommand & {
   readonly colorId: ColorId;
   readonly sizeRowId: SizeRowId;
@@ -242,6 +251,8 @@ export type SizeColorStructureCommandResult = {
   readonly sizeRowId?: SizeRowId;
   readonly quantity?: number;
   readonly totalQuantity?: number;
+  readonly deletedQuantityCellCount?: number;
+  readonly removedQuantity?: number;
   readonly nextVersion: EntityVersion;
 };
 

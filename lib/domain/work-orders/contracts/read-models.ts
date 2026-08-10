@@ -257,6 +257,7 @@ export type WorkOrderMaterialLineReadModel = {
   readonly displayOrder: number;
   readonly editable: boolean;
   readonly locked: boolean;
+  readonly deletable: boolean;
   readonly lifecycle: "active" | "archived";
   readonly archivedAt: IsoDateTime | null;
 };

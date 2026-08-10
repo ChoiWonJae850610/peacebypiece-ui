@@ -1,5 +1,7 @@
 import "server-only";
 
+import { WORK_ORDER_COMMAND_CODES } from "@/lib/domain/work-orders/command/workOrderCommandCodes";
+
 import { performance } from "perf_hooks";
 
 import {
@@ -129,7 +131,22 @@ export const WORK_ORDER_V2_MATERIALS_SQL = `
          m.supplier_partner_id, NULL::text AS partner_name, m.required_quantity,
          m.allowance_quantity, m.inventory_usage_quantity, m.order_quantity,
          m.unit_code, m.unit_price, m.amount, m.memo, m.status, m.display_order,
-         m.archived_at, count(m.id) OVER ()::integer AS total_count
+         m.archived_at,
+         (
+           m.status = 'editing' AND m.archived_at IS NULL
+           AND m.requested_at IS NULL AND m.cancelled_at IS NULL AND m.completed_at IS NULL
+           AND NOT EXISTS (
+             SELECT 1 FROM domain_events e
+             WHERE e.company_id = m.company_id AND e.entity_type = 'work_order'
+               AND e.entity_id = t.id::text AND e.metadata->>'materialLineId' = m.id::text
+               AND e.command_code = ANY(ARRAY[
+                 '${WORK_ORDER_COMMAND_CODES.material.orderRequest}',
+                 '${WORK_ORDER_COMMAND_CODES.material.orderCancel}',
+                 '${WORK_ORDER_COMMAND_CODES.material.orderComplete}'
+               ]::text[])
+           )
+         ) AS deletable,
+         count(m.id) OVER ()::integer AS total_count
   FROM target t
   LEFT JOIN work_order_material_lines m
     ON m.company_id = $1 AND m.revision_id = t.current_revision_id
@@ -467,6 +484,7 @@ export async function getWorkOrderMaterialsV2(input: CommonCollectionInput & {
       status, displayOrder: asCount(row.display_order),
       editable: input.lifecycle === "active" && status === "editing",
       locked: input.lifecycle === "archived" || status !== "editing",
+      deletable: input.lifecycle === "active" && row.deletable === true,
       lifecycle: input.lifecycle,
       archivedAt: row.archived_at === null ? null : new Date(String(row.archived_at)).toISOString() as WorkOrderMaterialLineReadModel["archivedAt"],
     };

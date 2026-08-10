@@ -14,6 +14,8 @@ import { WorkOrderCommandRequestError } from "@/lib/domain/work-orders/command/c
 import {
   addColorStructure,
   addSizeStructure,
+  deleteColorStructure,
+  deleteSizeStructure,
   patchColorStructure,
   renameSizeStructure,
   reorderColorStructures,
@@ -21,10 +23,15 @@ import {
   upsertColorSizeQuantity,
   type SizeColorStructureCommandServiceResult,
 } from "@/lib/domain/work-orders/command/sizeColorStructureCommandService";
-import { getWorkOrderV2SizeColorStructureMutationRuntimeGuard } from "@/lib/domain/work-orders/command/runtimeGuard";
+import {
+  getWorkOrderV2DraftChildHardDeleteMutationRuntimeGuard,
+  getWorkOrderV2SizeColorStructureMutationRuntimeGuard,
+} from "@/lib/domain/work-orders/command/runtimeGuard";
 import {
   validateAddColorStructure,
   validateAddSizeStructure,
+  validateDeleteColorStructure,
+  validateDeleteSizeStructure,
   validatePatchColorStructure,
   validateRenameSizeStructure,
   validateReorderColorStructures,
@@ -37,9 +44,11 @@ import type { CorrelationId, WorkOrderApiErrorEnvelope } from "@/lib/domain/work
 type CommandKind =
   | "size-create"
   | "size-rename"
+  | "size-delete"
   | "size-reorder"
   | "color-create"
   | "color-patch"
+  | "color-delete"
   | "color-reorder"
   | "quantity-upsert";
 
@@ -72,11 +81,13 @@ async function handle(input: {
   readonly kind: CommandKind;
 }): Promise<NextResponse | NextResponse<WorkOrderApiErrorEnvelope>> {
   const correlationId = randomUUID() as CorrelationId;
-  const runtime = getWorkOrderV2SizeColorStructureMutationRuntimeGuard();
+  const runtime = input.kind === "size-delete" || input.kind === "color-delete"
+    ? getWorkOrderV2DraftChildHardDeleteMutationRuntimeGuard()
+    : getWorkOrderV2SizeColorStructureMutationRuntimeGuard();
   if (!runtime.ok) {
     return createCommandErrorResponse({
       code: "FORBIDDEN",
-      message: "승인된 alpha.59 dev/test runtime에서만 사용할 수 있습니다.",
+      message: "승인된 사이즈·색상 dev/test runtime에서만 사용할 수 있습니다.",
       status: 403,
       correlationId,
     });
@@ -104,6 +115,12 @@ async function handle(input: {
         sizeRowId: input.targetId ?? "",
         command: validateRenameSizeStructure({ body, idempotencyKey }),
       });
+    } else if (input.kind === "size-delete") {
+      result = await deleteSizeStructure({
+        ...common,
+        sizeRowId: input.targetId ?? "",
+        command: validateDeleteSizeStructure({ body, idempotencyKey }),
+      });
     } else if (input.kind === "size-reorder") {
       result = await reorderSizeStructures({
         ...common,
@@ -116,6 +133,12 @@ async function handle(input: {
         ...common,
         colorId: input.targetId ?? "",
         command: validatePatchColorStructure({ body, idempotencyKey }),
+      });
+    } else if (input.kind === "color-delete") {
+      result = await deleteColorStructure({
+        ...common,
+        colorId: input.targetId ?? "",
+        command: validateDeleteColorStructure({ body, idempotencyKey }),
       });
     } else if (input.kind === "color-reorder") {
       result = await reorderColorStructures({
@@ -176,6 +199,10 @@ export function handleRenameSizeStructureV2(request: Request, workOrderId: strin
   return handle({ request, workOrderId, targetId: sizeRowId, kind: "size-rename" });
 }
 
+export function handleDeleteSizeStructureV2(request: Request, workOrderId: string, sizeRowId: string) {
+  return handle({ request, workOrderId, targetId: sizeRowId, kind: "size-delete" });
+}
+
 export function handleReorderSizeStructuresV2(request: Request, workOrderId: string) {
   return handle({ request, workOrderId, kind: "size-reorder" });
 }
@@ -186,6 +213,10 @@ export function handleAddColorStructureV2(request: Request, workOrderId: string)
 
 export function handlePatchColorStructureV2(request: Request, workOrderId: string, colorId: string) {
   return handle({ request, workOrderId, targetId: colorId, kind: "color-patch" });
+}
+
+export function handleDeleteColorStructureV2(request: Request, workOrderId: string, colorId: string) {
+  return handle({ request, workOrderId, targetId: colorId, kind: "color-delete" });
 }
 
 export function handleReorderColorStructuresV2(request: Request, workOrderId: string) {

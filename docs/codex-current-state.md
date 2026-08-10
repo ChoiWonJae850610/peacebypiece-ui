@@ -4,8 +4,8 @@ Document type: **Current Baseline**
 
 Canonical owner: `docs/codex-current-state.md`
 
-Result version: `2.0.0-alpha.59`
-Status: `ALPHA59_MOBILE_WORK_ORDER_INPUT_EXPANSION_COMPLETE`
+Result version: `2.0.0-alpha.60`
+Status: `ALPHA60_DRAFT_COMPONENT_HARD_DELETE_AND_SHARED_ARCHITECTURE_RULES_COMPLETE`
 
 This file is a compact present-state snapshot. It is not a version history, Permanent Rules owner, runtime process ledger, or evidence archive. Historical implementation details belong to numbered immutable evidence under `docs/project/app-v2/`.
 
@@ -15,26 +15,26 @@ This file is a compact present-state snapshot. It is not a version history, Perm
 | --- | --- |
 | Repository | `C:\CWJ_Project\peacebypiece-2.0` |
 | Branch | `master` |
-| Alpha.59 entry HEAD/origin | `f6291ebc7d16d77c6c4c64673926bc41735960dc` |
-| Entry commit | `feat: WAFL v2 alpha.58 사이즈·색상 읽기 UX 완성` |
+| Alpha.60 entry HEAD/origin | `55a2065c5bfc8a764fd5ad63865e21b2a1c8f916` |
+| Entry commit | `feat: WAFL v2 alpha.59 작업지시 입력과 수량 UX 완성` |
 | Entry ahead/behind | `0/0` |
 | Entry working tree | clean |
-| APP_VERSION | `2.0.0-alpha.59` |
-| Mobile package version | `2.0.0-alpha.59` |
+| APP_VERSION | `2.0.0-alpha.60` |
+| Mobile package version | `2.0.0-alpha.60` |
 | Root package version | `0.5.637` |
 | Expo public version | `2.0.0` |
 | iOS Development Build | build number `1`, reusable while native inputs remain unchanged |
 | iOS bundle identifier | `com.wafl.app` |
 | Android package | `com.wafl.app` |
 
-The source cannot contain the hash of the commit that contains itself. Final alpha.59 HEAD, origin synchronization, Git cleanliness, ZIP hash/size/entry count, and exact repo-state filename are owned by the matching post-push alpha.59 repo-state.
+The source cannot contain the hash of the commit that contains itself. Final alpha.60 HEAD, origin synchronization, Git cleanliness, ZIP hash/size/entry count, and exact repo-state filename are owned by the matching post-push alpha.60 repo-state.
 
 ## Latest delivery boundary
 
-- Target Source ZIP: `peacebypiece-ui-2.0.0-alpha.59.zip`.
-- Target repo-state: `repo-state-2.0.0-alpha.59-<actual timestamp>.txt`.
+- Target Source ZIP: `peacebypiece-ui-2.0.0-alpha.60.zip`.
+- Target repo-state: `repo-state-2.0.0-alpha.60-<actual timestamp>.txt`.
 - `4. Newest` must contain only that matching pair after Finish.
-- The accepted handoff is the matching alpha.59 ZIP/repo-state pair generated from the final synchronized pushed HEAD.
+- The accepted handoff is the matching alpha.60 ZIP/repo-state pair generated from the final synchronized pushed HEAD.
 
 ## Current product and transport baseline
 
@@ -52,6 +52,17 @@ The source cannot contain the hash of the commit that contains itself. Final alp
 Do not record live PID, port ownership, temporary origin, connection code, session/cookie, full identity hash, credentials, or full WorkOrder UUID in this tracked snapshot.
 
 ## Latest feature and architecture baseline
+
+Alpha.60 completes conditional hard delete for eligible WorkOrder-local draft children without dependency, schema/migration, native/EAS, R2, or production changes:
+
+- eligible WorkOrder-local size, color, fabric, and accessory rows in an editable unissued draft use conditional hard delete; normal mobile deletion no longer creates a new archive tombstone;
+- size/color deletion physically removes dependent quantity cells and synchronizes the WorkOrder and Revision total from the surviving matrix sum in the same transaction;
+- requested, cancelled-after-request, completed, issued-revision, and legacy archived rows remain protected through Revision/Event and order-history rules;
+- system/company/master library lifecycle remains separate from WorkOrder-local draft deletion and is not mutated by this flow;
+- the legacy material archive schema and routes remain bounded compatibility debt and are neither purged nor dropped;
+- the shared-architecture working rule has one canonical Permanent Rules owner in `09a`, with its canonical contract; alpha.51 and alpha.56 evidence remains immutable historical evidence.
+
+The single automated Runtime, owner-approved equivalent isolation gate, Node 24 Canonical Verify, and physical-iPhone QA all passed. The exact owner QA fixture was captured in its accepted final state and removed by one exact isolated cleanup transaction with mutable residual zero while append-only Event/Receipt evidence was preserved.
 
 Alpha.59 extends the completed alpha.58 size/color read-only baseline without a schema migration, dependency/native change, or production mutation:
 
@@ -101,18 +112,23 @@ Final TypeScript, ESLint, Next, Expo, contracts, mutation audit, Canonical Verif
 - Alpha.57 mobile overview, Category, image, and inline input: `docs/project/app-v2/57-mobile-overview-category-inline-input-evidence.md`.
 - Alpha.58 mobile size/color read-only foundation and final UX: `docs/project/app-v2/58-mobile-size-color-readonly-evidence.md`.
 - Alpha.59 mobile WorkOrder input expansion, quantity matrix, and editor lifecycle: `docs/project/app-v2/59-mobile-work-order-input-expansion-evidence.md`.
+- Alpha.60 draft-child hard delete and shared-architecture completion: `docs/project/app-v2/60-draft-child-hard-delete-and-shared-architecture-evidence.md`.
 
 Older facts remain in their numbered evidence. They are not recopied here.
 
-## Next candidate boundary
+## Current completion boundary
 
-Candidate: `2.0.0-alpha.60` — not started.
+Current completed result: `2.0.0-alpha.60` — implementation, automated verification, physical-iPhone owner QA, exact fixture cleanup, version synchronization, and finalization are complete.
+
+Candidate: `2.0.0-alpha.61`
+
+This candidate value is routing metadata only. Alpha.61 design and implementation are not started, and the candidate field grants no product authority.
 
 Potential future packages remain separate owner decisions:
 
-- size/color archive/restore lifecycle and its schema/read-model policy;
+- any broader archive/restore lifecycle and its schema/read-model policy beyond the preserved legacy compatibility surface;
 - fractional total-quantity policy and migration compatibility;
 - finished-measurement editing;
 - company common color library.
 
-Alpha.60 does not start until a separately owner-approved concise self-executing Delta defines one bounded objective, its exact mutation budget, Runtime, and acceptance.
+Alpha.60 does not include those adjacent candidates. No next-version design or implementation has started; every later package requires its own owner-approved Delta.

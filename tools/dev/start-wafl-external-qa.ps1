@@ -6,7 +6,7 @@
     [int]$NextPort = 3000,
     [int]$ExpoPort = 8081,
     [string]$CloudflaredPath = "",
-    [ValidateSet("external-device", "memo-ime-display", "accessory-lifecycle-parity", "work-order-image", "size-color-structure")]
+    [ValidateSet("external-device", "memo-ime-display", "accessory-lifecycle-parity", "work-order-image", "size-color-structure", "draft-child-hard-delete")]
     [string]$RuntimeQaMode = "external-device",
     [switch]$EnableAlpha46BasicInfoMutation,
     [switch]$EnableAlpha50MaterialDraftMutation,
@@ -15,21 +15,23 @@
     [switch]$EnableAlpha55MaterialOrderLifecycleMutation,
     [switch]$EnableAlpha56AccessoryLifecycleParityMutation,
     [switch]$EnableAlpha57WorkOrderImageMutation,
-    [switch]$EnableAlpha59SizeColorStructureMutation
+    [switch]$EnableAlpha59SizeColorStructureMutation,
+    [switch]$EnableAlpha60DraftChildHardDeleteMutation
 )
 
 $ErrorActionPreference = "Stop"
 . (Join-Path $PSScriptRoot "wafl-external-qa-common.ps1")
 . (Join-Path $PSScriptRoot "..\pipeline\pipeline-common.ps1")
 
-if (@($EnableAlpha46BasicInfoMutation, $EnableAlpha50MaterialDraftMutation, $EnableAlpha51MaterialLifecycleMutation, $EnableAlpha52CoreInlineMutation, $EnableAlpha55MaterialOrderLifecycleMutation, $EnableAlpha56AccessoryLifecycleParityMutation, $EnableAlpha57WorkOrderImageMutation, $EnableAlpha59SizeColorStructureMutation).Where({ $_ }).Count -gt 1) {
+if (@($EnableAlpha46BasicInfoMutation, $EnableAlpha50MaterialDraftMutation, $EnableAlpha51MaterialLifecycleMutation, $EnableAlpha52CoreInlineMutation, $EnableAlpha55MaterialOrderLifecycleMutation, $EnableAlpha56AccessoryLifecycleParityMutation, $EnableAlpha57WorkOrderImageMutation, $EnableAlpha59SizeColorStructureMutation, $EnableAlpha60DraftChildHardDeleteMutation).Where({ $_ }).Count -gt 1) {
     throw "EXTERNAL_QA_MUTATION_MODES_ARE_MUTUALLY_EXCLUSIVE"
 }
 $internalMemoImeMode = $RuntimeQaMode -eq "memo-ime-display"
 $internalAccessoryLifecycleMode = $RuntimeQaMode -eq "accessory-lifecycle-parity"
 $internalWorkOrderImageMode = $RuntimeQaMode -eq "work-order-image"
 $internalSizeColorStructureMode = $RuntimeQaMode -eq "size-color-structure"
-$internalRuntimeMode = $internalMemoImeMode -or $internalAccessoryLifecycleMode -or $internalWorkOrderImageMode -or $internalSizeColorStructureMode
+$internalDraftChildHardDeleteMode = $RuntimeQaMode -eq "draft-child-hard-delete"
+$internalRuntimeMode = $internalMemoImeMode -or $internalAccessoryLifecycleMode -or $internalWorkOrderImageMode -or $internalSizeColorStructureMode -or $internalDraftChildHardDeleteMode
 if ($internalMemoImeMode -and $MobileTransport -ne "DeveloperAutoConnect") {
     throw "MEMO_IME_DISPLAY_REQUIRES_DEVELOPER_AUTO_CONNECT"
 }
@@ -65,6 +67,15 @@ if ($internalSizeColorStructureMode -and -not $EnableAlpha59SizeColorStructureMu
 }
 if ($internalSizeColorStructureMode -and ($NextPort -ne 3100 -or $ExpoPort -ne 8081)) {
     throw "SIZE_COLOR_STRUCTURE_REQUIRES_CANONICAL_PORTS"
+}
+if ($internalDraftChildHardDeleteMode -and $MobileTransport -ne "DeveloperAutoConnect") {
+    throw "DRAFT_CHILD_HARD_DELETE_REQUIRES_DEVELOPER_AUTO_CONNECT"
+}
+if ($internalDraftChildHardDeleteMode -and -not $EnableAlpha60DraftChildHardDeleteMutation) {
+    throw "DRAFT_CHILD_HARD_DELETE_REQUIRES_ALPHA60_MUTATION_MODE"
+}
+if ($internalDraftChildHardDeleteMode -and ($NextPort -ne 3100 -or $ExpoPort -ne 8081)) {
+    throw "DRAFT_CHILD_HARD_DELETE_REQUIRES_CANONICAL_PORTS"
 }
 
 function Get-WaflQaDatabaseUrl {
@@ -372,6 +383,13 @@ try {
         $serverEnvironment.WAFL_EXTERNAL_QA_ALPHA59_SIZE_COLOR_STRUCTURE_MUTATION_ENABLED = "true"
         $state.commandApi = "ready"
         $state.mutationMode = "alpha59-qa-remediation"
+    }
+    if ($EnableAlpha60DraftChildHardDeleteMutation) {
+        $serverEnvironment.WAFL_V2_COMMAND_API_ENABLED = "1"
+        $serverEnvironment.WAFL_V2_COMMAND_MUTATION_APPROVED = "2.0.0-alpha.60-dev-test-draft-child-hard-delete-runtime"
+        $serverEnvironment.WAFL_EXTERNAL_QA_ALPHA60_DRAFT_CHILD_HARD_DELETE_MUTATION_ENABLED = "true"
+        $state.commandApi = "ready"
+        $state.mutationMode = "draft-child-hard-delete"
     }
     $nextStdout = Join-Path $stateDir "next.stdout.log"
     $nextStderr = Join-Path $stateDir "next.stderr.log"

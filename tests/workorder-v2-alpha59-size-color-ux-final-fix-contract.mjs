@@ -10,7 +10,7 @@ const editor = read("apps/mobile/features/work-orders/size-color/WorkOrderSizeCo
 const readOnly = read("apps/mobile/features/work-orders/size-color/WorkOrderSizeColorReadOnly.tsx");
 const controller = read("apps/mobile/features/work-orders/size-color/useSizeColorStructureEditController.ts");
 const repository = read("lib/domain/work-orders/command/sizeColorStructureCommandRepository.ts");
-const sortPolicy = read("apps/mobile/features/work-orders/size-color/sizeColorAutoSortPolicy.ts");
+const sortPolicy = read("apps/mobile/domain/sizeColorStructurePolicy.ts");
 const runtimeQa = read("scripts/run-wafl-v2-alpha59-size-color-structure-runtime-qa.mjs");
 
 test("shared automatic size and color policy is deterministic", async () => {
@@ -56,16 +56,17 @@ test("quantity and measurement sections are independently collapsed", () => {
 });
 
 test("server create and rename paths apply the shared canonical order inside their transaction", () => {
-  assert.match(repository, /sizeColorAutoSortPolicy/);
+  assert.match(repository, /sizeColorStructurePolicy/);
   assert.match(repository, /sortSizeRows/);
   assert.match(repository, /sortColorRows/);
   assert.match(repository, /applyCanonicalSizeOrder/);
   assert.match(repository, /applyCanonicalColorOrder/);
 });
 
-test("deferred boundaries remain explicit and no destructive lifecycle UI is introduced", () => {
-  assert.doesNotMatch(editor, /삭제|보관|복원/);
-  assert.doesNotMatch(controller, /delete|archive|restore/i);
+test("alpha.60 supersedes the deferred destructive boundary without archive or restore", () => {
+  assert.match(editor, /영구 삭제/);
+  assert.match(controller, /deleteSize[\s\S]+deleteColor/);
+  assert.doesNotMatch(`${editor}\n${controller}`, /archive|restore/i);
 });
 
 test("Runtime exact-color identities and accounting keys use the shared ASCII ordinal queue", () => {

@@ -10,10 +10,11 @@ import {
 } from "@/lib/db/client";
 import { installTenantClaims } from "@/lib/domain/work-orders/command/commandRepository";
 import { planColorSizeQuantityProjection } from "@/lib/domain/work-orders/command/quantityProjectionPolicy";
+import { WORK_ORDER_COMMAND_CODES } from "@/lib/domain/work-orders/command/workOrderCommandCodes";
 import {
   sortColorRows,
   sortSizeRows,
-} from "@/apps/mobile/features/work-orders/size-color/sizeColorAutoSortPolicy";
+} from "@/apps/mobile/domain/sizeColorStructurePolicy";
 import type {
   ColorId,
   CompanyMemberId,
@@ -24,13 +25,15 @@ import type {
   WorkOrderId,
 } from "@/lib/domain/work-orders/contracts";
 
-export const SIZE_STRUCTURE_CREATE_COMMAND_CODE = "work_order.size_structure.create";
-export const SIZE_STRUCTURE_RENAME_COMMAND_CODE = "work_order.size_structure.rename";
-export const SIZE_STRUCTURE_REORDER_COMMAND_CODE = "work_order.size_structure.reorder";
-export const COLOR_STRUCTURE_CREATE_COMMAND_CODE = "work_order.color_structure.create";
-export const COLOR_STRUCTURE_PATCH_COMMAND_CODE = "work_order.color_structure.patch";
-export const COLOR_STRUCTURE_REORDER_COMMAND_CODE = "work_order.color_structure.reorder";
-export const COLOR_SIZE_QUANTITY_UPSERT_COMMAND_CODE = "work_order.color_size_quantity.upsert";
+export const SIZE_STRUCTURE_CREATE_COMMAND_CODE = WORK_ORDER_COMMAND_CODES.sizeStructure.create;
+export const SIZE_STRUCTURE_RENAME_COMMAND_CODE = WORK_ORDER_COMMAND_CODES.sizeStructure.rename;
+export const SIZE_STRUCTURE_REORDER_COMMAND_CODE = WORK_ORDER_COMMAND_CODES.sizeStructure.reorder;
+export const SIZE_STRUCTURE_DELETE_COMMAND_CODE = WORK_ORDER_COMMAND_CODES.sizeStructure.delete;
+export const COLOR_STRUCTURE_CREATE_COMMAND_CODE = WORK_ORDER_COMMAND_CODES.colorStructure.create;
+export const COLOR_STRUCTURE_PATCH_COMMAND_CODE = WORK_ORDER_COMMAND_CODES.colorStructure.patch;
+export const COLOR_STRUCTURE_REORDER_COMMAND_CODE = WORK_ORDER_COMMAND_CODES.colorStructure.reorder;
+export const COLOR_STRUCTURE_DELETE_COMMAND_CODE = WORK_ORDER_COMMAND_CODES.colorStructure.delete;
+export const COLOR_SIZE_QUANTITY_UPSERT_COMMAND_CODE = WORK_ORDER_COMMAND_CODES.colorSizeQuantity.upsert;
 
 type FailureReason =
   | "not_found"
@@ -90,6 +93,11 @@ type ReceiptRow = DbQueryResultRow & {
   readonly work_order_id: string | null;
   readonly result_revision_id: string | null;
   readonly result_entity_version: number | string | null;
+  readonly correlation_id: string;
+};
+
+type DeleteReplayRow = DbQueryResultRow & {
+  readonly metadata: unknown;
 };
 
 type Context = { statementCount: number };
@@ -122,6 +130,8 @@ function targetResult(input: {
   readonly sizeRowId?: SizeRowId;
   readonly quantity?: number;
   readonly totalQuantity?: number;
+  readonly deletedQuantityCellCount?: number;
+  readonly removedQuantity?: number;
   readonly nextVersion?: number;
 }): SizeColorStructureCommandResult {
   return {
@@ -133,6 +143,8 @@ function targetResult(input: {
     ...(input.sizeRowId ? { sizeRowId: input.sizeRowId } : {}),
     ...(input.quantity !== undefined ? { quantity: input.quantity } : {}),
     ...(input.totalQuantity !== undefined ? { totalQuantity: input.totalQuantity } : {}),
+    ...(input.deletedQuantityCellCount !== undefined ? { deletedQuantityCellCount: input.deletedQuantityCellCount } : {}),
+    ...(input.removedQuantity !== undefined ? { removedQuantity: input.removedQuantity } : {}),
     nextVersion: (input.nextVersion ?? integer(input.target.work_order_version)) as EntityVersion,
   };
 }
@@ -181,7 +193,7 @@ async function readReceipt(input: {
   readonly requestHash: string;
 }): Promise<ReceiptRow | null> {
   const existing = await input.client.query<ReceiptRow>(`
-    SELECT request_sha256, work_order_id, result_revision_id, result_entity_version
+    SELECT request_sha256, work_order_id, result_revision_id, result_entity_version, correlation_id
     FROM work_order_command_receipts
     WHERE company_id = $1 AND command_code = $2 AND idempotency_key = $3
   `, [input.scope.companyId, input.commandCode, input.scopedIdempotencyKeyHash]);
@@ -362,6 +374,67 @@ async function readCanonicalQuantityTotal(
   return integer(result.rows[0]?.total_quantity ?? 0);
 }
 
+function deleteReplayMetadata(value: unknown) {
+  if (!value || typeof value !== "object" || Array.isArray(value)) {
+    throw new SizeColorStructureRepositoryError("idempotency_incomplete");
+  }
+  const metadata = value as Record<string, unknown>;
+  if (
+    !Number.isSafeInteger(metadata.deletedQuantityCellCount)
+    || Number(metadata.deletedQuantityCellCount) < 0
+    || !Number.isSafeInteger(metadata.removedQuantity)
+    || Number(metadata.removedQuantity) < 0
+    || !Number.isSafeInteger(metadata.canonicalTotalQuantity)
+    || Number(metadata.canonicalTotalQuantity) < 0
+  ) throw new SizeColorStructureRepositoryError("idempotency_incomplete");
+  return {
+    deletedQuantityCellCount: Number(metadata.deletedQuantityCellCount),
+    removedQuantity: Number(metadata.removedQuantity),
+    canonicalTotalQuantity: Number(metadata.canonicalTotalQuantity),
+  };
+}
+
+async function readDeleteReplay(input: {
+  readonly client: DbTransactionClient;
+  readonly context: Context;
+  readonly scope: TenantMemberScope;
+  readonly target: TargetRow;
+  readonly receipt: ReceiptRow;
+  readonly commandCode: string;
+  readonly targetKind: "size" | "color";
+  readonly targetId: SizeRowId | ColorId;
+}) {
+  const event = await input.client.query<DeleteReplayRow>(`
+    SELECT metadata
+    FROM domain_events
+    WHERE company_id = $1 AND entity_type = 'work_order' AND entity_id = $2
+      AND command_code = $3 AND correlation_id = $4
+    ORDER BY occurred_at DESC, id DESC
+    LIMIT 1
+  `, [input.scope.companyId, input.target.work_order_id, input.commandCode, input.receipt.correlation_id]);
+  input.context.statementCount += 1;
+  const metadata = deleteReplayMetadata(event.rows[0]?.metadata);
+  const nextVersion = integer(input.receipt.result_entity_version as number | string);
+  const originalTarget = {
+    ...input.target,
+    revision_id: input.receipt.result_revision_id as string,
+  };
+  return {
+    result: targetResult({
+      target: originalTarget,
+      targetKind: input.targetKind,
+      targetId: input.targetId,
+      totalQuantity: metadata.canonicalTotalQuantity,
+      deletedQuantityCellCount: metadata.deletedQuantityCellCount,
+      removedQuantity: metadata.removedQuantity,
+      nextVersion,
+    }),
+    nextVersion: nextVersion as EntityVersion,
+    idempotentReplay: true,
+    changedFields: [] as readonly string[],
+  };
+}
+
 function assertUniqueName(rows: readonly { readonly id: string }[], names: readonly string[], value: string, exceptId?: string) {
   const normalized = normalizeName(value);
   if (rows.some((row, index) => row.id !== exceptId && normalizeName(names[index]) === normalized)) {
@@ -443,6 +516,7 @@ async function finishChanged(input: {
   readonly changedFields: readonly string[];
   readonly summary: string;
   readonly canonicalTotalQuantity?: number;
+  readonly eventMetadata?: Readonly<Record<string, unknown>>;
 }) {
   const nextVersion = await advanceVersions(input);
   await appendEvent({
@@ -456,6 +530,7 @@ async function finishChanged(input: {
       ...(input.canonicalTotalQuantity !== undefined
         ? { canonicalTotalQuantity: input.canonicalTotalQuantity }
         : {}),
+      ...input.eventMetadata,
       versionTransition: {
         from: integer(input.target.work_order_version),
         to: nextVersion,
@@ -763,6 +838,112 @@ export async function reorderColorStructuresV2(input: CommonInput & {
     commandCode: COLOR_STRUCTURE_REORDER_COMMAND_CODE,
     orderedIds: input.orderedColorIds,
   });
+}
+
+const DELETE_STRUCTURE_CONFIG = {
+  size: {
+    commandCode: SIZE_STRUCTURE_DELETE_COMMAND_CODE,
+    table: "work_order_sizes",
+    quantityColumn: "size_id",
+    summary: "사이즈 구조 삭제",
+  },
+  color: {
+    commandCode: COLOR_STRUCTURE_DELETE_COMMAND_CODE,
+    table: "work_order_colors",
+    quantityColumn: "color_id",
+    summary: "색상 구조 삭제",
+  },
+} as const;
+
+async function deleteStructureV2(input: CommonInput & {
+  readonly targetKind: "size" | "color";
+  readonly targetId: SizeRowId | ColorId;
+}) {
+  const startedAt = performance.now();
+  const context: Context = { statementCount: 0 };
+  const config = DELETE_STRUCTURE_CONFIG[input.targetKind];
+  const data = await withWaflV2TenantWriteTransaction(async (client) => {
+    await installTenantClaims(client, input.scope);
+    context.statementCount += 1;
+    const target = await lockTarget({ client, context, ...input });
+    const existingReceipt = await readReceipt({ client, context, ...input, commandCode: config.commandCode });
+    if (existingReceipt) {
+      return readDeleteReplay({
+        client, context, scope: input.scope, target, receipt: existingReceipt,
+        commandCode: config.commandCode, targetKind: input.targetKind, targetId: input.targetId,
+      });
+    }
+    assertCurrentDraft(target, input.expectedVersion);
+    const rows = input.targetKind === "size"
+      ? await readSizes(client, context, input.scope, target.revision_id)
+      : await readColors(client, context, input.scope, target.revision_id);
+    if (!rows.some((row) => row.id === input.targetId)) {
+      throw new SizeColorStructureRepositoryError("not_found");
+    }
+    await reserveReceipt({ client, context, ...input, commandCode: config.commandCode });
+    const deletedCells = await client.query<QuantityCellRow>(`
+      DELETE FROM color_size_quantities
+      WHERE company_id = $1 AND revision_id = $2::uuid AND ${config.quantityColumn} = $3::uuid
+      RETURNING quantity
+    `, [input.scope.companyId, target.revision_id, input.targetId]);
+    context.statementCount += 1;
+    const deletedQuantityCellCount = deletedCells.rows.length;
+    const removedQuantity = deletedCells.rows.reduce((sum, row) => sum + integer(row.quantity), 0);
+    const deletedTarget = await client.query(`
+      DELETE FROM ${config.table}
+      WHERE company_id = $1 AND revision_id = $2::uuid AND id = $3::uuid
+      RETURNING id
+    `, [input.scope.companyId, target.revision_id, input.targetId]);
+    context.statementCount += 1;
+    if (!deletedTarget.rows[0]) throw new SizeColorStructureRepositoryError("not_found");
+    const survivors = rows.filter((row) => row.id !== input.targetId);
+    if (input.targetKind === "size") {
+      await applyCanonicalSizeOrder({
+        client, context, scope: input.scope, revisionId: target.revision_id,
+        rows: survivors as readonly SizeRow[],
+      });
+    } else {
+      await applyCanonicalColorOrder({
+        client, context, scope: input.scope, revisionId: target.revision_id,
+        rows: survivors as readonly ColorRow[],
+      });
+    }
+    const canonicalTotalQuantity = await readCanonicalQuantityTotal(client, context, input.scope, target.revision_id);
+    const changedFields = [
+      `${input.targetKind}.delete`,
+      "quantityCells.delete",
+      "totalQuantity",
+      "totalQuantitySnapshot",
+    ] as const;
+    const nextVersion = await finishChanged({
+      client, context, ...input, target,
+      commandCode: config.commandCode,
+      targetKind: input.targetKind,
+      targetId: input.targetId,
+      changedFields,
+      summary: config.summary,
+      canonicalTotalQuantity,
+      eventMetadata: { deletedQuantityCellCount, removedQuantity },
+    });
+    return {
+      result: targetResult({
+        target, targetKind: input.targetKind, targetId: input.targetId,
+        totalQuantity: canonicalTotalQuantity, deletedQuantityCellCount, removedQuantity, nextVersion,
+      }),
+      nextVersion: nextVersion as EntityVersion,
+      idempotentReplay: false,
+      changedFields,
+    };
+  });
+  return wrapped({ ...data, context, startedAt });
+}
+
+export function deleteSizeStructureV2(input: CommonInput & { readonly sizeRowId: SizeRowId }) {
+  return deleteStructureV2({ ...input, targetKind: "size", targetId: input.sizeRowId });
+}
+
+export function deleteColorStructureV2(input: CommonInput & { readonly colorId: ColorId }) {
+  return deleteStructureV2({ ...input, targetKind: "color", targetId: input.colorId });
 }
 
 async function reorderStructuresV2(input: CommonInput & {

@@ -61,7 +61,7 @@ type Props = {
   readonly onCancelInlineEdit: (owner: MaterialInlineEditSession) => void;
   readonly onSaveEdit: (draftOverride?: MaterialDraftUpdate) => void;
   readonly onSaveInlineEdit: (draftOverride: MaterialDraftUpdate, owner: MaterialInlineEditSession) => void;
-  readonly onArchive: (line: WorkOrderMaterialLine) => void;
+  readonly onDelete: (line: WorkOrderMaterialLine) => void;
   readonly onOrderAction: (line: WorkOrderMaterialLine, action: MaterialOrderAction) => void;
   readonly orderPolicy: (line: WorkOrderMaterialLine) => MaterialOrderPolicy;
   readonly onRetry: () => void;
@@ -286,7 +286,7 @@ function MaterialOrderActionButton({
   );
 }
 
-function MaterialCard({ line, expanded, canEdit, lifecycleBusy, orderBusyAction, orderPolicy, editor, activeField, activeInlineSession, onEdit, onChangeEdit, onCancelEdit, onSaveEdit, onArchive, onOrderAction, onToggle, onFieldFocus, onOpenReel }: {
+function MaterialCard({ line, expanded, canEdit, lifecycleBusy, orderBusyAction, orderPolicy, editor, activeField, activeInlineSession, onEdit, onChangeEdit, onCancelEdit, onSaveEdit, onDelete, onOrderAction, onToggle, onFieldFocus, onOpenReel }: {
   readonly line: WorkOrderMaterialLine;
   readonly expanded: boolean;
   readonly canEdit: boolean;
@@ -300,7 +300,7 @@ function MaterialCard({ line, expanded, canEdit, lifecycleBusy, orderBusyAction,
   readonly onChangeEdit: Props["onChangeInlineEdit"];
   readonly onCancelEdit: Props["onCancelInlineEdit"];
   readonly onSaveEdit: Props["onSaveInlineEdit"];
-  readonly onArchive: () => void;
+  readonly onDelete: () => void;
   readonly onOrderAction: (action: MaterialOrderAction) => void;
   readonly onToggle: () => void;
   readonly onFieldFocus: Props["onFieldFocus"];
@@ -508,13 +508,13 @@ function MaterialCard({ line, expanded, canEdit, lifecycleBusy, orderBusyAction,
                 onPress={() => onOrderAction(action.kind)}
               />
             ))}
-            {orderPolicy.canEdit ? (
+            {orderPolicy.canEdit && line.deletable ? (
               <Pressable
-                accessibilityLabel={`${line.name} 삭제된 ${materialLabel}로 이동`}
+                accessibilityLabel={`${line.name} ${materialLabel} 영구 삭제`}
                 accessibilityRole="button"
                 accessibilityState={{ disabled: lifecycleBusy }}
                 disabled={lifecycleBusy}
-                onPress={onArchive}
+                onPress={onDelete}
                 style={({ pressed }) => [styles.archiveActionButton, lifecycleBusy && styles.disabledAction, pressed && styles.pressed]}
               >
                 {lifecycleBusy ? <ActivityIndicator color="#9a4035" size="small" /> : <Trash2 color="#9a4035" size={17} strokeWidth={2.25} />}
@@ -548,7 +548,7 @@ function AddMaterialButton({ materialType, onPress }: { readonly materialType: M
 export default function WorkOrderMaterialsReadOnly({
   materialType, state, canEdit, lifecycleBusyId, orderBusyId, orderBusyAction,
   activeEditor, activeField, activeInlineSession, onAdd, onEdit, onChangeInlineEdit, onCancelEdit, onCancelInlineEdit, onSaveEdit, onSaveInlineEdit,
-  onArchive, onOrderAction, orderPolicy, onRetry, onLoadMore, onFieldFocus,
+  onDelete, onOrderAction, orderPolicy, onRetry, onLoadMore, onFieldFocus,
 }: Props) {
   const [expandedIds, setExpandedIds] = useState<ReadonlySet<string>>(() => new Set());
   const [reelTarget, setReelTarget] = useState<ReelTarget | null>(null);
@@ -621,7 +621,7 @@ export default function WorkOrderMaterialsReadOnly({
           orderBusyAction={orderBusyId === line.id ? orderBusyAction : null}
           orderPolicy={orderPolicy(line)}
           line={line}
-          onArchive={() => onArchive(line)}
+          onDelete={() => onDelete(line)}
           onOrderAction={(action) => onOrderAction(line, action)}
           onCancelEdit={onCancelInlineEdit}
           onChangeEdit={onChangeInlineEdit}

@@ -8,7 +8,7 @@ import {
   normalizedPresetKey,
   sortColorRows,
   sortSizeRows,
-} from "./sizeColorAutoSortPolicy";
+} from "@/domain/sizeColorStructurePolicy";
 import {
   isStructureMutationCommitAllowed,
   sameColorDraft,
@@ -29,9 +29,11 @@ export type SizeColorStructureEditBoundary = {
   readonly onAddSize: (displayLabel: string) => Promise<boolean>;
   readonly onAddSizes: (displayLabels: readonly string[]) => Promise<{ readonly added: number; readonly failed: string | null }>;
   readonly onRenameSize: (sizeRowId: string, displayLabel: string) => Promise<boolean>;
+  readonly onDeleteSize: (sizeRowId: string) => Promise<boolean>;
   readonly onAddColor: (draft: ColorStructureDraft) => Promise<boolean>;
   readonly onAddColors: (drafts: readonly ColorStructureDraft[]) => Promise<{ readonly added: number; readonly failed: string | null }>;
   readonly onPatchColor: (colorId: string, draft: ColorStructureDraft) => Promise<boolean>;
+  readonly onDeleteColor: (colorId: string) => Promise<boolean>;
   readonly onSetQuantity: (colorId: string, sizeRowId: string, quantity: number) => Promise<boolean>;
 };
 
@@ -276,6 +278,20 @@ export function useSizeColorStructureEditController(input: Input) {
       if (validated.error) { setErrorState({ workOrderId: input.workOrderId ?? "", message: validated.error }); return false; }
       return run(validated.value !== currentRow.displayLabel, ({ workOrderId, expectedVersion, clientRequestId, idempotencyKey }) => workOrderMutationController.renameSize(workOrderId, sizeRowId, { clientRequestId, expectedVersion, displayLabel: validated.value }, idempotencyKey), (bundle) => ({ ...bundle, matrix: { ...bundle.matrix, sizes: withSizeOrder(bundle.matrix.sizes.map((row) => row.id === sizeRowId ? { ...row, displayLabel: validated.value } : row)) } }));
     },
+    onDeleteSize: (sizeRowId) => run(
+      true,
+      ({ workOrderId, expectedVersion, clientRequestId, idempotencyKey }) => workOrderMutationController.deleteSize(
+        workOrderId, sizeRowId, { clientRequestId, expectedVersion }, idempotencyKey,
+      ),
+      (bundle) => ({
+        ...bundle,
+        matrix: {
+          ...bundle.matrix,
+          sizes: withSizeOrder(bundle.matrix.sizes.filter((row) => row.id !== sizeRowId)),
+          quantityCells: bundle.matrix.quantityCells.filter((cell) => cell.sizeRowId !== sizeRowId),
+        },
+      }),
+    ),
     onAddColor: async (draft) => (await addColorsSequentially([draft])).failed === null,
     onAddColors: addColorsSequentially,
     onPatchColor: async (colorId, draft) => {
@@ -286,6 +302,20 @@ export function useSizeColorStructureEditController(input: Input) {
       if (validated.error) { setErrorState({ workOrderId: input.workOrderId ?? "", message: validated.error }); return false; }
       return run(!sameColorDraft(currentRow, draft), ({ workOrderId, expectedVersion, clientRequestId, idempotencyKey }) => workOrderMutationController.patchColor(workOrderId, colorId, { clientRequestId, expectedVersion, patch: { displayName: validated.displayName, hexValue: validated.hexValue } }, idempotencyKey), (bundle) => ({ ...bundle, matrix: { ...bundle.matrix, colors: withColorOrder(bundle.matrix.colors.map((row) => row.id === colorId ? { ...row, displayName: validated.displayName, hexValue: validated.hexValue } : row)) } }));
     },
+    onDeleteColor: (colorId) => run(
+      true,
+      ({ workOrderId, expectedVersion, clientRequestId, idempotencyKey }) => workOrderMutationController.deleteColor(
+        workOrderId, colorId, { clientRequestId, expectedVersion }, idempotencyKey,
+      ),
+      (bundle) => ({
+        ...bundle,
+        matrix: {
+          ...bundle.matrix,
+          colors: withColorOrder(bundle.matrix.colors.filter((row) => row.id !== colorId)),
+          quantityCells: bundle.matrix.quantityCells.filter((cell) => cell.colorId !== colorId),
+        },
+      }),
+    ),
     onSetQuantity: async (colorId, sizeRowId, quantity) => {
       const currentCell = input.bundle?.matrix.quantityCells.find((cell) => cell.colorId === colorId && cell.sizeRowId === sizeRowId);
       const currentQuantity = Number(currentCell?.quantity ?? 0);

@@ -90,7 +90,7 @@ function readError(body: unknown, status: number, correlationHeader: string | nu
 }
 
 async function requestJson<T>(path: string, options: {
-  readonly method: "GET" | "POST" | "PATCH";
+  readonly method: "GET" | "POST" | "PATCH" | "DELETE";
   readonly body?: unknown;
   readonly idempotencyKey?: string;
 }): Promise<T> {
@@ -436,7 +436,7 @@ export async function getWorkOrderSizeSpec(workOrderId: string): Promise<WorkOrd
 async function mutateSizeColorStructure(
   workOrderId: string,
   path: string,
-  method: "POST" | "PATCH",
+  method: "POST" | "PATCH" | "DELETE",
   command: SizeColorStructureCommandBase & Readonly<Record<string, unknown>>,
   idempotencyKey: string,
 ): Promise<SizeColorStructureCommandResult> {
@@ -455,6 +455,9 @@ async function mutateSizeColorStructure(
     || !isNonEmptyString(result.revisionId)
     || !(result.targetKind === "size" || result.targetKind === "color" || result.targetKind === "quantity")
     || (result.targetKind === "quantity" && !isNonNegativeSafeInteger(result.totalQuantity))
+    || ((result.targetKind === "size" || result.targetKind === "color") && result.totalQuantity !== undefined && !isNonNegativeSafeInteger(result.totalQuantity))
+    || (result.deletedQuantityCellCount !== undefined && !isNonNegativeSafeInteger(result.deletedQuantityCellCount))
+    || (result.removedQuantity !== undefined && !isNonNegativeSafeInteger(result.removedQuantity))
     || !(result.targetId === null || isNonEmptyString(result.targetId))
     || !Number.isSafeInteger(result.nextVersion)
     || result.nextVersion < 1
@@ -482,6 +485,15 @@ export function renameWorkOrderSize(
   return mutateSizeColorStructure(workOrderId, `sizes/${encodeURIComponent(sizeRowId)}`, "PATCH", command, idempotencyKey);
 }
 
+export function deleteWorkOrderSize(
+  workOrderId: string,
+  sizeRowId: string,
+  command: SizeColorStructureCommandBase,
+  idempotencyKey: string,
+) {
+  return mutateSizeColorStructure(workOrderId, `sizes/${encodeURIComponent(sizeRowId)}`, "DELETE", command, idempotencyKey);
+}
+
 export function reorderWorkOrderSizes(
   workOrderId: string,
   command: SizeColorStructureCommandBase & { readonly orderedSizeRowIds: readonly string[] },
@@ -507,6 +519,15 @@ export function patchWorkOrderColor(
   idempotencyKey: string,
 ) {
   return mutateSizeColorStructure(workOrderId, `colors/${encodeURIComponent(colorId)}`, "PATCH", command, idempotencyKey);
+}
+
+export function deleteWorkOrderColor(
+  workOrderId: string,
+  colorId: string,
+  command: SizeColorStructureCommandBase,
+  idempotencyKey: string,
+) {
+  return mutateSizeColorStructure(workOrderId, `colors/${encodeURIComponent(colorId)}`, "DELETE", command, idempotencyKey);
 }
 
 export function reorderWorkOrderColors(
@@ -940,6 +961,26 @@ export function restoreWorkOrderMaterial(
   idempotencyKey: string,
 ) {
   return transitionWorkOrderMaterialLifecycle(workOrderId, materialLineId, "restore", command, idempotencyKey);
+}
+
+export async function deleteWorkOrderMaterial(
+  workOrderId: string,
+  materialLineId: string,
+  command: MaterialLifecycleCommandInput,
+  idempotencyKey: string,
+): Promise<MaterialLineCommandResult> {
+  const body = await requestJson<{ readonly ok: boolean; readonly data?: unknown }>(
+    `/api/v2/work-orders/${encodeURIComponent(workOrderId)}/materials/${encodeURIComponent(materialLineId)}`,
+    { method: "DELETE", body: command, idempotencyKey },
+  );
+  const normalized = body.ok ? normalizeMaterialCommandResult(body.data, workOrderId) : null;
+  if (
+    !normalized
+    || normalized.result.materialLineId !== materialLineId
+    || normalized.result.deleted !== true
+    || normalized.result.lifecycle !== "active"
+  ) throw new MobileApiError({ code: "MALFORMED_RESPONSE", message: "원단 삭제 응답이 올바르지 않습니다." });
+  return normalized;
 }
 
 export async function transitionWorkOrderMaterialOrder(

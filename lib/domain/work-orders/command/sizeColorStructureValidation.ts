@@ -114,6 +114,17 @@ export function validateRenameSizeStructure(input: {
   return validateAddSizeStructure(input);
 }
 
+export function validateDeleteSizeStructure(input: {
+  readonly body: unknown;
+  readonly idempotencyKey: string | null;
+}) {
+  if (!isJsonObject(input.body)) {
+    throw new WorkOrderCommandValidationError([fieldError("body", "INVALID_TYPE", "JSON object가 필요합니다.")]);
+  }
+  assertAllowedKeys(input.body, new Set(["clientRequestId", "expectedVersion"]));
+  return parseCommon({ body: input.body, idempotencyKey: input.idempotencyKey });
+}
+
 export function validateReorderSizeStructures(input: {
   readonly body: unknown;
   readonly idempotencyKey: string | null;
@@ -170,6 +181,8 @@ export function validatePatchColorStructure(input: {
     },
   };
 }
+
+export const validateDeleteColorStructure = validateDeleteSizeStructure;
 
 export function validateReorderColorStructures(input: {
   readonly body: unknown;

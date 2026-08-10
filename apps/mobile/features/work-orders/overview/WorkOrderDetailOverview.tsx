@@ -173,7 +173,7 @@ type Props = {
   readonly materialSaveNotice: string | null;
   readonly onBeginMaterialCreate: () => void;
   readonly onBeginMaterialEdit: (line: WorkOrderMaterialLine, field: keyof MaterialDraftFields) => void;
-  readonly onArchiveMaterial: (line: WorkOrderMaterialLine) => void;
+  readonly onDeleteMaterial: (line: WorkOrderMaterialLine) => void;
   readonly onMaterialOrderAction: (line: WorkOrderMaterialLine, action: MaterialOrderAction) => void;
   readonly materialOrderPolicy: (line: WorkOrderMaterialLine) => MaterialOrderPolicy;
   readonly onChangeMaterialDraft: (field: keyof MaterialDraftFields, value: string) => void;
@@ -563,7 +563,7 @@ export default function WorkOrderDetailOverview(props: Props) {
               orderBusyId={props.materialOrderBusyId}
               orderBusyAction={props.materialOrderBusyAction}
               onAdd={props.onBeginMaterialCreate}
-              onArchive={props.onArchiveMaterial}
+              onDelete={props.onDeleteMaterial}
               onOrderAction={props.onMaterialOrderAction}
               onEdit={props.onBeginMaterialEdit}
               onCancelEdit={props.onCancelMaterialEditor}

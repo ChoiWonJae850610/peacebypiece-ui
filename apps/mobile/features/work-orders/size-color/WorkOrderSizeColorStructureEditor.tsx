@@ -11,14 +11,19 @@ import {
   TextInput,
   View,
 } from "react-native";
-import { Check, ChevronLeft, Plus, X } from "lucide-react-native";
+import { Check, ChevronLeft, Plus, Trash2, X } from "lucide-react-native";
 
 import { WaflOptionReel } from "@/features/inputs/reel-picker/WaflReelPickerSheet";
 import WaflInputSheet from "@/features/inputs/WaflInputSheet";
 import type { ReelOption } from "@/features/inputs/reel-picker/reelPickerModel";
 import { WAFL_FONTS } from "@/constants/fonts";
 import { WAFL_THEME } from "@/constants/theme";
-import type { WorkOrderColorRow, WorkOrderSizeRow } from "@/domain/mobileContract";
+import type { WorkOrderColorRow, WorkOrderQuantityCell, WorkOrderSizeRow } from "@/domain/mobileContract";
+import {
+  reconcileSelectionAfterDelete,
+  summarizeDraftStructureDeleteImpact,
+} from "@/domain/draftChildDeletionPolicy";
+import { confirmWaflDestructiveAction } from "@/features/feedback/confirmWaflDestructiveAction";
 import {
   COLOR_PALETTE_PRESETS,
   CUSTOM_COLOR_GROUPS,
@@ -29,7 +34,7 @@ import {
   togglePresetSelection,
   unavailableColorPresetKeys,
   unavailableSizePresetKeys,
-} from "./sizeColorAutoSortPolicy";
+} from "@/domain/sizeColorStructurePolicy";
 import type { SizeColorCacheEntry } from "./sizeColorCache";
 import type { ColorStructureDraft } from "./sizeColorStructureEditPolicy";
 import type { SizeColorStructureEditBoundary } from "./useSizeColorStructureEditController";
@@ -171,6 +176,7 @@ function ExistingStructureEditor(props: {
   readonly kind: "size" | "color";
   readonly sizeRows: readonly WorkOrderSizeRow[];
   readonly colorRows: readonly WorkOrderColorRow[];
+  readonly quantityCells: readonly WorkOrderQuantityCell[];
   readonly edit: SizeColorStructureEditBoundary;
   readonly onClose: () => void;
 }) {
@@ -240,6 +246,30 @@ function ExistingStructureEditor(props: {
     setPaletteHex(normalizedHex);
     setPaletteOpen(false);
   };
+  const requestDelete = () => {
+    if (!selectedRow || props.edit.busy) return;
+    const label = selectedSize?.displayLabel ?? selectedColor?.displayName ?? "";
+    const impact = summarizeDraftStructureDeleteImpact(props.quantityCells, props.kind, selectedRow.id);
+    const impactMessage = impact.quantityCellCount > 0 || impact.removedQuantity > 0
+      ? `연결된 수량 셀 ${impact.quantityCellCount}개와 수량 합계 ${impact.removedQuantity}개가 함께 삭제됩니다.`
+      : "연결된 수량 셀은 없습니다.";
+    confirmWaflDestructiveAction({
+      title: `${props.kind === "size" ? "사이즈" : "색상"} 삭제`,
+      message: `“${label}”을(를) 이 작업지시서 초안에서 영구 삭제합니다. ${impactMessage}`,
+      onConfirm: () => {
+        const deleteTarget = async () => {
+          const orderedIds = rows.map((row) => row.id);
+          const deleted = selectedSize
+            ? await props.edit.onDeleteSize(selectedSize.id)
+            : await props.edit.onDeleteColor((selectedColor as WorkOrderColorRow).id);
+          if (!deleted) return;
+          const nextId = reconcileSelectionAfterDelete(orderedIds, selectedRow.id, selectedId);
+          if (nextId) selectRow(nextId);
+        };
+        void deleteTarget();
+      },
+    });
+  };
   return <WaflInputSheet
     cancelAccessibilityLabel={`${props.kind === "size" ? "사이즈" : "색상"} 변경 취소`}
     confirmAccessibilityLabel={`${props.kind === "size" ? "사이즈" : "색상"} 변경 저장`}
@@ -275,6 +305,15 @@ function ExistingStructureEditor(props: {
                 <View style={styles.colorPreviewRow}><View style={[styles.customPreview, { backgroundColor: paletteHex }]} /><ReadOnlyColorValues hex={paletteHex} /></View>
               </WaflInputSheet> : null}
             </> : null}
+            <Pressable
+              accessibilityLabel={`${selectedSize?.displayLabel ?? selectedColor?.displayName ?? "항목"} 삭제`}
+              disabled={props.edit.busy}
+              onPress={requestDelete}
+              style={({ pressed }) => [styles.destructiveAction, pressed && styles.actionPressed, props.edit.busy && styles.disabled]}
+            >
+              <Trash2 color="#b52b35" size={17} />
+              <Text style={styles.destructiveActionText}>영구 삭제</Text>
+            </Pressable>
           </View>
     </View> : <Text style={styles.emptyText}>등록된 항목이 없습니다.</Text>}
   </WaflInputSheet>;
@@ -317,7 +356,7 @@ export default function WorkOrderSizeColorStructureEditor({ identity, state, edi
       </View>
       {edit.canEdit && chooser === "size" ? <SizeChooser busy={edit.busy} onAdd={edit.onAddSizes} onClose={() => setChooser(null)} rows={matrix.sizes} /> : null}
       {edit.canEdit && chooser === "color" ? <ColorChooser busy={edit.busy} onAdd={edit.onAddColors} onClose={() => setChooser(null)} rows={matrix.colors} /> : null}
-      {edit.canEdit && editor ? <ExistingStructureEditor colorRows={matrix.colors} edit={edit} key={`${matrix.workOrderId}:${editor}`} kind={editor} onClose={() => { edit.onCancel(); setEditor(null); }} sizeRows={matrix.sizes} /> : null}
+      {edit.canEdit && editor ? <ExistingStructureEditor colorRows={matrix.colors} edit={edit} key={`${matrix.workOrderId}:${editor}`} kind={editor} onClose={() => { edit.onCancel(); setEditor(null); }} quantityCells={matrix.quantityCells} sizeRows={matrix.sizes} /> : null}
     </View> : null}
     <WorkOrderSizeColorReadOnly edit={edit} identity={identity} onRetry={onRetry} state={state} />
   </View>;
@@ -346,6 +385,8 @@ const styles = StyleSheet.create({
   fixedEditor: { backgroundColor: "#faf7f1", borderColor: "#e4d9cc", borderRadius: 12, borderWidth: 1, gap: 8, padding: 12 },
   paletteScroll: { maxHeight: 230 },
   colorValueButton: { alignItems: "center", borderColor: "#d5dbe4", borderRadius: 8, borderWidth: 1, flexDirection: "row", gap: 7, minHeight: 44, paddingHorizontal: 8 },
+  destructiveAction: { alignItems: "center", alignSelf: "flex-start", borderColor: "#e2a5aa", borderRadius: 8, borderWidth: 1, flexDirection: "row", gap: 6, minHeight: 40, paddingHorizontal: 12 },
+  destructiveActionText: { color: "#b52b35", fontFamily: WAFL_FONTS.bold, fontSize: 12 },
   swatch: { borderColor: "#c8bcae", borderRadius: 7, borderWidth: 1, height: 28, width: 28 },
   chipGrid: { flexDirection: "row", flexWrap: "wrap", gap: 7 },
   chip: { alignItems: "center", backgroundColor: "#fff", borderColor: "#cbd3df", borderRadius: 999, borderWidth: 1, flexDirection: "row", gap: 5, minHeight: 40, paddingHorizontal: 12 },

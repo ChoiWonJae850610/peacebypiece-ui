@@ -13,12 +13,16 @@ import {
 } from "@/lib/domain/work-orders/command/commandRoute";
 import {
   addMaterialLine,
+  deleteMaterialLine,
   type MaterialCommandServiceResult,
   patchMaterialLine,
   transitionMaterialLifecycle,
   transitionMaterialOrder,
 } from "@/lib/domain/work-orders/command/materialCommandService";
-import { getWorkOrderV2CommandRuntimeGuard } from "@/lib/domain/work-orders/command/runtimeGuard";
+import {
+  getWorkOrderV2CommandRuntimeGuard,
+  getWorkOrderV2DraftChildHardDeleteMutationRuntimeGuard,
+} from "@/lib/domain/work-orders/command/runtimeGuard";
 import {
   validateAddMaterialLine,
   validateMaterialOrderTransition,
@@ -28,7 +32,7 @@ import {
 import { WorkOrderCommandRequestError } from "@/lib/domain/work-orders/command/commandService";
 import { WorkOrderCommandValidationError } from "@/lib/domain/work-orders/command/validation";
 
-type MaterialCommandKind = "create" | "patch" | "archive" | "restore" | "request" | "cancel" | "complete";
+type MaterialCommandKind = "create" | "patch" | "delete" | "archive" | "restore" | "request" | "cancel" | "complete";
 
 function successResponse(
   result: MaterialCommandServiceResult,
@@ -61,7 +65,9 @@ async function handleMaterialCommand(input: {
   readonly kind: MaterialCommandKind;
 }): Promise<NextResponse | NextResponse<WorkOrderApiErrorEnvelope>> {
   const correlationId = randomUUID() as CorrelationId;
-  const runtimeGuard = getWorkOrderV2CommandRuntimeGuard();
+  const runtimeGuard = input.kind === "delete"
+    ? getWorkOrderV2DraftChildHardDeleteMutationRuntimeGuard()
+    : getWorkOrderV2CommandRuntimeGuard();
   if (!runtimeGuard.ok) {
     return createCommandErrorResponse({
       code: "FORBIDDEN", message: "v2 자재 Command API는 승인된 dev/test runtime에서만 사용할 수 있습니다.",
@@ -86,6 +92,14 @@ async function handleMaterialCommand(input: {
     if (input.kind === "patch") {
       const command = validatePatchMaterialLine(body);
       const result = await patchMaterialLine({
+        workOrderId: input.workOrderId, materialLineId: input.materialLineId ?? "", command,
+        scope: guard.scope, companyMemberId: guard.session.companyMemberId, correlationId,
+      });
+      return successResponse(result, correlationId, 200);
+    }
+    if (input.kind === "delete") {
+      const command = validateMaterialLifecycleTransition({ body, idempotencyKey: input.request.headers.get("Idempotency-Key") });
+      const result = await deleteMaterialLine({
         workOrderId: input.workOrderId, materialLineId: input.materialLineId ?? "", command,
         scope: guard.scope, companyMemberId: guard.session.companyMemberId, correlationId,
       });
@@ -149,6 +163,10 @@ export function handleAddMaterialLineV2(request: Request, workOrderId: string) {
 
 export function handlePatchMaterialLineV2(request: Request, workOrderId: string, materialLineId: string) {
   return handleMaterialCommand({ request, workOrderId, materialLineId, kind: "patch" });
+}
+
+export function handleDeleteMaterialLineV2(request: Request, workOrderId: string, materialLineId: string) {
+  return handleMaterialCommand({ request, workOrderId, materialLineId, kind: "delete" });
 }
 
 export function handleMaterialLifecycleTransitionV2(

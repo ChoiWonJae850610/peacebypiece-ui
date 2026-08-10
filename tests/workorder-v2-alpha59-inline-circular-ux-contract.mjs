@@ -122,6 +122,7 @@ assert.doesNotMatch(overview, /field="totalQuantity"|onBeginEdit\("totalQuantity
 assert.match(runtime, /TOTAL_QUANTITY_DECIMAL_MIGRATION_REQUIRED/);
 
 assert.match(structure, /onAddSizes|onAddColors|COLOR_PALETTE_PRESETS|CUSTOM_COLOR_GROUPS/);
-assert.doesNotMatch(structure, /delete|archive|restore/i);
+assert.match(structure, /confirmWaflDestructiveAction/);
+assert.doesNotMatch(structure, /archive|restore/i);
 
 console.log("workorder v2 alpha.59 inline circular UX contract: PASS");

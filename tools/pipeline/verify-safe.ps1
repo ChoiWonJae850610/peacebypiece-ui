@@ -1158,6 +1158,7 @@ $profileCommands = @{
           @{ Name = "workorder v2 alpha.54 final UI polish contract"; Command = "node"; Arguments = @("tests/workorder-v2-alpha54-final-ui-polish-contract.mjs") },
           @{ Name = "workorder v2 alpha.54 Korean initial search and workflow badge contract"; Command = "node"; Arguments = @("tests/workorder-v2-alpha54-korean-search-status-badge-contract.mjs") },
           @{ Name = "workorder v2 alpha.56 accessory lifecycle parity contract"; Command = "node"; Arguments = @("tests/workorder-v2-alpha56-accessory-lifecycle-parity-contract.mjs") },
+          @{ Name = "workorder v2 alpha.60 draft child hard delete contract"; Command = "node"; Arguments = @("tests/workorder-v2-alpha60-draft-child-hard-delete-contract.mjs") },
           @{ Name = "WAFL external QA stop-state regression contract"; Command = "node"; Arguments = @("tests/wafl-external-qa-stop-state-contract.mjs") },
           @{ Name = "WAFL external QA Tailscale transport contract"; Command = "node"; Arguments = @("tests/wafl-external-qa-tailscale-transport-contract.mjs") },
           @{ Name = "WAFL external QA Tailscale runtime contract"; Command = "powershell.exe"; Arguments = @("-NoProfile", "-File", "tests/wafl-external-qa-tailscale-runtime-contract.ps1") },

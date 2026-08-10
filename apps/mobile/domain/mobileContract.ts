@@ -213,6 +213,8 @@ export type SizeColorStructureCommandResult = {
   readonly sizeRowId?: string;
   readonly quantity?: number;
   readonly totalQuantity?: number;
+  readonly deletedQuantityCellCount?: number;
+  readonly removedQuantity?: number;
   readonly nextVersion: number;
 };
 
@@ -263,6 +265,7 @@ export type WorkOrderMaterialLine = {
   readonly status: MaterialLineStatus;
   readonly displayOrder: number;
   readonly locked: boolean;
+  readonly deletable: boolean;
   readonly lifecycle: "active" | "archived";
   readonly archivedAt: string | null;
 };
@@ -315,6 +318,7 @@ export type MaterialLineCommandResult = {
     readonly nextVersion: number;
     readonly lineVersion: number;
     readonly lifecycle: "active" | "archived";
+    readonly deleted?: boolean;
   };
   readonly nextVersion: number;
 };

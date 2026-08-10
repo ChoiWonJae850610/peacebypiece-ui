@@ -45,6 +45,7 @@ export function normalizeMaterialLine(value: unknown): WorkOrderMaterialLine | n
     || typeof value.status !== "string"
     || !Number.isSafeInteger(value.displayOrder)
     || typeof value.locked !== "boolean"
+    || typeof value.deletable !== "boolean"
     || (value.lifecycle !== "active" && value.lifecycle !== "archived")
     || !(value.archivedAt === null || typeof value.archivedAt === "string")
   ) return null;
@@ -66,6 +67,7 @@ export function normalizeMaterialLine(value: unknown): WorkOrderMaterialLine | n
     status: MATERIAL_STATUSES.has(value.status) ? value.status as WorkOrderMaterialLine["status"] : "unknown",
     displayOrder: Number(value.displayOrder),
     locked: value.locked,
+    deletable: value.deletable,
     lifecycle: value.lifecycle,
     archivedAt: value.archivedAt,
   };
@@ -83,6 +85,7 @@ export function normalizeMaterialCommandResult(value: unknown, workOrderId: stri
     || !Number.isSafeInteger(result.nextVersion)
     || !Number.isSafeInteger(result.lineVersion)
     || (result.lifecycle !== "active" && result.lifecycle !== "archived")
+    || !(result.deleted === undefined || typeof result.deleted === "boolean")
     || !Number.isSafeInteger(value.nextVersion)
     || value.nextVersion !== result.nextVersion
     || Number(value.nextVersion) < 1

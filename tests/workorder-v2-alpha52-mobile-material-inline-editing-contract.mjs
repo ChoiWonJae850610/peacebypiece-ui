@@ -56,7 +56,8 @@ for (const input of [
 }
 assert.match(app, /await workOrderMutationController\.updateMaterial/);
 assert.match(app, /await workOrderMutationController\.createMaterial/);
-assert.match(app, /requestArchiveMaterial/);
+assert.match(app, /requestDeleteMaterial/);
+assert.match(app, /workOrderMutationController\.deleteMaterial/);
 assert.doesNotMatch(materials, /onRestore|restoreButton|archivedSection/);
 assert.match(app, /materialMutation\.inFlight/);
 assert.doesNotMatch(materials, /onPress=\{onEdit\}/);
