@@ -23,6 +23,15 @@ export type BasicInfoDraft = {
 export type BasicInfoFieldErrors = Partial<Record<keyof BasicInfoDraft, string>>;
 export type MaterialEditorFieldErrors = Partial<Record<keyof MaterialDraftFields, string>>;
 
+export const WORK_ORDER_PRODUCT_NAME_MAX_LENGTH = 200;
+
+export function validateWorkOrderProductName(value: string): string | null {
+  const productName = value.trim();
+  return productName.length < 1 || productName.length > WORK_ORDER_PRODUCT_NAME_MAX_LENGTH
+    ? `제품명은 1자 이상 ${WORK_ORDER_PRODUCT_NAME_MAX_LENGTH}자 이하여야 합니다.`
+    : null;
+}
+
 export const EMPTY_MATERIAL_DRAFT: MaterialDraftFields = {
   name: "",
   colorOption: "",
@@ -87,7 +96,8 @@ export function validateBasicInfoDraft(draft: BasicInfoDraft): BasicInfoFieldErr
   const errors: BasicInfoFieldErrors = {};
   const totalQuantity = normalizeNumericCommitValue(draft.totalQuantity);
   const productName = draft.productName.trim();
-  if (productName.length < 1 || productName.length > 200) errors.productName = "제품명은 1자 이상 200자 이하여야 합니다.";
+  const productNameError = validateWorkOrderProductName(productName);
+  if (productNameError) errors.productName = productNameError;
   if (draft.dueDate) {
     const matched = /^(\d{4})-(\d{2})-(\d{2})$/.exec(draft.dueDate);
     const year = Number(matched?.[1] ?? 0);

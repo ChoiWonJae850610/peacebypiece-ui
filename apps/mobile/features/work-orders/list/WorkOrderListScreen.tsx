@@ -1,8 +1,9 @@
 import { useEffect, useRef, useState } from "react";
 import { ActivityIndicator, Image, Keyboard, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
-import { RefreshCw, Search, X } from "lucide-react-native";
+import { Plus, RefreshCw, Search, X } from "lucide-react-native";
 
 import { WAFL_FONTS } from "@/constants/fonts";
+import { WAFL_THEME } from "@/constants/theme";
 import type { WorkOrderListItem, WorkOrderListStatusFilter } from "@/domain/mobileContract";
 import { resolveMobileApiUrl } from "@/lib/apiClient";
 import {
@@ -32,6 +33,7 @@ type Props = {
   readonly searching?: boolean;
   readonly query: string;
   readonly statusFilter: WorkOrderListStatusFilter;
+  readonly onCreate: () => void;
   readonly onRefresh: () => void;
   readonly onLoadMore: () => void;
   readonly onSearch: (query: string) => void;
@@ -41,7 +43,7 @@ type Props = {
 
 export default function WorkOrderListScreen({
   items, hasMore, selectedId, loading = false, loadingMore = false, searching = false, query, statusFilter,
-  onRefresh, onLoadMore, onSearch, onStatusFilter, onSelect,
+  onCreate, onRefresh, onLoadMore, onSearch, onStatusFilter, onSelect,
 }: Props) {
   const [searchDraft, setSearchDraft] = useState(query);
   const onSearchRef = useRef(onSearch);
@@ -67,9 +69,14 @@ export default function WorkOrderListScreen({
           <Text style={styles.title}>작업지시서</Text>
           <Text style={styles.count}>현재 표시 작업지시서 {visibleItems.length}개{hasMore ? " · 다음 페이지 있음" : ""}</Text>
         </View>
-        <Pressable accessibilityLabel="작업지시서 목록 새로고침" accessibilityRole="button" disabled={loading} onPress={onRefresh} style={({ pressed }) => [styles.iconButton, pressed && styles.pressed]}>
-          {loading ? <ActivityIndicator color="#5b4c3d" /> : <RefreshCw color="#5b4c3d" size={20} />}
-        </Pressable>
+        <View style={styles.headingActions}>
+          <Pressable accessibilityLabel="새 작업지시서 만들기" accessibilityRole="button" disabled={loading || searching} onPress={onCreate} style={({ pressed }) => [styles.createButton, (loading || searching) && styles.disabled, pressed && styles.pressed]}>
+            <Plus color="#fff" size={18} /><Text style={styles.createText}>새로 만들기</Text>
+          </Pressable>
+          <Pressable accessibilityLabel="작업지시서 목록 새로고침" accessibilityRole="button" disabled={loading} onPress={onRefresh} style={({ pressed }) => [styles.iconButton, pressed && styles.pressed]}>
+            {loading ? <ActivityIndicator color="#5b4c3d" /> : <RefreshCw color="#5b4c3d" size={20} />}
+          </Pressable>
+        </View>
       </View>
 
       <View style={styles.searchRow}>
@@ -179,9 +186,12 @@ const styles = StyleSheet.create({
   container: { flex: 1, minHeight: 0 },
   headingRow: { alignItems: "center", flexDirection: "row", gap: 12, justifyContent: "space-between", marginBottom: 12 },
   headingText: { flex: 1, minWidth: 0 },
+  headingActions: { alignItems: "center", flexDirection: "row", gap: 8 },
   title: { color: "#17263d", fontFamily: WAFL_FONTS.black, fontSize: 22 },
   count: { color: "#75695d", fontFamily: WAFL_FONTS.regular, fontSize: 12, marginTop: 3 },
   iconButton: { alignItems: "center", backgroundColor: "#fffaf2", borderColor: "#ddd0bf", borderRadius: 12, borderWidth: 1, height: 44, justifyContent: "center", width: 44 },
+  createButton: { alignItems: "center", backgroundColor: WAFL_THEME.color.navyInk, borderRadius: 12, flexDirection: "row", gap: 5, height: 44, justifyContent: "center", paddingHorizontal: 11 },
+  createText: { color: "#fff", fontFamily: WAFL_FONTS.bold, fontSize: 12 },
   searchRow: { alignItems: "center", flexDirection: "row", flexShrink: 0, gap: 7, height: WORK_ORDER_SEARCH_LAYOUT.rowHeight, marginBottom: 8, maxHeight: WORK_ORDER_SEARCH_LAYOUT.rowHeight, minHeight: WORK_ORDER_SEARCH_LAYOUT.rowHeight },
   searchField: { alignItems: "center", backgroundColor: "#fffdf8", borderColor: "#d9cdbf", borderRadius: 10, borderWidth: 1, flex: 1, flexDirection: "row", gap: 6, height: WORK_ORDER_SEARCH_LAYOUT.fieldHeight, maxHeight: WORK_ORDER_SEARCH_LAYOUT.fieldHeight, minHeight: WORK_ORDER_SEARCH_LAYOUT.fieldHeight, overflow: "hidden", paddingHorizontal: 10 },
   searchInput: { color: "#17263d", flex: 1, fontFamily: WAFL_FONTS.regular, fontSize: 12, height: WORK_ORDER_SEARCH_LAYOUT.inputHeight, includeFontPadding: false, lineHeight: WORK_ORDER_SEARCH_LAYOUT.inputLineHeight, maxHeight: WORK_ORDER_SEARCH_LAYOUT.inputHeight, minHeight: WORK_ORDER_SEARCH_LAYOUT.inputHeight, minWidth: 0, paddingBottom: 0, paddingTop: 0, paddingVertical: 0 },
@@ -194,6 +204,7 @@ const styles = StyleSheet.create({
   filterText: { color: "#67584c", fontFamily: WAFL_FONTS.semibold, fontSize: 11 },
   filterTextSelected: { color: "#fff" },
   pressed: { opacity: 0.72 },
+  disabled: { opacity: 0.45 },
   list: { gap: 10, paddingBottom: 30 },
   card: { backgroundColor: "#fffdf8", borderColor: "#dfd5c8", borderRadius: 15, borderWidth: 1, gap: 9, padding: 14 },
   cardSelected: { borderColor: "#9b4a27", borderWidth: 2, padding: 13 },

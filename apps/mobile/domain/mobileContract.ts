@@ -417,6 +417,31 @@ export type PatchWorkOrderBasicInfoInput = {
   };
 };
 
+export type CreateWorkOrderDraftInput = {
+  readonly clientRequestId: string;
+  readonly productName: string;
+};
+
+export type CreateWorkOrderDraftResult = {
+  readonly result: {
+    readonly workOrderId: string;
+    readonly revisionId: string;
+    readonly revisionNumber: 0;
+    readonly status: "draft";
+    readonly revisionStatus: "draft";
+    readonly displayDocumentNumber: null;
+    readonly productName: string;
+    readonly productTypeCode: null;
+    readonly seasonCode: null;
+    readonly itemCode: null;
+    readonly dueDate: null;
+    readonly totalQuantity: 0;
+    readonly memo: null;
+    readonly factoryDeliveryMemo: null;
+  };
+  readonly nextVersion: number;
+};
+
 export type PatchWorkOrderBasicInfoResult = {
   readonly result: {
     readonly productName: string;

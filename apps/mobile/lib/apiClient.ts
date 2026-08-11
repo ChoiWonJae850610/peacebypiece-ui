@@ -1,5 +1,7 @@
 import type {
   CreateMaterialLineInput,
+  CreateWorkOrderDraftInput,
+  CreateWorkOrderDraftResult,
   MaterialLineCommandResult,
   MaterialLifecycleCommandInput,
   MaterialOrderCommandInput,
@@ -406,6 +408,44 @@ export async function getWorkOrderList(input: {
   if (input.cursor) query.set("cursor", input.cursor);
   const body = await requestJson<{ readonly ok: boolean; readonly data?: WorkOrderListPage }>(`/api/v2/work-orders?${query.toString()}`, { method: "GET" });
   if (!body.ok || !body.data || !Array.isArray(body.data.items)) throw new MobileApiError({ code: "MALFORMED_RESPONSE", message: "제작 카드 목록 응답이 올바르지 않습니다." });
+  return body.data;
+}
+
+export async function createWorkOrderDraft(
+  command: CreateWorkOrderDraftInput,
+  idempotencyKey: string,
+): Promise<CreateWorkOrderDraftResult> {
+  const body = await requestJson<{
+    readonly ok: boolean;
+    readonly data?: CreateWorkOrderDraftResult;
+  }>("/api/v2/work-orders", {
+    method: "POST",
+    body: { clientRequestId: command.clientRequestId, productName: command.productName },
+    idempotencyKey,
+  });
+  const result = body.data?.result;
+  if (
+    !body.ok
+    || !result
+    || !isNonEmptyString(result.workOrderId)
+    || !isNonEmptyString(result.revisionId)
+    || result.revisionNumber !== 0
+    || result.status !== "draft"
+    || result.revisionStatus !== "draft"
+    || result.displayDocumentNumber !== null
+    || !isNonEmptyString(result.productName)
+    || result.productTypeCode !== null
+    || result.seasonCode !== null
+    || result.itemCode !== null
+    || result.dueDate !== null
+    || result.totalQuantity !== 0
+    || result.memo !== null
+    || result.factoryDeliveryMemo !== null
+    || !Number.isSafeInteger(body.data.nextVersion)
+    || body.data.nextVersion < 1
+  ) {
+    throw new MobileApiError({ code: "MALFORMED_RESPONSE", message: "작업지시서 생성 응답이 올바르지 않습니다." });
+  }
   return body.data;
 }
 

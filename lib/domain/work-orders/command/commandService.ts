@@ -25,9 +25,10 @@ import {
 } from "@/lib/domain/work-orders/command/commandRepository";
 import {
   getWorkOrderV2BasicInfoMutationRuntimeGuard,
+  getWorkOrderV2CreateMutationRuntimeGuard,
   getWorkOrderV2CommandRuntimeGuard,
   getWorkOrderV2MaterialDraftMutationRuntimeGuard,
-  WAFL_V2_ALPHA25_MUTATION_APPROVAL,
+  getWorkOrderV2SizeColorStructureMutationRuntimeGuard,
 } from "@/lib/domain/work-orders/command/runtimeGuard";
 
 export class WorkOrderCommandRequestError extends Error {
@@ -123,6 +124,28 @@ export function requireBasicInfoMutationApproval() {
   }
 }
 
+export function requireWorkOrderCreateMutationApproval() {
+  const guard = getWorkOrderV2CreateMutationRuntimeGuard();
+  if (!guard.ok) {
+    throw new WorkOrderCommandRequestError({
+      code: "FORBIDDEN",
+      status: 403,
+      message: "작업지시서 생성은 별도 승인된 dev/test runtime에서만 실행할 수 있습니다.",
+    });
+  }
+}
+
+export function requireSizeColorStructureMutationApproval() {
+  const guard = getWorkOrderV2SizeColorStructureMutationRuntimeGuard();
+  if (!guard.ok) {
+    throw new WorkOrderCommandRequestError({
+      code: "FORBIDDEN",
+      status: 403,
+      message: "Size/color changes require an approved dev/test runtime.",
+    });
+  }
+}
+
 export function requireMaterialDraftMutationApproval() {
   const guard = getWorkOrderV2MaterialDraftMutationRuntimeGuard();
   if (!guard.ok) {
@@ -198,7 +221,7 @@ export async function createWorkOrderDraft(input: {
     correlationId: input.correlationId,
     permissionCode: "workorder.create",
   });
-  requireCommandMutationApproval(WAFL_V2_ALPHA25_MUTATION_APPROVAL);
+  requireWorkOrderCreateMutationApproval();
 
   const scopedIdempotencyKeyHash = sha256([
     WORK_ORDER_CREATE_COMMAND_CODE,

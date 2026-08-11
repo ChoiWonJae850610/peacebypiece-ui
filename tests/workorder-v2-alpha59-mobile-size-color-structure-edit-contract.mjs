@@ -122,7 +122,7 @@ assert.match(repository, /color_code/);
 assert.match(repository, /DELETE FROM \$\{config\.table\}/);
 assert.doesNotMatch(repository, /archiv|restore/i);
 assert.match(service, /permissionCode: "workorder\.update"/);
-assert.match(service, /WAFL_V2_ALPHA59_SIZE_COLOR_STRUCTURE_MUTATION_APPROVAL/);
+assert.match(service, /requireSizeColorStructureMutationApproval\(\)/);
 assert.match(route, /getWorkOrderV2SizeColorStructureMutationRuntimeGuard/);
 assert.doesNotMatch(route, /\bSELECT\b|\bINSERT\b|\bUPDATE\b|\bDELETE\b/);
 assert.match(validation, /REORDER_ITEM_BATCH_MAX/);

@@ -22,7 +22,18 @@ assert.match(shell, /<MobileWorkOrderExperience/);
 assert.doesNotMatch(shell, /apiClient|fetch\(|PATCH|validation|status ===/);
 const apiClientImports = experience.match(/^import .* from "@\/lib\/apiClient";$/gm) ?? [];
 assert.deepEqual(apiClientImports, ['import { resolveMobileApiUrl } from "@/lib/apiClient";']);
-assert.doesNotMatch(experience, /(?:get|update|create|delete|prepare|complete|archive|restore)WorkOrder[A-Za-z]*\(/, "experience must keep API mutations and queries behind application controllers");
+const directApiFetchPattern = /\bfetch\s*\(\s*(?:["'](?:https?:\/\/|\/api\/v2\/)|`[^`]*(?:https?:\/\/|\/api\/v2\/)|(?:configuredOrigin|resolveMobileApiUrl)\s*\()/;
+const directApiBypassPattern = /\brequestJson\s*\(|["']\/api\/v2\//;
+const delegatedCreateFixture = 'async function createWorkOrderDraftFromMobile() { return workOrderMutationController.createDraft(command, key); }';
+const directApiBypassFixture = 'async function createWorkOrderDraftFromMobile() { return fetch("/api/v2/work-orders"); }';
+const localAssetFetchFixture = 'const localResponse = await fetch(acquired.asset.uri);';
+assert.doesNotMatch(delegatedCreateFixture, directApiBypassPattern, "controller delegation must not be mistaken for a direct API bypass");
+assert.doesNotMatch(localAssetFetchFixture, directApiFetchPattern, "local asset URI reads must not be mistaken for API ownership");
+assert.match(directApiBypassFixture, directApiFetchPattern, "direct HTTP API fetch must remain forbidden in the screen layer");
+assert.doesNotMatch(experience, directApiBypassPattern, "experience must keep request helpers and API route ownership behind application controllers");
+assert.doesNotMatch(experience, directApiFetchPattern, "experience must keep HTTP API execution behind application controllers");
+assert.doesNotMatch(experience, /EXPO_PUBLIC_WAFL_(?:API_BASE_URL|WEB_BASE_URL)/, "experience must not own the WAFL API base origin");
+assert.match(experience, /workOrderMutationController\.createDraft\(/, "mobile create must use the canonical mutation controller");
 for (const boundary of ["mobileSessionController", "useWorkOrderNavigation", "workOrderQueryController", "workOrderMutationController", "createExplicitMutationController"]) {
   assert.match(experience, new RegExp(boundary), `missing application boundary: ${boundary}`);
 }

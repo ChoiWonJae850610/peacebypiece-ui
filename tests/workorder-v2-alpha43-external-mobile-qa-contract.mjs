@@ -193,7 +193,7 @@ assert.match(startScript, /EXPO_PUBLIC_WAFL_WEB_BASE_URL/);
 assert.match(startScript, /ValidateSet\("ExpoTunnelLegacyDisabled", "Lan", "TailscaleLan", "DeveloperAutoConnect"\)/);
 assert.match(startScript, /EXPO_PACKAGER_PROXY_URL/);
 assert.equal((startScript.match(/APP_VARIANT/g) ?? []).length, 1);
-assert.match(startScript, /if \(\$MobileTransport -in @\("TailscaleLan", "DeveloperAutoConnect"\)\) \{\s*\$mobileEnvironment\.APP_VARIANT = "development"\s*\$mobileEnvironment\.EXPO_PACKAGER_PROXY_URL/);
+assert.match(startScript, /if \(\$MobileTransport -in @\("TailscaleLan", "DeveloperAutoConnect"\)\) \{\s*\$mobileEnvironment\.APP_VARIANT = "development"\s*[\s\S]*?\$mobileEnvironment\.REACT_NATIVE_PACKAGER_HOSTNAME = \$state\.tailscaleIpv4\s*\$mobileEnvironment\.EXPO_PACKAGER_PROXY_URL/);
 assert.match(startScript, /expo-tailscale-lan-ready/);
 assert.match(startScript, /"--lan"/);
 assert.doesNotMatch(startScript, /"--tunnel"/);

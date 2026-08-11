@@ -28,6 +28,8 @@ export const WAFL_V2_ALPHA59_SIZE_COLOR_STRUCTURE_MUTATION_APPROVAL =
   "2.0.0-alpha.59-dev-test-size-color-structure-runtime";
 export const WAFL_V2_ALPHA60_DRAFT_CHILD_HARD_DELETE_MUTATION_APPROVAL =
   "2.0.0-alpha.60-dev-test-draft-child-hard-delete-runtime";
+export const WAFL_V2_ALPHA61_MOBILE_WORK_ORDER_CREATE_MUTATION_APPROVAL =
+  "2.0.0-alpha.61-dev-test-mobile-work-order-create-runtime";
 
 const SUPPORTED_MUTATION_APPROVALS = new Set([
   WAFL_V2_ALPHA25_MUTATION_APPROVAL,
@@ -39,6 +41,7 @@ const SUPPORTED_MUTATION_APPROVALS = new Set([
   WAFL_V2_ALPHA57_WORK_ORDER_IMAGE_MUTATION_APPROVAL,
   WAFL_V2_ALPHA59_SIZE_COLOR_STRUCTURE_MUTATION_APPROVAL,
   WAFL_V2_ALPHA60_DRAFT_CHILD_HARD_DELETE_MUTATION_APPROVAL,
+  WAFL_V2_ALPHA61_MOBILE_WORK_ORDER_CREATE_MUTATION_APPROVAL,
 ]);
 
 export type WorkOrderV2CommandRuntimeGuard =
@@ -73,6 +76,18 @@ export function getWorkOrderV2CommandRuntimeGuard(input?: {
     fingerprint: readGuard.fingerprint,
     mutationApproved,
   };
+}
+
+export function getWorkOrderV2CreateMutationRuntimeGuard(): WorkOrderV2CommandRuntimeGuard {
+  const configuredApproval = process.env.WAFL_V2_COMMAND_MUTATION_APPROVED ?? "";
+  if (
+    configuredApproval !== WAFL_V2_ALPHA25_MUTATION_APPROVAL
+    && configuredApproval !== WAFL_V2_ALPHA61_MOBILE_WORK_ORDER_CREATE_MUTATION_APPROVAL
+  ) return { ok: false, reason: "work-order-create-mutation-approval-missing" };
+  return getWorkOrderV2CommandRuntimeGuard({
+    requireMutationApproval: true,
+    requiredMutationApproval: configuredApproval,
+  });
 }
 
 export function getWorkOrderV2BasicInfoMutationRuntimeGuard(): WorkOrderV2CommandRuntimeGuard {
@@ -126,6 +141,7 @@ export function getWorkOrderV2SizeColorStructureMutationRuntimeGuard(): WorkOrde
   if (
     configuredApproval !== WAFL_V2_ALPHA59_SIZE_COLOR_STRUCTURE_MUTATION_APPROVAL
     && configuredApproval !== WAFL_V2_ALPHA60_DRAFT_CHILD_HARD_DELETE_MUTATION_APPROVAL
+    && configuredApproval !== WAFL_V2_ALPHA61_MOBILE_WORK_ORDER_CREATE_MUTATION_APPROVAL
   ) return { ok: false, reason: "size-color-mutation-approval-missing" };
   return getWorkOrderV2CommandRuntimeGuard({
     requireMutationApproval: true,

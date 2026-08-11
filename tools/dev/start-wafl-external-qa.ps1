@@ -16,14 +16,15 @@
     [switch]$EnableAlpha56AccessoryLifecycleParityMutation,
     [switch]$EnableAlpha57WorkOrderImageMutation,
     [switch]$EnableAlpha59SizeColorStructureMutation,
-    [switch]$EnableAlpha60DraftChildHardDeleteMutation
+    [switch]$EnableAlpha60DraftChildHardDeleteMutation,
+    [switch]$EnableAlpha61MobileWorkOrderCreateMutation
 )
 
 $ErrorActionPreference = "Stop"
 . (Join-Path $PSScriptRoot "wafl-external-qa-common.ps1")
 . (Join-Path $PSScriptRoot "..\pipeline\pipeline-common.ps1")
 
-if (@($EnableAlpha46BasicInfoMutation, $EnableAlpha50MaterialDraftMutation, $EnableAlpha51MaterialLifecycleMutation, $EnableAlpha52CoreInlineMutation, $EnableAlpha55MaterialOrderLifecycleMutation, $EnableAlpha56AccessoryLifecycleParityMutation, $EnableAlpha57WorkOrderImageMutation, $EnableAlpha59SizeColorStructureMutation, $EnableAlpha60DraftChildHardDeleteMutation).Where({ $_ }).Count -gt 1) {
+if (@($EnableAlpha46BasicInfoMutation, $EnableAlpha50MaterialDraftMutation, $EnableAlpha51MaterialLifecycleMutation, $EnableAlpha52CoreInlineMutation, $EnableAlpha55MaterialOrderLifecycleMutation, $EnableAlpha56AccessoryLifecycleParityMutation, $EnableAlpha57WorkOrderImageMutation, $EnableAlpha59SizeColorStructureMutation, $EnableAlpha60DraftChildHardDeleteMutation, $EnableAlpha61MobileWorkOrderCreateMutation).Where({ $_ }).Count -gt 1) {
     throw "EXTERNAL_QA_MUTATION_MODES_ARE_MUTUALLY_EXCLUSIVE"
 }
 $internalMemoImeMode = $RuntimeQaMode -eq "memo-ime-display"
@@ -391,6 +392,13 @@ try {
         $state.commandApi = "ready"
         $state.mutationMode = "draft-child-hard-delete"
     }
+    if ($EnableAlpha61MobileWorkOrderCreateMutation) {
+        $serverEnvironment.WAFL_V2_COMMAND_API_ENABLED = "1"
+        $serverEnvironment.WAFL_V2_COMMAND_MUTATION_APPROVED = "2.0.0-alpha.61-dev-test-mobile-work-order-create-runtime"
+        $serverEnvironment.WAFL_EXTERNAL_QA_ALPHA61_MOBILE_WORK_ORDER_CREATE_MUTATION_ENABLED = "true"
+        $state.commandApi = "ready"
+        $state.mutationMode = "mobile-work-order-create"
+    }
     $nextStdout = Join-Path $stateDir "next.stdout.log"
     $nextStderr = Join-Path $stateDir "next.stderr.log"
     $nextArguments = if ($NextMode -eq "production") { @($nextCli, "start", "-H", "127.0.0.1", "-p", [string]$NextPort) } else { @($nextCli, "dev", "-H", "127.0.0.1", "-p", [string]$NextPort) }
@@ -457,6 +465,12 @@ try {
     }
     if ($MobileTransport -in @("TailscaleLan", "DeveloperAutoConnect")) {
         $mobileEnvironment.APP_VARIANT = "development"
+        # Expo's URL creator consults the proxy URL first, but keep the legacy
+        # hostname fallback on the same dynamically resolved tailnet address.
+        # This prevents a Development Client deep link from falling back to the
+        # Windows LAN gateway when Expo changes which URL-construction branch it
+        # uses.
+        $mobileEnvironment.REACT_NATIVE_PACKAGER_HOSTNAME = $state.tailscaleIpv4
         $mobileEnvironment.EXPO_PACKAGER_PROXY_URL = "http://$($state.tailscaleIpv4):$ExpoPort"
     }
     $savedMobile = @{}
@@ -473,7 +487,7 @@ try {
 
     $expoStdout = Join-Path $stateDir "expo.stdout.log"
     $expoStderr = Join-Path $stateDir "expo.stderr.log"
-    $expo = Start-WaflQaOwnedProcess -Role "expo" -FilePath $node -ArgumentList @($expoCli, "start", "--lan", "--port", [string]$ExpoPort) -WorkingDirectory (Join-Path $root "apps\mobile") -OwnerMarker $ownerMarker -Environment $mobileEnvironment -StdoutPath $expoStdout -StderrPath $expoStderr
+    $expo = Start-WaflQaOwnedProcess -Role "expo" -FilePath $node -ArgumentList @($expoCli, "start", "--lan", "--dev-client", "--port", [string]$ExpoPort) -WorkingDirectory (Join-Path $root "apps\mobile") -OwnerMarker $ownerMarker -Environment $mobileEnvironment -StdoutPath $expoStdout -StderrPath $expoStderr
     $state.processes += $expo
     $state.lastSuccessfulStage = "expo-lan-started"
     Write-WaflQaJson -Path (Get-WaflQaStatePath) -Value $state
@@ -499,6 +513,40 @@ try {
             }
         } catch {
             throw "EXPO_TAILSCALE_READINESS_FAILED"
+        }
+    }
+
+    if ($developerAutoConnect) {
+        try {
+            $manifestResponse = Invoke-WebRequest -UseBasicParsing -Uri "http://127.0.0.1:$ExpoPort/manifest?platform=ios" -Method Get -TimeoutSec 10
+            if ($manifestResponse.StatusCode -ne 200) { throw "EXPO_IOS_MANIFEST_UNAVAILABLE" }
+            $manifest = $manifestResponse.Content | ConvertFrom-Json
+            $launchUrl = [string]$manifest.launchAsset.url
+            if ([string]::IsNullOrWhiteSpace($launchUrl)) { throw "EXPO_IOS_MANIFEST_LAUNCH_URL_MISSING" }
+            $launchUri = [Uri]$launchUrl
+            if ($launchUri.Host -ne $state.tailscaleIpv4 -or $launchUri.Port -ne $ExpoPort) {
+                throw "EXPO_DEVELOPER_AUTOCONNECT_METRO_ADVERTISED_HOST_MISMATCH"
+            }
+            $developerClientRedirect = Invoke-WebRequest -UseBasicParsing -MaximumRedirection 0 -Uri "http://127.0.0.1:$ExpoPort/_expo/link?choice=expo-dev-client&platform=ios" -Method Get -TimeoutSec 10
+            if ($developerClientRedirect.StatusCode -ne 307) { throw "EXPO_DEVELOPER_AUTOCONNECT_CLIENT_LAUNCH_URL_UNAVAILABLE" }
+            $developerClientLocation = [string]$developerClientRedirect.Headers.Location
+            if ([string]::IsNullOrWhiteSpace($developerClientLocation)) { throw "EXPO_DEVELOPER_AUTOCONNECT_CLIENT_LAUNCH_URL_MISSING" }
+            $developerClientUri = [Uri]$developerClientLocation
+            $developerClientQuery = [System.Web.HttpUtility]::ParseQueryString($developerClientUri.Query)
+            $developerClientMetroUrl = [string]$developerClientQuery.Get("url")
+            if ([string]::IsNullOrWhiteSpace($developerClientMetroUrl)) { throw "EXPO_DEVELOPER_AUTOCONNECT_CLIENT_LAUNCH_URL_MISSING" }
+            $developerClientMetroUri = [Uri]$developerClientMetroUrl
+            if ($developerClientMetroUri.Host -ne $state.tailscaleIpv4 -or $developerClientMetroUri.Port -ne $ExpoPort) {
+                throw "EXPO_DEVELOPER_AUTOCONNECT_CLIENT_LAUNCH_HOST_MISMATCH"
+            }
+            $state.metroAdvertisedHost = $launchUri.Host
+            $state.iosManifestLaunchHost = $launchUri.Host
+            $state.developerClientLaunchHost = $developerClientMetroUri.Host
+            $state.developerClientLaunchPort = $developerClientMetroUri.Port
+            $state.lastSuccessfulStage = "expo-developer-autoconnect-manifest-tailnet-verified"
+            Write-WaflQaJson -Path (Get-WaflQaStatePath) -Value $state
+        } catch {
+            throw "EXPO_DEVELOPER_AUTOCONNECT_METRO_ADVERTISED_HOST_MISMATCH"
         }
     }
 

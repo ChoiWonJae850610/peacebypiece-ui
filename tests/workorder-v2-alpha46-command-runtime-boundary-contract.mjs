@@ -2,7 +2,7 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
-import { isExternalQaPathAllowed } from "../lib/external-qa/configCore.mjs";
+import { isExternalQaPathAllowed, isTailscaleServePathAllowed } from "../lib/external-qa/configCore.mjs";
 
 const read = (relativePath) => fs.readFileSync(path.resolve(relativePath), "utf8");
 const runtime = read("lib/domain/work-orders/command/runtimeGuard.ts");
@@ -24,7 +24,9 @@ assert.ok(genericApprovals);
 assert.doesNotMatch(genericApprovals, /ALPHA46|alpha\.46/, "alpha.46 must not enter the generic mutation approval set");
 assert.match(runtime, /getWorkOrderV2BasicInfoMutationRuntimeGuard/);
 assert.match(runtime, /WAFL_V2_ALPHA25_MUTATION_APPROVAL[\s\S]*WAFL_V2_ALPHA46_BASIC_INFO_MUTATION_APPROVAL/);
-assert.match(service, /createWorkOrderDraft[\s\S]*requireCommandMutationApproval\(WAFL_V2_ALPHA25_MUTATION_APPROVAL\)/);
+assert.match(runtime, /getWorkOrderV2CreateMutationRuntimeGuard/);
+assert.match(runtime, /WAFL_V2_ALPHA25_MUTATION_APPROVAL[\s\S]*WAFL_V2_ALPHA61_MOBILE_WORK_ORDER_CREATE_MUTATION_APPROVAL/);
+assert.match(service, /createWorkOrderDraft[\s\S]*requireWorkOrderCreateMutationApproval\(\)/);
 assert.match(service, /patchWorkOrderBasicInfo[\s\S]*requireBasicInfoMutationApproval\(\)/);
 assert.match(validation, /mobileBasicInfoOnly/);
 assert.match(validation, /new Set\(\["productName", "dueDate", "totalQuantity"\]\)/);
@@ -44,6 +46,19 @@ assert.equal(isExternalQaPathAllowed(uuidPath, "PATCH", {
   WAFL_V2_COMMAND_API_ENABLED: "1",
   WAFL_V2_COMMAND_MUTATION_APPROVED: "2.0.0-alpha.46-dev-test-mobile-basic-info-runtime",
 }), false);
+const alpha61CreateEnvironment = {
+  WAFL_SERVER_RUNTIME_MODE: "dev",
+  WAFL_EXTERNAL_QA_ALPHA61_MOBILE_WORK_ORDER_CREATE_MUTATION_ENABLED: "true",
+  WAFL_V2_COMMAND_API_ENABLED: "1",
+  WAFL_V2_COMMAND_MUTATION_APPROVED: "2.0.0-alpha.61-dev-test-mobile-work-order-create-runtime",
+};
+assert.equal(isExternalQaPathAllowed("/api/v2/work-orders", "POST", alpha61CreateEnvironment), true);
+assert.equal(isTailscaleServePathAllowed("/api/v2/work-orders", "POST", alpha61CreateEnvironment), true);
+assert.equal(isTailscaleServePathAllowed(`${uuidPath}/size-color/sizes`, "POST", alpha61CreateEnvironment), true);
+assert.equal(isTailscaleServePathAllowed(`${uuidPath}/size-color/quantities/9c2325ba-3b70-fd71-0eb5-c68db954829a/9c2325ba-3b70-fd71-0eb5-c68db954829a`, "PATCH", alpha61CreateEnvironment), true);
+assert.equal(isExternalQaPathAllowed("/api/v2/work-orders", "POST", { ...alpha61CreateEnvironment, WAFL_SERVER_RUNTIME_MODE: "production" }), false);
+assert.equal(isExternalQaPathAllowed("/api/v2/work-orders", "POST", { ...alpha61CreateEnvironment, WAFL_V2_COMMAND_MUTATION_APPROVED: "2.0.0-alpha.60-dev-test-draft-child-hard-delete-runtime" }), false);
+assert.equal(isExternalQaPathAllowed("/api/v2/work-orders", "POST", { ...alpha61CreateEnvironment, WAFL_EXTERNAL_QA_ALPHA61_MOBILE_WORK_ORDER_CREATE_MUTATION_ENABLED: "false" }), false);
 assert.equal(isExternalQaPathAllowed(uuidPath, "PATCH", {
   WAFL_SERVER_RUNTIME_MODE: "dev",
   WAFL_EXTERNAL_QA_ALPHA46_BASIC_INFO_MUTATION_ENABLED: "true",

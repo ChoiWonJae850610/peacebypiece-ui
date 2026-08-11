@@ -47,7 +47,9 @@ assert.match(runtimeGuard, /getWorkOrderV2ReadRuntimeGuard\(\)/, "command guard 
 assert.match(runtimeGuard, /WAFL_V2_COMMAND_API_ENABLED/, "command feature gate required");
 assert.match(runtimeGuard, /WAFL_V2_COMMAND_MUTATION_APPROVED/, "separate mutation approval gate required");
 assert.match(runtimeGuard, /2\.0\.0-alpha\.25-dev-test-command-runtime/, "exact alpha.25 mutation approval value required");
-assert.match(service, /requireCommandMutationApproval\(WAFL_V2_ALPHA25_MUTATION_APPROVAL\)/, "create must retain the exact alpha.25 approval");
+assert.match(runtimeGuard, /getWorkOrderV2CreateMutationRuntimeGuard/, "create must use its bounded runtime guard");
+assert.match(runtimeGuard, /WAFL_V2_ALPHA25_MUTATION_APPROVAL[\s\S]+WAFL_V2_ALPHA61_MOBILE_WORK_ORDER_CREATE_MUTATION_APPROVAL/, "create approvals must remain limited to alpha.25 and alpha.61 dev/test modes");
+assert.match(service, /requireWorkOrderCreateMutationApproval\(\)/, "create must use the bounded create approval helper");
 assert.match(service, /requireBasicInfoMutationApproval\(\)/, "basic-info PATCH must use its bounded approval helper");
 
 assert.match(routeHandler, /permissionCode = input\.kind === "create" \? "workorder\.create" : "workorder\.update"/, "create/update permissions must remain action-code based");

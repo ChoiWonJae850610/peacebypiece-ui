@@ -1,6 +1,7 @@
 import {
   archiveWorkOrderMaterial,
   completeWorkOrderImageUpload,
+  createWorkOrderDraft,
   createWorkOrderMaterial,
   deleteWorkOrderColor,
   deleteWorkOrderMaterial,
@@ -27,6 +28,7 @@ import {
 } from "../../lib/apiClient";
 import type {
   CreateMaterialLineInput,
+  CreateWorkOrderDraftInput,
   MaterialLifecycleCommandInput,
   MaterialOrderCommandInput,
   MaterialOrderCommandKind,
@@ -35,6 +37,9 @@ import type {
 } from "../../domain/mobileContract";
 
 export const workOrderMutationController = {
+  createDraft(command: CreateWorkOrderDraftInput, idempotencyKey: string) {
+    return createWorkOrderDraft(command, idempotencyKey);
+  },
   updateOverview(workOrderId: string, command: PatchWorkOrderBasicInfoInput) {
     return patchWorkOrderBasicInfo(workOrderId, command);
   },

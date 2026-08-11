@@ -100,6 +100,11 @@ for (const token of [
   "Node-only contracts",
   "alias-free pure module",
   "Failure Handoff",
+  "standing routine dev/test self-healing authority",
+  "arbitrary one-attempt ceilings",
+  "nested continuation packaging",
+  "WAFL 런타임 준비",
+  "current feature's narrow dev/test mutation switch",
 ]) {
   assert.ok(testing.includes(token), `testing/handoff owner missing ${token}`);
 }

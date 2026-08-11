@@ -52,7 +52,11 @@ These rules do not authorize changing product behavior outside the active Delta.
 
 ## 5. Bounded validation and new failure
 
-Run each validation step the number of times stated by the Delta. Do not automatically loop or repeat an identical failure. A read-only correction cycle is allowed only when explicitly authorized, target/fingerprint is unchanged, effects remain zero, and its bound is not exceeded.
+Run each validation step the number of times stated by the Delta. Do not automatically loop or repeat an identical failure unless the active Delta grants standing routine dev/test self-healing authority. Under that authority, correct a clear in-scope contract/helper/fixture/guard/tooling defect, run the directly relevant gate, and repeat Canonical Verify as reasonably needed; preserve protected boundaries and stop when the diagnosis or scope is uncertain. Do not use arbitrary one-attempt ceilings or nested continuation packaging as a substitute for this bounded workflow.
+
+### 5.1 WAFL runtime preparation shorthand
+
+`WAFL 런타임 준비` means: inspect the active feature and current external-QA status; verify exact runner ownership, parameters, and narrow mutation mode; repair only stale or partial dev/test runtime state within the active Delta; then start or retain the canonical DeveloperAutoConnect roles (Next `3100`, Metro `8081`, Tailscale Serve HTTPS to loopback Next), with port `3000` and Quick Tunnel/Funnel absent. In DeveloperAutoConnect, Metro advertised host, the iOS manifest launch bundle URL host, and the current Expo Development Client redirect's encoded Metro URL host must all equal the current dynamically resolved Tailscale IPv4; Windows LAN IPv4 advertisement is a READY failure. The runner must use the custom Development Client route, not leave URL selection to a previously discovered LAN session. A physical Development Client's persisted selection is not inferable from server health alone: if the device has not demonstrably followed the current redirect, report `OWNER_IPHONE_CONNECTION_CHECK_REQUIRED`, not `READY`. Alive Next/Metro/Serve roles alone are not READY. Keep Tailscale and Chrome Remote Desktop running, prove all roles and the current feature's narrow dev/test mutation switch, and report the applicable status. This shorthand never authorizes production, user-business mutation, broad cleanup, or a wider feature command set.
 
 On any new or repeated failure:
 

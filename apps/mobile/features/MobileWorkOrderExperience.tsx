@@ -18,6 +18,7 @@ import {
   type MaterialInlineEditSession,
 } from "@/features/materials/materialInlineEditSession";
 import WorkOrderListScreen from "@/features/work-orders/list/WorkOrderListScreen";
+import WorkOrderCreateSheet from "@/features/work-orders/create/WorkOrderCreateSheet";
 import DelayedLoadingMessage from "@/features/work-orders/loading/DelayedLoadingMessage";
 import {
   customerGuidance,
@@ -54,6 +55,7 @@ import {
   normalizeMaterialDraft,
   sameMaterialDraft,
   validateBasicInfoDraft,
+  validateWorkOrderProductName,
   validateMaterialDraft,
   validateMaterialOrderRequest,
 } from "@/domain/workOrderValidation";
@@ -76,6 +78,7 @@ import {
 import { acquireWorkOrderAttachment } from "@/features/work-orders/images/workOrderAttachmentAcquisition";
 import { resolveMobileApiUrl } from "@/lib/apiClient";
 import { encodeWorkOrderProductType } from "@/domain/workOrderCategoryPolicy";
+import { reconcileCreatedWorkOrderListItem, resolveWorkOrderCreateAttempt, type WorkOrderCreateAttemptIdentity } from "@/domain/workOrderCreatePolicy";
 import { MobileApiError, type MaterialDraftFields, type MaterialDraftUpdate, type MaterialType, type MobileCurrentUser, type WorkOrderAttachmentAsset, type WorkOrderDetailCore, type WorkOrderImageAsset, type WorkOrderListItem, type WorkOrderListStatusFilter, type WorkOrderMaterialLine } from "@/domain/mobileContract";
 
 type AppPhase =
@@ -114,6 +117,10 @@ export default function MobileWorkOrderExperience() {
   const [listStatusFilter, setListStatusFilter] = useState<WorkOrderListStatusFilter>("all");
   const [listLoadingMore, setListLoadingMore] = useState(false);
   const [listSearching, setListSearching] = useState(false);
+  const [createSheetVisible, setCreateSheetVisible] = useState(false);
+  const [createProductName, setCreateProductName] = useState("");
+  const [createError, setCreateError] = useState<string | null>(null);
+  const [createPending, setCreatePending] = useState(false);
   const { selected, setSelected, selectedWorkOrderId } = useWorkOrderNavigation();
   const [detail, setDetail] = useState<WorkOrderDetailCore | null>(null);
   const [images, setImages] = useState<readonly WorkOrderImageAsset[]>([]);
@@ -151,11 +158,13 @@ export default function MobileWorkOrderExperience() {
   const listRequestInFlight = useRef(false);
   const pendingListSearch = useRef<{ readonly query: string; readonly status: WorkOrderListStatusFilter } | null>(null);
   const overviewMutation = useRef(createExplicitMutationController()).current;
+  const createMutation = useRef(createExplicitMutationController()).current;
   const materialMutation = useRef(createExplicitMutationController()).current;
   const materialLifecycleMutation = useRef(createExplicitMutationController()).current;
   const materialOrderMutation = useRef(createExplicitMutationController()).current;
   const imageMutation = useRef(createExplicitMutationController()).current;
   const clientRequestCounter = useRef(0);
+  const createAttemptIdentity = useRef<WorkOrderCreateAttemptIdentity | null>(null);
   const autoConnectInFlight = useRef(false);
   const manualDisconnectSuppressed = useRef(false);
   const bootStarted = useRef(false);
@@ -537,6 +546,101 @@ export default function MobileWorkOrderExperience() {
   function selectItemSafely(item: WorkOrderListItem) {
     if (selected?.workOrderId === item.workOrderId) return;
     leaveWithDraftPolicy("work-order", () => void selectItem(item));
+  }
+
+  function openCreateSheet() {
+    if (createMutation.inFlight) return;
+    createAttemptIdentity.current = null;
+    setCreateProductName("");
+    setCreateError(null);
+    setCreateSheetVisible(true);
+  }
+
+  function cancelCreateSheet() {
+    if (createMutation.inFlight) return;
+    createAttemptIdentity.current = null;
+    setCreateError(null);
+    setCreateSheetVisible(false);
+  }
+
+  function changeCreateProductName(value: string) {
+    if (createAttemptIdentity.current?.productName !== value.trim()) createAttemptIdentity.current = null;
+    setCreateProductName(value);
+    if (createError) setCreateError(null);
+  }
+
+  function listItemFromCreatedDraft(created: WorkOrderDetailCore): WorkOrderListItem {
+    return {
+      workOrderId: created.header.id,
+      displayDocumentNumber: created.header.document.displayDocumentNumber,
+      productName: created.header.productName,
+      status: created.header.status,
+      dueDate: created.header.dueDate,
+      totalQuantity: created.header.totalQuantity,
+      estimatedAmountSummary: { currency: created.amounts.currency, estimatedTotal: created.amounts.estimatedTotal },
+      representativeThumbnail: created.header.representativeImage,
+      incompleteMaterialSummary: { incompleteFabricCount: 0, incompleteAccessoryCount: 0 },
+      processCount: 0,
+      latestDocumentStatus: created.header.document.status,
+      updatedAt: created.header.updatedAt,
+    };
+  }
+
+  async function createWorkOrderDraftFromMobile() {
+    const productName = createProductName.trim();
+    const validationError = validateWorkOrderProductName(productName);
+    if (validationError) {
+      setCreateError(validationError);
+      return;
+    }
+    if (createMutation.tryBegin() !== "started") return;
+    setCreatePending(true);
+    setCreateError(null);
+    clientRequestCounter.current += 1;
+    const identity = resolveWorkOrderCreateAttempt(
+      createAttemptIdentity.current,
+      productName,
+      `${Date.now()}-${clientRequestCounter.current}`,
+    );
+    createAttemptIdentity.current = identity;
+    try {
+      const created = await workOrderMutationController.createDraft({ clientRequestId: identity.clientRequestId, productName }, identity.idempotencyKey);
+      const [createdDetail, createdImages] = await Promise.all([
+        workOrderQueryController.detail(created.result.workOrderId),
+        workOrderQueryController.images(created.result.workOrderId),
+      ]);
+      if (
+        createdDetail.header.id !== created.result.workOrderId
+        || createdDetail.header.status !== "draft"
+        || createdDetail.revision.status !== "draft"
+        || createdDetail.header.totalQuantity !== 0
+        || createdImages.entityVersion !== createdDetail.header.entityVersion
+      ) {
+        throw new MobileApiError({ code: "MALFORMED_RESPONSE", message: "생성된 작업지시서의 초기 상태를 확인하지 못했습니다." });
+      }
+      const item = listItemFromCreatedDraft(createdDetail);
+      setItems((current) => reconcileCreatedWorkOrderListItem(current, item));
+      selectedWorkOrderId.current = item.workOrderId;
+      setSelected(item);
+      setDetail(createdDetail);
+      setImages(createdImages.items);
+      setAttachments(createdImages.attachments);
+      setBasicInfoDraft(basicInfoDraftFromDetail(createdDetail));
+      setBasicInfoErrors({});
+      setEditing(false);
+      setSaveState("read-only");
+      setSaveMessage(null);
+      setErrorState(null);
+      setCreateSheetVisible(false);
+      setCreateProductName("");
+      setPhase("detail-ready");
+      createAttemptIdentity.current = null;
+    } catch (error) {
+      setCreateError(customerMessage(error));
+    } finally {
+      createMutation.complete();
+      setCreatePending(false);
+    }
   }
 
   function loadListSafely() {
@@ -1876,7 +1980,7 @@ export default function MobileWorkOrderExperience() {
         {globalError && errorState ? <ErrorPanel error={errorState} onRetry={retry} /> : tablet ? (
           <View style={styles.split}>
             <View style={styles.listPane}>
-              <WorkOrderListScreen items={items} hasMore={hasMore} selectedId={selected?.workOrderId ?? null} loading={phase === "authenticated-loading-list"} loadingMore={listLoadingMore} searching={listSearching} query={listQuery} statusFilter={listStatusFilter} onLoadMore={() => void loadMoreList()} onRefresh={loadListSafely} onSearch={applyListSearch} onStatusFilter={applyListStatusFilter} onSelect={selectItemSafely} />
+              <WorkOrderListScreen items={items} hasMore={hasMore} selectedId={selected?.workOrderId ?? null} loading={phase === "authenticated-loading-list"} loadingMore={listLoadingMore} searching={listSearching} query={listQuery} statusFilter={listStatusFilter} onCreate={openCreateSheet} onLoadMore={() => void loadMoreList()} onRefresh={loadListSafely} onSearch={applyListSearch} onStatusFilter={applyListStatusFilter} onSelect={selectItemSafely} />
             </View>
             <View style={styles.detailPane}>{detailPane}</View>
           </View>
@@ -1884,10 +1988,11 @@ export default function MobileWorkOrderExperience() {
           <View style={styles.phoneBody}>{detailPane}</View>
         ) : (
           <View style={styles.phoneBody}>
-            <WorkOrderListScreen items={items} hasMore={hasMore} selectedId={null} loading={phase === "authenticated-loading-list"} loadingMore={listLoadingMore} searching={listSearching} query={listQuery} statusFilter={listStatusFilter} onLoadMore={() => void loadMoreList()} onRefresh={loadListSafely} onSearch={applyListSearch} onStatusFilter={applyListStatusFilter} onSelect={selectItemSafely} />
+            <WorkOrderListScreen items={items} hasMore={hasMore} selectedId={null} loading={phase === "authenticated-loading-list"} loadingMore={listLoadingMore} searching={listSearching} query={listQuery} statusFilter={listStatusFilter} onCreate={openCreateSheet} onLoadMore={() => void loadMoreList()} onRefresh={loadListSafely} onSearch={applyListSearch} onStatusFilter={applyListStatusFilter} onSelect={selectItemSafely} />
           </View>
         )}
       </View>
+      <WorkOrderCreateSheet error={createError} onCancel={cancelCreateSheet} onChangeProductName={changeCreateProductName} onConfirm={createWorkOrderDraftFromMobile} pending={createPending} productName={createProductName} visible={createSheetVisible} />
     </SafeAreaView>
   );
 }

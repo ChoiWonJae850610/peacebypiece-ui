@@ -5,7 +5,7 @@ import { createHash } from "crypto";
 import type { WorkspaceApiCompanyScope } from "@/lib/auth/apiRouteGuards";
 import {
   createCommandTenantScope,
-  requireCommandMutationApproval,
+  requireSizeColorStructureMutationApproval,
   WorkOrderCommandRequestError,
 } from "@/lib/domain/work-orders/command/commandService";
 import {
@@ -30,10 +30,6 @@ import {
   SizeColorStructureRepositoryError,
   type SizeColorStructureRepositoryResult,
 } from "@/lib/domain/work-orders/command/sizeColorStructureCommandRepository";
-import {
-  WAFL_V2_ALPHA59_SIZE_COLOR_STRUCTURE_MUTATION_APPROVAL,
-  WAFL_V2_ALPHA60_DRAFT_CHILD_HARD_DELETE_MUTATION_APPROVAL,
-} from "@/lib/domain/work-orders/command/runtimeGuard";
 import type {
   ColorId,
   CompanyMemberId,
@@ -132,12 +128,7 @@ function prepare(input: CommonInput, commandCode: string, request: unknown) {
     correlationId: input.correlationId,
     permissionCode: "workorder.update",
   });
-  const configuredApproval = process.env.WAFL_V2_COMMAND_MUTATION_APPROVED;
-  requireCommandMutationApproval(
-    configuredApproval === WAFL_V2_ALPHA60_DRAFT_CHILD_HARD_DELETE_MUTATION_APPROVAL
-      ? WAFL_V2_ALPHA60_DRAFT_CHILD_HARD_DELETE_MUTATION_APPROVAL
-      : WAFL_V2_ALPHA59_SIZE_COLOR_STRUCTURE_MUTATION_APPROVAL,
-  );
+  requireSizeColorStructureMutationApproval();
   const scopedIdempotencyKeyHash = sha256([
     commandCode,
     tenantScope.companyId,

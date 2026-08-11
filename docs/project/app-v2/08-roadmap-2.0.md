@@ -2,7 +2,21 @@
 
 Document role: canonical owner for the current result, next candidate, and Version Delta boundary. It is not the historical implementation ledger; completed details live in numbered immutable evidence.
 
-## Current result — 2.0.0-alpha.60
+## Current result — 2.0.0-alpha.61
+
+Status: `ALPHA61_FINALIZATION_COMPLETE`.
+
+Alpha.61 completes the bounded mobile WorkOrder-create flow and DeveloperAutoConnect finalization:
+
+- draft creation uses the canonical tenant, member, permission, expected-version, idempotency, Event, and Receipt command boundaries;
+- the mobile create sheet, list insertion, shared policy, and API client reuse the alpha.53 architecture rather than creating a parallel product path;
+- owner physical-iPhone product QA passed creation, size `L`, color `네이비`, `네이비 × L = 100`, detail/list persistence, background/re-entry, and one Development Client Reload;
+- DeveloperAutoConnect dynamically resolves the current Tailscale IPv4. The owner then closed and reopened the Development Build, entered WAFL automatically without a manual URL, and confirmed that no `192.168.*:8081` address was selected;
+- the exact dev/test owner QA draft was cleaned once with mutable residual zero while Event/Receipt evidence was preserved and Receipt references were detached using the canonical composite identity.
+
+Evidence: `61-mobile-work-order-create-and-runtime-autoconnect-evidence.md`.
+
+## Previous result — 2.0.0-alpha.60
 
 Status: `ALPHA60_DRAFT_COMPONENT_HARD_DELETE_AND_SHARED_ARCHITECTURE_RULES_COMPLETE`.
 
@@ -101,6 +115,7 @@ Permanent Rules, Current Baseline, Version Delta, Immutable Evidence, responsibi
 | alpha.58 | mobile size/color read-only foundation and final UX | `58-mobile-size-color-readonly-evidence.md` |
 | alpha.59 | mobile WorkOrder input expansion and editor lifecycle | `59-mobile-work-order-input-expansion-evidence.md` |
 | alpha.60 | draft-child hard delete and shared-architecture completion | `60-draft-child-hard-delete-and-shared-architecture-evidence.md` |
+| alpha.61 | mobile WorkOrder create and DeveloperAutoConnect finalization | `61-mobile-work-order-create-and-runtime-autoconnect-evidence.md` |
 | maintenance | canonical Codex rule normalization without APP_VERSION change | `54-canonical-codex-working-rules-normalization-evidence.md` |
 
 Older results remain in numbered evidence files indexed and task-routed by `00-start-here.md`. Their detailed outcomes are not duplicated here.
@@ -132,17 +147,14 @@ Standard reference:
 
 The Delta does not repeat Permanent Rules, PC-audit mechanics, runner internals, generic Failure Handoff fields, or generic Git/artifact procedures. Those remain owned by `09a` through `09d`. An omitted exceptional authority remains forbidden.
 
-## Next candidate — 2.0.0-alpha.61
+## Next candidate — 2.0.0-alpha.62
 
-Status: `not started`.
+Status: `routing candidate only`.
 
-This heading is canonical routing metadata only. It grants no alpha.61 product authority; alpha.60 finalization remains the only active work.
+This heading is canonical routing metadata only. It grants no alpha.62 product authority.
 
-Separate owner-approved packages may consider one bounded adjacent objective at a time after alpha.60 finalization:
+Separate owner-approved packages may consider one bounded adjacent objective at a time after alpha.61 finalization:
 
-- any broader archive/restore lifecycle beyond the preserved legacy compatibility surface, including schema, impact counts, read-model, conflict, and restore-name/code policy;
-- fractional total-quantity policy, including matrix compatibility, historical data, list/overview/PDF/issue behavior, and migration;
-- finished-measurement editing with stable size/POM identity and explicit persistence policy;
-- company common color library with tenant ownership and WorkOrder snapshot rules.
+- finished-measurement editing with cm/inch persistence and a system size/POM snapshot connection.
 
-None of these candidates is implied by the alpha.60 hard-delete scope. Factory, AI image generation, production mutation, R2 mutation, dependency/native/EAS work, and unrelated expansion remain outside the boundary unless a future owner-approved Delta explicitly includes them.
+This candidate is not implied by the alpha.61 create scope. Factory, AI image generation, production mutation, R2 mutation, dependency/native/EAS work, and unrelated expansion remain outside the boundary unless a future owner-approved Delta explicitly includes them.
