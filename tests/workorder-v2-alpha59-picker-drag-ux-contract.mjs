@@ -57,7 +57,7 @@ const controller = read("apps/mobile/features/work-orders/size-color/useSizeColo
 const repository = read("lib/domain/work-orders/command/sizeColorStructureCommandRepository.ts");
 const runtimeQa = read("scripts/run-wafl-v2-alpha59-size-color-structure-runtime-qa.mjs");
 
-for (const semantic of ["SIZE_ALPHA_PRESETS", "SIZE_NUMERIC_PRESETS", "COLOR_PALETTE_PRESETS", "CUSTOM_COLOR_GROUPS", "onAddSizes", "onAddColors", "WaflOptionReel"]) {
+for (const semantic of ["SIZE_ALPHA_PRESETS", "SIZE_NUMERIC_PRESETS", "COLOR_PALETTE_PRESETS", "CUSTOM_COLOR_GROUPS", "onAddSizes", "onAddColors", "CatalogChoice"]) {
   assert.match(editor, new RegExp(semantic));
 }
 assert.doesNotMatch(editor, /PanResponder|GripVertical|onLongPress|accessibilityActions|onReorderSizeIds|onReorderColorIds/);

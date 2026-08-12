@@ -1,0 +1,20 @@
+import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
+
+const repository = readFileSync("lib/domain/work-orders/measurement/measurementCommandRepository.ts", "utf8");
+const service = readFileSync("lib/domain/work-orders/measurement/measurementCommandService.ts", "utf8");
+const route = readFileSync("lib/domain/work-orders/measurement/measurementCommandRoute.ts", "utf8");
+const runner = readFileSync("scripts/run-wafl-v2-alpha62-size-spec-template-migration.mjs", "utf8");
+const runtimeRunner = readFileSync("scripts/run-wafl-v2-alpha62-size-measurement-runtime-qa.mjs", "utf8");
+for (const token of ["apply-template", "set-unit", "set-cell", "save-company-template", "work_order_command_receipts", "domain_events", "FOR UPDATE OF w,r", "parseMeasurementToCm"]) assert.ok(repository.includes(token), token);
+assert.match(repository, /company_id=\$1 AND command_code=\$2 AND idempotency_key=\$3/);
+assert.match(repository, /hash\.slice\(20,32\)/);
+assert.match(repository, /ON CONFLICT\(size_spec_id,size_row_id,pom_column_id\) DO UPDATE/);
+assert.doesNotMatch(repository, /ON CONFLICT\(company_id,size_spec_id,size_row_id,pom_column_id\)/);
+assert.match(service, /Idempotency-Key/);
+assert.match(route, /getWorkOrderV2MeasurementMutationRuntimeGuard/);
+assert.doesNotMatch(repository, /work_order_command_receipts[\s\S]{0,120}RETURNING id/);
+assert.match(repository, /const replay=await receipt\(client,context,input,code\);if\(replay\)[\s\S]{0,420}const row=await target\(client,context,input\);/);
+for (const token of ["014_v2_size_spec_templates.sql", "BEGIN READ ONLY", "target-fingerprint-mismatch", "ledger-must-be-13-before-014", "migration-approval-missing", "ALPHA62_MIGRATION_014_APPLY_PASS"]) assert.ok(runner.includes(token), token);
+assert.match(runtimeRunner, /requestVersions\.get\(key\)/);
+console.log("workorder v2 alpha.62 measurement command contract: PASS");

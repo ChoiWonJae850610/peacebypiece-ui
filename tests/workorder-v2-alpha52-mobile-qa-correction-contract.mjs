@@ -17,7 +17,10 @@ const materials = fs.readFileSync("apps/mobile/features/materials/WorkOrderMater
 const editor = fs.readFileSync("apps/mobile/features/materials/WorkOrderMaterialEditor.tsx", "utf8");
 const list = fs.readFileSync("apps/mobile/features/work-orders/list/WorkOrderListScreen.tsx", "utf8");
 const app = fs.readFileSync("apps/mobile/features/MobileWorkOrderExperience.tsx", "utf8");
-const apiClient = fs.readFileSync("apps/mobile/lib/apiClient.ts", "utf8");
+const apiClient = [
+  fs.readFileSync("apps/mobile/lib/apiClient.ts", "utf8"),
+  fs.readFileSync("apps/mobile/lib/apiTransport.ts", "utf8"),
+].join("\n");
 const listService = fs.readFileSync("lib/domain/work-orders/read/listService.ts", "utf8");
 const listRepository = fs.readFileSync("lib/domain/work-orders/read/listRepository.ts", "utf8");
 const validation = fs.readFileSync("lib/domain/work-orders/command/materialValidation.ts", "utf8");

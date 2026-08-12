@@ -19,6 +19,7 @@ import ExpandedInlineField from "@/components/ExpandedInlineField";
 import ReelInlineEditValue from "@/features/inputs/reel-picker/ReelInlineEditValue";
 import WaflReelPickerSheet from "@/features/inputs/reel-picker/WaflReelPickerSheet";
 import MaterialQuantityValue from "@/features/materials/MaterialQuantityValue";
+import MaterialPartnerPickerSheet from "@/features/materials/MaterialPartnerPickerSheet";
 import { createMaterialMemoDisclosureModel } from "@/features/materials/materialMemoDisclosureModel";
 import DelayedLoadingMessage from "@/features/work-orders/loading/DelayedLoadingMessage";
 import {
@@ -29,7 +30,8 @@ import type { MaterialEditorViewState } from "@/features/materials/WorkOrderMate
 import type { MaterialInlineEditSession } from "@/features/materials/materialInlineEditSession";
 import { materialReelDraftPatch, type MaterialReelField } from "@/features/materials/materialReelAdapter";
 import { MOBILE_MATERIAL_FIELD_LABELS } from "@/features/materials/materialFieldPolicy";
-import type { MaterialDraftFields, MaterialDraftUpdate, MaterialType, WorkOrderMaterialLine } from "@/domain/mobileContract";
+import type { MaterialDraftFields, MaterialDraftUpdate, MaterialPartnerOption, MaterialType, WorkOrderMaterialLine } from "@/domain/mobileContract";
+import { materialDraftFromLine } from "@/domain/workOrderValidation";
 import type { MaterialOrderAction, MaterialOrderPolicy } from "@/domain/materialOrderPolicy";
 import { calculateMaterialAmount, calculateOrderQuantity, formatQuantity, formatWon } from "@/lib/mobileDisplay";
 
@@ -67,6 +69,7 @@ type Props = {
   readonly onRetry: () => void;
   readonly onLoadMore: () => void;
   readonly onFieldFocus: (target: TextInput) => void;
+  readonly partnerOptions: readonly MaterialPartnerOption[];
 };
 
 type MaterialInlineFieldProps = {
@@ -111,6 +114,9 @@ function MaterialInlineField({
     && activeInlineSession.field === field;
   const owner = active ? activeInlineSession : null;
   const editable = canEdit;
+  const lineDraft = materialDraftFromLine(line);
+  const currentValue = active ? editor?.draft[field] ?? "" : lineDraft[field];
+  const nullableText = field === "colorOption" || field === "usageArea" || field === "memo";
   return (
     <ControlledInlineEditValue
       accessibilityLabel={label}
@@ -135,7 +141,8 @@ function MaterialInlineField({
       placeholder={placeholder}
       saving={active ? editor?.saveState === "saving" : false}
       testID={testID}
-      value={active ? editor?.draft[field] ?? "" : ""}
+      value={currentValue}
+      valueSemantics={nullableText ? "nullable-text" : undefined}
     />
   );
 }
@@ -227,15 +234,6 @@ function exactHexColor(value: string | null) {
   return /^#[0-9a-f]{6}$/i.test(candidate) ? candidate : null;
 }
 
-function CompactField({ label, value }: { readonly label: string; readonly value: string }) {
-  return (
-    <View style={styles.compactField}>
-      <Text style={styles.compactLabel}>{label}</Text>
-      <Text style={styles.compactValue}>{value}</Text>
-    </View>
-  );
-}
-
 type MaterialOrderActionView = {
   readonly kind: MaterialOrderAction;
   readonly label: string;
@@ -286,7 +284,7 @@ function MaterialOrderActionButton({
   );
 }
 
-function MaterialCard({ line, expanded, canEdit, lifecycleBusy, orderBusyAction, orderPolicy, editor, activeField, activeInlineSession, onEdit, onChangeEdit, onCancelEdit, onSaveEdit, onDelete, onOrderAction, onToggle, onFieldFocus, onOpenReel }: {
+function MaterialCard({ line, expanded, canEdit, lifecycleBusy, orderBusyAction, orderPolicy, editor, activeField, activeInlineSession, onEdit, onChangeEdit, onCancelEdit, onSaveEdit, onDelete, onOrderAction, onToggle, onFieldFocus, onOpenReel, onOpenPartner, partnerOptions }: {
   readonly line: WorkOrderMaterialLine;
   readonly expanded: boolean;
   readonly canEdit: boolean;
@@ -305,6 +303,8 @@ function MaterialCard({ line, expanded, canEdit, lifecycleBusy, orderBusyAction,
   readonly onToggle: () => void;
   readonly onFieldFocus: Props["onFieldFocus"];
   readonly onOpenReel: (target: ReelTarget) => void;
+  readonly onOpenPartner: () => void;
+  readonly partnerOptions: readonly MaterialPartnerOption[];
 }) {
   const { width } = useWindowDimensions();
   const compactActions = width < 760;
@@ -397,7 +397,13 @@ function MaterialCard({ line, expanded, canEdit, lifecycleBusy, orderBusyAction,
         </View>
 
         <View testID="material-core-row" style={styles.coreRow}>
-          <CompactField label={MOBILE_MATERIAL_FIELD_LABELS.partner} value="—" />
+          <View style={styles.compactField}>
+            <Text style={styles.compactLabel}>{MOBILE_MATERIAL_FIELD_LABELS.partner}</Text>
+            <Pressable accessibilityRole="button" disabled={!fieldEditable} onPress={onOpenPartner} style={({ pressed }) => [styles.compactInline, pressed && styles.pressed]}>
+              <Text numberOfLines={2} style={styles.compactValue}>{line.partnerName?.trim() || partnerOptions.find((item) => item.id === line.partnerId)?.name || "미선택"}</Text>
+            </Pressable>
+            {editor?.materialLineId === line.id && activeField === "partnerId" && editor.fieldErrors.partnerId ? <Text style={styles.fieldError}>{editor.fieldErrors.partnerId}</Text> : null}
+          </View>
           <View style={styles.compactField}>
             <Text style={styles.compactLabel}>색상·옵션</Text>
             <View style={styles.colorRow}>
@@ -510,7 +516,7 @@ function MaterialCard({ line, expanded, canEdit, lifecycleBusy, orderBusyAction,
             ))}
             {orderPolicy.canEdit && line.deletable ? (
               <Pressable
-                accessibilityLabel={`${line.name} ${materialLabel} 영구 삭제`}
+                accessibilityLabel={`${line.name} ${materialLabel} 삭제`}
                 accessibilityRole="button"
                 accessibilityState={{ disabled: lifecycleBusy }}
                 disabled={lifecycleBusy}
@@ -548,10 +554,11 @@ function AddMaterialButton({ materialType, onPress }: { readonly materialType: M
 export default function WorkOrderMaterialsReadOnly({
   materialType, state, canEdit, lifecycleBusyId, orderBusyId, orderBusyAction,
   activeEditor, activeField, activeInlineSession, onAdd, onEdit, onChangeInlineEdit, onCancelEdit, onCancelInlineEdit, onSaveEdit, onSaveInlineEdit,
-  onDelete, onOrderAction, orderPolicy, onRetry, onLoadMore, onFieldFocus,
+  onDelete, onOrderAction, orderPolicy, onRetry, onLoadMore, onFieldFocus, partnerOptions,
 }: Props) {
   const [expandedIds, setExpandedIds] = useState<ReadonlySet<string>>(() => new Set());
   const [reelTarget, setReelTarget] = useState<ReelTarget | null>(null);
+  const [partnerTargetId, setPartnerTargetId] = useState<string | null>(null);
   const waiting = state.status === "loading" || state.status === "retrying";
   const materialLabel = materialType === "accessory" ? "부자재" : "원단";
   const materialSubject = materialType === "accessory" ? "부자재가" : "원단이";
@@ -604,6 +611,18 @@ export default function WorkOrderMaterialsReadOnly({
           visible
         />
       ) : null}
+      <MaterialPartnerPickerSheet
+        items={partnerOptions}
+        onCancel={() => { setPartnerTargetId(null); onCancelEdit(); }}
+        onSelect={(partnerId) => {
+          const owner = activeInlineSession;
+          if (owner && owner.itemId === partnerTargetId) onSaveInlineEdit({ partnerId }, owner);
+          setPartnerTargetId(null);
+        }}
+        pending={activeEditor?.saveState === "saving"}
+        selectedId={activeEditor?.materialLineId === partnerTargetId ? activeEditor.draft.partnerId : ""}
+        visible={partnerTargetId !== null}
+      />
       {canEdit ? (
         <View style={styles.listToolbar}>
           <AddMaterialButton materialType={materialType} onPress={onAdd} />
@@ -627,6 +646,11 @@ export default function WorkOrderMaterialsReadOnly({
           onChangeEdit={onChangeInlineEdit}
           onEdit={(field) => onEdit(line, field)}
           onOpenReel={setReelTarget}
+          onOpenPartner={() => {
+            onEdit(line, "partnerId");
+            setPartnerTargetId(line.id);
+          }}
+          partnerOptions={partnerOptions}
           onSaveEdit={onSaveInlineEdit}
           onFieldFocus={onFieldFocus}
           onToggle={() => setExpandedIds((current) => {
@@ -661,6 +685,7 @@ const styles = StyleSheet.create({
   centerState: { alignItems: "center", gap: 8, justifyContent: "center", minHeight: 180, padding: 24 },
   stateTitle: { color: "#3f352d", fontFamily: WAFL_FONTS.bold, fontSize: 15, textAlign: "center" },
   stateCaption: { color: "#827568", fontFamily: WAFL_FONTS.regular, fontSize: 12, lineHeight: 18, textAlign: "center" },
+  fieldError: { color: "#a33b35", fontFamily: WAFL_FONTS.medium, fontSize: 10, lineHeight: 15, marginTop: 3 },
   errorState: { alignItems: "center", backgroundColor: "#fff8f4", borderColor: "#e2c4bc", borderRadius: 12, borderWidth: 1, gap: 8, margin: 12, minHeight: 170, padding: 22 },
   errorTitle: { color: "#992f2b", fontFamily: WAFL_FONTS.bold, fontSize: 15, textAlign: "center" },
   retryButton: { alignItems: "center", backgroundColor: "#9b4a27", borderRadius: 10, flexDirection: "row", gap: 6, minHeight: 44, paddingHorizontal: 16 },

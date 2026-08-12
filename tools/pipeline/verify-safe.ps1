@@ -1159,6 +1159,20 @@ $profileCommands = @{
           @{ Name = "workorder v2 alpha.54 Korean initial search and workflow badge contract"; Command = "node"; Arguments = @("tests/workorder-v2-alpha54-korean-search-status-badge-contract.mjs") },
           @{ Name = "workorder v2 alpha.56 accessory lifecycle parity contract"; Command = "node"; Arguments = @("tests/workorder-v2-alpha56-accessory-lifecycle-parity-contract.mjs") },
           @{ Name = "workorder v2 alpha.60 draft child hard delete contract"; Command = "node"; Arguments = @("tests/workorder-v2-alpha60-draft-child-hard-delete-contract.mjs") },
+          @{ Name = "workorder v2 alpha.62 measurement policy contract"; Command = "node"; Arguments = @("tests/workorder-v2-alpha62-measurement-policy-contract.mjs") },
+          @{ Name = "workorder v2 alpha.62 measurement command contract"; Command = "node"; Arguments = @("tests/workorder-v2-alpha62-measurement-command-contract.mjs") },
+          @{ Name = "workorder v2 alpha.62 system template management contract"; Command = "node"; Arguments = @("tests/workorder-v2-alpha62-system-template-management-contract.mjs") },
+          @{ Name = "workorder v2 alpha.62 runtime boundary contract"; Command = "node"; Arguments = @("tests/workorder-v2-alpha62-runtime-boundary-contract.mjs") },
+          @{ Name = "workorder v2 alpha.62 iPhone remediation contract"; Command = "node"; Arguments = @("tests/workorder-v2-alpha62-iphone-remediation-contract.mjs") },
+          @{ Name = "workorder v2 alpha.62 measurement UX structure contract"; Command = "node"; Arguments = @("tests/workorder-v2-alpha62-measurement-ux-structure-contract.mjs") },
+          @{ Name = "workorder v2 alpha.62 integrated UX performance contract"; Command = "node"; Arguments = @("tests/workorder-v2-alpha62-ux-performance-contract.mjs") },
+          @{ Name = "workorder v2 alpha.62 template choice delete regression contract"; Command = "node"; Arguments = @("tests/workorder-v2-alpha62-template-choice-delete-regression-contract.mjs") },
+          @{ Name = "workorder v2 alpha.62 spec source-of-truth authoring contract"; Command = "node"; Arguments = @("tests/workorder-v2-alpha62-spec-source-of-truth-authoring-contract.mjs") },
+          @{ Name = "workorder v2 alpha.62 shared input material UX contract"; Command = "node"; Arguments = @("tests/workorder-v2-alpha62-shared-input-material-ux-contract.mjs") },
+          @{ Name = "workorder v2 alpha.62 batch selection saved spec UX contract"; Command = "node"; Arguments = @("tests/workorder-v2-alpha62-batch-selection-saved-spec-contract.mjs") },
+          @{ Name = "workorder v2 alpha.62 focus pending grid contract"; Command = "node"; Arguments = @("tests/workorder-v2-alpha62-focus-pending-grid-contract.mjs") },
+          @{ Name = "workorder v2 alpha.62 final architecture cleanup contract"; Command = "node"; Arguments = @("tests/workorder-v2-alpha62-final-architecture-cleanup-contract.mjs") },
+          @{ Name = "workorder v2 alpha.62 final QA lifecycle projection copy contract"; Command = "node"; Arguments = @("tests/workorder-v2-alpha62-finalqa-lifecycle-projection-copy-contract.mjs") },
           @{ Name = "WAFL external QA stop-state regression contract"; Command = "node"; Arguments = @("tests/wafl-external-qa-stop-state-contract.mjs") },
           @{ Name = "WAFL external QA Tailscale transport contract"; Command = "node"; Arguments = @("tests/wafl-external-qa-tailscale-transport-contract.mjs") },
           @{ Name = "WAFL external QA Tailscale runtime contract"; Command = "powershell.exe"; Arguments = @("-NoProfile", "-File", "tests/wafl-external-qa-tailscale-runtime-contract.ps1") },
@@ -1682,6 +1696,12 @@ if ($Profile -eq "automation-infrastructure" -and (GetProjectAppVersion) -in @("
 }
 if ($Profile -eq "automation-infrastructure" -and (GetProjectAppVersion) -eq "2.0.0-alpha.51" -and (Test-Path (Join-Path $ProjectDir "tests/workorder-v2-alpha51-material-soft-delete-restore-contract.mjs"))) {
     $allowedMigrationChanges = @("db/v2/migrations/013_v2_material_line_archive_lifecycle.sql")
+}
+if ($Profile -eq "automation-infrastructure" -and (GetProjectAppVersion) -in @("2.0.0-alpha.61", "2.0.0-alpha.62") -and (Test-Path (Join-Path $ProjectDir "tests/workorder-v2-alpha62-measurement-command-contract.mjs"))) {
+    $allowedMigrationChanges = @(
+        "db/v2/migrations/014_v2_size_spec_templates.sql",
+        "db/v2/migrations/015_v2_company_work_order_structure_options.sql"
+    )
 }
 $unexpectedMigrationChanges = @($migrationChanges | Where-Object { $allowedMigrationChanges -notcontains $_ })
 if ($unexpectedMigrationChanges.Count -gt 0) {

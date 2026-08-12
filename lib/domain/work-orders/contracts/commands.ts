@@ -253,6 +253,12 @@ export type SizeColorStructureCommandResult = {
   readonly totalQuantity?: number;
   readonly deletedQuantityCellCount?: number;
   readonly removedQuantity?: number;
+  readonly createdItems?: readonly {
+    readonly id: string;
+    readonly displayName: string;
+    readonly hexValue: string | null;
+  }[];
+  readonly deletedTargetIds?: readonly string[];
   readonly nextVersion: EntityVersion;
 };
 

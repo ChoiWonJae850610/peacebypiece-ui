@@ -108,7 +108,9 @@ assert.doesNotMatch(materialsSql, /work_order_processes|work_order_images|genera
 assert.match(materialsSql, /NOT EXISTS[\s\S]*domain_events[\s\S]*materialLineId/, "alpha.60 delete eligibility may consult only bounded material lifecycle event history");
 assert.match(sizeColorSql, /work_order_colors[\s\S]*work_order_sizes[\s\S]*color_size_quantities/, "size-color endpoint must read only its matrix tables");
 assert.doesNotMatch(sizeColorSql, /work_order_material_lines|work_order_processes|work_order_images|generated_documents|domain_events/, "size-color endpoint must not eager-load other tabs");
-assert.match(sizeSpecSql, /work_order_size_specs[\s\S]*work_order_size_spec_sizes[\s\S]*work_order_size_spec_poms[\s\S]*work_order_size_spec_values/, "size-spec endpoint must use structured size-spec tables");
+for (const table of ["work_order_size_specs", "work_order_size_spec_sizes", "work_order_size_spec_poms", "work_order_size_spec_values", "work_order_sizes"]) {
+  assert.ok(sizeSpecSql.includes(table), `size-spec endpoint must use canonical ${table}`);
+}
 assert.match(processesSql, /work_order_processes/, "process endpoint must read process rows");
 assert.doesNotMatch(processesSql, /work_order_material_lines|work_order_images|generated_documents|domain_events/, "process endpoint must not eager-load other tabs");
 assert.match(assetsSql, /work_order_revision_images[\s\S]*work_order_revision_attachments/, "assets endpoint must read revision-linked metadata");

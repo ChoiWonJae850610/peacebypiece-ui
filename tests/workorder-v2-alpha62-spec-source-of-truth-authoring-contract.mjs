@@ -1,0 +1,41 @@
+#!/usr/bin/env node
+import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
+
+const read = (path) => readFileSync(path, "utf8");
+const policy = read("apps/mobile/domain/measurementPolicy.ts");
+const mobile = read("apps/mobile/features/work-orders/size-color/WorkOrderSizeColorReadOnly.tsx");
+const sheets = read("apps/mobile/features/work-orders/size-color/MeasurementTemplateSheets.tsx");
+const editor = read("apps/mobile/features/work-orders/size-color/WorkOrderSizeColorStructureEditor.tsx");
+const controller = read("apps/mobile/features/work-orders/size-color/useSizeColorStructureEditController.ts");
+const timing = read("apps/mobile/lib/devMutationTiming.ts");
+const measurement = read("lib/domain/work-orders/measurement/measurementCommandRepository.ts");
+const structure = read("lib/domain/work-orders/command/sizeColorStructureCommandRepository.ts");
+const detail = read("lib/domain/work-orders/read/detailRepository.ts");
+const route = read("lib/domain/work-orders/command/materialCommandRoute.ts");
+const guard = read("lib/domain/work-orders/command/runtimeGuard.ts");
+const proxy = read("lib/external-qa/configCore.mjs");
+const reel = read("apps/mobile/features/inputs/reel-picker/WaflReelPickerSheet.tsx");
+
+for (const token of ["normalizeMeasurementSizeSemanticKey", "projectMeasurementSizesFromWorkOrder"]) assert.ok(policy.includes(token));
+for (const token of ["JOIN work_order_sizes x", "work_size.id::text", "JOIN work_order_size_spec_sizes spec_size", "regexp_replace(trim(work_size.size_code)"]) assert.ok(detail.includes(token), `read model SOT missing ${token}`);
+for (const token of ["INSERT INTO work_order_size_spec_sizes", "FROM work_order_sizes ws", "source_size_code", "normalized_size_code"]) assert.ok(measurement.replaceAll("work_size", "ws"), `template intersection missing ${token}`);
+assert.doesNotMatch(measurement, /kind === "add-size"|kind === "remove-size"|"add-size":|"remove-size":/);
+assert.match(measurement, /const workOrderSizeId=uuid\(input\.payload\.sizeRowId\)/);
+for (const token of ["synchronizeFinishedSpecSizes", "DELETE FROM work_order_size_spec_values", "INSERT INTO work_order_size_spec_sizes"]) assert.ok(structure.includes(token));
+for (const token of ["완성 스펙", "미입력 스펙값", "스펙 불러오기", "스펙 저장", "accessibilityLabel=\"스펙 불러오기\""]) assert.ok(mobile.includes(token));
+assert.doesNotMatch(mobile, /MeasurementSizeChooser|onAddMeasurementSize|onRemoveMeasurementSize|치수표에서 제외/);
+for (const token of ["WAFL 추천", "사용자 저장 스펙", "새 스펙 저장", "기존 스펙 업데이트"]) assert.ok(sheets.includes(token));
+assert.doesNotMatch(sheets, /현재 완성 스펙의 항목과 일치하는 값을|작업지시서 사이즈는 그대로 유지됩니다|아래 V를 누를 때만 변경됩니다/);
+assert.doesNotMatch(sheets, /회사 치수표|기준 치수/);
+assert.doesNotMatch(editor, /\d+개 추가|영구 삭제/);
+assert.equal((editor.match(/<Text style=\{styles\.primaryButtonText\}>추가<\/Text>/g) ?? []).length, 2, "direct size/color creation must keep the fixed 추가 label");
+for (const token of ["markVisibleComplete", "measurement-unit", "mutationQueue.enqueue", "authoritativeVersion"]) assert.ok(controller.includes(token));
+for (const token of ["visible-complete", "visibleCompleteMs"]) assert.ok(timing.includes(token));
+assert.match(controller, /scope === "measurement-unit"[\s\S]{0,80}markVisibleComplete\(\)/);
+assert.match(reel, /reelColumn: \{ backgroundColor: "transparent"/);
+assert.match(reel, /optionSwatch: \{[^}]*borderRadius: 11/);
+assert.match(route, /getWorkOrderV2MaterialHardDeleteMutationRuntimeGuard/);
+assert.match(guard, /getWorkOrderV2MaterialHardDeleteMutationRuntimeGuard[\s\S]{0,500}WAFL_V2_ALPHA62_MEASUREMENT_MUTATION_APPROVAL/);
+assert.match(proxy, /materials\$[\s\S]{0,1500}alpha62SizeMeasurementEnabled/);
+console.log("workorder v2 alpha.62 spec source-of-truth authoring contract: PASS");

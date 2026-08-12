@@ -1,4 +1,5 @@
 import type { WorkOrderStatus } from "@/domain/mobileContract";
+import { WAFL_UNSET_PLACEHOLDER } from "@/lib/displayPlaceholder";
 
 const WORK_ORDER_STATUS_LABELS: Readonly<Record<WorkOrderStatus, string>> = {
   draft: "작성 중",
@@ -40,7 +41,7 @@ export function formatProductType(alias: string | null, code: string | null) {
   const displayAlias = alias?.trim();
   if (displayAlias) return displayAlias;
   const normalizedCode = code?.trim();
-  if (!normalizedCode) return "미지정";
+  if (!normalizedCode) return WAFL_UNSET_PLACEHOLDER;
   return PRODUCT_TYPE_LABELS[normalizedCode] ?? "제품 유형 확인 필요";
 }
 

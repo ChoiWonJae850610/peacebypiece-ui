@@ -81,7 +81,7 @@ assert.match(commandValidation, /parseOptionalText\(body\.patch\.itemCode, "patc
 assert.doesNotMatch(materials, /archivedState|archivedTotalCount|onRestore|onLoadMoreArchived|restoreButton|archivedSection/);
 assert.doesNotMatch(overview, /archivedMaterials|archivedMaterialCount|onRestoreMaterial|onLoadMoreArchivedMaterials/);
 assert.doesNotMatch(experience, /requestRestoreMaterial|loadMoreArchivedMaterials/);
-assert.match(experience, /requestArchiveMaterial[\s\S]*삭제[\s\S]*이력은 안전하게 보존됩니다/);
+assert.match(experience, /requestDeleteMaterial[\s\S]*초안에서 삭제합니다[\s\S]*발주 이력이 없는 항목만 삭제할 수 있습니다/);
 assert.match(validation, /unitCode: materialType === "accessory" \? "개" : "yd"/);
 assert.match(experience, /const base = materialCreateDraft\(activeMaterialType\)/);
 assert.equal((experience.match(/materialCreateDraft\(activeMaterialType\)/g) ?? []).length, 1);

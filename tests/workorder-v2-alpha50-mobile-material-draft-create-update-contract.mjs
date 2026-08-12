@@ -19,7 +19,7 @@ const detail = read("apps/mobile/features/work-orders/overview/WorkOrderDetailOv
 const materials = read("apps/mobile/features/materials/WorkOrderMaterialsReadOnly.tsx");
 const editor = read("apps/mobile/features/materials/WorkOrderMaterialEditor.tsx");
 const materialFieldPolicy = read("apps/mobile/features/materials/materialFieldPolicy.ts");
-const apiClient = read("apps/mobile/lib/apiClient.ts");
+const apiClient = [read("apps/mobile/lib/apiClient.ts"), read("apps/mobile/lib/apiTransport.ts")].join("\n");
 const apiTypes = read("apps/mobile/domain/mobileContract.ts");
 const mobileValidation = read("apps/mobile/domain/workOrderValidation.ts");
 const mobilePolicy = read("apps/mobile/domain/workOrderPolicy.ts");
@@ -114,7 +114,9 @@ assert.ok(evidence.includes("inventory usage"), "immutable alpha.50 evidence mus
 assert.match(apiTypes, /readonly orderQuantity: string/);
 assert.doesNotMatch(editor, /field="orderQuantity"/);
 assert.match(editor, /발주수량, 자동 계산, 읽기 전용/);
-assert.doesNotMatch(apiTypes + editor, /partnerId|materialId|supplierPartnerId|applicationColorTarget/);
+assert.doesNotMatch(apiTypes + editor, /materialId|supplierPartnerId|applicationColorTarget/);
+assert.match(apiTypes, /readonly partnerId: string/);
+assert.match(editor, /partnerOptions/);
 assert.match(apiClient, /export async function createWorkOrderMaterial/);
 assert.match(apiClient, /method: "POST"/);
 assert.match(apiClient, /"Idempotency-Key"/);
@@ -133,7 +135,7 @@ for (const state of ["editing", "saving", "validation-error", "conflict", "locke
 assert.match(editor, /state\.materialType === "accessory" \? "부자재" : "원단"/);
 assert.match(editor, /\$\{materialLabel\} 추가/);
 assert.match(editor, /\$\{materialLabel\} 수정/);
-assert.match(editor, /추가 취소/);
+assert.match(editor, /accessibilityLabel=\{`\$\{materialLabel\} [^`]+`\}/);
 assert.match(editor, /저장 전/);
 assert.match(editor, /계속 편집|최신 내용 불러오기/);
 assert.match(app, /decideDraftExit/);

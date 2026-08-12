@@ -19,6 +19,7 @@ export type ReelOption = {
   readonly key: string;
   readonly value: string;
   readonly label?: string;
+  readonly metadata?: string | null;
   readonly swatchHex?: string | null;
 };
 

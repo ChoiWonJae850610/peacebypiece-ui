@@ -3,8 +3,10 @@ import {
   getWorkOrderImages,
   getWorkOrderList,
   getWorkOrderMaterials,
+  getWorkOrderMaterialPartners,
   getWorkOrderSizeColor,
   getWorkOrderSizeSpec,
+  getWorkOrderStructureOptions,
 } from "../../lib/apiClient";
 import type { MaterialType, WorkOrderListStatusFilter } from "../../domain/mobileContract";
 
@@ -24,7 +26,13 @@ export const workOrderQueryController = {
   sizeSpec(workOrderId: string) {
     return getWorkOrderSizeSpec(workOrderId);
   },
+  structureOptions(workOrderId: string) {
+    return getWorkOrderStructureOptions(workOrderId);
+  },
   materials(workOrderId: string, materialType: MaterialType, cursor: string | null = null, lifecycle: "active" | "archived" = "active") {
     return getWorkOrderMaterials(workOrderId, materialType, cursor, lifecycle);
+  },
+  materialPartners(workOrderId: string) {
+    return getWorkOrderMaterialPartners(workOrderId);
   },
 } as const;

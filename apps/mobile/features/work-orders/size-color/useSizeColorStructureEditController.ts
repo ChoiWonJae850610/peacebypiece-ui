@@ -1,7 +1,9 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
-import { createExplicitMutationController } from "@/application/mutationController";
-import { MobileApiError, type SizeColorStructureCommandResult, type WorkOrderSizeColorBundle } from "@/domain/mobileContract";
+import { createSerializedMutationQueue } from "@/application/mutationController";
+import { MobileApiError, type MeasurementCommandResult, type SizeColorStructureCommandResult, type WorkOrderSizeColorBundle } from "@/domain/mobileContract";
+import { createApplyMeasurementTemplateCommand } from "@/domain/measurementCommandTransport";
+import { formatMeasurementFromCm, normalizeMeasurementSizeSemanticKey, parseMeasurementToCm } from "@/domain/measurementPolicy";
 import { workOrderMutationController } from "@/features/work-orders/workOrderMutationController";
 import {
   createImmutableAddSnapshot,
@@ -17,13 +19,20 @@ import {
   type ColorStructureDraft,
 } from "./sizeColorStructureEditPolicy";
 import { reconcileQuantityCell } from "./sizeColorReconciliation";
+import { createDevMutationTiming } from "@/lib/devMutationTiming";
+import type { StructureSelectionCandidate } from "@/domain/sizeColorSelectionBatchPolicy";
+import { commitMeasurementProjectionTransition } from "./projectionVersionTransition";
+import type { MeasurementProjectionCommandKind } from "./measurementProjectionImpactPolicy";
+import type { PendingCommandScope } from "./sizeColorPendingPolicy";
+
+export type { PendingCommandScope } from "./sizeColorPendingPolicy";
 
 export type SizeColorStructureEditBoundary = {
   readonly canEdit: boolean;
   readonly editing: boolean;
   readonly busy: boolean;
+  readonly pendingScope: PendingCommandScope | null;
   readonly errorMessage: string | null;
-  readonly resetToken: number;
   readonly onBegin: () => void;
   readonly onCancel: () => void;
   readonly onAddSize: (displayLabel: string) => Promise<boolean>;
@@ -34,7 +43,17 @@ export type SizeColorStructureEditBoundary = {
   readonly onAddColors: (drafts: readonly ColorStructureDraft[]) => Promise<{ readonly added: number; readonly failed: string | null }>;
   readonly onPatchColor: (colorId: string, draft: ColorStructureDraft) => Promise<boolean>;
   readonly onDeleteColor: (colorId: string) => Promise<boolean>;
+  readonly onApplySelectionBatch: (
+    targetKind: "size" | "color",
+    additions: readonly StructureSelectionCandidate[],
+    deletionIds: readonly string[],
+  ) => Promise<boolean>;
   readonly onSetQuantity: (colorId: string, sizeRowId: string, quantity: number) => Promise<boolean>;
+  readonly onSetMeasurementCell: (sizeRowId: string, pomColumnId: string, measurementUnit: "cm" | "inch", displayValue: string | null) => Promise<boolean>;
+  readonly onSetMeasurementUnit: (measurementUnit: "cm" | "inch") => Promise<boolean>;
+  readonly onApplyMeasurementTemplate: (templateId: string) => Promise<boolean>;
+  readonly onSaveMeasurementTemplate: (templateName: string) => Promise<boolean>;
+  readonly onUpdateMeasurementTemplate: (templateId: string) => Promise<boolean>;
 };
 
 type LatestProjection = {
@@ -49,7 +68,9 @@ type Input = {
   readonly bundle: WorkOrderSizeColorBundle | null;
   readonly onReconcile: (updater: (bundle: WorkOrderSizeColorBundle) => WorkOrderSizeColorBundle, nextVersion: number) => void;
   readonly onTotalQuantityReconcile: (totalQuantity: number, nextVersion: number) => void;
-  readonly onCommitted: (nextVersion: number) => Promise<void>;
+  readonly onVersionReconcile: (nextVersion: number) => void;
+  readonly onPromoteProjectionVersion: (nextVersion: number) => void;
+  readonly onRefreshSizeSpec: (nextVersion: number) => Promise<void>;
   readonly onConflict: () => Promise<void>;
   readonly onRefreshLatest: () => Promise<LatestProjection | undefined>;
   readonly onAuthenticationError: (error: MobileApiError) => void;
@@ -63,20 +84,50 @@ function withColorOrder<T extends { readonly id: string; readonly displayName: s
   return sortColorRows(rows).map((row, displayOrder) => ({ ...row, displayOrder }));
 }
 
+function reconcileFinishedSpecSizes(bundle: WorkOrderSizeColorBundle, matrixSizes = bundle.matrix.sizes): WorkOrderSizeColorBundle {
+  const existingByKey = new Map(bundle.specifications.sizes.map((size) => [
+    normalizeMeasurementSizeSemanticKey(size.code || size.displayLabel),
+    size,
+  ]));
+  const sizes = matrixSizes.map((matrixSize, displayOrder) => {
+    const key = normalizeMeasurementSizeSemanticKey(matrixSize.code || matrixSize.displayLabel);
+    const existing = existingByKey.get(key);
+    return {
+      id: matrixSize.id,
+      code: matrixSize.code || existing?.code || key,
+      displayLabel: matrixSize.displayLabel,
+      displayOrder,
+    };
+  });
+  const sizeIds = new Set(sizes.map((size) => size.id));
+  return {
+    ...bundle,
+    matrix: { ...bundle.matrix, sizes: matrixSizes },
+    specifications: {
+      ...bundle.specifications,
+      sizes,
+      cells: bundle.specifications.cells.filter((cell) => sizeIds.has(cell.sizeRowId)),
+      sourceTemplateModified: bundle.specifications.templateId !== null,
+    },
+  };
+}
+
 function isConflict(error: unknown) {
   return error instanceof MobileApiError && (error.code === "CONFLICT" || error.status === 409);
 }
+function isStructureResult(value: SizeColorStructureCommandResult | MeasurementCommandResult): value is SizeColorStructureCommandResult { return "targetKind" in value; }
 
 export function useSizeColorStructureEditController(input: Input) {
   const [editingWorkOrderId, setEditingWorkOrderId] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [pendingScope, setPendingScope] = useState<PendingCommandScope | null>(null);
   const [errorState, setErrorState] = useState<{ readonly workOrderId: string; readonly message: string } | null>(null);
-  const [resetToken, setResetToken] = useState(0);
-  const mutation = useRef(createExplicitMutationController()).current;
+  const mutationQueue = useRef(createSerializedMutationQueue()).current;
   const sequence = useRef(0);
   const generation = useRef(0);
   const batchBusy = useRef(false);
   const activeWorkOrderId = useRef(input.workOrderId);
+  const authoritativeVersion = useRef(input.entityVersion);
   const current = useRef(input);
 
   useEffect(() => {
@@ -84,6 +135,10 @@ export function useSizeColorStructureEditController(input: Input) {
     if (activeWorkOrderId.current !== input.workOrderId) {
       generation.current += 1;
       activeWorkOrderId.current = input.workOrderId;
+      authoritativeVersion.current = input.entityVersion;
+    } else if (input.entityVersion !== null
+      && (authoritativeVersion.current === null || input.entityVersion > authoritativeVersion.current)) {
+      authoritativeVersion.current = input.entityVersion;
     }
   }, [input]);
 
@@ -102,54 +157,85 @@ export function useSizeColorStructureEditController(input: Input) {
 
   const run = useCallback(async (
     changed: boolean,
-    request: (context: { readonly workOrderId: string; readonly expectedVersion: number; readonly clientRequestId: string; readonly idempotencyKey: string }) => Promise<SizeColorStructureCommandResult>,
+    request: (context: { readonly workOrderId: string; readonly expectedVersion: number; readonly clientRequestId: string; readonly idempotencyKey: string }) => Promise<SizeColorStructureCommandResult | MeasurementCommandResult>,
     reconcile?: (bundle: WorkOrderSizeColorBundle, result: SizeColorStructureCommandResult) => WorkOrderSizeColorBundle,
     optimistic?: (bundle: WorkOrderSizeColorBundle) => WorkOrderSizeColorBundle,
+    projectionCommand?: MeasurementProjectionCommandKind,
+    metricName = "size-color-structure",
+    scope: PendingCommandScope = "structure",
+    failureRollbackBundle?: WorkOrderSizeColorBundle,
   ) => {
-    const snapshot = current.current;
-    if (!snapshot.canEdit || !snapshot.workOrderId || snapshot.entityVersion === null) return false;
+    const initial = current.current;
+    if (!changed || !initial.canEdit || !initial.workOrderId || initial.entityVersion === null) return false;
     const requestGeneration = generation.current;
-    const requestWorkOrderId = snapshot.workOrderId;
-    const ids = identity();
-    let optimisticApplied = false;
-    let conflictRefreshed = false;
+    const requestWorkOrderId = initial.workOrderId;
+    const timing = createDevMutationTiming(metricName);
+    if (scope === "measurement-unit") timing.markVisibleComplete();
     setErrorState(null);
-    const result = await mutation.execute(changed, async () => {
+    return mutationQueue.enqueue(async () => {
+      const snapshot = current.current;
+      if (!snapshot.canEdit || snapshot.workOrderId !== requestWorkOrderId || snapshot.entityVersion === null
+        || requestGeneration !== generation.current) return false;
+      const ids = identity();
+      let optimisticApplied = false;
+      let conflictRefreshed = false;
       if (optimistic && snapshot.bundle) {
         const optimisticBundle = optimistic(snapshot.bundle);
-        snapshot.onReconcile(() => optimisticBundle, snapshot.entityVersion as number);
-        snapshot.onTotalQuantityReconcile(Number(optimisticBundle.matrix.matrixTotal), snapshot.entityVersion as number);
+        snapshot.onReconcile(() => optimisticBundle, snapshot.entityVersion);
+        snapshot.onTotalQuantityReconcile(Number(optimisticBundle.matrix.matrixTotal), snapshot.entityVersion);
         optimisticApplied = true;
       }
       setBusy(true);
-      return request({ workOrderId: requestWorkOrderId, expectedVersion: snapshot.entityVersion as number, ...ids });
-    }).catch(async (error: unknown) => {
-      if (error instanceof MobileApiError && (error.code === "AUTH_REQUIRED" || error.status === 401)) snapshot.onAuthenticationError(error);
-      else if (isConflict(error)) {
-        await snapshot.onConflict();
-        conflictRefreshed = true;
-        setErrorState({ workOrderId: requestWorkOrderId, message: "다른 변경이 먼저 저장되어 최신 값을 다시 불러왔습니다." });
-      } else reportError(requestWorkOrderId, error, "변경을 저장하지 못했습니다.");
-      setResetToken((value) => value + 1);
-      return { kind: "skipped" as const };
-    }).finally(() => setBusy(false));
-    if (result.kind !== "success") {
-      if (optimisticApplied && !conflictRefreshed && snapshot.bundle
-        && isStructureMutationCommitAllowed({ requestWorkOrderId, activeWorkOrderId: activeWorkOrderId.current, requestGeneration, activeGeneration: generation.current })) {
-        snapshot.onReconcile(() => snapshot.bundle as WorkOrderSizeColorBundle, snapshot.entityVersion as number);
-        snapshot.onTotalQuantityReconcile(Number(snapshot.bundle.matrix.matrixTotal), snapshot.entityVersion as number);
+      setPendingScope(scope);
+      try {
+        const expectedVersion = authoritativeVersion.current ?? snapshot.entityVersion;
+        const commandResult = await request({ workOrderId: requestWorkOrderId, expectedVersion, ...ids });
+        timing.markRequestComplete();
+        if (!isStructureMutationCommitAllowed({ requestWorkOrderId, activeWorkOrderId: activeWorkOrderId.current, requestGeneration, activeGeneration: generation.current })) {
+          timing.complete({ followUpRequests: 0, outcome: "skipped" });
+          return false;
+        }
+        if (reconcile && isStructureResult(commandResult)) snapshot.onReconcile((bundle) => reconcile(bundle, commandResult), commandResult.nextVersion);
+        if ("totalQuantity" in commandResult && commandResult.totalQuantity !== undefined) {
+          snapshot.onTotalQuantityReconcile(commandResult.totalQuantity, commandResult.nextVersion);
+        }
+        authoritativeVersion.current = commandResult.nextVersion;
+        const projectionImpact = projectionCommand
+          ? await commitMeasurementProjectionTransition({
+            command: projectionCommand,
+            nextVersion: commandResult.nextVersion,
+            promoteProjection: snapshot.onPromoteProjectionVersion,
+            reconcileEntityVersion: snapshot.onVersionReconcile,
+            refreshSizeSpec: snapshot.onRefreshSizeSpec,
+          })
+          : null;
+        if (!projectionCommand) snapshot.onVersionReconcile(commandResult.nextVersion);
+        timing.complete({ followUpRequests: projectionImpact?.workOrderSizeSpecGets ?? 0, outcome: "success" });
+        return true;
+      } catch (error: unknown) {
+        if (error instanceof MobileApiError && (error.code === "AUTH_REQUIRED" || error.status === 401)) snapshot.onAuthenticationError(error);
+        else if (isConflict(error)) {
+          await snapshot.onConflict();
+          conflictRefreshed = true;
+          setErrorState({ workOrderId: requestWorkOrderId, message: "다른 변경이 먼저 저장되어 최신 값을 다시 불러왔습니다." });
+        } else reportError(requestWorkOrderId, error, "변경을 저장하지 못했습니다.");
+        if (failureRollbackBundle && !conflictRefreshed) {
+          snapshot.onReconcile(() => failureRollbackBundle, snapshot.entityVersion);
+          snapshot.onTotalQuantityReconcile(Number(failureRollbackBundle.matrix.matrixTotal), snapshot.entityVersion);
+        } else if (optimisticApplied && !conflictRefreshed && snapshot.bundle
+          && isStructureMutationCommitAllowed({ requestWorkOrderId, activeWorkOrderId: activeWorkOrderId.current, requestGeneration, activeGeneration: generation.current })) {
+          snapshot.onReconcile(() => snapshot.bundle as WorkOrderSizeColorBundle, snapshot.entityVersion);
+          snapshot.onTotalQuantityReconcile(Number(snapshot.bundle.matrix.matrixTotal), snapshot.entityVersion);
+        }
+        timing.complete({ followUpRequests: conflictRefreshed ? 3 : 0, outcome: "failure" });
+        return false;
+      } finally {
+        setBusy(false);
+        setPendingScope(null);
+        timing.markBusyRelease();
       }
-      return false;
-    }
-    if (!isStructureMutationCommitAllowed({ requestWorkOrderId, activeWorkOrderId: activeWorkOrderId.current, requestGeneration, activeGeneration: generation.current })) return false;
-    if (reconcile) snapshot.onReconcile((bundle) => reconcile(bundle, result.value), result.value.nextVersion);
-    if (result.value.totalQuantity !== undefined) {
-      snapshot.onTotalQuantityReconcile(result.value.totalQuantity, result.value.nextVersion);
-    }
-    await snapshot.onCommitted(result.value.nextVersion);
-    setResetToken((value) => value + 1);
-    return true;
-  }, [identity, mutation, reportError]);
+    });
+  }, [identity, mutationQueue, reportError]);
 
   const addSizesSequentially = useCallback(async (displayLabels: readonly string[]) => {
     const snapshot = current.current;
@@ -192,7 +278,7 @@ export function useSizeColorStructureEditController(input: Input) {
         const existing = sizes.find((row) => row.id === result?.targetId);
         if (!existing) sizes = withSizeOrder([...sizes, { id: result.targetId, code: "", displayLabel: validated.value, displayOrder: sizes.length }]);
         else sizes = withSizeOrder(sizes);
-        snapshot.onReconcile((bundle) => ({ ...bundle, matrix: { ...bundle.matrix, sizes } }), expectedVersion);
+        snapshot.onReconcile((bundle) => reconcileFinishedSpecSizes(bundle, sizes), expectedVersion);
         added += 1;
       }
       await snapshot.onRefreshLatest();
@@ -201,7 +287,6 @@ export function useSizeColorStructureEditController(input: Input) {
     } finally {
       batchBusy.current = false;
       setBusy(false);
-      setResetToken((value) => value + 1);
     }
   }, [busy, identity, reportError]);
 
@@ -256,7 +341,6 @@ export function useSizeColorStructureEditController(input: Input) {
     } finally {
       batchBusy.current = false;
       setBusy(false);
-      setResetToken((value) => value + 1);
     }
   }, [busy, identity, reportError]);
 
@@ -264,11 +348,18 @@ export function useSizeColorStructureEditController(input: Input) {
     canEdit: input.canEdit,
     editing: input.canEdit && editingWorkOrderId === input.workOrderId,
     busy,
+    pendingScope,
     errorMessage: errorState?.workOrderId === input.workOrderId ? errorState.message : null,
-    resetToken,
     onBegin: () => { if (input.canEdit) { setErrorState(null); setEditingWorkOrderId(input.workOrderId); } },
-    onCancel: () => { if (!busy) { setEditingWorkOrderId(null); setErrorState(null); setResetToken((value) => value + 1); } },
-    onAddSize: async (displayLabel) => (await addSizesSequentially([displayLabel])).failed === null,
+    onCancel: () => { if (!busy) { setEditingWorkOrderId(null); setErrorState(null); } },
+    onAddSize: async (displayLabel) => {
+      const sizes = input.bundle?.matrix.sizes ?? [];
+      const validated = validateSizeLabel(displayLabel, sizes);
+      if (validated.error) { setErrorState({ workOrderId: input.workOrderId ?? "", message: validated.error }); return false; }
+      return run(true, ({ workOrderId, expectedVersion, clientRequestId, idempotencyKey }) => workOrderMutationController.addSize(
+        workOrderId, { clientRequestId, expectedVersion, displayLabel: validated.value }, idempotencyKey,
+      ), (bundle, result) => result.targetId ? reconcileFinishedSpecSizes(bundle, withSizeOrder([...bundle.matrix.sizes, { id: result.targetId, code: validated.value, displayLabel: validated.value, displayOrder: bundle.matrix.sizes.length }])) : bundle, undefined, undefined, "size-add");
+    },
     onAddSizes: addSizesSequentially,
     onRenameSize: async (sizeRowId, displayLabel) => {
       const sizes = input.bundle?.matrix.sizes ?? [];
@@ -276,23 +367,30 @@ export function useSizeColorStructureEditController(input: Input) {
       if (!currentRow) return false;
       const validated = validateSizeLabel(displayLabel, sizes, sizeRowId);
       if (validated.error) { setErrorState({ workOrderId: input.workOrderId ?? "", message: validated.error }); return false; }
-      return run(validated.value !== currentRow.displayLabel, ({ workOrderId, expectedVersion, clientRequestId, idempotencyKey }) => workOrderMutationController.renameSize(workOrderId, sizeRowId, { clientRequestId, expectedVersion, displayLabel: validated.value }, idempotencyKey), (bundle) => ({ ...bundle, matrix: { ...bundle.matrix, sizes: withSizeOrder(bundle.matrix.sizes.map((row) => row.id === sizeRowId ? { ...row, displayLabel: validated.value } : row)) } }));
+      return run(validated.value !== currentRow.displayLabel, ({ workOrderId, expectedVersion, clientRequestId, idempotencyKey }) => workOrderMutationController.renameSize(workOrderId, sizeRowId, { clientRequestId, expectedVersion, displayLabel: validated.value }, idempotencyKey), (bundle) => reconcileFinishedSpecSizes(bundle, withSizeOrder(bundle.matrix.sizes.map((row) => row.id === sizeRowId ? { ...row, displayLabel: validated.value } : row))), undefined, undefined, "size-rename");
     },
     onDeleteSize: (sizeRowId) => run(
       true,
       ({ workOrderId, expectedVersion, clientRequestId, idempotencyKey }) => workOrderMutationController.deleteSize(
         workOrderId, sizeRowId, { clientRequestId, expectedVersion }, idempotencyKey,
       ),
-      (bundle) => ({
-        ...bundle,
-        matrix: {
-          ...bundle.matrix,
-          sizes: withSizeOrder(bundle.matrix.sizes.filter((row) => row.id !== sizeRowId)),
-          quantityCells: bundle.matrix.quantityCells.filter((cell) => cell.sizeRowId !== sizeRowId),
-        },
-      }),
+      (bundle) => {
+        const nextSizes = withSizeOrder(bundle.matrix.sizes.filter((row) => row.id !== sizeRowId));
+        const synchronized = reconcileFinishedSpecSizes(bundle, nextSizes);
+        return { ...synchronized, matrix: { ...synchronized.matrix, quantityCells: bundle.matrix.quantityCells.filter((cell) => cell.sizeRowId !== sizeRowId) } };
+      },
+      undefined,
+      undefined,
+      "size-delete",
     ),
-    onAddColor: async (draft) => (await addColorsSequentially([draft])).failed === null,
+    onAddColor: async (draft) => {
+      const colors = input.bundle?.matrix.colors ?? [];
+      const validated = validateColorDraft(draft, colors);
+      if (validated.error) { setErrorState({ workOrderId: input.workOrderId ?? "", message: validated.error }); return false; }
+      return run(true, ({ workOrderId, expectedVersion, clientRequestId, idempotencyKey }) => workOrderMutationController.addColor(
+        workOrderId, { clientRequestId, expectedVersion, displayName: validated.displayName, hexValue: validated.hexValue }, idempotencyKey,
+      ), (bundle, result) => result.targetId ? ({ ...bundle, matrix: { ...bundle.matrix, colors: withColorOrder([...bundle.matrix.colors, { id: result.targetId, code: "", displayName: validated.displayName, hexValue: validated.hexValue, displayOrder: bundle.matrix.colors.length }]) } }) : bundle, undefined, undefined, "color-add");
+    },
     onAddColors: addColorsSequentially,
     onPatchColor: async (colorId, draft) => {
       const colors = input.bundle?.matrix.colors ?? [];
@@ -316,6 +414,37 @@ export function useSizeColorStructureEditController(input: Input) {
         },
       }),
     ),
+    onApplySelectionBatch: (targetKind, additions, deletionIds) => run(
+      additions.length > 0 || deletionIds.length > 0,
+      ({ workOrderId, expectedVersion, clientRequestId, idempotencyKey }) => workOrderMutationController.batchStructureSelection(
+        workOrderId,
+        { clientRequestId, expectedVersion, targetKind, additions, deletionIds },
+        idempotencyKey,
+      ),
+      (bundle, result) => {
+        const deleted = new Set(result.deletedTargetIds ?? deletionIds);
+        const created = result.createdItems ?? [];
+        const quantityCells = bundle.matrix.quantityCells.filter((cell) => (
+          targetKind === "size" ? !deleted.has(cell.sizeRowId) : !deleted.has(cell.colorId)
+        ));
+        if (targetKind === "size") {
+          const sizes = withSizeOrder([
+            ...bundle.matrix.sizes.filter((row) => !deleted.has(row.id)),
+            ...created.map((item) => ({ id: item.id, code: item.displayName, displayLabel: item.displayName, displayOrder: bundle.matrix.sizes.length })),
+          ]);
+          const synchronized = reconcileFinishedSpecSizes(bundle, sizes);
+          return { ...synchronized, matrix: { ...synchronized.matrix, quantityCells } };
+        }
+        const colors = withColorOrder([
+          ...bundle.matrix.colors.filter((row) => !deleted.has(row.id)),
+          ...created.map((item) => ({ id: item.id, code: "", displayName: item.displayName, hexValue: item.hexValue, displayOrder: bundle.matrix.colors.length })),
+        ]);
+        return { ...bundle, matrix: { ...bundle.matrix, colors, quantityCells } };
+      },
+      undefined,
+      undefined,
+      `selection-batch-${targetKind}`,
+    ),
     onSetQuantity: async (colorId, sizeRowId, quantity) => {
       const currentCell = input.bundle?.matrix.quantityCells.find((cell) => cell.colorId === colorId && cell.sizeRowId === sizeRowId);
       const currentQuantity = Number(currentCell?.quantity ?? 0);
@@ -336,9 +465,41 @@ export function useSizeColorStructureEditController(input: Input) {
           result.quantity ?? quantity,
         ),
         (bundle) => reconcileQuantityCell(bundle, colorId, sizeRowId, quantity),
+        undefined,
+        "quantity-upsert",
+        "quantity",
       );
     },
-  }), [addColorsSequentially, addSizesSequentially, busy, editingWorkOrderId, errorState, input.bundle, input.canEdit, input.workOrderId, resetToken, run]);
+    onSetMeasurementCell: async (sizeRowId, pomColumnId, measurementUnit, displayValue) => {
+      const parsed = displayValue === null ? null : parseMeasurementToCm(displayValue, measurementUnit);
+      return run(true, ({ workOrderId, expectedVersion, clientRequestId, idempotencyKey }) => workOrderMutationController.mutateMeasurement(workOrderId, {
+        kind: "set-cell", clientRequestId, expectedVersion, sizeRowId, pomColumnId, measurementUnit, displayValue,
+      }, idempotencyKey), undefined, (bundle) => ({
+        ...bundle,
+        specifications: {
+          ...bundle.specifications,
+          cells: [
+            ...bundle.specifications.cells.filter((cell) => cell.sizeRowId !== sizeRowId || cell.pomColumnId !== pomColumnId),
+            { sizeRowId, pomColumnId, displayValue: parsed ? formatMeasurementFromCm(parsed.centimeters, measurementUnit) : null, decimalValue: parsed ? String(parsed.centimeters) : null },
+          ],
+          sourceTemplateModified: bundle.specifications.templateId !== null,
+        },
+      }), "set-cell", "measurement-cell", "measurement-cell");
+    },
+    onSetMeasurementUnit: async (measurementUnit) => {
+      const snapshot = current.current;
+      if (!snapshot.canEdit || !snapshot.workOrderId || snapshot.entityVersion === null) return false;
+      const previousBundle = snapshot.bundle ?? undefined;
+      snapshot.onReconcile((bundle) => ({ ...bundle, specifications: { ...bundle.specifications, measurementUnit, cells: bundle.specifications.cells.map((cell) => ({ ...cell, displayValue: cell.decimalValue === null ? null : formatMeasurementFromCm(Number(cell.decimalValue), measurementUnit) })) } }), snapshot.entityVersion);
+      const saved = await run(true, ({ workOrderId, expectedVersion, clientRequestId, idempotencyKey }) => workOrderMutationController.mutateMeasurement(workOrderId, {
+        kind: "set-unit", clientRequestId, expectedVersion, measurementUnit,
+      }, idempotencyKey), undefined, undefined, "set-unit", "measurement-unit", "measurement-unit", previousBundle);
+      return saved;
+    },
+    onApplyMeasurementTemplate: async (templateId) => run(true, ({ workOrderId, expectedVersion, clientRequestId, idempotencyKey }) => workOrderMutationController.mutateMeasurement(workOrderId, createApplyMeasurementTemplateCommand({ templateId, expectedVersion, clientRequestId }), idempotencyKey), undefined, undefined, "apply-template", "template-apply", "template"),
+    onSaveMeasurementTemplate: async (templateName) => run(true, ({ workOrderId, expectedVersion, clientRequestId, idempotencyKey }) => workOrderMutationController.mutateMeasurement(workOrderId, { kind: "save-company-template", templateName, expectedVersion, clientRequestId }, idempotencyKey), undefined, undefined, "save-company-template", "company-template-save", "template"),
+    onUpdateMeasurementTemplate: async (templateId) => run(true, ({ workOrderId, expectedVersion, clientRequestId, idempotencyKey }) => workOrderMutationController.mutateMeasurement(workOrderId, { kind: "update-company-template", templateId, expectedVersion, clientRequestId }, idempotencyKey), undefined, undefined, "update-company-template", "company-template-update", "template"),
+  }), [addColorsSequentially, addSizesSequentially, busy, editingWorkOrderId, errorState, input.bundle, input.canEdit, input.workOrderId, pendingScope, run]);
 
   return { boundary };
 }

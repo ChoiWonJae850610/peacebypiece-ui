@@ -4,6 +4,7 @@ import { randomUUID } from "crypto";
 import { NextResponse } from "next/server";
 
 import { createWaflApiSuccess } from "@/lib/api/waflApiServer";
+import { startWaflRouteTiming } from "@/lib/api/waflPerformanceTiming";
 import { requireWorkspaceApiGuard } from "@/lib/auth/apiRouteGuards";
 import type { CorrelationId, WorkOrderApiErrorEnvelope } from "@/lib/domain/work-orders/contracts";
 import {
@@ -21,7 +22,7 @@ import {
 } from "@/lib/domain/work-orders/command/materialCommandService";
 import {
   getWorkOrderV2CommandRuntimeGuard,
-  getWorkOrderV2DraftChildHardDeleteMutationRuntimeGuard,
+  getWorkOrderV2MaterialHardDeleteMutationRuntimeGuard,
 } from "@/lib/domain/work-orders/command/runtimeGuard";
 import {
   validateAddMaterialLine,
@@ -38,6 +39,7 @@ function successResponse(
   result: MaterialCommandServiceResult,
   correlationId: CorrelationId,
   status: number,
+  timingHeaders: Readonly<Record<string, string>>,
 ) {
   return createWaflApiSuccess(result.data, {
     status,
@@ -48,6 +50,7 @@ function successResponse(
       "X-WAFL-Command-Transaction-Count": String(result.transactionCount),
       "X-WAFL-Command-DB-Ms": String(result.dbMs),
       "X-WAFL-Idempotent-Replay": result.idempotentReplay ? "1" : "0",
+      ...timingHeaders,
     },
   });
 }
@@ -65,8 +68,9 @@ async function handleMaterialCommand(input: {
   readonly kind: MaterialCommandKind;
 }): Promise<NextResponse | NextResponse<WorkOrderApiErrorEnvelope>> {
   const correlationId = randomUUID() as CorrelationId;
+  const timing = startWaflRouteTiming();
   const runtimeGuard = input.kind === "delete"
-    ? getWorkOrderV2DraftChildHardDeleteMutationRuntimeGuard()
+    ? getWorkOrderV2MaterialHardDeleteMutationRuntimeGuard()
     : getWorkOrderV2CommandRuntimeGuard();
   if (!runtimeGuard.ok) {
     return createCommandErrorResponse({
@@ -75,6 +79,7 @@ async function handleMaterialCommand(input: {
     });
   }
   const guard = await requireWorkspaceApiGuard({ permissionCode: permissionFor(input.kind) });
+  timing.markGuardComplete();
   if (!guard.ok) {
     return createCommandErrorResponse({ ...mapCommandGuardFailureStatus(guard.response.status), correlationId });
   }
@@ -87,7 +92,7 @@ async function handleMaterialCommand(input: {
         workOrderId: input.workOrderId, command, scope: guard.scope,
         companyMemberId: guard.session.companyMemberId, correlationId,
       });
-      return successResponse(result, correlationId, result.idempotentReplay ? 200 : 201);
+      return successResponse(result, correlationId, result.idempotentReplay ? 200 : 201, timing.headers(result.dbMs));
     }
     if (input.kind === "patch") {
       const command = validatePatchMaterialLine(body);
@@ -95,7 +100,7 @@ async function handleMaterialCommand(input: {
         workOrderId: input.workOrderId, materialLineId: input.materialLineId ?? "", command,
         scope: guard.scope, companyMemberId: guard.session.companyMemberId, correlationId,
       });
-      return successResponse(result, correlationId, 200);
+      return successResponse(result, correlationId, 200, timing.headers(result.dbMs));
     }
     if (input.kind === "delete") {
       const command = validateMaterialLifecycleTransition({ body, idempotencyKey: input.request.headers.get("Idempotency-Key") });
@@ -103,7 +108,7 @@ async function handleMaterialCommand(input: {
         workOrderId: input.workOrderId, materialLineId: input.materialLineId ?? "", command,
         scope: guard.scope, companyMemberId: guard.session.companyMemberId, correlationId,
       });
-      return successResponse(result, correlationId, 200);
+      return successResponse(result, correlationId, 200, timing.headers(result.dbMs));
     }
     if (input.kind === "archive" || input.kind === "restore") {
       const command = validateMaterialLifecycleTransition({ body, idempotencyKey: input.request.headers.get("Idempotency-Key") });
@@ -112,7 +117,7 @@ async function handleMaterialCommand(input: {
         kind: input.kind, command, scope: guard.scope,
         companyMemberId: guard.session.companyMemberId, correlationId,
       });
-      return successResponse(result, correlationId, 200);
+      return successResponse(result, correlationId, 200, timing.headers(result.dbMs));
     }
 
     const command = validateMaterialOrderTransition({
@@ -129,7 +134,7 @@ async function handleMaterialCommand(input: {
       companyMemberId: guard.session.companyMemberId,
       correlationId,
     });
-    return successResponse(result, correlationId, 200);
+    return successResponse(result, correlationId, 200, timing.headers(result.dbMs));
   } catch (error) {
     if (error instanceof WorkOrderCommandValidationError) {
       return createCommandErrorResponse({

@@ -30,6 +30,8 @@ export const WAFL_V2_ALPHA60_DRAFT_CHILD_HARD_DELETE_MUTATION_APPROVAL =
   "2.0.0-alpha.60-dev-test-draft-child-hard-delete-runtime";
 export const WAFL_V2_ALPHA61_MOBILE_WORK_ORDER_CREATE_MUTATION_APPROVAL =
   "2.0.0-alpha.61-dev-test-mobile-work-order-create-runtime";
+export const WAFL_V2_ALPHA62_MEASUREMENT_MUTATION_APPROVAL =
+  "2.0.0-alpha.62-dev-test-size-measurement-runtime";
 
 const SUPPORTED_MUTATION_APPROVALS = new Set([
   WAFL_V2_ALPHA25_MUTATION_APPROVAL,
@@ -42,6 +44,7 @@ const SUPPORTED_MUTATION_APPROVALS = new Set([
   WAFL_V2_ALPHA59_SIZE_COLOR_STRUCTURE_MUTATION_APPROVAL,
   WAFL_V2_ALPHA60_DRAFT_CHILD_HARD_DELETE_MUTATION_APPROVAL,
   WAFL_V2_ALPHA61_MOBILE_WORK_ORDER_CREATE_MUTATION_APPROVAL,
+  WAFL_V2_ALPHA62_MEASUREMENT_MUTATION_APPROVAL,
 ]);
 
 export type WorkOrderV2CommandRuntimeGuard =
@@ -99,6 +102,7 @@ export function getWorkOrderV2BasicInfoMutationRuntimeGuard(): WorkOrderV2Comman
     && configuredApproval !== WAFL_V2_ALPHA57_WORK_ORDER_IMAGE_MUTATION_APPROVAL
     && configuredApproval !== WAFL_V2_ALPHA59_SIZE_COLOR_STRUCTURE_MUTATION_APPROVAL
     && configuredApproval !== WAFL_V2_ALPHA60_DRAFT_CHILD_HARD_DELETE_MUTATION_APPROVAL
+    && configuredApproval !== WAFL_V2_ALPHA62_MEASUREMENT_MUTATION_APPROVAL
   ) {
     return { ok: false, reason: "basic-info-mutation-approval-missing" };
   }
@@ -120,6 +124,7 @@ export function getWorkOrderV2MaterialDraftMutationRuntimeGuard(): WorkOrderV2Co
     && configuredApproval !== WAFL_V2_ALPHA57_WORK_ORDER_IMAGE_MUTATION_APPROVAL
     && configuredApproval !== WAFL_V2_ALPHA59_SIZE_COLOR_STRUCTURE_MUTATION_APPROVAL
     && configuredApproval !== WAFL_V2_ALPHA60_DRAFT_CHILD_HARD_DELETE_MUTATION_APPROVAL
+    && configuredApproval !== WAFL_V2_ALPHA62_MEASUREMENT_MUTATION_APPROVAL
   ) {
     return { ok: false, reason: "material-draft-mutation-approval-missing" };
   }
@@ -130,9 +135,14 @@ export function getWorkOrderV2MaterialDraftMutationRuntimeGuard(): WorkOrderV2Co
 }
 
 export function getWorkOrderV2ImageMutationRuntimeGuard(): WorkOrderV2CommandRuntimeGuard {
+  const configuredApproval = process.env.WAFL_V2_COMMAND_MUTATION_APPROVED ?? "";
+  if (
+    configuredApproval !== WAFL_V2_ALPHA57_WORK_ORDER_IMAGE_MUTATION_APPROVAL
+    && configuredApproval !== WAFL_V2_ALPHA62_MEASUREMENT_MUTATION_APPROVAL
+  ) return { ok: false, reason: "work-order-asset-mutation-approval-missing" };
   return getWorkOrderV2CommandRuntimeGuard({
     requireMutationApproval: true,
-    requiredMutationApproval: WAFL_V2_ALPHA57_WORK_ORDER_IMAGE_MUTATION_APPROVAL,
+    requiredMutationApproval: configuredApproval,
   });
 }
 
@@ -142,6 +152,7 @@ export function getWorkOrderV2SizeColorStructureMutationRuntimeGuard(): WorkOrde
     configuredApproval !== WAFL_V2_ALPHA59_SIZE_COLOR_STRUCTURE_MUTATION_APPROVAL
     && configuredApproval !== WAFL_V2_ALPHA60_DRAFT_CHILD_HARD_DELETE_MUTATION_APPROVAL
     && configuredApproval !== WAFL_V2_ALPHA61_MOBILE_WORK_ORDER_CREATE_MUTATION_APPROVAL
+    && configuredApproval !== WAFL_V2_ALPHA62_MEASUREMENT_MUTATION_APPROVAL
   ) return { ok: false, reason: "size-color-mutation-approval-missing" };
   return getWorkOrderV2CommandRuntimeGuard({
     requireMutationApproval: true,
@@ -149,10 +160,41 @@ export function getWorkOrderV2SizeColorStructureMutationRuntimeGuard(): WorkOrde
   });
 }
 
+export function getWorkOrderV2MeasurementMutationRuntimeGuard(): WorkOrderV2CommandRuntimeGuard {
+  return getWorkOrderV2CommandRuntimeGuard({
+    requireMutationApproval: true,
+    requiredMutationApproval: WAFL_V2_ALPHA62_MEASUREMENT_MUTATION_APPROVAL,
+  });
+}
+
 export function getWorkOrderV2DraftChildHardDeleteMutationRuntimeGuard(): WorkOrderV2CommandRuntimeGuard {
   return getWorkOrderV2CommandRuntimeGuard({
     requireMutationApproval: true,
     requiredMutationApproval: WAFL_V2_ALPHA60_DRAFT_CHILD_HARD_DELETE_MUTATION_APPROVAL,
+  });
+}
+
+export function getWorkOrderV2SizeColorHardDeleteMutationRuntimeGuard(): WorkOrderV2CommandRuntimeGuard {
+  const configuredApproval = process.env.WAFL_V2_COMMAND_MUTATION_APPROVED ?? "";
+  if (
+    configuredApproval !== WAFL_V2_ALPHA60_DRAFT_CHILD_HARD_DELETE_MUTATION_APPROVAL
+    && configuredApproval !== WAFL_V2_ALPHA62_MEASUREMENT_MUTATION_APPROVAL
+  ) return { ok: false, reason: "size-color-hard-delete-mutation-approval-missing" };
+  return getWorkOrderV2CommandRuntimeGuard({
+    requireMutationApproval: true,
+    requiredMutationApproval: configuredApproval,
+  });
+}
+
+export function getWorkOrderV2MaterialHardDeleteMutationRuntimeGuard(): WorkOrderV2CommandRuntimeGuard {
+  const configuredApproval = process.env.WAFL_V2_COMMAND_MUTATION_APPROVED ?? "";
+  if (
+    configuredApproval !== WAFL_V2_ALPHA60_DRAFT_CHILD_HARD_DELETE_MUTATION_APPROVAL
+    && configuredApproval !== WAFL_V2_ALPHA62_MEASUREMENT_MUTATION_APPROVAL
+  ) return { ok: false, reason: "material-hard-delete-mutation-approval-missing" };
+  return getWorkOrderV2CommandRuntimeGuard({
+    requireMutationApproval: true,
+    requiredMutationApproval: configuredApproval,
   });
 }
 

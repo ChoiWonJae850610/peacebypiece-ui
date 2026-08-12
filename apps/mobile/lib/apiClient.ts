@@ -8,7 +8,6 @@ import type {
   MaterialOrderCommandKind,
   MaterialType,
   MobileCurrentUser,
-  MobileFieldError,
   PatchMaterialLineInput,
   PatchWorkOrderBasicInfoInput,
   PatchWorkOrderBasicInfoResult,
@@ -26,142 +25,19 @@ import type {
   WorkOrderSizeSpec,
   SizeColorStructureCommandBase,
   SizeColorStructureCommandResult,
+  MeasurementTemplateSummary,
 } from "@/domain/mobileContract";
-import { classifyMobileApiErrorCode, MobileApiError } from "@/domain/mobileContract";
-import { classifyNonJsonHttpResponse } from "@/domain/mobileHttpResponse";
+import { MobileApiError } from "@/domain/mobileContract";
+import { measurementCommandPath } from "@/domain/measurementCommandTransport";
 import {
   isJsonObject,
   normalizeMaterialCommandResult,
   normalizeMaterialLine,
 } from "./apiResponseNormalizer";
+import { requestJson, resolveMobileApiUrl } from "./apiTransport";
 
-const LOCAL_HOSTS = new Set(["localhost", "127.0.0.1", "::1"]);
-const REQUEST_TIMEOUT_MS = 15_000;
+export { assertMobileApiOrigin, resolveMobileApiUrl } from "./apiTransport";
 
-function configuredOrigin(): string {
-  const autoConnect = process.env.EXPO_PUBLIC_WAFL_DEVELOPER_AUTO_CONNECT?.trim().toLowerCase() === "true";
-  const raw = process.env.EXPO_PUBLIC_WAFL_API_BASE_URL?.trim()
-    || (!autoConnect ? process.env.EXPO_PUBLIC_WAFL_WEB_BASE_URL?.trim() : "");
-  const externalQa = process.env.EXPO_PUBLIC_WAFL_EXTERNAL_QA?.trim().toLowerCase() === "true";
-  if (!raw) throw new MobileApiError({ code: "API_ORIGIN_INVALID", message: "개발용 연결 주소가 설정되지 않았습니다." });
-
-  try {
-    const url = new URL(raw);
-    const production = process.env.NODE_ENV === "production";
-    const isLocal = LOCAL_HOSTS.has(url.hostname);
-    const isQuickTunnel = url.hostname.endsWith(".trycloudflare.com");
-    const isTailscaleServe = url.hostname.endsWith(".ts.net");
-    if (url.username || url.password || url.pathname !== "/" || url.search || url.hash) throw new Error("origin-only");
-    if (externalQa && (url.protocol !== "https:" || isLocal)) throw new Error("external-https-required");
-    if (autoConnect && (url.protocol !== "https:" || !isTailscaleServe || isQuickTunnel)) throw new Error("tailscale-serve-origin-required");
-    if (production && (isLocal || isQuickTunnel || isTailscaleServe)) throw new Error("temporary-origin-forbidden");
-    if (!new Set(["http:", "https:"]).has(url.protocol)) throw new Error("protocol");
-    return url.origin;
-  } catch {
-    throw new MobileApiError({ code: "API_ORIGIN_INVALID", message: "개발용 연결 주소가 올바르지 않습니다." });
-  }
-}
-
-function readError(body: unknown, status: number, correlationHeader: string | null): MobileApiError {
-  const root = isJsonObject(body) ? body : {};
-  const nested = isJsonObject(root.error) ? root.error : {};
-  const rawCode = String(nested.code ?? root.code ?? (status === 401 ? "AUTH_REQUIRED" : status === 403 ? "FORBIDDEN" : status === 404 ? "NOT_FOUND" : status >= 500 ? "INTERNAL_ERROR" : "NETWORK_ERROR"));
-  const identity = classifyMobileApiErrorCode(rawCode);
-  const message = String(nested.message ?? root.message ?? "요청을 처리하지 못했습니다.");
-  const correlationId = String(nested.correlationId ?? correlationHeader ?? "").trim() || null;
-  const fieldErrors = Array.isArray(nested.fieldErrors)
-    ? nested.fieldErrors.filter(isJsonObject).map((fieldError): MobileFieldError => ({
-      field: String(fieldError.field ?? ""),
-      code: String(fieldError.code ?? "VALIDATION_ERROR"),
-      message: String(fieldError.message ?? "입력값을 확인해 주세요."),
-    })).filter((fieldError) => fieldError.field.length > 0)
-    : [];
-  const entityVersion = Number.isSafeInteger(nested.entityVersion) && Number(nested.entityVersion) >= 1
-    ? Number(nested.entityVersion)
-    : null;
-  return new MobileApiError({
-    code: identity.code,
-    codeKind: identity.kind,
-    rawCode: identity.rawCode,
-    message,
-    status,
-    correlationId,
-    fieldErrors,
-    entityVersion,
-  });
-}
-
-async function requestJson<T>(path: string, options: {
-  readonly method: "GET" | "POST" | "PATCH" | "DELETE";
-  readonly body?: unknown;
-  readonly idempotencyKey?: string;
-}): Promise<T> {
-  if (!path.startsWith("/") || path.startsWith("//")) {
-    throw new MobileApiError({ code: "API_ORIGIN_INVALID", message: "요청 경로가 올바르지 않습니다." });
-  }
-
-  const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
-  const requestStartedAt = Date.now();
-  let response: Response;
-  try {
-    response = await fetch(`${configuredOrigin()}${path}`, {
-      method: options.method,
-      credentials: "include",
-      headers: {
-        Accept: "application/json",
-        "Cache-Control": "no-store",
-        ...(options.body ? { "Content-Type": "application/json" } : {}),
-        ...(options.idempotencyKey ? { "Idempotency-Key": options.idempotencyKey } : {}),
-      },
-      body: options.body ? JSON.stringify(options.body) : undefined,
-      signal: controller.signal,
-    });
-  } catch (error) {
-    if (error instanceof Error && error.name === "AbortError") {
-      throw new MobileApiError({ code: "TIMEOUT", message: "요청 시간이 초과되었습니다." });
-    }
-    throw new MobileApiError({ code: "NETWORK_ERROR", message: "연결 상태를 확인한 뒤 다시 시도하세요." });
-  } finally {
-    clearTimeout(timeout);
-  }
-
-  if (process.env.EXPO_PUBLIC_WAFL_EXTERNAL_QA?.trim().toLowerCase() === "true") {
-    const requestKind = options.method === "PATCH"
-      ? (path.includes("/materials/") ? "material-patch" : "overview-patch")
-      : path.includes("/materials") ? "materials-get" : path.includes("/work-orders/") ? "detail-get" : "other";
-    const requestBody = isJsonObject(options.body) ? options.body : null;
-    const patchBody = requestBody && isJsonObject(requestBody.patch) ? requestBody.patch : null;
-    console.info("[WAFL_MOBILE_REQUEST_METRIC]", {
-      requestKind,
-      method: options.method,
-      status: response.status,
-      elapsedMs: Date.now() - requestStartedAt,
-      payloadFields: patchBody ? Object.keys(patchBody).sort() : [],
-      statementCount: response.headers.get("x-wafl-command-statement-count"),
-      dbMs: response.headers.get("x-wafl-command-db-ms"),
-    });
-  }
-  const contentType = response.headers.get("content-type")?.toLowerCase() ?? "";
-  if (!contentType.includes("application/json")) {
-    const classified = classifyNonJsonHttpResponse(response.status);
-    throw new MobileApiError({
-      code: classified.code,
-      message: classified.message,
-      status: response.status,
-      correlationId: response.headers.get("x-wafl-correlation-id"),
-    });
-  }
-
-  let body: unknown;
-  try {
-    body = await response.json();
-  } catch {
-    throw new MobileApiError({ code: "MALFORMED_RESPONSE", message: "서버 응답을 읽을 수 없습니다.", status: response.status });
-  }
-  if (!response.ok) throw readError(body, response.status, response.headers.get("x-wafl-correlation-id"));
-  return body as T;
-}
 
 const NON_NEGATIVE_DECIMAL_PATTERN = /^(?:0|[1-9]\d*)(?:\.\d+)?$/;
 const COLOR_HEX_PATTERN = /^#[0-9a-fA-F]{6}$/;
@@ -307,6 +183,9 @@ function normalizeWorkOrderSizeSpec(workOrderId: string, value: unknown): WorkOr
     || !isNullableString(value.genderCode)
     || !isNullableString(value.categoryCode)
     || !isNullableString(value.templateId)
+    || !(value.templateVersion === null || isNonNegativeSafeInteger(value.templateVersion))
+    || !isNullableString(value.templateName)
+    || typeof value.sourceTemplateModified !== "boolean"
   ) return malformedSizeSpecResponse();
 
   const sizes = normalizeSizeRows(value.sizes);
@@ -364,6 +243,9 @@ function normalizeWorkOrderSizeSpec(workOrderId: string, value: unknown): WorkOr
     categoryCode: value.categoryCode,
     measurementUnit: value.measurementUnit,
     templateId: value.templateId,
+    templateVersion: value.templateVersion,
+    templateName: value.templateName,
+    sourceTemplateModified: value.sourceTemplateModified,
     sizes,
     pomColumns,
     cells,
@@ -473,6 +355,82 @@ export async function getWorkOrderSizeSpec(workOrderId: string): Promise<WorkOrd
   return normalizeWorkOrderSizeSpec(workOrderId, body.data);
 }
 
+export async function getWorkOrderStructureOptions(workOrderId: string): Promise<import("../domain/mobileContract").WorkOrderStructureOptionPage> {
+  const body = await requestJson<{ readonly ok: boolean; readonly data?: import("../domain/mobileContract").WorkOrderStructureOptionPage }>(
+    `/api/v2/work-orders/${encodeURIComponent(workOrderId)}/size-color/options`,
+    { method: "GET" },
+  );
+  if (!body.ok || !body.data || !Number.isSafeInteger(body.data.entityVersion) || !Array.isArray(body.data.items)) {
+    throw new MobileApiError({ code: "MALFORMED_RESPONSE", message: "회사 사이즈·색상 선택지 응답이 올바르지 않습니다." });
+  }
+  return body.data;
+}
+
+export async function getWorkOrderMaterialPartners(workOrderId: string): Promise<import("../domain/mobileContract").WorkOrderMaterialPartnerPage> {
+  const body = await requestJson<{ readonly ok: boolean; readonly data?: import("../domain/mobileContract").WorkOrderMaterialPartnerPage }>(
+    `/api/v2/work-orders/${encodeURIComponent(workOrderId)}/material-partners`,
+    { method: "GET" },
+  );
+  const data = body.data;
+  if (!body.ok || !data || data.workOrderId !== workOrderId || !Number.isSafeInteger(data.entityVersion) || !Array.isArray(data.items)
+    || data.items.some((item) => !item || typeof item.id !== "string" || typeof item.name !== "string" || !item.id || !item.name.trim())) {
+    throw new MobileApiError({ code: "MALFORMED_RESPONSE", message: "거래처 목록 응답이 올바르지 않습니다." });
+  }
+  return data;
+}
+
+export async function createWorkOrderStructureOption(
+  workOrderId: string,
+  command: { readonly clientRequestId: string; readonly expectedVersion: number; readonly kind: "size" | "color"; readonly displayName: string; readonly hexValue?: string | null },
+  idempotencyKey: string,
+) {
+  const body = await requestJson<{ readonly ok: boolean; readonly data?: { readonly item?: import("../domain/mobileContract").CompanyWorkOrderStructureOption; readonly entityVersion?: number } }>(
+    `/api/v2/work-orders/${encodeURIComponent(workOrderId)}/size-color/options`,
+    { method: "POST", body: command, idempotencyKey },
+  );
+  if (!body.ok || !body.data?.item || body.data.item.sourceKind !== "company" || body.data.entityVersion !== command.expectedVersion) {
+    throw new MobileApiError({ code: "MALFORMED_RESPONSE", message: "회사 선택지 저장 응답이 올바르지 않습니다." });
+  }
+  return body.data;
+}
+
+export async function removeWorkOrderStructureOption(
+  workOrderId: string,
+  optionId: string,
+  command: { readonly clientRequestId: string; readonly expectedVersion: number },
+  idempotencyKey: string,
+) {
+  const body = await requestJson<{ readonly ok: boolean; readonly data?: { readonly optionId?: string; readonly removed?: boolean; readonly deactivated?: boolean; readonly entityVersion?: number } }>(
+    `/api/v2/work-orders/${encodeURIComponent(workOrderId)}/size-color/options/${encodeURIComponent(optionId)}`,
+    { method: "DELETE", body: command, idempotencyKey },
+  );
+  if (!body.ok || body.data?.optionId !== optionId || body.data.removed !== true || body.data.entityVersion !== command.expectedVersion) {
+    throw new MobileApiError({ code: "MALFORMED_RESPONSE", message: "회사 선택지 삭제 응답이 올바르지 않습니다." });
+  }
+  return body.data;
+}
+
+export async function mutateWorkOrderMeasurement(
+  workOrderId: string,
+  command: import("../domain/mobileContract").MeasurementCommandInput,
+  idempotencyKey: string,
+): Promise<import("../domain/mobileContract").MeasurementCommandResult> {
+  const body = await requestJson<{ readonly ok: boolean; readonly data?: { readonly result?: import("../domain/mobileContract").MeasurementCommandResult; readonly nextVersion?: number } }>(
+    measurementCommandPath(workOrderId),
+    { method: "POST", body: command, idempotencyKey },
+  );
+  const result = body.data?.result;
+  if (!body.ok || !result || result.workOrderId !== workOrderId || !isNonEmptyString(result.revisionId)
+    || !Number.isSafeInteger(result.nextVersion) || result.nextVersion < 1 || body.data?.nextVersion !== result.nextVersion
+    || !Array.isArray(result.changedFields) || result.changedFields.some((field) => !isNonEmptyString(field))) {
+    throw new MobileApiError({ code: "MALFORMED_RESPONSE", message: "Measurement command response is invalid." });
+  }
+  return result;
+}
+
+export async function getMeasurementTemplates(workOrderId:string,categoryCode:string|null,genderCode:string|null):Promise<readonly MeasurementTemplateSummary[]>{const query=new URLSearchParams();if(categoryCode)query.set("categoryCode",categoryCode);if(genderCode)query.set("genderCode",genderCode);const body=await requestJson<{readonly ok:boolean;readonly data?:{readonly items?:readonly MeasurementTemplateSummary[]}}>(`/api/v2/work-orders/${encodeURIComponent(workOrderId)}/size-spec/templates?${query.toString()}`,{method:"GET"});const items=body.data?.items;if(!body.ok||!Array.isArray(items))throw new MobileApiError({code:"MALFORMED_RESPONSE",message:"Measurement template response is invalid."});return items;}
+export async function patchCompanyMeasurementTemplate(templateId:string,input:{readonly name?:string;readonly isActive?:boolean}){const body=await requestJson<{readonly ok:boolean;readonly data?:{readonly template?:MeasurementTemplateSummary}}>(`/api/v2/size-spec-templates/${encodeURIComponent(templateId)}`,{method:"PATCH",body:input});if(!body.ok||!body.data?.template)throw new MobileApiError({code:"MALFORMED_RESPONSE",message:"Company template response is invalid."});return body.data.template;}
+
 async function mutateSizeColorStructure(
   workOrderId: string,
   path: string,
@@ -498,6 +456,10 @@ async function mutateSizeColorStructure(
     || ((result.targetKind === "size" || result.targetKind === "color") && result.totalQuantity !== undefined && !isNonNegativeSafeInteger(result.totalQuantity))
     || (result.deletedQuantityCellCount !== undefined && !isNonNegativeSafeInteger(result.deletedQuantityCellCount))
     || (result.removedQuantity !== undefined && !isNonNegativeSafeInteger(result.removedQuantity))
+    || (result.createdItems !== undefined && (!Array.isArray(result.createdItems) || result.createdItems.some((item) => !item
+      || !isNonEmptyString(item.id) || !isNonEmptyString(item.displayName)
+      || !(item.hexValue === null || typeof item.hexValue === "string"))))
+    || (result.deletedTargetIds !== undefined && (!Array.isArray(result.deletedTargetIds) || result.deletedTargetIds.some((id) => !isNonEmptyString(id))))
     || !(result.targetId === null || isNonEmptyString(result.targetId))
     || !Number.isSafeInteger(result.nextVersion)
     || result.nextVersion < 1
@@ -594,11 +556,12 @@ export function upsertWorkOrderColorSizeQuantity(
   );
 }
 
-export function resolveMobileApiUrl(path: string | null): string | null {
-  if (!path) return null;
-  if (/^https?:\/\//i.test(path)) return path;
-  if (!path.startsWith("/") || path.startsWith("//")) return null;
-  return `${configuredOrigin()}${path}`;
+export function batchWorkOrderStructureSelection(
+  workOrderId: string,
+  command: import("../domain/mobileContract").SizeColorSelectionBatchInput,
+  idempotencyKey: string,
+) {
+  return mutateSizeColorStructure(workOrderId, "selection-batch", "POST", command, idempotencyKey);
 }
 
 export async function getWorkOrderImages(workOrderId: string): Promise<WorkOrderImagePage> {
@@ -980,7 +943,7 @@ async function transitionWorkOrderMaterialLifecycle(
   );
   const normalized = body.ok ? normalizeMaterialCommandResult(body.data, workOrderId) : null;
   if (!normalized || normalized.result.materialLineId !== materialLineId || normalized.result.lifecycle !== (kind === "archive" ? "archived" : "active")) {
-    throw new MobileApiError({ code: "MALFORMED_RESPONSE", message: "원단 상태 변경 응답이 올바르지 않습니다." });
+    throw new MobileApiError({ code: "MALFORMED_RESPONSE", message: "자재 정보 상태 변경 응답이 올바르지 않습니다." });
   }
   return normalized;
 }
@@ -1094,8 +1057,4 @@ export async function patchWorkOrderBasicInfo(
     throw new MobileApiError({ code: "MALFORMED_RESPONSE", message: "제작 카드 저장 응답이 올바르지 않습니다." });
   }
   return body.data;
-}
-
-export function assertMobileApiOrigin(): void {
-  configuredOrigin();
 }

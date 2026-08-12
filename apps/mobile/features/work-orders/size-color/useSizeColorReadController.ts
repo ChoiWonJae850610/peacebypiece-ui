@@ -3,6 +3,7 @@ import { useCallback, useEffect, useMemo, useRef, useState, type MutableRefObjec
 import {
   EMPTY_SIZE_COLOR_STATE,
   isSizeColorBundleEmpty,
+  promoteSizeColorCacheProjection,
   putBoundedSizeColorEntry,
   type SizeColorCacheEntry,
 } from "@/features/work-orders/size-color/sizeColorCache";
@@ -18,7 +19,6 @@ import {
 import { workOrderQueryController } from "@/features/work-orders/workOrderQueryController";
 import { MobileApiError } from "@/domain/mobileContract";
 import type { WorkOrderSizeColorBundle } from "@/domain/mobileContract";
-import { promoteSizeColorBundleVersion } from "./sizeColorReconciliation";
 
 export type SizeColorReadBoundary = {
   readonly identity: string;
@@ -62,11 +62,9 @@ export function useSizeColorReadController(input: ControllerInput) {
   const updateCache = useCallback((
     updater: (current: Readonly<Record<string, SizeColorCacheEntry>>) => Readonly<Record<string, SizeColorCacheEntry>>,
   ) => {
-    setCache((current) => {
-      const next = updater(current);
-      cacheRef.current = next;
-      return next;
-    });
+    const next = updater(cacheRef.current);
+    cacheRef.current = next;
+    setCache(next);
   }, []);
 
   const resetSession = useCallback(() => {
@@ -130,7 +128,7 @@ export function useSizeColorReadController(input: ControllerInput) {
         return;
       }
       const message = error instanceof SizeColorReadConflictError
-        ? "사이즈·색상과 완성 치수 버전이 다릅니다. 다시 시도해 주세요."
+        ? "사이즈·색상과 완성 스펙 버전이 다릅니다. 다시 시도해 주세요."
         : error instanceof MobileApiError
           ? error.message
           : "사이즈·색상을 불러오지 못했습니다.";
@@ -165,19 +163,21 @@ export function useSizeColorReadController(input: ControllerInput) {
     nextVersion: number,
   ) => {
     const current = activeIdentity.current;
-    if (current.workOrderId === null || current.entityVersion === null) return;
-    const currentKey = sizeColorRequestKey(current.workOrderId, current.entityVersion);
-    const entry = cacheRef.current[currentKey];
-    if (!entry?.bundle) return;
-    const bundle = promoteSizeColorBundleVersion(updater(entry.bundle), nextVersion);
-    const nextKey = sizeColorRequestKey(current.workOrderId, nextVersion);
-    updateCache((cache) => putBoundedSizeColorEntry(cache, nextKey, {
-      status: isSizeColorBundleEmpty(bundle) ? "empty" : "loaded",
-      bundle,
-      errorMessage: null,
+    const currentWorkOrderId = current.workOrderId;
+    const currentEntityVersion = current.entityVersion;
+    if (currentWorkOrderId === null || currentEntityVersion === null) return;
+    updateCache((cache) => promoteSizeColorCacheProjection(cache, {
+      workOrderId: currentWorkOrderId,
+      currentVersion: currentEntityVersion,
+      nextVersion,
+      updater,
       touchedAt: Date.now(),
     }));
   }, [updateCache]);
+
+  const promoteCurrentProjectionVersion = useCallback((nextVersion: number) => {
+    reconcileMutation((bundle) => bundle, nextVersion);
+  }, [reconcileMutation]);
 
   const refreshWithData = useCallback(() => {
     const current = activeIdentity.current;
@@ -205,5 +205,5 @@ export function useSizeColorReadController(input: ControllerInput) {
     onRetry,
   }), [identity, onOpen, onRetry, state]);
 
-  return { boundary, resetSession, reconcileMutation, refreshWithData };
+  return { boundary, resetSession, reconcileMutation, promoteCurrentProjectionVersion, refreshWithData };
 }

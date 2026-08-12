@@ -29,12 +29,13 @@ import {
 } from "@/features/work-orders/overview/workOrderDetailPresentation";
 import ReelInlineEditValue from "@/features/inputs/reel-picker/ReelInlineEditValue";
 import WaflReelPickerSheet from "@/features/inputs/reel-picker/WaflReelPickerSheet";
-import type { MaterialDraftFields, MaterialDraftUpdate, MaterialType, WorkOrderAttachmentAsset, WorkOrderDetailCore, WorkOrderImageAsset, WorkOrderMaterialLine } from "@/domain/mobileContract";
+import type { MaterialDraftFields, MaterialDraftUpdate, MaterialPartnerOption, MaterialType, WorkOrderAttachmentAsset, WorkOrderDetailCore, WorkOrderImageAsset, WorkOrderMaterialLine } from "@/domain/mobileContract";
 import type { MaterialOrderAction, MaterialOrderPolicy } from "@/domain/materialOrderPolicy";
 import { formatWon } from "@/lib/mobileDisplay";
 import { resolveMobileApiUrl } from "@/lib/apiClient";
 import { useFocusedFieldVisibility } from "@/hooks/useFocusedFieldVisibility";
 import { formatWorkOrderStatus } from "@/lib/workOrderDisplay";
+import { displayValueOrUnset, isUnsetDisplayValue, WAFL_UNSET_PLACEHOLDER } from "@/lib/displayPlaceholder";
 import {
   WORK_ORDER_CATEGORY_MAJORS,
   WORK_ORDER_TARGET_AUDIENCES,
@@ -49,11 +50,11 @@ const SECTION_TABS = [
   { id: "output", label: "문서", count: (detail: WorkOrderDetailCore) => detail.tabCounts.documents },
 ] as const;
 
-function MiniStat({ label, value, editor, expanded = false }: { readonly label: string; readonly value: string; readonly editor?: ReactNode; readonly expanded?: boolean }) {
+function MiniStat({ label, value, editor, expanded = false, placeholder = false }: { readonly label: string; readonly value: string; readonly editor?: ReactNode; readonly expanded?: boolean; readonly placeholder?: boolean }) {
   return (
     <View style={[styles.miniStat, expanded && styles.miniStatExpanded]}>
       <Text style={styles.miniLabel}>{label}</Text>
-      {editor ?? <Text numberOfLines={2} style={styles.miniValue}>{value}</Text>}
+      {editor ?? <Text numberOfLines={2} style={[styles.miniValue, placeholder && styles.miniPlaceholder]}>{value}</Text>}
     </View>
   );
 }
@@ -171,6 +172,7 @@ type Props = {
   readonly activeMaterialInlineSession: MaterialInlineEditSession | null;
   readonly materialEditorDirty: boolean;
   readonly materialSaveNotice: string | null;
+  readonly materialPartnerOptions: readonly MaterialPartnerOption[];
   readonly onBeginMaterialCreate: () => void;
   readonly onBeginMaterialEdit: (line: WorkOrderMaterialLine, field: keyof MaterialDraftFields) => void;
   readonly onDeleteMaterial: (line: WorkOrderMaterialLine) => void;
@@ -369,7 +371,8 @@ export default function WorkOrderDetailOverview(props: Props) {
                   <MiniStat
                     expanded={props.activeBasicField === "targetAudience"}
                     label="대상"
-                    value={props.draft.targetAudience || "미지정"}
+                    placeholder={isUnsetDisplayValue(props.draft.targetAudience)}
+                    value={displayValueOrUnset(props.draft.targetAudience)}
                     editor={(
                       <ReelInlineEditValue
                         accessibilityLabel="대상"
@@ -380,7 +383,7 @@ export default function WorkOrderDetailOverview(props: Props) {
                         errorMessage={props.fieldErrors.targetAudience ?? null}
                         onActivate={() => props.onRequestSectionChange(() => props.onBeginEdit("targetAudience"))}
                         onOpenPicker={() => setCategoryReelField("targetAudience")}
-                        placeholder="미지정"
+                        placeholder={WAFL_UNSET_PLACEHOLDER}
                         saving={savingBasic}
                         testID="overview-inline-target-audience"
                       />
@@ -409,7 +412,8 @@ export default function WorkOrderDetailOverview(props: Props) {
                   <MiniStat
                     expanded={props.activeBasicField === "categoryMajor"}
                     label="대분류"
-                    value={props.draft.categoryMajor || "미지정"}
+                    placeholder={isUnsetDisplayValue(props.draft.categoryMajor)}
+                    value={displayValueOrUnset(props.draft.categoryMajor)}
                     editor={(
                       <ReelInlineEditValue
                         accessibilityLabel="대분류"
@@ -420,7 +424,7 @@ export default function WorkOrderDetailOverview(props: Props) {
                         errorMessage={props.fieldErrors.categoryMajor ?? null}
                         onActivate={() => props.onRequestSectionChange(() => props.onBeginEdit("categoryMajor"))}
                         onOpenPicker={() => setCategoryReelField("categoryMajor")}
-                        placeholder="미지정"
+                        placeholder={WAFL_UNSET_PLACEHOLDER}
                         saving={savingBasic}
                         testID="overview-inline-category-major"
                       />
@@ -449,14 +453,16 @@ export default function WorkOrderDetailOverview(props: Props) {
                   <MiniStat
                     expanded={props.activeBasicField === "categoryDetail"}
                     label="세부 품목"
-                    value={props.draft.categoryDetail || "미지정"}
+                    placeholder={isUnsetDisplayValue(props.draft.categoryDetail)}
+                    value={displayValueOrUnset(props.draft.categoryDetail)}
                     editor={(
                     <ControlledInlineEditValue
                       accessibilityLabel="세부 품목"
                       active={props.activeBasicField === "categoryDetail"}
                       commitMode="blur-submit"
                       dirty={props.dirty}
-                      displayValue={props.draft.categoryDetail || "미지정"}
+                      displayValue={props.draft.categoryDetail}
+                      displayPlaceholder={WAFL_UNSET_PLACEHOLDER}
                       editable={props.canEdit && !basicLocked}
                       errorMessage={props.fieldErrors.categoryDetail ?? null}
                       invalid={Boolean(props.fieldErrors.categoryDetail)}
@@ -470,20 +476,23 @@ export default function WorkOrderDetailOverview(props: Props) {
                       saving={savingBasic}
                       testID="overview-inline-category-detail"
                       value={props.draft.categoryDetail}
+                      valueSemantics="nullable-text"
                     />
                     )}
                   />
                   <MiniStat
                     expanded={props.activeBasicField === "seasonCode"}
                     label="시즌"
-                    value={props.draft.seasonCode || "미지정"}
+                    placeholder={isUnsetDisplayValue(props.draft.seasonCode)}
+                    value={displayValueOrUnset(props.draft.seasonCode)}
                     editor={(
                     <ControlledInlineEditValue
                       accessibilityLabel="시즌"
                       active={props.activeBasicField === "seasonCode"}
                       commitMode="blur-submit"
                       dirty={props.dirty}
-                      displayValue={props.draft.seasonCode || "미지정"}
+                      displayValue={props.draft.seasonCode}
+                      displayPlaceholder={WAFL_UNSET_PLACEHOLDER}
                       editable={props.canEdit && !basicLocked}
                       errorMessage={props.fieldErrors.seasonCode ?? null}
                       invalid={Boolean(props.fieldErrors.seasonCode)}
@@ -497,6 +506,7 @@ export default function WorkOrderDetailOverview(props: Props) {
                       saving={savingBasic}
                       testID="overview-inline-season"
                       value={props.draft.seasonCode}
+                      valueSemantics="nullable-text"
                     />
                     )}
                   />
@@ -549,6 +559,7 @@ export default function WorkOrderDetailOverview(props: Props) {
               onChange={props.onChangeMaterialDraft}
               onReloadLatest={props.onReloadLatestMaterial}
               onSave={props.onSaveMaterial}
+              partnerOptions={props.materialPartnerOptions}
               state={props.materialEditor}
             />
           ) : (
@@ -575,6 +586,7 @@ export default function WorkOrderDetailOverview(props: Props) {
               onLoadMore={props.onLoadMoreMaterials}
               onRetry={props.onRetryMaterials}
               orderPolicy={props.materialOrderPolicy}
+              partnerOptions={props.materialPartnerOptions}
               onFieldFocus={onFieldFocus}
               saveNotice={props.materialSaveNotice}
               state={props.materials}
@@ -641,6 +653,7 @@ const styles = StyleSheet.create({
   miniStatExpanded: { flexBasis: "100%", minWidth: "100%" },
   miniLabel: { color: "#7a6c5c", fontFamily: WAFL_FONTS.medium, fontSize: 9 },
   miniValue: { color: "#17263d", fontFamily: WAFL_FONTS.bold, fontSize: 11, lineHeight: 15, marginTop: 2 },
+  miniPlaceholder: { color: "#9b9288" },
   categoryDisplay: { backgroundColor: "#f7f0e5", borderRadius: 9, flexBasis: "47%", flexGrow: 1, minHeight: 56, minWidth: 112, paddingHorizontal: 9, paddingVertical: 7 },
   categoryDisplayDisabled: { opacity: 0.72 },
   categoryLabel: { color: "#7a6c5c", fontFamily: WAFL_FONTS.medium, fontSize: 9, lineHeight: 14 },

@@ -116,8 +116,15 @@ for (const token of [
   "Product version artifacts",
   "Documentation-only maintenance",
   "do not create, replace, or overwrite an artifact with the same APP_VERSION",
+  "External handoff file hygiene",
+  "exact filename plus verified byte size and SHA-256",
+  "current task's official Result/QA pair",
+  "never use a wildcard or broad deletion",
 ]) {
   assert.ok(finalization.includes(token), `Version Delta/finalization owner missing ${token}`);
+}
+for (const nonOwner of [entry, lifecycle, safety, testing]) {
+  assert.doesNotMatch(nonOwner, /External handoff file hygiene/, "handoff file hygiene must have one Permanent Rules owner");
 }
 
 for (const token of [

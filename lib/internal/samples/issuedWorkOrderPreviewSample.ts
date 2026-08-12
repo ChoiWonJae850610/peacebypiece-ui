@@ -90,6 +90,9 @@ export const issuedWorkOrderPreviewSample = {
     categoryCode: "DRESS",
     measurementUnit: "cm",
     templateId: null,
+    templateVersion: null,
+    templateName: null,
+    sourceTemplateModified: false,
     sizes,
     pomColumns: [
       { id: "60000000-0000-0000-0000-000000000001", code: "CHEST", displayName: "가슴 단면", displayOrder: 0 },

@@ -217,6 +217,16 @@ const alpha60ApiPaths = [
   "app/api/v2/work-orders/[workOrderId]/size-color/colors/[colorId]/route.ts",
   "app/api/v2/work-orders/[workOrderId]/materials/[materialLineId]/route.ts",
 ];
+const alpha62ApiPaths = [
+  "app/api/system/standards/size-spec-templates/route.ts",
+  "app/api/v2/size-spec-templates/[templateId]/route.ts",
+  "app/api/v2/work-orders/[workOrderId]/material-partners/route.ts",
+  "app/api/v2/work-orders/[workOrderId]/size-color/options/route.ts",
+  "app/api/v2/work-orders/[workOrderId]/size-color/options/[optionId]/route.ts",
+  "app/api/v2/work-orders/[workOrderId]/size-color/selection-batch/route.ts",
+  "app/api/v2/work-orders/[workOrderId]/size-spec/commands/route.ts",
+  "app/api/v2/work-orders/[workOrderId]/size-spec/templates/route.ts",
+];
 const alpha51ContractExists = fs.existsSync(path.join(root, "tests/workorder-v2-alpha51-material-soft-delete-restore-contract.mjs"));
 const alpha26ContractExists = fs.existsSync(path.join(root, "tests/workorder-v2-alpha26-material-command-api-contract.mjs"));
 const alpha27ApiPaths = ["app/api/v2/work-orders/[workOrderId]/revisions/issue/route.ts"];
@@ -245,7 +255,9 @@ const alpha40ContractExists = fs.existsSync(path.join(root, "tests/workorder-v2-
 const alpha30ContractExists = fs.existsSync(path.join(root, "tests/workorder-v2-alpha30-factory-instruction-contract.mjs"));
 const alpha27ContractExists = fs.existsSync(path.join(root, "tests/workorder-v2-alpha27-revision-issue-command-contract.mjs"));
 const alpha28ContractExists = fs.existsSync(path.join(root, "tests/workorder-v2-alpha28-issued-preview-contract.mjs"));
-if (alpha60ContractExists && apiChanges.length > 0) {
+if (fs.existsSync(path.join(root, "tests/workorder-v2-alpha62-measurement-command-contract.mjs")) && apiChanges.length > 0) {
+  assert.deepEqual(apiChanges.filter((change) => ![...alpha60ApiPaths, ...alpha62ApiPaths].some((allowedPath) => change.endsWith(allowedPath))), [], "alpha.62 may add only its exact size-spec, company catalog, and material-partner API routes beside alpha.60 routes");
+} else if (alpha60ContractExists && apiChanges.length > 0) {
   assert.deepEqual(
     apiChanges.filter((change) => !alpha60ApiPaths.some((allowedPath) => change.endsWith(allowedPath))),
     [],

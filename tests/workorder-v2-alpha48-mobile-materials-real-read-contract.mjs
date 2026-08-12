@@ -142,7 +142,8 @@ for (const badge of ["statusBadgeEditing", "statusBadgeRequested", "statusBadgeC
   assert.match(materials, new RegExp(`${badge}: \\{[^\\n]*backgroundColor`), `material status badge tone missing: ${badge}`);
 }
 assert.match(materials, /materialIdentity[\s\S]{0,1800}headerBadgeCluster[\s\S]{0,500}unitChip[\s\S]{0,500}statusBadge/);
-assert.match(materials, /testID="material-core-row"[\s\S]{0,1200}label=\{MOBILE_MATERIAL_FIELD_LABELS\.partner\} value="—"[\s\S]{0,1200}>색상·옵션</);
+assert.match(materials, /testID="material-core-row"[\s\S]{0,1600}MOBILE_MATERIAL_FIELD_LABELS\.partner[\s\S]{0,1600}line\.partnerId[\s\S]{0,1600}>색상·옵션</);
+assert.match(materials, /MaterialPartnerPickerSheet/);
 assert.equal((materials.match(/label="필요수량"/g) ?? []).length, 2, "compact and expanded 필요수량 source slots must both exist");
 assert.match(materials, /activeQuantityField \? \([\s\S]*material-quantity-row-expanded[\s\S]*\) : \([\s\S]*styles\.coreRow/, "compact and expanded quantity slots must be mutually exclusive");
 assert.match(materials, /expandedPanel[\s\S]{0,1800}label="필요수량"[\s\S]{0,1800}label="단가"[\s\S]{0,1800}label="로스·여유"/);

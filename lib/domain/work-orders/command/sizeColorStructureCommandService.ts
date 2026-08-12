@@ -11,6 +11,7 @@ import {
 import {
   addColorStructureV2,
   addSizeStructureV2,
+  batchStructureSelectionV2,
   COLOR_STRUCTURE_CREATE_COMMAND_CODE,
   COLOR_STRUCTURE_DELETE_COMMAND_CODE,
   COLOR_STRUCTURE_PATCH_COMMAND_CODE,
@@ -27,6 +28,7 @@ import {
   SIZE_STRUCTURE_DELETE_COMMAND_CODE,
   SIZE_STRUCTURE_RENAME_COMMAND_CODE,
   SIZE_STRUCTURE_REORDER_COMMAND_CODE,
+  STRUCTURE_SELECTION_BATCH_COMMAND_CODE,
   SizeColorStructureRepositoryError,
   type SizeColorStructureRepositoryResult,
 } from "@/lib/domain/work-orders/command/sizeColorStructureCommandRepository";
@@ -288,5 +290,37 @@ export function upsertColorSizeQuantity(input: CommonInput & {
     colorId: input.colorId as ColorId,
     sizeRowId: input.sizeRowId as SizeRowId,
     quantity: input.command.quantity,
+  }));
+}
+
+export function batchStructureSelection(input: CommonInput & {
+  readonly command: CommonInput["command"] & {
+    readonly targetKind: "size" | "color";
+    readonly additions: readonly { readonly displayName: string; readonly hexValue: string | null }[];
+    readonly deletionIds: readonly string[];
+  };
+}) {
+  input.command.deletionIds.forEach(assertUuid);
+  const request = {
+    workOrderId: input.workOrderId,
+    expectedVersion: input.command.expectedVersion,
+    targetKind: input.command.targetKind,
+    additions: input.command.additions,
+    deletionIds: input.command.deletionIds,
+  };
+  const common = prepare(input, STRUCTURE_SELECTION_BATCH_COMMAND_CODE, request);
+  const additions = input.command.additions.map((item, index) => ({
+    id: deterministicUuid(
+      input.command.targetKind === "size" ? "work-order-size-batch" : "work-order-color-batch",
+      `${common.scopedIdempotencyKeyHash}\0${index}\0${item.displayName}`,
+    ) as SizeRowId | ColorId,
+    displayName: item.displayName,
+    hexValue: item.hexValue,
+  }));
+  return mapped(() => batchStructureSelectionV2({
+    ...common,
+    targetKind: input.command.targetKind,
+    additions,
+    deletionIds: input.command.deletionIds as readonly (SizeRowId | ColorId)[],
   }));
 }

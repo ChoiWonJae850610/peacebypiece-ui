@@ -27,7 +27,7 @@ type Props = {
   readonly cancelAccessibilityLabel?: string;
   readonly confirmAccessibilityLabel?: string;
   readonly onCancel: () => void;
-  readonly onConfirm: () => Promise<unknown> | unknown;
+  readonly onConfirm?: () => Promise<unknown> | unknown;
 };
 
 export default function WaflInputSheet({
@@ -61,7 +61,7 @@ export default function WaflInputSheet({
   }
 
   async function confirm() {
-    if (actionPending || confirmDisabled) return;
+    if (actionPending || confirmDisabled || !onConfirm) return;
     const submitted = await guardRef.current.submit(async () => {
       if (mountedRef.current) setSubmitting(true);
       try {
@@ -85,7 +85,7 @@ export default function WaflInputSheet({
           </View>
           <View style={[styles.content, contentStyle]}>{children}</View>
           <View style={styles.actions}>
-            <Pressable
+            {onConfirm ? <Pressable
               accessibilityLabel={cancelAccessibilityLabel}
               accessibilityRole="button"
               accessibilityState={{ disabled: actionPending }}
@@ -94,7 +94,7 @@ export default function WaflInputSheet({
               style={[styles.cancelButton, actionPending && styles.disabled]}
             >
               <X color={WAFL_THEME.color.deepNavy} size={21} strokeWidth={2.4} />
-            </Pressable>
+            </Pressable> : null}
             <Pressable
               accessibilityLabel={confirmAccessibilityLabel}
               accessibilityRole="button"

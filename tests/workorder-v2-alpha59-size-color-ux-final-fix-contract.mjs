@@ -37,18 +37,19 @@ test("shared automatic size and color policy is deterministic", async () => {
   assert.match(sortPolicy, /Intl\.Collator\("ko-KR"/);
 });
 
-test("mobile owns compact cards and reel editors, not manual reorder", () => {
+test("mobile owns compact cards and canonical catalog selectors, not manual reorder", () => {
   assert.match(editor, /count=\{matrix\.sizes\.length\} editable=\{edit\.canEdit\} kind="size"/);
   assert.match(editor, /count=\{matrix\.colors\.length\} editable=\{edit\.canEdit\} kind="color"/);
-  assert.match(editor, /WaflOptionReel/);
+  assert.match(editor, /function CatalogChoice/);
+  assert.match(editor, /function SizeChooser[\s\S]*function ColorChooser/);
   assert.match(editor, /직접 색상 만들기/);
   assert.doesNotMatch(editor, /PanResponder|GripVertical|dragTargetIndex|accessibilityMoveActions|onReorderSizeIds|onReorderColorIds/);
   assert.doesNotMatch(controller, /onMoveSize|onMoveColor|onReorderSizeIds|onReorderColorIds|reorderSizes|reorderColors/);
 });
 
 test("quantity and measurement sections are independently collapsed", () => {
-  assert.match(readOnly, /<Text style=\{styles\.sectionTitle\}>색상×사이즈<\/Text>/);
-  assert.match(readOnly, /<Text style=\{styles\.sectionTitle\}>완성 치수표<\/Text>/);
+  assert.match(readOnly, /<Text style=\{styles\.sectionTitle\}>색상·사이즈<\/Text>/);
+  assert.match(readOnly, /<Text style=\{styles\.sectionTitle\}>완성 스펙<\/Text>/);
   assert.doesNotMatch(readOnly, /합계 일치|색상×사이즈 생산수량 · 총/);
   assert.match(readOnly, /quantityExpanded/);
   assert.match(readOnly, /measurementExpanded/);
@@ -64,7 +65,8 @@ test("server create and rename paths apply the shared canonical order inside the
 });
 
 test("alpha.60 supersedes the deferred destructive boundary without archive or restore", () => {
-  assert.match(editor, /영구 삭제/);
+  assert.match(editor, /title: "사이즈 삭제"/);
+  assert.match(editor, /title: "색상 삭제"/);
   assert.match(controller, /deleteSize[\s\S]+deleteColor/);
   assert.doesNotMatch(`${editor}\n${controller}`, /archive|restore/i);
 });

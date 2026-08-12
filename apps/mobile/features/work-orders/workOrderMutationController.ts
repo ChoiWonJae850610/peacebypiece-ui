@@ -25,6 +25,10 @@ import {
   reorderWorkOrderColors,
   reorderWorkOrderSizes,
   upsertWorkOrderColorSizeQuantity,
+  mutateWorkOrderMeasurement,
+  createWorkOrderStructureOption,
+  removeWorkOrderStructureOption,
+  batchWorkOrderStructureSelection,
 } from "../../lib/apiClient";
 import type {
   CreateMaterialLineInput,
@@ -52,6 +56,10 @@ export const workOrderMutationController = {
   deleteColor: deleteWorkOrderColor,
   reorderColors: reorderWorkOrderColors,
   upsertQuantity: upsertWorkOrderColorSizeQuantity,
+  mutateMeasurement: mutateWorkOrderMeasurement,
+  createStructureOption: createWorkOrderStructureOption,
+  removeStructureOption: removeWorkOrderStructureOption,
+  batchStructureSelection: batchWorkOrderStructureSelection,
   createMaterial(workOrderId: string, command: CreateMaterialLineInput, idempotencyKey: string) {
     return createWorkOrderMaterial(workOrderId, command, idempotencyKey);
   },

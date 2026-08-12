@@ -4,6 +4,7 @@ import { randomUUID } from "crypto";
 import { NextResponse } from "next/server";
 
 import { createWaflApiSuccess } from "@/lib/api/waflApiServer";
+import { startWaflRouteTiming } from "@/lib/api/waflPerformanceTiming";
 import { requireWorkspaceApiGuard } from "@/lib/auth/apiRouteGuards";
 import {
   createCommandErrorResponse,
@@ -14,6 +15,7 @@ import { WorkOrderCommandRequestError } from "@/lib/domain/work-orders/command/c
 import {
   addColorStructure,
   addSizeStructure,
+  batchStructureSelection,
   deleteColorStructure,
   deleteSizeStructure,
   patchColorStructure,
@@ -24,12 +26,13 @@ import {
   type SizeColorStructureCommandServiceResult,
 } from "@/lib/domain/work-orders/command/sizeColorStructureCommandService";
 import {
-  getWorkOrderV2DraftChildHardDeleteMutationRuntimeGuard,
+  getWorkOrderV2SizeColorHardDeleteMutationRuntimeGuard,
   getWorkOrderV2SizeColorStructureMutationRuntimeGuard,
 } from "@/lib/domain/work-orders/command/runtimeGuard";
 import {
   validateAddColorStructure,
   validateAddSizeStructure,
+  validateBatchStructureSelection,
   validateDeleteColorStructure,
   validateDeleteSizeStructure,
   validatePatchColorStructure,
@@ -50,12 +53,14 @@ type CommandKind =
   | "color-patch"
   | "color-delete"
   | "color-reorder"
+  | "selection-batch"
   | "quantity-upsert";
 
 function successResponse(
   result: SizeColorStructureCommandServiceResult,
   correlationId: CorrelationId,
   status: number,
+  timingHeaders: Readonly<Record<string, string>>,
 ) {
   return createWaflApiSuccess({
     result: result.result,
@@ -69,6 +74,7 @@ function successResponse(
       "X-WAFL-Command-Transaction-Count": String(result.transactionCount),
       "X-WAFL-Command-DB-Ms": String(result.dbMs),
       "X-WAFL-Idempotent-Replay": result.idempotentReplay ? "1" : "0",
+      ...timingHeaders,
     },
   });
 }
@@ -81,8 +87,9 @@ async function handle(input: {
   readonly kind: CommandKind;
 }): Promise<NextResponse | NextResponse<WorkOrderApiErrorEnvelope>> {
   const correlationId = randomUUID() as CorrelationId;
-  const runtime = input.kind === "size-delete" || input.kind === "color-delete"
-    ? getWorkOrderV2DraftChildHardDeleteMutationRuntimeGuard()
+  const timing = startWaflRouteTiming();
+  const runtime = input.kind === "size-delete" || input.kind === "color-delete" || input.kind === "selection-batch"
+    ? getWorkOrderV2SizeColorHardDeleteMutationRuntimeGuard()
     : getWorkOrderV2SizeColorStructureMutationRuntimeGuard();
   if (!runtime.ok) {
     return createCommandErrorResponse({
@@ -93,6 +100,7 @@ async function handle(input: {
     });
   }
   const guard = await requireWorkspaceApiGuard({ permissionCode: "workorder.update" });
+  timing.markGuardComplete();
   if (!guard.ok) {
     return createCommandErrorResponse({ ...mapCommandGuardFailureStatus(guard.response.status), correlationId });
   }
@@ -145,6 +153,11 @@ async function handle(input: {
         ...common,
         command: validateReorderColorStructures({ body, idempotencyKey }),
       });
+    } else if (input.kind === "selection-batch") {
+      result = await batchStructureSelection({
+        ...common,
+        command: validateBatchStructureSelection({ body, idempotencyKey }),
+      });
     } else {
       result = await upsertColorSizeQuantity({
         ...common,
@@ -154,7 +167,7 @@ async function handle(input: {
       });
     }
     const created = input.kind === "size-create" || input.kind === "color-create";
-    return successResponse(result, correlationId, created && !result.idempotentReplay ? 201 : 200);
+    return successResponse(result, correlationId, created && !result.idempotentReplay ? 201 : 200, timing.headers(result.dbMs));
   } catch (error) {
     if (error instanceof WorkOrderCommandValidationError) {
       return createCommandErrorResponse({
@@ -236,4 +249,8 @@ export function handleUpsertColorSizeQuantityV2(
     secondaryTargetId: sizeRowId,
     kind: "quantity-upsert",
   });
+}
+
+export function handleBatchStructureSelectionV2(request: Request, workOrderId: string) {
+  return handle({ request, workOrderId, kind: "selection-batch" });
 }

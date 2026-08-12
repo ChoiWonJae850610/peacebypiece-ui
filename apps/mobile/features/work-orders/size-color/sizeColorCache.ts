@@ -1,4 +1,6 @@
 import type { WorkOrderSizeColorBundle } from "@/domain/mobileContract";
+import { promoteSizeColorBundleVersion } from "./sizeColorReconciliation.ts";
+import { sizeColorRequestKey } from "./sizeColorQueryPolicy.ts";
 
 export type SizeColorReadStatus = "not-loaded" | "loading" | "retrying" | "refreshing" | "empty" | "loaded" | "error";
 
@@ -39,4 +41,25 @@ export function isSizeColorBundleEmpty(bundle: WorkOrderSizeColorBundle) {
     && specifications.sizes.length === 0
     && specifications.pomColumns.length === 0
     && specifications.cells.length === 0;
+}
+
+export function promoteSizeColorCacheProjection(
+  cache: Readonly<Record<string, SizeColorCacheEntry>>,
+  input: {
+    readonly workOrderId: string;
+    readonly currentVersion: number;
+    readonly nextVersion: number;
+    readonly updater: (bundle: WorkOrderSizeColorBundle) => WorkOrderSizeColorBundle;
+    readonly touchedAt: number;
+  },
+): Readonly<Record<string, SizeColorCacheEntry>> {
+  const current = cache[sizeColorRequestKey(input.workOrderId, input.currentVersion)];
+  if (!current?.bundle) return cache;
+  const bundle = promoteSizeColorBundleVersion(input.updater(current.bundle), input.nextVersion);
+  return putBoundedSizeColorEntry(cache, sizeColorRequestKey(input.workOrderId, input.nextVersion), {
+    status: isSizeColorBundleEmpty(bundle) ? "empty" : "loaded",
+    bundle,
+    errorMessage: null,
+    touchedAt: input.touchedAt,
+  });
 }

@@ -74,6 +74,7 @@ export default function SystemStandardsDesignPage() {
               <AdminLinkButton href="/system/standards/seed-status">seed 상태</AdminLinkButton>
               <AdminLinkButton href="/system/standards/regression">회귀점검</AdminLinkButton>
               <AdminLinkButton href="/system/standards/customer-onboarding">고객사 초기 기준정보</AdminLinkButton>
+              <AdminLinkButton href="/system/standards/size-spec-templates">완성 치수 템플릿</AdminLinkButton>
               <AdminLinkButton href="/system">시스템 콘솔</AdminLinkButton>
             </div>
           </div>

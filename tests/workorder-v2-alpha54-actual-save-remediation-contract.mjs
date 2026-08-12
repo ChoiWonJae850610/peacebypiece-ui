@@ -16,6 +16,7 @@ const canonical = {
   name: "Cotton",
   colorOption: "Navy",
   usageArea: "Body",
+  partnerId: "",
   requiredQuantity: "10",
   allowanceQuantity: "0.5",
   inventoryUsageQuantity: "0",

@@ -46,7 +46,7 @@ assert.ok(
   appFirstRoadmap.includes(`## Next candidate — ${nextVersion}`),
   "App-first roadmap next candidate must be the next canonical alpha",
 );
-for (const semanticToken of ["size/color", "read-only foundation"]) {
+for (const semanticToken of ["NOT_STARTED", "product scope"]) {
   assert.ok(
     current.includes(semanticToken) && appFirstRoadmap.includes(semanticToken),
     `Current Baseline and roadmap must share next-candidate meaning: ${semanticToken}`,

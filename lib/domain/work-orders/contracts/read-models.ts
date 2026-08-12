@@ -306,6 +306,9 @@ export type WorkOrderSizeSpecReadModel = {
   readonly categoryCode: string | null;
   readonly measurementUnit: MeasurementUnit;
   readonly templateId: SizeTemplateId | null;
+  readonly templateVersion: number | null;
+  readonly templateName: string | null;
+  readonly sourceTemplateModified: boolean;
   readonly sizes: readonly WorkOrderSizeRowReadModel[];
   readonly pomColumns: readonly WorkOrderPomColumnReadModel[];
   readonly cells: readonly SizeSpecCellReadModel[];

@@ -398,6 +398,12 @@ if ($VerificationProfile -eq "automation-infrastructure" -and $ExpectedAppVersio
 if ($VerificationProfile -eq "automation-infrastructure" -and $ExpectedAppVersion -eq "2.0.0-alpha.39") {
     $allowedMigrationChanges = @("db/v2/migrations/011_v2_document_access_viewer_functions.sql")
 }
+if ($VerificationProfile -eq "automation-infrastructure" -and $ExpectedAppVersion -eq "2.0.0-alpha.62") {
+    $allowedMigrationChanges = @(
+        "db/v2/migrations/014_v2_size_spec_templates.sql",
+        "db/v2/migrations/015_v2_company_work_order_structure_options.sql"
+    )
+}
 $pendingApprovedMigrationChanges = @($migrationChanges | Where-Object { $allowedMigrationChanges -notcontains $_ })
 if ($VerificationProfile -eq "automation-infrastructure" -and
     $ExpectedAppVersion -in @("2.0.0-alpha.41", "2.0.0-alpha.42") -and

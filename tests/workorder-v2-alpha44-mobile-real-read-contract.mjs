@@ -35,7 +35,7 @@ assert.deepEqual(mobilePackage.dependencies, expectedDependencies, "native/depen
 
 const entry = read("apps/mobile/app/index.tsx");
 const app = read("apps/mobile/features/MobileWorkOrderExperience.tsx");
-const apiClient = read("apps/mobile/lib/apiClient.ts");
+const apiClient = [read("apps/mobile/lib/apiClient.ts"), read("apps/mobile/lib/apiTransport.ts")].join("\n");
 const list = read("apps/mobile/features/work-orders/list/WorkOrderListScreen.tsx");
 const detail = read("apps/mobile/features/work-orders/overview/WorkOrderDetailOverview.tsx");
 const errorPresentation = read("apps/mobile/application/errorPresentation.ts");
@@ -50,8 +50,9 @@ assert.match(apiClient, /`\/api\/v2\/work-orders\?\$\{query\.toString\(\)\}`/);
 assert.match(apiClient, /\/api\/v2\/work-orders\/\$\{encodeURIComponent\(workOrderId\)\}/);
 assert.match(apiClient, /\/api\/dev\/mobile-connect\/exchange/);
 assert.match(apiClient, /\/api\/dev\/mobile-connect\/disconnect/);
-const alpha44ReadClient = apiClient.slice(0, apiClient.indexOf("export async function getWorkOrderImages"));
-assert.doesNotMatch(alpha44ReadClient, /method: "(PUT|DELETE)"/);
+const alpha44ListReadClient = apiClient.slice(apiClient.indexOf("export async function getWorkOrderList"), apiClient.indexOf("export async function createWorkOrderDraft"));
+const alpha44DetailReadClient = apiClient.slice(apiClient.indexOf("export async function getWorkOrderDetail"), apiClient.indexOf("export async function getWorkOrderSizeColor"));
+assert.doesNotMatch(`${alpha44ListReadClient}\n${alpha44DetailReadClient}`, /method: "(POST|PATCH|PUT|DELETE)"/);
 assert.doesNotMatch(apiClient, /\/processes|\/documents|\/history/, "later mobile reads must not unlock process/document/history");
 const imageReadClient = apiClient.slice(
   apiClient.indexOf("export async function getWorkOrderImages"),

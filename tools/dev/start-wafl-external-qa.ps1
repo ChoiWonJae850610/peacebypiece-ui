@@ -6,7 +6,7 @@
     [int]$NextPort = 3000,
     [int]$ExpoPort = 8081,
     [string]$CloudflaredPath = "",
-    [ValidateSet("external-device", "memo-ime-display", "accessory-lifecycle-parity", "work-order-image", "size-color-structure", "draft-child-hard-delete")]
+    [ValidateSet("external-device", "memo-ime-display", "accessory-lifecycle-parity", "work-order-image", "size-color-structure", "draft-child-hard-delete", "size-measurement-standards")]
     [string]$RuntimeQaMode = "external-device",
     [switch]$EnableAlpha46BasicInfoMutation,
     [switch]$EnableAlpha50MaterialDraftMutation,
@@ -17,14 +17,15 @@
     [switch]$EnableAlpha57WorkOrderImageMutation,
     [switch]$EnableAlpha59SizeColorStructureMutation,
     [switch]$EnableAlpha60DraftChildHardDeleteMutation,
-    [switch]$EnableAlpha61MobileWorkOrderCreateMutation
+    [switch]$EnableAlpha61MobileWorkOrderCreateMutation,
+    [switch]$EnableAlpha62SizeMeasurementMutation
 )
 
 $ErrorActionPreference = "Stop"
 . (Join-Path $PSScriptRoot "wafl-external-qa-common.ps1")
 . (Join-Path $PSScriptRoot "..\pipeline\pipeline-common.ps1")
 
-if (@($EnableAlpha46BasicInfoMutation, $EnableAlpha50MaterialDraftMutation, $EnableAlpha51MaterialLifecycleMutation, $EnableAlpha52CoreInlineMutation, $EnableAlpha55MaterialOrderLifecycleMutation, $EnableAlpha56AccessoryLifecycleParityMutation, $EnableAlpha57WorkOrderImageMutation, $EnableAlpha59SizeColorStructureMutation, $EnableAlpha60DraftChildHardDeleteMutation, $EnableAlpha61MobileWorkOrderCreateMutation).Where({ $_ }).Count -gt 1) {
+if (@($EnableAlpha46BasicInfoMutation, $EnableAlpha50MaterialDraftMutation, $EnableAlpha51MaterialLifecycleMutation, $EnableAlpha52CoreInlineMutation, $EnableAlpha55MaterialOrderLifecycleMutation, $EnableAlpha56AccessoryLifecycleParityMutation, $EnableAlpha57WorkOrderImageMutation, $EnableAlpha59SizeColorStructureMutation, $EnableAlpha60DraftChildHardDeleteMutation, $EnableAlpha61MobileWorkOrderCreateMutation, $EnableAlpha62SizeMeasurementMutation).Where({ $_ }).Count -gt 1) {
     throw "EXTERNAL_QA_MUTATION_MODES_ARE_MUTUALLY_EXCLUSIVE"
 }
 $internalMemoImeMode = $RuntimeQaMode -eq "memo-ime-display"
@@ -32,7 +33,8 @@ $internalAccessoryLifecycleMode = $RuntimeQaMode -eq "accessory-lifecycle-parity
 $internalWorkOrderImageMode = $RuntimeQaMode -eq "work-order-image"
 $internalSizeColorStructureMode = $RuntimeQaMode -eq "size-color-structure"
 $internalDraftChildHardDeleteMode = $RuntimeQaMode -eq "draft-child-hard-delete"
-$internalRuntimeMode = $internalMemoImeMode -or $internalAccessoryLifecycleMode -or $internalWorkOrderImageMode -or $internalSizeColorStructureMode -or $internalDraftChildHardDeleteMode
+$internalSizeMeasurementMode = $RuntimeQaMode -eq "size-measurement-standards"
+$internalRuntimeMode = $internalMemoImeMode -or $internalAccessoryLifecycleMode -or $internalWorkOrderImageMode -or $internalSizeColorStructureMode -or $internalDraftChildHardDeleteMode -or $internalSizeMeasurementMode
 if ($internalMemoImeMode -and $MobileTransport -ne "DeveloperAutoConnect") {
     throw "MEMO_IME_DISPLAY_REQUIRES_DEVELOPER_AUTO_CONNECT"
 }
@@ -78,6 +80,9 @@ if ($internalDraftChildHardDeleteMode -and -not $EnableAlpha60DraftChildHardDele
 if ($internalDraftChildHardDeleteMode -and ($NextPort -ne 3100 -or $ExpoPort -ne 8081)) {
     throw "DRAFT_CHILD_HARD_DELETE_REQUIRES_CANONICAL_PORTS"
 }
+if ($internalSizeMeasurementMode -and $MobileTransport -ne "DeveloperAutoConnect") { throw "SIZE_MEASUREMENT_STANDARDS_REQUIRES_DEVELOPER_AUTO_CONNECT" }
+if ($internalSizeMeasurementMode -and -not $EnableAlpha62SizeMeasurementMutation) { throw "SIZE_MEASUREMENT_STANDARDS_REQUIRES_ALPHA62_MUTATION_MODE" }
+if ($internalSizeMeasurementMode -and ($NextPort -ne 3100 -or $ExpoPort -ne 8081)) { throw "SIZE_MEASUREMENT_STANDARDS_REQUIRES_CANONICAL_PORTS" }
 
 function Get-WaflQaDatabaseUrl {
     param([Parameter(Mandatory = $true)][string]$RepositoryRoot)
@@ -398,6 +403,14 @@ try {
         $serverEnvironment.WAFL_EXTERNAL_QA_ALPHA61_MOBILE_WORK_ORDER_CREATE_MUTATION_ENABLED = "true"
         $state.commandApi = "ready"
         $state.mutationMode = "mobile-work-order-create"
+    }
+    if ($EnableAlpha62SizeMeasurementMutation) {
+        $serverEnvironment.WAFL_V2_COMMAND_API_ENABLED = "1"
+        $serverEnvironment.WAFL_V2_COMMAND_MUTATION_APPROVED = "2.0.0-alpha.62-dev-test-size-measurement-runtime"
+        $serverEnvironment.WAFL_EXTERNAL_QA_ALPHA62_SIZE_MEASUREMENT_MUTATION_ENABLED = "true"
+        $serverEnvironment.WAFL_EXTERNAL_QA_PERFORMANCE_TIMING_APPROVED = "2.0.0-alpha.62-dev-test-performance-timing"
+        $state.commandApi = "ready"
+        $state.mutationMode = "size-measurement-standards"
     }
     $nextStdout = Join-Path $stateDir "next.stdout.log"
     $nextStderr = Join-Path $stateDir "next.stderr.log"

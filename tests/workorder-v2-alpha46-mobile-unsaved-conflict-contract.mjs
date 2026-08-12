@@ -13,7 +13,7 @@ const detail = read("apps/mobile/features/work-orders/overview/WorkOrderDetailOv
 const inlineField = read("apps/mobile/components/ControlledInlineEditValue.tsx");
 const datePicker = read("apps/mobile/components/InlineDatePicker.tsx");
 const focusedVisibility = read("apps/mobile/hooks/useFocusedFieldVisibility.ts");
-const client = read("apps/mobile/lib/apiClient.ts");
+const client = [read("apps/mobile/lib/apiClient.ts"), read("apps/mobile/lib/apiTransport.ts")].join("\n");
 const reelPicker = read("apps/mobile/features/inputs/reel-picker/WaflReelPickerSheet.tsx");
 const inputShell = read("apps/mobile/features/inputs/WaflInputSheet.tsx");
 

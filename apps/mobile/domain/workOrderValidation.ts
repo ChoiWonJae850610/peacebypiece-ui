@@ -36,6 +36,7 @@ export const EMPTY_MATERIAL_DRAFT: MaterialDraftFields = {
   name: "",
   colorOption: "",
   usageArea: "",
+  partnerId: "",
   requiredQuantity: "0",
   allowanceQuantity: "0",
   inventoryUsageQuantity: "0",
@@ -69,6 +70,7 @@ export function createMaterialDraft(
     name: materialDraftString(input.name, fallback.name),
     colorOption: materialDraftString(input.colorOption, fallback.colorOption),
     usageArea: materialDraftString(input.usageArea, fallback.usageArea),
+    partnerId: materialDraftString(input.partnerId, fallback.partnerId),
     requiredQuantity: materialDraftString(input.requiredQuantity, fallback.requiredQuantity),
     allowanceQuantity: materialDraftString(input.allowanceQuantity, fallback.allowanceQuantity),
     inventoryUsageQuantity: materialDraftString(input.inventoryUsageQuantity, fallback.inventoryUsageQuantity),
@@ -132,6 +134,7 @@ export function materialDraftFromLine(line: WorkOrderMaterialLine): MaterialDraf
     name: line.name,
     colorOption: line.colorOption ?? "",
     usageArea: line.usageArea ?? "",
+    partnerId: line.partnerId ?? "",
     requiredQuantity: stripDecimalTrailingZeros(line.requiredQuantity),
     allowanceQuantity: stripDecimalTrailingZeros(line.allowanceQuantity),
     inventoryUsageQuantity: stripDecimalTrailingZeros(line.inventoryUsageQuantity),
@@ -178,6 +181,22 @@ export function validateMaterialDraft(input: MaterialDraftInput, materialType: M
   return errors;
 }
 
+export function validateMaterialCreateDraft(
+  input: MaterialDraftInput,
+  materialType: MaterialType = "fabric",
+): MaterialEditorFieldErrors {
+  const draft = createMaterialDraft(input);
+  const errors = validateMaterialDraft(draft, materialType);
+  const requiredQuantity = normalizeNumericCommitValue(draft.requiredQuantity);
+  if (!MATERIAL_QUANTITY_PATTERN.test(requiredQuantity) || Number(requiredQuantity) <= 0) {
+    errors.requiredQuantity = "필요수량을 0보다 크게 입력해 주세요.";
+  }
+  if (!draft.unitCode.trim()) {
+    errors.unitCode = "단위를 선택해 주세요.";
+  }
+  return errors;
+}
+
 export function validateMaterialOrderRequest(line: WorkOrderMaterialLine): MaterialEditorFieldErrors {
   const draft = materialDraftFromLine(line);
   const draftErrors = validateMaterialDraft(draft, line.materialType);
@@ -191,6 +210,8 @@ export function validateMaterialOrderRequest(line: WorkOrderMaterialLine): Mater
     if (draftErrors[field]) errors[field] = draftErrors[field];
   }
   const calculated = calculateOrderQuantity(draft);
+  const externalOrder = calculated !== null && Number(calculated) > 0;
+  if (externalOrder && !draft.partnerId.trim()) errors.partnerId = "거래처를 선택해 주세요.";
   const required = MATERIAL_QUANTITY_PATTERN.test(draft.requiredQuantity.trim())
     ? Number(draft.requiredQuantity)
     : null;
@@ -198,6 +219,9 @@ export function validateMaterialOrderRequest(line: WorkOrderMaterialLine): Mater
     ? Number(draft.allowanceQuantity)
     : null;
   const demand = required === null || allowance === null ? null : required + allowance;
+  if (required === null || required <= 0) {
+    errors.requiredQuantity = "필요수량을 0보다 크게 입력해 주세요.";
+  }
   if (
     calculated === null
     || demand === null
@@ -207,11 +231,8 @@ export function validateMaterialOrderRequest(line: WorkOrderMaterialLine): Mater
     errors.orderQuantity = "발주수량 계산값을 확인해 주세요.";
   }
   const unitPrice = draft.unitPrice.trim();
-  if (
-    !MATERIAL_PRICE_PATTERN.test(unitPrice)
-    || Number(unitPrice) <= 0
-  ) {
-    errors.unitPrice = "외부 발주가 필요한 경우 0보다 큰 단가를 입력해 주세요.";
+  if (externalOrder && (!MATERIAL_PRICE_PATTERN.test(unitPrice) || Number(unitPrice) <= 0)) {
+    errors.unitPrice = "단가를 0보다 크게 입력해 주세요.";
   }
   return errors;
 }
@@ -237,6 +258,7 @@ export function normalizeMaterialDraft(input: MaterialDraftInput, fallback: Mate
     name: draft.name.trim(),
     colorOption: draft.colorOption.trim(),
     usageArea: draft.usageArea.trim(),
+    partnerId: draft.partnerId.trim(),
     requiredQuantity,
     allowanceQuantity,
     inventoryUsageQuantity,

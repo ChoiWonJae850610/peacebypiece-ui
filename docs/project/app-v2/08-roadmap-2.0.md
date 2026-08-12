@@ -2,7 +2,33 @@
 
 Document role: canonical owner for the current result, next candidate, and Version Delta boundary. It is not the historical implementation ledger; completed details live in numbered immutable evidence.
 
-## Current result — 2.0.0-alpha.61
+## Current result — 2.0.0-alpha.62
+
+Status: `ALPHA62_FINALIZATION_COMPLETE`.
+
+Alpha.62 completes the bounded size-measurement standards/template and Maker authoring
+workflows on the accepted alpha.61 architecture:
+
+- additive dev/test migrations `014` and `015` own versioned system/company size-spec
+  templates, independent revision snapshots, cm/inch plus exact 1/8-inch persistence, and
+  same-company reusable size/color options; production migration and mutation remain zero;
+- WorkOrder Size is the finished-spec size source of truth, while WAFL recommendations and
+  user-saved specs copy only matching values into the current independent snapshot;
+- canonical shared mobile owners cover reels, V/X sheets, semantic choices, option grids,
+  nullable normalization, immediate focus, serialized mutations, command-scoped pending,
+  staged size/color batch selection, projection promotion, and paired material copy;
+- measurement/template commands reconcile only their declared projection impact, preserving
+  zero whole-tab reload for set-cell/unit and template save/update, and at most one targeted
+  spec read for template apply;
+- alpha.60 draft-child hard delete, linked quantity cleanup, matrix-total synchronization,
+  replay, and requested/completed/issued/legacy protection remain intact;
+- targeted/static checks, isolated Runtime suites, Canonical Verify, DeveloperAutoConnect,
+  and owner physical-iPhone final QA passed. Finalization preserved the owner fixture and
+  changed no production, R2, PDF, token, dependency, native, or EAS boundary.
+
+Evidence: `62-size-measurement-standards-templates-evidence.md`.
+
+## Previous result — 2.0.0-alpha.61
 
 Status: `ALPHA61_FINALIZATION_COMPLETE`.
 
@@ -116,6 +142,7 @@ Permanent Rules, Current Baseline, Version Delta, Immutable Evidence, responsibi
 | alpha.59 | mobile WorkOrder input expansion and editor lifecycle | `59-mobile-work-order-input-expansion-evidence.md` |
 | alpha.60 | draft-child hard delete and shared-architecture completion | `60-draft-child-hard-delete-and-shared-architecture-evidence.md` |
 | alpha.61 | mobile WorkOrder create and DeveloperAutoConnect finalization | `61-mobile-work-order-create-and-runtime-autoconnect-evidence.md` |
+| alpha.62 | size measurement standards/templates, Maker authoring, and shared mobile architecture | `62-size-measurement-standards-templates-evidence.md` |
 | maintenance | canonical Codex rule normalization without APP_VERSION change | `54-canonical-codex-working-rules-normalization-evidence.md` |
 
 Older results remain in numbered evidence files indexed and task-routed by `00-start-here.md`. Their detailed outcomes are not duplicated here.
@@ -147,14 +174,135 @@ Standard reference:
 
 The Delta does not repeat Permanent Rules, PC-audit mechanics, runner internals, generic Failure Handoff fields, or generic Git/artifact procedures. Those remain owned by `09a` through `09d`. An omitted exceptional authority remains forbidden.
 
-## Next candidate — 2.0.0-alpha.62
+## Completed alpha.62 implementation checkpoint history
 
-Status: `routing candidate only`.
+Status: `ALPHA62_FINALIZATION_COMPLETE`.
 
-This heading is canonical routing metadata only. It grants no alpha.62 product authority.
+The paragraphs below preserve the accepted pre-finalization checkpoints. Their interim
+owner-QA labels are historical; the owner subsequently completed and explicitly approved
+the final physical-iPhone QA before alpha.62 finalization.
 
-Separate owner-approved packages may consider one bounded adjacent objective at a time after alpha.61 finalization:
+The owner-approved alpha.62 package implements system/company size-spec templates,
+versioned WorkOrder revision snapshots, persisted cm/inch units, exact 1/8-inch input,
+mobile template apply/save/edit flows, and the bounded dev/test Runtime guard. The current
+measurement UX/structure remediation adds schema-accurate template provenance and a
+source-template `수정됨` projection, keeps the card expanded across unit persistence,
+uses decimal cm input plus the shared WAFL integer/eighth-inch reel, and owns the canonical
+Korean POM names `총장` / `가슴단면` / `어깨너비`. WorkOrder Size is the sole finished-spec
+size source of truth. Template apply preserves the exact WorkOrder size set and fills only
+matching normalized-size values; size structure commands synchronize stored spec rows in
+the same transaction. Spec-only size add/exclude is absent. Size/color UI says `삭제` while
+the alpha.60 hard-delete domain contract is retained.
 
-- finished-measurement editing with cm/inch persistence and a system size/POM snapshot connection.
+The compact `스펙 불러오기` picker groups system rows as `WAFL 추천` and tenant rows as
+`회사 스펙`; the company save sheet distinguishes a new template from an immutable new
+version and connects same-company rename/disable without changing a WorkOrder snapshot.
+The outer V/X sheet owns apply/cancel, so X performs zero mutation. Dev/test-only route,
+guard, product, DB, statement, request, busy-release, and follow-up-read timing separates
+the latency layers. Authoritative command-response reconciliation removes redundant detail,
+matrix, and size-spec reads from the blocking path except where a replaced projection needs
+one exact refresh. Before/after isolated samples reduced representative blocking latency
+from about 2.4–3.0 seconds to about 1.0–2.0 seconds.
 
-This candidate is not implied by the alpha.61 create scope. Factory, AI image generation, production mutation, R2 mutation, dependency/native/EAS work, and unrelated expansion remain outside the boundary unless a future owner-approved Delta explicitly includes them.
+The template-source and company-save-mode binary choices now use explicit semantic buttons;
+the actual templates remain metadata-bearing cards. The shared iPhone size/color delete
+`not_found` regression was caused by an alpha.62 external-QA DELETE allowlist omission plus
+an alpha.60-only route guard. A new narrow canonical size/color hard-delete guard composes
+alpha.60 and alpha.62 approvals. Eligible material hard delete uses the same bounded pair,
+while alpha.62 does not enable legacy archive/restore. Alpha.60 physical
+delete semantics, linked quantity-cell cleanup, surviving-matrix total synchronization,
+replay, and requested/completed/issued/legacy protection remain owned by their existing
+canonical repository and contracts.
+
+Product-equivalent Runtime passes local-immediate/persisted unit switching, cell/structure
+modified state, WorkOrder-size SOT synchronization, template intersection and exact reapply,
+fabric/accessory create/patch/order and eligible hard delete, Korean POM read projection,
+replay, Event/Receipt accounting, immutable company-template
+v1/v2 behavior, and exact cleanup. A bounded
+first run exposed the existing snapshot `source_template_id text` to template `id uuid`
+join mismatch; the canonical read model now casts at that exact boundary. The failed
+isolated fixture was exact-cleaned with zero mutable residual and preserved append-only
+evidence. TypeScript, ESLint errors, build, mutation audit, targeted contracts, and
+Canonical Verify pass on the final changed fingerprint. The owner fixture was not mutated by this remediation and is currently a
+draft version 40 fixture with matrix XS/S/M/L/XL and a cm S/M/L/XL measurement snapshot for
+physical iPhone UX/structure re-QA; that re-QA is `NOT_EXECUTED`.
+
+The current Maker-authoring composition covers basic WorkOrder fields, size/color/quantity,
+fabric/accessory create-edit-delete and order request/cancel, image and attachment
+create-read-delete, and all alpha.62 spec commands without globally enabling v2 mutation.
+Company-created size/color options are reusable within the same tenant; unused rows may be
+deleted exactly, while referenced rows become inactive without rewriting WorkOrder history.
+The material editor uses the canonical same-company partner list and preserves positive
+unit-price readiness. Nullable overview, factory memo, and paired fabric/accessory inputs
+now share one typed pure normalization and commit-decision owner: omitted means no change,
+explicit empty means clear, a normalized change saves once, and an unchanged blur saves
+zero times. The canonical flat reel owns unit and inch option input; the same WAFL
+InputSheet/V/X grammar owns the metadata-bearing partner list. Draft material creation
+requires positive needed quantity and a valid unit while partner and price remain optional
+until external order request. The iOS attachment path normalizes percent-encoded filenames
+to NFC and preserves the exact Korean name through upload metadata, DB snapshot, read model,
+and mobile display.
+
+Product-equivalent isolated Runtime completed 45 authoring requests, including overview,
+factory memo, and fabric/accessory nullable clear re-read plus positive-quantity rejection,
+preserved 30 Events and 23
+Receipts, detached exact receipt references, removed exact dev/test file objects, and left
+zero mutable business residual. The existing owner fixture remains draft/draft at version
+82/82 and owner physical iPhone shared-input/material UX re-QA is `NOT_EXECUTED`.
+
+The current size/color chooser uses one shared typed staged-set and diff policy. Option taps
+and X are local-only operations; V sends one idempotent logical batch command. When removals
+exist, one product-language confirmation summarizes only removed labels and the affected
+entered quantity. The server validates the whole diff before one tenant-scoped transaction
+that owns additions, eligible alpha.60 hard deletes, linked quantity cleanup, WorkOrder-size
+finished-spec synchronization, and surviving matrix totals. This is not a sequence of
+per-item HTTP mutations. Company custom-catalog deactivation remains a distinct lifecycle.
+
+The same remediation moves all unset overview values to the shared muted `미지정` semantic,
+keeps partner selection in the shared flat rich WAFL picker, removes the app-owned numeric
+submit key, and reconciles successful cm/inch unit persistence without an unrelated detail,
+matrix, or template follow-up GET. Normal copy now uses `사용자 저장 스펙`; v1/v2 and internal
+version-preservation explanations remain hidden while immutable template versioning stays
+intact. Isolated Runtime and historical contracts pass, including request/transaction
+accounting, replay, hard-delete protection, exact cleanup, and zero mutable residual.
+Canonical Verify under Node 24.14.0 passes on the final changed set.
+The exact owner fixture remains draft/draft version 113/113 with one snapshot, zero generated
+documents, and zero public tokens; physical iPhone batch/saved-spec re-QA is `NOT_EXECUTED`.
+
+The next owner re-QA checkpoint keeps that alpha.62 boundary and adds the iPhone focus,
+pending-scope, and compact-selection remediation. Vendor selection now adapts to the same
+canonical flat WAFL scroll/reel option owner as the target selector, with readable long names
+and staged X/V behavior. A shared typed transition policy and serialized entity-version queue
+allow changed/cleared inline field A to save once while field B focuses immediately; unchanged
+field A remains a zero-mutation transition. The cm/inch preference uses command-scoped pending,
+so unrelated Size/Color staging remains enabled and a following mutation queues behind the
+returned authoritative version without an unrelated read. Size and Color render through one
+accessible option-grid owner with preferred four- and three-column default layouts and separate
+registered-option sections. User-facing source copy is `WAFL 추천` / `사용자 저장 스펙`, while
+immutable internal template versioning is unchanged. The preserved owner fixture is read-only
+audited at draft/draft version 127/127 with zero generated documents and zero public tokens;
+physical iPhone focus/pending/grid re-QA remains required.
+
+The final architecture-cleanup checkpoint replaces the vendor adapter's flat option branch
+with the same canonical `single-choice-reel` render policy and reel column used by target
+selection. Measurement-unit success promotes the current valid matrix/spec projection to
+the command's next-version cache key before entity-version reconciliation, so the complete
+controller chain performs no size-color GET, no size-spec GET, no unrelated reload, and no
+global disable. The canonical owners now include shared Sheet V/X, semantic two-way choice
+buttons, option grids, inline transition/serialized mutation, command-scoped pending,
+projection-version transition, and low-level mobile request transport. A wholesale
+MobileWorkOrderExperience rewrite and full domain split of the API facade remain bounded
+technical debt rather than a speculative final-QA refactor. Current isolated measurement,
+batch, and Maker Runtime suites pass with exact cleanup; the owner fixture remains read-only
+preserved at draft/draft version 140/140 with one snapshot and no document or public token.
+Owner physical iPhone final QA is `NOT_EXECUTED`.
+
+APP_VERSION is `2.0.0-alpha.62`, and the result is finalized at
+`ALPHA62_FINALIZATION_COMPLETE`. The owner fixture remains preserved; finalization performs
+read-only audit only. Factory, AI image generation, production mutation, R2 mutation,
+dependency/native/EAS work, and alpha.63 expansion remain outside this boundary.
+
+## Next candidate — 2.0.0-alpha.63
+
+Status: `NOT_STARTED`. No alpha.63 product scope, mutation, migration, Runtime, or delivery
+authority is implied by alpha.62 completion.

@@ -71,16 +71,19 @@ export function buildReadOnlyMarkerEvidence({ compiled, runtime, sources }) {
   ].every((term) => policy.includes(term));
   const experienceUsesCanonicalPolicy = experience.includes("canEditWorkOrder(")
     && /canEdit\s*:\s*canEditWorkOrder\s*\(/.test(experience);
-  const editorGuardPresent = editor.includes("editable={edit.canEdit}")
-    && editor.includes("edit.canEdit && chooser")
+  const currentCatalogGuardPresent = editor.includes("edit.canEdit && chooser === \"size\"")
+    && editor.includes("edit.canEdit && chooser === \"color\"");
+  const historicalNestedEditorGuardPresent = editor.includes("edit.canEdit && chooser")
     && editor.includes("edit.canEdit && editor");
+  const editorGuardPresent = editor.includes("editable={edit.canEdit}")
+    && (currentCatalogGuardPresent || historicalNestedEditorGuardPresent);
   const addReachableOnlyThroughGuard = editorGuardPresent
     && editor.includes("StructureCard")
     && editor.includes("editable={edit.canEdit}")
     && !/\bon(?:Add|Create)(?:Size|Color|Sizes|Colors)?\b|StructureCard|SizeChooser|ColorChooser/.test(readOnly);
   const manualDragAbsent = !/GripVertical|dragHandle|onLongPress|PanResponder/.test(`${editor} ${readOnly}`);
   const mobileReorderAbsent = !/accessibilityMoveActions|accessibilityActions\s*=|onReorder(?:Size|Color)Ids/.test(`${editor} ${readOnly}`);
-  const readOnlyMatrixSourcePresent = readOnly.includes("색상×사이즈")
+  const readOnlyMatrixSourcePresent = (readOnly.includes("색상×사이즈") || readOnly.includes("색상·사이즈"))
     && /matrix\.sizes/.test(readOnly)
     && /specifications/.test(readOnly);
 

@@ -112,6 +112,7 @@ const draft = {
   name: "지퍼",
   colorOption: "NAVY",
   usageArea: "앞중심",
+  partnerId: "partner-1",
   requiredQuantity: "3.000",
   allowanceQuantity: "0.500",
   inventoryUsageQuantity: "0.500",

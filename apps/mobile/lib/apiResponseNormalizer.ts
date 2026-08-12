@@ -39,6 +39,8 @@ export function normalizeMaterialLine(value: unknown): WorkOrderMaterialLine | n
     || typeof value.name !== "string"
     || optionalString(value.colorOption) === undefined
     || optionalString(value.usageArea) === undefined
+    || optionalString(value.partnerId) === undefined
+    || optionalString(value.partnerName) === undefined
     || typeof value.unitCode !== "string"
     || typeof value.currency !== "string"
     || optionalString(value.memo) === undefined
@@ -55,6 +57,8 @@ export function normalizeMaterialLine(value: unknown): WorkOrderMaterialLine | n
     name: value.name,
     colorOption: optionalString(value.colorOption) ?? null,
     usageArea: optionalString(value.usageArea) ?? null,
+    partnerId: optionalString(value.partnerId) ?? null,
+    partnerName: optionalString(value.partnerName) ?? null,
     requiredQuantity: value.requiredQuantity as string,
     allowanceQuantity: value.allowanceQuantity as string,
     inventoryUsageQuantity: value.inventoryUsageQuantity as string,

@@ -94,7 +94,7 @@ for (const validationMeaning of [
 
 const sizeReadClient = apiClient.slice(
   apiClient.indexOf("export async function getWorkOrderSizeColor"),
-  apiClient.indexOf("async function mutateSizeColorStructure"),
+  apiClient.indexOf("export async function getWorkOrderStructureOptions"),
 );
 assert.doesNotMatch(sizeReadClient, /method: "(POST|PATCH|PUT|DELETE)"/);
 assert.doesNotMatch(sizeReadClient, /patchWorkOrderSize|deleteWorkOrderSize|createWorkOrderSize/i);
@@ -177,12 +177,9 @@ for (const stateMeaning of [
   "등록된 사이즈와 색상이 없습니다",
   "색상은 있지만 등록된 사이즈",
   "사이즈는 있지만 등록된 색상",
-  "등록된 수량 셀이 없어",
   "색상×사이즈",
-  "행 합계",
-  "열 합계",
   "저장된 총수량",
-  "완성 치수표",
+  "완성 스펙",
   "기존 수량 메모",
 ]) assert.ok(component.includes(stateMeaning), `read-only UI meaning missing: ${stateMeaning}`);
 assert.doesNotMatch(component, /합계 일치|색상×사이즈 생산수량 · 총/);
@@ -218,13 +215,14 @@ assert.equal(displayMeasurement(measurementCell("1"), "inch", "cm"), "2.5");
 assert.equal(displayMeasurement(measurementCell("12.5"), "inch", "cm"), "31.8");
 assert.equal(displayMeasurement(undefined, "cm", "inch"), "-");
 
-assert.ok(component.includes("완성 치수 표시 단위"));
-assert.ok(component.includes("표시만 변경하며 저장되지 않습니다"));
+assert.ok(component.includes("완성 스펙 표시 단위"));
+assert.ok(component.includes("단위를 변경하면 화면에 즉시 반영되고 작업지시서에 저장됩니다."));
 const componentImports = component.match(/^import .*$/gm)?.join("\n") ?? "";
-assert.doesNotMatch(componentImports, /apiClient|Mutation|workOrderQueryController|fetch|axios/i);
+assert.doesNotMatch(componentImports, /workOrderQueryController|fetch|axios/i);
+assert.match(componentImports, /getMeasurementTemplates, patchCompanyMeasurementTemplate/);
 assert.match(component, /edit\?\.canEdit/);
-assert.match(component, /edit\?\.canEdit \? \([\s\S]*QuantityCellEditor[\s\S]*\) : <Text/);
-assert.doesNotMatch(component, /AsyncStorage|SecureStore|apiClient|fetch\(|axios/i);
+assert.match(component, /edit\?\.canEdit \? <QuantityCellEditor[\s\S]*: <Text/);
+assert.doesNotMatch(component, /AsyncStorage|SecureStore|fetch\(|axios/i);
 const boundarySource = sizeColorController.slice(
   sizeColorController.indexOf("export type SizeColorReadBoundary"),
   sizeColorController.indexOf("type ActiveIdentity"),

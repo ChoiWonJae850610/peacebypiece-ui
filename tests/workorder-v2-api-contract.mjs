@@ -104,7 +104,7 @@ collectApiFiles(path.join(root, "app/api"));
 for (const file of apiFiles) {
   const source = fs.readFileSync(file, "utf8");
   const relative = path.relative(root, file).replaceAll("\\", "/");
-  if (relative === "app/api/v2/work-orders/route.ts") continue;
+  if (relative === "app/api/v2/work-orders/route.ts" || relative.startsWith("app/api/v2/work-orders/[workOrderId]/size-spec/") || relative === "app/api/v2/size-spec-templates/[templateId]/route.ts") continue;
   assert.doesNotMatch(source, /domain\/work-orders\/contracts/, `runtime API outside the alpha.23 vertical slice must not import contracts: ${relative}`);
 }
 

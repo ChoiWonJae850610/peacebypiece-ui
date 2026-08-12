@@ -145,6 +145,20 @@ export type WorkOrderColorRow = {
   readonly displayOrder: number;
 };
 
+export type CompanyWorkOrderStructureOption = {
+  readonly id: string;
+  readonly kind: "size" | "color";
+  readonly displayName: string;
+  readonly hexValue: string | null;
+  readonly active: boolean;
+  readonly sourceKind: "company";
+};
+
+export type WorkOrderStructureOptionPage = {
+  readonly entityVersion: number;
+  readonly items: readonly CompanyWorkOrderStructureOption[];
+};
+
 export type WorkOrderQuantityCell = {
   readonly colorId: string;
   readonly sizeRowId: string;
@@ -188,6 +202,9 @@ export type WorkOrderSizeSpec = {
   readonly categoryCode: string | null;
   readonly measurementUnit: "cm" | "inch";
   readonly templateId: string | null;
+  readonly templateVersion: number | null;
+  readonly templateName: string | null;
+  readonly sourceTemplateModified: boolean;
   readonly sizes: readonly WorkOrderSizeRow[];
   readonly pomColumns: readonly WorkOrderPomColumn[];
   readonly cells: readonly WorkOrderSizeSpecCell[];
@@ -215,8 +232,44 @@ export type SizeColorStructureCommandResult = {
   readonly totalQuantity?: number;
   readonly deletedQuantityCellCount?: number;
   readonly removedQuantity?: number;
+  readonly createdItems?: readonly {
+    readonly id: string;
+    readonly displayName: string;
+    readonly hexValue: string | null;
+  }[];
+  readonly deletedTargetIds?: readonly string[];
   readonly nextVersion: number;
 };
+
+export type SizeColorSelectionBatchInput = SizeColorStructureCommandBase & {
+  readonly targetKind: "size" | "color";
+  readonly additions: readonly {
+    readonly displayName: string;
+    readonly hexValue: string | null;
+  }[];
+  readonly deletionIds: readonly string[];
+};
+
+type MeasurementCommandBase = SizeColorStructureCommandBase;
+export type MeasurementCommandInput = MeasurementCommandBase & (
+  | { readonly kind: "apply-template"; readonly templateId: string }
+  | { readonly kind: "set-unit"; readonly measurementUnit: "cm" | "inch" }
+  | { readonly kind: "set-cell"; readonly sizeRowId: string; readonly pomColumnId: string; readonly measurementUnit: "cm" | "inch"; readonly displayValue: string | null }
+  | { readonly kind: "add-pom"; readonly displayName: string; readonly pomCode?: string; readonly measurementType: "circumference" | "half_flat" | "quarter_pattern_reference" | "length"; readonly instruction?: string }
+  | { readonly kind: "rename-pom"; readonly pomColumnId: string; readonly displayName: string }
+  | { readonly kind: "remove-pom"; readonly pomColumnId: string }
+  | { readonly kind: "reorder-poms"; readonly orderedIds: readonly string[] }
+  | { readonly kind: "save-company-template"; readonly templateName: string; readonly templateId?: never }
+  | { readonly kind: "update-company-template"; readonly templateId: string }
+);
+
+export type MeasurementCommandResult = {
+  readonly workOrderId: string;
+  readonly revisionId: string;
+  readonly nextVersion: number;
+  readonly changedFields: readonly string[];
+};
+export type MeasurementTemplateSummary = { readonly id:string;readonly sourceKind:"system"|"company";readonly name:string;readonly templateVersion:number;readonly categoryCode:string|null;readonly genderCode:string|null;readonly sizeSetCode:string|null;readonly sizeCount:number;readonly pomCount:number;readonly valueCount:number };
 
 export type WorkOrderImageUploadTarget = {
   readonly storageKey: string;
@@ -253,6 +306,8 @@ export type WorkOrderMaterialLine = {
   readonly name: string;
   readonly colorOption: string | null;
   readonly usageArea: string | null;
+  readonly partnerId: string | null;
+  readonly partnerName: string | null;
   readonly requiredQuantity: string;
   readonly allowanceQuantity: string;
   readonly inventoryUsageQuantity: string;
@@ -286,6 +341,7 @@ export type MaterialDraftFields = {
   readonly name: string;
   readonly colorOption: string;
   readonly usageArea: string;
+  readonly partnerId: string;
   readonly requiredQuantity: string;
   readonly allowanceQuantity: string;
   readonly inventoryUsageQuantity: string;
@@ -293,6 +349,17 @@ export type MaterialDraftFields = {
   readonly unitCode: string;
   readonly unitPrice: string;
   readonly memo: string;
+};
+
+export type MaterialPartnerOption = {
+  readonly id: string;
+  readonly name: string;
+};
+
+export type WorkOrderMaterialPartnerPage = {
+  readonly workOrderId: string;
+  readonly entityVersion: number;
+  readonly items: readonly MaterialPartnerOption[];
 };
 
 export type MaterialDraftUpdate = Partial<Omit<MaterialDraftFields, "orderQuantity">>;
@@ -445,11 +512,13 @@ export type CreateWorkOrderDraftResult = {
 export type PatchWorkOrderBasicInfoResult = {
   readonly result: {
     readonly productName: string;
-    readonly productTypeCode?: string | null;
-    readonly seasonCode?: string | null;
-    readonly itemCode?: string | null;
+    readonly productTypeCode: string | null;
+    readonly seasonCode: string | null;
+    readonly itemCode: string | null;
     readonly dueDate: string | null;
     readonly totalQuantity: number;
+    readonly memo: string | null;
+    readonly factoryDeliveryMemo: string | null;
   };
   readonly nextVersion: number;
 };

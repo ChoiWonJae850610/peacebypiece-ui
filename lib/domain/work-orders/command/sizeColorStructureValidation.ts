@@ -184,6 +184,48 @@ export function validatePatchColorStructure(input: {
 
 export const validateDeleteColorStructure = validateDeleteSizeStructure;
 
+export function validateBatchStructureSelection(input: {
+  readonly body: unknown;
+  readonly idempotencyKey: string | null;
+}) {
+  if (!isJsonObject(input.body)) {
+    throw new WorkOrderCommandValidationError([fieldError("body", "INVALID_TYPE", "JSON object가 필요합니다.")]);
+  }
+  assertAllowedKeys(input.body, new Set(["clientRequestId", "expectedVersion", "targetKind", "additions", "deletionIds"]));
+  const targetKind = input.body.targetKind;
+  if (targetKind !== "size" && targetKind !== "color") {
+    throw new WorkOrderCommandValidationError([fieldError("targetKind", "INVALID_VALUE", "targetKind는 size 또는 color여야 합니다.")]);
+  }
+  const validatedTargetKind: "size" | "color" = targetKind;
+  if (!Array.isArray(input.body.additions) || input.body.additions.length > REORDER_ITEM_BATCH_MAX) {
+    throw new WorkOrderCommandValidationError([fieldError("additions", "INVALID_LENGTH", `additions는 ${REORDER_ITEM_BATCH_MAX}개 이하여야 합니다.`)]);
+  }
+  const additions = input.body.additions.map((candidate, index) => {
+    if (!isJsonObject(candidate)) {
+      throw new WorkOrderCommandValidationError([fieldError(`additions.${index}`, "INVALID_TYPE", "추가 항목 형식을 확인해 주세요.")]);
+    }
+    assertAllowedKeys(candidate, new Set(["displayName", "hexValue"]), `additions.${index}.`);
+    return {
+      displayName: parseDisplayText(candidate.displayName, `additions.${index}.displayName`, validatedTargetKind === "size" ? 40 : 80),
+      hexValue: validatedTargetKind === "size" ? null : parseHexValue(candidate.hexValue, hasOwn(candidate, "hexValue")) ?? null,
+    };
+  });
+  const normalizedNames = additions.map((item) => item.displayName.normalize("NFKC").trim().toLocaleLowerCase("en-US"));
+  if (new Set(normalizedNames).size !== normalizedNames.length) {
+    throw new WorkOrderCommandValidationError([fieldError("additions", "DUPLICATE_NAME", "추가 항목에 같은 이름이 있습니다.")]);
+  }
+  const deletionIds = parseOrderedIds<SizeRowId | ColorId>(input.body.deletionIds, "deletionIds");
+  if (additions.length === 0 && deletionIds.length === 0) {
+    throw new WorkOrderCommandValidationError([fieldError("additions", "EMPTY_CHANGE", "적용할 선택 변경이 없습니다.")]);
+  }
+  return {
+    ...parseCommon({ body: input.body, idempotencyKey: input.idempotencyKey }),
+    targetKind: validatedTargetKind,
+    additions,
+    deletionIds,
+  };
+}
+
 export function validateReorderColorStructures(input: {
   readonly body: unknown;
   readonly idempotencyKey: string | null;

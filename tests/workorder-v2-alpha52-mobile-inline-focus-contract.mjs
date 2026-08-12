@@ -5,6 +5,7 @@ import fs from "node:fs";
 const field = fs.readFileSync("apps/mobile/components/ControlledInlineEditValue.tsx", "utf8");
 const detail = fs.readFileSync("apps/mobile/features/work-orders/overview/WorkOrderDetailOverview.tsx", "utf8");
 const app = fs.readFileSync("apps/mobile/features/MobileWorkOrderExperience.tsx", "utf8");
+const transition = fs.readFileSync("apps/mobile/application/inlineEditTransition.ts", "utf8");
 const visibility = fs.readFileSync("apps/mobile/hooks/useFocusedFieldVisibility.ts", "utf8");
 
 assert.match(field, /const inputRef = useRef<TextInput>/);
@@ -30,6 +31,9 @@ assert.match(field, /onCancel/);
 assert.match(field, /onSave/);
 assert.match(app, /activeBasicField/);
 assert.match(app, /activeMaterialField/);
-assert.match(app, /현재 필드 편집을 완료해 주세요/);
+assert.match(app, /planInlineEditTransition/);
+assert.match(app, /inlineMutationQueue\.enqueue/);
+assert.match(transition, /activateNextImmediately: true/);
+assert.doesNotMatch(app, /현재 필드 편집을 완료해 주세요/);
 
 console.log("workorder v2 alpha.52 mobile inline focus contract: PASS");

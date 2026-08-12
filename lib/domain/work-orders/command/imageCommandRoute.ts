@@ -26,7 +26,6 @@ import {
 } from "@/lib/domain/work-orders/command/imageCommandRepository";
 import {
   getWorkOrderV2ImageMutationRuntimeGuard,
-  WAFL_V2_ALPHA57_WORK_ORDER_IMAGE_MUTATION_APPROVAL,
 } from "@/lib/domain/work-orders/command/runtimeGuard";
 import type {
   CompanyMemberId,
@@ -91,7 +90,7 @@ function ensureRuntime(correlationId: CorrelationId) {
       message: `작업지시서 이미지 mutation runtime이 승인되지 않았습니다. (${correlationId.slice(0, 8)})`,
     });
   }
-  requireCommandMutationApproval(WAFL_V2_ALPHA57_WORK_ORDER_IMAGE_MUTATION_APPROVAL);
+  requireCommandMutationApproval(process.env.WAFL_V2_COMMAND_MUTATION_APPROVED ?? "");
 }
 
 function readIdempotencyKey(request: Request): string {

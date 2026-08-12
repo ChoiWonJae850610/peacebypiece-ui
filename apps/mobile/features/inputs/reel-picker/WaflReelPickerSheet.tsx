@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useReducer, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useReducer, useRef, useState } from "react";
 import {
   FlatList,
   Pressable,
@@ -20,10 +20,7 @@ import {
   prepareNumericDraftOnFocus,
 } from "@/lib/mobileDisplay";
 import {
-  circularLogicalIndex,
-  circularRecenterIndex,
   composeQuarterQuantity,
-  createCircularReelWindow,
   createReelWindow,
   decomposeQuarterQuantity,
   defaultReelStep,
@@ -38,13 +35,23 @@ import {
 } from "./reelPickerModel";
 import { createSelectionHapticAdapter } from "./reelPickerHaptics";
 import { INITIAL_REEL_PICKER_STATE, reelPickerReducer } from "./reelPickerState";
+import { composeInchMeasurement, decomposeInchMeasurement, inchEighthOptions } from "@/domain/measurementPolicy";
+import { WAFL_UNSET_PLACEHOLDER } from "@/lib/displayPlaceholder";
+import { resolveWaflPickerRenderPath, type WaflPickerKind } from "./waflPickerRenderPolicy";
+import { useExternalReelVisibilityLifecycle } from "./useExternalReelVisibilityLifecycle";
 
 const ITEM_HEIGHT = 44;
 const VISIBLE_ROWS = 5;
 const REEL_HEIGHT = ITEM_HEIGHT * VISIBLE_ROWS;
 const platformReelHaptics = createSelectionHapticAdapter((durationMs) => Vibration.vibrate(durationMs));
 
-export type ReelPickerKind = "quantity" | "unit" | "integer" | "option";
+export type ReelPickerKind = WaflPickerKind;
+
+export type WaflPickerOption = {
+  readonly value: string;
+  readonly label: string;
+  readonly metadata?: string | null;
+};
 
 type Props = {
   readonly visible: boolean;
@@ -54,6 +61,8 @@ type Props = {
   readonly unitCode: string;
   readonly kind?: ReelPickerKind;
   readonly options?: readonly string[];
+  readonly optionItems?: readonly WaflPickerOption[];
+  readonly pending?: boolean;
   readonly onCancel: () => void;
   readonly onApply: (value: string, unitCode: string) => Promise<unknown> | unknown;
 };
@@ -131,7 +140,10 @@ function ReelColumn({
           return (
             <View style={styles.reelItem}>
               {item.swatchHex ? <View style={[styles.optionSwatch, { backgroundColor: item.swatchHex }]} /> : null}
-              <Text numberOfLines={1} style={[styles.reelText, distance === 0 ? styles.reelTextSelected : distance === 1 ? styles.reelTextNear : styles.reelTextFar]}>{item.label ?? item.value}</Text>
+              {item.label ? <View style={styles.optionReelCopy}>
+                <Text numberOfLines={2} style={[styles.reelText, distance === 0 ? styles.reelTextSelected : distance === 1 ? styles.reelTextNear : styles.reelTextFar, styles.optionReelText]}>{item.label}</Text>
+                {item.metadata ? <Text numberOfLines={1} style={styles.optionReelMetadata}>{item.metadata}</Text> : null}
+              </View> : <Text numberOfLines={1} style={[styles.reelText, distance === 0 ? styles.reelTextSelected : distance === 1 ? styles.reelTextNear : styles.reelTextFar]}>{item.value}</Text>}
             </View>
           );
         }}
@@ -148,22 +160,15 @@ function ReelColumn({
   );
 }
 
-function CircularOptionReelColumn(props: {
+function FiniteOptionReelColumn(props: {
   readonly accessibilityLabel: string;
   readonly options: readonly ReelOption[];
   readonly selectedValue: string;
   readonly onSelect: (logicalIndex: number) => void;
   readonly compact?: boolean;
 }) {
-  const window = useMemo(
-    () => createCircularReelWindow(props.options, props.options[0]?.value ?? ""),
-    [props.options],
-  );
   const logicalIndex = Math.max(0, props.options.findIndex((option) => option.value === props.selectedValue));
   const logicalOption = props.options[logicalIndex];
-  const selectedIndex = window.circular
-    ? window.selectedIndex - circularLogicalIndex(window, window.selectedIndex) + logicalIndex
-    : logicalIndex;
   return <ReelColumn
     accessibilityLabel={props.accessibilityLabel}
     accessibilityValue={{
@@ -173,10 +178,9 @@ function CircularOptionReelColumn(props: {
       max: props.options.length,
     }}
     compact={props.compact}
-    onSelect={(visualIndex) => props.onSelect(circularLogicalIndex(window, visualIndex))}
-    options={window.options}
-    recenterIndex={(visualIndex) => circularRecenterIndex(window, visualIndex)}
-    selectedIndex={selectedIndex}
+    onSelect={props.onSelect}
+    options={props.options}
+    selectedIndex={logicalIndex}
   />;
 }
 
@@ -186,7 +190,7 @@ export function WaflOptionReel(props: {
   readonly selectedValue: string;
   readonly onSelect: (value: string) => void;
 }) {
-  return <CircularOptionReelColumn
+  return <FiniteOptionReelColumn
     accessibilityLabel={props.accessibilityLabel}
     onSelect={(index) => {
       const value = props.options[index]?.value;
@@ -199,57 +203,79 @@ export function WaflOptionReel(props: {
   />;
 }
 
-export default function WaflReelPickerSheet({ visible, field, label, value, unitCode, kind = "quantity", options = [], onCancel, onApply }: Props) {
+export default function WaflReelPickerSheet({ visible, field, label, value, unitCode, kind = "quantity", options = [], optionItems: suppliedOptionItems, pending = false, onCancel, onApply }: Props) {
   const integerOnly = kind === "integer";
   const optionOnly = kind === "option";
-  const [state, dispatch] = useReducer(reelPickerReducer, INITIAL_REEL_PICKER_STATE, (initial) => reelPickerReducer(initial, {
-    type: "open",
-    field,
-    label,
-    value,
-    unit: unitCode.trim() || materialUnitOptions("")[0] || "개",
-    step: integerOnly ? "1" : defaultReelStep(unitCode),
-  }));
+  const eighthInch = kind === "eighth-inch";
+  const [state, dispatch] = useReducer(reelPickerReducer, INITIAL_REEL_PICKER_STATE);
   const [windowAnchor, setWindowAnchor] = useState(value);
+  const openExternalSession = useCallback(() => {
+    setWindowAnchor(value);
+    dispatch({
+      type: "open",
+      field,
+      label,
+      value,
+      unit: unitCode.trim() || materialUnitOptions("")[0] || "개",
+      step: integerOnly || eighthInch ? "1" : defaultReelStep(unitCode),
+    });
+  }, [eighthInch, field, integerOnly, label, unitCode, value]);
+  const closeExternalSession = useCallback(() => dispatch({ type: "cancel" }), []);
+  const { markCurrentSessionClosed } = useExternalReelVisibilityLifecycle({
+    visible,
+    onOpen: openExternalSession,
+    onExternalClose: closeExternalSession,
+  });
   const quantityParts = useMemo(() => decomposeQuarterQuantity(state.selectedValue), [state.selectedValue]);
-  const numberAnchor = kind === "quantity" ? quantityParts.integerPart : windowAnchor;
-  const numberStep = kind === "quantity" ? "1" : state.step;
+  const inchParts = useMemo(() => decomposeInchMeasurement(state.selectedValue), [state.selectedValue]);
+  const numberAnchor = kind === "quantity" ? quantityParts.integerPart : eighthInch ? inchParts.integerPart : windowAnchor;
+  const numberStep = kind === "quantity" || eighthInch ? "1" : state.step;
   const numberWindow = useMemo(() => createReelWindow(numberAnchor, numberStep), [numberAnchor, numberStep]);
   const displayedNumberOptions = numberWindow.options;
   const unitOptions = useMemo<readonly ReelOption[]>(
     () => materialUnitOptions(state.selectedUnit || unitCode).map((option) => ({ key: option, value: option })),
     [state.selectedUnit, unitCode],
   );
-  const optionItems = useMemo<readonly ReelOption[]>(
-    () => options.map((option, index) => ({
+  const optionItems = useMemo<readonly (ReelOption & { readonly metadata?: string | null })[]>(
+    () => suppliedOptionItems?.map((option, index) => ({
+      key: `option-${option.value || "empty"}-${index}`,
+      label: option.label || WAFL_UNSET_PLACEHOLDER,
+      metadata: option.metadata,
+      value: option.value,
+    })) ?? options.map((option, index) => ({
       key: `option-${option || "empty"}-${index}`,
-      label: option || "미지정",
+      label: option || WAFL_UNSET_PLACEHOLDER,
       value: option,
     })),
-    [options],
+    [options, suppliedOptionItems],
   );
   const stepOptions = useMemo(() => reelStepOptions(integerOnly), [integerOnly]);
   const stepIndex = Math.max(0, stepOptions.findIndex((option) => option.value === state.step));
-  const numberIndex = reelIndexForValue(numberWindow, kind === "quantity" ? quantityParts.integerPart : state.selectedValue);
-  const fractionOptions = useMemo(() => quarterFractionOptions(), []);
-  const fractionIndex = Math.max(0, fractionOptions.findIndex((option) => option.value === quantityParts.fractionPart));
+  const numberIndex = reelIndexForValue(numberWindow, kind === "quantity" ? quantityParts.integerPart : eighthInch ? inchParts.integerPart : state.selectedValue);
+  const fractionOptions = useMemo(() => eighthInch ? inchEighthOptions() : quarterFractionOptions(), [eighthInch]);
+  const fractionIndex = Math.max(0, fractionOptions.findIndex((option) => option.value === (eighthInch ? inchParts.fractionPart : quantityParts.fractionPart)));
   const normalized = optionOnly
     ? state.selectedValue
-    : normalizeReelValue(state.selectedValue.trim() || "0");
+    : eighthInch
+      ? composeInchMeasurement(inchParts.integerPart, inchParts.fractionPart)
+      : normalizeReelValue(state.selectedValue.trim() || "0");
   const applyDisabled = kind === "unit"
     ? !state.selectedUnit.trim()
     : optionOnly
       ? !optionItems.some((option) => option.value === state.selectedValue)
       : normalized === null;
+  const renderPath = resolveWaflPickerRenderPath(kind, state.mode);
 
   function cancel() {
+    if (!markCurrentSessionClosed()) return;
     dispatch({ type: "cancel" });
     onCancel();
   }
 
   async function apply() {
     if (applyDisabled) return;
-    await onApply(normalized ?? state.selectedValue, state.selectedUnit.trim());
+    const applied = await onApply(normalized ?? state.selectedValue, state.selectedUnit.trim());
+    if (applied === false || !markCurrentSessionClosed()) return;
     dispatch({ type: "apply" });
   }
 
@@ -257,7 +283,9 @@ export default function WaflReelPickerSheet({ visible, field, label, value, unit
     const selectedNumber = reelValueAtIndex(numberWindow, index);
     const next = kind === "quantity"
       ? composeQuarterQuantity(selectedNumber, quantityParts.fractionPart)
-      : selectedNumber;
+      : eighthInch
+        ? composeInchMeasurement(selectedNumber, inchParts.fractionPart)
+        : selectedNumber;
     if (next === null) return;
     if (next !== state.selectedValue) platformReelHaptics.selectionChanged(index);
     dispatch({ type: "select-value", value: next });
@@ -266,7 +294,9 @@ export default function WaflReelPickerSheet({ visible, field, label, value, unit
   function selectFraction(index: number) {
     const fraction = fractionOptions[index]?.value;
     if (fraction === undefined) return;
-    const next = composeQuarterQuantity(quantityParts.integerPart, fraction);
+    const next = eighthInch
+      ? composeInchMeasurement(inchParts.integerPart, fraction)
+      : composeQuarterQuantity(quantityParts.integerPart, fraction);
     if (next === null || next === state.selectedValue) return;
     platformReelHaptics.selectionChanged(index);
     dispatch({ type: "select-value", value: next });
@@ -287,8 +317,7 @@ export default function WaflReelPickerSheet({ visible, field, label, value, unit
     dispatch({ type: "select-step", step });
   }
 
-  function selectOption(index: number) {
-    const next = optionItems[index]?.value;
+  function selectOption(next: string, index: number) {
     if (next === undefined || next === state.selectedValue) return;
     platformReelHaptics.selectionChanged(index);
     dispatch({ type: "select-value", value: next });
@@ -305,29 +334,34 @@ export default function WaflReelPickerSheet({ visible, field, label, value, unit
     <WaflInputSheet
       cancelAccessibilityLabel="변경 취소"
       confirmAccessibilityLabel="변경 저장"
-      confirmDisabled={applyDisabled}
+      confirmDisabled={applyDisabled || pending}
       onCancel={cancel}
       onConfirm={apply}
+      pending={pending}
       title={label}
       visible={visible && state.phase === "open"}
     >
-          {optionOnly ? (
+          {renderPath === "single-choice-reel" ? (
             <View style={styles.optionReel}>
-              <Text style={styles.reelLabel}>{label}</Text>
-              <CircularOptionReelColumn accessibilityLabel={`${label} 선택 목록`} onSelect={selectOption} options={optionItems} selectedValue={state.selectedValue} />
+              <WaflOptionReel
+                accessibilityLabel={`${label} 선택 릴`}
+                onSelect={(next) => selectOption(next, optionItems.findIndex((option) => option.value === next))}
+                options={optionItems}
+                selectedValue={state.selectedValue}
+              />
             </View>
-          ) : state.mode === "reel" ? (
+          ) : renderPath === "numeric-reel" ? (
             <View style={styles.reels}>
               {kind !== "unit" ? <View style={styles.numberReel}>
-                <Text style={styles.reelLabel}>{kind === "quantity" ? "정수" : "수량"}</Text>
+                <Text style={styles.reelLabel}>{kind === "quantity" || eighthInch ? "정수" : "수량"}</Text>
                 <ReelColumn accessibilityLabel={`${label} 숫자 릴`} onSelect={selectNumber} options={displayedNumberOptions} selectedIndex={numberIndex} />
               </View> : null}
               {kind === "unit" ? <View style={styles.unitOnlyReel}>
                 <Text style={styles.reelLabel}>단위</Text>
-                <CircularOptionReelColumn accessibilityLabel="원단·부자재 단위 릴" compact onSelect={selectUnit} options={unitOptions} selectedValue={state.selectedUnit} />
-              </View> : kind === "quantity" ? <View style={styles.intervalReel}>
-                <Text style={styles.reelLabel}>소수</Text>
-                <ReelColumn accessibilityLabel={`${label} 소수 릴`} compact onSelect={selectFraction} options={fractionOptions} selectedIndex={fractionIndex} />
+                <FiniteOptionReelColumn accessibilityLabel="원단·부자재 단위 목록" compact onSelect={selectUnit} options={unitOptions} selectedValue={state.selectedUnit} />
+              </View> : kind === "quantity" || eighthInch ? <View style={styles.intervalReel}>
+                <Text style={styles.reelLabel}>{eighthInch ? "분수" : "소수"}</Text>
+                <ReelColumn accessibilityLabel={`${label} ${eighthInch ? "분수" : "소수"} 릴`} compact onSelect={selectFraction} options={fractionOptions} selectedIndex={fractionIndex} />
               </View> : <View style={styles.intervalReel}>
                 <Text style={styles.reelLabel}>간격</Text>
                 <ReelColumn accessibilityLabel={`${label} 간격 릴`} compact onSelect={selectStep} options={stepOptions} selectedIndex={stepIndex} />
@@ -354,7 +388,7 @@ export default function WaflReelPickerSheet({ visible, field, label, value, unit
 
           {kind === "quantity" && quantityParts.preservedValue ? <Text style={styles.legacyValue}>기존값 {quantityParts.preservedValue}</Text> : null}
 
-          {kind !== "unit" && !optionOnly ? <Pressable
+          {kind !== "unit" && !optionOnly && !eighthInch ? <Pressable
             accessibilityLabel={state.mode === "reel" ? "숫자 키패드로 직접 입력" : "릴 피커로 입력"}
             accessibilityRole="button"
             onPress={toggleMode}
@@ -375,12 +409,15 @@ const styles = StyleSheet.create({
   intervalReel: { flexBasis: 108, flexGrow: 0, flexShrink: 1, minWidth: 84 },
   unitOnlyReel: { flex: 1, minWidth: 0 },
   reelLabel: { color: "#65594e", fontFamily: WAFL_FONTS.semibold, fontSize: 11, marginBottom: 5 },
-  reelColumn: { backgroundColor: "#fbf5eb", borderColor: "#dfd2c2", borderRadius: 12, borderWidth: 1, height: REEL_HEIGHT, overflow: "hidden", position: "relative" },
-  unitColumn: { backgroundColor: "#f4efe5" },
+  reelColumn: { backgroundColor: "transparent", borderBottomColor: "#dfd2c2", borderBottomWidth: 1, borderTopColor: "#dfd2c2", borderTopWidth: 1, height: REEL_HEIGHT, overflow: "hidden", position: "relative" },
+  unitColumn: { backgroundColor: "transparent" },
   reelList: { height: REEL_HEIGHT },
   reelContent: { paddingVertical: ITEM_HEIGHT * 2 },
   reelItem: { alignItems: "center", flexDirection: "row", gap: 8, height: ITEM_HEIGHT, justifyContent: "center", paddingHorizontal: 8 },
-  optionSwatch: { borderColor: "#b9af9f", borderRadius: 7, borderWidth: 1, height: 22, width: 22 },
+  optionReelCopy: { alignItems: "center", flex: 1, minWidth: 0 },
+  optionReelText: { fontSize: 15, lineHeight: 17, textAlign: "center" },
+  optionReelMetadata: { color: "#786d62", fontFamily: WAFL_FONTS.regular, fontSize: 9, lineHeight: 11, textAlign: "center" },
+  optionSwatch: { borderColor: "#b9af9f", borderRadius: 11, borderWidth: 1, height: 22, width: 22 },
   reelText: { color: WAFL_THEME.color.deepNavy, fontFamily: WAFL_FONTS.semibold, fontSize: 18 },
   reelTextSelected: { color: WAFL_THEME.color.deepNavy, fontFamily: WAFL_FONTS.black, fontSize: 22 },
   reelTextNear: { opacity: 0.58 },

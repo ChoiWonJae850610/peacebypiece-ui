@@ -81,3 +81,9 @@ The tracked evidence cannot contain the hash of the commit that contains itself.
 ## 6. Completion declaration
 
 Declare completion only when every applicable Delta and Permanent Rule gate passes. Product completion requires matching artifacts when named. Documentation-only maintenance completes without new product artifacts when its exception conditions pass. Anything not executed is reported as `NOT_RUN`.
+
+## 7. External handoff file hygiene
+
+- `INBOX` keeps at most one current active WAFL handoff ZIP. After the active handoff and its evidence are verified, remove superseded WAFL handoff ZIPs only by exact filename plus verified byte size and SHA-256; never use a wildcard or broad deletion, and never touch unrelated files.
+- `RESULTS` keeps only the current task's official Result/QA pair. Publish and verify both current files before removing older WAFL result files individually; intermediate logs and raw evidence do not belong in `RESULTS`.
+- A failure preserves the active input and the previously verified official Result/QA pair unless the active Delta explicitly requires a new verified failure pair.

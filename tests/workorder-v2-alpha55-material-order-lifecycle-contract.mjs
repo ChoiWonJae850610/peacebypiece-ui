@@ -90,6 +90,7 @@ const validLine = {
   name: "QA fabric",
   colorOption: undefined,
   usageArea: undefined,
+  partnerId: "partner-1",
   requiredQuantity: "2.000",
   allowanceQuantity: "0.500",
   inventoryUsageQuantity: "0.500",

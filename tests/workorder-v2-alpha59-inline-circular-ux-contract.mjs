@@ -2,7 +2,10 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
 
-import { createInlineEditFinalizationController } from "../apps/mobile/lib/inlineEditFinalization.ts";
+import {
+  createInlineEditFinalizationController,
+  decideInlineEditCommit,
+} from "../apps/mobile/lib/inlineEditFinalization.ts";
 import {
   QUARTER_FRACTION_VALUES,
   circularLogicalIndex,
@@ -70,8 +73,8 @@ const runtime = read("scripts/run-wafl-v2-alpha59-size-color-structure-runtime-q
 
 assert.doesNotMatch(shell, /X는 변경을 취소|Check는 입력을 저장|사용법|개발 진행|공통 입력 모듈/);
 assert.match(shell, />WAFL INPUT</);
-assert.match(structure, /title=\{props\.kind === "size" \? "사이즈" : "색상"\}/);
-assert.doesNotMatch(structure, /title=\{props\.kind === "size" \? "사이즈 이름" : "색상 이름"\}/);
+assert.match(structure, /title="사이즈 선택"/);
+assert.match(structure, /title="색상 선택"/);
 assert.match(structure, /accessibilityRole="alert"/);
 
 assert.match(overview, /accessibilityLabel="제품명"[\s\S]{0,180}commitMode="blur-submit"/);
@@ -83,7 +86,8 @@ for (const field of ["name", "colorOption", "unitPrice"]) {
 assert.match(materials, /MaterialInlineField[^\n]+field="unitPrice"[^\n]+keyboardType="number-pad"/);
 assert.match(materialEditor, /<EditorField field="unitPrice" keyboardType="number-pad"/);
 assert.doesNotMatch(`${materials}\n${materialEditor}\n${reel}`, /reelTarget\.field === "unitPrice"|kind="currency"|"currency" \|/);
-assert.match(controlled, /if \(result\.value === activationValueRef\.current\)[\s\S]{0,100}onCancel\(\)/);
+assert.equal(decideInlineEditCommit({ activationValue: "1000.00", draftValue: "01000", semantics: "numeric" }).changed, false);
+assert.match(controlled, /decideInlineEditCommit[\s\S]{0,260}if \(!decision\.changed\)[\s\S]{0,100}onCancel\(\)/);
 assert.match(controlled, /\{!inlineCommit \? <View style=\{styles\.actions\}>/);
 const submitBlock = controlled.slice(controlled.indexOf("function handleSubmitEditing"), controlled.indexOf("function handleCancel"));
 assert.match(submitBlock, /requestSave\(\)/);
@@ -91,16 +95,17 @@ assert.match(submitBlock, /inputRef\.current\.blur\(\)/);
 assert.match(experience, /rollbackBasicInline\(true\)/);
 assert.match(experience, /await refreshInlineMaterial\(error\.entityVersion\)/);
 
-assert.match(reel, /createCircularReelWindow/);
-assert.match(reel, /circularRecenterIndex/);
-assert.match(reel, /CircularOptionReelColumn[^\n]*accessibilityLabel="원단·부자재 단위 릴"/);
+assert.match(reel, /function FlatOptionReelColumn/);
+assert.doesNotMatch(reel, /createCircularReelWindow|circularRecenterIndex|CircularOptionReelColumn/);
+assert.match(reel, /FlatOptionReelColumn[^\n]*accessibilityLabel="원단·부자재 단위 목록"/);
 assert.match(overview, /field="targetAudience"[\s\S]{0,180}kind="option"/);
 assert.match(overview, /field="categoryMajor"[\s\S]{0,180}kind="option"/);
-assert.match(structure, /<WaflOptionReel/);
+assert.match(structure, /function CatalogChoice/);
+assert.match(structure, /function SizeChooser[\s\S]*function ColorChooser/);
 assert.match(reel, /platformReelHaptics\.selectionChanged/);
 assert.match(reel, /logicalOption\?\.label[\s\S]{0,180}now: logicalIndex \+ 1/);
 
-assert.match(reel, /kind === "quantity" \? <View style=\{styles\.intervalReel\}>[\s\S]{0,120}>소수</);
+assert.match(reel, /kind === "quantity" \|\| eighthInch \? <View style=\{styles\.intervalReel\}>[\s\S]{0,160}eighthInch \? "분수" : "소수"/);
 assert.match(reel, /composeQuarterQuantity/);
 assert.match(reel, /기존값 \{quantityParts\.preservedValue\}/);
 assert.doesNotMatch(QUARTER_FRACTION_VALUES.join("/"), /(?:^|\/)1(?:\/|$)|(?:^|\/)5(?:\/|$)|(?:^|\/)10(?:\/|$)/);

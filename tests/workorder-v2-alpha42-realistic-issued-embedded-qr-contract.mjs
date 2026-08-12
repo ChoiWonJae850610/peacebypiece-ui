@@ -34,7 +34,7 @@ assert.match(migration, /CREATE UNIQUE INDEX document_access_tokens_one_embedded
 assert.match(migration, /ON public\.document_access_tokens \(company_id, generated_document_id\)/);
 assert.match(migration, /WHERE token_purpose = 'embedded_qr'/);
 assert.doesNotMatch(migration, /\b(?:DROP|TRUNCATE|DELETE|UPDATE)\b/i);
-assert.equal(fs.readdirSync(path.join(root, "db/v2/migrations")).filter((name) => /^\d{3}_.*\.sql$/.test(name)).length, fs.existsSync(path.join(root, "db/v2/migrations/013_v2_material_line_archive_lifecycle.sql")) ? 13 : 12);
+assert.equal(fs.readdirSync(path.join(root, "db/v2/migrations")).filter((name) => /^\d{3}_.*\.sql$/.test(name)).length, fs.existsSync(path.join(root, "db/v2/migrations/015_v2_company_work_order_structure_options.sql")) ? 15 : fs.existsSync(path.join(root, "db/v2/migrations/014_v2_size_spec_templates.sql")) ? 14 : fs.existsSync(path.join(root, "db/v2/migrations/013_v2_material_line_archive_lifecycle.sql")) ? 13 : 12);
 
 assert.match(migrationRunner, /const FILE = "012_v2_document_access_token_purpose\.sql"/);
 assert.match(migrationRunner, /before\.ledger\.length, 11/);

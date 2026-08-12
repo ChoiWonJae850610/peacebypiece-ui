@@ -63,6 +63,14 @@ function parseQuantity(value: unknown, field: string): DecimalString {
   return parseDecimal(value, field, QUANTITY_PATTERN, 3);
 }
 
+function assertPositiveRequiredQuantity(value: DecimalString): void {
+  if (Number(value) <= 0) {
+    throw new WorkOrderCommandValidationError([
+      fieldError("requiredQuantity", "REQUIRED", "필요수량을 0보다 크게 입력해 주세요."),
+    ]);
+  }
+}
+
 function parsePrice(value: unknown, field: string): DecimalString {
   return parseDecimal(value, field, PRICE_PATTERN, 2);
 }
@@ -126,6 +134,7 @@ export function validateAddMaterialLine(input: {
   parseQuantity(input.body.orderQuantity, "orderQuantity");
   const unitPrice = parsePrice(input.body.unitPrice, "unitPrice");
   const requiredQuantity = parseQuantity(input.body.requiredQuantity, "requiredQuantity");
+  assertPositiveRequiredQuantity(requiredQuantity);
   const allowanceQuantity = parseQuantity(input.body.allowanceQuantity, "allowanceQuantity");
   const inventoryUsageQuantity = parseQuantity(input.body.inventoryUsageQuantity, "inventoryUsageQuantity");
   const orderQuantity = canonicalOrderQuantity(requiredQuantity, allowanceQuantity);

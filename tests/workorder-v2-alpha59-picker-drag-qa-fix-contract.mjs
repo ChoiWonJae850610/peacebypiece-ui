@@ -32,8 +32,8 @@ const readOnly = read("apps/mobile/features/work-orders/size-color/WorkOrderSize
 const packageJson = read("package.json");
 const lockfile = read("package-lock.json");
 
-for (const copy of ["개 추가", "RGB", "HEX", "직접 색상 만들기"]) assert.match(editor, new RegExp(copy));
-assert.match(editor, /WaflOptionReel/);
+for (const copy of ["추가", "RGB", "HEX", "직접 색상 만들기"]) assert.match(editor, new RegExp(copy));
+assert.match(editor, /function CatalogChoice/);
 assert.match(editor, /CUSTOM_COLOR_GROUPS/);
 assert.doesNotMatch(editor, /PanResponder|dragging|accessibilityActions|onReorderSizeIds|onReorderColorIds/);
 assert.doesNotMatch(editor, /숫자 사이즈|선택 목록 수|SIZE_NUMERIC_REEL_RANGE/);
@@ -41,11 +41,8 @@ assert.doesNotMatch(editor, /H 값|S 값|L 값|manualHex|setManualHex/);
 assert.doesNotMatch(editor, /placeholder="HEX|placeholder="RGB|placeholder="HSL/);
 assert.match(editor, /confirmWaflDestructiveAction/);
 assert.doesNotMatch(editor, /archive|restore/i);
-assert.ok(
-  editor.indexOf("const immutableSelection") < editor.indexOf("props.onAdd(immutableSelection)")
-    && editor.indexOf("props.onAdd(immutableSelection)") < editor.indexOf("if (!result.failed) props.onClose()"),
-  "selection is captured before the request and cleared only after success",
-);
+assert.match(editor, /selected\.has\(normalized\(label\)\)/);
+assert.match(editor, /selected\.has\(normalized\(preset\.name\)\)/);
 
 assert.match(controller, /const immutableSelection = Object\.freeze/);
 assert.match(controller, /await snapshot\.onRefreshLatest\(\)/);
@@ -57,7 +54,8 @@ assert.match(controller, /retryError/);
 assert.doesNotMatch(controller, /reorderSizes|reorderColors|onReorderSizeIds|onReorderColorIds/);
 assert.match(policy, /Object\.freeze/);
 assert.doesNotMatch(readOnly, /onAddSizes|onPatchColor|onReorder/);
-assert.match(editor, /영구 삭제/);
+assert.match(editor, /title: "사이즈 삭제"/);
+assert.match(editor, /title: "색상 삭제"/);
 assert.doesNotMatch(`${editor}\n${readOnly}`, /보관|복원/);
 
 const packageDependencies = Object.keys(JSON.parse(packageJson).dependencies ?? {}).sort();

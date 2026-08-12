@@ -54,7 +54,10 @@ assert.equal(mutation.inFlight, false);
 const picker = fs.readFileSync("apps/mobile/features/inputs/reel-picker/WaflReelPickerSheet.tsx", "utf8");
 const materials = fs.readFileSync("apps/mobile/features/materials/WorkOrderMaterialsReadOnly.tsx", "utf8");
 const experience = fs.readFileSync("apps/mobile/features/MobileWorkOrderExperience.tsx", "utf8");
-const apiClient = fs.readFileSync("apps/mobile/lib/apiClient.ts", "utf8");
+const apiClient = [
+  fs.readFileSync("apps/mobile/lib/apiClient.ts", "utf8"),
+  fs.readFileSync("apps/mobile/lib/apiTransport.ts", "utf8"),
+].join("\n");
 const datePicker = fs.readFileSync("apps/mobile/components/InlineDatePicker.tsx", "utf8");
 
 assert.match(picker, /selectedIndexRef/);

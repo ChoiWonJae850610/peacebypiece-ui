@@ -1,6 +1,8 @@
 import "server-only";
 
-import { WORK_ORDER_COMMAND_CODES } from "@/lib/domain/work-orders/command/workOrderCommandCodes";
+import { canonicalPomDisplayName } from "@/lib/catalog/systemCatalogPolicy";
+import { MEASUREMENT_SNAPSHOT_CONTENT_COMMAND_CODES, WORK_ORDER_COMMAND_CODES } from "@/lib/domain/work-orders/command/workOrderCommandCodes";
+import { formatMeasurementFromCm, isMeasurementSnapshotModified } from "@/lib/domain/work-orders/measurement/measurementPolicy";
 
 import { performance } from "perf_hooks";
 
@@ -53,6 +55,7 @@ import { createV2WorkOrderImageFileProxyUrl } from "@/lib/storage/r2/r2Client";
 import { createWorkOrderImageDerivativeKeys } from "@/lib/storage/r2/r2Keys";
 
 export const WORK_ORDER_V2_DETAIL_REPOSITORY_STATEMENT_COUNT = 2;
+const MEASUREMENT_CONTENT_COMMAND_CODES_SQL = MEASUREMENT_SNAPSHOT_CONTENT_COMMAND_CODES.map((code) => `'${code}'`).join(",");
 
 const TARGET_SQL = `
   SELECT w.id, w.current_revision_id, w.entity_version, w.total_quantity AS work_order_total
@@ -188,29 +191,46 @@ export const WORK_ORDER_V2_SIZE_COLOR_SQL = `
 
 export const WORK_ORDER_V2_SIZE_SPEC_SQL = `
   WITH target AS MATERIALIZED (${TARGET_SQL}), spec AS (
-    SELECT ss.* FROM target t
+    SELECT ss.*, st.name AS source_template_name,
+           (SELECT max((e.metadata->'versionTransition'->>'to')::integer)
+            FROM domain_events e
+            WHERE e.company_id=$1 AND e.entity_type='work_order' AND e.entity_id=t.id::text
+              AND e.command_code='${WORK_ORDER_COMMAND_CODES.measurement.applyTemplate}') AS source_apply_entity_version,
+           (SELECT max((e.metadata->'versionTransition'->>'to')::integer)
+            FROM domain_events e
+            WHERE e.company_id=$1 AND e.entity_type='work_order' AND e.entity_id=t.id::text
+              AND e.command_code IN (${MEASUREMENT_CONTENT_COMMAND_CODES_SQL})) AS latest_content_entity_version
+    FROM target t
     LEFT JOIN work_order_size_specs ss
       ON ss.company_id = $1 AND ss.revision_id = t.current_revision_id
+    LEFT JOIN size_spec_templates st ON st.id::text=ss.source_template_id
   ), rows AS (
     SELECT t.id AS work_order_id, t.current_revision_id, t.entity_version,
            'meta'::text AS row_kind, s.gender_code AS value_a, s.category_code AS value_b,
            COALESCE(s.measurement_unit, 'cm') AS value_c, s.source_template_id AS id_a,
-           NULL::text AS id_b, NULL::text AS id_c, NULL::integer AS order_value,
-           NULL::text AS decimal_value, NULL::text AS display_value
+           s.source_template_version::text AS id_b, s.source_template_name AS id_c, NULL::integer AS order_value,
+           s.source_apply_entity_version::text AS decimal_value, s.latest_content_entity_version::text AS display_value
     FROM target t LEFT JOIN spec s ON true
     UNION ALL
     SELECT t.id, t.current_revision_id, t.entity_version, 'size', x.size_code, x.display_label,
            NULL, x.id::text, NULL, NULL, x.display_order, NULL, NULL
-    FROM target t JOIN work_order_size_spec_sizes x ON x.company_id = $1 AND x.revision_id = t.current_revision_id
+    FROM target t JOIN work_order_sizes x ON x.company_id = $1 AND x.revision_id = t.current_revision_id
     UNION ALL
     SELECT t.id, t.current_revision_id, t.entity_version, 'pom', p.pom_code, p.display_name,
            NULL, p.id::text, NULL, NULL, p.display_order, NULL, NULL
     FROM target t JOIN work_order_size_spec_poms p ON p.company_id = $1 AND p.revision_id = t.current_revision_id
     UNION ALL
     SELECT t.id, t.current_revision_id, t.entity_version, 'cell', NULL, NULL, NULL,
-           v.size_row_id::text, v.pom_column_id::text, NULL, NULL,
+           work_size.id::text, v.pom_column_id::text, NULL, NULL,
            v.decimal_value::text, v.display_fraction
-    FROM target t JOIN work_order_size_spec_values v ON v.company_id = $1 AND v.revision_id = t.current_revision_id
+    FROM target t
+    JOIN work_order_size_spec_values v ON v.company_id = $1 AND v.revision_id = t.current_revision_id
+    JOIN work_order_size_spec_sizes spec_size
+      ON spec_size.company_id=v.company_id AND spec_size.id=v.size_row_id
+    JOIN work_order_sizes work_size
+      ON work_size.company_id=v.company_id AND work_size.revision_id=v.revision_id
+     AND upper(regexp_replace(trim(work_size.size_code), '\\s+', '', 'g'))
+       = upper(regexp_replace(trim(spec_size.size_code), '\\s+', '', 'g'))
   )
   SELECT work_order_id, current_revision_id, entity_version, row_kind, value_a, value_b,
          value_c, id_a, id_b, id_c, order_value, decimal_value, display_value
@@ -553,15 +573,23 @@ export async function getWorkOrderSizeSpecV2(input: Omit<CommonCollectionInput, 
       categoryCode: meta.value_b === null ? null : String(meta.value_b),
       measurementUnit: meta.value_c === "inch" ? "inch" : "cm",
       templateId: meta.id_a ? String(meta.id_a) as SizeTemplateId : null,
+      templateVersion: meta.id_b === null ? null : asCount(meta.id_b),
+      templateName: meta.id_c === null ? null : String(meta.id_c),
+      sourceTemplateModified: isMeasurementSnapshotModified({
+        sourceTemplateId: meta.id_a === null ? null : String(meta.id_a),
+        sourceTemplateVersion: meta.id_b === null ? null : asCount(meta.id_b),
+        sourceApplyEntityVersion: meta.decimal_value === null ? null : asCount(meta.decimal_value),
+        latestContentEntityVersion: meta.display_value === null ? null : asCount(meta.display_value),
+      }),
       sizes: result.rows.filter((row) => row.row_kind === "size").map((row) => ({
         id: String(row.id_a) as SizeRowId, code: String(row.value_a), displayLabel: String(row.value_b), displayOrder: asCount(row.order_value),
       })),
       pomColumns: result.rows.filter((row) => row.row_kind === "pom").map((row) => ({
-        id: String(row.id_a) as PomColumnId, code: String(row.value_a), displayName: String(row.value_b), displayOrder: asCount(row.order_value),
+        id: String(row.id_a) as PomColumnId, code: String(row.value_a), displayName: canonicalPomDisplayName(String(row.value_a), String(row.value_b)), displayOrder: asCount(row.order_value),
       })),
       cells: result.rows.filter((row) => row.row_kind === "cell").map((row) => ({
         sizeRowId: String(row.id_a) as SizeRowId, pomColumnId: String(row.id_b) as PomColumnId,
-        displayValue: row.display_value === null ? null : String(row.display_value),
+        displayValue: row.decimal_value === null ? null : formatMeasurementFromCm(Number(row.decimal_value), meta.value_c === "inch" ? "inch" : "cm"),
         decimalValue: row.decimal_value === null ? null : asDecimal(row.decimal_value),
       })),
       entityVersion: asCount(meta.entity_version) as EntityVersion,

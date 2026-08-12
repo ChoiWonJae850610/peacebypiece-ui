@@ -35,6 +35,8 @@ This folder contains the ordered, additive, reviewed v2 migration SQL drafts int
 - alpha.39 preparation: guarded additive migration `011` defines two fixed-search-path SECURITY DEFINER viewer functions and EXECUTE ACLs only. Source/static checks are ready; apply is not authorized by this document and ledger remains 10/10 until explicit approval.
 - alpha.39 completed: approved dev/test migration `011` applied once; ledger 11/11 and existing rows were unchanged.
 - alpha.42 preparation: guarded additive migration `012` defines token purpose, its CHECK, and the one-embedded-token-per-document partial unique index. Apply is not authorized by this document; ledger remains 11/11 until explicit approval.
+- alpha.62 preparation: guarded additive migration `014` adds versioned system/company size-spec templates and their size/POM/value rows. It has no seed, backfill, or destructive SQL; approved dev/test apply and post-apply audit are required before runtime use.
+- alpha.62 Maker authoring continuation: guarded additive migration `015` adds tenant-owned reusable company size/color choices with normalized uniqueness and active/inactive history safety. WorkOrder size/color rows remain independent historical snapshots. It has no seed, backfill, or production apply authority.
 - production use: forbidden until the production migration gate is explicitly approved.
 - next version: alpha.23 consumes the measured schema through a bounded Read API only; no migration rerun is implied.
 
@@ -55,5 +57,6 @@ The existing `db/migrations/` path remains the legacy/current executable baselin
 11. `011_v2_document_access_viewer_functions.sql`
 12. `012_v2_document_access_token_purpose.sql`
 13. `013_v2_material_line_archive_lifecycle.sql`
+14. `014_v2_size_spec_templates.sql`
 
 The order is a static contract. No file is applied, validated, backfilled, seeded, or benchmarked in alpha.21.

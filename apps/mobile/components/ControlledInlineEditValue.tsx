@@ -18,7 +18,11 @@ import { Check, X } from "lucide-react-native";
 
 import { WAFL_FONTS } from "@/constants/fonts";
 import { WAFL_THEME } from "@/constants/theme";
-import { createInlineEditFinalizationController } from "@/lib/inlineEditFinalization";
+import {
+  createInlineEditFinalizationController,
+  decideInlineEditCommit,
+  type InlineEditValueSemantics,
+} from "@/lib/inlineEditFinalization";
 import {
   normalizeNumericCommitValue,
   normalizeNumericDraft,
@@ -32,6 +36,7 @@ type Props = {
   readonly displayValue: string;
   readonly value: string;
   readonly placeholder: string;
+  readonly displayPlaceholder?: string;
   readonly onActivate: () => void;
   readonly onChange: (value: string) => void;
   readonly onSave: (finalizedValue: string) => void;
@@ -50,6 +55,7 @@ type Props = {
   readonly testID?: string;
   readonly onFocusTarget?: (target: TextInput) => void;
   readonly commitMode?: "explicit" | "blur-submit";
+  readonly valueSemantics?: InlineEditValueSemantics;
 };
 
 export default function ControlledInlineEditValue({
@@ -59,6 +65,7 @@ export default function ControlledInlineEditValue({
   displayValue,
   value,
   placeholder,
+  displayPlaceholder,
   onActivate,
   onChange,
   onSave,
@@ -77,6 +84,7 @@ export default function ControlledInlineEditValue({
   testID,
   onFocusTarget,
   commitMode = "explicit",
+  valueSemantics,
 }: Props) {
   const inputRef = useRef<TextInput>(null);
   const finalizationRef = useRef(createInlineEditFinalizationController(value));
@@ -86,6 +94,7 @@ export default function ControlledInlineEditValue({
   const [finalizing, setFinalizing] = useState(false);
   const [nativeDirty, setNativeDirty] = useState(false);
   const numeric = keyboardType === "number-pad" || keyboardType === "decimal-pad" || keyboardType === "numeric";
+  const semantics = valueSemantics ?? (numeric ? "numeric" : "text");
   const inlineCommit = commitMode === "blur-submit";
   const activationRef = useRef({ numeric, onChange, value });
 
@@ -141,11 +150,16 @@ export default function ControlledInlineEditValue({
     setFinalizing(false);
     setNativeDirty(false);
     if (!result.shouldSave) return;
-    if (result.value === activationValueRef.current) {
+    const decision = decideInlineEditCommit({
+      activationValue: activationValueRef.current,
+      draftValue: result.value,
+      semantics,
+    });
+    if (!decision.changed) {
       onCancel();
       return;
     }
-    onSave(result.value);
+    onSave(decision.value);
   }
 
   function handleNativeChange(event: NativeSyntheticEvent<TextInputChangeEventData>) {
@@ -205,7 +219,7 @@ export default function ControlledInlineEditValue({
     if (!editable) {
       return (
         <View style={containerStyle} testID={testID}>
-          <Text numberOfLines={displayLineLimit} style={displayStyle}>{displayValue || placeholder}</Text>
+          <Text numberOfLines={displayLineLimit} style={[displayStyle, !displayValue && styles.placeholder]}>{displayValue || displayPlaceholder || placeholder}</Text>
         </View>
       );
     }
@@ -219,7 +233,7 @@ export default function ControlledInlineEditValue({
         style={({ pressed }) => [styles.editable, containerStyle, pressed && styles.pressed]}
         testID={testID}
       >
-        <Text numberOfLines={displayLineLimit} style={[displayStyle, !displayValue && styles.placeholder]}>{displayValue || placeholder}</Text>
+        <Text numberOfLines={displayLineLimit} style={[displayStyle, !displayValue && styles.placeholder]}>{displayValue || displayPlaceholder || placeholder}</Text>
       </Pressable>
     );
   }
@@ -245,8 +259,8 @@ export default function ControlledInlineEditValue({
         }}
         onSubmitEditing={inlineCommit && !multiline ? handleSubmitEditing : undefined}
         placeholder={emptyNumericDraft ? "0" : placeholder}
-        returnKeyType={multiline ? "default" : "done"}
-        submitBehavior={multiline ? "newline" : inlineCommit ? "blurAndSubmit" : "submit"}
+        returnKeyType={numeric ? undefined : multiline ? "default" : "done"}
+        submitBehavior={numeric ? undefined : multiline ? "newline" : inlineCommit ? "blurAndSubmit" : "submit"}
         style={[styles.input, !inlineCommit && styles.inputWithActions, multiline && styles.inputMultiline, displayStyle, inputStyle, invalid && styles.inputInvalid]}
         textAlignVertical={multiline ? "top" : "center"}
         value={value}

@@ -20,6 +20,8 @@ const expectedFiles = [
   "011_v2_document_access_viewer_functions.sql",
   "012_v2_document_access_token_purpose.sql",
   "013_v2_material_line_archive_lifecycle.sql",
+  "014_v2_size_spec_templates.sql",
+  "015_v2_company_work_order_structure_options.sql",
 ];
 
 const actualFiles = fs
@@ -39,7 +41,11 @@ const executableSql = combined
   .replace(/^\s*--.*$/gm, "");
 
 for (const { file, source } of sources) {
-  if (file === "013_v2_material_line_archive_lifecycle.sql") {
+  if (file === "015_v2_company_work_order_structure_options.sql") {
+    assert.ok(source.includes("WAFL v2 alpha.62 additive dev/test migration"), `${file} missing alpha.62 execution prohibition`);
+  } else if (file === "014_v2_size_spec_templates.sql") {
+    assert.ok(source.includes("WAFL v2 alpha.62 additive dev/test migration"), `${file} missing alpha.62 execution prohibition`);
+  } else if (file === "013_v2_material_line_archive_lifecycle.sql") {
     assert.ok(source.includes("EXECUTION IS PROHIBITED WITHOUT THE APPROVED ALPHA.51 DEV/TEST GATE"), `${file} missing alpha.51 execution prohibition`);
   } else if (file === "012_v2_document_access_token_purpose.sql") {
     assert.ok(source.includes("EXECUTION IS PROHIBITED WITHOUT THE APPROVED ALPHA.42 DEV/TEST GATE"), `${file} missing alpha.42 execution prohibition`);
@@ -86,6 +92,19 @@ for (const { file, source } of sources) {
   assert.equal((structureOnly.match(/\bBEGIN\s*;/gi) ?? []).length, 1, `${file} must have one BEGIN`);
   assert.equal((structureOnly.match(/\bCOMMIT\s*;/gi) ?? []).length, 1, `${file} must have one COMMIT`);
 }
+
+const alpha62Migration = sources.find(({ file }) => file === "014_v2_size_spec_templates.sql").source;
+for (const token of [
+  "CREATE TABLE public.size_spec_templates",
+  "CREATE TABLE public.size_spec_template_sizes",
+  "CREATE TABLE public.size_spec_template_poms",
+  "CREATE TABLE public.size_spec_template_values",
+  "source_kind IN ('system', 'company')",
+  "company_id IS NULL",
+  "company_id IS NOT NULL",
+  "decimal_value numeric(14, 4)",
+  "size_spec_templates_compatible_active_idx",
+]) assert.ok(alpha62Migration.includes(token), `alpha.62 template migration missing ${token}`);
 
 for (const [label, pattern] of [
   ["DROP", /\bDROP\s+(TABLE|SCHEMA|COLUMN|CONSTRAINT|INDEX|TYPE|FUNCTION|POLICY)\b/i],
@@ -283,6 +302,17 @@ const alpha60ApiPaths = [
   "app/api/v2/work-orders/[workOrderId]/size-color/colors/[colorId]/route.ts",
   "app/api/v2/work-orders/[workOrderId]/materials/[materialLineId]/route.ts",
 ];
+const alpha62ContractExists = fs.existsSync(path.join(root, "tests/workorder-v2-alpha62-measurement-command-contract.mjs"));
+const alpha62ApiPaths = [
+  "app/api/system/standards/size-spec-templates/route.ts",
+  "app/api/v2/size-spec-templates/[templateId]/route.ts",
+  "app/api/v2/work-orders/[workOrderId]/size-spec/commands/route.ts",
+  "app/api/v2/work-orders/[workOrderId]/size-spec/templates/route.ts",
+  "app/api/v2/work-orders/[workOrderId]/size-color/options/route.ts",
+  "app/api/v2/work-orders/[workOrderId]/size-color/options/[optionId]/route.ts",
+  "app/api/v2/work-orders/[workOrderId]/size-color/selection-batch/route.ts",
+  "app/api/v2/work-orders/[workOrderId]/material-partners/route.ts",
+];
 const alpha27ApiPaths = ["app/api/v2/work-orders/[workOrderId]/revisions/issue/route.ts"];
 const alpha28ApiPaths = ["app/api/v2/work-orders/[workOrderId]/revisions/[revisionId]/preview/route.ts"];
 const alpha29ApiPaths = ["app/api/v2/work-orders/documents/[documentRef]/preview-target/route.ts"];
@@ -312,7 +342,9 @@ const alpha25ContractExists = fs.existsSync(path.join(root, "tests/workorder-v2-
 const alpha26ContractExists = fs.existsSync(path.join(root, "tests/workorder-v2-alpha26-material-command-api-contract.mjs"));
 const alpha27ContractExists = fs.existsSync(path.join(root, "tests/workorder-v2-alpha27-revision-issue-command-contract.mjs"));
 const alpha28ContractExists = fs.existsSync(path.join(root, "tests/workorder-v2-alpha28-issued-preview-contract.mjs"));
-if (alpha60ContractExists && apiChanges.length > 0) {
+if (alpha62ContractExists && apiChanges.length > 0) {
+  assert.deepEqual(apiChanges.filter((change) => !alpha62ApiPaths.some((allowedPath) => change.endsWith(allowedPath))), [], "alpha.62 may add only its exact measurement and company structure-option API routes");
+} else if (alpha60ContractExists && apiChanges.length > 0) {
   assert.deepEqual(
     apiChanges.filter((change) => !alpha60ApiPaths.some((allowedPath) => change.endsWith(allowedPath))),
     [],

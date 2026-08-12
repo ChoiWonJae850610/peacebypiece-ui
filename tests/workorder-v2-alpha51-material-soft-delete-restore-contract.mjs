@@ -102,8 +102,8 @@ assert.match(draftExitPolicy, /return "discard"/);
 assert.match(app, /workOrderQueryController\.materials\(currentDetail\.header\.id, line\.materialType, null, "active"\)/);
 assert.match(app, /materialLifecycleMutation\.inFlight/);
 assert.doesNotMatch(app, /setInterval|automaticSave|autoSave/);
-assert.match(app, /requestDeleteMaterial[\s\S]*?초안에서 영구 삭제/);
-assert.match(materials, /accessibilityLabel=\{`\$\{line\.name\} \$\{materialLabel\} 영구 삭제`\}/);
+assert.match(app, /requestDeleteMaterial[\s\S]*?초안에서 삭제합니다/);
+assert.match(materials, /accessibilityLabel=\{`\$\{line\.name\} \$\{materialLabel\} 삭제`\}/);
 assert.doesNotMatch(materials, /onRestore|archivedExpanded|archivedSection|restoreButton/);
 
 const workOrderId = "11111111-1111-1111-1111-111111111111";
@@ -127,7 +127,7 @@ assert.match(evidence, /archive success \| 2/);
 assert.match(evidence, /restore success \| 2/);
 assert.match(evidence, /material row delta \| 0/);
 const currentAlpha = Number(canonicalVersion.match(/alpha\.(\d+)$/)?.[1] ?? -1);
-const nextCandidateAlpha = Number(roadmap.match(/Next candidate — 2\.0\.0-alpha\.(\d+)/)?.[1] ?? -1);
+const nextCandidateAlpha = Number(roadmap.match(/(?:Next candidate|Current implementation checkpoint) — 2\.0\.0-alpha\.(\d+)/)?.[1] ?? -1);
 assert.ok(currentAlpha >= 0 && nextCandidateAlpha >= currentAlpha, "roadmap candidate must not regress behind the canonical result");
 
 console.log("workorder v2 alpha.51 material soft-delete restore lifecycle contract: PASS");

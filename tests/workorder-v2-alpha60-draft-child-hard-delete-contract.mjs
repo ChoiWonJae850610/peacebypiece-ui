@@ -64,14 +64,17 @@ assert.match(materialRepository, /target\.cancelled_at !== null/);
 assert.match(materialRepository, /target\.completed_at !== null/);
 assert.match(materialRepository, /metadata->>'materialLineId'/);
 assert.match(materialRepository, /DELETE FROM work_order_material_lines/);
-assert.match(materialRoute, /input\.kind === "delete"[\s\S]+getWorkOrderV2DraftChildHardDeleteMutationRuntimeGuard/);
+assert.match(materialRoute, /input\.kind === "delete"[\s\S]+getWorkOrderV2MaterialHardDeleteMutationRuntimeGuard/);
+assert.match(read("lib/domain/work-orders/command/runtimeGuard.ts"), /getWorkOrderV2MaterialHardDeleteMutationRuntimeGuard[\s\S]+WAFL_V2_ALPHA60_DRAFT_CHILD_HARD_DELETE_MUTATION_APPROVAL/);
 
 assert.match(mobile, /workOrderMutationController\.deleteMaterial/);
 assert.doesNotMatch(mobile, /workOrderMutationController\.archiveMaterial/);
 assert.doesNotMatch(mobile, /materials\(workOrderId, materialType, null, "archived"\)/);
 assert.match(structureEditor, /confirmWaflDestructiveAction/);
-assert.match(structureEditor, /quantityCellCount[\s\S]+removedQuantity/);
+assert.match(structureEditor, /summarizeStagedDeletionQuantity[\s\S]+createStagedDeletionMessage/);
+assert.doesNotMatch(structureEditor, /연결된 수량 셀|quantityCellCount/);
 assert.match(structureController, /deleteSize[\s\S]+deleteColor/);
+assert.match(structureController, /batchStructureSelection/);
 assert.match(config, /verb === "DELETE"[\s\S]+alpha60DraftChildHardDeleteEnabled/);
 
 console.log("WAFL v2 alpha.60 draft child hard delete contract: PASS");

@@ -28,3 +28,30 @@ export function createExplicitMutationController() {
     },
   };
 }
+
+export type SerializedMutationQueue = {
+  readonly pendingCount: number;
+  enqueue<T>(request: () => Promise<T>): Promise<T>;
+};
+
+/**
+ * Canonical client-side ordering owner for independent UI edits that share one
+ * server-side entity version. A rejected request does not poison the queue;
+ * later requests still run, in tap order, after the failure is observed.
+ */
+export function createSerializedMutationQueue(): SerializedMutationQueue {
+  let tail: Promise<void> = Promise.resolve();
+  let pendingCount = 0;
+  return {
+    get pendingCount() { return pendingCount; },
+    enqueue<T>(request: () => Promise<T>): Promise<T> {
+      pendingCount += 1;
+      const result = tail.then(request, request);
+      tail = result.then(
+        () => { pendingCount -= 1; },
+        () => { pendingCount -= 1; },
+      );
+      return result;
+    },
+  };
+}

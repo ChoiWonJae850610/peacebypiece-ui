@@ -34,6 +34,7 @@ export const COLOR_STRUCTURE_PATCH_COMMAND_CODE = WORK_ORDER_COMMAND_CODES.color
 export const COLOR_STRUCTURE_REORDER_COMMAND_CODE = WORK_ORDER_COMMAND_CODES.colorStructure.reorder;
 export const COLOR_STRUCTURE_DELETE_COMMAND_CODE = WORK_ORDER_COMMAND_CODES.colorStructure.delete;
 export const COLOR_SIZE_QUANTITY_UPSERT_COMMAND_CODE = WORK_ORDER_COMMAND_CODES.colorSizeQuantity.upsert;
+export const STRUCTURE_SELECTION_BATCH_COMMAND_CODE = WORK_ORDER_COMMAND_CODES.structureSelection.batch;
 
 type FailureReason =
   | "not_found"
@@ -132,6 +133,8 @@ function targetResult(input: {
   readonly totalQuantity?: number;
   readonly deletedQuantityCellCount?: number;
   readonly removedQuantity?: number;
+  readonly createdItems?: readonly { readonly id: string; readonly displayName: string; readonly hexValue: string | null }[];
+  readonly deletedTargetIds?: readonly string[];
   readonly nextVersion?: number;
 }): SizeColorStructureCommandResult {
   return {
@@ -145,6 +148,8 @@ function targetResult(input: {
     ...(input.totalQuantity !== undefined ? { totalQuantity: input.totalQuantity } : {}),
     ...(input.deletedQuantityCellCount !== undefined ? { deletedQuantityCellCount: input.deletedQuantityCellCount } : {}),
     ...(input.removedQuantity !== undefined ? { removedQuantity: input.removedQuantity } : {}),
+    ...(input.createdItems !== undefined ? { createdItems: input.createdItems } : {}),
+    ...(input.deletedTargetIds !== undefined ? { deletedTargetIds: input.deletedTargetIds } : {}),
     nextVersion: (input.nextVersion ?? integer(input.target.work_order_version)) as EntityVersion,
   };
 }
@@ -372,6 +377,56 @@ async function readCanonicalQuantityTotal(
   `, [scope.companyId, revisionId]);
   context.statementCount += 1;
   return integer(result.rows[0]?.total_quantity ?? 0);
+}
+
+async function synchronizeFinishedSpecSizes(input: {
+  readonly client: DbTransactionClient;
+  readonly context: Context;
+  readonly scope: TenantMemberScope;
+  readonly revisionId: string;
+}) {
+  await input.client.query(`
+    DELETE FROM work_order_size_spec_values value
+    USING work_order_size_spec_sizes spec_size, work_order_size_specs spec
+    WHERE value.company_id = $1 AND value.revision_id = $2::uuid
+      AND spec_size.company_id = value.company_id AND spec_size.id = value.size_row_id
+      AND spec.company_id = value.company_id AND spec.id = value.size_spec_id
+      AND NOT EXISTS (
+        SELECT 1 FROM work_order_sizes work_size
+        WHERE work_size.company_id = $1 AND work_size.revision_id = $2::uuid
+          AND upper(regexp_replace(trim(work_size.size_code), '\\s+', '', 'g'))
+            = upper(regexp_replace(trim(spec_size.size_code), '\\s+', '', 'g'))
+      )
+  `, [input.scope.companyId, input.revisionId]);
+  input.context.statementCount += 1;
+  await input.client.query(`
+    DELETE FROM work_order_size_spec_sizes spec_size
+    USING work_order_size_specs spec
+    WHERE spec_size.company_id = $1 AND spec_size.revision_id = $2::uuid
+      AND spec.company_id = spec_size.company_id AND spec.id = spec_size.size_spec_id
+      AND NOT EXISTS (
+        SELECT 1 FROM work_order_sizes work_size
+        WHERE work_size.company_id = $1 AND work_size.revision_id = $2::uuid
+          AND upper(regexp_replace(trim(work_size.size_code), '\\s+', '', 'g'))
+            = upper(regexp_replace(trim(spec_size.size_code), '\\s+', '', 'g'))
+      )
+  `, [input.scope.companyId, input.revisionId]);
+  input.context.statementCount += 1;
+  await input.client.query(`
+    INSERT INTO work_order_size_spec_sizes (
+      id, company_id, revision_id, size_spec_id, size_code, display_label, display_order
+    )
+    SELECT work_size.id, $1, $2::uuid, spec.id, work_size.size_code,
+           work_size.display_label, work_size.display_order
+    FROM work_order_sizes work_size
+    JOIN work_order_size_specs spec ON spec.company_id=$1 AND spec.revision_id=$2::uuid
+    WHERE work_size.company_id=$1 AND work_size.revision_id=$2::uuid
+    ON CONFLICT (size_spec_id, size_code) DO UPDATE
+    SET display_label=EXCLUDED.display_label,
+        display_order=EXCLUDED.display_order,
+        updated_at=now()
+  `, [input.scope.companyId, input.revisionId]);
+  input.context.statementCount += 1;
 }
 
 function deleteReplayMetadata(value: unknown) {
@@ -629,6 +684,7 @@ export async function addSizeStructureV2(input: CommonInput & {
       revisionId: target.revision_id,
       rows: [...sizes, { id: input.sizeRowId, display_label: input.displayLabel }],
     });
+    await synchronizeFinishedSpecSizes({ client, context, scope: input.scope, revisionId: target.revision_id });
     const changedFields = ["size.create"] as const;
     const nextVersion = await finishChanged({
       client, context, ...input, target,
@@ -681,6 +737,7 @@ export async function renameSizeStructureV2(input: CommonInput & {
       revisionId: target.revision_id,
       rows: sizes.map((row) => row.id === input.sizeRowId ? { ...row, display_label: input.displayLabel } : row),
     });
+    await synchronizeFinishedSpecSizes({ client, context, scope: input.scope, revisionId: target.revision_id });
     const changedFields = ["size.displayLabel"] as const;
     const nextVersion = await finishChanged({
       client, context, ...input, target,
@@ -902,6 +959,7 @@ async function deleteStructureV2(input: CommonInput & {
         client, context, scope: input.scope, revisionId: target.revision_id,
         rows: survivors as readonly SizeRow[],
       });
+      await synchronizeFinishedSpecSizes({ client, context, scope: input.scope, revisionId: target.revision_id });
     } else {
       await applyCanonicalColorOrder({
         client, context, scope: input.scope, revisionId: target.revision_id,
@@ -946,6 +1004,216 @@ export function deleteColorStructureV2(input: CommonInput & { readonly colorId: 
   return deleteStructureV2({ ...input, targetKind: "color", targetId: input.colorId });
 }
 
+type SelectionBatchAddition = {
+  readonly id: SizeRowId | ColorId;
+  readonly displayName: string;
+  readonly hexValue: string | null;
+};
+
+function parseSelectionBatchReplay(value: unknown) {
+  if (!value || typeof value !== "object" || Array.isArray(value)) {
+    throw new SizeColorStructureRepositoryError("idempotency_incomplete");
+  }
+  const metadata = value as Record<string, unknown>;
+  const createdItems = metadata.createdItems;
+  const deletedTargetIds = metadata.deletedTargetIds;
+  if (!Array.isArray(createdItems) || !Array.isArray(deletedTargetIds)
+    || createdItems.some((item) => !item || typeof item !== "object" || Array.isArray(item)
+      || typeof (item as Record<string, unknown>).id !== "string"
+      || typeof (item as Record<string, unknown>).displayName !== "string"
+      || !((item as Record<string, unknown>).hexValue === null || typeof (item as Record<string, unknown>).hexValue === "string"))
+    || deletedTargetIds.some((id) => typeof id !== "string")
+    || !Number.isSafeInteger(metadata.deletedQuantityCellCount)
+    || !Number.isSafeInteger(metadata.removedQuantity)
+    || !Number.isSafeInteger(metadata.canonicalTotalQuantity)) {
+    throw new SizeColorStructureRepositoryError("idempotency_incomplete");
+  }
+  return {
+    createdItems: createdItems as readonly SelectionBatchAddition[],
+    deletedTargetIds: deletedTargetIds as readonly string[],
+    deletedQuantityCellCount: Number(metadata.deletedQuantityCellCount),
+    removedQuantity: Number(metadata.removedQuantity),
+    canonicalTotalQuantity: Number(metadata.canonicalTotalQuantity),
+  };
+}
+
+async function readSelectionBatchReplay(input: {
+  readonly client: DbTransactionClient;
+  readonly context: Context;
+  readonly scope: TenantMemberScope;
+  readonly target: TargetRow;
+  readonly receipt: ReceiptRow;
+  readonly targetKind: "size" | "color";
+}) {
+  const event = await input.client.query<DeleteReplayRow>(`
+    SELECT metadata
+    FROM domain_events
+    WHERE company_id = $1 AND entity_type = 'work_order' AND entity_id = $2
+      AND command_code = $3 AND correlation_id = $4
+    ORDER BY occurred_at DESC, id DESC
+    LIMIT 1
+  `, [input.scope.companyId, input.target.work_order_id, STRUCTURE_SELECTION_BATCH_COMMAND_CODE, input.receipt.correlation_id]);
+  input.context.statementCount += 1;
+  const metadata = parseSelectionBatchReplay(event.rows[0]?.metadata);
+  const nextVersion = integer(input.receipt.result_entity_version as number | string);
+  return {
+    result: targetResult({
+      target: { ...input.target, revision_id: input.receipt.result_revision_id as string },
+      targetKind: input.targetKind,
+      targetId: null,
+      ...metadata,
+      nextVersion,
+    }),
+    nextVersion: nextVersion as EntityVersion,
+    idempotentReplay: true,
+    changedFields: [] as readonly string[],
+  };
+}
+
+export async function batchStructureSelectionV2(input: CommonInput & {
+  readonly targetKind: "size" | "color";
+  readonly additions: readonly SelectionBatchAddition[];
+  readonly deletionIds: readonly (SizeRowId | ColorId)[];
+}) {
+  const startedAt = performance.now();
+  const context: Context = { statementCount: 0 };
+  const data = await withWaflV2TenantWriteTransaction(async (client) => {
+    await installTenantClaims(client, input.scope);
+    context.statementCount += 1;
+    const target = await lockTarget({ client, context, ...input });
+    const existingReceipt = await readReceipt({
+      client, context, ...input, commandCode: STRUCTURE_SELECTION_BATCH_COMMAND_CODE,
+    });
+    if (existingReceipt) {
+      return readSelectionBatchReplay({ client, context, scope: input.scope, target, receipt: existingReceipt, targetKind: input.targetKind });
+    }
+    assertCurrentDraft(target, input.expectedVersion);
+    const rows = input.targetKind === "size"
+      ? await readSizes(client, context, input.scope, target.revision_id)
+      : await readColors(client, context, input.scope, target.revision_id);
+    const currentIds = new Set(rows.map((row) => row.id));
+    if (input.deletionIds.some((id) => !currentIds.has(id))) {
+      throw new SizeColorStructureRepositoryError("not_found");
+    }
+    const deletionSet = new Set<string>(input.deletionIds);
+    const survivingNames = rows
+      .filter((row) => !deletionSet.has(row.id))
+      .map((row) => normalizeName(input.targetKind === "size" ? (row as SizeRow).display_label : (row as ColorRow).display_name));
+    const additionNames = input.additions.map((item) => normalizeName(item.displayName));
+    if (new Set([...survivingNames, ...additionNames]).size !== survivingNames.length + additionNames.length) {
+      throw new SizeColorStructureRepositoryError("duplicate");
+    }
+    await reserveReceipt({ client, context, ...input, commandCode: STRUCTURE_SELECTION_BATCH_COMMAND_CODE });
+
+    let deletedQuantityCellCount = 0;
+    let removedQuantity = 0;
+    if (input.deletionIds.length > 0) {
+      const quantityColumn = input.targetKind === "size" ? "size_id" : "color_id";
+      const deletedCells = await client.query<QuantityCellRow>(`
+        DELETE FROM color_size_quantities
+        WHERE company_id = $1 AND revision_id = $2::uuid AND ${quantityColumn} = ANY($3::uuid[])
+        RETURNING quantity
+      `, [input.scope.companyId, target.revision_id, input.deletionIds]);
+      context.statementCount += 1;
+      deletedQuantityCellCount = deletedCells.rows.length;
+      removedQuantity = deletedCells.rows.reduce((sum, row) => sum + integer(row.quantity), 0);
+      const table = input.targetKind === "size" ? "work_order_sizes" : "work_order_colors";
+      const deleted = await client.query(`
+        DELETE FROM ${table}
+        WHERE company_id = $1 AND revision_id = $2::uuid AND id = ANY($3::uuid[])
+        RETURNING id
+      `, [input.scope.companyId, target.revision_id, input.deletionIds]);
+      context.statementCount += 1;
+      if (deleted.rows.length !== input.deletionIds.length) throw new SizeColorStructureRepositoryError("not_found");
+    }
+
+    if (input.additions.length > 0 && input.targetKind === "size") {
+      const survivors = (rows as readonly SizeRow[]).filter((row) => !deletionSet.has(row.id));
+      const codes = new Set(survivors.map((row) => row.size_code));
+      const sizeCodes = input.additions.map((item) => {
+        const code = derivedCode("SIZE", item.displayName, codes);
+        codes.add(code);
+        return code;
+      });
+      await client.query(`
+        INSERT INTO work_order_sizes (id, company_id, revision_id, size_code, display_label, display_order)
+        SELECT addition.id, $1, $2::uuid, addition.size_code, addition.display_name, addition.ordinality - 1
+        FROM unnest($3::uuid[], $4::text[], $5::text[]) WITH ORDINALITY
+          AS addition(id, size_code, display_name, ordinality)
+      `, [input.scope.companyId, target.revision_id, input.additions.map((item) => item.id), sizeCodes, input.additions.map((item) => item.displayName)]);
+      context.statementCount += 1;
+    } else if (input.additions.length > 0) {
+      const survivors = (rows as readonly ColorRow[]).filter((row) => !deletionSet.has(row.id));
+      const codes = new Set(survivors.map((row) => row.color_code).filter((value): value is string => value !== null));
+      const colorCodes = input.additions.map((item) => {
+        const code = derivedCode("COLOR", item.displayName, codes);
+        codes.add(code);
+        return code;
+      });
+      await client.query(`
+        INSERT INTO work_order_colors (id, company_id, revision_id, color_code, display_name, hex_value, display_order)
+        SELECT addition.id, $1, $2::uuid, addition.color_code, addition.display_name, addition.hex_value, addition.ordinality - 1
+        FROM unnest($3::uuid[], $4::text[], $5::text[], $6::text[]) WITH ORDINALITY
+          AS addition(id, color_code, display_name, hex_value, ordinality)
+      `, [input.scope.companyId, target.revision_id, input.additions.map((item) => item.id), colorCodes, input.additions.map((item) => item.displayName), input.additions.map((item) => item.hexValue)]);
+      context.statementCount += 1;
+    }
+
+    if (input.targetKind === "size") {
+      const nextRows = [
+        ...(rows as readonly SizeRow[]).filter((row) => !deletionSet.has(row.id)),
+        ...input.additions.map((item) => ({ id: item.id, display_label: item.displayName })),
+      ];
+      await applyCanonicalSizeOrder({ client, context, scope: input.scope, revisionId: target.revision_id, rows: nextRows });
+      await synchronizeFinishedSpecSizes({ client, context, scope: input.scope, revisionId: target.revision_id });
+    } else {
+      const nextRows = [
+        ...(rows as readonly ColorRow[]).filter((row) => !deletionSet.has(row.id)),
+        ...input.additions.map((item) => ({ id: item.id, display_name: item.displayName })),
+      ];
+      await applyCanonicalColorOrder({ client, context, scope: input.scope, revisionId: target.revision_id, rows: nextRows });
+    }
+    const canonicalTotalQuantity = await readCanonicalQuantityTotal(client, context, input.scope, target.revision_id);
+    const changedFields = [
+      ...(input.additions.length > 0 ? [`${input.targetKind}.create`] : []),
+      ...(input.deletionIds.length > 0 ? [`${input.targetKind}.delete`, "quantityCells.delete"] : []),
+      ...(input.deletionIds.length > 0 ? ["totalQuantity", "totalQuantitySnapshot"] : []),
+    ];
+    const nextVersion = await finishChanged({
+      client, context, ...input, target,
+      commandCode: STRUCTURE_SELECTION_BATCH_COMMAND_CODE,
+      targetKind: input.targetKind,
+      targetId: null,
+      changedFields,
+      summary: input.targetKind === "size" ? "사이즈 선택 일괄 적용" : "색상 선택 일괄 적용",
+      canonicalTotalQuantity,
+      eventMetadata: {
+        createdItems: input.additions,
+        deletedTargetIds: input.deletionIds,
+        deletedQuantityCellCount,
+        removedQuantity,
+      },
+    });
+    return {
+      result: targetResult({
+        target,
+        targetKind: input.targetKind,
+        targetId: null,
+        createdItems: input.additions,
+        deletedTargetIds: input.deletionIds,
+        deletedQuantityCellCount,
+        removedQuantity,
+        totalQuantity: canonicalTotalQuantity,
+        nextVersion,
+      }),
+      nextVersion: nextVersion as EntityVersion,
+      idempotentReplay: false,
+      changedFields,
+    };
+  });
+  return wrapped({ ...data, context, startedAt });
+}
+
 async function reorderStructuresV2(input: CommonInput & {
   readonly targetKind: "size" | "color";
   readonly commandCode: string;
@@ -975,6 +1243,9 @@ async function reorderStructuresV2(input: CommonInput & {
       table: input.targetKind === "size" ? "work_order_sizes" : "work_order_colors",
       orderedIds: input.orderedIds,
     });
+    if (input.targetKind === "size") {
+      await synchronizeFinishedSpecSizes({ client, context, scope: input.scope, revisionId: target.revision_id });
+    }
     const changedFields = [`${input.targetKind}.displayOrder`];
     const nextVersion = await finishChanged({
       client, context, ...input, target,

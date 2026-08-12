@@ -1,10 +1,11 @@
 import { useState } from "react";
 import { ActivityIndicator, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
-import { ArrowLeft, Save, SlidersVertical } from "lucide-react-native";
+import { ChevronDown, Save, SlidersVertical, X } from "lucide-react-native";
 
 import { WAFL_FONTS } from "@/constants/fonts";
 import type { MaterialEditorFieldErrors } from "@/domain/workOrderValidation";
-import type { MaterialDraftFields, MaterialType } from "@/domain/mobileContract";
+import type { MaterialDraftFields, MaterialPartnerOption, MaterialType } from "@/domain/mobileContract";
+import MaterialPartnerPickerSheet from "@/features/materials/MaterialPartnerPickerSheet";
 import WaflReelPickerSheet from "@/features/inputs/reel-picker/WaflReelPickerSheet";
 import MaterialQuantityValue from "@/features/materials/MaterialQuantityValue";
 import { MOBILE_MATERIAL_FIELD_LABELS } from "@/features/materials/materialFieldPolicy";
@@ -46,6 +47,7 @@ type Props = {
   readonly onCancel: () => void;
   readonly onSave: () => void;
   readonly onReloadLatest: () => void;
+  readonly partnerOptions: readonly MaterialPartnerOption[];
 };
 
 type FieldProps = {
@@ -90,8 +92,9 @@ function EditorField({ label, field, state, onChange, keyboardType = "default", 
   );
 }
 
-export default function WorkOrderMaterialEditor({ state, dirty, onChange, onCancel, onSave, onReloadLatest }: Props) {
+export default function WorkOrderMaterialEditor({ state, dirty, onChange, onCancel, onSave, onReloadLatest, partnerOptions }: Props) {
   const [reelTarget, setReelTarget] = useState<ReelEditorTarget | null>(null);
+  const [partnerPickerOpen, setPartnerPickerOpen] = useState(false);
   const saving = state.saveState === "saving";
   const saveBlocked = !dirty || saving || state.saveState === "locked" || state.saveState === "conflict" || state.saveState === "refresh-error";
   const reloadAvailable = state.saveState === "conflict" || state.saveState === "locked" || state.saveState === "refresh-error";
@@ -99,6 +102,7 @@ export default function WorkOrderMaterialEditor({ state, dirty, onChange, onCanc
   const calculatedAmount = calculateMaterialAmount(calculatedOrderQuantity, state.draft.unitPrice);
   const materialLabel = state.materialType === "accessory" ? "부자재" : "원단";
   const materialNameLabel = `${materialLabel}명`;
+  const partnerName = partnerOptions.find((item) => item.id === state.draft.partnerId)?.name ?? "거래처 선택";
 
   return (
     <View testID="material-draft-editor" style={styles.editor}>
@@ -118,11 +122,15 @@ export default function WorkOrderMaterialEditor({ state, dirty, onChange, onCanc
           visible
         />
       ) : null}
+      <MaterialPartnerPickerSheet
+        items={partnerOptions}
+        onCancel={() => setPartnerPickerOpen(false)}
+        onSelect={(partnerId) => { onChange("partnerId", partnerId); setPartnerPickerOpen(false); }}
+        selectedId={state.draft.partnerId}
+        visible={partnerPickerOpen}
+      />
       <View style={styles.header}>
-        <Pressable accessibilityLabel={`${materialLabel} 편집 취소`} accessibilityRole="button" disabled={saving} onPress={onCancel} style={({ pressed }) => [styles.backButton, pressed && styles.pressed]}>
-          <ArrowLeft color="#3f352d" size={18} />
-          <Text style={styles.backText}>취소</Text>
-        </Pressable>
+        <Pressable accessibilityLabel={`${materialLabel} 편집 취소`} accessibilityRole="button" disabled={saving} onPress={onCancel} style={({ pressed }) => [styles.backButton, pressed && styles.pressed]}><X color="#3f352d" size={20} /></Pressable>
         <View style={styles.headerText}>
           <Text style={styles.title}>{state.mode === "create" ? `${materialLabel} 추가` : `${materialLabel} 수정`}</Text>
           <Text style={styles.caption}>draft 작업지시서에 명시적으로 저장합니다.</Text>
@@ -133,6 +141,20 @@ export default function WorkOrderMaterialEditor({ state, dirty, onChange, onCanc
       <View style={styles.fields}>
         <EditorField field="name" label={materialNameLabel} maxLength={200} onChange={onChange} placeholder={`${materialNameLabel}을 입력하세요`} state={state} />
         <EditorField field="colorOption" label={MOBILE_MATERIAL_FIELD_LABELS.colorOption} maxLength={200} onChange={onChange} placeholder="예: NAVY" state={state} />
+        <View style={styles.field}>
+          <Text style={styles.label}>거래처</Text>
+          <Pressable
+            accessibilityLabel={`거래처, ${partnerName}`}
+            accessibilityRole="button"
+            disabled={saving}
+            onPress={() => setPartnerPickerOpen(true)}
+            style={({ pressed }) => [styles.reelField, state.fieldErrors.partnerId && styles.inputInvalid, pressed && styles.pressed]}
+          >
+            <Text numberOfLines={1} style={styles.reelFieldValue}>{partnerName}</Text>
+            <ChevronDown color="#9b4a27" size={17} />
+          </Pressable>
+          {state.fieldErrors.partnerId ? <Text style={styles.fieldError}>{state.fieldErrors.partnerId}</Text> : null}
+        </View>
         <EditorField field="unitPrice" keyboardType="number-pad" label={MOBILE_MATERIAL_FIELD_LABELS.unitPrice} maxLength={16} onChange={onChange} placeholder="0" state={state} />
         {([
           { field: "unitCode", label: "단위", value: state.draft.unitCode || "단위 선택", reelValue: state.draft.requiredQuantity },
@@ -175,12 +197,9 @@ export default function WorkOrderMaterialEditor({ state, dirty, onChange, onCanc
       ) : null}
 
       <View style={styles.actions}>
-        <Pressable accessibilityRole="button" disabled={saving} onPress={onCancel} style={styles.cancelButton}>
-          <Text style={styles.cancelText}>{state.mode === "create" ? "추가 취소" : "취소"}</Text>
-        </Pressable>
-        <Pressable accessibilityRole="button" disabled={saveBlocked} onPress={onSave} style={[styles.saveButton, saveBlocked && styles.saveButtonDisabled]}>
+        <Pressable accessibilityLabel={`${materialLabel} 변경 취소`} accessibilityRole="button" disabled={saving} onPress={onCancel} style={styles.cancelButton}><X color="#5d5147" size={20} /></Pressable>
+        <Pressable accessibilityLabel={`${materialLabel} 저장`} accessibilityRole="button" disabled={saveBlocked} onPress={onSave} style={[styles.saveButton, saveBlocked && styles.saveButtonDisabled]}>
           {saving ? <ActivityIndicator color="#fff" size="small" /> : <Save color="#fff" size={16} />}
-          <Text style={styles.saveText}>{saving ? "저장 중" : "저장"}</Text>
         </Pressable>
       </View>
     </View>
@@ -190,8 +209,7 @@ export default function WorkOrderMaterialEditor({ state, dirty, onChange, onCanc
 const styles = StyleSheet.create({
   editor: { backgroundColor: "#fffdf8", padding: 12 },
   header: { alignItems: "center", borderBottomColor: "#eadfce", borderBottomWidth: 1, flexDirection: "row", gap: 9, paddingBottom: 10 },
-  backButton: { alignItems: "center", flexDirection: "row", gap: 3, minHeight: 44, paddingRight: 5 },
-  backText: { color: "#3f352d", fontFamily: WAFL_FONTS.semibold, fontSize: 12 },
+  backButton: { alignItems: "center", justifyContent: "center", minHeight: 44, width: 44 },
   headerText: { flex: 1, minWidth: 0 },
   title: { color: "#17263d", fontFamily: WAFL_FONTS.bold, fontSize: 16 },
   caption: { color: "#7c7065", fontFamily: WAFL_FONTS.regular, fontSize: 10, lineHeight: 15, marginTop: 1 },
@@ -211,10 +229,8 @@ const styles = StyleSheet.create({
   reloadButton: { alignItems: "center", alignSelf: "flex-start", borderColor: "#b9aa9a", borderRadius: 8, borderWidth: 1, justifyContent: "center", minHeight: 40, paddingHorizontal: 12 },
   reloadText: { color: "#584b41", fontFamily: WAFL_FONTS.bold, fontSize: 11 },
   actions: { flexDirection: "row", gap: 8, justifyContent: "flex-end", paddingTop: 10 },
-  cancelButton: { alignItems: "center", borderColor: "#cfc2b4", borderRadius: 9, borderWidth: 1, justifyContent: "center", minHeight: 44, minWidth: 96, paddingHorizontal: 14 },
-  cancelText: { color: "#5d5147", fontFamily: WAFL_FONTS.bold, fontSize: 12 },
-  saveButton: { alignItems: "center", backgroundColor: "#17263d", borderRadius: 9, flexDirection: "row", gap: 6, justifyContent: "center", minHeight: 44, minWidth: 108, paddingHorizontal: 16 },
+  cancelButton: { alignItems: "center", borderColor: "#cfc2b4", borderRadius: 9, borderWidth: 1, justifyContent: "center", minHeight: 44, width: 48 },
+  saveButton: { alignItems: "center", backgroundColor: "#17263d", borderRadius: 9, justifyContent: "center", minHeight: 44, width: 48 },
   saveButtonDisabled: { opacity: 0.42 },
-  saveText: { color: "#fff", fontFamily: WAFL_FONTS.bold, fontSize: 12 },
   pressed: { opacity: 0.68 },
 });

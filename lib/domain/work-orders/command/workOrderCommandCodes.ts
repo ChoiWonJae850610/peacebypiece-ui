@@ -14,6 +14,24 @@ export const WORK_ORDER_COMMAND_CODES = {
   colorSizeQuantity: {
     upsert: "work_order.color_size_quantity.upsert",
   },
+  structureSelection: {
+    batch: "work_order.structure_selection.batch",
+  },
+  measurement: {
+    applyTemplate: "work_order.measurement.apply_template",
+    patchUnit: "work_order.measurement.patch_unit",
+    patchCell: "work_order.measurement.patch_cell",
+    sizeCreate: "work_order.measurement.size.create",
+    sizePatch: "work_order.measurement.size.patch",
+    sizeDelete: "work_order.measurement.size.delete",
+    sizeReorder: "work_order.measurement.size.reorder",
+    pomCreate: "work_order.measurement.pom.create",
+    pomPatch: "work_order.measurement.pom.patch",
+    pomDelete: "work_order.measurement.pom.delete",
+    pomReorder: "work_order.measurement.pom.reorder",
+    saveCompanyTemplate: "work_order.measurement.save_company_template",
+    updateCompanyTemplate: "work_order.measurement.update_company_template",
+  },
   material: {
     create: "work_order.material.create",
     patch: "work_order.material.patch",
@@ -30,4 +48,22 @@ export type WorkOrderCommandCode =
   | (typeof WORK_ORDER_COMMAND_CODES.sizeStructure)[keyof typeof WORK_ORDER_COMMAND_CODES.sizeStructure]
   | (typeof WORK_ORDER_COMMAND_CODES.colorStructure)[keyof typeof WORK_ORDER_COMMAND_CODES.colorStructure]
   | (typeof WORK_ORDER_COMMAND_CODES.colorSizeQuantity)[keyof typeof WORK_ORDER_COMMAND_CODES.colorSizeQuantity]
+  | (typeof WORK_ORDER_COMMAND_CODES.structureSelection)[keyof typeof WORK_ORDER_COMMAND_CODES.structureSelection]
+  | (typeof WORK_ORDER_COMMAND_CODES.measurement)[keyof typeof WORK_ORDER_COMMAND_CODES.measurement]
   | (typeof WORK_ORDER_COMMAND_CODES.material)[keyof typeof WORK_ORDER_COMMAND_CODES.material];
+
+export const MEASUREMENT_SNAPSHOT_CONTENT_COMMAND_CODES = [
+  WORK_ORDER_COMMAND_CODES.sizeStructure.create,
+  WORK_ORDER_COMMAND_CODES.sizeStructure.rename,
+  WORK_ORDER_COMMAND_CODES.sizeStructure.reorder,
+  WORK_ORDER_COMMAND_CODES.sizeStructure.delete,
+  WORK_ORDER_COMMAND_CODES.measurement.patchCell,
+  WORK_ORDER_COMMAND_CODES.measurement.sizeCreate,
+  WORK_ORDER_COMMAND_CODES.measurement.sizePatch,
+  WORK_ORDER_COMMAND_CODES.measurement.sizeDelete,
+  WORK_ORDER_COMMAND_CODES.measurement.sizeReorder,
+  WORK_ORDER_COMMAND_CODES.measurement.pomCreate,
+  WORK_ORDER_COMMAND_CODES.measurement.pomPatch,
+  WORK_ORDER_COMMAND_CODES.measurement.pomDelete,
+  WORK_ORDER_COMMAND_CODES.measurement.pomReorder,
+] as const satisfies readonly WorkOrderCommandCode[];

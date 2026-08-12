@@ -25,7 +25,9 @@ assert.match(shell, /createWaflInputCommitGuard/);
 assert.match(shell, /accessibilityState=\{\{ busy: actionPending, disabled: actionPending \|\| confirmDisabled \}\}/);
 assert.match(reel, /<WaflInputSheet/);
 assert.match(structure, /<WaflInputSheet/);
-assert.match(structure, /title=\{props\.kind === "size" \? "사이즈" : "색상"\}/);
+assert.doesNotMatch(structure, /function SheetFrame|<Modal|KeyboardAvoidingView/);
+assert.match(structure, /title="사이즈 선택"/);
+assert.match(structure, /title="색상 선택"/);
 assert.doesNotMatch(structure, /doneButton|doneButtonText|>완료<|>변경 저장</);
 assert.doesNotMatch(structure, /onSubmitEditing=\{\(\) => void save\(\)\}/);
 
@@ -60,7 +62,7 @@ try {
 }
 assert.equal(failed, true);
 assert.equal(guard.isActive(), false, "failure must release the commit guard for a deliberate retry");
-assert.match(structure, /if \(!saved\)[\s\S]{0,260}setName\([\s\S]{0,260}setHex\(/);
+assert.match(structure, /onCreate\(\{ displayName: name, hexValue: selectedHex \}\)\.then\(\(saved\) => \{ if \(saved\) \{ setName\(""\); setMode\("base"\); \} \}\)/);
 assert.match(experience, /rollback/);
 
 for (const table of ["work_order_colors", "work_order_sizes", "color_size_quantities", "work_order_size_specs", "work_order_size_spec_sizes", "work_order_size_spec_values"]) {

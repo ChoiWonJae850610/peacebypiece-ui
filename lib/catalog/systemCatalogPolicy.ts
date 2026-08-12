@@ -115,10 +115,20 @@ export const SYSTEM_SIZE_SETS: SystemSizeSetSeed[] = [
   },
 ];
 
+export const SYSTEM_POM_KOREAN_DISPLAY_NAMES = {
+  body_length: "총장",
+  shoulder_width: "어깨너비",
+  chest_width: "가슴단면",
+} as const;
+
+export function canonicalPomDisplayName(code: string, fallback: string): string {
+  return SYSTEM_POM_KOREAN_DISPLAY_NAMES[code as keyof typeof SYSTEM_POM_KOREAN_DISPLAY_NAMES] ?? fallback;
+}
+
 export const SYSTEM_POMS: SystemPomSeed[] = [
-  { code: "body_length", displayName: "Body length", measurementUnit: "cm", measurementType: "length", instruction: "Measure actual garment length.", sortOrder: 10, categoryCodes: ["apparel.top", "apparel.outer", "apparel.onepiece_set", "underwear.innerwear", "underwear.sleepwear"] },
-  { code: "shoulder_width", displayName: "Shoulder width", measurementUnit: "cm", measurementType: "half_flat", instruction: "Measure flat shoulder width.", sortOrder: 20, categoryCodes: ["apparel.top", "apparel.outer"] },
-  { code: "chest_width", displayName: "Chest width", measurementUnit: "cm", measurementType: "half_flat", instruction: "Measure finished garment flat chest.", sortOrder: 30, categoryCodes: ["apparel.top", "apparel.outer", "apparel.onepiece_set", "underwear.innerwear"] },
+  { code: "body_length", displayName: SYSTEM_POM_KOREAN_DISPLAY_NAMES.body_length, measurementUnit: "cm", measurementType: "length", instruction: "Measure actual garment length.", sortOrder: 10, categoryCodes: ["apparel.top", "apparel.outer", "apparel.onepiece_set", "underwear.innerwear", "underwear.sleepwear"] },
+  { code: "shoulder_width", displayName: SYSTEM_POM_KOREAN_DISPLAY_NAMES.shoulder_width, measurementUnit: "cm", measurementType: "half_flat", instruction: "Measure flat shoulder width.", sortOrder: 20, categoryCodes: ["apparel.top", "apparel.outer"] },
+  { code: "chest_width", displayName: SYSTEM_POM_KOREAN_DISPLAY_NAMES.chest_width, measurementUnit: "cm", measurementType: "half_flat", instruction: "Measure finished garment flat chest.", sortOrder: 30, categoryCodes: ["apparel.top", "apparel.outer", "apparel.onepiece_set", "underwear.innerwear"] },
   { code: "waist_width", displayName: "Waist width", measurementUnit: "cm", measurementType: "half_flat", instruction: "Measure finished garment flat waist.", sortOrder: 40, categoryCodes: ["apparel.bottom", "apparel.onepiece_set", "underwear.panties"] },
   { code: "hip_width", displayName: "Hip width", measurementUnit: "cm", measurementType: "half_flat", instruction: "Measure finished garment flat hip.", sortOrder: 50, categoryCodes: ["apparel.bottom", "apparel.onepiece_set", "underwear.panties"] },
   { code: "sleeve_length", displayName: "Sleeve length", measurementUnit: "cm", measurementType: "length", instruction: "Measure actual sleeve length.", sortOrder: 60, categoryCodes: ["apparel.top", "apparel.outer"] },

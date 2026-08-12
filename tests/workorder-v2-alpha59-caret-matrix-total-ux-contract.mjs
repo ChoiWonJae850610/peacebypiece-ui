@@ -38,8 +38,8 @@ assert.match(controlled, /onSubmitEditing=.*handleSubmitEditing/);
 assert.match(controlled, /onEndEditing=\{handleEndEditing\}/);
 assert.match(controlled, /finalizationRef\.current\.requestSave\(\)/);
 
-assert.match(sizeColor, /<Text style=\{styles\.sectionTitle\}>색상×사이즈<\/Text>/);
-assert.match(sizeColor, /<Text style=\{styles\.sectionTitle\}>완성 치수표<\/Text>/);
+assert.match(sizeColor, /<Text style=\{styles\.sectionTitle\}>색상·사이즈<\/Text>/);
+assert.match(sizeColor, /<Text style=\{styles\.sectionTitle\}>완성 스펙<\/Text>/);
 assert.doesNotMatch(sizeColor, /합계 일치|색상×사이즈 생산수량 · 총/);
 assert.match(sizeColor, /!matrix\.projectionsMatch/);
 assert.match(sizeColor, /저장된 총수량과 색상×사이즈 합계가 다릅니다/);

@@ -65,6 +65,7 @@ const mobileStockCovered = {
   name: "Stock covered fabric",
   colorOption: null,
   usageArea: null,
+  partnerId: "supplier-id",
   requiredQuantity: "3",
   allowanceQuantity: "0.5",
   inventoryUsageQuantity: "3.5",

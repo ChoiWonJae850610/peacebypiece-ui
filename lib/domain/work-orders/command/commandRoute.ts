@@ -4,6 +4,7 @@ import { randomUUID } from "crypto";
 import { NextResponse } from "next/server";
 
 import { createWaflApiSuccess } from "@/lib/api/waflApiServer";
+import { startWaflRouteTiming } from "@/lib/api/waflPerformanceTiming";
 import { requireWorkspaceApiGuard } from "@/lib/auth/apiRouteGuards";
 import type {
   CorrelationId,
@@ -86,6 +87,7 @@ function commandSuccessResponse(
   result: Awaited<ReturnType<typeof createWorkOrderDraft>>,
   correlationId: CorrelationId,
   status: number,
+  timingHeaders: Readonly<Record<string, string>>,
 ) {
   return createWaflApiSuccess(result.data, {
     status,
@@ -96,6 +98,7 @@ function commandSuccessResponse(
       "X-WAFL-Command-Transaction-Count": String(result.transactionCount),
       "X-WAFL-Command-DB-Ms": String(result.dbMs),
       "X-WAFL-Idempotent-Replay": result.idempotentReplay ? "1" : "0",
+      ...timingHeaders,
     },
   });
 }
@@ -106,6 +109,7 @@ async function handleCommand(input: {
   readonly workOrderId?: string;
 }) {
   const correlationId = randomUUID() as CorrelationId;
+  const timing = startWaflRouteTiming();
   const runtimeGuard = getWorkOrderV2CommandRuntimeGuard();
   if (!runtimeGuard.ok) {
     return createCommandErrorResponse({
@@ -118,6 +122,7 @@ async function handleCommand(input: {
 
   const permissionCode = input.kind === "create" ? "workorder.create" : "workorder.update";
   const guard = await requireWorkspaceApiGuard({ permissionCode });
+  timing.markGuardComplete();
   if (!guard.ok) {
     return createCommandErrorResponse({ ...mapCommandGuardFailureStatus(guard.response.status), correlationId });
   }
@@ -135,7 +140,7 @@ async function handleCommand(input: {
         companyMemberId: guard.session.companyMemberId,
         correlationId,
       });
-      return commandSuccessResponse(result, correlationId, result.idempotentReplay ? 200 : 201);
+      return commandSuccessResponse(result, correlationId, result.idempotentReplay ? 200 : 201, timing.headers(result.dbMs));
     }
 
     const command = validatePatchWorkOrderBasicInfo(body, {
@@ -149,7 +154,7 @@ async function handleCommand(input: {
       companyMemberId: guard.session.companyMemberId,
       correlationId,
     });
-    return commandSuccessResponse(result, correlationId, 200);
+    return commandSuccessResponse(result, correlationId, 200, timing.headers(result.dbMs));
   } catch (error) {
     if (error instanceof WorkOrderCommandValidationError) {
       return createCommandErrorResponse({
