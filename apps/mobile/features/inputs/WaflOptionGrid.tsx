@@ -24,7 +24,7 @@ type Props = {
 export default function WaflOptionGrid(props: Props) {
   const basis = props.columns === 4 ? "23%" : "31.5%";
   return <View accessibilityLabel={props.accessibilityLabel} style={styles.grid}>
-    {props.items.map((item) => <View key={item.key} style={[styles.cell, { flexBasis: basis }]}> 
+    {props.items.map((item) => <View key={item.key} style={[styles.cell, { flexBasis: basis }]}>
       <Pressable
         accessibilityLabel={`${item.label}${item.selected ? ", 선택됨" : ""}`}
         accessibilityRole="checkbox"
