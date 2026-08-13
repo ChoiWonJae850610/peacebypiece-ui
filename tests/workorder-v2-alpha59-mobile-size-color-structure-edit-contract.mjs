@@ -94,7 +94,10 @@ const validation = read("lib/domain/work-orders/command/sizeColorStructureValida
 const editor = read("apps/mobile/features/work-orders/size-color/WorkOrderSizeColorStructureEditor.tsx");
 const controller = read("apps/mobile/features/work-orders/size-color/useSizeColorStructureEditController.ts");
 const overview = read("apps/mobile/features/work-orders/overview/WorkOrderDetailOverview.tsx");
-const experience = read("apps/mobile/features/MobileWorkOrderExperience.tsx");
+const experience = [
+  read("apps/mobile/features/MobileWorkOrderExperience.tsx"),
+  read("apps/mobile/features/work-orders/size-color/useWorkOrderSizeSpecCoordination.ts"),
+].join("\n");
 const readOnly = read("apps/mobile/features/work-orders/size-color/WorkOrderSizeColorReadOnly.tsx");
 const runner = read("tools/dev/start-wafl-external-qa.ps1");
 const runtimeQa = read("scripts/run-wafl-v2-alpha59-size-color-structure-runtime-qa.mjs");
@@ -133,13 +136,14 @@ assert.match(editor, /WorkOrderSizeColorReadOnly/);
 assert.match(editor, /edit\.canEdit/);
 assert.match(editor, /count=\{matrix\.sizes\.length\} editable=\{edit\.canEdit\} kind="size"/);
 assert.match(editor, /count=\{matrix\.colors\.length\} editable=\{edit\.canEdit\} kind="color"/);
-assert.match(editor, /function CatalogChoice/);
 assert.match(editor, /function SizeChooser[\s\S]*function ColorChooser/);
+assert.match(editor, /WaflOptionGrid accessibilityLabel="WAFL 기본 사이즈 선택" columns=\{4\}/);
+assert.match(editor, /WaflOptionGrid accessibilityLabel="WAFL 기본 색상 선택" columns=\{3\}/);
 assert.doesNotMatch(editor, /PanResponder|onLongPress|accessibilityActions|onReorderSizeIds|onReorderColorIds/);
 assert.doesNotMatch(editor, /ChevronUp|ChevronDown/);
 assert.match(editor, /confirmWaflDestructiveAction/);
 assert.doesNotMatch(editor, /archive|restore/i);
-assert.match(controller, /createExplicitMutationController/);
+assert.match(controller, /createSerializedMutationQueue/);
 assert.match(controller, /isStructureMutationCommitAllowed/);
 assert.match(controller, /snapshot\.onReconcile/);
 assert.match(controller, /snapshot\.onVersionReconcile/);
@@ -151,8 +155,9 @@ assert.match(controller, /sortSizeRows/);
 assert.match(controller, /sortColorRows/);
 assert.doesNotMatch(controller, /reorderSizes|reorderColors|onReorderSizeIds|onReorderColorIds/);
 assert.match(overview, /WorkOrderSizeColorStructureEditor/);
-assert.match(experience, /canEdit: canEditWorkOrder\(detail, user\)/);
-assert.match(experience, /refreshSizeColorProjection/);
+assert.match(experience, /canEdit: canEditWorkOrder\(input\.detail, input\.user\)/);
+assert.match(experience, /readConsistentSizeColorBundle/);
+assert.match(experience, /onRefreshLatest: refresh/);
 assert.doesNotMatch(readOnly, /TextInput|onAddSize|onPatchColor|onMoveSize/);
 assert.match(runner, /EnableAlpha59SizeColorStructureMutation/);
 assert.match(runner, /RuntimeQaMode -eq "size-color-structure"/);

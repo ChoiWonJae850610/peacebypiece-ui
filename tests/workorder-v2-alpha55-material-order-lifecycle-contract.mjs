@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 import assert from "node:assert/strict";
 import fs from "node:fs";
+import { readMobileApiSource } from "./helpers/mobile-api-source.mjs";
 import path from "node:path";
 
 import { resolveMaterialOrderPolicy } from "../apps/mobile/domain/materialOrderPolicy.ts";
@@ -118,9 +119,9 @@ const transitionContract = read("lib/domain/work-orders/contracts/state-transiti
 const detailRepository = read("lib/domain/work-orders/read/detailRepository.ts");
 const runtimeGuard = read("lib/domain/work-orders/command/runtimeGuard.ts");
 const runner = read("tools/dev/start-wafl-external-qa.ps1");
-const apiClient = read("apps/mobile/lib/apiClient.ts");
+const apiClient = readMobileApiSource();
 const mutationController = read("apps/mobile/features/work-orders/workOrderMutationController.ts");
-const experience = read("apps/mobile/features/MobileWorkOrderExperience.tsx");
+const experience = [read("apps/mobile/features/MobileWorkOrderExperience.tsx"), read("apps/mobile/features/materials/useWorkOrderMaterialAuthoringController.ts")].join("\n");
 const materialView = read("apps/mobile/features/materials/WorkOrderMaterialsReadOnly.tsx");
 const fixtureRunner = read("scripts/run-wafl-v2-alpha55-material-order-fixtures.mjs");
 const runtimeQa = read("scripts/run-wafl-v2-alpha55-material-order-runtime-qa.mjs");

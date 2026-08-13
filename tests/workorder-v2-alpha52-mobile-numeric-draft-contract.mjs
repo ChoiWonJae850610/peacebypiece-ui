@@ -15,7 +15,7 @@ const controlled = fs.readFileSync("apps/mobile/components/ControlledInlineEditV
 const materials = fs.readFileSync("apps/mobile/features/materials/WorkOrderMaterialsReadOnly.tsx", "utf8");
 const reelSheet = fs.readFileSync("apps/mobile/features/inputs/reel-picker/WaflReelPickerSheet.tsx", "utf8");
 const overview = fs.readFileSync("apps/mobile/features/work-orders/overview/WorkOrderDetailOverview.tsx", "utf8");
-const app = fs.readFileSync("apps/mobile/features/MobileWorkOrderExperience.tsx", "utf8");
+const app = [fs.readFileSync("apps/mobile/features/MobileWorkOrderExperience.tsx", "utf8"), fs.readFileSync("apps/mobile/features/materials/useWorkOrderMaterialAuthoringController.ts", "utf8")].join("\n");
 const visibilityDate = fs.readFileSync("tests/workorder-v2-alpha52-mobile-inline-visibility-date-picker-contract.mjs", "utf8");
 
 assert.equal(normalizeNumericDraft(""), "");

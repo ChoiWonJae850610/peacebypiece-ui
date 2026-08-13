@@ -4,8 +4,8 @@ Document type: **Current Baseline**
 
 Canonical owner: `docs/codex-current-state.md`
 
-Result version: `2.0.0-alpha.62`
-Status: `ALPHA62_FINALIZATION_COMPLETE`
+Result version: `2.0.0-alpha.63`
+Status: `ALPHA63_FINALIZATION_COMPLETE`
 
 This file is a compact present-state snapshot. It is not a version history, Permanent Rules owner, runtime process ledger, or evidence archive. Historical implementation details belong to numbered immutable evidence under `docs/project/app-v2/`.
 
@@ -15,26 +15,26 @@ This file is a compact present-state snapshot. It is not a version history, Perm
 | --- | --- |
 | Repository | `C:\CWJ_Project\peacebypiece-2.0` |
 | Branch | `master` |
-| Alpha.62 entry HEAD/origin | `0681652b7c349bd4b73885e7bd3b3b7bb8a41cb3` |
-| Entry commit | `feat: WAFL v2 alpha.61 mobile WorkOrder create` |
+| Alpha.63 entry HEAD/origin | `93833f4c39fcf42bd387952137fd518b3186bade` |
+| Entry commit | `feat: WAFL v2 alpha.62 완성 스펙·입력 UX와 공통 아키텍처 완성` |
 | Entry ahead/behind | `0/0` |
 | Entry working tree | clean |
-| APP_VERSION | `2.0.0-alpha.62` |
-| Mobile package version | `2.0.0-alpha.62` |
+| APP_VERSION | `2.0.0-alpha.63` |
+| Mobile package version | `2.0.0-alpha.63` |
 | Root package version | `0.5.637` |
 | Expo public version | `2.0.0` |
 | iOS Development Build | build number `1`, reusable while native inputs remain unchanged |
 | iOS bundle identifier | `com.wafl.app` |
 | Android package | `com.wafl.app` |
 
-The source cannot contain the hash of the commit that contains itself. Final alpha.62 HEAD, origin synchronization, Git cleanliness, ZIP hash/size/entry count, and exact repo-state filename are owned by the matching post-push alpha.62 repo-state.
+The source cannot contain the hash of the commit that contains itself. Final alpha.63 HEAD, origin synchronization, Git cleanliness, ZIP hash/size/entry count, and exact repo-state filename are owned by the matching post-push alpha.63 repo-state.
 
 ## Latest delivery boundary
 
-- Target Source ZIP: `peacebypiece-ui-2.0.0-alpha.62.zip`.
-- Target repo-state: `repo-state-2.0.0-alpha.62-<actual timestamp>.txt`.
+- Target Source ZIP: `peacebypiece-ui-2.0.0-alpha.63.zip`.
+- Target repo-state: `repo-state-2.0.0-alpha.63-<actual timestamp>.txt`.
 - `4. Newest` must contain only that matching pair after Finish.
-- The accepted handoff is the matching alpha.61 ZIP/repo-state pair generated from the final synchronized pushed HEAD.
+- The accepted handoff is the matching alpha.63 ZIP/repo-state pair generated from the final synchronized pushed HEAD.
 
 ## Current product and transport baseline
 
@@ -52,6 +52,26 @@ The source cannot contain the hash of the commit that contains itself. Final alp
 Do not record live PID, port ownership, temporary origin, connection code, session/cookie, full identity hash, credentials, or full WorkOrder UUID in this tracked snapshot.
 
 ## Latest feature and architecture baseline
+
+Alpha.63 completes a source/architecture-only stabilization while preserving the accepted
+alpha.62 Maker behavior:
+
+- `MobileWorkOrderExperience` is now top-level composition plus session/list/create,
+  navigation, and overview coordination; paired material/accessory, asset, and size/spec
+  lifecycles have coherent typed feature-controller owners;
+- mobile API access is split into session, WorkOrder, material, size/color, measurement, and
+  asset modules above the single canonical `apiTransport` request/auth/error owner;
+- the current cross-domain `mobileContract.ts` remains intentionally shared because a split
+  would increase fan-out and cycle risk without improving ownership;
+- shared request identity, inline normalization, mutation queue, pending scope, projection
+  reconciliation, picker/Sheet grammar, semantic copy, date, placeholder, and number/unit
+  owners are reused, and the new controller/API graph has circular dependency count `0`;
+- isolated Runtime measured material success and conflict revalidation. One detail GET plus
+  one lifecycle-filtered material-list GET remains bounded debt because command responses do
+  not authoritatively own every UI projection;
+- applicable contracts, TypeScript, ESLint, Next/Expo builds, import graph, isolated Runtime,
+  mutation audit, Canonical Verify, DeveloperAutoConnect, and owner physical-iPhone regression
+  QA passed without production, schema/migration, dependency/native/EAS, or product change.
 
 Alpha.62 completes finished-size specification standards, Maker authoring UX, and the
 shared mobile input/projection architecture on the alpha.61 baseline:
@@ -145,14 +165,16 @@ Final TypeScript, ESLint, Next, Expo, contracts, mutation audit, Canonical Verif
 - Alpha.60 draft-child hard delete and shared-architecture completion: `docs/project/app-v2/60-draft-child-hard-delete-and-shared-architecture-evidence.md`.
 - Alpha.61 mobile WorkOrder create and DeveloperAutoConnect finalization: `docs/project/app-v2/61-mobile-work-order-create-and-runtime-autoconnect-evidence.md`.
 - Alpha.62 size measurement standards, saved specs, Maker authoring, and shared mobile architecture: `docs/project/app-v2/62-size-measurement-standards-templates-evidence.md`.
+- Alpha.63 mobile architecture stabilization: `docs/project/app-v2/63-mobile-architecture-stabilization-evidence.md`.
 
 Older facts remain in their numbered evidence. They are not recopied here.
 
 ## Current completion boundary
 
-Current completed result: `2.0.0-alpha.62` — size measurement standards/templates,
-Maker authoring and shared input/projection architecture, automated Runtime, owner
-physical-iPhone QA, version synchronization, and finalization are complete.
+Current completed result: `2.0.0-alpha.63` — Maker mobile responsibility decomposition,
+typed domain API ownership above one transport, import-cycle protection, preserved alpha.62
+behavior, automated Runtime, owner physical-iPhone QA, version synchronization, and
+finalization are complete.
 
 The detailed paragraphs below preserve the accepted alpha.62 implementation checkpoints
 that led to finalization. Their interim `NOT_EXECUTED` device labels describe those earlier
@@ -278,14 +300,11 @@ owner fixture was read-only audited at draft/draft version 140/140, one snapshot
 generated documents, and zero public tokens. Owner physical iPhone final QA is
 `NOT_EXECUTED`.
 
-The display version is `2.0.0-alpha.62`. Alpha.62 is finalized at
-`ALPHA62_FINALIZATION_COMPLETE`; final Git and artifact identities are owned by the matching
-post-push repo-state. The owner QA fixture remains preserved and finalization mutated it `0`
-times. Factory, production, and alpha.63 scope are not started by this completion.
-
-Next candidate: `2.0.0-alpha.63`.
-
-Candidate: `2.0.0-alpha.63`
-
-Status: `NOT_STARTED`. No alpha.63 product scope, mutation, migration, Runtime, or delivery
-authority exists until a separate owner-approved Version Delta defines it.
+The display version is `2.0.0-alpha.63`; alpha.63 is finalized at
+`ALPHA63_FINALIZATION_COMPLETE`. Mobile API calls use typed domain owners above the single
+low-level transport, and the top-level Maker experience composes separate material, asset,
+and size/spec controllers while preserving alpha.62 behavior. Applicable alpha.47-alpha.63
+contracts, isolated Maker/batch/measurement Runtime suites, Next/Expo build, import-cycle
+checks, Canonical Verify, DeveloperAutoConnect, and owner physical-iPhone regression pass.
+The exact alpha.62 owner fixture remains read-only preserved. Factory/PDF/AI, production
+mutation, dependency/native/EAS, and new migration/schema scope remain excluded.

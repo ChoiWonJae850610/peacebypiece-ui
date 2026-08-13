@@ -3,6 +3,7 @@ import fs from "node:fs";
 import path from "node:path";
 
 import { assertCanonicalWaflVersionConsistency } from "./helpers/wafl-v2-current-version.mjs";
+import { readMobileApiSource } from "./helpers/mobile-api-source.mjs";
 import { readOnlyBadgeLabel } from "../apps/mobile/features/work-orders/overview/workOrderDetailPresentation.ts";
 
 const read = (relativePath) => fs.readFileSync(path.resolve(relativePath), "utf8");
@@ -35,7 +36,7 @@ assert.deepEqual(mobilePackage.dependencies, expectedDependencies, "native/depen
 
 const entry = read("apps/mobile/app/index.tsx");
 const app = read("apps/mobile/features/MobileWorkOrderExperience.tsx");
-const apiClient = [read("apps/mobile/lib/apiClient.ts"), read("apps/mobile/lib/apiTransport.ts")].join("\n");
+const apiClient = readMobileApiSource();
 const list = read("apps/mobile/features/work-orders/list/WorkOrderListScreen.tsx");
 const detail = read("apps/mobile/features/work-orders/overview/WorkOrderDetailOverview.tsx");
 const errorPresentation = read("apps/mobile/application/errorPresentation.ts");

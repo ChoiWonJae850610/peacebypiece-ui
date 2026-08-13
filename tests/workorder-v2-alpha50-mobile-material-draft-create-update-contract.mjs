@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 import assert from "node:assert/strict";
 import fs from "node:fs";
+import { readMobileApiSource } from "./helpers/mobile-api-source.mjs";
 import path from "node:path";
 
 import { resolveMaterialOrderPolicy } from "../apps/mobile/domain/materialOrderPolicy.ts";
@@ -14,12 +15,12 @@ assertCanonicalWaflVersionConsistency();
 const mobilePackage = json("apps/mobile/package.json");
 const appJson = json("apps/mobile/app.json");
 const easJson = json("apps/mobile/eas.json");
-const app = read("apps/mobile/features/MobileWorkOrderExperience.tsx");
+const app = [read("apps/mobile/features/MobileWorkOrderExperience.tsx"), read("apps/mobile/features/materials/useWorkOrderMaterialAuthoringController.ts")].join("\n");
 const detail = read("apps/mobile/features/work-orders/overview/WorkOrderDetailOverview.tsx");
 const materials = read("apps/mobile/features/materials/WorkOrderMaterialsReadOnly.tsx");
 const editor = read("apps/mobile/features/materials/WorkOrderMaterialEditor.tsx");
 const materialFieldPolicy = read("apps/mobile/features/materials/materialFieldPolicy.ts");
-const apiClient = [read("apps/mobile/lib/apiClient.ts"), read("apps/mobile/lib/apiTransport.ts")].join("\n");
+const apiClient = readMobileApiSource();
 const apiTypes = read("apps/mobile/domain/mobileContract.ts");
 const mobileValidation = read("apps/mobile/domain/workOrderValidation.ts");
 const mobilePolicy = read("apps/mobile/domain/workOrderPolicy.ts");

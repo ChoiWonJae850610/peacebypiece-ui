@@ -109,7 +109,10 @@ const actual = buildReadOnlyMarkerEvidence({
   runtime,
   sources: {
     policy: fs.readFileSync(path.join(root, "apps/mobile/domain/workOrderPolicy.ts"), "utf8"),
-    experience: fs.readFileSync(path.join(root, "apps/mobile/features/MobileWorkOrderExperience.tsx"), "utf8"),
+    experience: [
+      fs.readFileSync(path.join(root, "apps/mobile/features/MobileWorkOrderExperience.tsx"), "utf8"),
+      fs.readFileSync(path.join(root, "apps/mobile/features/work-orders/size-color/useWorkOrderSizeSpecCoordination.ts"), "utf8"),
+    ].join("\n"),
     editor: fs.readFileSync(path.join(root, "apps/mobile/features/work-orders/size-color/WorkOrderSizeColorStructureEditor.tsx"), "utf8"),
     readOnly: fs.readFileSync(path.join(root, "apps/mobile/features/work-orders/size-color/WorkOrderSizeColorReadOnly.tsx"), "utf8"),
   },

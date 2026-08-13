@@ -5,7 +5,7 @@ import { Plus, RefreshCw, Search, X } from "lucide-react-native";
 import { WAFL_FONTS } from "@/constants/fonts";
 import { WAFL_THEME } from "@/constants/theme";
 import type { WorkOrderListItem, WorkOrderListStatusFilter } from "@/domain/mobileContract";
-import { resolveMobileApiUrl } from "@/lib/apiClient";
+import { resolveMobileApiUrl } from "@/lib/apiTransport";
 import {
   WORK_ORDER_SEARCH_DEBOUNCE_MS,
   WORK_ORDER_SEARCH_LAYOUT,

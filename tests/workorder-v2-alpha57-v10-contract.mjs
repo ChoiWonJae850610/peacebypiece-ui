@@ -44,7 +44,10 @@ assert.deepEqual(
 );
 
 const overview = read("apps/mobile/features/work-orders/overview/WorkOrderDetailOverview.tsx");
-const experience = read("apps/mobile/features/MobileWorkOrderExperience.tsx");
+const experience = [
+  read("apps/mobile/features/MobileWorkOrderExperience.tsx"),
+  read("apps/mobile/features/materials/useWorkOrderMaterialAuthoringController.ts"),
+].join("\n");
 const materials = read("apps/mobile/features/materials/WorkOrderMaterialsReadOnly.tsx");
 const validation = read("apps/mobile/domain/workOrderValidation.ts");
 const mobileContract = read("apps/mobile/domain/mobileContract.ts");

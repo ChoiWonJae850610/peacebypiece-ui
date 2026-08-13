@@ -79,6 +79,10 @@ const editController = read("apps/mobile/features/work-orders/size-color/useSize
 const structureEditor = read("apps/mobile/features/work-orders/size-color/WorkOrderSizeColorStructureEditor.tsx");
 const templateSheets = read("apps/mobile/features/work-orders/size-color/MeasurementTemplateSheets.tsx");
 const apiClient = read("apps/mobile/lib/apiClient.ts");
+const apiDomains = fs.readdirSync(path.join(root, "apps/mobile/lib/api"))
+  .filter((name) => name.endsWith("Api.ts"))
+  .map((name) => read(`apps/mobile/lib/api/${name}`))
+  .join("\n");
 const apiTransport = read("apps/mobile/lib/apiTransport.ts");
 for (const token of ["promoteSizeColorCacheProjection", "promoteCurrentProjectionVersion"]) assert.ok(readController.includes(token));
 for (const token of ["commitMeasurementProjectionTransition", "onPromoteProjectionVersion"]) assert.ok(editController.includes(token));
@@ -86,8 +90,8 @@ assert.ok(structureEditor.includes("WaflInputSheet"));
 assert.doesNotMatch(structureEditor, /<Modal|KeyboardAvoidingView|function SheetFrame/);
 assert.ok(templateSheets.includes("WaflChoiceButtons"));
 assert.doesNotMatch(templateSheets, /function SemanticChoiceButtons/);
-assert.ok(apiClient.includes('from "./apiTransport"'));
 assert.doesNotMatch(apiClient, /async function requestJson|function configuredOrigin/);
+assert.match(apiDomains, /from "\.\.\/apiTransport"/);
 for (const token of ["requestJson", "configuredOrigin", "assertMobileApiOrigin"]) assert.ok(apiTransport.includes(token));
 
 console.log(JSON.stringify({

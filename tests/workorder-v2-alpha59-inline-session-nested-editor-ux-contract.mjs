@@ -20,7 +20,10 @@ import {
 
 const root = path.resolve(import.meta.dirname, "..");
 const read = (relativePath) => fs.readFileSync(path.join(root, relativePath), "utf8");
-const experience = read("apps/mobile/features/MobileWorkOrderExperience.tsx");
+const experience = [
+  read("apps/mobile/features/MobileWorkOrderExperience.tsx"),
+  read("apps/mobile/features/materials/useWorkOrderMaterialAuthoringController.ts"),
+].join("\n");
 const materials = read("apps/mobile/features/materials/WorkOrderMaterialsReadOnly.tsx");
 const controlled = read("apps/mobile/components/ControlledInlineEditValue.tsx");
 const structure = read("apps/mobile/features/work-orders/size-color/WorkOrderSizeColorStructureEditor.tsx");
@@ -81,12 +84,11 @@ assert.equal(nested.nameDraft, "그레이 수정");
 nested = selectNestedStructureRow(nested, white);
 assert.equal(nested.selectedId, "color-white");
 
-const catalogEditor = structure.slice(structure.indexOf("function CatalogChoice"), structure.indexOf("export default function WorkOrderSizeColorStructureEditor"));
-assert.match(catalogEditor, /accessibilityState=\{\{ checked: props\.selected \}\}/);
-assert.match(catalogEditor, /selected\.has\(normalized\(option\.displayName\)\)/);
-assert.match(catalogEditor, /onToggle\(\{ displayName: option\.displayName, hexValue: option\.hexValue/);
-assert.match(catalogEditor, /onRemove=\{\(\) => props\.onRemove\(option\)\}/);
-assert.doesNotMatch(catalogEditor, /onPatchColor|ExistingStructureEditor/);
+assert.match(structure, /import WaflOptionGrid/);
+assert.match(structure, /selected: selected\.has\(structureSelectionKey\(option\.displayName\)\)/);
+assert.match(structure, /onToggle=\{\(item\) => setSelectedKeys/);
+assert.match(structure, /onRemove=\{\(item\) => \{ const option = companyById\.get\(item\.key\); if \(option\) props\.onRemove\(option\); \}\}/);
+assert.doesNotMatch(structure, /onPatchColor|ExistingStructureEditor/);
 assert.match(runtime, /inlineSessionNestedEditorLifecycle/);
 assert.match(runtime, /proveInlineSessionAndNestedEditorStateMachines/);
 assert.match(runtime, /ALPHA59_INLINE_SESSION_NESTED_EDITOR_IPHONE_REQA_REQUIRED/);

@@ -40,7 +40,7 @@ test("shared automatic size and color policy is deterministic", async () => {
 test("mobile owns compact cards and canonical catalog selectors, not manual reorder", () => {
   assert.match(editor, /count=\{matrix\.sizes\.length\} editable=\{edit\.canEdit\} kind="size"/);
   assert.match(editor, /count=\{matrix\.colors\.length\} editable=\{edit\.canEdit\} kind="color"/);
-  assert.match(editor, /function CatalogChoice/);
+  assert.match(editor, /import WaflOptionGrid/);
   assert.match(editor, /function SizeChooser[\s\S]*function ColorChooser/);
   assert.match(editor, /직접 색상 만들기/);
   assert.doesNotMatch(editor, /PanResponder|GripVertical|dragTargetIndex|accessibilityMoveActions|onReorderSizeIds|onReorderColorIds/);
@@ -65,8 +65,7 @@ test("server create and rename paths apply the shared canonical order inside the
 });
 
 test("alpha.60 supersedes the deferred destructive boundary without archive or restore", () => {
-  assert.match(editor, /title: "사이즈 삭제"/);
-  assert.match(editor, /title: "색상 삭제"/);
+  assert.match(editor, /title: targetKind === "size" \? "사이즈 삭제" : "색상 삭제"/);
   assert.match(controller, /deleteSize[\s\S]+deleteColor/);
   assert.doesNotMatch(`${editor}\n${controller}`, /archive|restore/i);
 });

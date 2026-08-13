@@ -1,35 +1,38 @@
 import {
-  archiveWorkOrderMaterial,
   completeWorkOrderImageUpload,
-  createWorkOrderDraft,
-  createWorkOrderMaterial,
-  deleteWorkOrderColor,
-  deleteWorkOrderMaterial,
-  deleteWorkOrderSize,
   deleteWorkOrderImage,
   deleteWorkOrderAttachment,
-  patchWorkOrderBasicInfo,
   completeWorkOrderAttachmentUpload,
-  patchWorkOrderMaterial,
   prepareWorkOrderImageUpload,
   prepareWorkOrderAttachmentUpload,
   putWorkOrderImageBlob,
-  restoreWorkOrderMaterial,
   setRepresentativeWorkOrderImage,
-  transitionWorkOrderMaterialOrder,
   issueWorkOrderAttachmentPreview,
+} from "../../lib/api/assetsApi";
+import { createWorkOrderDraft, patchWorkOrderBasicInfo } from "../../lib/api/workOrdersApi";
+import {
+  archiveWorkOrderMaterial,
+  createWorkOrderMaterial,
+  deleteWorkOrderMaterial,
+  patchWorkOrderMaterial,
+  restoreWorkOrderMaterial,
+  transitionWorkOrderMaterialOrder,
+} from "../../lib/api/materialsApi";
+import {
   addWorkOrderColor,
   addWorkOrderSize,
+  batchWorkOrderStructureSelection,
+  createWorkOrderStructureOption,
+  deleteWorkOrderColor,
+  deleteWorkOrderSize,
   patchWorkOrderColor,
+  removeWorkOrderStructureOption,
   renameWorkOrderSize,
   reorderWorkOrderColors,
   reorderWorkOrderSizes,
   upsertWorkOrderColorSizeQuantity,
-  mutateWorkOrderMeasurement,
-  createWorkOrderStructureOption,
-  removeWorkOrderStructureOption,
-  batchWorkOrderStructureSelection,
-} from "../../lib/apiClient";
+} from "../../lib/api/sizeColorApi";
+import { mutateWorkOrderMeasurement } from "../../lib/api/measurementApi";
 import type {
   CreateMaterialLineInput,
   CreateWorkOrderDraftInput,

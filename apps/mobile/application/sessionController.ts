@@ -1,10 +1,10 @@
 import {
-  assertMobileApiOrigin,
   connectTailscaleDeveloper,
   disconnectMobileSession,
   exchangeMobileConnectCode,
   getCurrentMobileUser,
-} from "../lib/apiClient";
+} from "../lib/api/sessionApi";
+import { assertMobileApiOrigin } from "../lib/apiTransport";
 import { MobileApiError, type MobileCurrentUser } from "../domain/mobileContract";
 
 function requireCompanyContext(user: MobileCurrentUser): MobileCurrentUser {

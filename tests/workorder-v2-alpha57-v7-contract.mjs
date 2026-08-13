@@ -8,7 +8,10 @@ const read = (relativePath) => fs.readFileSync(path.join(root, relativePath), "u
 const mobilePackage = JSON.parse(read("apps/mobile/package.json"));
 const mobileConfig = JSON.parse(read("apps/mobile/app.json"));
 const gallery = read("apps/mobile/features/work-orders/images/WorkOrderImageGallery.tsx");
-const experience = read("apps/mobile/features/MobileWorkOrderExperience.tsx");
+const experience = [
+  read("apps/mobile/features/MobileWorkOrderExperience.tsx"),
+  read("apps/mobile/features/work-orders/images/useWorkOrderAssetAuthoringController.ts"),
+].join("\n");
 const attachmentAcquisition = read("apps/mobile/features/work-orders/images/workOrderAttachmentAcquisition.ts");
 const imageRepository = read("lib/domain/work-orders/command/imageCommandRepository.ts");
 const attachmentRepository = read("lib/domain/work-orders/command/attachmentCommandRepository.ts");

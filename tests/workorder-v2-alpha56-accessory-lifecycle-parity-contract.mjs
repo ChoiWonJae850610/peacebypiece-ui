@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 import assert from "node:assert/strict";
 import fs from "node:fs";
+import { readMobileApiSource } from "./helpers/mobile-api-source.mjs";
 import path from "node:path";
 
 import { createInlineEditFinalizationController } from "../apps/mobile/lib/inlineEditFinalization.ts";
@@ -19,9 +20,9 @@ assertCanonicalWaflVersionConsistency();
 
 const contract = read("apps/mobile/domain/mobileContract.ts");
 const normalizer = read("apps/mobile/lib/apiResponseNormalizer.ts");
-const apiClient = read("apps/mobile/lib/apiClient.ts");
+const apiClient = readMobileApiSource();
 const controller = read("apps/mobile/features/work-orders/workOrderQueryController.ts");
-const experience = read("apps/mobile/features/MobileWorkOrderExperience.tsx");
+const experience = [read("apps/mobile/features/MobileWorkOrderExperience.tsx"), read("apps/mobile/features/materials/useWorkOrderMaterialAuthoringController.ts")].join("\n");
 const overview = read("apps/mobile/features/work-orders/overview/WorkOrderDetailOverview.tsx");
 const materialView = read("apps/mobile/features/materials/WorkOrderMaterialsReadOnly.tsx");
 const editor = read("apps/mobile/features/materials/WorkOrderMaterialEditor.tsx");

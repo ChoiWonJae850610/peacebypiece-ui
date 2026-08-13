@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
+import { readMobileApiSource } from "./helpers/mobile-api-source.mjs";
 import path from "node:path";
 
 import { assertCanonicalWaflVersionConsistency } from "./helpers/wafl-v2-current-version.mjs";
@@ -30,9 +31,12 @@ const read = (relativePath) => fs.readFileSync(path.resolve(relativePath), "utf8
 assertCanonicalWaflVersionConsistency();
 
 const contract = read("apps/mobile/domain/mobileContract.ts");
-const apiClient = read("apps/mobile/lib/apiClient.ts");
+const apiClient = readMobileApiSource();
 const controller = read("apps/mobile/features/work-orders/workOrderQueryController.ts");
-const experience = read("apps/mobile/features/MobileWorkOrderExperience.tsx");
+const experience = [
+  read("apps/mobile/features/MobileWorkOrderExperience.tsx"),
+  read("apps/mobile/features/work-orders/size-color/useWorkOrderSizeSpecCoordination.ts"),
+].join("\n");
 const detail = read("apps/mobile/features/work-orders/overview/WorkOrderDetailOverview.tsx");
 const cache = read("apps/mobile/features/work-orders/size-color/sizeColorCache.ts");
 const queryPolicy = read("apps/mobile/features/work-orders/size-color/sizeColorQueryPolicy.ts");

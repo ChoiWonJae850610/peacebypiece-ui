@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 import assert from "node:assert/strict";
 import fs from "node:fs";
+import { readMobileApiSource } from "./helpers/mobile-api-source.mjs";
 import { isTailscaleServePathAllowed } from "../lib/external-qa/configCore.mjs";
 import {
   createStagedDeletionMessage,
@@ -40,7 +41,7 @@ assert.equal(createStagedDeletionMessage({ targetKind: "color", deletedDisplayNa
 
 const editor = read("apps/mobile/features/work-orders/size-color/WorkOrderSizeColorStructureEditor.tsx");
 const controller = read("apps/mobile/features/work-orders/size-color/useSizeColorStructureEditController.ts");
-const apiClient = read("apps/mobile/lib/apiClient.ts");
+const apiClient = readMobileApiSource();
 const route = read("lib/domain/work-orders/command/sizeColorStructureCommandRoute.ts");
 const repository = read("lib/domain/work-orders/command/sizeColorStructureCommandRepository.ts");
 const sheets = read("apps/mobile/features/work-orders/size-color/MeasurementTemplateSheets.tsx");

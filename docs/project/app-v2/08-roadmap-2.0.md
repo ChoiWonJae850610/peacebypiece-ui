@@ -2,7 +2,32 @@
 
 Document role: canonical owner for the current result, next candidate, and Version Delta boundary. It is not the historical implementation ledger; completed details live in numbered immutable evidence.
 
-## Current result — 2.0.0-alpha.62
+## Current result — 2.0.0-alpha.63
+
+Status: `ALPHA63_FINALIZATION_COMPLETE`.
+
+Alpha.63 completes source/architecture-only stabilization of the accepted alpha.62 Maker
+mobile product:
+
+- `MobileWorkOrderExperience` retains top-level composition, session/list/create/navigation,
+  and overview coordination while coherent controllers own paired material/accessory,
+  image/attachment, and size/spec feature lifecycles;
+- typed session, WorkOrder, material, size/color, measurement, and asset API modules sit above
+  the single canonical `apiTransport` request/auth/error owner;
+- `mobileContract.ts` remains intentionally shared, and the new controller/API import graph
+  has circular dependency count `0`;
+- current shared inline, queue, pending, projection, picker, Sheet, copy, date, placeholder,
+  and display owners are reused without user-visible feature or UX change;
+- material Runtime measurement preserves one detail plus one lifecycle-filtered material-list
+  revalidation read where the command response is not authoritative for every projection;
+- targeted and historical contracts, TypeScript, ESLint, Next/Expo builds, isolated Runtime,
+  mutation audit, Node 24.14.0 Canonical Verify, DeveloperAutoConnect, and owner physical-iPhone
+  regression passed with no production, schema/migration, dependency/native/EAS, Factory,
+  PDF/document, or AI expansion.
+
+Evidence: `63-mobile-architecture-stabilization-evidence.md`.
+
+## Previous result — 2.0.0-alpha.62
 
 Status: `ALPHA62_FINALIZATION_COMPLETE`.
 
@@ -302,7 +327,10 @@ APP_VERSION is `2.0.0-alpha.62`, and the result is finalized at
 read-only audit only. Factory, AI image generation, production mutation, R2 mutation,
 dependency/native/EAS work, and alpha.63 expansion remain outside this boundary.
 
-## Next candidate — 2.0.0-alpha.63
+## Next candidate — 2.0.0-alpha.64
 
-Status: `NOT_STARTED`. No alpha.63 product scope, mutation, migration, Runtime, or delivery
-authority is implied by alpha.62 completion.
+Status: `NOT_STARTED`.
+
+Alpha.63 finalization grants no alpha.64 product, Factory/PDF/AI, production,
+dependency/native/EAS, or migration/schema authority. A new owner-approved Version Delta is
+required before any alpha.64 work begins.

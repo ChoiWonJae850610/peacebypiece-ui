@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 import assert from "node:assert/strict";
 import fs from "node:fs";
+import { readMobileApiSource } from "./helpers/mobile-api-source.mjs";
 import path from "node:path";
 
 import { planColorSizeQuantityProjection } from "../lib/domain/work-orders/command/quantityProjectionPolicy.ts";
@@ -27,7 +28,7 @@ const validation = read("lib/domain/work-orders/command/validation.ts");
 const detailRepository = read("lib/domain/work-orders/read/detailRepository.ts");
 const listRepository = read("lib/domain/work-orders/read/listRepository.ts");
 const issueRepository = read("lib/domain/work-orders/command/issueRepository.ts");
-const apiClient = read("apps/mobile/lib/apiClient.ts");
+const apiClient = readMobileApiSource();
 const runtimeQa = read("scripts/run-wafl-v2-alpha59-size-color-structure-runtime-qa.mjs");
 
 const inlineSources = [controlled, compactInline, overview, experience, materials].join("\n");

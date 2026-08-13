@@ -49,7 +49,10 @@ assert.doesNotMatch(picker, /flatOptionList|flatOptionMetadata/);
 assert.ok(partnerPicker.includes("WaflReelPickerSheet"));
 assert.ok(partnerPicker.includes('kind="option"'));
 
-const experience = read("apps/mobile/features/MobileWorkOrderExperience.tsx");
+const experience = [
+  read("apps/mobile/features/MobileWorkOrderExperience.tsx"),
+  read("apps/mobile/features/materials/useWorkOrderMaterialAuthoringController.ts"),
+].join("\n");
 for (const token of ["createSerializedMutationQueue", "planInlineEditTransition", "inlineMutationQueue.enqueue", "previousInlineOwner", "activeBasicFieldRef.current = field"]) assert.ok(experience.includes(token));
 assert.doesNotMatch(experience, /현재 필드 편집을 완료해 주세요/);
 

@@ -4,16 +4,20 @@ import fs from "node:fs";
 import path from "node:path";
 
 import { assertCanonicalWaflVersionConsistency } from "./helpers/wafl-v2-current-version.mjs";
+import { readMobileApiSource } from "./helpers/mobile-api-source.mjs";
 
 const read = (relativePath) => fs.readFileSync(path.resolve(relativePath), "utf8");
 assertCanonicalWaflVersionConsistency();
 const appConfig = JSON.parse(read("apps/mobile/app.json"));
 const easConfig = JSON.parse(read("apps/mobile/eas.json"));
 const appConfigFactory = read("apps/mobile/app.config.js");
-const app = read("apps/mobile/features/MobileWorkOrderExperience.tsx");
+const app = [
+  read("apps/mobile/features/MobileWorkOrderExperience.tsx"),
+  read("apps/mobile/features/work-orders/workOrderMutationController.ts"),
+].join("\n");
 const detail = read("apps/mobile/features/work-orders/overview/WorkOrderDetailOverview.tsx");
-const domainClient = read("apps/mobile/lib/apiClient.ts");
-const client = [domainClient, read("apps/mobile/lib/apiTransport.ts")].join("\n");
+const domainClient = readMobileApiSource();
+const client = domainClient;
 const types = read("apps/mobile/domain/mobileContract.ts");
 const policy = read("apps/mobile/domain/workOrderPolicy.ts");
 
@@ -41,7 +45,7 @@ for (const forbiddenEditField of ["productTypeCode", "seasonCode", "itemCode", "
 assert.match(policy, /detail\.header\.status === "draft"/);
 assert.match(policy, /detail\.revision\.status === "draft"/);
 assert.match(policy, /permissionCodes\?\.includes\(UPDATE_PERMISSION\)/);
-assert.match(app, /expectedVersion: detail\.header\.entityVersion/);
+assert.match(app, /expectedVersion: latestDetail\.header\.entityVersion/);
 assert.match(app, /clientRequestId: nextClientRequestId\(\)/);
 const basicInfoClient = domainClient.slice(domainClient.indexOf("export async function patchWorkOrderBasicInfo"));
 assert.doesNotMatch(basicInfoClient, /idempotencyKey|Idempotency-Key/);

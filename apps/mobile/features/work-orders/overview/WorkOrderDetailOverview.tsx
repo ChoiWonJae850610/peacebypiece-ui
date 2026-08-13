@@ -32,7 +32,7 @@ import WaflReelPickerSheet from "@/features/inputs/reel-picker/WaflReelPickerShe
 import type { MaterialDraftFields, MaterialDraftUpdate, MaterialPartnerOption, MaterialType, WorkOrderAttachmentAsset, WorkOrderDetailCore, WorkOrderImageAsset, WorkOrderMaterialLine } from "@/domain/mobileContract";
 import type { MaterialOrderAction, MaterialOrderPolicy } from "@/domain/materialOrderPolicy";
 import { formatWon } from "@/lib/mobileDisplay";
-import { resolveMobileApiUrl } from "@/lib/apiClient";
+import { resolveMobileApiUrl } from "@/lib/apiTransport";
 import { useFocusedFieldVisibility } from "@/hooks/useFocusedFieldVisibility";
 import { formatWorkOrderStatus } from "@/lib/workOrderDisplay";
 import { displayValueOrUnset, isUnsetDisplayValue, WAFL_UNSET_PLACEHOLDER } from "@/lib/displayPlaceholder";

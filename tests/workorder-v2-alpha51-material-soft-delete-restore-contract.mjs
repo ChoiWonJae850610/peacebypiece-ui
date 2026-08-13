@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 import assert from "node:assert/strict";
 import fs from "node:fs";
+import { readMobileApiSource } from "./helpers/mobile-api-source.mjs";
 import path from "node:path";
 
 import { isTailscaleServePathAllowed } from "../lib/external-qa/configCore.mjs";
@@ -17,8 +18,8 @@ const detailRepository = read("lib/domain/work-orders/read/detailRepository.ts")
 const listRepository = read("lib/domain/work-orders/read/listRepository.ts");
 const issueRepository = read("lib/domain/work-orders/command/issueRepository.ts");
 const previewRepository = read("lib/domain/work-orders/read/previewRepository.ts");
-const apiClient = read("apps/mobile/lib/apiClient.ts");
-const app = read("apps/mobile/features/MobileWorkOrderExperience.tsx");
+const apiClient = readMobileApiSource();
+const app = [read("apps/mobile/features/MobileWorkOrderExperience.tsx"), read("apps/mobile/features/materials/useWorkOrderMaterialAuthoringController.ts")].join("\n");
 const draftExitPolicy = read("apps/mobile/application/draftExitPolicy.ts");
 const materials = read("apps/mobile/features/materials/WorkOrderMaterialsReadOnly.tsx");
 const start = read("tools/dev/start-wafl-external-qa.ps1");

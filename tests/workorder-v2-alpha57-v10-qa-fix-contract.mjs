@@ -22,7 +22,10 @@ const overview = read("apps/mobile/features/work-orders/overview/WorkOrderDetail
 const gallery = read("apps/mobile/features/work-orders/images/WorkOrderImageGallery.tsx");
 const materials = read("apps/mobile/features/materials/WorkOrderMaterialsReadOnly.tsx");
 const materialEditor = read("apps/mobile/features/materials/WorkOrderMaterialEditor.tsx");
-const experience = read("apps/mobile/features/MobileWorkOrderExperience.tsx");
+const experience = [
+  read("apps/mobile/features/MobileWorkOrderExperience.tsx"),
+  read("apps/mobile/features/materials/useWorkOrderMaterialAuthoringController.ts"),
+].join("\n");
 const validation = read("apps/mobile/domain/workOrderValidation.ts");
 
 assert.deepEqual(["", ...WORK_ORDER_TARGET_AUDIENCES], ["", "여성", "남성", "공용", "키즈", "기타"]);
@@ -67,10 +70,10 @@ assert.equal((overview.match(/kind="option"/g) ?? []).length, 2);
 assert.match(overview, /options=\{\["", \.\.\.WORK_ORDER_TARGET_AUDIENCES\]\}/);
 assert.match(overview, /options=\{\["", \.\.\.WORK_ORDER_CATEGORY_MAJORS\]\}/);
 
-assert.match(reel, /optionOnly \? \(/);
+assert.match(reel, /renderPath === "single-choice-reel" \? \(/);
 assert.match(reel, /kind !== "unit" && !optionOnly/);
-assert.match(reel, /label: option \|\| "미지정"/);
-assert.doesNotMatch(reel.slice(reel.indexOf("{optionOnly ? ("), reel.indexOf(") : state.mode")), /stepOptions|keyboardType|toggleMode/);
+assert.match(reel, /label: option\.label \|\| WAFL_UNSET_PLACEHOLDER/);
+assert.doesNotMatch(reel.slice(reel.indexOf('{renderPath === "single-choice-reel" ? ('), reel.indexOf(') : renderPath === "numeric-reel"')), /stepOptions|keyboardType|toggleMode/);
 
 assert.match(controlled, /commitMode\?: "explicit" \| "blur-submit"/);
 assert.match(controlled, /onSubmitEditing=\{inlineCommit && !multiline \? handleSubmitEditing : undefined\}/);

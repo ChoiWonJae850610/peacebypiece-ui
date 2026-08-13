@@ -1,12 +1,13 @@
 #!/usr/bin/env node
 import assert from "node:assert/strict";
 import fs from "node:fs";
+import { readMobileApiSource } from "./helpers/mobile-api-source.mjs";
 
 const read = (relativePath) => fs.readFileSync(relativePath, "utf8");
 
 const pagination = read("lib/domain/work-orders/contracts/pagination.ts");
 const detailService = read("lib/domain/work-orders/read/detailService.ts");
-const mobileApi = read("apps/mobile/lib/apiClient.ts");
+const mobileApi = readMobileApiSource();
 const imageRuntimeQa = read("scripts/run-wafl-v2-alpha57-work-order-image-runtime-qa.mjs");
 const diagnostic = read("scripts/run-wafl-v2-alpha57-worker-read-diagnostic.mjs");
 const fileRoute = read("lib/workorder/attachments/attachmentFileRoute.ts");

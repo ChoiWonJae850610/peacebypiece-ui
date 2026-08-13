@@ -65,7 +65,10 @@ const materials = read("apps/mobile/features/materials/WorkOrderMaterialsReadOnl
 const materialEditor = read("apps/mobile/features/materials/WorkOrderMaterialEditor.tsx");
 const reel = read("apps/mobile/features/inputs/reel-picker/WaflReelPickerSheet.tsx");
 const structure = read("apps/mobile/features/work-orders/size-color/WorkOrderSizeColorStructureEditor.tsx");
-const experience = read("apps/mobile/features/MobileWorkOrderExperience.tsx");
+const experience = [
+  read("apps/mobile/features/MobileWorkOrderExperience.tsx"),
+  read("apps/mobile/features/materials/useWorkOrderMaterialAuthoringController.ts"),
+].join("\n");
 const migration = read("db/v2/migrations/002_v2_work_orders_revisions.sql");
 const quantityMigration = read("db/v2/migrations/003_v2_revision_content.sql");
 const mobileValidation = read("apps/mobile/domain/workOrderValidation.ts");
@@ -95,12 +98,14 @@ assert.match(submitBlock, /inputRef\.current\.blur\(\)/);
 assert.match(experience, /rollbackBasicInline\(true\)/);
 assert.match(experience, /await refreshInlineMaterial\(error\.entityVersion\)/);
 
-assert.match(reel, /function FlatOptionReelColumn/);
+assert.match(reel, /function FiniteOptionReelColumn/);
 assert.doesNotMatch(reel, /createCircularReelWindow|circularRecenterIndex|CircularOptionReelColumn/);
-assert.match(reel, /FlatOptionReelColumn[^\n]*accessibilityLabel="원단·부자재 단위 목록"/);
+assert.match(reel, /FiniteOptionReelColumn[^\n]*accessibilityLabel="원단·부자재 단위 목록"/);
 assert.match(overview, /field="targetAudience"[\s\S]{0,180}kind="option"/);
 assert.match(overview, /field="categoryMajor"[\s\S]{0,180}kind="option"/);
-assert.match(structure, /function CatalogChoice/);
+assert.match(structure, /import WaflOptionGrid/);
+assert.match(structure, /columns=\{4\}/);
+assert.match(structure, /columns=\{3\}/);
 assert.match(structure, /function SizeChooser[\s\S]*function ColorChooser/);
 assert.match(reel, /platformReelHaptics\.selectionChanged/);
 assert.match(reel, /logicalOption\?\.label[\s\S]{0,180}now: logicalIndex \+ 1/);

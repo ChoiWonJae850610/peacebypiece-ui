@@ -37,7 +37,7 @@ import {
   attachmentListSummary,
   formatAttachmentBytes,
 } from "@/features/work-orders/images/attachmentPresentation";
-import { resolveMobileApiUrl } from "@/lib/apiClient";
+import { resolveMobileApiUrl } from "@/lib/apiTransport";
 
 type Props = {
   readonly images: readonly WorkOrderImageAsset[];

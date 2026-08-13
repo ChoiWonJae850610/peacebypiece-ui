@@ -1,14 +1,18 @@
 #!/usr/bin/env node
 import assert from "node:assert/strict";
 import fs from "node:fs";
+import { readMobileApiSource } from "./helpers/mobile-api-source.mjs";
 
 const read = (relativePath) => fs.readFileSync(relativePath, "utf8");
 
 const gallery = read("apps/mobile/features/work-orders/images/WorkOrderImageGallery.tsx");
-const experience = read("apps/mobile/features/MobileWorkOrderExperience.tsx");
+const experience = [
+  read("apps/mobile/features/MobileWorkOrderExperience.tsx"),
+  read("apps/mobile/features/work-orders/images/useWorkOrderAssetAuthoringController.ts"),
+].join("\n");
 const overview = read("apps/mobile/features/work-orders/overview/WorkOrderDetailOverview.tsx");
 const mobileContract = read("apps/mobile/domain/mobileContract.ts");
-const apiClient = read("apps/mobile/lib/apiClient.ts");
+const apiClient = readMobileApiSource();
 const detailRepository = read("lib/domain/work-orders/read/detailRepository.ts");
 const imageRoute = read("lib/domain/work-orders/command/imageCommandRoute.ts");
 const imageRepository = read("lib/domain/work-orders/command/imageCommandRepository.ts");

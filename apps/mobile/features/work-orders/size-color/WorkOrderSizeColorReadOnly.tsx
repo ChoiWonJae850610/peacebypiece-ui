@@ -9,7 +9,7 @@ import type { MeasurementTemplateSummary, WorkOrderSizeSpecCell } from "@/domain
 import { formatMeasurementFromCm, normalizeCentimeterDraft, parseMeasurementToCm } from "@/domain/measurementPolicy";
 import WaflReelPickerSheet from "@/features/inputs/reel-picker/WaflReelPickerSheet";
 import DelayedLoadingMessage from "@/features/work-orders/loading/DelayedLoadingMessage";
-import { getMeasurementTemplates, patchCompanyMeasurementTemplate } from "@/lib/apiClient";
+import { getMeasurementTemplates, patchCompanyMeasurementTemplate } from "@/lib/api/measurementApi";
 import { CompanyTemplateSaveSheet, MeasurementTemplatePickerSheet } from "./MeasurementTemplateSheets";
 import type { SizeColorCacheEntry } from "./sizeColorCache";
 import { formatDecimal, quantityCellMap, sizeSpecCellMap, sumQuantities, type MeasurementDisplayUnit } from "./sizeColorDisplayModel";

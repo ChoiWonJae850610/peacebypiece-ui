@@ -3,6 +3,7 @@ import fs from "node:fs";
 import path from "node:path";
 
 import { assertCanonicalWaflVersionConsistency } from "./helpers/wafl-v2-current-version.mjs";
+import { readMobileApiSource } from "./helpers/mobile-api-source.mjs";
 import { resolveWorkOrderTabVisualState } from "../apps/mobile/features/work-orders/overview/workOrderDetailPresentation.ts";
 
 const read = (relativePath) => fs.readFileSync(path.resolve(relativePath), "utf8");
@@ -17,7 +18,7 @@ const app = read("apps/mobile/features/MobileWorkOrderExperience.tsx");
 const list = read("apps/mobile/features/work-orders/list/WorkOrderListScreen.tsx");
 const detail = read("apps/mobile/features/work-orders/overview/WorkOrderDetailOverview.tsx");
 const display = read("apps/mobile/lib/workOrderDisplay.ts");
-const apiClient = [read("apps/mobile/lib/apiClient.ts"), read("apps/mobile/lib/apiTransport.ts")].join("\n");
+const apiClient = readMobileApiSource();
 const proxy = read("proxy.ts");
 const externalQa = read("lib/external-qa/configCore.mjs");
 const runtime = [entry, app, list, detail, apiClient].join("\n");

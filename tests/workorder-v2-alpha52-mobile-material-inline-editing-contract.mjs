@@ -6,7 +6,10 @@ import { resolveMaterialOrderPolicy } from "../apps/mobile/domain/materialOrderP
 
 const materials = fs.readFileSync("apps/mobile/features/materials/WorkOrderMaterialsReadOnly.tsx", "utf8");
 const overview = fs.readFileSync("apps/mobile/features/work-orders/overview/WorkOrderDetailOverview.tsx", "utf8");
-const app = fs.readFileSync("apps/mobile/features/MobileWorkOrderExperience.tsx", "utf8");
+const app = [
+  fs.readFileSync("apps/mobile/features/MobileWorkOrderExperience.tsx", "utf8"),
+  fs.readFileSync("apps/mobile/features/materials/useWorkOrderMaterialAuthoringController.ts", "utf8"),
+].join("\n");
 const runtimeGuard = fs.readFileSync("lib/domain/work-orders/command/runtimeGuard.ts", "utf8");
 const qaConfig = fs.readFileSync("lib/external-qa/configCore.mjs", "utf8");
 const runner = fs.readFileSync("tools/dev/start-wafl-external-qa.ps1", "utf8");

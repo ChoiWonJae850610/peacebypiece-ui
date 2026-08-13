@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 import assert from "node:assert/strict";
 import fs from "node:fs";
+import { readMobileApiSource } from "./helpers/mobile-api-source.mjs";
 import path from "node:path";
 
 import {
@@ -38,7 +39,7 @@ assert.equal(replay, first);
 assert.notEqual(changed.idempotencyKey, first.idempotencyKey);
 assert.deepEqual(reconcileCreatedWorkOrderListItem([item("old", "기존"), item("new", "이전")], item("new", "신규")), [item("new", "신규"), item("old", "기존")]);
 
-const api = read("apps/mobile/lib/apiClient.ts");
+const api = readMobileApiSource();
 const mutation = read("apps/mobile/features/work-orders/workOrderMutationController.ts");
 const experience = read("apps/mobile/features/MobileWorkOrderExperience.tsx");
 const list = read("apps/mobile/features/work-orders/list/WorkOrderListScreen.tsx");

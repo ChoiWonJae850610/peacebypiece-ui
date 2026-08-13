@@ -159,7 +159,10 @@ function inlineMarkerSources() {
     controlledInline: fs.readFileSync("apps/mobile/components/ControlledInlineEditValue.tsx", "utf8"),
     reelPicker: fs.readFileSync("apps/mobile/features/inputs/reel-picker/WaflReelPickerSheet.tsx", "utf8"),
     display: fs.readFileSync("apps/mobile/lib/mobileDisplay.ts", "utf8"),
-    experience: fs.readFileSync("apps/mobile/features/MobileWorkOrderExperience.tsx", "utf8"),
+    experience: [
+      fs.readFileSync("apps/mobile/features/MobileWorkOrderExperience.tsx", "utf8"),
+      fs.readFileSync("apps/mobile/features/materials/useWorkOrderMaterialAuthoringController.ts", "utf8"),
+    ].join("\n"),
   };
 }
 

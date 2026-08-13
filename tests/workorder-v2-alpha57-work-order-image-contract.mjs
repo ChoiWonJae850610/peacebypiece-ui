@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 import assert from "node:assert/strict";
 import fs from "node:fs";
+import { readMobileApiSource } from "./helpers/mobile-api-source.mjs";
 
 import { isTailscaleServePathAllowed } from "../lib/external-qa/configCore.mjs";
 import { assertCanonicalWaflVersionConsistency } from "./helpers/wafl-v2-current-version.mjs";
@@ -14,10 +15,13 @@ const mobilePackage = JSON.parse(read("apps/mobile/package.json"));
 const lockfile = read("apps/mobile/package-lock.json");
 const acquisition = read("apps/mobile/features/work-orders/images/workOrderImageAcquisition.ts");
 const gallery = read("apps/mobile/features/work-orders/images/WorkOrderImageGallery.tsx");
-const experience = read("apps/mobile/features/MobileWorkOrderExperience.tsx");
+const experience = [
+  read("apps/mobile/features/MobileWorkOrderExperience.tsx"),
+  read("apps/mobile/features/work-orders/images/useWorkOrderAssetAuthoringController.ts"),
+].join("\n");
 const list = read("apps/mobile/features/work-orders/list/WorkOrderListScreen.tsx");
 const overview = read("apps/mobile/features/work-orders/overview/WorkOrderDetailOverview.tsx");
-const apiClient = read("apps/mobile/lib/apiClient.ts");
+const apiClient = readMobileApiSource();
 const queryController = read("apps/mobile/features/work-orders/workOrderQueryController.ts");
 const mutationController = read("apps/mobile/features/work-orders/workOrderMutationController.ts");
 const repository = read("lib/domain/work-orders/command/imageCommandRepository.ts");

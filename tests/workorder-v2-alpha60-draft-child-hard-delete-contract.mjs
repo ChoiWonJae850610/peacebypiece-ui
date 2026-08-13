@@ -40,7 +40,10 @@ const sizeRepository = read("lib/domain/work-orders/command/sizeColorStructureCo
 const materialRepository = read("lib/domain/work-orders/command/materialCommandRepository.ts");
 const sizeRoute = read("lib/domain/work-orders/command/sizeColorStructureCommandRoute.ts");
 const materialRoute = read("lib/domain/work-orders/command/materialCommandRoute.ts");
-const mobile = read("apps/mobile/features/MobileWorkOrderExperience.tsx");
+const mobile = [
+  read("apps/mobile/features/MobileWorkOrderExperience.tsx"),
+  read("apps/mobile/features/materials/useWorkOrderMaterialAuthoringController.ts"),
+].join("\n");
 const structureEditor = read("apps/mobile/features/work-orders/size-color/WorkOrderSizeColorStructureEditor.tsx");
 const structureController = read("apps/mobile/features/work-orders/size-color/useSizeColorStructureEditController.ts");
 const config = read("lib/external-qa/configCore.mjs");

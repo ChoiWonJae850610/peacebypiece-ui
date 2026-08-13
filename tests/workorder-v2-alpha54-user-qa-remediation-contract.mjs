@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 import assert from "node:assert/strict";
 import fs from "node:fs";
+import { readMobileApiSource } from "./helpers/mobile-api-source.mjs";
 
 import { classifyNonJsonHttpResponse } from "../apps/mobile/domain/mobileHttpResponse.ts";
 import { calendarMonthCells } from "../apps/mobile/hooks/useDatePickerState.ts";
@@ -53,11 +54,8 @@ assert.equal(mutation.inFlight, false);
 
 const picker = fs.readFileSync("apps/mobile/features/inputs/reel-picker/WaflReelPickerSheet.tsx", "utf8");
 const materials = fs.readFileSync("apps/mobile/features/materials/WorkOrderMaterialsReadOnly.tsx", "utf8");
-const experience = fs.readFileSync("apps/mobile/features/MobileWorkOrderExperience.tsx", "utf8");
-const apiClient = [
-  fs.readFileSync("apps/mobile/lib/apiClient.ts", "utf8"),
-  fs.readFileSync("apps/mobile/lib/apiTransport.ts", "utf8"),
-].join("\n");
+const experience = [fs.readFileSync("apps/mobile/features/MobileWorkOrderExperience.tsx", "utf8"), fs.readFileSync("apps/mobile/features/materials/useWorkOrderMaterialAuthoringController.ts", "utf8")].join("\n");
+const apiClient = readMobileApiSource();
 const datePicker = fs.readFileSync("apps/mobile/components/InlineDatePicker.tsx", "utf8");
 
 assert.match(picker, /selectedIndexRef/);

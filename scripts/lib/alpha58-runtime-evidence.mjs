@@ -155,7 +155,7 @@ export function inspectSamePositionInlineCoreFieldSources(sources) {
       "background-duplicate-zero",
       "background/unmount lifecycle에는 저장 호출이 없고 controller의 유일한 onSave는 finalization에만 있다",
       controlledSaveCalls.length === 1
-        && /function finalizePendingSave[\s\S]*?onSave\(result\.value\)/.test(sources.controlledInline)
+        && /function finalizePendingSave[\s\S]*?decideInlineEditCommit\([\s\S]*?onSave\(decision\.value\)/.test(sources.controlledInline)
         && !/useEffect\([\s\S]{0,700}\bonSave\(/.test(sources.controlledInline),
       `controllerOnSaveCalls=${controlledSaveCalls.length}; effectSaveCall=${/useEffect\([\s\S]{0,700}\bonSave\(/.test(sources.controlledInline)}`,
       "an effect/unmount save path exists or save is not confined to finalization",
@@ -183,7 +183,8 @@ export function inspectSamePositionInlineCoreFieldSources(sources) {
     sourceCheck(
       "failure-conflict-restore",
       "실패 복원과 conflict 최신값 refresh 경계가 유지된다",
-      sources.controlledInline.includes("result.value === activationValueRef.current")
+      sources.controlledInline.includes("activationValue: activationValueRef.current")
+        && sources.controlledInline.includes("if (!decision.changed)")
         && sources.experience.includes("await refreshInlineMaterial(error.entityVersion)")
         && sources.experience.includes("rollbackInlineMaterial()"),
       "unchanged activation equality, conflict refresh, and rollback paths present",

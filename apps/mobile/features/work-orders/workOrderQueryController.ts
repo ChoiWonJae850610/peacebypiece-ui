@@ -1,13 +1,17 @@
 import {
   getWorkOrderDetail,
-  getWorkOrderImages,
   getWorkOrderList,
+} from "../../lib/api/workOrdersApi";
+import { getWorkOrderImages } from "../../lib/api/assetsApi";
+import {
   getWorkOrderMaterials,
   getWorkOrderMaterialPartners,
+} from "../../lib/api/materialsApi";
+import {
   getWorkOrderSizeColor,
   getWorkOrderSizeSpec,
   getWorkOrderStructureOptions,
-} from "../../lib/apiClient";
+} from "../../lib/api/sizeColorApi";
 import type { MaterialType, WorkOrderListStatusFilter } from "../../domain/mobileContract";
 
 export const workOrderQueryController = {

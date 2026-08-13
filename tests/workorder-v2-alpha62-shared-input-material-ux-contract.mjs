@@ -36,7 +36,10 @@ assert.equal(attachmentFilenameRoundTripsJson(koreanFilename), true);
 const controlledInline = read("apps/mobile/components/ControlledInlineEditValue.tsx");
 const materialRead = read("apps/mobile/features/materials/WorkOrderMaterialsReadOnly.tsx");
 const overview = read("apps/mobile/features/work-orders/overview/WorkOrderDetailOverview.tsx");
-const experience = read("apps/mobile/features/MobileWorkOrderExperience.tsx");
+const experience = [
+  read("apps/mobile/features/MobileWorkOrderExperience.tsx"),
+  read("apps/mobile/features/materials/useWorkOrderMaterialAuthoringController.ts"),
+].join("\n");
 const materialValidation = read("apps/mobile/domain/workOrderValidation.ts");
 const serverMaterialValidation = read("lib/domain/work-orders/command/materialValidation.ts");
 const serverMaterialRepository = read("lib/domain/work-orders/command/materialCommandRepository.ts");
@@ -53,8 +56,8 @@ for (const token of ["decideInlineEditCommit", "valueSemantics", "activationValu
 assert.ok(materialRead.includes("materialDraftFromLine(line)"), "material inline activation must use the persisted line value");
 assert.ok(materialRead.includes('valueSemantics={nullableText ? "nullable-text" : undefined}'));
 assert.equal((overview.match(/valueSemantics="nullable-text"/g) ?? []).length >= 2, true);
-assert.ok(experience.includes('semantics: "nullable-text"'));
-assert.ok(experience.includes("decision.nullableValue"));
+assert.ok(controlledInline.includes("semantics,"));
+assert.ok(controlledInline.includes("onSave(decision.value)"));
 for (const token of ["usage_area = CASE WHEN", "memo = CASE WHEN", "hasOwn(patch, \"usageArea\")", "hasOwn(patch, \"memo\")"]) {
   assert.ok(serverMaterialRepository.includes(token), `explicit nullable patch contract missing ${token}`);
 }

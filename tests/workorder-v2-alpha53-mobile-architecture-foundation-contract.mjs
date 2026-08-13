@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 import assert from "node:assert/strict";
 import fs from "node:fs";
+import { readMobileApiSource } from "./helpers/mobile-api-source.mjs";
 
 const read = (path) => fs.readFileSync(path, "utf8");
 const shell = read("apps/mobile/components/MobileWorkOrderApp.tsx");
@@ -12,7 +13,7 @@ const mutations = read("apps/mobile/features/work-orders/workOrderMutationContro
 const validation = read("apps/mobile/domain/workOrderValidation.ts");
 const policy = read("apps/mobile/domain/workOrderPolicy.ts");
 const contract = read("apps/mobile/domain/mobileContract.ts");
-const apiInfrastructure = [read("apps/mobile/lib/apiClient.ts"), read("apps/mobile/lib/apiTransport.ts")].join("\n");
+const apiInfrastructure = readMobileApiSource();
 const theme = read("apps/mobile/constants/theme.ts");
 const serverErrors = read("lib/domain/work-orders/contracts/errors.ts");
 const workingRules = read("docs/project/app-v2/09-codex-working-rules.md");
@@ -21,7 +22,7 @@ assert.ok(shell.split(/\r?\n/).length <= 10, "MobileWorkOrderApp must remain a c
 assert.match(shell, /<MobileWorkOrderExperience/);
 assert.doesNotMatch(shell, /apiClient|fetch\(|PATCH|validation|status ===/);
 const apiClientImports = experience.match(/^import .* from "@\/lib\/apiClient";$/gm) ?? [];
-assert.deepEqual(apiClientImports, ['import { resolveMobileApiUrl } from "@/lib/apiClient";']);
+assert.deepEqual(apiClientImports, []);
 const directApiFetchPattern = /\bfetch\s*\(\s*(?:["'](?:https?:\/\/|\/api\/v2\/)|`[^`]*(?:https?:\/\/|\/api\/v2\/)|(?:configuredOrigin|resolveMobileApiUrl)\s*\()/;
 const directApiBypassPattern = /\brequestJson\s*\(|["']\/api\/v2\//;
 const delegatedCreateFixture = 'async function createWorkOrderDraftFromMobile() { return workOrderMutationController.createDraft(command, key); }';

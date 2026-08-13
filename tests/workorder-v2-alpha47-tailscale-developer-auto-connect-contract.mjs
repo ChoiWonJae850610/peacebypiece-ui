@@ -112,7 +112,11 @@ const autoRoute = read("app/api/dev/mobile-connect/auto/route.ts");
 const autoService = read("lib/mobile-dev-session/tailscaleAutoConnect.ts");
 const mobileApp = read("apps/mobile/features/MobileWorkOrderExperience.tsx");
 const connectScreen = read("apps/mobile/components/MobileConnectScreen.tsx");
-const apiClient = [read("apps/mobile/lib/apiClient.ts"), read("apps/mobile/lib/apiTransport.ts")].join("\n");
+const apiClient = [
+  read("apps/mobile/lib/apiClient.ts"),
+  read("apps/mobile/lib/apiTransport.ts"),
+  read("apps/mobile/lib/api/sessionApi.ts"),
+].join("\n");
 const start = read("tools/dev/start-wafl-external-qa.ps1");
 const stop = read("tools/dev/stop-wafl-external-qa.ps1");
 const common = read("tools/dev/wafl-external-qa-common.ps1");

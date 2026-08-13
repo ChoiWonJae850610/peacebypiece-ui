@@ -11,6 +11,7 @@ const root = process.cwd();
 const companyId = "wafl-fn-company-a";
 const statePath = path.join(root, ".tmp", "wafl-external-qa", "state.json");
 const resultPath = path.join(root, ".tmp", "wafl-external-qa", "alpha62-maker-authoring-runtime-result.json");
+const alpha63MaterialRevalidation = process.env.WAFL_ALPHA63_MATERIAL_REVALIDATION === "1";
 const date = new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Seoul", year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date()).replaceAll("-", "");
 const suffix = crypto.randomBytes(4).toString("hex").toUpperCase();
 const marker = `QA A62 size measurement isolated ${date}-${suffix}`;
@@ -77,6 +78,7 @@ async function run() {
   let fixture;
   let cookie = "";
   const ledger = [];
+  const materialRevalidation = [];
 
   async function request(route, { method = "GET", body, key, rawBody, headers = {} } = {}) {
     const started = performance.now();
@@ -108,6 +110,28 @@ async function run() {
     const result = await request(route, { method, key, body: { clientRequestId: id(`${label}-client`), expectedVersion: version, ...payload } });
     assert.ok([200, 201].includes(result.response.status), `${label}:${result.response.status}:${result.text}`);
     return result.json.data;
+  };
+
+  const revalidateMaterial = async (label, materialType, nextVersion, outcome = "success") => {
+    const start = ledger.length;
+    const detailProjection = await request(`/api/v2/work-orders/${fixture.work_order_id}`);
+    const materialProjection = await request(`/api/v2/work-orders/${fixture.work_order_id}/materials?type=${materialType}&lifecycle=active&limit=30`);
+    assert.equal(detailProjection.response.status, 200, `${label}:detail:${detailProjection.text}`);
+    assert.equal(materialProjection.response.status, 200, `${label}:materials:${materialProjection.text}`);
+    assert.equal(detailProjection.json.data.header.entityVersion, nextVersion, `${label}:detail-version`);
+    assert.equal(materialProjection.json.data.entityVersion, nextVersion, `${label}:material-version`);
+    const requests = ledger.slice(start);
+    materialRevalidation.push({
+      label,
+      outcome,
+      commandCount: 1,
+      mutationCount: outcome === "success" ? 1 : 0,
+      detailGetCount: requests.filter((entry) => entry.method === "GET" && entry.route === "/api/v2/work-orders/:uuid").length,
+      materialGetCount: requests.filter((entry) => entry.method === "GET" && entry.route.startsWith("/api/v2/work-orders/:uuid/materials?")).length,
+      authoritativeProjection: "detail+material-list",
+      nextVersion,
+      fallback: outcome === "success" ? "bounded-authoritative-revalidation" : "conflict-authoritative-revalidation",
+    });
   };
 
   const prepareAsset = async (kind, filename, contentType, bytes) => {
@@ -226,6 +250,7 @@ async function run() {
       version = created.nextVersion;
       const materialLineId = created.result.materialLineId;
       materialIds.push(materialLineId);
+      if (alpha63MaterialRevalidation) await revalidateMaterial(`${materialType}-create`, materialType, version);
       if (materialType === "fabric") {
         const blocked = await request(`/api/v2/work-orders/${fixture.work_order_id}/materials/${materialLineId}/order-request`, {
           method: "POST",
@@ -235,13 +260,34 @@ async function run() {
         assert.equal(blocked.response.status, 400, blocked.text);
         assert.equal(blocked.json.error.fieldErrors.some((item) => item.field === "partnerId"), true);
         assert.equal(blocked.json.error.fieldErrors.some((item) => item.field === "unitPrice"), true);
-        const readyPatch = await mutate(`/api/v2/work-orders/${fixture.work_order_id}/materials/${materialLineId}`, "PATCH", version, { patch: { partnerId: partner.id, unitPrice: "1000" } }, "fabric-readiness-patch");
-        version = readyPatch.nextVersion;
+        if (alpha63MaterialRevalidation) {
+          const pricePatch = await mutate(`/api/v2/work-orders/${fixture.work_order_id}/materials/${materialLineId}`, "PATCH", version, { patch: { unitPrice: "1000" } }, "fabric-price-patch");
+          version = pricePatch.nextVersion;
+          await revalidateMaterial("patch-unit-price", materialType, version);
+          const partnerPatch = await mutate(`/api/v2/work-orders/${fixture.work_order_id}/materials/${materialLineId}`, "PATCH", version, { patch: { partnerId: partner.id } }, "fabric-partner-patch");
+          version = partnerPatch.nextVersion;
+          await revalidateMaterial("partner-change", materialType, version);
+          const quantityPatch = await mutate(`/api/v2/work-orders/${fixture.work_order_id}/materials/${materialLineId}`, "PATCH", version, { patch: { requiredQuantity: "4" } }, "fabric-quantity-patch");
+          version = quantityPatch.nextVersion;
+          await revalidateMaterial("patch-quantity", materialType, version);
+          const staleVersion = version - 1;
+          const conflict = await request(`/api/v2/work-orders/${fixture.work_order_id}/materials/${materialLineId}`, {
+            method: "PATCH",
+            key: id("fabric-conflict-key"),
+            body: { clientRequestId: id("fabric-conflict-client"), expectedVersion: staleVersion, patch: { memo: "must-not-apply" } },
+          });
+          assert.equal(conflict.response.status, 409, conflict.text);
+          await revalidateMaterial("conflict-fallback", materialType, version, "conflict");
+        } else {
+          const readyPatch = await mutate(`/api/v2/work-orders/${fixture.work_order_id}/materials/${materialLineId}`, "PATCH", version, { patch: { partnerId: partner.id, unitPrice: "1000" } }, "fabric-readiness-patch");
+          version = readyPatch.nextVersion;
+        }
       }
       const patched = await mutate(`/api/v2/work-orders/${fixture.work_order_id}/materials/${materialLineId}`, "PATCH", version, { patch: { memo: "blur-save-changed" } }, `${materialType}-patch`);
       version = patched.nextVersion;
       const cleared = await mutate(`/api/v2/work-orders/${fixture.work_order_id}/materials/${materialLineId}`, "PATCH", version, { patch: { usageArea: "", memo: "" } }, `${materialType}-nullable-clear`);
       version = cleared.nextVersion;
+      if (alpha63MaterialRevalidation) await revalidateMaterial(`${materialType}-nullable-clear`, materialType, version);
       const clearedPage = await request(`/api/v2/work-orders/${fixture.work_order_id}/materials?type=${materialType}&lifecycle=active&limit=30`);
       assert.equal(clearedPage.response.status, 200, clearedPage.text);
       const clearedLine = clearedPage.json.data.items.find((item) => item.id === materialLineId);
@@ -250,9 +296,11 @@ async function run() {
       const requested = await mutate(`/api/v2/work-orders/${fixture.work_order_id}/materials/${materialLineId}/order-request`, "POST", version, {}, `${materialType}-request`);
       version = requested.nextVersion;
       assert.equal(requested.result.status, "requested");
+      if (alpha63MaterialRevalidation) await revalidateMaterial(`${materialType}-order-request`, materialType, version);
       const cancelled = await mutate(`/api/v2/work-orders/${fixture.work_order_id}/materials/${materialLineId}/order-cancel`, "POST", version, { reason: "isolated runtime QA" }, `${materialType}-cancel`);
       version = cancelled.nextVersion;
       assert.equal(cancelled.result.status, "editing");
+      if (alpha63MaterialRevalidation) await revalidateMaterial(`${materialType}-order-cancel`, materialType, version);
 
       const deletable = await mutate(`/api/v2/work-orders/${fixture.work_order_id}/materials`, "POST", version, {
         materialType,
@@ -272,6 +320,7 @@ async function run() {
       const deleted = await mutate(`/api/v2/work-orders/${fixture.work_order_id}/materials/${deletable.result.materialLineId}`, "DELETE", version, {}, `${materialType}-hard-delete`);
       version = deleted.nextVersion;
       assert.equal(deleted.result.deleted, true);
+      if (alpha63MaterialRevalidation) await revalidateMaterial(`${materialType}-delete`, materialType, version);
     }
 
     const imageTarget = await prepareAsset("images", `A62-${suffix}.png`, "image/png", imageBytes);
@@ -362,6 +411,12 @@ async function run() {
     assert.equal(Number(after.documents), Number(baseline.documents));
     assert.equal(Number(after.tokens), Number(baseline.tokens));
     assert.equal(Number(after.work_orders), Number(baseline.other_work_orders));
+    if (alpha63MaterialRevalidation) {
+      assert.equal(materialRevalidation.length, 14);
+      assert.equal(materialRevalidation.every((entry) => entry.detailGetCount === 1 && entry.materialGetCount === 1), true);
+      assert.equal(materialRevalidation.every((entry) => entry.commandCount === 1), true);
+      assert.equal(materialRevalidation.find((entry) => entry.label === "conflict-fallback")?.mutationCount, 0);
+    }
 
     const result = {
       result: "PASS",
@@ -372,11 +427,12 @@ async function run() {
         basicNullableClear: ["seasonCode", "itemCode", "factoryDeliveryMemo"],
         sizeColorQuantity: true,
         companyCatalog: { create: 2, usedDeactivate: 1, unusedHardDelete: 1 },
-        material: { create: 4, patch: 5, nullableClear: 2, orderRequest: 3, orderCancel: 2, hardDelete: 2, readinessRejected: 1, createQuantityRejected: 1 },
+        material: { create: 4, patch: alpha63MaterialRevalidation ? 7 : 5, nullableClear: 2, orderRequest: 3, orderCancel: 2, hardDelete: 2, readinessRejected: 1, createQuantityRejected: 1 },
         assets: { imagePutCompleteReadDelete: 1, attachmentUnicodePutCompleteReadDelete: 1 },
       },
       requestCount: ledger.length,
       requestLedger: ledger,
+      materialRevalidation,
       receiptsPreservedAndDetached: beforeCleanupReceipts.length,
       eventsPreserved: Number(residual.events),
       businessResidual: 0,

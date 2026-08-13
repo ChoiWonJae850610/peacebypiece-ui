@@ -1,9 +1,10 @@
 #!/usr/bin/env node
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
+import { readMobileApiSource } from "./helpers/mobile-api-source.mjs";
 
 const read = (file) => readFileSync(file, "utf8");
-const api = read("apps/mobile/lib/apiClient.ts");
+const api = readMobileApiSource();
 const apiTransport = read("apps/mobile/lib/apiTransport.ts");
 const experience = read("apps/mobile/features/MobileWorkOrderExperience.tsx");
 const controller = read("apps/mobile/features/work-orders/size-color/useSizeColorStructureEditController.ts");

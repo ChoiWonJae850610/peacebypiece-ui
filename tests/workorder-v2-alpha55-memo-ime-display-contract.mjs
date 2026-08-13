@@ -91,7 +91,7 @@ assert.match(controlled, /onEndEditing=\{handleEndEditing\}/);
 assert.match(controlled, /onChange=\{handleNativeChange\}/);
 assert.match(controlled, /event\.nativeEvent\.text/);
 assert.match(controlled, /finalizationRef\.current\.requestSave\(\)/);
-assert.match(controlled, /if \(!result\.shouldSave\) return;[\s\S]{0,220}onSave\(result\.value\)/);
+assert.match(controlled, /if \(!result\.shouldSave\) return;[\s\S]*?decideInlineEditCommit\([\s\S]*?if \(!decision\.changed\)[\s\S]*?onSave\(decision\.value\)/);
 assert.doesNotMatch(controlled, /setTimeout\(/);
 assert.match(materials, /onSave\(\{ \[field\]: finalizedValue \}/);
 assert.doesNotMatch(`${controlled}\n${materials}`, /selectTextOnFocus|selection=|setNativeProps\(/);

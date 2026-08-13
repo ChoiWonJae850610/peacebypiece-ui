@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
+import { readMobileApiSource } from "./helpers/mobile-api-source.mjs";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
 
@@ -18,7 +19,10 @@ assert.equal(presentation.attachmentListSummary([
   { sizeBytes: 0 },
 ]), "총 3개 · 1.5MB");
 
-const experience = read("apps/mobile/features/MobileWorkOrderExperience.tsx");
+const experience = [
+  read("apps/mobile/features/MobileWorkOrderExperience.tsx"),
+  read("apps/mobile/features/work-orders/images/useWorkOrderAssetAuthoringController.ts"),
+].join("\n");
 const overview = read("apps/mobile/features/work-orders/overview/WorkOrderDetailOverview.tsx");
 const gallery = read("apps/mobile/features/work-orders/images/WorkOrderImageGallery.tsx");
 const materials = read("apps/mobile/features/materials/WorkOrderMaterialsReadOnly.tsx");
@@ -40,9 +44,9 @@ assert.match(gallery, /attachment\.filename/);
 assert.match(gallery, /formatAttachmentBytes\(attachment\.sizeBytes\)/);
 assert.doesNotMatch(gallery, /selected\.filename|selected\.mimeType|selected\.sizeBytes/);
 
-const apiClient = read("apps/mobile/lib/apiClient.ts");
+const apiClient = readMobileApiSource();
 assert.match(apiClient, /issueWorkOrderAttachmentPreview/);
-assert.match(experience, /issueAttachmentPreview\(selected\.workOrderId, attachment\.id\)/);
+assert.match(experience, /issueAttachmentPreview\(input\.selected\.workOrderId, attachment\.id\)/);
 assert.doesNotMatch(experience, /attachment\.viewUrl[\s\S]{0,120}Linking\.openURL/);
 
 const previewToken = read("lib/workorder/attachments/attachmentPreviewToken.ts");

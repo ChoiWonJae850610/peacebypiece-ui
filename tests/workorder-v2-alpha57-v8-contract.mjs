@@ -33,10 +33,13 @@ assert.match(gallery, /\{memoLength\}자\s*\/\s*\{FACTORY_DELIVERY_MEMO_MAX_LENG
 assert.match(gallery, /onSaveMemo:\s*\(memo: string\) => Promise<boolean>/);
 assert.doesNotMatch(gallery, /공장 전달 메모 편집 취소|공장 전달 메모 저장|styles\.memoAction\b|>편집</);
 
-const experience = read("apps/mobile/features/MobileWorkOrderExperience.tsx");
+const experience = [
+  read("apps/mobile/features/MobileWorkOrderExperience.tsx"),
+  read("apps/mobile/features/work-orders/images/useWorkOrderAssetAuthoringController.ts"),
+].join("\n");
 assert.match(experience, /saveFactoryDeliveryMemo\(memo: string\): Promise<boolean>/);
 assert.match(experience, /factoryDeliveryMemoLength\(memo\) > FACTORY_DELIVERY_MEMO_MAX_LENGTH/);
-assert.match(experience, /onSaveFactoryDeliveryMemo=\{saveFactoryDeliveryMemo\}/);
+assert.match(experience, /onSaveFactoryDeliveryMemo=\{assetAuthoring\.saveFactoryDeliveryMemo\}/);
 
 const materials = read("apps/mobile/features/materials/WorkOrderMaterialsReadOnly.tsx");
 assert.match(materials, /testID=\{`material-add-\$\{materialType\}`\}/);

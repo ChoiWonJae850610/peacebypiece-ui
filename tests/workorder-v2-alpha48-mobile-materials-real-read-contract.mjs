@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
+import { readMobileApiSource } from "./helpers/mobile-api-source.mjs";
 import path from "node:path";
 
 import { resolveMaterialOrderPolicy } from "../apps/mobile/domain/materialOrderPolicy.ts";
@@ -18,8 +19,11 @@ const appJson = json("apps/mobile/app.json");
 const easJson = json("apps/mobile/eas.json");
 const detail = read("apps/mobile/features/work-orders/overview/WorkOrderDetailOverview.tsx");
 const materials = read("apps/mobile/features/materials/WorkOrderMaterialsReadOnly.tsx");
-const app = read("apps/mobile/features/MobileWorkOrderExperience.tsx");
-const apiClient = read("apps/mobile/lib/apiClient.ts");
+const app = [
+  read("apps/mobile/features/MobileWorkOrderExperience.tsx"),
+  read("apps/mobile/features/materials/useWorkOrderMaterialAuthoringController.ts"),
+].join("\n");
+const apiClient = readMobileApiSource();
 const apiResponseNormalizer = read("apps/mobile/lib/apiResponseNormalizer.ts");
 const apiTypes = read("apps/mobile/domain/mobileContract.ts");
 const mobileDisplay = read("apps/mobile/lib/mobileDisplay.ts");
@@ -209,9 +213,9 @@ assert.match(app, /page\.materialType !== materialType/);
 assert.match(app, /new Set\(merged\.map\(\(line\) => line\.id\)\)/);
 assert.match(app, /materialCache\[materialCacheKey\(detail\.header\.id, activeMaterialType\)\]/);
 assert.match(app, /onOpenMaterials=\{\(materialType\) =>/);
-assert.match(app, /loadMaterials\(detail\.header\.id, materialType, "initial"\)/);
-assert.match(app, /onRetryMaterials=\{\(\) => void loadMaterials\(detail\.header\.id, activeMaterialType, "retry"\)\}/);
-assert.match(app, /onLoadMoreMaterials=\{\(\) => void loadMaterials\(detail\.header\.id, activeMaterialType, "more"\)\}/);
+assert.match(app, /materialAuthoring\.loadMaterials\(detail\.header\.id, materialType, "initial"\)/);
+assert.match(app, /onRetryMaterials=\{\(\) => void materialAuthoring\.loadMaterials\(detail\.header\.id, activeMaterialType, "retry"\)\}/);
+assert.match(app, /onLoadMoreMaterials=\{\(\) => void materialAuthoring\.loadMaterials\(detail\.header\.id, activeMaterialType, "more"\)\}/);
 for (const errorBoundary of ["status === 401", "status === 403", "status === 404", "status === 409"]) {
   assert.match(`${app}\n${errorPresentation}`, new RegExp(errorBoundary.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")), `error boundary missing: ${errorBoundary}`);
 }

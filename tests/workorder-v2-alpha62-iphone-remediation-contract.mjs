@@ -1,11 +1,12 @@
 #!/usr/bin/env node
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
+import { readMobileApiSource } from "./helpers/mobile-api-source.mjs";
 
 const read = (path) => readFileSync(path, "utf8");
 const repository = read("lib/domain/work-orders/measurement/measurementCommandRepository.ts");
 const runner = read("scripts/run-wafl-v2-alpha62-size-measurement-runtime-qa.mjs");
-const mobileApi = read("apps/mobile/lib/apiClient.ts");
+const mobileApi = readMobileApiSource();
 const mobileController = read("apps/mobile/features/work-orders/size-color/useSizeColorStructureEditController.ts");
 const mobileView = read("apps/mobile/features/work-orders/size-color/WorkOrderSizeColorReadOnly.tsx");
 const templateSheets = read("apps/mobile/features/work-orders/size-color/MeasurementTemplateSheets.tsx");

@@ -51,7 +51,7 @@ const quantityComponent = read("apps/mobile/features/materials/MaterialQuantityV
 const reelValue = read("apps/mobile/features/inputs/reel-picker/ReelInlineEditValue.tsx");
 const materials = read("apps/mobile/features/materials/WorkOrderMaterialsReadOnly.tsx");
 const editor = read("apps/mobile/features/materials/WorkOrderMaterialEditor.tsx");
-const experience = read("apps/mobile/features/MobileWorkOrderExperience.tsx");
+const experience = [read("apps/mobile/features/MobileWorkOrderExperience.tsx"), read("apps/mobile/features/materials/useWorkOrderMaterialAuthoringController.ts")].join("\n");
 const policy = read("apps/mobile/domain/workOrderPolicy.ts");
 const runtimeQa = read("scripts/run-wafl-v2-alpha55-material-order-runtime-qa.mjs");
 
@@ -80,7 +80,7 @@ const saveSlice = experience.slice(
 );
 assert.match(saveSlice, /selectedWorkOrderId\.current !== editor\.workOrderId/);
 assert.match(saveSlice, /detail\.header\.id !== editor\.workOrderId/);
-assert.match(saveSlice, /const expectedVersion = detail\.header\.entityVersion/);
+assert.match(saveSlice, /const expectedVersion = latestDetail\.header\.entityVersion/);
 assert.match(saveSlice, /workOrderMutationController\.createMaterial\(editor\.workOrderId/);
 assert.match(policy, /detail\.header\.status === "draft"/);
 assert.match(policy, /detail\.revision\.status === "draft"/);
