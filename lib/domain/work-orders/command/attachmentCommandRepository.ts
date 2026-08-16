@@ -17,6 +17,7 @@ import { installTenantClaims } from "@/lib/domain/work-orders/command/commandRep
 
 export const ATTACHMENT_UPLOAD_COMMAND_CODE = "work_order.attachment.upload";
 export const ATTACHMENT_DELETE_COMMAND_CODE = "work_order.attachment.delete";
+export const ATTACHMENT_OUTPUT_INCLUDE_COMMAND_CODE = "work_order.attachment.output_include.set";
 
 type FailureReason =
   | "not_found"
@@ -532,4 +533,92 @@ export async function deleteWorkOrderAttachmentV2(input: {
     context,
     startedAt,
   });
+}
+
+export async function setWorkOrderAttachmentOutputIncludeV2(input: {
+  scope: TenantMemberScope;
+  assignedCompanyMemberId: CompanyMemberId | null;
+  workOrderId: WorkOrderId;
+  attachmentId: string;
+  expectedVersion: EntityVersion;
+  clientRequestId: string;
+  includeInDocument: boolean;
+  scopedIdempotencyKeyHash: string;
+  requestHash: string;
+}) {
+  const startedAt = performance.now();
+  const context: Context = { statementCount: 0 };
+  const completed = await withWaflV2TenantWriteTransaction(async (client) => {
+    await installTenantClaims(client, input.scope);
+    context.statementCount += 1;
+    const receipt = await reserveReceipt({
+      client,
+      context,
+      scope: input.scope,
+      commandCode: ATTACHMENT_OUTPUT_INCLUDE_COMMAND_CODE,
+      scopedIdempotencyKeyHash: input.scopedIdempotencyKeyHash,
+      requestHash: input.requestHash,
+    });
+    if (receipt) return {
+      workOrderId: receipt.work_order_id as string,
+      revisionId: receipt.result_revision_id as string,
+      nextVersion: Number(receipt.result_entity_version),
+      idempotentReplay: true,
+    };
+    const target = await lockAttachmentTarget({
+      client,
+      context,
+      scope: input.scope,
+      workOrderId: input.workOrderId,
+      attachmentId: input.attachmentId,
+      assignedCompanyMemberId: input.assignedCompanyMemberId,
+    });
+    assertDraft(target, input.expectedVersion);
+    const updated = await client.query(`
+      UPDATE work_order_revision_attachments
+      SET output_include = $4
+      WHERE company_id = $1 AND revision_id = $2::uuid AND attachment_id = $3::uuid
+        AND output_include IS DISTINCT FROM $4
+    `, [input.scope.companyId, target.revision_id, input.attachmentId, input.includeInDocument]);
+    context.statementCount += 1;
+    const nextVersion = updated.rowCount === 0
+      ? integer(target.work_order_version)
+      : await advanceVersions({ client, context, scope: input.scope, target, expectedVersion: input.expectedVersion });
+    if (updated.rowCount !== 0) {
+      await appendEvent({
+        client,
+        context,
+        scope: input.scope,
+        target,
+        attachmentId: input.attachmentId,
+        commandCode: ATTACHMENT_OUTPUT_INCLUDE_COMMAND_CODE,
+        summary: input.includeInDocument ? "첨부를 작업지시서 출력에 포함" : "첨부를 작업지시서 출력에서 제외",
+        clientRequestId: input.clientRequestId,
+        nextVersion,
+      });
+    }
+    await completeReceipt({
+      client,
+      context,
+      scope: input.scope,
+      commandCode: ATTACHMENT_OUTPUT_INCLUDE_COMMAND_CODE,
+      scopedIdempotencyKeyHash: input.scopedIdempotencyKeyHash,
+      target,
+      nextVersion,
+    });
+    return { workOrderId: target.work_order_id, revisionId: target.revision_id, nextVersion, idempotentReplay: false };
+  });
+  return {
+    result: {
+      workOrderId: completed.workOrderId as WorkOrderId,
+      revisionId: completed.revisionId,
+      attachmentId: input.attachmentId,
+      includeInDocument: input.includeInDocument,
+      nextVersion: completed.nextVersion as EntityVersion,
+    },
+    idempotentReplay: completed.idempotentReplay,
+    statementCount: context.statementCount,
+    transactionCount: 1 as const,
+    dbMs: Number((performance.now() - startedAt).toFixed(2)),
+  };
 }

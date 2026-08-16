@@ -1,6 +1,10 @@
 $ErrorActionPreference = "Stop"
 . (Join-Path $PSScriptRoot "..\tools\dev\wafl-external-qa-common.ps1")
 
+$nodeToolchain = Resolve-WaflQaCanonicalNodeToolchain
+if ($nodeToolchain.Version -ne "v24.14.0") { throw "CANONICAL_NODE_VERSION_CONTRACT_FAILED" }
+if (-not (Test-Path -LiteralPath $nodeToolchain.Node -PathType Leaf)) { throw "CANONICAL_NODE_TOOLCHAIN_INCOMPLETE" }
+
 $values = @("100.64.0.1", "100.127.255.254", "100.128.0.1", "127.0.0.1", "192.168.1.5", "not-an-ip")
 $expected = @($true, $true, $false, $false, $false, $false)
 $actual = @($values | ForEach-Object { Test-WaflQaTailscaleIpv4 -Value $_ })

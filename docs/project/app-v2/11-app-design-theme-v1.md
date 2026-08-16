@@ -1,5 +1,7 @@
 # WAFL App Design Theme v1 — Dongdaemun Atelier Ops
 
+> Historical first App-first theme and rationale. Current React Native mobile visual/layout/component rules are owned by `11a-mobile-design-system-v2.md` and `11b-maker-workorder-tab-ia-v2.md`. Theme v1 applies only where those current owners do not supersede or conflict with it.
+
 ## 1. Theme Definition
 
 Theme name:

@@ -53,7 +53,7 @@ const config = read("lib/external-qa/configCore.mjs");
 for (const token of [
   "makerAuthoringAssetMutationEnabled",
   "size-color\\/options",
-  "alpha62SizeMeasurementEnabled(env)",
+  "isMakerQaCapabilityEnabled(env, MAKER_QA_CAPABILITY.MEASUREMENT)",
   "/api/v2/work-orders/files/upload",
 ]) assert.ok(config.includes(token), `runtime composition missing ${token}`);
 
@@ -67,7 +67,8 @@ for (const token of [
   ">추가</Text>",
   "summarizeStagedDeletionQuantity",
   "diffStagedStructureSelection",
-  "StructureCard",
+  "onEditSize",
+  "onEditColor",
 ]) assert.ok(editor.includes(token), `mobile catalog UX missing ${token}`);
 assert.ok(!editor.includes("ExistingStructureEditor"), "legacy duplicate structure editor must be removed");
 assert.ok(!editor.includes("<WaflOptionReel"), "size/color two-way selection must not regress to a reel");

@@ -1,14 +1,13 @@
-import { useCallback, useMemo, useState, type ReactNode } from "react";
+import { useCallback, useMemo, useRef, useState, type ReactNode } from "react";
 import {
   ActivityIndicator,
   Pressable,
-  ScrollView,
   StyleSheet,
   Text,
-  TextInput,
+  type TextInput,
   View,
 } from "react-native";
-import { Check, ChevronLeft, ChevronRight } from "lucide-react-native";
+import { Check, ChevronLeft } from "lucide-react-native";
 
 import { WAFL_FONTS } from "@/constants/fonts";
 import { WAFL_THEME } from "@/constants/theme";
@@ -37,31 +36,42 @@ import type { ColorStructureDraft } from "./sizeColorStructureEditPolicy";
 import type { SizeColorStructureEditBoundary } from "./useSizeColorStructureEditController";
 import { isSizeColorCommandPending } from "./sizeColorPendingPolicy";
 import WorkOrderSizeColorReadOnly from "./WorkOrderSizeColorReadOnly";
+import SpecItemSelectionSheet from "./SpecItemSelectionSheet";
 import { workOrderMutationController } from "@/features/work-orders/workOrderMutationController";
 import { workOrderQueryController } from "@/features/work-orders/workOrderQueryController";
 import WaflOptionGrid, { type WaflOptionGridItem } from "@/features/inputs/WaflOptionGrid";
 import WaflInputSheet from "@/features/inputs/WaflInputSheet";
+import WaflSheetTextInput from "@/features/inputs/WaflSheetTextInput";
+import { WAFL_REUSABLE_CATALOG_CREATE_SIZING } from "@/domain/waflSheetDetentPolicy";
+import { decodeWorkOrderMajorCategoryCode } from "@/domain/workOrderCategoryPolicy";
+import { listWaflSystemSpecItems } from "@/domain/systemSpecItemCatalog";
+import { useWaflNestedSheetHandoff } from "@/features/inputs/useWaflNestedSheetHandoff";
+import type { WaflSheetSizing } from "@/domain/waflSheetDetentPolicy";
 
 type Props = {
   readonly identity: string;
   readonly state: SizeColorCacheEntry;
   readonly edit: SizeColorStructureEditBoundary;
   readonly onRetry: () => void;
+  readonly productTypeCode: string | null;
 };
 
-function StructureSelectionSheet(props: { readonly title: string; readonly onClose: () => void; readonly onApply?: () => void; readonly applyDisabled?: boolean; readonly busy?: boolean; readonly children: ReactNode }) {
+function StructureSelectionSheet(props: { readonly title: string; readonly onClose: () => void; readonly onAfterClose?: () => void; readonly onAfterOpen?: () => void; readonly onApply?: () => void; readonly applyDisabled?: boolean; readonly busy?: boolean; readonly children: ReactNode; readonly sizing?: WaflSheetSizing; readonly visible?: boolean }) {
   return <WaflInputSheet
     cancelAccessibilityLabel={`${props.title} 변경 취소`}
     confirmAccessibilityLabel={`${props.title} 변경 적용`}
     confirmDisabled={props.applyDisabled}
     contentStyle={styles.structureSheetContent}
     onCancel={props.onClose}
+    onAfterClose={props.onAfterClose}
+    onAfterOpen={props.onAfterOpen}
     onConfirm={props.onApply}
     pending={props.busy}
+    sizing={props.sizing ?? "expandable"}
     title={props.title}
-    visible
+    visible={props.visible ?? true}
   >
-    <ScrollView contentContainerStyle={styles.sheetContent} keyboardShouldPersistTaps="handled">{props.children}</ScrollView>
+    <View style={styles.sheetContent}>{props.children}</View>
   </WaflInputSheet>;
 }
 
@@ -70,20 +80,21 @@ function SizeChooser(props: {
   readonly companyOptions: readonly CompanyWorkOrderStructureOption[];
   readonly busy: boolean;
   readonly onClose: () => void;
-  readonly onCreate: (name: string) => Promise<boolean>;
+  readonly onCreate: (name: string) => Promise<CompanyWorkOrderStructureOption | null>;
   readonly onRemove: (option: CompanyWorkOrderStructureOption) => void;
   readonly onApply: (diff: StructureSelectionBatchDiff) => Promise<boolean>;
 }) {
-  const [directMode, setDirectMode] = useState(false);
+  const nested = useWaflNestedSheetHandoff<"select" | "create">("select");
+  const directInputRef = useRef<TextInput>(null);
   const [direct, setDirect] = useState("");
   const [selectedKeys, setSelectedKeys] = useState<readonly string[]>(() => createStagedStructureSelection(props.rows.map((row) => ({ id: row.id, displayName: row.displayLabel, hexValue: null }))));
   const selected = useMemo(() => new Set(selectedKeys), [selectedKeys]);
-  if (directMode) return <StructureSelectionSheet onClose={props.onClose} title="직접 사이즈 만들기">
-    <Pressable accessibilityLabel="사이즈 선택으로 돌아가기" onPress={() => setDirectMode(false)} style={styles.backButton}><ChevronLeft color="#23375a" size={18} /><Text style={styles.backButtonText}>사이즈 선택</Text></Pressable>
+  if (nested.route === "create") return <StructureSelectionSheet onAfterClose={nested.finishClose} onAfterOpen={() => directInputRef.current?.focus()} onClose={props.onClose} sizing={WAFL_REUSABLE_CATALOG_CREATE_SIZING} title="직접 사이즈 만들기" visible={nested.visible}>
+    <Pressable accessibilityLabel="기본 사이즈로 돌아가기" onPress={() => nested.transition("select")} style={styles.backButton}><ChevronLeft color="#23375a" size={18} /><Text style={styles.backButtonText}>기본 사이즈</Text></Pressable>
     <Text style={styles.fieldLabel}>사이즈명</Text>
-    <TextInput maxLength={40} onChangeText={setDirect} placeholder="예: 프리사이즈" style={styles.input} value={direct} />
+    <WaflSheetTextInput maxLength={40} onChangeText={setDirect} placeholder="예: 프리사이즈" ref={directInputRef} style={styles.input} value={direct} />
     <Text style={styles.catalogHint}>추가하면 회사에서 다음 작업지시서에도 다시 선택할 수 있습니다.</Text>
-    <Pressable disabled={props.busy || !direct.trim()} onPress={() => { void props.onCreate(direct).then((saved) => { if (saved) { setDirect(""); setDirectMode(false); } }); }} style={[styles.primaryButton, (props.busy || !direct.trim()) && styles.disabled]}>
+    <Pressable disabled={props.busy || !direct.trim()} onPress={() => { void props.onCreate(direct).then((created) => { if (created) { setSelectedKeys((current) => [...new Set([...current, structureSelectionKey(created.displayName)])]); setDirect(""); nested.transition("select"); } }); }} style={[styles.primaryButton, (props.busy || !direct.trim()) && styles.disabled]}>
       {props.busy ? <ActivityIndicator color="#fff" /> : <Text style={styles.primaryButtonText}>추가</Text>}
     </Pressable>
   </StructureSelectionSheet>;
@@ -93,13 +104,13 @@ function SizeChooser(props: {
   const systemItems: readonly WaflOptionGridItem[] = system.map((label) => ({ key: `system:${label}`, label, selected: selected.has(structureSelectionKey(label)) }));
   const companyItems: readonly WaflOptionGridItem[] = props.companyOptions.map((option) => ({ key: option.id, label: option.displayName, selected: selected.has(structureSelectionKey(option.displayName)), removable: true }));
   const companyById = new Map(props.companyOptions.map((option) => [option.id, option]));
-  return <StructureSelectionSheet applyDisabled={diff.additions.length === 0 && diff.deletionIds.length === 0} busy={props.busy} onApply={() => { void props.onApply(diff); }} onClose={props.onClose} title="사이즈 선택">
+  return <StructureSelectionSheet applyDisabled={diff.additions.length === 0 && diff.deletionIds.length === 0} busy={props.busy} onAfterClose={nested.finishClose} onApply={() => { void props.onApply(diff); }} onClose={props.onClose} title="사이즈 선택" visible={nested.visible}>
     <Text style={styles.catalogHint}>항목을 고른 뒤 V를 누르면 변경사항을 한 번에 저장합니다.</Text>
     <Text style={styles.catalogSectionTitle}>WAFL 기본 사이즈</Text>
     <WaflOptionGrid accessibilityLabel="WAFL 기본 사이즈 선택" columns={4} disabled={props.busy} items={systemItems} onToggle={(item) => setSelectedKeys((current) => toggleStagedStructureSelection(current, item.label))} />
     <Text style={styles.catalogSectionTitle}>등록 사이즈</Text>
     {companyItems.length > 0 ? <WaflOptionGrid accessibilityLabel="등록 사이즈 선택" columns={4} disabled={props.busy} items={companyItems} onRemove={(item) => { const option = companyById.get(item.key); if (option) props.onRemove(option); }} onToggle={(item) => setSelectedKeys((current) => toggleStagedStructureSelection(current, item.label))} /> : <Text style={styles.catalogEmpty}>등록한 사이즈가 없습니다.</Text>}
-    <Pressable onPress={() => setDirectMode(true)} style={styles.secondaryButton}><Text style={styles.secondaryButtonText}>직접 만들기</Text></Pressable>
+    <Pressable onPress={() => nested.transition("create")} style={styles.secondaryButton}><Text style={styles.secondaryButtonText}>직접 만들기</Text></Pressable>
   </StructureSelectionSheet>;
 }
 
@@ -133,23 +144,24 @@ function ColorChooser(props: {
   readonly companyOptions: readonly CompanyWorkOrderStructureOption[];
   readonly busy: boolean;
   readonly onClose: () => void;
-  readonly onCreate: (draft: ColorStructureDraft) => Promise<boolean>;
+  readonly onCreate: (draft: ColorStructureDraft) => Promise<CompanyWorkOrderStructureOption | null>;
   readonly onRemove: (option: CompanyWorkOrderStructureOption) => void;
   readonly onApply: (diff: StructureSelectionBatchDiff) => Promise<boolean>;
 }) {
-  const [mode, setMode] = useState<"base" | "custom">("base");
+  const nested = useWaflNestedSheetHandoff<"base" | "custom">("base");
+  const nameInputRef = useRef<TextInput>(null);
   const [name, setName] = useState("");
   const [selectedHex, setSelectedHex] = useState("#FFFFFF");
   const [selectedKeys, setSelectedKeys] = useState<readonly string[]>(() => createStagedStructureSelection(props.rows.map((row) => ({ id: row.id, displayName: row.displayName, hexValue: row.hexValue }))));
   const selected = useMemo(() => new Set(selectedKeys), [selectedKeys]);
-  if (mode === "custom") return <StructureSelectionSheet onClose={props.onClose} title="직접 색상 만들기">
-    <Pressable accessibilityLabel="기본 색상으로 돌아가기" onPress={() => setMode("base")} style={styles.backButton}><ChevronLeft color="#23375a" size={18} /><Text style={styles.backButtonText}>기본 색상</Text></Pressable>
+  if (nested.route === "custom") return <StructureSelectionSheet onAfterClose={nested.finishClose} onAfterOpen={() => nameInputRef.current?.focus()} onClose={props.onClose} sizing={WAFL_REUSABLE_CATALOG_CREATE_SIZING} title="직접 색상 만들기" visible={nested.visible}>
+    <Pressable accessibilityLabel="기본 색상으로 돌아가기" onPress={() => nested.transition("base")} style={styles.backButton}><ChevronLeft color="#23375a" size={18} /><Text style={styles.backButtonText}>기본 색상</Text></Pressable>
     <Text style={styles.fieldLabel}>색상명</Text>
-    <TextInput maxLength={80} onChangeText={setName} placeholder="색상 이름" style={styles.input} value={name} />
+    <WaflSheetTextInput maxLength={80} onChangeText={setName} placeholder="색상 이름" ref={nameInputRef} style={styles.input} value={name} />
     <ColorGrid onChange={setSelectedHex} value={selectedHex} />
     <View style={styles.colorPreviewRow}><View style={[styles.customPreview, { backgroundColor: selectedHex }]} /><ReadOnlyColorValues hex={selectedHex} /></View>
     <Text style={styles.catalogHint}>추가하면 회사에서 다음 작업지시서에도 다시 선택할 수 있습니다.</Text>
-    <Pressable disabled={props.busy || !name.trim()} onPress={() => { void props.onCreate({ displayName: name, hexValue: selectedHex }).then((saved) => { if (saved) { setName(""); setMode("base"); } }); }} style={[styles.primaryButton, (props.busy || !name.trim()) && styles.disabled]}>
+    <Pressable disabled={props.busy || !name.trim()} onPress={() => { void props.onCreate({ displayName: name, hexValue: selectedHex }).then((created) => { if (created) { setSelectedKeys((current) => [...new Set([...current, structureSelectionKey(created.displayName)])]); setName(""); nested.transition("base"); } }); }} style={[styles.primaryButton, (props.busy || !name.trim()) && styles.disabled]}>
       {props.busy ? <ActivityIndicator color="#fff" /> : <Text style={styles.primaryButtonText}>추가</Text>}
     </Pressable>
   </StructureSelectionSheet>;
@@ -158,28 +170,21 @@ function ColorChooser(props: {
   const systemItems: readonly WaflOptionGridItem[] = COLOR_PALETTE_PRESETS.map((preset) => ({ key: `system:${preset.name}`, label: preset.name, selected: selected.has(structureSelectionKey(preset.name)), swatchHex: preset.hex }));
   const companyItems: readonly WaflOptionGridItem[] = props.companyOptions.map((option) => ({ key: option.id, label: option.displayName, selected: selected.has(structureSelectionKey(option.displayName)), swatchHex: option.hexValue, removable: true }));
   const companyById = new Map(props.companyOptions.map((option) => [option.id, option]));
-  return <StructureSelectionSheet applyDisabled={diff.additions.length === 0 && diff.deletionIds.length === 0} busy={props.busy} onApply={() => { void props.onApply(diff); }} onClose={props.onClose} title="색상 선택">
+  return <StructureSelectionSheet applyDisabled={diff.additions.length === 0 && diff.deletionIds.length === 0} busy={props.busy} onAfterClose={nested.finishClose} onApply={() => { void props.onApply(diff); }} onClose={props.onClose} title="색상 선택" visible={nested.visible}>
     <Text style={styles.catalogHint}>항목을 고른 뒤 V를 누르면 변경사항을 한 번에 저장합니다.</Text>
     <Text style={styles.catalogSectionTitle}>WAFL 기본 색상</Text>
     <WaflOptionGrid accessibilityLabel="WAFL 기본 색상 선택" columns={3} disabled={props.busy} items={systemItems} onToggle={(item) => setSelectedKeys((current) => toggleStagedStructureSelection(current, item.label))} />
     <Text style={styles.catalogSectionTitle}>등록 색상</Text>
     {companyItems.length > 0 ? <WaflOptionGrid accessibilityLabel="등록 색상 선택" columns={3} disabled={props.busy} items={companyItems} onRemove={(item) => { const option = companyById.get(item.key); if (option) props.onRemove(option); }} onToggle={(item) => setSelectedKeys((current) => toggleStagedStructureSelection(current, item.label))} /> : <Text style={styles.catalogEmpty}>등록한 색상이 없습니다.</Text>}
-    <Pressable onPress={() => setMode("custom")} style={styles.secondaryButton}><Text style={styles.secondaryButtonText}>직접 색상 만들기</Text></Pressable>
+    <Pressable onPress={() => nested.transition("custom")} style={styles.secondaryButton}><Text style={styles.secondaryButtonText}>직접 만들기</Text></Pressable>
   </StructureSelectionSheet>;
 }
 
-function StructureCard(props: { readonly kind: "size" | "color"; readonly count: number; readonly editable: boolean; readonly busy: boolean; readonly onOpen: () => void }) {
-  const label = props.kind === "size" ? "사이즈" : "색상";
-  if (!props.editable) return <View accessibilityLabel={`${label} ${props.count}개, 읽기 전용`} style={[styles.structureAction, styles.staticAction]}><Text style={styles.actionText}>{label} {props.count}</Text></View>;
-  return <Pressable accessibilityLabel={`${label} ${props.count}개 선택`} disabled={props.busy} onPress={props.onOpen} style={({ pressed }) => [styles.structureAction, styles.structureOpen, pressed && styles.actionPressed, props.busy && styles.disabled]}>
-    <Text style={styles.actionText}>{label} {props.count}</Text>
-    <ChevronRight color="#fff" size={17} />
-  </Pressable>;
-}
-
-export default function WorkOrderSizeColorStructureEditor({ identity, state, edit, onRetry }: Props) {
+export default function WorkOrderSizeColorStructureEditor({ identity, state, edit, onRetry, productTypeCode }: Props) {
   const matrix = state.bundle?.matrix;
-  const [chooser, setChooser] = useState<"size" | "color" | null>(null);
+  const categoryCode = decodeWorkOrderMajorCategoryCode(productTypeCode);
+  const systemSpecItems = useMemo(() => listWaflSystemSpecItems(categoryCode), [categoryCode]);
+  const [chooser, setChooser] = useState<"size" | "color" | "spec_item" | null>(null);
   const [companyOptions, setCompanyOptions] = useState<readonly CompanyWorkOrderStructureOption[]>([]);
   const [catalogBusy, setCatalogBusy] = useState(false);
   const [catalogError, setCatalogError] = useState<string | null>(null);
@@ -194,17 +199,31 @@ export default function WorkOrderSizeColorStructureEditor({ identity, state, edi
     }
   }, [matrix]);
   const nextCatalogIdentity = (kind: string) => `alpha62-company-${kind}-${Date.now()}-${Math.random().toString(16).slice(2)}`;
-  const createOption = async (kind: "size" | "color", displayName: string, hexValue?: string | null) => {
-    if (!matrix || catalogBusy) return false;
+  const createOption = async (kind: "size" | "color" | "spec_item", displayName: string, hexValue?: string | null) => {
+    if (!matrix || catalogBusy) return null;
     setCatalogBusy(true);
     setCatalogError(null);
     try {
       const clientRequestId = nextCatalogIdentity("client");
-      await workOrderMutationController.createStructureOption(matrix.workOrderId, { clientRequestId, expectedVersion: matrix.entityVersion, kind, displayName, hexValue }, nextCatalogIdentity("idempotency"));
+      const created = await workOrderMutationController.createStructureOption(matrix.workOrderId, { clientRequestId, expectedVersion: matrix.entityVersion, kind, displayName, hexValue }, nextCatalogIdentity("idempotency"));
+      await loadOptions();
+      return created.item ?? null;
+    } catch (error) {
+      setCatalogError(error instanceof Error ? error.message : "회사 선택지를 저장하지 못했습니다.");
+      return null;
+    } finally { setCatalogBusy(false); }
+  };
+  const renameOption = async (option: CompanyWorkOrderStructureOption, displayName: string) => {
+    if (!matrix || catalogBusy || option.kind !== "spec_item") return false;
+    setCatalogBusy(true);
+    setCatalogError(null);
+    try {
+      const clientRequestId = nextCatalogIdentity("client");
+      await workOrderMutationController.renameStructureOption(matrix.workOrderId, option.id, { clientRequestId, expectedVersion: matrix.entityVersion, displayName }, nextCatalogIdentity("idempotency"));
       await loadOptions();
       return true;
     } catch (error) {
-      setCatalogError(error instanceof Error ? error.message : "회사 선택지를 저장하지 못했습니다.");
+      setCatalogError(error instanceof Error ? error.message : "회사 스펙 항목 이름을 변경하지 못했습니다.");
       return false;
     } finally { setCatalogBusy(false); }
   };
@@ -242,38 +261,49 @@ export default function WorkOrderSizeColorStructureEditor({ identity, state, edi
     return false;
   };
   const structureBusy = catalogBusy || isSizeColorCommandPending(edit.pendingScope, "structure");
+  const editorSurfaceVisible = Boolean(edit.errorMessage || catalogError || (edit.canEdit && chooser));
   return <View>
-    {matrix ? <View style={styles.cards}>
+    {matrix && editorSurfaceVisible ? <View style={styles.cards}>
       {edit.errorMessage ? <Text accessibilityRole="alert" style={styles.error}>{edit.errorMessage}</Text> : null}
       {catalogError ? <Text accessibilityRole="alert" style={styles.error}>{catalogError}</Text> : null}
-      <View style={styles.cardRow}>
-        <StructureCard busy={structureBusy} count={matrix.sizes.length} editable={edit.canEdit} kind="size" onOpen={() => { edit.onBegin(); setChooser("size"); void loadOptions(); }} />
-        <StructureCard busy={structureBusy} count={matrix.colors.length} editable={edit.canEdit} kind="color" onOpen={() => { edit.onBegin(); setChooser("color"); void loadOptions(); }} />
-      </View>
       {edit.canEdit && chooser === "size" ? <SizeChooser busy={structureBusy} companyOptions={companyOptions.filter((item) => item.kind === "size")} onApply={(diff) => applyBatch("size", diff)} onClose={() => { edit.onCancel(); setChooser(null); }} onCreate={(name) => createOption("size", name)} onRemove={removeOption} rows={matrix.sizes} /> : null}
       {edit.canEdit && chooser === "color" ? <ColorChooser busy={structureBusy} companyOptions={companyOptions.filter((item) => item.kind === "color")} onApply={(diff) => applyBatch("color", diff)} onClose={() => { edit.onCancel(); setChooser(null); }} onCreate={(draft) => createOption("color", draft.displayName, draft.hexValue)} onRemove={removeOption} rows={matrix.colors} /> : null}
+      {edit.canEdit && chooser === "spec_item" ? <SpecItemSelectionSheet
+        busy={structureBusy}
+        currentPoms={state.bundle?.specifications.pomColumns ?? []}
+        onApply={(items) => edit.onSetPomSelection(items)}
+        onClose={() => { edit.onCancel(); setChooser(null); }}
+        onCreate={(name) => createOption("spec_item", name)}
+        onRemove={removeOption}
+        onRename={renameOption}
+        options={companyOptions.filter((item) => item.kind === "spec_item")}
+        recommendationAvailable={categoryCode !== null}
+        systemItems={systemSpecItems}
+      /> : null}
     </View> : null}
-    <WorkOrderSizeColorReadOnly edit={edit} identity={identity} onRetry={onRetry} state={state} />
+    <WorkOrderSizeColorReadOnly
+      edit={edit}
+      identity={identity}
+      onEditColor={() => { edit.onBegin(); setChooser("color"); void loadOptions(); }}
+      onEditSize={() => { edit.onBegin(); setChooser("size"); void loadOptions(); }}
+      onEditSpecItems={() => { edit.onBegin(); setChooser("spec_item"); void loadOptions(); }}
+      onRetry={onRetry}
+      state={state}
+      structureBusy={structureBusy}
+    />
   </View>;
 }
 
 const styles = StyleSheet.create({
-  cards: { gap: 9, paddingHorizontal: 12, paddingTop: 12 },
-  cardRow: { flexDirection: "row", gap: 9 },
-  structureAction: { alignItems: "stretch", backgroundColor: "#17263d", borderRadius: 8, flex: 1, flexDirection: "row", minHeight: 44, overflow: "hidden" },
-  structureOpen: { alignItems: "center", justifyContent: "space-between", paddingHorizontal: 13 },
+  cards: { gap: WAFL_THEME.layout.controlGap, paddingHorizontal: WAFL_THEME.layout.cardPadding, paddingTop: WAFL_THEME.layout.cardPadding },
   addAction: { alignItems: "center", flex: 1, flexDirection: "row", gap: 6, justifyContent: "center", minHeight: 44, paddingHorizontal: 8 },
   editAction: { alignItems: "center", justifyContent: "center", minHeight: 44, minWidth: 54, paddingHorizontal: 9 },
-  staticAction: { alignItems: "center", flex: 1, flexDirection: "row", justifyContent: "space-between", minHeight: 44, paddingHorizontal: 12 },
   actionDivider: { alignSelf: "stretch", backgroundColor: "rgba(255,255,255,0.22)", width: 1 },
-  actionText: { color: "#fff", fontFamily: WAFL_FONTS.bold, fontSize: 12 },
   countText: { color: "#fff", fontFamily: WAFL_FONTS.bold, fontSize: 12 },
-  actionPressed: { backgroundColor: "#23375a", opacity: 0.78 },
-  structureSheetContent: { maxHeight: 620, paddingTop: 10 },
+  structureSheetContent: { paddingTop: 10 },
   sheetContent: { gap: 10, paddingBottom: 12, paddingHorizontal: 16 },
   reelEditorContent: { gap: WAFL_THEME.spacing.md, marginTop: WAFL_THEME.spacing.md },
   fixedEditor: { backgroundColor: "#faf7f1", borderColor: "#e4d9cc", borderRadius: 12, borderWidth: 1, gap: 8, padding: 12 },
-  paletteScroll: { maxHeight: 230 },
   colorValueButton: { alignItems: "center", borderColor: "#d5dbe4", borderRadius: 8, borderWidth: 1, flexDirection: "row", gap: 7, minHeight: 44, paddingHorizontal: 8 },
   destructiveAction: { alignItems: "center", alignSelf: "flex-start", borderColor: "#e2a5aa", borderRadius: 8, borderWidth: 1, flexDirection: "row", gap: 6, minHeight: 40, paddingHorizontal: 12 },
   destructiveActionText: { color: "#b52b35", fontFamily: WAFL_FONTS.bold, fontSize: 12 },
@@ -304,6 +334,7 @@ const styles = StyleSheet.create({
   backButton: { alignItems: "center", alignSelf: "flex-start", flexDirection: "row", gap: 4, minHeight: 44, paddingRight: 12 },
   backButtonText: { color: "#23375a", fontFamily: WAFL_FONTS.bold, fontSize: 11 },
   disabled: { opacity: 0.4 },
+  pressed: { opacity: 0.68 },
   groupedPalette: { gap: 10 },
   colorGroup: { gap: 5 },
   colorGroupName: { color: "#65594e", fontFamily: WAFL_FONTS.semibold, fontSize: 10 },

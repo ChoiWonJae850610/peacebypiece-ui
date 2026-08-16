@@ -12,6 +12,7 @@ export type MobileJsonRequestOptions = {
 };
 
 function mobileRequestMetricKind(path: string, method: string) {
+  if (path.startsWith("/api/v2/address-search?")) return "address-search";
   if (path.endsWith("/size-spec/commands")) return "measurement-command";
   if (path.endsWith("/size-spec/templates")) return "measurement-templates-get";
   if (path.endsWith("/size-spec")) return "measurement-get";

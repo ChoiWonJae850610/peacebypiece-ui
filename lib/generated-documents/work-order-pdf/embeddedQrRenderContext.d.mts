@@ -2,7 +2,7 @@ export const WORK_ORDER_PDF_EMBEDDED_QR_HEADER: "x-wafl-pdf-embedded-qr";
 
 export type EmbeddedQrRenderContext = {
   readonly viewerUrl: string;
-  readonly expiresAt: string;
+  readonly expiresAt: string | null;
   readonly label: "문서 보기";
   readonly purpose: "embedded_qr";
 };

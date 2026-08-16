@@ -13,9 +13,10 @@ import type {
   WorkOrderId,
   WorkOrderRevisionId,
 } from "@/lib/domain/work-orders/contracts";
-import { withWaflV2TenantWriteTransaction, type DbQueryResultRow } from "@/lib/db/client";
+import { withDbTransaction, type DbQueryResultRow } from "@/lib/db/client";
 import { installTenantClaims } from "@/lib/domain/work-orders/command/commandRepository";
 import { serializePostgresDateOnly } from "@/lib/domain/work-orders/dateOnly.mjs";
+import { evaluateWorkOrderIssueReadiness } from "@/lib/domain/work-orders/issueReadiness";
 
 export const WORK_ORDER_ISSUE_COMMAND_CODE = "work_order.revision.issue";
 
@@ -69,6 +70,8 @@ type IssueTargetRow = DbQueryResultRow & {
   readonly business_date: string;
   readonly fabric_count: number | string;
   readonly accessory_count: number | string;
+  readonly representative_image_count: number | string;
+  readonly included_attachment_count: number | string;
 };
 
 type IssuedRow = DbQueryResultRow & {
@@ -132,7 +135,33 @@ export async function issueWorkOrderRevisionV2(input: {
 }): Promise<WorkOrderIssueRepositoryResult> {
   const startedAt = performance.now();
   let statementCount = 0;
-  const transactionResult = await withWaflV2TenantWriteTransaction(async (client) => {
+  const transactionResult = await withDbTransaction(async (client) => {
+    // Partner master rows are outside the v2 tenant-runtime table grant. Resolve and
+    // lock the exact same-company display values before entering the restricted role,
+    // then freeze those values during this same issuance transaction.
+    const privilegedTargetLock = await client.query(`
+      SELECT w.id
+      FROM work_orders w
+      JOIN work_order_revisions r
+        ON r.company_id = w.company_id AND r.id = w.current_revision_id
+      WHERE w.company_id = $1 AND w.id = $2::uuid AND r.id = $3::uuid
+        AND w.deleted_at IS NULL
+      FOR UPDATE OF w, r
+    `, [input.scope.companyId, input.command.workOrderId, input.command.revisionId]);
+    statementCount += 1;
+    if (privilegedTargetLock.rowCount !== 1) throw new WorkOrderIssueRepositoryError("not_found");
+    const supplierSnapshots = await client.query<DbQueryResultRow & { readonly material_id: string; readonly supplier_name: string }>(`
+      SELECT material.id AS material_id, partner.name AS supplier_name
+      FROM work_order_material_lines AS material
+      JOIN partners AS partner
+        ON partner.company_id = material.company_id AND partner.id = material.supplier_partner_id
+      WHERE material.company_id = $1 AND material.revision_id = $2::uuid
+      ORDER BY material.id
+      FOR SHARE OF partner
+    `, [input.scope.companyId, input.command.revisionId]);
+    statementCount += 1;
+    await client.query("SET LOCAL ROLE wafl_v2_tenant_runtime");
+    statementCount += 1;
     await installTenantClaims(client, input.scope);
     statementCount += 1;
 
@@ -196,6 +225,12 @@ export async function issueWorkOrderRevisionV2(input: {
              (SELECT count(*) FROM work_order_material_lines m
               WHERE m.company_id = w.company_id AND m.revision_id = r.id
                 AND m.material_type = 'accessory' AND m.archived_at IS NULL) AS accessory_count
+             ,(SELECT count(*) FROM work_order_revision_images ri
+               WHERE ri.company_id = w.company_id AND ri.revision_id = r.id
+                 AND ri.is_representative = true) AS representative_image_count
+             ,(SELECT count(*) FROM work_order_revision_attachments ra
+               WHERE ra.company_id = w.company_id AND ra.revision_id = r.id
+                 AND ra.output_include = true) AS included_attachment_count
       FROM work_orders w
       JOIN work_order_revisions r ON r.company_id = w.company_id AND r.id = w.current_revision_id
       CROSS JOIN LATERAL public.wafl_v2_document_number_settings() AS settings
@@ -225,12 +260,22 @@ export async function issueWorkOrderRevisionV2(input: {
     const seasonCode = normalizedCode(target.season_code);
     const itemCode = normalizedCode(target.item_code);
     const matrixTotalQuantity = integer(target.matrix_total_quantity);
-    if (!target.product_name.trim() || !target.product_type_code?.trim() || !target.due_date
-      || matrixTotalQuantity < 1
-      || integer(target.total_quantity) !== matrixTotalQuantity
-      || integer(target.revision_total_quantity) !== matrixTotalQuantity
-      || !companyCode || !seasonCode || !itemCode
-      || integer(target.fabric_count) < 1 || integer(target.accessory_count) < 1) {
+    const readiness = evaluateWorkOrderIssueReadiness({
+      productName: target.product_name,
+      productTypeCode: target.product_type_code,
+      seasonCode: target.season_code,
+      itemCode: target.item_code,
+      dueDate: target.due_date,
+      companyDocumentCode: target.company_code,
+      workOrderTotal: integer(target.total_quantity),
+      revisionTotal: integer(target.revision_total_quantity),
+      matrixTotal: matrixTotalQuantity,
+      representativeImageCount: integer(target.representative_image_count),
+      fabricCount: integer(target.fabric_count),
+      accessoryCount: integer(target.accessory_count),
+      includedAttachmentCount: integer(target.included_attachment_count),
+    });
+    if (!readiness.canIssue || !companyCode || !seasonCode || !itemCode) {
       throw new WorkOrderIssueRepositoryError("precondition_failed", workOrderVersion);
     }
 
@@ -246,13 +291,23 @@ export async function issueWorkOrderRevisionV2(input: {
     const documentNumberBase = `${companyCode}-${seasonCode}-${itemCode}-${compactDate}-${String(sequence).padStart(3, "0")}`;
 
     const issuedResult = await client.query<IssuedRow>(`
-      WITH finalized_revision AS (
+      WITH snapshotted_materials AS (
+        UPDATE work_order_material_lines AS material
+        SET supplier_name_snapshot = snapshot.supplier_name,
+            updated_at = now()
+        FROM jsonb_to_recordset($11::jsonb) AS snapshot(material_id uuid, supplier_name text)
+        WHERE material.company_id = $1
+          AND material.revision_id = $4::uuid
+          AND material.id = snapshot.material_id
+        RETURNING material.id
+      ), finalized_revision AS (
         UPDATE work_order_revisions
         SET revision_status = 'finalized', finalized_by_member_id = $5,
             finalized_at = now(), company_code_snapshot = $6,
             entity_version = entity_version + 1, updated_at = now()
         WHERE company_id = $1 AND id = $4::uuid AND work_order_id = $2::uuid
           AND revision_status = 'draft' AND entity_version = $7
+          AND (SELECT count(*) FROM snapshotted_materials) >= 0
         RETURNING id, revision_no, entity_version, finalized_at
       ), issued_work_order AS (
         UPDATE work_orders
@@ -272,6 +327,7 @@ export async function issueWorkOrderRevisionV2(input: {
       input.scope.companyId, input.command.workOrderId, input.command.expectedVersion,
       input.command.revisionId, input.scope.companyMemberId, companyCode,
       input.command.expectedRevisionVersion, documentNumberBase, businessDate, sequence,
+      JSON.stringify(supplierSnapshots.rows.map((row) => ({ material_id: row.material_id, supplier_name: row.supplier_name }))),
     ]);
     statementCount += 1;
     const issued = issuedResult.rows[0];

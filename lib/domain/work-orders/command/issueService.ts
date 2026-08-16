@@ -17,7 +17,7 @@ import {
   WORK_ORDER_ISSUE_COMMAND_CODE,
   WorkOrderIssueRepositoryError,
 } from "@/lib/domain/work-orders/command/issueRepository";
-import { WAFL_V2_ALPHA27_MUTATION_APPROVAL } from "@/lib/domain/work-orders/command/runtimeGuard";
+import { WAFL_V2_ALPHA27_MUTATION_APPROVAL, WAFL_V2_ALPHA64_DOCUMENT_R0_MUTATION_APPROVAL } from "@/lib/domain/work-orders/command/runtimeGuard";
 
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -76,7 +76,11 @@ export async function issueWorkOrderRevision(input: {
     correlationId: input.correlationId,
     permissionCode: "workorder.update",
   });
-  requireCommandMutationApproval(WAFL_V2_ALPHA27_MUTATION_APPROVAL);
+  requireCommandMutationApproval(
+    process.env.WAFL_V2_COMMAND_MUTATION_APPROVED === WAFL_V2_ALPHA64_DOCUMENT_R0_MUTATION_APPROVAL
+      ? WAFL_V2_ALPHA64_DOCUMENT_R0_MUTATION_APPROVAL
+      : WAFL_V2_ALPHA27_MUTATION_APPROVAL,
+  );
   const command = { ...input.command, workOrderId: input.workOrderId as WorkOrderId };
   const scopedIdempotencyKeyHash = sha256([
     WORK_ORDER_ISSUE_COMMAND_CODE,

@@ -18,9 +18,10 @@ type PreviewProps = {
   readonly representativeImageLabel?: string;
   readonly quantityUnit?: string;
   readonly coverFacts?: WorkOrderPreviewCoverFacts;
+  readonly includedAttachmentImages?: readonly { readonly filename: string; readonly dataUrl: string }[];
   readonly embeddedQr?: {
     readonly qrSvg: string;
-    readonly expiresAt: string;
+    readonly expiresAt: string | null;
     readonly label: "문서 보기";
   };
 };
@@ -141,7 +142,16 @@ function ProcessSection({ data, rows, continued }: { readonly data: WorkOrderIss
   );
 }
 
-function buildBlocks(data: WorkOrderIssuedPreviewReadModel): readonly DocumentBlock[] {
+function IncludedAttachmentSection({ filename, dataUrl }: { readonly filename: string; readonly dataUrl: string }) {
+  return (
+    <section className={styles.documentSection}>
+      <SectionHeading title={`첨부 · ${filename}`} />
+      <img alt={filename} className={styles.includedAttachmentImage} src={dataUrl} />
+    </section>
+  );
+}
+
+function buildBlocks(data: WorkOrderIssuedPreviewReadModel, includedAttachmentImages: PreviewProps["includedAttachmentImages"]): readonly DocumentBlock[] {
   const blocks: DocumentBlock[] = [];
   const addMaterials = (key: string, title: string, rows: WorkOrderIssuedPreviewReadModel["materials"]["fabrics"]) => {
     chunk(rows, 6).forEach((group, index) => blocks.push({ key: `${key}-${index}`, weight: 4 + group.length * 2, content: <MaterialSection title={title} rows={group} continued={index > 0} /> }));
@@ -151,6 +161,7 @@ function buildBlocks(data: WorkOrderIssuedPreviewReadModel): readonly DocumentBl
   if (data.sizeColors.colors.length && data.sizeColors.sizes.length) blocks.push({ key: "size-color", weight: 4 + data.sizeColors.colors.length * 2, content: <SizeColorSection data={data} /> });
   chunk(data.sizeSpecifications.pomColumns, 7).forEach((rows, index) => blocks.push({ key: `size-spec-${index}`, weight: 4 + rows.length * 2, content: <SizeSpecSection data={data} rows={rows} continued={index > 0} /> }));
   chunk(data.processes, 6).forEach((rows, index) => blocks.push({ key: `process-${index}`, weight: 4 + rows.length * 3, content: <ProcessSection data={data} rows={rows} continued={index > 0} /> }));
+  includedAttachmentImages?.forEach((image, index) => blocks.push({ key: `attachment-image-${index}`, weight: 32, content: <IncludedAttachmentSection {...image} /> }));
   return blocks;
 }
 
@@ -170,9 +181,9 @@ function PageNumberFooter({ pageNumber, totalPages }: { readonly pageNumber: num
   );
 }
 
-export default function IssuedWorkOrderDocument({ data, representativeImageSrc, representativeImageLabel, quantityUnit, coverFacts, embeddedQr }: PreviewProps) {
+export default function IssuedWorkOrderDocument({ data, representativeImageSrc, representativeImageLabel, quantityUnit, coverFacts, embeddedQr, includedAttachmentImages }: PreviewProps) {
   const timeZone = data.layoutMetadata.businessTimezone;
-  const contentPages = packBlocks(buildBlocks(data));
+  const contentPages = packBlocks(buildBlocks(data, includedAttachmentImages));
   const totalPages = contentPages.length + 1;
   const memos = [data.header.factoryDeliveryMemo, data.header.memo].map((memo) => memo?.trim()).filter(Boolean) as string[];
   const quantity = quantityUnit ? `${number.format(data.header.totalQuantity)}${quantityUnit}` : number.format(data.header.totalQuantity);
@@ -192,7 +203,7 @@ export default function IssuedWorkOrderDocument({ data, representativeImageSrc, 
               <aside aria-label="문서 보기 QR" className={styles.embeddedQr} data-wafl-embedded-qr="true">
                 <div aria-hidden="true" dangerouslySetInnerHTML={{ __html: embeddedQr.qrSvg }} />
                 <strong>{embeddedQr.label}</strong>
-                <small>유효기간 {formatDate(embeddedQr.expiresAt, timeZone)}</small>
+                <small>{embeddedQr.expiresAt ? `유효기간 ${formatDate(embeddedQr.expiresAt, timeZone)}` : "관리형 접근"}</small>
               </aside>
             ) : null}
           </div>

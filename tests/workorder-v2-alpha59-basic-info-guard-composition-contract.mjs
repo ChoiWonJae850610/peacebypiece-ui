@@ -6,6 +6,7 @@ import path from "node:path";
 import {
   isTailscaleServePathAllowed,
 } from "../lib/external-qa/configCore.mjs";
+import { MAKER_QA_APPROVAL } from "../lib/external-qa/makerQaCapabilities.mjs";
 
 const read = (relativePath) => fs.readFileSync(path.resolve(relativePath), "utf8");
 const runtimeGuard = read("lib/domain/work-orders/command/runtimeGuard.ts");
@@ -27,6 +28,12 @@ const exactAlpha59Environment = {
 };
 
 function constantValue(name) {
+  const ownerKey = ({
+    WAFL_V2_ALPHA46_BASIC_INFO_MUTATION_APPROVAL: "ALPHA46",
+    WAFL_V2_ALPHA52_CORE_INLINE_MUTATION_APPROVAL: "ALPHA52",
+    WAFL_V2_ALPHA57_WORK_ORDER_IMAGE_MUTATION_APPROVAL: "ALPHA57",
+  })[name];
+  if (ownerKey) return MAKER_QA_APPROVAL[ownerKey];
   const escapedName = name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
   const match = new RegExp(`export const ${escapedName}\\s*=\\s*\\n?\\s*"([^"]+)"`).exec(runtimeGuard);
   assert.ok(match, `missing runtime approval constant: ${name}`);
@@ -37,9 +44,17 @@ const basicGuardStart = runtimeGuard.indexOf("export function getWorkOrderV2Basi
 const basicGuardEnd = runtimeGuard.indexOf("export function getWorkOrderV2MaterialDraftMutationRuntimeGuard");
 assert.ok(basicGuardStart >= 0 && basicGuardEnd > basicGuardStart);
 const basicGuardSource = runtimeGuard.slice(basicGuardStart, basicGuardEnd);
-const acceptedConstantNames = [...basicGuardSource.matchAll(/configuredApproval !== (WAFL_V2_[A-Z0-9_]+_APPROVAL)/g)]
-  .map((match) => match[1]);
-const acceptedTokens = new Set(acceptedConstantNames.map(constantValue));
+assert.match(basicGuardSource, /MAKER_QA_CAPABILITY\.BASIC_INFO/);
+const acceptedTokens = new Set([
+  constantValue("WAFL_V2_ALPHA25_MUTATION_APPROVAL"),
+  MAKER_QA_APPROVAL.ALPHA46,
+  MAKER_QA_APPROVAL.ALPHA52,
+  MAKER_QA_APPROVAL.ALPHA57,
+  MAKER_QA_APPROVAL.ALPHA59,
+  MAKER_QA_APPROVAL.ALPHA60,
+  MAKER_QA_APPROVAL.ALPHA62,
+  MAKER_QA_APPROVAL.ALPHA64_CURRENT,
+]);
 
 function basicInfoGuardAllows(token, canonicalReadGuardPass = true) {
   return acceptedTokens.has(token) && canonicalReadGuardPass;

@@ -20,6 +20,7 @@ import type {
   DocumentAccessTokenSummary,
   DocumentAccessTokenPurpose,
   PublicDocumentAccessMetadata,
+  PublicDocumentDeliveryAttachment,
 } from "./types";
 
 type RepositoryFailureReason = "not_found" | "idempotency_conflict" | "idempotency_incomplete" | "conflict";
@@ -45,7 +46,7 @@ type TokenRow = DbQueryResultRow & {
   readonly generated_document_id: string;
   readonly token_purpose: DocumentAccessTokenPurpose;
   readonly created_at: Date | string;
-  readonly expires_at: Date | string;
+  readonly expires_at: Date | string | null;
   readonly revoked_at: Date | string | null;
   readonly rotated_from_token_id: string | null;
   readonly last_accessed_at: Date | string | null;
@@ -59,7 +60,7 @@ type PublicRow = DbQueryResultRow & {
   readonly generated_document_id: string;
   readonly display_document_number: string;
   readonly document_type: string;
-  readonly expires_at: Date | string;
+  readonly expires_at: Date | string | null;
   readonly access_count: number | string;
   readonly first_access?: boolean;
   readonly storage_object_key: string;
@@ -70,7 +71,7 @@ type PublicRow = DbQueryResultRow & {
 const iso = (value: Date | string | null) => value === null ? null : new Date(value).toISOString();
 const status = (row: TokenRow): DocumentAccessTokenStatus => {
   if (row.revoked_at !== null) return "revoked";
-  return Date.parse(iso(row.expires_at)!) <= Date.now() ? "expired" : "active";
+  return row.expires_at !== null && Date.parse(iso(row.expires_at)!) <= Date.now() ? "expired" : "active";
 };
 
 function mapToken(row: TokenRow): DocumentAccessTokenSummary {
@@ -78,7 +79,7 @@ function mapToken(row: TokenRow): DocumentAccessTokenSummary {
     tokenId: String(row.id),
     tokenPurpose: row.token_purpose,
     createdAt: iso(row.created_at)!,
-    expiresAt: iso(row.expires_at)!,
+    expiresAt: iso(row.expires_at),
     revokedAt: iso(row.revoked_at),
     rotatedFromTokenId: row.rotated_from_token_id ? String(row.rotated_from_token_id) : null,
     lastAccessedAt: iso(row.last_accessed_at),
@@ -94,12 +95,38 @@ function mapPublic(row: PublicRow): PublicDocumentAccessMetadata {
     generatedDocumentId: String(row.generated_document_id),
     displayDocumentNumber: String(row.display_document_number),
     documentType: String(row.document_type),
-    expiresAt: iso(row.expires_at)!,
+    expiresAt: iso(row.expires_at),
     accessCount: Number(row.access_count),
     storageObjectKey: String(row.storage_object_key),
     fileSizeBytes: Number(row.file_size_bytes),
     contentSha256: String(row.content_sha256),
+    deliveryAttachments: [],
   };
+}
+
+function deliveryAttachments(snapshot: unknown): readonly PublicDocumentDeliveryAttachment[] {
+  if (!snapshot || typeof snapshot !== "object" || !Array.isArray((snapshot as { assetManifest?: unknown }).assetManifest)) return [];
+  const result: PublicDocumentDeliveryAttachment[] = [];
+  for (const item of (snapshot as { assetManifest: unknown[] }).assetManifest) {
+    if (!item || typeof item !== "object") continue;
+    const row = item as Record<string, unknown>;
+    if (row.assetType !== "attachment" || row.includeInDocument !== true) continue;
+    if (typeof row.revisionAssetId !== "string" || typeof row.filename !== "string" || typeof row.mimeType !== "string"
+      || typeof row.storageObjectKeySnapshot !== "string" || row.storageObjectKeySnapshot.includes("..")
+      || !Number.isSafeInteger(row.sourceSizeBytes) || Number(row.sourceSizeBytes) < 0
+      || typeof row.sourceContentSha256 !== "string" || !/^[0-9a-f]{64}$/.test(row.sourceContentSha256)) continue;
+    result.push({
+      revisionAssetId: row.revisionAssetId,
+      filename: row.filename,
+      mimeType: row.mimeType.toLowerCase(),
+      storageObjectKey: row.storageObjectKeySnapshot,
+      sizeBytes: Number(row.sourceSizeBytes),
+      contentSha256: row.sourceContentSha256,
+      displayOrder: Number.isSafeInteger(row.displayOrder) ? Number(row.displayOrder) : result.length,
+    });
+    if (result.length >= 100) break;
+  }
+  return result.sort((left, right) => left.displayOrder - right.displayOrder || left.filename.localeCompare(right.filename));
 }
 
 async function loadGeneratedDocument(
@@ -152,7 +179,7 @@ export async function createDocumentAccessToken(input: {
   readonly scope: TenantMemberScope;
   readonly generatedDocumentId: string;
   readonly tokenHash: string;
-  readonly expiresAt: string;
+  readonly expiresAt: string | null;
   readonly scopedIdempotencyKey: string;
   readonly requestHash: string;
 }): Promise<{ readonly token: DocumentAccessTokenSummary; readonly displayDocumentNumber: string; readonly idempotentReplay: boolean }> {
@@ -239,7 +266,7 @@ export async function listDocumentAccessTokens(input: {
              rotated_from_token_id, last_accessed_at, access_count
       FROM document_access_tokens
       WHERE company_id = $1 AND generated_document_id = $2::uuid
-        AND token_purpose = 'manual_share'
+        AND token_purpose IN ('manual_share', 'embedded_qr')
       ORDER BY created_at DESC, id DESC
       LIMIT 100
     `, [input.scope.companyId, input.generatedDocumentId]);
@@ -260,14 +287,14 @@ export async function revokeDocumentAccessToken(input: {
       JOIN generated_documents document
         ON document.company_id = token.company_id AND document.id = token.generated_document_id
       WHERE token.company_id = $1 AND token.generated_document_id = $2::uuid AND token.id = $3::uuid
-        AND token.token_purpose = 'manual_share'
+        AND token.token_purpose IN ('manual_share', 'embedded_qr')
         AND document.status = 'generated' AND document.deleted_at IS NULL
       FOR UPDATE OF token
     `, [input.scope.companyId, input.generatedDocumentId, input.tokenId]);
     const current = result.rows[0];
     if (!current) throw new DocumentAccessRepositoryError("not_found");
     if (current.revoked_at !== null) return { token: mapToken(current), idempotentReplay: true };
-    if (Date.parse(iso(current.expires_at)!) <= Date.now()) throw new DocumentAccessRepositoryError("not_found");
+    if (current.expires_at !== null && Date.parse(iso(current.expires_at)!) <= Date.now()) throw new DocumentAccessRepositoryError("not_found");
     const updated = await client.query<TokenRow>(`
       UPDATE document_access_tokens
       SET revoked_at = now()
@@ -354,7 +381,7 @@ export async function insertEmbeddedQrAccessToken(input: {
   readonly companyId: string;
   readonly generatedDocumentId: string;
   readonly tokenHash: string;
-  readonly expiresAt: string;
+  readonly expiresAt: null;
 }): Promise<DocumentAccessTokenSummary> {
   const document = await input.client.query(`
     SELECT id
@@ -396,6 +423,18 @@ export async function readDocumentAccessSession(input: {
     const result = await client.query<PublicRow>(`
       SELECT * FROM public.wafl_v2_read_document_access_session($1::uuid, $2::uuid)
     `, [input.tokenId, input.generatedDocumentId]);
-    return result.rows[0] ? mapPublic(result.rows[0]) : null;
+    const row = result.rows[0];
+    if (!row) return null;
+    const metadata = mapPublic(row);
+    await client.query("SELECT set_config('wafl.company_id', $1, true)", [metadata.companyId]);
+    const document = await client.query<DbQueryResultRow>(`
+      SELECT snapshot
+      FROM generated_documents
+      WHERE company_id=$1 AND id=$2::uuid AND status='generated'
+        AND revoked_at IS NULL AND deleted_at IS NULL
+      LIMIT 1
+    `, [metadata.companyId, metadata.generatedDocumentId]);
+    if (!document.rows[0]) return null;
+    return { ...metadata, deliveryAttachments: deliveryAttachments(document.rows[0].snapshot) };
   });
 }

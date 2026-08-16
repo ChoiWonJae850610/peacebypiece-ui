@@ -23,6 +23,8 @@ Every fact or rule has one canonical owner. Other documents keep only the contex
 | Current/next roadmap and Version Delta | `08-roadmap-2.0.md` | latest work order | each version | no | mutable | always |
 | Product direction | `01-app-first-product-definition.md` | `02`, `03`, `04`, confirmed policy | policy change only | no | mutable | product/UI/auth |
 | Device QA matrix | `05-device-test-plan.md` | UI evidence standard | device/support change | no | mutable | mobile/tablet/UI |
+| Mobile visual system | `11a-mobile-design-system-v2.md` | `11b` Maker tab IA, `11c` reference index | approved mobile design-system change | no | mutable normative contract | every current mobile UI task |
+| Mobile input architecture | `11a-mobile-design-system-v2.md` input routing matrix | typed owners under `apps/mobile/features/inputs`, live `ControlledInlineEditValue` | input lifecycle change | no | mutable normative contract | mobile input, sheet, picker, keyboard, validation UI |
 | Expo/native environment | `06-expo-environment-setup.md` | app config, EAS config | environment change | no | mutable | mobile/native/EAS |
 | External Runtime operations | `41-external-mobile-qa-runbook.md` | runner source/contracts | operational change | no | mutable | external Runtime QA |
 | WorkOrder API semantics | `16-workorder-api-command-read-model-contracts.md` | domain contracts | API contract change | no | mutable normative contract | API/read/command |
@@ -56,11 +58,16 @@ Read:
 
 - `01-app-first-product-definition.md`
 - `02-mobile-tablet-ux-principles.md`
+- `11a-mobile-design-system-v2.md`
+- `11b-maker-workorder-tab-ia-v2.md`
+- `11c-mobile-design-system-v2-visual-reference.md` only when visual references are relevant
 - `03-app-architecture.md`
 - `05-device-test-plan.md`
 - `06-expo-environment-setup.md`
 - `docs/project/32-product-completion-and-ui-evidence-standard.md`
 - relevant recent UI evidence and target components/contracts
+
+For mobile input work, route first through the `11a` input matrix: `WaflInputSheet`, `WaflSheetValueField`/`WaflSheetTextInput`, `WaflReelPickerSheet`/`WaflInputModeSwitch`, `ControlledInlineEditValue`, choice/grid owners, and typed numeric/domain semantics. `InlineEditableFields` and `ProductionCardMock` remain historical/showroom references, not alternative live owners.
 
 ### API Read
 

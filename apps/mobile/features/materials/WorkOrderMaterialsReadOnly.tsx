@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import {
   ActivityIndicator,
   Pressable,
@@ -14,12 +14,15 @@ import {
 import { Check, ChevronDown, ChevronUp, FileUp, Plus, RefreshCw, RotateCcw, Trash2, type LucideIcon } from "lucide-react-native";
 
 import { WAFL_FONTS } from "@/constants/fonts";
+import { WAFL_THEME } from "@/constants/theme";
 import ControlledInlineEditValue from "@/components/ControlledInlineEditValue";
 import ExpandedInlineField from "@/components/ExpandedInlineField";
 import ReelInlineEditValue from "@/features/inputs/reel-picker/ReelInlineEditValue";
 import WaflReelPickerSheet from "@/features/inputs/reel-picker/WaflReelPickerSheet";
 import MaterialQuantityValue from "@/features/materials/MaterialQuantityValue";
 import MaterialPartnerPickerSheet from "@/features/materials/MaterialPartnerPickerSheet";
+import WaflSectionCard from "@/features/layout/WaflSectionCard";
+import WaflSectionHeaderAction from "@/features/layout/WaflSectionHeaderAction";
 import { createMaterialMemoDisclosureModel } from "@/features/materials/materialMemoDisclosureModel";
 import DelayedLoadingMessage from "@/features/work-orders/loading/DelayedLoadingMessage";
 import {
@@ -70,6 +73,8 @@ type Props = {
   readonly onLoadMore: () => void;
   readonly onFieldFocus: (target: TextInput) => void;
   readonly partnerOptions: readonly MaterialPartnerOption[];
+  readonly sectionCount?: number;
+  readonly embedded?: boolean;
 };
 
 type MaterialInlineFieldProps = {
@@ -534,27 +539,27 @@ function MaterialCard({ line, expanded, canEdit, lifecycleBusy, orderBusyAction,
   );
 }
 
-function AddMaterialButton({ materialType, onPress }: { readonly materialType: MaterialType; readonly onPress: () => void }) {
+function MaterialListShell({ materialType, count, canEdit, embedded = false, onAdd, children }: { readonly materialType: MaterialType; readonly count: number; readonly canEdit: boolean; readonly embedded?: boolean; readonly onAdd: () => void; readonly children: ReactNode }) {
   const materialLabel = materialType === "accessory" ? "부자재" : "원단";
-  return (
-    <Pressable
-      accessibilityHint={`새 ${materialLabel} 입력 화면을 엽니다`}
-      accessibilityLabel={`${materialLabel} 추가`}
-      accessibilityRole="button"
-      onPress={onPress}
-      style={({ pressed }) => [styles.addButton, pressed && styles.pressed]}
-      testID={`material-add-${materialType}`}
-    >
-      <Plus color="#ffffff" size={19} strokeWidth={2.4} />
-      <Text style={styles.addButtonText}>{materialLabel} 추가</Text>
-    </Pressable>
-  );
+  if (embedded) return <View style={styles.embeddedList} testID={`material-section-${materialType}`}>{children}</View>;
+  return <WaflSectionCard
+    headerAction={canEdit ? <WaflSectionHeaderAction
+        accessibilityLabel={`${materialLabel} 추가`}
+        icon={<Plus color={WAFL_THEME.color.navyInk} size={WAFL_THEME.icon.standard} strokeWidth={2.4} />}
+        onPress={onAdd}
+        testID={`material-add-${materialType}`}
+      /> : null}
+    testID={`material-section-${materialType}`}
+    title={`${materialLabel} · ${count}`}
+  >
+    <View style={styles.list}>{children}</View>
+  </WaflSectionCard>;
 }
 
 export default function WorkOrderMaterialsReadOnly({
   materialType, state, canEdit, lifecycleBusyId, orderBusyId, orderBusyAction,
   activeEditor, activeField, activeInlineSession, onAdd, onEdit, onChangeInlineEdit, onCancelEdit, onCancelInlineEdit, onSaveEdit, onSaveInlineEdit,
-  onDelete, onOrderAction, orderPolicy, onRetry, onLoadMore, onFieldFocus, partnerOptions,
+  onDelete, onOrderAction, orderPolicy, onRetry, onLoadMore, onFieldFocus, partnerOptions, sectionCount, embedded = false,
 }: Props) {
   const [expandedIds, setExpandedIds] = useState<ReadonlySet<string>>(() => new Set());
   const [reelTarget, setReelTarget] = useState<ReelTarget | null>(null);
@@ -562,23 +567,26 @@ export default function WorkOrderMaterialsReadOnly({
   const waiting = state.status === "loading" || state.status === "retrying";
   const materialLabel = materialType === "accessory" ? "부자재" : "원단";
   const materialSubject = materialType === "accessory" ? "부자재가" : "원단이";
+  const totalCount = Math.max(sectionCount ?? state.items.length, state.items.length);
 
   if (waiting && state.items.length === 0) {
-    return (
+    return <MaterialListShell canEdit={canEdit} count={totalCount} embedded={embedded} materialType={materialType} onAdd={onAdd}>
       <DelayedLoadingMessage
         identity={`materials:${materialType}`}
         loading
         scope={materialType}
       />
-    );
+    </MaterialListShell>;
   }
 
   if (state.status === "empty") {
-    return <View style={styles.centerState}><Text style={styles.stateTitle}>등록된 {materialSubject} 없습니다</Text><Text style={styles.stateCaption}>이 작업지시서에 연결된 {materialLabel} 내역이 없습니다.</Text>{canEdit ? <AddMaterialButton materialType={materialType} onPress={onAdd} /> : null}</View>;
+    return <MaterialListShell canEdit={canEdit} count={totalCount} embedded={embedded} materialType={materialType} onAdd={onAdd}>
+      <View style={styles.centerState}><Text style={styles.stateTitle}>등록된 {materialSubject} 없습니다</Text><Text style={styles.stateCaption}>이 작업지시서에 연결된 {materialLabel} 내역이 없습니다.</Text></View>
+    </MaterialListShell>;
   }
 
   if (state.status === "error" && state.items.length === 0) {
-    return (
+    return <MaterialListShell canEdit={canEdit} count={totalCount} embedded={embedded} materialType={materialType} onAdd={onAdd}>
       <View style={styles.errorState}>
         <Text accessibilityRole="alert" style={styles.errorTitle}>{state.errorMessage ?? `${materialLabel} 정보를 불러오지 못했습니다`}</Text>
         <Text style={styles.stateCaption}>자동으로 다시 요청하지 않습니다.</Text>
@@ -587,11 +595,11 @@ export default function WorkOrderMaterialsReadOnly({
           <Text style={styles.retryText}>다시 시도</Text>
         </Pressable>
       </View>
-    );
+    </MaterialListShell>;
   }
 
   return (
-    <View style={styles.list}>
+    <MaterialListShell canEdit={canEdit} count={totalCount} embedded={embedded} materialType={materialType} onAdd={onAdd}>
       {reelTarget ? (
         <WaflReelPickerSheet
           field={reelTarget.field}
@@ -612,6 +620,7 @@ export default function WorkOrderMaterialsReadOnly({
         />
       ) : null}
       <MaterialPartnerPickerSheet
+        allowUnset
         items={partnerOptions}
         onCancel={() => { setPartnerTargetId(null); onCancelEdit(); }}
         onSelect={(partnerId) => {
@@ -619,15 +628,15 @@ export default function WorkOrderMaterialsReadOnly({
           if (owner && owner.itemId === partnerTargetId) onSaveInlineEdit({ partnerId }, owner);
           setPartnerTargetId(null);
         }}
+        onUnset={() => {
+          const owner = activeInlineSession;
+          if (owner && owner.itemId === partnerTargetId) onSaveInlineEdit({ partnerId: "" }, owner);
+          setPartnerTargetId(null);
+        }}
         pending={activeEditor?.saveState === "saving"}
         selectedId={activeEditor?.materialLineId === partnerTargetId ? activeEditor.draft.partnerId : ""}
         visible={partnerTargetId !== null}
       />
-      {canEdit ? (
-        <View style={styles.listToolbar}>
-          <AddMaterialButton materialType={materialType} onPress={onAdd} />
-        </View>
-      ) : null}
       {state.items.map((line) => (
         <MaterialCard
           activeField={activeField}
@@ -677,7 +686,7 @@ export default function WorkOrderMaterialsReadOnly({
           <Text style={styles.moreText}>{state.status === "loading-more" ? "더 불러오는 중" : "더 보기"}</Text>
         </Pressable>
       ) : null}
-    </View>
+    </MaterialListShell>
   );
 }
 
@@ -691,11 +700,9 @@ const styles = StyleSheet.create({
   retryButton: { alignItems: "center", backgroundColor: "#9b4a27", borderRadius: 10, flexDirection: "row", gap: 6, minHeight: 44, paddingHorizontal: 16 },
   retryText: { color: "#fff", fontFamily: WAFL_FONTS.bold, fontSize: 13 },
   pressed: { opacity: 0.7 },
-  list: { gap: 10, padding: 12, paddingBottom: 16 },
-  listToolbar: { gap: 8, minHeight: 44, width: "100%" },
-  addButton: { alignItems: "center", alignSelf: "stretch", backgroundColor: "#17263d", borderRadius: 8, flexDirection: "row", gap: 7, justifyContent: "center", minHeight: 44, paddingHorizontal: 14, width: "100%" },
-  addButtonText: { color: "#ffffff", fontFamily: WAFL_FONTS.bold, fontSize: 12 },
-  card: { backgroundColor: "#fffdf8", borderColor: "#e7ded1", borderLeftWidth: 4, borderRadius: 8, borderWidth: 1, overflow: "hidden" },
+  list: { gap: WAFL_THEME.layout.sectionGap },
+  embeddedList: { gap: WAFL_THEME.layout.sectionGap },
+  card: { backgroundColor: WAFL_THEME.color.paper, borderColor: WAFL_THEME.color.border, borderLeftWidth: 4, borderRadius: WAFL_THEME.radius.cardCompact, borderWidth: WAFL_THEME.border.hairline, overflow: "hidden" },
   cardEditing: { borderLeftColor: "#a89d90" },
   cardRequested: { borderLeftColor: "#c75f35" },
   cardCompleted: { backgroundColor: "#fbfaf6", borderLeftColor: "#4d6a3a" },

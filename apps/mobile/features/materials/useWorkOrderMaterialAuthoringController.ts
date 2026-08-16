@@ -244,20 +244,21 @@ export function useWorkOrderMaterialAuthoringController(input: Input) {
     return `alpha51-mobile-material-${kind}-${Date.now()}-${clientRequestCounter.current}`;
   }
 
-  function beginMaterialCreate() {
+  function beginMaterialCreate(materialType: MaterialType = activeMaterialType) {
     if (!canEditWorkOrder(detail, user)) return;
     if (!input.prepareOverviewForCreate()) {
-      Alert.alert("개요 편집을 완료해 주세요.", `현재 값을 저장하거나 취소한 뒤 ${materialInformationSubject(activeMaterialType)}를 추가할 수 있습니다.`);
+      Alert.alert("개요 편집을 완료해 주세요.", `현재 값을 저장하거나 취소한 뒤 ${materialInformationSubject(materialType)}를 추가할 수 있습니다.`);
       return;
     }
+    setActiveMaterialType(materialType);
     const token = ++materialEditorSequence.current;
-    const base = materialCreateDraft(activeMaterialType);
+    const base = materialCreateDraft(materialType);
     updateMaterialEditor(() => ({
       token,
       mode: "create",
       workOrderId: detail.header.id,
       materialLineId: null,
-      materialType: activeMaterialType,
+      materialType,
       base,
       draft: { ...base },
       fieldErrors: {},

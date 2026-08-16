@@ -4,7 +4,7 @@ import type { LocalIssuedPdfRenderInput } from "@/lib/generated-documents/work-o
 
 export default function GeneratedIssuedWorkOrderPreview({ input, embeddedQr }: {
   readonly input: LocalIssuedPdfRenderInput;
-  readonly embeddedQr?: { readonly qrSvg: string; readonly expiresAt: string; readonly label: "문서 보기" };
+  readonly embeddedQr?: { readonly qrSvg: string; readonly expiresAt: string | null; readonly label: "문서 보기" };
 }) {
   return (
     <main
@@ -26,6 +26,7 @@ export default function GeneratedIssuedWorkOrderPreview({ input, embeddedQr }: {
         data={input.snapshot.preview}
         embeddedQr={embeddedQr}
         representativeImageSrc={input.representativeImageDataUrl ?? undefined}
+        includedAttachmentImages={input.includedAttachmentImages}
       />
     </main>
   );

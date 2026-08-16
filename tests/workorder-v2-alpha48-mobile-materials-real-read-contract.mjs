@@ -104,17 +104,18 @@ assert.equal(isExternalQaPathAllowed(materialsPath, "GET"), false, "Cloudflare P
 assert.doesNotMatch(externalQa, /\/api\/v2\/\*/);
 
 assert.match(detail, /SECTION_TABS/);
-assert.match(detail, /id: "fabric", label: "원단"/);
-assert.match(detail, /tab\.id === "fabric" \|\| tab\.id === "accessory"/);
-assert.match(detail, /setActiveSection\(tab\.id\)[\s\S]{0,120}props\.onOpenMaterials\(tab\.id\)/);
+assert.match(detail, /id: "materials", label: "원부자재"/);
+assert.match(detail, /<WaflMaterialsCategorySwitch/);
+assert.match(detail, /renderMaterialSection\(activeMaterialCategory\)/);
+assert.match(detail, /props\.onOpenMaterials\(resolved\.materialFocus \?\? undefined\)/);
 assert.equal(resolveWorkOrderTabVisualState({ selected: false, locked: true }), "locked");
 assert.equal(resolveWorkOrderTabVisualState({ selected: false, locked: false }), "inactive");
 assert.match(detail, /disabled=\{disabled\}/);
-for (const disabledTab of ["media", "sizes", "flow", "output"]) {
-  assert.match(detail, new RegExp(`id: "${disabledTab}"`), `future tab missing: ${disabledTab}`);
+for (const visibleTab of ["media", "sizes", "materials", "output"]) {
+  assert.match(detail, new RegExp(`id: "${visibleTab}"`), `visible tab missing: ${visibleTab}`);
 }
 assert.match(detail, /WorkOrderMaterialsReadOnly/);
-assert.match(detail, /key=\{props\.materialIdentityKey\}/);
+assert.match(detail, /key=\{props\.materialIdentityKeys\[materialType\]\}/);
 assert.doesNotMatch(detail, /mockProductionCard|constants\/mockProductionCard/);
 
 for (const state of ["not-loaded", "loading", "loaded", "empty", "error", "retrying", "loading-more"]) {
@@ -138,7 +139,7 @@ assert.match(read("docs/project/app-v2/47-mobile-materials-real-read-evidence.md
 for (const status of ["발주 전", "발주요청", "발주완료", "과거 취소", "상태 확인 필요"]) {
   assert.match(materialOrderPolicy, new RegExp(status), `material status label missing: ${status}`);
 }
-assert.match(materials, /card: \{[^\n]*borderLeftWidth: 4[^\n]*borderRadius: 8/);
+assert.match(materials, /card: \{[^\n]*borderLeftWidth: 4[^\n]*borderRadius: WAFL_THEME\.radius\.cardCompact/);
 for (const accent of ["cardEditing", "cardRequested", "cardCompleted", "cardCancelled", "cardUnknown"]) {
   assert.match(materials, new RegExp(`${accent}: \\{[^\\n]*borderLeftColor`), `material status accent missing: ${accent}`);
 }
@@ -211,11 +212,13 @@ assert.match(app, /materialRequests\.current\.get\(cacheKey\) !== requestToken/)
 assert.match(app, /page\.workOrderId !== workOrderId/);
 assert.match(app, /page\.materialType !== materialType/);
 assert.match(app, /new Set\(merged\.map\(\(line\) => line\.id\)\)/);
-assert.match(app, /materialCache\[materialCacheKey\(detail\.header\.id, activeMaterialType\)\]/);
-assert.match(app, /onOpenMaterials=\{\(materialType\) =>/);
-assert.match(app, /materialAuthoring\.loadMaterials\(detail\.header\.id, materialType, "initial"\)/);
-assert.match(app, /onRetryMaterials=\{\(\) => void materialAuthoring\.loadMaterials\(detail\.header\.id, activeMaterialType, "retry"\)\}/);
-assert.match(app, /onLoadMoreMaterials=\{\(\) => void materialAuthoring\.loadMaterials\(detail\.header\.id, activeMaterialType, "more"\)\}/);
+assert.match(app, /materialCache\[materialCacheKey\(detail\.header\.id, "fabric"\)\]/);
+assert.match(app, /materialCache\[materialCacheKey\(detail\.header\.id, "accessory"\)\]/);
+assert.match(app, /onOpenMaterials=\{\(materialFocus\) =>/);
+assert.match(app, /materialAuthoring\.loadMaterials\(detail\.header\.id, "fabric", "initial"\)/);
+assert.match(app, /materialAuthoring\.loadMaterials\(detail\.header\.id, "accessory", "initial"\)/);
+assert.match(app, /onRetryMaterials=\{\(materialType\) => void materialAuthoring\.loadMaterials\(detail\.header\.id, materialType, "retry"\)\}/);
+assert.match(app, /onLoadMoreMaterials=\{\(materialType\) => void materialAuthoring\.loadMaterials\(detail\.header\.id, materialType, "more"\)\}/);
 for (const errorBoundary of ["status === 401", "status === 403", "status === 404", "status === 409"]) {
   assert.match(`${app}\n${errorPresentation}`, new RegExp(errorBoundary.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")), `error boundary missing: ${errorBoundary}`);
 }

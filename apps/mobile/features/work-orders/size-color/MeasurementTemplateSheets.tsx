@@ -1,11 +1,12 @@
 import { useMemo, useState } from "react";
-import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
+import { Pressable, StyleSheet, Text, View } from "react-native";
 import { Check } from "lucide-react-native";
 
 import { WAFL_FONTS } from "@/constants/fonts";
 import { WAFL_THEME } from "@/constants/theme";
 import type { MeasurementTemplateSummary } from "@/domain/mobileContract";
 import WaflInputSheet from "@/features/inputs/WaflInputSheet";
+import WaflSheetValueField from "@/features/inputs/WaflSheetValueField";
 import WaflChoiceButtons from "@/features/inputs/WaflChoiceButtons";
 import { confirmWaflDestructiveAction } from "@/features/feedback/confirmWaflDestructiveAction";
 
@@ -60,10 +61,11 @@ export function MeasurementTemplatePickerSheet(props: {
     onCancel={() => { setSource("system"); setSelectedId(""); props.onCancel(); }}
     onConfirm={async () => { if (selected && await props.onApply(selected)) { setSource("system"); setSelectedId(""); } }}
     pending={props.pending}
+    sizing="adaptiveExpandable"
     title="스펙 불러오기"
     visible={props.visible}
   >
-    <ScrollView contentContainerStyle={styles.scrollContent} nestedScrollEnabled showsVerticalScrollIndicator>
+    <View style={styles.scrollContent}>
       <WaflChoiceButtons
         accessibilityLabel="스펙 출처"
         onSelect={(value) => { setSource(value); setSelectedId(""); }}
@@ -72,7 +74,7 @@ export function MeasurementTemplatePickerSheet(props: {
       />
       <TemplateGroup items={source === "system" ? recommended : company} label={source === "system" ? "WAFL 추천" : "사용자 저장 스펙"} onSelect={setSelectedId} selectedId={selectedId} />
       {props.errorMessage ? <Text style={styles.error}>{props.errorMessage}</Text> : null}
-    </ScrollView>
+    </View>
   </WaflInputSheet>;
 }
 
@@ -113,6 +115,7 @@ export function CompanyTemplateSaveSheet(props: {
       if (saved) { setName(""); setSelectedId(""); }
     }}
     pending={props.pending || managementPending}
+    sizing="adaptiveExpandable"
     title="스펙 저장"
     visible={props.visible}
   >
@@ -130,15 +133,12 @@ export function CompanyTemplateSaveSheet(props: {
       selectedValue={mode}
     />
     {mode === "new" ? <View style={styles.nameField}>
-      <Text style={styles.fieldLabel}>새 스펙 이름</Text>
-      <TextInput
-        accessibilityLabel="새 스펙 이름"
+      <WaflSheetValueField
         autoCorrect={false}
+        label="새 스펙 이름"
         maxLength={120}
-        onChangeText={setName}
+        onChange={setName}
         placeholder="예: 남성 티셔츠 기본 스펙"
-        placeholderTextColor="#9a8e82"
-        style={styles.input}
         value={name}
       />
     </View> : <View style={styles.updateFlow}>
@@ -149,8 +149,7 @@ export function CompanyTemplateSaveSheet(props: {
         selectedId={effectiveSelectedId}
       />
       {selected ? <View style={styles.management}>
-        <Text style={styles.fieldLabel}>사용자 저장 스펙 관리</Text>
-        <TextInput accessibilityLabel="사용자 저장 스펙 새 이름" maxLength={120} onChangeText={setRenameDraft} style={styles.input} value={renameDraft} />
+        <WaflSheetValueField label="사용자 저장 스펙 관리" maxLength={120} onChange={setRenameDraft} placeholder="스펙 이름" value={renameDraft} />
         <View style={styles.managementActions}>
           <Pressable disabled={managementPending || !renameDraft.trim() || renameDraft.trim() === selected.name} onPress={() => {
             setManagementError(null);
@@ -174,7 +173,7 @@ export function CompanyTemplateSaveSheet(props: {
 }
 
 const styles = StyleSheet.create({
-  sheetContent: { maxHeight: 560, paddingTop: 10 },
+  sheetContent: { paddingTop: 10 },
   scrollContent: { gap: 14, paddingBottom: 4 },
   group: { gap: 7 },
   groupTitle: { color: WAFL_THEME.color.brickOrange, fontFamily: WAFL_FONTS.bold, fontSize: 11, letterSpacing: 0.3 },
@@ -186,8 +185,6 @@ const styles = StyleSheet.create({
   empty: { backgroundColor: "#faf7f1", borderRadius: 9, color: "#75665b", fontFamily: WAFL_FONTS.medium, fontSize: 12, padding: 12 },
   error: { color: WAFL_THEME.color.error, fontFamily: WAFL_FONTS.medium, fontSize: 12 },
   nameField: { gap: 6, marginTop: 12 },
-  fieldLabel: { color: WAFL_THEME.color.navyInk, fontFamily: WAFL_FONTS.semibold, fontSize: 12 },
-  input: { backgroundColor: "#fffdf9", borderColor: WAFL_THEME.color.border, borderRadius: 10, borderWidth: 1, color: WAFL_THEME.color.deepNavy, fontFamily: WAFL_FONTS.medium, fontSize: 14, minHeight: 48, paddingHorizontal: 12 },
   updateFlow: { gap: 12, marginTop: 12 },
   management: { gap: 7 },
   managementActions: { flexDirection: "row", gap: 8, justifyContent: "flex-end" },

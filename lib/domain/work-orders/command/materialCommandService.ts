@@ -17,8 +17,8 @@ import type {
 } from "@/lib/domain/work-orders/contracts";
 import {
   createCommandTenantScope,
-  requireCommandMutationApproval,
   requireMaterialDraftMutationApproval,
+  requireMaterialOrderMutationApproval,
   WorkOrderCommandRequestError,
 } from "@/lib/domain/work-orders/command/commandService";
 import {
@@ -38,15 +38,6 @@ import {
   transitionMaterialLifecycleV2,
   transitionMaterialOrderV2,
 } from "@/lib/domain/work-orders/command/materialCommandRepository";
-import {
-  WAFL_V2_ALPHA26_MUTATION_APPROVAL,
-  WAFL_V2_ALPHA55_MATERIAL_ORDER_LIFECYCLE_MUTATION_APPROVAL,
-  WAFL_V2_ALPHA56_ACCESSORY_LIFECYCLE_PARITY_MUTATION_APPROVAL,
-  WAFL_V2_ALPHA57_WORK_ORDER_IMAGE_MUTATION_APPROVAL,
-  WAFL_V2_ALPHA59_SIZE_COLOR_STRUCTURE_MUTATION_APPROVAL,
-  WAFL_V2_ALPHA60_DRAFT_CHILD_HARD_DELETE_MUTATION_APPROVAL,
-  WAFL_V2_ALPHA62_MEASUREMENT_MUTATION_APPROVAL,
-} from "@/lib/domain/work-orders/command/runtimeGuard";
 
 export type MaterialCommandServiceResult = {
   readonly data: {
@@ -381,22 +372,7 @@ export async function transitionMaterialOrder(input: {
     scope: input.scope, companyMemberId: input.companyMemberId,
     correlationId: input.correlationId, permissionCode,
   });
-  const configuredApproval = process.env.WAFL_V2_COMMAND_MUTATION_APPROVED;
-  requireCommandMutationApproval(
-    configuredApproval === WAFL_V2_ALPHA55_MATERIAL_ORDER_LIFECYCLE_MUTATION_APPROVAL
-      ? WAFL_V2_ALPHA55_MATERIAL_ORDER_LIFECYCLE_MUTATION_APPROVAL
-      : configuredApproval === WAFL_V2_ALPHA56_ACCESSORY_LIFECYCLE_PARITY_MUTATION_APPROVAL
-        ? WAFL_V2_ALPHA56_ACCESSORY_LIFECYCLE_PARITY_MUTATION_APPROVAL
-      : configuredApproval === WAFL_V2_ALPHA57_WORK_ORDER_IMAGE_MUTATION_APPROVAL
-        ? WAFL_V2_ALPHA57_WORK_ORDER_IMAGE_MUTATION_APPROVAL
-      : configuredApproval === WAFL_V2_ALPHA59_SIZE_COLOR_STRUCTURE_MUTATION_APPROVAL
-        ? WAFL_V2_ALPHA59_SIZE_COLOR_STRUCTURE_MUTATION_APPROVAL
-      : configuredApproval === WAFL_V2_ALPHA60_DRAFT_CHILD_HARD_DELETE_MUTATION_APPROVAL
-        ? WAFL_V2_ALPHA60_DRAFT_CHILD_HARD_DELETE_MUTATION_APPROVAL
-      : configuredApproval === WAFL_V2_ALPHA62_MEASUREMENT_MUTATION_APPROVAL
-        ? WAFL_V2_ALPHA62_MEASUREMENT_MUTATION_APPROVAL
-      : WAFL_V2_ALPHA26_MUTATION_APPROVAL,
-  );
+  requireMaterialOrderMutationApproval();
   const commandCode = TRANSITION_COMMAND_CODES[input.kind];
   const keyHash = scopedKeyHash({
     commandCode,

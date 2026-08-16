@@ -6,7 +6,7 @@ const runner = readFileSync("tools/dev/start-wafl-external-qa.ps1", "utf8");
 const external = readFileSync("lib/external-qa/configCore.mjs", "utf8");
 const guard = readFileSync("lib/domain/work-orders/command/runtimeGuard.ts", "utf8");
 for (const token of ["size-measurement-standards", "EnableAlpha62SizeMeasurementMutation", "2.0.0-alpha.62-dev-test-size-measurement-runtime", "SIZE_MEASUREMENT_STANDARDS_REQUIRES_DEVELOPER_AUTO_CONNECT", "SIZE_MEASUREMENT_STANDARDS_REQUIRES_CANONICAL_PORTS"]) assert.ok(runner.includes(token), token);
-assert.match(external, /alpha62SizeMeasurementEnabled/);
+assert.match(external, /MAKER_QA_CAPABILITY\.MEASUREMENT/);
 assert.match(external, /size-spec\\\/commands/);
 assert.match(external, /size-spec-templates/);
 assert.match(guard, /WAFL_V2_ALPHA62_MEASUREMENT_MUTATION_APPROVAL/);

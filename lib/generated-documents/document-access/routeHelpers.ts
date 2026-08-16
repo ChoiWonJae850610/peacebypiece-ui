@@ -13,12 +13,13 @@ import {
   DocumentAccessServiceError,
   getDocumentShares,
   getPublicDocumentSession,
+  readPublicDocumentAttachment,
   readPublicDocumentPdf,
   redeemPublicDocumentToken,
   revokeDocumentShare,
   rotateDocumentShare,
 } from "./service";
-import { createDocumentViewerSession, verifyDocumentViewerSession } from "./session";
+import { createDocumentViewerAttachmentRef, createDocumentViewerSession, verifyDocumentViewerSession } from "./session";
 
 const PUBLIC_HEADERS = {
   "Cache-Control": "private, no-store",
@@ -36,6 +37,12 @@ function jsonError(code: string, message: string, status: number, correlationId:
 
 function genericPublicNotFound(correlationId: string) {
   return jsonError("NOT_FOUND", "공유 링크를 사용할 수 없습니다.", 404, correlationId);
+}
+
+function requestOrigin(request: Request): string {
+  const proto = request.headers.get("x-forwarded-proto")?.trim();
+  const host = request.headers.get("x-forwarded-host")?.trim();
+  return proto && host ? `${proto}://${host}` : new URL(request.url).origin;
 }
 
 async function readBoundedObject(request: Request, maxBytes: number): Promise<Record<string, unknown>> {
@@ -92,7 +99,7 @@ export async function handleCreateDocumentAccessToken(request: Request, generate
       generatedDocumentId,
       idempotencyKey,
       expiresInDays: body.expiresInDays === undefined ? undefined : Number(body.expiresInDays),
-      origin: new URL(request.url).origin,
+      origin: requestOrigin(request),
       scope: guard.scope,
       companyMemberId: guard.session.companyMemberId,
       correlationId,
@@ -135,7 +142,7 @@ export async function handleRotateDocumentAccessToken(request: Request, generate
       tokenId,
       idempotencyKey: request.headers.get("idempotency-key") ?? "",
       expiresInDays: body.expiresInDays === undefined ? undefined : Number(body.expiresInDays),
-      origin: new URL(request.url).origin,
+      origin: requestOrigin(request),
       scope: guard.scope,
       companyMemberId: guard.session.companyMemberId,
       correlationId,
@@ -160,6 +167,22 @@ export async function handlePublicDocumentViewerSession(request: Request) {
       generatedDocumentId: redeemed.generatedDocumentId,
       tokenExpiresAt: redeemed.expiresAt,
     });
+    const bundle = await getPublicDocumentSession({ tokenId: redeemed.tokenId, generatedDocumentId: redeemed.generatedDocumentId });
+    if (!bundle) return genericPublicNotFound(correlationId);
+    const attachments = bundle.deliveryAttachments.map((attachment) => {
+      const ref = createDocumentViewerAttachmentRef({ tokenId: redeemed.tokenId, generatedDocumentId: redeemed.generatedDocumentId, revisionAssetId: attachment.revisionAssetId });
+      const inlineSupported = /^image\/(?:jpeg|png|webp)$/i.test(attachment.mimeType) || attachment.mimeType === "application/pdf";
+      const query = encodeURIComponent(ref);
+      return {
+        ref,
+        filename: attachment.filename,
+        mimeType: attachment.mimeType,
+        sizeBytes: attachment.sizeBytes,
+        inlineSupported,
+        inlineUrl: inlineSupported ? `/api/public/document-viewer/attachment?ref=${query}&disposition=inline` : null,
+        downloadUrl: `/api/public/document-viewer/attachment?ref=${query}&disposition=attachment`,
+      };
+    });
     const response = NextResponse.json({
       ok: true,
       data: {
@@ -167,6 +190,7 @@ export async function handlePublicDocumentViewerSession(request: Request) {
         displayDocumentNumber: redeemed.displayDocumentNumber,
         expiresAt: redeemed.expiresAt,
         accessCount: redeemed.accessCount,
+        attachments,
       },
     }, { headers: { ...PUBLIC_HEADERS, "X-WAFL-Correlation-Id": correlationId } });
     response.cookies.set(DOCUMENT_VIEWER_COOKIE, session.value, {
@@ -177,6 +201,44 @@ export async function handlePublicDocumentViewerSession(request: Request) {
       maxAge: session.maxAgeSeconds,
     });
     return response;
+  } catch {
+    return genericPublicNotFound(correlationId);
+  }
+}
+
+export async function handlePublicDocumentAttachment(request: Request) {
+  const correlationId = randomUUID();
+  try {
+    const session = verifyDocumentViewerSession(readCookie(request, DOCUMENT_VIEWER_COOKIE));
+    if (!session) return genericPublicNotFound(correlationId);
+    const metadata = await getPublicDocumentSession({ tokenId: session.tokenId, generatedDocumentId: session.generatedDocumentId });
+    if (!metadata) return genericPublicNotFound(correlationId);
+    const url = new URL(request.url);
+    const ref = url.searchParams.get("ref") ?? "";
+    const attachment = metadata.deliveryAttachments.find((candidate) => createDocumentViewerAttachmentRef({
+      tokenId: session.tokenId,
+      generatedDocumentId: session.generatedDocumentId,
+      revisionAssetId: candidate.revisionAssetId,
+    }) === ref);
+    if (!attachment) return genericPublicNotFound(correlationId);
+    const body = await readPublicDocumentAttachment(attachment);
+    if (!body) return genericPublicNotFound(correlationId);
+    const requestedDisposition = url.searchParams.get("disposition") === "inline" ? "inline" : "attachment";
+    const inlineSafe = /^image\/(?:jpeg|png|webp)$/i.test(attachment.mimeType) || attachment.mimeType === "application/pdf";
+    const disposition = requestedDisposition === "inline" && inlineSafe ? "inline" : "attachment";
+    const fallback = attachment.mimeType === "application/pdf" ? "attachment.pdf" : "attachment";
+    const encoded = encodeURIComponent(attachment.filename || fallback);
+    return new Response(new Uint8Array(body), {
+      status: 200,
+      headers: {
+        ...PUBLIC_HEADERS,
+        "Content-Type": attachment.mimeType,
+        "Content-Length": String(body.byteLength),
+        "Content-Disposition": `${disposition}; filename*=UTF-8''${encoded}`,
+        "X-Content-Type-Options": "nosniff",
+        "X-WAFL-Correlation-Id": correlationId,
+      },
+    });
   } catch {
     return genericPublicNotFound(correlationId);
   }

@@ -33,6 +33,7 @@ assertCanonicalWaflVersionConsistency();
 const contract = read("apps/mobile/domain/mobileContract.ts");
 const apiClient = readMobileApiSource();
 const controller = read("apps/mobile/features/work-orders/workOrderQueryController.ts");
+const frozenAxisTable = read("apps/mobile/features/layout/WaflFrozenAxisTable.tsx");
 const experience = [
   read("apps/mobile/features/MobileWorkOrderExperience.tsx"),
   read("apps/mobile/features/work-orders/size-color/useWorkOrderSizeSpecCoordination.ts"),
@@ -62,9 +63,9 @@ for (const pathname of [
   `${sizeColorPath}/extra`,
   `${sizeSpecPath}/history`,
   `/api/v2/work-orders/${workOrderId}/processes`,
-  `/api/v2/work-orders/${workOrderId}/documents`,
   `/api/v2/work-orders/${workOrderId}/history`,
 ]) assert.equal(isTailscaleServePathAllowed(pathname, "GET", {}), false, `blocked nested path: ${pathname}`);
+assert.equal(isTailscaleServePathAllowed(`/api/v2/work-orders/${workOrderId}/documents`, "GET", {}), true, "current document read capability remains available");
 
 for (const typeName of [
   "WorkOrderSizeRow",
@@ -163,7 +164,7 @@ assert.equal("key-0" in boundedCache, false);
 assert.match(cache, /"not-loaded" \| "loading" \| "retrying" \| "refreshing" \| "empty" \| "loaded" \| "error"/);
 
 assert.match(detail, /tab\.id === "sizes"/);
-assert.match(detail, /setActiveSection\("sizes"\)/);
+assert.match(detail, /openSection\("sizes"\)/);
 assert.match(detail, /props\.sizeColor\.onOpen\(\)/);
 assert.match(detail, /import WorkOrderSizeColorStructureEditor from/);
 const sizeColorEditor = read("apps/mobile/features/work-orders/size-color/WorkOrderSizeColorStructureEditor.tsx");
@@ -172,7 +173,7 @@ assert.equal(resolveWorkOrderTabVisualState({ selected: false, locked: true }), 
 assert.equal(resolveWorkOrderTabVisualState({ selected: true, locked: false }), "active");
 assert.equal(readOnlyBadgeLabel(false), "읽기 전용");
 assert.equal(readOnlyBadgeLabel(true), null);
-assert.match(detail, /locked=\{locked\}/, "flow/output lock must remain");
+assert.doesNotMatch(detail, /locked=\{locked\}/, "current cumulative Maker tabs must not inherit the old flow/output lock");
 assert.doesNotMatch(detail, /제작과 문서는 다음 단계에서 연결합니다/);
 assert.equal(WORK_ORDER_LOADING_MESSAGES.sizeColor, "사이즈·색상 정보를 불러오는 중입니다.");
 
@@ -187,7 +188,8 @@ for (const stateMeaning of [
   "기존 수량 메모",
 ]) assert.ok(component.includes(stateMeaning), `read-only UI meaning missing: ${stateMeaning}`);
 assert.doesNotMatch(component, /합계 일치|색상×사이즈 생산수량 · 총/);
-assert.match(component, /<ScrollView horizontal/);
+assert.match(component, /<WaflFrozenAxisTable/);
+assert.match(frozenAxisTable, /<ScrollView horizontal/);
 
 const measurementCell = (decimalValue, displayValue = decimalValue) => ({
   sizeRowId: "size-1",

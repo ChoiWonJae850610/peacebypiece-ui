@@ -9,6 +9,7 @@ import {
 } from "./constants";
 
 const VIEWER_SESSION_NAMESPACE = "wafl-document-viewer-session:v1";
+const VIEWER_ATTACHMENT_NAMESPACE = "wafl-document-viewer-attachment:v1";
 
 export type DocumentViewerSession = {
   readonly version: 1;
@@ -29,7 +30,7 @@ function sign(encoded: string): string {
 export function createDocumentViewerSession(input: {
   readonly tokenId: string;
   readonly generatedDocumentId: string;
-  readonly tokenExpiresAt: string;
+  readonly tokenExpiresAt: string | null;
   readonly now?: Date;
 }): { readonly value: string; readonly maxAgeSeconds: number; readonly expiresAt: string } {
   if (!DOCUMENT_ACCESS_UUID_PATTERN.test(input.tokenId)
@@ -37,7 +38,9 @@ export function createDocumentViewerSession(input: {
     throw new Error("DOCUMENT_VIEWER_SESSION_ID_INVALID");
   }
   const now = input.now ?? new Date();
-  const tokenExpires = Date.parse(input.tokenExpiresAt);
+  const tokenExpires = input.tokenExpiresAt === null
+    ? now.getTime() + DOCUMENT_VIEWER_SESSION_MAX_AGE_SECONDS * 1000
+    : Date.parse(input.tokenExpiresAt);
   if (!Number.isFinite(tokenExpires) || tokenExpires <= now.getTime()) throw new Error("DOCUMENT_VIEWER_SESSION_EXPIRED");
   const maxAgeSeconds = Math.max(1, Math.min(
     DOCUMENT_VIEWER_SESSION_MAX_AGE_SECONDS,
@@ -79,4 +82,20 @@ export function verifyDocumentViewerSession(value: string | null | undefined): D
   } catch {
     return null;
   }
+}
+
+export function createDocumentViewerAttachmentRef(input: {
+  readonly tokenId: string;
+  readonly generatedDocumentId: string;
+  readonly revisionAssetId: string;
+}): string {
+  return createHmac("sha256", getWaflSessionSigningSecret())
+    .update(VIEWER_ATTACHMENT_NAMESPACE, "utf8")
+    .update("\0", "utf8")
+    .update(input.tokenId, "utf8")
+    .update("\0", "utf8")
+    .update(input.generatedDocumentId, "utf8")
+    .update("\0", "utf8")
+    .update(input.revisionAssetId, "utf8")
+    .digest("base64url");
 }

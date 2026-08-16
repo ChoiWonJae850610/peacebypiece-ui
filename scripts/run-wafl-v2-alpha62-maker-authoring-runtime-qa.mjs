@@ -12,6 +12,7 @@ const companyId = "wafl-fn-company-a";
 const statePath = path.join(root, ".tmp", "wafl-external-qa", "state.json");
 const resultPath = path.join(root, ".tmp", "wafl-external-qa", "alpha62-maker-authoring-runtime-result.json");
 const alpha63MaterialRevalidation = process.env.WAFL_ALPHA63_MATERIAL_REVALIDATION === "1";
+const currentMakerSmoke = process.env.WAFL_ALPHA64_CURRENT_MAKER_SMOKE === "1";
 const date = new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Seoul", year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date()).replaceAll("-", "");
 const suffix = crypto.randomBytes(4).toString("hex").toUpperCase();
 const marker = `QA A62 size measurement isolated ${date}-${suffix}`;
@@ -66,8 +67,9 @@ async function provision() {
 async function run() {
   const state = JSON.parse(fs.readFileSync(statePath, "utf8"));
   assert.equal(state.status, "running");
-  assert.equal(state.runtimeQaMode, "size-measurement-standards");
-  assert.equal(state.mutationMode, "size-measurement-standards");
+  assert.equal(state.runtimeQaMode, currentMakerSmoke ? "current-maker" : "size-measurement-standards");
+  assert.equal(state.mutationMode, currentMakerSmoke ? "current-maker-alpha64" : "size-measurement-standards");
+  if (currentMakerSmoke) assert.equal(state.makerQaProfile, "alpha64-current-maker");
   assert.equal(state.nextPort, 3100);
   assert.equal(state.expoPort, 8081);
   assert.equal(state.metroAdvertisedHost, state.tailscaleIpv4);
@@ -157,7 +159,7 @@ async function run() {
         (SELECT count(*)::integer FROM document_access_tokens) tokens,
         (SELECT count(*)::integer FROM work_orders WHERE company_id=$1 AND id<>$2::uuid) other_work_orders
     `, [companyId, fixture.work_order_id])).rows[0];
-    assert.equal(Number(baseline.migrations), 15);
+    assert.equal(Number(baseline.migrations), currentMakerSmoke ? 16 : 15);
     const partner = (await client.query("SELECT id::text FROM partners WHERE company_id=$1 AND is_active ORDER BY id LIMIT 1", [companyId])).rows[0];
     assert.ok(partner?.id, "active-dev-test-partner-required");
 
@@ -420,7 +422,7 @@ async function run() {
 
     const result = {
       result: "PASS",
-      checkpoint: "ALPHA62_MAKER_AUTHORING_RUNTIME_PASS",
+      checkpoint: currentMakerSmoke ? "ALPHA64_CURRENT_MAKER_AUTHORING_RUNTIME_PASS" : "ALPHA62_MAKER_AUTHORING_RUNTIME_PASS",
       marker,
       mutationMatrix: {
         basic: ["dueDate", "productTypeCode", "seasonCode", "itemCode", "factoryDeliveryMemo"],
@@ -441,7 +443,7 @@ async function run() {
     };
     fs.mkdirSync(path.dirname(resultPath), { recursive: true });
     fs.writeFileSync(resultPath, `${JSON.stringify(result, null, 2)}\n`, "utf8");
-    console.log("ALPHA62_MAKER_AUTHORING_RUNTIME_PASS");
+    console.log(currentMakerSmoke ? "ALPHA64_CURRENT_MAKER_AUTHORING_RUNTIME_PASS" : "ALPHA62_MAKER_AUTHORING_RUNTIME_PASS");
   } finally {
     await client.end();
   }

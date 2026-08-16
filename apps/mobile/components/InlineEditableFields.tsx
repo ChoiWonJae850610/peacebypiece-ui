@@ -15,6 +15,11 @@ import {
   COMPACT_FIELD_VALUE_TEXT,
 } from "@/constants/compactFieldTypography";
 
+/**
+ * Historical showroom/mock primitives retained for ProductionCardMock evidence.
+ * Current live Maker inline authoring routes through ControlledInlineEditValue.
+ */
+
 type InlineFieldProps = {
   readonly label: string;
   readonly value?: string;

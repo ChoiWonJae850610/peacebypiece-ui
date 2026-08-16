@@ -126,7 +126,7 @@ for (const name of [
   "WAFL_V2_TEST_PREFIX",
   "WAFL_V2_APPROVED_DB_FINGERPRINT",
 ]) {
-  assert.equal((externalQaStart.match(new RegExp(name, "g")) ?? []).length, 1, `${name} must be injected exactly once into the Next environment`);
+  assert.equal((externalQaStart.match(new RegExp(`\\b${name}\\s*=`, "g")) ?? []).length, 1, `${name} must be injected exactly once into the Next environment`);
 }
 const mobileEnvironmentBlock = externalQaStart.slice(externalQaStart.indexOf("$mobileEnvironment = @{"));
 assert.doesNotMatch(mobileEnvironmentBlock, /WAFL_V2_(?:READ|RUNTIME|TEST_PREFIX|APPROVED_DB_FINGERPRINT)/);

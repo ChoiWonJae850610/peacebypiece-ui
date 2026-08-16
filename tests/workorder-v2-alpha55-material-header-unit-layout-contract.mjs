@@ -53,7 +53,7 @@ assert.match(materials, /statusBadge: \{[^\n]*flexShrink: 0[^\n]*lineHeight: 14/
 assert.doesNotMatch(materials, /materialTitleRow/);
 const materialCard = materials.slice(
   materials.indexOf("function MaterialCard("),
-  materials.indexOf("function AddMaterialButton("),
+  materials.indexOf("function MaterialListShell("),
 );
 assert.match(materialCard, /const headerPresentation = createMaterialHeaderPresentation/);
 assert.match(materialCard, /styles\.headerBadgeCluster[\s\S]*?field="unitCode"[\s\S]*?styles\.statusBadge[\s\S]*?headerPresentation\.badgeCluster\[1\]\.text/);

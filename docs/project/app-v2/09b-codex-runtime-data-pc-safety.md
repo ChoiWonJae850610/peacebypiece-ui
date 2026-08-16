@@ -35,12 +35,21 @@ Unless an exact Delta changes the specialist environment:
 
 - Metro uses private Tailscale LAN HTTP under Development-only ATS.
 - Developer authentication and business API use tailnet-only Tailscale Serve HTTPS.
-- Preview/Viewer uses runner-owned Cloudflare Quick Tunnel HTTPS.
+- Current App-first Preview/Viewer uses the same tailnet-only Tailscale Serve HTTPS origin. Quick Tunnel, cloudflared, and Funnel are not current physical-QA transports.
 - Next DeveloperAutoConnect binds `127.0.0.1`, never `0.0.0.0` or a public/LAN address.
 - Tailscale Funnel is forbidden.
 - Host/path allowlists are exact; request `Host` is authority and `x-forwarded-host` is not.
 
+The normal latest Maker physical-QA runtime is cumulative: its canonical profile contains every still-supported finalized Maker capability plus the selected current Delta capability. Selecting a new feature mode must not silently remove older Maker authoring capabilities. One pure canonical capability owner supplies both internal command guards and the Tailscale method/path gate; feature-specific historical profiles may remain only as bounded test/evidence modes. A new current profile must extend the semantic superset contract, remain dev/test-only and production-closed, and preserve exact route/method, tenant, permission, version, idempotency, Event, and Receipt boundaries. A green set of isolated historical feature modes does not prove the latest Maker runtime READY.
+
 Parse Tailscale config structurally. Funnel is enabled only when an active item explicitly has `AllowFunnel: true`. Empty JSON or false/null/missing values are disabled. A non-empty Serve object alone is not Funnel. Parse failure or unknown schema is not PASS. Normal teardown does not silently mutate Funnel configuration.
+
+Server-mediated third-party APIs use one fixed HTTPS upstream and a server-only credential owner.
+Credentials must never enter `NEXT_PUBLIC_*`, `EXPO_PUBLIC_*`, a mobile bundle, client response,
+source fixture, Result, or log. The server proxy requires the normal authenticated permission
+guard, validates and bounds every input, uses a timeout and bounded response parser, returns only
+the typed fields the client needs, disables caching, and exposes stable WAFL errors without raw
+provider payloads. External-QA ingress must admit only the exact current-profile method/path.
 
 ## 4. Mutation baseline and effect accounting
 

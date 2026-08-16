@@ -44,7 +44,7 @@ assert.match(experience, /onSaveFactoryDeliveryMemo=\{assetAuthoring\.saveFactor
 const materials = read("apps/mobile/features/materials/WorkOrderMaterialsReadOnly.tsx");
 assert.match(materials, /testID=\{`material-add-\$\{materialType\}`\}/);
 assert.match(materials, /\{materialLabel\} 추가/);
-assert.match(materials, /addButton:[\s\S]*width: "100%"/);
+assert.match(materials, /<WaflSectionHeaderAction/);
 const actionCluster = materials.slice(
   materials.indexOf('<View testID="material-order-actions"'),
   materials.indexOf("</View>", materials.indexOf('<View testID="material-order-actions"')) + 7,
@@ -61,9 +61,9 @@ for (const evidence of ["asset.mimeType", "blob.type", "asset.fileName", "asset.
 assert.match(acquisition, /ALLOWED_IMAGE_MIME_TYPES/);
 
 const externalConfig = read("lib/external-qa/configCore.mjs");
-assert.match(externalConfig, /alpha57WorkOrderImageEnabled/);
+assert.match(externalConfig, /makerAuthoringAssetMutationEnabled/);
 assert.match(externalConfig, /images\\\/upload/);
-assert.match(externalConfig, /verb === "PATCH"[\s\S]*alpha57WorkOrderImageEnabled\(env\)/);
+assert.match(externalConfig, /verb === "PATCH"[\s\S]*makerAuthoringAssetMutationEnabled\(env\)/);
 
 const runner = read("tools/dev/start-wafl-external-qa.ps1");
 assert.match(runner, /EnableAlpha57WorkOrderImageMutation/);
@@ -84,6 +84,6 @@ console.log(JSON.stringify({
   imageFailurePoint: "external-device read-only ingress returned non-JSON 404 before Next route",
   boundary: "Mobile -> Next API -> Worker -> R2",
   memoMaxLength: 500,
-  materialAddButton: "full-width",
+  materialAddButton: "shared-section-header-action",
   materialActionOrder: "state-left-delete-right",
 }));

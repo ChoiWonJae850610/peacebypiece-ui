@@ -24,16 +24,26 @@ assert.match(startScript, /Test-WaflQaReadApiTarget/);
 assert.match(startScript, /GetSha256HexPrefix/);
 assert.match(startScript, /readApiGuard = "ready"/);
 assert.match(startScript, /fingerprintVerified = \$true/);
+assert.match(startScript, /Resolve-WaflQaCanonicalNodeToolchain/);
+assert.match(startScript, /DATABASE_URL = \$readApiTarget\.DatabaseUrl/);
+assert.match(startScript, /serverEnvironmentContractReady/);
+assert.match(startScript, /Invoke-WaflQaBundleTransfer/);
+assert.match(startScript, /Invoke-WaflQaDeveloperReadSmoke/);
+assert.match(startScript, /developer-auth-company-workorder-read-ready/);
 for (const name of [
   "WAFL_V2_READ_API_ENABLED",
   "WAFL_V2_READ_APPROVED",
   "WAFL_V2_RUNTIME",
   "WAFL_V2_TEST_PREFIX",
   "WAFL_V2_APPROVED_DB_FINGERPRINT",
-]) assert.equal((startScript.match(new RegExp(name, "g")) ?? []).length, 1, `${name} must be Next-only`);
+]) assert.ok((startScript.match(new RegExp(name, "g")) ?? []).length >= 1, `${name} must be present in the Next contract`);
 assert.doesNotMatch(startScript.slice(startScript.indexOf("$mobileEnvironment = @{")), /WAFL_V2_(?:READ|RUNTIME|TEST_PREFIX|APPROVED_DB_FINGERPRINT)/);
 assert.match(statusScript, /Read API guard:/);
 assert.match(statusScript, /DB fingerprint verified:/);
+assert.match(statusScript, /Invoke-WaflQaDeveloperReadSmoke/);
+assert.match(statusScript, /WorkOrder list read:/);
+assert.match(statusScript, /Owner fixture detail read:/);
+assert.match(statusScript, /Runtime canonical READY:/);
 assert.doesNotMatch(`${startScript}\n${commonScript}`, /authkey|nodekey|loginurl/i);
 
 const legacy = spawnSync(process.execPath, [rejectScript], { encoding: "utf8" });

@@ -1,14 +1,17 @@
 import { useState } from "react";
-import { ActivityIndicator, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
+import { ActivityIndicator, Pressable, StyleSheet, Text, View } from "react-native";
 import { ChevronDown, Save, SlidersVertical, X } from "lucide-react-native";
 
 import { WAFL_FONTS } from "@/constants/fonts";
+import { WAFL_THEME } from "@/constants/theme";
 import type { MaterialEditorFieldErrors } from "@/domain/workOrderValidation";
 import type { MaterialDraftFields, MaterialPartnerOption, MaterialType } from "@/domain/mobileContract";
 import MaterialPartnerPickerSheet from "@/features/materials/MaterialPartnerPickerSheet";
 import WaflReelPickerSheet from "@/features/inputs/reel-picker/WaflReelPickerSheet";
+import WaflSheetTextInput, { WaflSheetFocusBlock } from "@/features/inputs/WaflSheetTextInput";
 import MaterialQuantityValue from "@/features/materials/MaterialQuantityValue";
 import { MOBILE_MATERIAL_FIELD_LABELS } from "@/features/materials/materialFieldPolicy";
+import { WAFL_UNSET_PLACEHOLDER } from "@/lib/displayPlaceholder";
 import { materialReelDraftPatch, type MaterialReelField } from "@/features/materials/materialReelAdapter";
 import {
   calculateMaterialAmount,
@@ -48,6 +51,7 @@ type Props = {
   readonly onSave: () => void;
   readonly onReloadLatest: () => void;
   readonly partnerOptions: readonly MaterialPartnerOption[];
+  readonly showChrome?: boolean;
 };
 
 type FieldProps = {
@@ -67,9 +71,9 @@ function EditorField({ label, field, state, onChange, keyboardType = "default", 
   const disabled = state.saveState === "saving" || state.saveState === "locked" || state.saveState === "refresh-error";
   const numeric = keyboardType === "number-pad" || keyboardType === "decimal-pad";
   return (
-    <View style={[styles.field, multiline && styles.fieldWide]}>
+    <WaflSheetFocusBlock style={[styles.field, multiline && styles.fieldWide]}>
       <Text style={styles.label}>{label}</Text>
-      <TextInput
+      <WaflSheetTextInput
         accessibilityLabel={`${label} 입력`}
         editable={!disabled}
         keyboardType={keyboardType}
@@ -88,11 +92,11 @@ function EditorField({ label, field, state, onChange, keyboardType = "default", 
         value={state.draft[field]}
       />
       {state.fieldErrors[field] ? <Text style={styles.fieldError}>{state.fieldErrors[field]}</Text> : null}
-    </View>
+    </WaflSheetFocusBlock>
   );
 }
 
-export default function WorkOrderMaterialEditor({ state, dirty, onChange, onCancel, onSave, onReloadLatest, partnerOptions }: Props) {
+export default function WorkOrderMaterialEditor({ state, dirty, onChange, onCancel, onSave, onReloadLatest, partnerOptions, showChrome = true }: Props) {
   const [reelTarget, setReelTarget] = useState<ReelEditorTarget | null>(null);
   const [partnerPickerOpen, setPartnerPickerOpen] = useState(false);
   const saving = state.saveState === "saving";
@@ -102,7 +106,7 @@ export default function WorkOrderMaterialEditor({ state, dirty, onChange, onCanc
   const calculatedAmount = calculateMaterialAmount(calculatedOrderQuantity, state.draft.unitPrice);
   const materialLabel = state.materialType === "accessory" ? "부자재" : "원단";
   const materialNameLabel = `${materialLabel}명`;
-  const partnerName = partnerOptions.find((item) => item.id === state.draft.partnerId)?.name ?? "거래처 선택";
+  const partnerName = partnerOptions.find((item) => item.id === state.draft.partnerId)?.name ?? WAFL_UNSET_PLACEHOLDER;
 
   return (
     <View testID="material-draft-editor" style={styles.editor}>
@@ -123,20 +127,22 @@ export default function WorkOrderMaterialEditor({ state, dirty, onChange, onCanc
         />
       ) : null}
       <MaterialPartnerPickerSheet
+        allowUnset
         items={partnerOptions}
         onCancel={() => setPartnerPickerOpen(false)}
         onSelect={(partnerId) => { onChange("partnerId", partnerId); setPartnerPickerOpen(false); }}
+        onUnset={() => { onChange("partnerId", ""); setPartnerPickerOpen(false); }}
         selectedId={state.draft.partnerId}
         visible={partnerPickerOpen}
       />
-      <View style={styles.header}>
+      {showChrome ? <View style={styles.header}>
         <Pressable accessibilityLabel={`${materialLabel} 편집 취소`} accessibilityRole="button" disabled={saving} onPress={onCancel} style={({ pressed }) => [styles.backButton, pressed && styles.pressed]}><X color="#3f352d" size={20} /></Pressable>
         <View style={styles.headerText}>
           <Text style={styles.title}>{state.mode === "create" ? `${materialLabel} 추가` : `${materialLabel} 수정`}</Text>
           <Text style={styles.caption}>draft 작업지시서에 명시적으로 저장합니다.</Text>
         </View>
         <Text style={styles.unsavedBadge}>{dirty ? "저장 전" : "변경 없음"}</Text>
-      </View>
+      </View> : null}
 
       <View style={styles.fields}>
         <EditorField field="name" label={materialNameLabel} maxLength={200} onChange={onChange} placeholder={`${materialNameLabel}을 입력하세요`} state={state} />
@@ -196,18 +202,18 @@ export default function WorkOrderMaterialEditor({ state, dirty, onChange, onCanc
         </Pressable>
       ) : null}
 
-      <View style={styles.actions}>
+      {showChrome ? <View style={styles.actions}>
         <Pressable accessibilityLabel={`${materialLabel} 변경 취소`} accessibilityRole="button" disabled={saving} onPress={onCancel} style={styles.cancelButton}><X color="#5d5147" size={20} /></Pressable>
         <Pressable accessibilityLabel={`${materialLabel} 저장`} accessibilityRole="button" disabled={saveBlocked} onPress={onSave} style={[styles.saveButton, saveBlocked && styles.saveButtonDisabled]}>
           {saving ? <ActivityIndicator color="#fff" size="small" /> : <Save color="#fff" size={16} />}
         </Pressable>
-      </View>
+      </View> : null}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  editor: { backgroundColor: "#fffdf8", padding: 12 },
+  editor: { backgroundColor: WAFL_THEME.color.paper, padding: WAFL_THEME.layout.cardPadding },
   header: { alignItems: "center", borderBottomColor: "#eadfce", borderBottomWidth: 1, flexDirection: "row", gap: 9, paddingBottom: 10 },
   backButton: { alignItems: "center", justifyContent: "center", minHeight: 44, width: 44 },
   headerText: { flex: 1, minWidth: 0 },

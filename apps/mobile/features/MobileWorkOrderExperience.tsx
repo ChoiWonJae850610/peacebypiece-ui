@@ -972,7 +972,6 @@ export default function MobileWorkOrderExperience() {
       activeBasicField={activeBasicField}
       fieldErrors={basicInfoErrors}
       materialEditor={materialEditor}
-      materialType={activeMaterialType}
       activeMaterialField={activeMaterialField}
       activeMaterialInlineSession={activeMaterialInlineSession}
       materialEditorDirty={materialEditorDirty}
@@ -995,22 +994,31 @@ export default function MobileWorkOrderExperience() {
       onChangeMaterialDraft={materialAuthoring.changeDraft}
       onChangeMaterialInlineDraft={(field, value, owner) => materialAuthoring.changeDraft(field, value, owner)}
       onReloadLatest={reloadLatestBasicInfo}
+      onRefreshDocuments={reloadLatestBasicInfo}
       onReloadLatestMaterial={materialAuthoring.reloadLatest}
-      materials={materialCache[materialCacheKey(detail.header.id, activeMaterialType)] ?? EMPTY_MATERIAL_STATE}
-      materialIdentityKey={materialCacheKey(detail.header.id, activeMaterialType)}
+      materials={{
+        fabric: materialCache[materialCacheKey(detail.header.id, "fabric")] ?? EMPTY_MATERIAL_STATE,
+        accessory: materialCache[materialCacheKey(detail.header.id, "accessory")] ?? EMPTY_MATERIAL_STATE,
+      }}
+      materialIdentityKeys={{
+        fabric: materialCacheKey(detail.header.id, "fabric"),
+        accessory: materialCacheKey(detail.header.id, "accessory"),
+      }}
       materialSaveNotice={materialSaveNotice}
       materialPartnerOptions={materialPartnerOptions}
-      onLoadMoreMaterials={() => void materialAuthoring.loadMaterials(detail.header.id, activeMaterialType, "more")}
-      onOpenMaterials={(materialType) => {
+      onLoadMoreMaterials={(materialType) => void materialAuthoring.loadMaterials(detail.header.id, materialType, "more")}
+      onOpenMaterials={(materialFocus) => {
+        const materialType = materialFocus ?? activeMaterialType;
         if (materialEditor?.materialType !== materialType) materialAuthoring.closeEditorSession();
         materialAuthoring.setActiveType(materialType);
         setMaterialSaveNotice(null);
-        void materialAuthoring.loadMaterials(detail.header.id, materialType, "initial");
+        void materialAuthoring.loadMaterials(detail.header.id, "fabric", "initial");
+        void materialAuthoring.loadMaterials(detail.header.id, "accessory", "initial");
       }}
       sizeColor={sizeColor}
       sizeColorEdit={sizeColorEdit}
       onRequestSectionChange={(onProceed) => leaveWithDraftPolicy("feature", onProceed)}
-      onRetryMaterials={() => void materialAuthoring.loadMaterials(detail.header.id, activeMaterialType, "retry")}
+      onRetryMaterials={(materialType) => void materialAuthoring.loadMaterials(detail.header.id, materialType, "retry")}
       onDeleteImage={assetAuthoring.requestDeleteImage}
       onDeleteAttachment={assetAuthoring.requestDeleteAttachment}
       onOpenAttachment={(attachment) => void assetAuthoring.openAttachment(attachment)}
@@ -1092,8 +1100,8 @@ function ErrorPanel({ error, onRetry, onReturnToList }: { readonly error: Mobile
 
 const styles = StyleSheet.create({
   safe: { backgroundColor: WAFL_THEME.color.paperMuted, flex: 1 },
-  app: { alignSelf: "center", flex: 1, maxWidth: 1180, paddingHorizontal: 14, width: "100%" },
-  appTablet: { paddingHorizontal: 22 },
+  app: { alignSelf: "center", flex: 1, maxWidth: 1180, paddingHorizontal: WAFL_THEME.layout.screenGutterPhone, width: "100%" },
+  appTablet: { paddingHorizontal: WAFL_THEME.layout.screenGutterTablet },
   connectPage: { flex: 1, justifyContent: "center", padding: 18 },
   header: { alignItems: "center", borderBottomColor: "#d9cfc2", borderBottomWidth: 1, flexDirection: "row", gap: 12, justifyContent: "space-between", paddingVertical: 12 },
   headerMain: { flex: 1, minWidth: 0 },

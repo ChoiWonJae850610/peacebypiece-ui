@@ -54,12 +54,13 @@ const mobileContract = read("apps/mobile/domain/mobileContract.ts");
 const commandValidation = read("lib/domain/work-orders/command/validation.ts");
 
 const tabsIndex = overview.indexOf("<View style={styles.tabRailFrame}>");
-const overviewSummaryIndex = overview.indexOf("<View style={[styles.summaryGrid");
+const overviewSummaryIndex = overview.indexOf("<WaflMetricGrid items={overviewMetricItems}");
 assert.ok(tabsIndex >= 0 && overviewSummaryIndex > tabsIndex, "tabs must render above overview totals");
-assert.equal((overview.match(/<View style=\{\[styles\.summaryGrid/g) ?? []).length, 1);
-assert.match(overview, /activeSection === "overview"[\s\S]*label="총 수량"[\s\S]*label="납기"[\s\S]*1벌 원가[\s\S]*예상 총원가/);
+assert.equal((overview.match(/<WaflMetricGrid items=\{overviewMetricItems\}/g) ?? []).length, 1);
+assert.match(overview, /label="총 수량"[\s\S]*label="납기"/);
+assert.match(overview, /activeSection === "overview"[\s\S]*1벌 원가[\s\S]*예상 총원가/);
 assert.doesNotMatch(overview, /mediaCount|formatProductType|productTypeAlias/);
-assert.match(overview, /\{ id: "flow", label: "제작"/);
+assert.match(overview, /\{ id: "materials", label: "원부자재"/);
 assert.match(overview, /\{ id: "output", label: "문서"/);
 
 for (const field of ["targetAudience", "categoryMajor", "categoryDetail", "seasonCode"]) {
@@ -86,8 +87,8 @@ assert.doesNotMatch(overview, /archivedMaterials|archivedMaterialCount|onRestore
 assert.doesNotMatch(experience, /requestRestoreMaterial|loadMoreArchivedMaterials/);
 assert.match(experience, /requestDeleteMaterial[\s\S]*초안에서 삭제합니다[\s\S]*발주 이력이 없는 항목만 삭제할 수 있습니다/);
 assert.match(validation, /unitCode: materialType === "accessory" \? "개" : "yd"/);
-assert.match(experience, /const base = materialCreateDraft\(activeMaterialType\)/);
-assert.equal((experience.match(/materialCreateDraft\(activeMaterialType\)/g) ?? []).length, 1);
+assert.match(experience, /const base = materialCreateDraft\(materialType\)/);
+assert.equal((experience.match(/materialCreateDraft\(materialType\)/g) ?? []).length, 1);
 
 console.log(JSON.stringify({
   ok: true,

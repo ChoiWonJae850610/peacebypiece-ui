@@ -173,7 +173,7 @@ test("same-position unit-price marker accepts canonical number-pad behavior and 
   assert.equal(staleDecimalPadAssertion, false, "the pre-fix exact decimal-pad marker reproduces the stale failure");
 
   const evidence = inspectSamePositionInlineCoreFieldSources(sources);
-  assert.equal(evidence.passed, true);
+  assert.equal(evidence.passed, true, evidence.failureKeys.join(","));
   assert.deepEqual(evidence.failureKeys, []);
   assert.deepEqual(evidence.subchecks.map((check) => check.key), [
     "same-position-text-input",
@@ -221,6 +221,6 @@ test("same-position unit-price marker blocks stale keyboards, modal/action regre
     materialView: sources.materialView.replace("displayValue={formatWon(calculationDraft.unitPrice)}", "displayValue={calculationDraft.unitPrice}"),
   }, "won-view-formatting");
   expectBlocked({
-    overview: sources.overview.replace("materialType={props.materialType}", 'materialType="fabric"'),
+    overview: sources.overview.replace("materialType={materialType}", 'materialType="fabric"'),
   }, "material-accessory-symmetry");
 });

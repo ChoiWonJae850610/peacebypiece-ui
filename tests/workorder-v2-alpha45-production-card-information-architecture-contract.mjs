@@ -16,7 +16,7 @@ const externalQa = read("lib/external-qa/configCore.mjs");
 const mock = read("apps/mobile/components/ProductionCardMock.tsx");
 
 assert.match(detail, /testID="production-card-sheet"/);
-assert.match(detail, /styles\.hero[\s\S]*styles\.tabRailFrame[\s\S]*styles\.summaryGrid[\s\S]*ReadinessPanel[\s\S]*title="비용 구성"/);
+assert.match(detail, /styles\.hero[\s\S]*styles\.tabRailFrame[\s\S]*WaflMetricGrid[\s\S]*ReadinessPanel[\s\S]*title="비용 구성"/);
 
 for (const removedSection of ["문서 요약", "구성 요약"]) {
   assert.doesNotMatch(detail, new RegExp(removedSection), `removed section remains: ${removedSection}`);
@@ -33,7 +33,7 @@ for (const actualField of [
   "header.readiness.warnings", "detail.amounts.fabricTotal", "detail.amounts.accessoryTotal", "detail.amounts.processTotal",
   "detail.amounts.unitPrice", "detail.amounts.estimatedTotal", "detail.tabCounts.images", "detail.tabCounts.attachments",
   "detail.tabCounts.sizes", "detail.tabCounts.colors", "detail.tabCounts.fabric", "detail.tabCounts.accessory",
-  "detail.tabCounts.processes", "detail.tabCounts.documents",
+  "detail.tabCounts.documents",
 ]) assert.match(detail, new RegExp(actualField.replaceAll(".", "\\.")), `required actual overview source missing: ${actualField}`);
 
 assert.match(detail, /useWindowDimensions/);
@@ -44,7 +44,7 @@ assert.match(detail, /title:[^\n]+flexShrink: 1[^\n]+minWidth: 0/);
 assert.doesNotMatch(detail, /accessibilityRole="header"[^>]*numberOfLines/);
 assert.match(detail, /scrollContent: \{ paddingBottom: 42 \}/);
 
-for (const label of ["개요", "이미지·첨부", "사이즈·색상", "원단", "부자재", "제작", "문서"]) {
+for (const label of ["개요", "이미지·첨부", "사이즈·색상", "원부자재", "제작", "문서"]) {
   assert.match(detail, new RegExp(label), `tab label/count location missing: ${label}`);
 }
 assert.equal(resolveWorkOrderTabVisualState({ selected: false, locked: true }), "locked");
@@ -55,12 +55,13 @@ assert.match(detail, /setActiveSection/);
 assert.doesNotMatch(detail, /setActiveTab|activeTab/);
 
 assert.doesNotMatch(detail, /mockProductionCard|summaryMetrics|costMetrics|overviewInfo|nextCheckByTab|constants\/mockProductionCard/);
-assert.doesNotMatch(detail, /header\.id|entityVersion|header\.document/);
+assert.doesNotMatch(detail, /value=\{header\.id\}|<Text[^>]*>\{header\.id\}<\/Text>|Entity version|value=\{header\.document/, "routing/projection fields must not be rendered as overview rows");
 assert.doesNotMatch(detail, /value=\{detail\.revision\.status\}/, "revision status must not return as a duplicate overview row");
 assert.doesNotMatch(detail, /core detail|server calculated|internal status/i);
 assert.match(detail, /WorkOrderImageGallery/);
 assert.match(apiClient, /\/assets\?limit=50/);
-assert.doesNotMatch(apiClient, /\/processes|\/documents|\/history/, "process/document/history remain locked");
+assert.doesNotMatch(apiClient, /\/history/, "history remains locked");
+assert.match(apiClient, /export async function getWorkOrderProcesses[\s\S]*method: "GET"/);
 assert.match(apiClient, /target\.method/);
 assert.match(apiClient, /export async function deleteWorkOrderMaterial/);
 assert.match(apiClient, /method: "DELETE"/);

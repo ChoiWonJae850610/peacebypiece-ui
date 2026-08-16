@@ -128,7 +128,7 @@ assert.match(evidence, /archive success \| 2/);
 assert.match(evidence, /restore success \| 2/);
 assert.match(evidence, /material row delta \| 0/);
 const currentAlpha = Number(canonicalVersion.match(/alpha\.(\d+)$/)?.[1] ?? -1);
-const nextCandidateAlpha = Number(roadmap.match(/(?:Next candidate|Current implementation checkpoint) — 2\.0\.0-alpha\.(\d+)/)?.[1] ?? -1);
+const nextCandidateAlpha = Number(roadmap.match(/(?:Current result|Current candidate|Next candidate|Current implementation checkpoint) — 2\.0\.0-alpha\.(\d+)/)?.[1] ?? -1);
 assert.ok(currentAlpha >= 0 && nextCandidateAlpha >= currentAlpha, "roadmap candidate must not regress behind the canonical result");
 
 console.log("workorder v2 alpha.51 material soft-delete restore lifecycle contract: PASS");

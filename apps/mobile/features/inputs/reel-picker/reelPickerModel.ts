@@ -1,4 +1,11 @@
 import { canonicalizeNumericInput } from "../../../lib/mobileDisplay.ts";
+import {
+  formatMaterialQuantityScaled,
+  MATERIAL_QUANTITY_MAX,
+  MATERIAL_QUANTITY_MAX_SCALED,
+  MATERIAL_QUANTITY_SCALE,
+  parseMaterialQuantityScaled,
+} from "../../../domain/materialQuantityPrecision.ts";
 
 export const REEL_STEPS = ["0.1", "0.5", "1", "5", "10", "50"] as const;
 export type ReelStep = (typeof REEL_STEPS)[number];
@@ -6,13 +13,11 @@ export const INTEGER_REEL_STEPS = ["1", "5", "10", "50"] as const satisfies read
 
 export const MATERIAL_REEL_UNITS = ["개", "장", "벌", "m", "yd", "kg"] as const;
 export const MATERIAL_QUANTITY_MIN = "0";
-export const MATERIAL_QUANTITY_MAX = "99999999999.999";
+export { MATERIAL_QUANTITY_MAX };
 export const MATERIAL_REEL_WINDOW_RADIUS = 50;
 export const CIRCULAR_REEL_COPY_COUNT = 9;
 export const QUARTER_FRACTION_VALUES = ["0", "0.25", "0.5", "0.75"] as const;
 
-const SCALE = 1000n;
-const MAX_SCALED = 99_999_999_999_999n;
 const COUNT_UNITS = new Set(["개", "장", "벌", "ea", "set"]);
 
 export type ReelOption = {
@@ -49,16 +54,12 @@ export type QuarterQuantityParts = {
 
 function scaled(value: string): bigint | null {
   const canonical = canonicalizeNumericInput(value);
-  const matched = /^(\d{1,11})(?:\.(\d{1,3}))?$/u.exec(canonical);
-  if (!matched) return null;
-  return BigInt(matched[1]) * SCALE + BigInt((matched[2] ?? "").padEnd(3, "0"));
+  return parseMaterialQuantityScaled(canonical);
 }
 
 function displayValue(value: bigint): string {
-  const bounded = value < 0n ? 0n : value > MAX_SCALED ? MAX_SCALED : value;
-  const whole = bounded / SCALE;
-  const fraction = (bounded % SCALE).toString().padStart(3, "0").replace(/0+$/u, "");
-  return `${whole}${fraction ? `.${fraction}` : ""}`;
+  const bounded = value < 0n ? 0n : value > MATERIAL_QUANTITY_MAX_SCALED ? MATERIAL_QUANTITY_MAX_SCALED : value;
+  return formatMaterialQuantityScaled(bounded);
 }
 
 function modulo(value: number, divisor: number): number {
@@ -120,7 +121,7 @@ export function decomposeQuarterQuantity(value: string): QuarterQuantityParts {
     return { integerPart: "0", fractionPart: "0", exactQuarter: false, preservedValue: value };
   }
   const [integerPart = "0", rawFraction = ""] = canonical.split(".");
-  const thousandths = rawFraction.padEnd(3, "0");
+  const thousandths = rawFraction.padEnd(MATERIAL_QUANTITY_SCALE, "0");
   const quarter = thousandths === "000" ? "0"
     : thousandths === "250" ? "0.25"
       : thousandths === "500" ? "0.5"
@@ -161,7 +162,7 @@ export function reelStepOptions(integerOnly = false): readonly ReelOption[] {
 
 export function normalizeReelValue(value: string): string | null {
   const parsed = scaled(value);
-  return parsed === null || parsed > MAX_SCALED ? null : displayValue(parsed);
+  return parsed === null || parsed > MATERIAL_QUANTITY_MAX_SCALED ? null : displayValue(parsed);
 }
 
 export function createReelWindow(
@@ -174,7 +175,7 @@ export function createReelWindow(
   if (stepScaled === null || stepScaled <= 0n) throw new Error("invalid-reel-step");
   const safeRadius = Math.max(1, Math.min(100, Math.trunc(radius)));
   const before = anchor / stepScaled < BigInt(safeRadius) ? Number(anchor / stepScaled) : safeRadius;
-  const afterCapacity = (MAX_SCALED - anchor) / stepScaled;
+  const afterCapacity = (MATERIAL_QUANTITY_MAX_SCALED - anchor) / stepScaled;
   const after = afterCapacity < BigInt(safeRadius) ? Number(afterCapacity) : safeRadius;
   const options: ReelOption[] = [];
   for (let offset = -before; offset <= after; offset += 1) {

@@ -65,10 +65,10 @@ assert.doesNotMatch(fileRoute, /getR2Object|createR2SdkFileResponse|S3Client/);
 const externalConfig = read("lib/external-qa/configCore.mjs");
 const runtimeGuard = read("lib/domain/work-orders/command/runtimeGuard.ts");
 const materialService = read("lib/domain/work-orders/command/materialCommandService.ts");
-assert.match(externalConfig, /alpha57WorkOrderImageEnabled\(env\)[\s\S]*materials/);
+assert.match(externalConfig, /makerAuthoringAssetMutationEnabled\(env\)[\s\S]*materials/);
 assert.match(externalConfig, /attachments\\\/.*preview/);
-assert.match(runtimeGuard, /getWorkOrderV2MaterialDraftMutationRuntimeGuard[\s\S]*WAFL_V2_ALPHA57_WORK_ORDER_IMAGE_MUTATION_APPROVAL/);
-assert.match(materialService, /configuredApproval === WAFL_V2_ALPHA57_WORK_ORDER_IMAGE_MUTATION_APPROVAL/);
+assert.match(runtimeGuard, /getWorkOrderV2MaterialDraftMutationRuntimeGuard[\s\S]*MAKER_QA_CAPABILITY\.MATERIAL_DRAFT/);
+assert.match(materialService, /requireMaterialDraftMutationApproval/);
 
 assert.match(gallery, /Math\.abs\(gesture\.dx\) >= 8/);
 assert.match(gallery, /distanceIntent = Math\.abs\(gesture\.dx\) >= 24/);

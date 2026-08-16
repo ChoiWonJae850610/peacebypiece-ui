@@ -134,8 +134,8 @@ assert.match(validation, /parseIdempotencyKey/);
 
 assert.match(editor, /WorkOrderSizeColorReadOnly/);
 assert.match(editor, /edit\.canEdit/);
-assert.match(editor, /count=\{matrix\.sizes\.length\} editable=\{edit\.canEdit\} kind="size"/);
-assert.match(editor, /count=\{matrix\.colors\.length\} editable=\{edit\.canEdit\} kind="color"/);
+assert.match(editor, /onEditSize=\{\(\) =>/);
+assert.match(editor, /onEditColor=\{\(\) =>/);
 assert.match(editor, /function SizeChooser[\s\S]*function ColorChooser/);
 assert.match(editor, /WaflOptionGrid accessibilityLabel="WAFL 기본 사이즈 선택" columns=\{4\}/);
 assert.match(editor, /WaflOptionGrid accessibilityLabel="WAFL 기본 색상 선택" columns=\{3\}/);

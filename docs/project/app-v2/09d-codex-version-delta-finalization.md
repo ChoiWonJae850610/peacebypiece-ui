@@ -87,3 +87,9 @@ Declare completion only when every applicable Delta and Permanent Rule gate pass
 - `INBOX` keeps at most one current active WAFL handoff ZIP. After the active handoff and its evidence are verified, remove superseded WAFL handoff ZIPs only by exact filename plus verified byte size and SHA-256; never use a wildcard or broad deletion, and never touch unrelated files.
 - `RESULTS` keeps only the current task's official Result/QA pair. Publish and verify both current files before removing older WAFL result files individually; intermediate logs and raw evidence do not belong in `RESULTS`.
 - A failure preserves the active input and the previously verified official Result/QA pair unless the active Delta explicitly requires a new verified failure pair.
+
+## 8. Current-source GPT review snapshot
+
+When an owner-approved Delta requires a GPT-reviewable current-source snapshot at a normal pre-finalization checkpoint, it is a diagnostic snapshot, not a release artifact. Create it only after the official Result/QA pair is verified, under `C:\CWJ_Project\Patch\PeacebyPiece\4. Newest`, with a timestamped `current-source-snapshot` filename. Include the current tracked and untracked source, current canonical docs and contracts, the current official Result/QA pair, and an index that states the checkpoint and collection scope.
+
+Apply the canonical Source ZIP exclusions for Git metadata, dependencies, builds, caches, runtime/test artifacts, reports, coverage, env files, secrets, credentials, logs, existing generated ZIPs, and repo-state/build-result outputs. Verify archive open/test, entry count, byte size, SHA-256, exclusion violations, and secret/env hits. Snapshot creation must not modify repository source, Git state, DB/R2/PDF/token state, fixtures, or Runtime. It does not replace the canonical release Source ZIP or authorize version, commit, push, or finalization work.

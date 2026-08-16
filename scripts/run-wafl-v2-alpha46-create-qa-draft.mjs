@@ -16,6 +16,7 @@ const REQUIRED_CONFIRMATION = "EXECUTE WAFL V2 ALPHA46 QA DRAFT CREATE";
 const REQUIRED_ALPHA59_ISOLATED_CONFIRMATION = "EXECUTE WAFL V2 ALPHA59 ISOLATED QA DRAFT CREATE";
 const REQUIRED_ALPHA60_ISOLATED_CONFIRMATION = "EXECUTE WAFL V2 ALPHA60 ISOLATED QA DRAFT CREATE";
 const REQUIRED_ALPHA62_ISOLATED_CONFIRMATION = "EXECUTE WAFL V2 ALPHA62 ISOLATED QA DRAFT CREATE";
+const REQUIRED_ALPHA64_SPEC_ISOLATED_CONFIRMATION = "EXECUTE WAFL V2 ALPHA64 SPEC CATALOG ISOLATED QA DRAFT CREATE";
 const REQUIRED_CREATE_APPROVAL = "2.0.0-alpha.25-dev-test-command-runtime";
 const ALLOWED_RUNTIMES = new Set(["development", "dev", "local", "test", "demo"]);
 const COMPANY_A = "wafl-fn-company-a";
@@ -41,16 +42,17 @@ export function resolveApprovedDraftTarget(environment = process.env) {
   const alpha59 = /^QA A59 picker drag isolated [0-9]{8}-[A-F0-9]{8}$/.test(temporaryName);
   const alpha60 = /^QA A60 draft child hard delete [0-9]{8}-[A-F0-9]{8}$/.test(temporaryName);
   const alpha62 = /^QA A62 size measurement isolated [0-9]{8}-[A-F0-9]{8}$/.test(temporaryName) || /^QA A62 완성 치수 검증 [A-F0-9]{8}$/.test(temporaryName);
-  if (!alpha59 && !alpha60 && !alpha62) fail("isolated-name-prefix-mismatch");
-  const requiredConfirmation = alpha62 ? REQUIRED_ALPHA62_ISOLATED_CONFIRMATION : alpha60 ? REQUIRED_ALPHA60_ISOLATED_CONFIRMATION : REQUIRED_ALPHA59_ISOLATED_CONFIRMATION;
+  const alpha64Spec = /^QA A64 spec catalog isolated [0-9]{8}-[A-F0-9]{8}$/.test(temporaryName);
+  if (!alpha59 && !alpha60 && !alpha62 && !alpha64Spec) fail("isolated-name-prefix-mismatch");
+  const requiredConfirmation = alpha64Spec ? REQUIRED_ALPHA64_SPEC_ISOLATED_CONFIRMATION : alpha62 ? REQUIRED_ALPHA62_ISOLATED_CONFIRMATION : alpha60 ? REQUIRED_ALPHA60_ISOLATED_CONFIRMATION : REQUIRED_ALPHA59_ISOLATED_CONFIRMATION;
   if (environment.WAFL_V2_CONFIRMATION !== requiredConfirmation) fail("isolated-confirmation-mismatch");
   if (String(environment.WAFL_V2_TEMPORARY_DRAFT_MARKER ?? "").trim() !== temporaryName) fail("isolated-marker-mismatch");
   const clientRequestId = String(environment.WAFL_V2_TEMPORARY_DRAFT_CLIENT_REQUEST_ID ?? "").trim();
   const idempotencyKey = String(environment.WAFL_V2_TEMPORARY_DRAFT_IDEMPOTENCY_KEY ?? "").trim();
-  if (!(alpha62 ? /^a62-(?:isolated|owner)-create-[a-f0-9]{8}$/ : alpha60 ? /^a60-isolated-create-[a-f0-9]{8}$/ : /^a59-isolated-create-[a-f0-9]{8}$/).test(clientRequestId)) fail("isolated-client-request-id-invalid");
+  if (!(alpha64Spec ? /^a64-spec-isolated-create-[a-f0-9]{8}$/ : alpha62 ? /^a62-(?:isolated|owner)-create-[a-f0-9]{8}$/ : alpha60 ? /^a60-isolated-create-[a-f0-9]{8}$/ : /^a59-isolated-create-[a-f0-9]{8}$/).test(clientRequestId)) fail("isolated-client-request-id-invalid");
   if (idempotencyKey !== clientRequestId) fail("isolated-idempotency-key-mismatch");
   return Object.freeze({
-    mode: alpha62 ? "alpha62-isolated" : alpha60 ? "alpha60-isolated" : "alpha59-isolated",
+    mode: alpha64Spec ? "alpha64-spec-isolated" : alpha62 ? "alpha62-isolated" : alpha60 ? "alpha60-isolated" : "alpha59-isolated",
     productName: temporaryName,
     dueDate: null,
     totalQuantity: 0,
@@ -81,6 +83,7 @@ function assertGuard(target) {
   if (target.mode === "alpha59-isolated" && process.env.WAFL_V2_CONFIRMATION !== REQUIRED_ALPHA59_ISOLATED_CONFIRMATION) fail("isolated-confirmation-mismatch");
   if (target.mode === "alpha60-isolated" && process.env.WAFL_V2_CONFIRMATION !== REQUIRED_ALPHA60_ISOLATED_CONFIRMATION) fail("isolated-confirmation-mismatch");
   if (target.mode === "alpha62-isolated" && process.env.WAFL_V2_CONFIRMATION !== REQUIRED_ALPHA62_ISOLATED_CONFIRMATION) fail("isolated-confirmation-mismatch");
+  if (target.mode === "alpha64-spec-isolated" && process.env.WAFL_V2_CONFIRMATION !== REQUIRED_ALPHA64_SPEC_ISOLATED_CONFIRMATION) fail("isolated-confirmation-mismatch");
   if (process.env.WAFL_V2_READ_API_ENABLED !== "1" || process.env.WAFL_V2_READ_APPROVED !== "1") fail("read-api-guard-missing");
   if (process.env.WAFL_V2_COMMAND_API_ENABLED !== "1") fail("command-api-disabled");
   if (process.env.WAFL_V2_COMMAND_MUTATION_APPROVED !== REQUIRED_CREATE_APPROVAL) fail("create-approval-mismatch");

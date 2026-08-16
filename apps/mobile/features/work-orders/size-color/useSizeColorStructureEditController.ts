@@ -54,6 +54,7 @@ export type SizeColorStructureEditBoundary = {
   readonly onApplyMeasurementTemplate: (templateId: string) => Promise<boolean>;
   readonly onSaveMeasurementTemplate: (templateName: string) => Promise<boolean>;
   readonly onUpdateMeasurementTemplate: (templateId: string) => Promise<boolean>;
+  readonly onSetPomSelection: (selectedItems: readonly { readonly catalogOptionId: string | null; readonly systemSpecItemKey: string | null; readonly currentPomId: string | null; readonly displayName: string }[]) => Promise<boolean>;
 };
 
 type LatestProjection = {
@@ -499,6 +500,7 @@ export function useSizeColorStructureEditController(input: Input) {
     onApplyMeasurementTemplate: async (templateId) => run(true, ({ workOrderId, expectedVersion, clientRequestId, idempotencyKey }) => workOrderMutationController.mutateMeasurement(workOrderId, createApplyMeasurementTemplateCommand({ templateId, expectedVersion, clientRequestId }), idempotencyKey), undefined, undefined, "apply-template", "template-apply", "template"),
     onSaveMeasurementTemplate: async (templateName) => run(true, ({ workOrderId, expectedVersion, clientRequestId, idempotencyKey }) => workOrderMutationController.mutateMeasurement(workOrderId, { kind: "save-company-template", templateName, expectedVersion, clientRequestId }, idempotencyKey), undefined, undefined, "save-company-template", "company-template-save", "template"),
     onUpdateMeasurementTemplate: async (templateId) => run(true, ({ workOrderId, expectedVersion, clientRequestId, idempotencyKey }) => workOrderMutationController.mutateMeasurement(workOrderId, { kind: "update-company-template", templateId, expectedVersion, clientRequestId }, idempotencyKey), undefined, undefined, "update-company-template", "company-template-update", "template"),
+    onSetPomSelection: async (selectedItems) => run(true, ({ workOrderId, expectedVersion, clientRequestId, idempotencyKey }) => workOrderMutationController.mutateMeasurement(workOrderId, { kind: "set-pom-selection", selectedItems, expectedVersion, clientRequestId }, idempotencyKey), undefined, undefined, "set-pom-selection", "pom-selection-batch", "template"),
   }), [addColorsSequentially, addSizesSequentially, busy, editingWorkOrderId, errorState, input.bundle, input.canEdit, input.workOrderId, pendingScope, run]);
 
   return { boundary };

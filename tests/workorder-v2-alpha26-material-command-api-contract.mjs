@@ -13,6 +13,7 @@ const cancelRoute = read("app/api/v2/work-orders/[workOrderId]/materials/[materi
 const completeRoute = read("app/api/v2/work-orders/[workOrderId]/materials/[materialLineId]/order-complete/route.ts");
 const commands = read("lib/domain/work-orders/contracts/commands.ts");
 const runtimeGuard = read("lib/domain/work-orders/command/runtimeGuard.ts");
+const makerQaCapabilities = read("lib/external-qa/makerQaCapabilities.mjs");
 const validation = read("lib/domain/work-orders/command/materialValidation.ts");
 const baseValidation = read("lib/domain/work-orders/command/validation.ts");
 const service = read("lib/domain/work-orders/command/materialCommandService.ts");
@@ -66,9 +67,10 @@ assert.doesNotMatch(validation, /"companyId"|"memberId"|"revisionId"|"supplierCo
 
 assert.match(runtimeGuard, /2\.0\.0-alpha\.26-dev-test-material-command-runtime/, "exact alpha.26 mutation approval required");
 assert.match(runtimeGuard, /SUPPORTED_MUTATION_APPROVALS/, "known fixed approvals must remain allowlisted");
-assert.match(service, /WAFL_V2_ALPHA26_MUTATION_APPROVAL/, "historical alpha.26 exact approval must remain supported");
-assert.match(service, /WAFL_V2_ALPHA55_MATERIAL_ORDER_LIFECYCLE_MUTATION_APPROVAL/, "current lifecycle approval must be explicit");
-assert.match(service, /requireCommandMutationApproval\(/, "service must recheck the selected exact approval before mutation");
+assert.match(runtimeGuard, /configuredApproval !== WAFL_V2_ALPHA26_MUTATION_APPROVAL[\s\S]{0,160}MAKER_QA_CAPABILITY\.MATERIAL_DRAFT/, "historical alpha.26 exact material approval must remain supported");
+assert.match(makerQaCapabilities, /ALPHA55: "2\.0\.0-alpha\.55-dev-test-mobile-material-order-lifecycle-runtime"/, "current lifecycle approval must remain canonical");
+assert.match(service, /requireMaterialDraftMutationApproval\(\)/, "draft service must recheck its semantic capability before mutation");
+assert.match(service, /requireMaterialOrderMutationApproval\(\)/, "order service must recheck its semantic capability before mutation");
 assert.match(service, /deterministicUuid/, "create replay must use deterministic line identity without schema change");
 assert.match(service, /material\.order\.request/, "request/cancel permission required");
 assert.match(service, /material\.order\.place/, "complete permission required");

@@ -11,9 +11,11 @@ import {
   createCompanyWorkOrderStructureOption,
   listCompanyWorkOrderStructureOptions,
   removeCompanyWorkOrderStructureOption,
+  renameCompanyWorkOrderStructureOption,
   scopedStructureOptionIdempotencyKey,
   STRUCTURE_OPTION_CREATE_COMMAND_CODE,
   STRUCTURE_OPTION_REMOVE_COMMAND_CODE,
+  STRUCTURE_OPTION_RENAME_COMMAND_CODE,
   StructureOptionRepositoryError,
 } from "@/lib/domain/work-orders/catalog/structureOptionRepository";
 import { isWorkOrderStructureOptionKind, normalizeWorkOrderStructureOptionHex, normalizeWorkOrderStructureOptionName } from "@/lib/domain/work-orders/catalog/structureOptionPolicy";
@@ -54,6 +56,7 @@ function mapRepositoryError(error: StructureOptionRepositoryError): never {
   const entityVersion = error.entityVersion === null ? undefined : error.entityVersion as EntityVersion;
   if (error.reason === "not_found") throw new WorkOrderCommandRequestError({ code: "NOT_FOUND", status: 404, message: "회사 선택지를 찾을 수 없습니다.", entityVersion });
   if (error.reason === "locked") throw new WorkOrderCommandRequestError({ code: "LOCKED", status: 409, message: "수정 가능한 초안에서만 회사 선택지를 변경할 수 있습니다.", entityVersion });
+  if (error.reason === "validation") throw new WorkOrderCommandRequestError({ code: "VALIDATION_ERROR", status: 400, message: "회사 선택지 정보를 확인해 주세요.", entityVersion });
   throw new WorkOrderCommandRequestError({ code: "CONFLICT", status: 409, message: error.reason === "idempotency_conflict" ? "같은 요청 식별값이 다른 변경에 사용되었습니다." : "최신 상태를 다시 확인해 주세요.", entityVersion });
 }
 
@@ -116,6 +119,33 @@ export async function handleRemoveStructureOption(request: Request, workOrderId:
     const scopedKey = scopedStructureOptionIdempotencyKey(STRUCTURE_OPTION_REMOVE_COMMAND_CODE, access.tenantScope, common.idempotencyKey);
     const requestHash = hash(JSON.stringify({ workOrderId, optionId, expectedVersion: common.expectedVersion }));
     const result = await removeCompanyWorkOrderStructureOption({ scope: access.tenantScope, workOrderId, assignedCompanyMemberId: assignedMemberId(access.scope), expectedVersion: common.expectedVersion, scopedIdempotencyKeyHash: scopedKey, requestHash, optionId });
+    return createWaflApiSuccess(result, { headers: { "Cache-Control": "no-store", "X-WAFL-Correlation-Id": correlationId } });
+  }, correlationId);
+}
+
+export async function handleRenameStructureOption(request: Request, workOrderId: string, optionId: string) {
+  const correlationId = randomUUID() as CorrelationId;
+  return errorResponse(async () => {
+    if (!UUID.test(workOrderId) || !UUID.test(optionId)) throw new WorkOrderCommandRequestError({ code: "NOT_FOUND", status: 404, message: "회사 스펙 항목을 찾을 수 없습니다." });
+    const access = await guard("workorder.update", correlationId, true);
+    if (!access.ok) return createCommandErrorResponse({ ...mapCommandGuardFailureStatus(access.response.status), correlationId });
+    const body = bodyObject(await readBoundedCommandJson(request));
+    const common = mutationInput(request, body);
+    const name = normalizeWorkOrderStructureOptionName(body.displayName, "spec_item");
+    if (!name.ok) throw new WorkOrderCommandRequestError({ code: "VALIDATION_ERROR", status: 400, message: name.message });
+    const scopedKey = scopedStructureOptionIdempotencyKey(STRUCTURE_OPTION_RENAME_COMMAND_CODE, access.tenantScope, common.idempotencyKey);
+    const requestHash = hash(JSON.stringify({ workOrderId, optionId, expectedVersion: common.expectedVersion, displayName: name.displayName }));
+    const result = await renameCompanyWorkOrderStructureOption({
+      scope: access.tenantScope,
+      workOrderId,
+      assignedCompanyMemberId: assignedMemberId(access.scope),
+      expectedVersion: common.expectedVersion,
+      scopedIdempotencyKeyHash: scopedKey,
+      requestHash,
+      optionId,
+      displayName: name.displayName,
+      normalizedName: name.normalizedName,
+    });
     return createWaflApiSuccess(result, { headers: { "Cache-Control": "no-store", "X-WAFL-Correlation-Id": correlationId } });
   }, correlationId);
 }

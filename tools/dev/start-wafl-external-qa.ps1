@@ -6,7 +6,7 @@
     [int]$NextPort = 3000,
     [int]$ExpoPort = 8081,
     [string]$CloudflaredPath = "",
-    [ValidateSet("external-device", "memo-ime-display", "accessory-lifecycle-parity", "work-order-image", "size-color-structure", "draft-child-hard-delete", "size-measurement-standards")]
+    [ValidateSet("external-device", "memo-ime-display", "accessory-lifecycle-parity", "work-order-image", "size-color-structure", "draft-child-hard-delete", "size-measurement-standards", "maker-document-r0", "current-maker")]
     [string]$RuntimeQaMode = "external-device",
     [switch]$EnableAlpha46BasicInfoMutation,
     [switch]$EnableAlpha50MaterialDraftMutation,
@@ -18,14 +18,15 @@
     [switch]$EnableAlpha59SizeColorStructureMutation,
     [switch]$EnableAlpha60DraftChildHardDeleteMutation,
     [switch]$EnableAlpha61MobileWorkOrderCreateMutation,
-    [switch]$EnableAlpha62SizeMeasurementMutation
+    [switch]$EnableAlpha62SizeMeasurementMutation,
+    [switch]$EnableAlpha64MakerDocumentR0Mutation
 )
 
 $ErrorActionPreference = "Stop"
 . (Join-Path $PSScriptRoot "wafl-external-qa-common.ps1")
 . (Join-Path $PSScriptRoot "..\pipeline\pipeline-common.ps1")
 
-if (@($EnableAlpha46BasicInfoMutation, $EnableAlpha50MaterialDraftMutation, $EnableAlpha51MaterialLifecycleMutation, $EnableAlpha52CoreInlineMutation, $EnableAlpha55MaterialOrderLifecycleMutation, $EnableAlpha56AccessoryLifecycleParityMutation, $EnableAlpha57WorkOrderImageMutation, $EnableAlpha59SizeColorStructureMutation, $EnableAlpha60DraftChildHardDeleteMutation, $EnableAlpha61MobileWorkOrderCreateMutation, $EnableAlpha62SizeMeasurementMutation).Where({ $_ }).Count -gt 1) {
+if (@($EnableAlpha46BasicInfoMutation, $EnableAlpha50MaterialDraftMutation, $EnableAlpha51MaterialLifecycleMutation, $EnableAlpha52CoreInlineMutation, $EnableAlpha55MaterialOrderLifecycleMutation, $EnableAlpha56AccessoryLifecycleParityMutation, $EnableAlpha57WorkOrderImageMutation, $EnableAlpha59SizeColorStructureMutation, $EnableAlpha60DraftChildHardDeleteMutation, $EnableAlpha61MobileWorkOrderCreateMutation, $EnableAlpha62SizeMeasurementMutation, $EnableAlpha64MakerDocumentR0Mutation).Where({ $_ }).Count -gt 1) {
     throw "EXTERNAL_QA_MUTATION_MODES_ARE_MUTUALLY_EXCLUSIVE"
 }
 $internalMemoImeMode = $RuntimeQaMode -eq "memo-ime-display"
@@ -34,7 +35,8 @@ $internalWorkOrderImageMode = $RuntimeQaMode -eq "work-order-image"
 $internalSizeColorStructureMode = $RuntimeQaMode -eq "size-color-structure"
 $internalDraftChildHardDeleteMode = $RuntimeQaMode -eq "draft-child-hard-delete"
 $internalSizeMeasurementMode = $RuntimeQaMode -eq "size-measurement-standards"
-$internalRuntimeMode = $internalMemoImeMode -or $internalAccessoryLifecycleMode -or $internalWorkOrderImageMode -or $internalSizeColorStructureMode -or $internalDraftChildHardDeleteMode -or $internalSizeMeasurementMode
+$internalMakerDocumentR0Mode = $RuntimeQaMode -in @("maker-document-r0", "current-maker")
+$internalRuntimeMode = $internalMemoImeMode -or $internalAccessoryLifecycleMode -or $internalWorkOrderImageMode -or $internalSizeColorStructureMode -or $internalDraftChildHardDeleteMode -or $internalSizeMeasurementMode -or $internalMakerDocumentR0Mode
 if ($internalMemoImeMode -and $MobileTransport -ne "DeveloperAutoConnect") {
     throw "MEMO_IME_DISPLAY_REQUIRES_DEVELOPER_AUTO_CONNECT"
 }
@@ -83,6 +85,9 @@ if ($internalDraftChildHardDeleteMode -and ($NextPort -ne 3100 -or $ExpoPort -ne
 if ($internalSizeMeasurementMode -and $MobileTransport -ne "DeveloperAutoConnect") { throw "SIZE_MEASUREMENT_STANDARDS_REQUIRES_DEVELOPER_AUTO_CONNECT" }
 if ($internalSizeMeasurementMode -and -not $EnableAlpha62SizeMeasurementMutation) { throw "SIZE_MEASUREMENT_STANDARDS_REQUIRES_ALPHA62_MUTATION_MODE" }
 if ($internalSizeMeasurementMode -and ($NextPort -ne 3100 -or $ExpoPort -ne 8081)) { throw "SIZE_MEASUREMENT_STANDARDS_REQUIRES_CANONICAL_PORTS" }
+if ($internalMakerDocumentR0Mode -and $MobileTransport -ne "DeveloperAutoConnect") { throw "MAKER_DOCUMENT_R0_REQUIRES_DEVELOPER_AUTO_CONNECT" }
+if ($internalMakerDocumentR0Mode -and -not $EnableAlpha64MakerDocumentR0Mutation) { throw "MAKER_DOCUMENT_R0_REQUIRES_ALPHA64_MUTATION_MODE" }
+if ($internalMakerDocumentR0Mode -and ($NextPort -ne 3100 -or $ExpoPort -ne 8081)) { throw "MAKER_DOCUMENT_R0_REQUIRES_CANONICAL_PORTS" }
 
 function Get-WaflQaDatabaseUrl {
     param([Parameter(Mandatory = $true)][string]$RepositoryRoot)
@@ -144,12 +149,12 @@ $root = Get-WaflQaRepositoryRoot
 if (-not (Test-Path -LiteralPath (Join-Path $root ".git") -PathType Container)) { throw "Repository root validation failed: $root" }
 if ((Get-Location).Path -ne $root) { Set-Location -LiteralPath $root }
 
-$node = Get-WaflQaExecutablePath -Name "node"
-$npm = Get-WaflQaExecutablePath -Name "npm.cmd"
-$npx = Get-WaflQaExecutablePath -Name "npx.cmd"
+$nodeToolchain = Resolve-WaflQaCanonicalNodeToolchain
+$node = $nodeToolchain.Node
+$nodeVersion = $nodeToolchain.Version
 $usesTailscaleServeOrigin = $internalRuntimeMode -or $MobileTransport -eq "DeveloperAutoConnect"
 $cloudflared = if ($usesTailscaleServeOrigin) { $null } else { Get-WaflQaCloudflaredPath -ExplicitPath $CloudflaredPath }
-if (-not $node -or -not $npm -or -not $npx) { throw "Node, npm, and npx must be available on PATH." }
+if ($nodeVersion -ne "v24.14.0") { throw "CANONICAL_NODE_VERSION_MISMATCH" }
 if (-not $usesTailscaleServeOrigin -and -not $cloudflared) {
     throw "cloudflared was not found. Installation is not automatic. Approval command: winget install --id Cloudflare.cloudflared --exact"
 }
@@ -182,6 +187,7 @@ $state = [ordered]@{
     status = "starting"
     failureCode = $null
     appVersion = $appVersion
+    nodeVersion = $nodeVersion.TrimStart('v')
     workingTreeEntryCount = $gitStatus.Count
     nextMode = $NextMode
     mobileTransport = $MobileTransport
@@ -200,15 +206,35 @@ $state = [ordered]@{
     readApiRuntime = "dev-test"
     fingerprintVerified = $false
     fingerprintPrefix = $null
+    databaseEnvironmentInjected = $false
+    serverEnvironmentContractReady = $false
+    capabilityProfileReady = $false
     tailscaleServeReady = $false
     tailscaleServeHostname = $null
     developerAutoConnectReady = $false
+    runtimeReadSmokeReady = $false
+    developerAutoConnectHttp = 0
+    authMeHttp = 0
+    companyContextReady = $false
+    workOrderListHttp = 0
+    workOrderListReady = $false
+    ownerFixtureDetailHttp = 0
+    ownerFixtureDetailReady = $false
+    manifestHttp = 0
+    bundleHttp = 0
+    bundleBytes = 0
     developerIdentityVerified = $false
     developerLoginHashPrefix = $null
     serveConfigOwnership = "none"
     funnelUnchanged = $true
     commandApi = "blocked"
     mutationMode = "read-only"
+    makerQaProfile = $null
+    ownerFixtureSource = "unresolved"
+    metroAdvertisedHost = $null
+    iosManifestLaunchHost = $null
+    developerClientLaunchHost = $null
+    developerClientLaunchPort = 0
     processes = @()
 }
 Write-WaflQaJson -Path (Get-WaflQaStatePath) -Value $state
@@ -314,6 +340,7 @@ try {
     }
 
     $serverEnvironment = @{
+        DATABASE_URL = $readApiTarget.DatabaseUrl
         WAFL_SERVER_RUNTIME_MODE = "dev"
         WAFL_EXTERNAL_QA_ENABLED = "true"
         WAFL_EXTERNAL_QA_ORIGIN = $state.publicOrigin
@@ -412,6 +439,36 @@ try {
         $state.commandApi = "ready"
         $state.mutationMode = "size-measurement-standards"
     }
+    if ($EnableAlpha64MakerDocumentR0Mutation) {
+        $serverEnvironment.WAFL_V2_COMMAND_API_ENABLED = "1"
+        $serverEnvironment.WAFL_V2_COMMAND_MUTATION_APPROVED = "2.0.0-alpha.64-dev-test-maker-document-r0-runtime"
+        $serverEnvironment.WAFL_V2_DOCUMENT_VIEWER_ENABLED = "1"
+        $serverEnvironment.WAFL_V2_DOCUMENT_VIEWER_MUTATION_APPROVED = "2.0.0-alpha.64-dev-test-maker-document-r0-runtime"
+        $serverEnvironment.WAFL_PDF_RENDER_ORIGIN = "http://127.0.0.1:$NextPort"
+        $serverEnvironment.WAFL_EXTERNAL_QA_ALPHA64_DOCUMENT_R0_MUTATION_ENABLED = "true"
+        $state.commandApi = "ready"
+        $state.mutationMode = "current-maker-alpha64"
+        $state.makerQaProfile = "alpha64-current-maker"
+    }
+    $state.databaseEnvironmentInjected = -not [string]::IsNullOrWhiteSpace([string]$serverEnvironment.DATABASE_URL) `
+        -and [string]$serverEnvironment.DATABASE_URL -eq [string]$readApiTarget.DatabaseUrl
+    $state.capabilityProfileReady = if ($RuntimeQaMode -eq "current-maker") {
+        [string]$state.makerQaProfile -eq "alpha64-current-maker" `
+            -and [string]$state.mutationMode -eq "current-maker-alpha64" `
+            -and [string]$serverEnvironment.WAFL_V2_COMMAND_API_ENABLED -eq "1" `
+            -and [string]$serverEnvironment.WAFL_EXTERNAL_QA_ALPHA64_DOCUMENT_R0_MUTATION_ENABLED -eq "true"
+    } else { $true }
+    $state.serverEnvironmentContractReady = $state.databaseEnvironmentInjected `
+        -and [string]$serverEnvironment.WAFL_SERVER_RUNTIME_MODE -eq "dev" `
+        -and [string]$serverEnvironment.WAFL_V2_READ_API_ENABLED -eq "1" `
+        -and [string]$serverEnvironment.WAFL_V2_RUNTIME -eq [string]$readApiTarget.Runtime `
+        -and [string]$serverEnvironment.WAFL_V2_TEST_PREFIX -eq [string]$readApiTarget.TestPrefix `
+        -and [string]$serverEnvironment.WAFL_V2_APPROVED_DB_FINGERPRINT -eq [string]$readApiTarget.ApprovedFingerprint `
+        -and $state.capabilityProfileReady
+    if (-not $state.serverEnvironmentContractReady) { throw "NEXT_SERVER_ENVIRONMENT_CONTRACT_INVALID" }
+    $state.lastSuccessfulStage = "next-server-environment-ready"
+    Write-WaflQaJson -Path (Get-WaflQaStatePath) -Value $state
+
     $nextStdout = Join-Path $stateDir "next.stdout.log"
     $nextStderr = Join-Path $stateDir "next.stderr.log"
     $nextArguments = if ($NextMode -eq "production") { @($nextCli, "start", "-H", "127.0.0.1", "-p", [string]$NextPort) } else { @($nextCli, "dev", "-H", "127.0.0.1", "-p", [string]$NextPort) }
@@ -462,7 +519,6 @@ try {
         }
         if (-not $serveReady) { throw "TAILSCALE_SERVE_HTTPS_READINESS_FAILED" }
         $state.tailscaleServeReady = $true
-        $state.developerAutoConnectReady = $true
         $state.lastSuccessfulStage = "tailscale-serve-https-ready"
         Write-WaflQaJson -Path (Get-WaflQaStatePath) -Value $state
     }
@@ -530,37 +586,69 @@ try {
     }
 
     if ($developerAutoConnect) {
-        try {
-            $manifestResponse = Invoke-WebRequest -UseBasicParsing -Uri "http://127.0.0.1:$ExpoPort/manifest?platform=ios" -Method Get -TimeoutSec 10
-            if ($manifestResponse.StatusCode -ne 200) { throw "EXPO_IOS_MANIFEST_UNAVAILABLE" }
-            $manifest = $manifestResponse.Content | ConvertFrom-Json
-            $launchUrl = [string]$manifest.launchAsset.url
-            if ([string]::IsNullOrWhiteSpace($launchUrl)) { throw "EXPO_IOS_MANIFEST_LAUNCH_URL_MISSING" }
-            $launchUri = [Uri]$launchUrl
-            if ($launchUri.Host -ne $state.tailscaleIpv4 -or $launchUri.Port -ne $ExpoPort) {
-                throw "EXPO_DEVELOPER_AUTOCONNECT_METRO_ADVERTISED_HOST_MISMATCH"
+        $advertisedReadyDeadline = [DateTime]::UtcNow.AddSeconds(90)
+        $advertisedReady = $false
+        $launchUri = $null
+        $developerClientMetroUri = $null
+        while ([DateTime]::UtcNow -lt $advertisedReadyDeadline -and -not $advertisedReady) {
+            try {
+                $manifestResponse = Invoke-WebRequest -UseBasicParsing -Uri "http://127.0.0.1:$ExpoPort/manifest?platform=ios" -Method Get -TimeoutSec 10
+                if ($manifestResponse.StatusCode -ne 200) { throw "EXPO_IOS_MANIFEST_UNAVAILABLE" }
+                $manifest = $manifestResponse.Content | ConvertFrom-Json
+                $launchUrl = [string]$manifest.launchAsset.url
+                if ([string]::IsNullOrWhiteSpace($launchUrl)) { throw "EXPO_IOS_MANIFEST_LAUNCH_URL_MISSING" }
+                $launchUri = [Uri]$launchUrl
+                if ($launchUri.Host -ne $state.tailscaleIpv4 -or $launchUri.Port -ne $ExpoPort) {
+                    throw "EXPO_DEVELOPER_AUTOCONNECT_METRO_ADVERTISED_HOST_MISMATCH"
+                }
+                $developerClientRedirect = Get-WaflQaRedirectResponse -Uri "http://127.0.0.1:$ExpoPort/_expo/link?choice=expo-dev-client&platform=ios" -TimeoutSeconds 10
+                if ($developerClientRedirect.StatusCode -ne 307) { throw "EXPO_DEVELOPER_AUTOCONNECT_CLIENT_LAUNCH_URL_UNAVAILABLE" }
+                $developerClientLocation = [string]$developerClientRedirect.Location
+                if ([string]::IsNullOrWhiteSpace($developerClientLocation)) { throw "EXPO_DEVELOPER_AUTOCONNECT_CLIENT_LAUNCH_URL_MISSING" }
+                $developerClientUri = [Uri]$developerClientLocation
+                $developerClientQuery = [System.Web.HttpUtility]::ParseQueryString($developerClientUri.Query)
+                $developerClientMetroUrl = [string]$developerClientQuery.Get("url")
+                if ([string]::IsNullOrWhiteSpace($developerClientMetroUrl)) { throw "EXPO_DEVELOPER_AUTOCONNECT_CLIENT_LAUNCH_URL_MISSING" }
+                $developerClientMetroUri = [Uri]$developerClientMetroUrl
+                if ($developerClientMetroUri.Host -ne $state.tailscaleIpv4 -or $developerClientMetroUri.Port -ne $ExpoPort) {
+                    throw "EXPO_DEVELOPER_AUTOCONNECT_CLIENT_LAUNCH_HOST_MISMATCH"
+                }
+                $advertisedReady = $true
+            } catch {
+                if ([DateTime]::UtcNow -lt $advertisedReadyDeadline) { Start-Sleep -Milliseconds 250 }
             }
-            $developerClientRedirect = Invoke-WebRequest -UseBasicParsing -MaximumRedirection 0 -Uri "http://127.0.0.1:$ExpoPort/_expo/link?choice=expo-dev-client&platform=ios" -Method Get -TimeoutSec 10
-            if ($developerClientRedirect.StatusCode -ne 307) { throw "EXPO_DEVELOPER_AUTOCONNECT_CLIENT_LAUNCH_URL_UNAVAILABLE" }
-            $developerClientLocation = [string]$developerClientRedirect.Headers.Location
-            if ([string]::IsNullOrWhiteSpace($developerClientLocation)) { throw "EXPO_DEVELOPER_AUTOCONNECT_CLIENT_LAUNCH_URL_MISSING" }
-            $developerClientUri = [Uri]$developerClientLocation
-            $developerClientQuery = [System.Web.HttpUtility]::ParseQueryString($developerClientUri.Query)
-            $developerClientMetroUrl = [string]$developerClientQuery.Get("url")
-            if ([string]::IsNullOrWhiteSpace($developerClientMetroUrl)) { throw "EXPO_DEVELOPER_AUTOCONNECT_CLIENT_LAUNCH_URL_MISSING" }
-            $developerClientMetroUri = [Uri]$developerClientMetroUrl
-            if ($developerClientMetroUri.Host -ne $state.tailscaleIpv4 -or $developerClientMetroUri.Port -ne $ExpoPort) {
-                throw "EXPO_DEVELOPER_AUTOCONNECT_CLIENT_LAUNCH_HOST_MISMATCH"
-            }
-            $state.metroAdvertisedHost = $launchUri.Host
-            $state.iosManifestLaunchHost = $launchUri.Host
-            $state.developerClientLaunchHost = $developerClientMetroUri.Host
-            $state.developerClientLaunchPort = $developerClientMetroUri.Port
-            $state.lastSuccessfulStage = "expo-developer-autoconnect-manifest-tailnet-verified"
-            Write-WaflQaJson -Path (Get-WaflQaStatePath) -Value $state
-        } catch {
+        }
+        if (-not $advertisedReady -or $null -eq $launchUri -or $null -eq $developerClientMetroUri) {
             throw "EXPO_DEVELOPER_AUTOCONNECT_METRO_ADVERTISED_HOST_MISMATCH"
         }
+        $state.metroAdvertisedHost = $launchUri.Host
+        $state.iosManifestLaunchHost = $launchUri.Host
+        $state.developerClientLaunchHost = $developerClientMetroUri.Host
+        $state.developerClientLaunchPort = $developerClientMetroUri.Port
+        $state.manifestHttp = 200
+        $bundleTransfer = Invoke-WaflQaBundleTransfer -Uri $launchUri.AbsoluteUri -TimeoutSeconds 180
+        if ($bundleTransfer.StatusCode -ne 200 -or $bundleTransfer.Bytes -le 0) { throw "EXPO_IOS_BUNDLE_STREAM_UNAVAILABLE" }
+        $state.bundleHttp = $bundleTransfer.StatusCode
+        $state.bundleBytes = $bundleTransfer.Bytes
+        $state.lastSuccessfulStage = "expo-developer-autoconnect-manifest-tailnet-verified"
+        Write-WaflQaJson -Path (Get-WaflQaStatePath) -Value $state
+
+        $readSmoke = Invoke-WaflQaDeveloperReadSmoke -State $state
+        $state.developerAutoConnectHttp = $readSmoke.AutoConnectHttp
+        $state.authMeHttp = $readSmoke.AuthMeHttp
+        $state.companyContextReady = $readSmoke.CompanyContextReady
+        $state.workOrderListHttp = $readSmoke.WorkOrderListHttp
+        $state.workOrderListReady = $readSmoke.WorkOrderListReady
+        $state.ownerFixtureSource = $readSmoke.OwnerFixtureSource
+        $state.ownerFixtureDetailHttp = $readSmoke.OwnerFixtureDetailHttp
+        $state.ownerFixtureDetailReady = $readSmoke.OwnerFixtureDetailReady
+        $state.runtimeReadSmokeReady = $readSmoke.Passed
+        if (-not $readSmoke.Passed) {
+            throw ("DEVELOPER_READ_SMOKE_{0}" -f ([string]$readSmoke.FailureStage).ToUpperInvariant().Replace('-', '_'))
+        }
+        $state.developerAutoConnectReady = $true
+        $state.lastSuccessfulStage = "developer-auth-company-workorder-read-ready"
+        Write-WaflQaJson -Path (Get-WaflQaStatePath) -Value $state
     }
 
     $state.status = "running"

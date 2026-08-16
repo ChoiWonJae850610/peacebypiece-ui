@@ -39,7 +39,7 @@ assert.match(controlled, /onSubmitEditing=.*handleSubmitEditing/);
 assert.match(controlled, /onEndEditing=\{handleEndEditing\}/);
 assert.match(controlled, /finalizationRef\.current\.requestSave\(\)/);
 
-assert.match(sizeColor, /<Text style=\{styles\.sectionTitle\}>색상·사이즈<\/Text>/);
+assert.match(sizeColor, /testID="size-color-expanded-matrix-card" title="색상·사이즈"/);
 assert.match(sizeColor, /<Text style=\{styles\.sectionTitle\}>완성 스펙<\/Text>/);
 assert.doesNotMatch(sizeColor, /합계 일치|색상×사이즈 생산수량 · 총/);
 assert.match(sizeColor, /!matrix\.projectionsMatch/);
@@ -79,7 +79,7 @@ assert.doesNotMatch(commandRoute, /`\s*(?:SELECT|INSERT|UPDATE|DELETE)\b/i);
 assert.match(detailRepository, /COALESCE\(sum\(q\.quantity\), 0\)::integer/);
 assert.match(listRepository, /quantity_totals AS/);
 assert.match(issueRepository, /matrix_total_quantity/);
-assert.match(issueRepository, /integer\(target\.total_quantity\) !== matrixTotalQuantity/);
+assert.match(issueRepository, /evaluateWorkOrderIssueReadiness\([\s\S]*matrixTotal:\s*matrixTotalQuantity/);
 assert.match(apiClient, /value\.projectionsMatch !== projectionsMatch/);
 assert.match(controller, /onTotalQuantityReconcile/);
 assert.match(controller, /const optimisticBundle = optimistic\(snapshot\.bundle\)/);

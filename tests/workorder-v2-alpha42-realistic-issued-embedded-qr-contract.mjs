@@ -34,7 +34,7 @@ assert.match(migration, /CREATE UNIQUE INDEX document_access_tokens_one_embedded
 assert.match(migration, /ON public\.document_access_tokens \(company_id, generated_document_id\)/);
 assert.match(migration, /WHERE token_purpose = 'embedded_qr'/);
 assert.doesNotMatch(migration, /\b(?:DROP|TRUNCATE|DELETE|UPDATE)\b/i);
-assert.equal(fs.readdirSync(path.join(root, "db/v2/migrations")).filter((name) => /^\d{3}_.*\.sql$/.test(name)).length, fs.existsSync(path.join(root, "db/v2/migrations/015_v2_company_work_order_structure_options.sql")) ? 15 : fs.existsSync(path.join(root, "db/v2/migrations/014_v2_size_spec_templates.sql")) ? 14 : fs.existsSync(path.join(root, "db/v2/migrations/013_v2_material_line_archive_lifecycle.sql")) ? 13 : 12);
+assert.equal(fs.readdirSync(path.join(root, "db/v2/migrations")).filter((name) => /^\d{3}_.*\.sql$/.test(name)).length, fs.existsSync(path.join(root, "db/v2/migrations/018_v2_company_spec_item_category_scope.sql")) ? 18 : fs.existsSync(path.join(root, "db/v2/migrations/017_v2_company_spec_item_catalog.sql")) ? 17 : fs.existsSync(path.join(root, "db/v2/migrations/016_v2_r0_document_snapshot_and_managed_qr.sql")) ? 16 : fs.existsSync(path.join(root, "db/v2/migrations/015_v2_company_work_order_structure_options.sql")) ? 15 : fs.existsSync(path.join(root, "db/v2/migrations/014_v2_size_spec_templates.sql")) ? 14 : fs.existsSync(path.join(root, "db/v2/migrations/013_v2_material_line_archive_lifecycle.sql")) ? 13 : 12);
 
 assert.match(migrationRunner, /const FILE = "012_v2_document_access_token_purpose\.sql"/);
 assert.match(migrationRunner, /before\.ledger\.length, 11/);
@@ -46,14 +46,14 @@ assert.match(migrationRunner, /target-fingerprint-mismatch/);
 
 assert.match(constants, /DOCUMENT_ACCESS_DEFAULT_EXPIRY_DAYS = 7/);
 assert.match(constants, /DOCUMENT_ACCESS_MAX_EXPIRY_DAYS = 30/);
-assert.match(constants, /DOCUMENT_EMBEDDED_QR_EXPIRY_DAYS = 365/);
+assert.doesNotMatch(constants, /DOCUMENT_EMBEDDED_QR_EXPIRY_DAYS = 365/);
 assert.match(constants, /DOCUMENT_MANUAL_SHARE_PURPOSE = "manual_share"/);
 assert.match(constants, /DOCUMENT_EMBEDDED_QR_PURPOSE = "embedded_qr"/);
 assert.match(repository, /token_purpose = 'manual_share'/);
 assert.match(repository, /insertEmbeddedQrAccessToken[\s\S]*?token_purpose[\s\S]*?VALUES \(\$1, \$2::uuid, \$3::char\(64\), \$4::timestamptz, \$5\)[\s\S]*?DOCUMENT_EMBEDDED_QR_PURPOSE/);
 assert.match(repository, /insertEmbeddedQrAccessToken/);
 assert.match(service, /createEmbeddedQrAccessToken/);
-assert.match(service, /DOCUMENT_EMBEDDED_QR_EXPIRY_DAYS/);
+assert.match(service, /const expiresAt = null/);
 assert.match(service, /insertEmbeddedQrAccessToken/);
 assert.doesNotMatch(repository, /raw_token/i);
 

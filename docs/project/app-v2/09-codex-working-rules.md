@@ -47,7 +47,7 @@ When current code or verified Runtime evidence conflicts with a document, preser
 | [09d — Version Delta and Finalization](09d-codex-version-delta-finalization.md) | Delta authority, Git, commit/push, documentation maintenance, ZIP/repo-state, clean delivery |
 | [09e — Self-Executing Version Delta Template](09e-codex-version-delta-template.md) | concise file-only handoff format used by alpha.55 and later |
 
-Specialist environment and command details remain in `06-expo-environment-setup.md` and `41-external-mobile-qa-runbook.md`. Verification semantics remain in `17-v2-api-contract-test-plan.md`. Device judgment remains in `05-device-test-plan.md` and `docs/project/32-product-completion-and-ui-evidence-standard.md`.
+Specialist environment and command details remain in `06-expo-environment-setup.md` and `41-external-mobile-qa-runbook.md`. Verification semantics remain in `17-v2-api-contract-test-plan.md`. Device judgment remains in `05-device-test-plan.md` and `docs/project/32-product-completion-and-ui-evidence-standard.md`. Current Maker mobile visual, sticky-tab, and shared-sheet routing belongs to `11a-mobile-design-system-v2.md` and `11b-maker-workorder-tab-ia-v2.md`; Version Deltas and evidence link to those owners instead of copying their full rules.
 
 ## 4. Task classification
 

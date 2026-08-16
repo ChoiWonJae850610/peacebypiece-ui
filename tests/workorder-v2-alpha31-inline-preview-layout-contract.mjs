@@ -29,7 +29,7 @@ assert.match(loader, /<IssuedWorkOrderDocument data=\{data\}/);
 assert.doesNotMatch(loader, /<table|documentHeader|MaterialTable/);
 assert.match(renderer, /export function formatRevisionLabel/);
 assert.match(renderer, /return `\$\{revisionNumber\}차`/);
-assert.match(renderer, /packBlocks\(buildBlocks\(data\)\)/);
+assert.match(renderer, /packBlocks\(buildBlocks\(data, includedAttachmentImages\)\)/);
 assert.match(renderer, /factoryDeliveryMemo[\s\S]*header\.memo/);
 assert.doesNotMatch(renderer, /통합 작업 지침|주의사항|penSpace|R\{data\.document\.revisionNumber\}/);
 assert.match(renderer, /quantityUnit \? `\$\{number\.format\(data\.header\.totalQuantity\)\}\$\{quantityUnit\}` : number\.format/);

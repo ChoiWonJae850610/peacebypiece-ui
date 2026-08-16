@@ -37,9 +37,9 @@ test("shared automatic size and color policy is deterministic", async () => {
   assert.match(sortPolicy, /Intl\.Collator\("ko-KR"/);
 });
 
-test("mobile owns compact cards and canonical catalog selectors, not manual reorder", () => {
-  assert.match(editor, /count=\{matrix\.sizes\.length\} editable=\{edit\.canEdit\} kind="size"/);
-  assert.match(editor, /count=\{matrix\.colors\.length\} editable=\{edit\.canEdit\} kind="color"/);
+test("mobile owns canonical catalog selectors and compact shared edit actions, not manual reorder", () => {
+  assert.match(editor, /onEditSize=\{\(\) =>/);
+  assert.match(editor, /onEditColor=\{\(\) =>/);
   assert.match(editor, /import WaflOptionGrid/);
   assert.match(editor, /function SizeChooser[\s\S]*function ColorChooser/);
   assert.match(editor, /직접 색상 만들기/);
@@ -47,12 +47,13 @@ test("mobile owns compact cards and canonical catalog selectors, not manual reor
   assert.doesNotMatch(controller, /onMoveSize|onMoveColor|onReorderSizeIds|onReorderColorIds|reorderSizes|reorderColors/);
 });
 
-test("quantity and measurement sections are independently collapsed", () => {
-  assert.match(readOnly, /<Text style=\{styles\.sectionTitle\}>색상·사이즈<\/Text>/);
+test("quantity matrix and finished spec are expanded by default with bounded full views", () => {
+  assert.match(readOnly, /testID="size-color-expanded-matrix-card" title="색상·사이즈"/);
   assert.match(readOnly, /<Text style=\{styles\.sectionTitle\}>완성 스펙<\/Text>/);
   assert.doesNotMatch(readOnly, /합계 일치|색상×사이즈 생산수량 · 총/);
-  assert.match(readOnly, /quantityExpanded/);
-  assert.match(readOnly, /measurementExpanded/);
+  assert.match(readOnly, /matrixNeedsFullView/);
+  assert.match(readOnly, /specNeedsFullView/);
+  assert.doesNotMatch(readOnly, /quantityExpanded|measurementExpanded/);
   assert.doesNotMatch(readOnly, /function SummaryItem|summaryGrid|summaryItem|summaryValue/);
 });
 

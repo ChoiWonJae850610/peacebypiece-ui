@@ -8,7 +8,7 @@ Document role: canonical owner for external Runtime preflight, start, readiness,
 | --- | --- | --- |
 | Metro | private Tailscale LAN HTTP | Development Build/ATS only |
 | Developer auth and business API | Tailscale Serve HTTPS | tailnet-only, exact Serve host |
-| Preview/Viewer | Cloudflare Quick Tunnel HTTPS | process-owned exact temporary host |
+| Preview/Viewer | Tailscale Serve HTTPS | tailnet-only, exact Serve host |
 | Next backend | `127.0.0.1` | localhost-only |
 
 Funnel is forbidden. `x-forwarded-host` is never host authority. Temporary origins, identity material, fingerprints, connection codes, cookies, tokens, and full private host/address values are not tracked.
@@ -25,7 +25,7 @@ Before start, verify read-only:
 - production blocked and Command mode/effect budget exactly as declared;
 - selected ports free or owned exactly as allowed by the Delta;
 - no active unrelated Serve/Funnel configuration;
-- cloudflared, Node, mobile dependencies, and installed Development Build remain compatible.
+- Node, mobile dependencies, and installed Development Build remain compatible; cloudflared is absent.
 
 An existing Serve/Funnel configuration, HTTPS consent requirement, ambiguous identity/company mapping, production target, or unknown listener ownership is a stop condition. Do not reset, merge, approve, or kill broadly.
 
@@ -48,8 +48,8 @@ The runner must:
 - start Next on `127.0.0.1` only;
 - create one runner-owned foreground Serve proxy to that localhost backend;
 - keep Funnel disabled;
-- start one process-owned Cloudflare Quick Tunnel for Preview/Viewer;
-- start Metro with Tailscale advertisement and public API/Preview origins only;
+- route Preview/Viewer through the same exact tailnet-only Serve HTTPS origin;
+- start Metro with the dynamically resolved Tailscale IPv4 advertisement and exact Serve API/Preview origin;
 - inject DB fingerprint, identity hash pair, session secrets, and mutation approval only into the exact server process that needs them;
 - write ownership marker/state only under ignored runtime paths;
 - stop without automatic retry/rollback/cleanup when any stage fails.
@@ -58,7 +58,7 @@ The default DeveloperAutoConnect mode is read-only. A bounded mutation switch ma
 
 ### Internal controlled Runtime QA mode
 
-An active Version Delta may name an internal automated mode that does not exercise Preview/Viewer. The `memo-ime-display` mode uses the same canonical runner, exact Tailscale developer identity, localhost Next backend, foreground Serve ownership, Metro transport, command guard, and stop contract, while omitting the Cloudflare Quick Tunnel:
+An active Version Delta may name an internal automated mode that does not exercise Preview/Viewer. The `memo-ime-display` mode uses the same canonical runner, exact Tailscale developer identity, localhost Next backend, foreground Serve ownership, Metro transport, command guard, and stop contract:
 
 ```powershell
 .\tools\dev\start-wafl-external-qa.ps1 `
@@ -69,7 +69,9 @@ An active Version Delta may name an internal automated mode that does not exerci
   -EnableAlpha55MaterialOrderLifecycleMutation
 ```
 
-This mode is valid only for its owner-approved internal automation budget. It records `runtimeQaMode=memo-ime-display`, `previewTransport=tailscale-serve-internal`, and `quickTunnelReady=false`; the exact owned roles are Next, foreground Serve, and Metro. It must not be presented as external physical-device readiness. After automated QA and exact owned stop, physical-device handoff uses the default `external-device` runner topology, including the process-owned Quick Tunnel required for Preview/Viewer.
+This mode is valid only for its owner-approved internal automation budget. It records `runtimeQaMode=memo-ime-display` and `previewTransport=tailscale-serve-internal`; the exact owned roles are Next, foreground Serve, and Metro. It must not be presented as external physical-device readiness. Physical-device handoff uses the same exact Serve-based topology and the mutation mode named by the active Delta.
+
+For alpha.64 and later current Maker physical QA, the selected feature switch launches `RuntimeQaMode current-maker` and records the canonical current Maker profile rather than a document-only island. Capability composition and its security invariant are owned only by `09b`; this runbook owns the operational selection and status evidence.
 
 ## Readiness
 
@@ -78,10 +80,10 @@ Before user QA, verify the exact checks named by the Delta. The standard read-on
 - runner state and ownership marker ready;
 - Tailscale service and Serve HTTPS ready;
 - Next localhost backend healthy;
-- Cloudflare Preview/Viewer origin ready;
+- Tailscale Serve Preview/Viewer origin ready;
 - Metro manifest and advertised Tailscale endpoint valid;
 - one bounded bundle transfer when specifically required;
-- API origin and Preview origin separated;
+- API and Preview/Viewer resolve to the exact approved Serve origin;
 - production and Command mutation blocked;
 - bounded session/auto-connect, `auth/me`, expected Company context, allowed reads, and disconnect;
 - business/DB/R2/PDF/token/production effects zero.
@@ -149,7 +151,7 @@ Do not run Serve reset, Funnel reset, `tailscale down`, service stop/restart, wi
 The standard PASS requires:
 
 - runner state stopped and marker safely cleared;
-- runner-owned cloudflared, Next, Metro, and foreground Serve ended or correctly already-stopped/PID-reused;
+- runner-owned Next, Metro, and foreground Serve ended or correctly already-stopped/PID-reused; cloudflared ownership count remains zero;
 - protected unrelated process termination zero;
 - Serve WAFL proxy removed and no unresolved ownership mismatch;
 - explicit `AllowFunnel: true` count zero and Funnel configuration unchanged;

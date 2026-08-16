@@ -140,7 +140,7 @@ for (const path of [uploadPath, completePath, representativePath, deletePath]) {
   assert.equal(isTailscaleServePathAllowed(path, "POST", { ...alpha57Env, WAFL_V2_COMMAND_MUTATION_APPROVED: "wrong" }), false);
 }
 assert.match(runtimeGuard, /WAFL_V2_ALPHA57_WORK_ORDER_IMAGE_MUTATION_APPROVAL/);
-assert.match(externalQa, /alpha57WorkOrderImageEnabled/);
+assert.match(externalQa, /makerAuthoringAssetMutationEnabled/);
 assert.match(runner, /EnableAlpha57WorkOrderImageMutation/);
 assert.match(runner, /work-order-image-upload-primary-delete/);
 assert.match(runner, /"work-order-image"/);

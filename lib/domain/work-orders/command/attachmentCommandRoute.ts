@@ -12,10 +12,12 @@ import {
 } from "@/lib/domain/work-orders/command/commandRoute";
 import {
   ATTACHMENT_DELETE_COMMAND_CODE,
+  ATTACHMENT_OUTPUT_INCLUDE_COMMAND_CODE,
   ATTACHMENT_UPLOAD_COMMAND_CODE,
   AttachmentCommandRepositoryError,
   completeWorkOrderAttachmentUploadV2,
   deleteWorkOrderAttachmentV2,
+  setWorkOrderAttachmentOutputIncludeV2,
 } from "@/lib/domain/work-orders/command/attachmentCommandRepository";
 import {
   createCommandTenantScope,
@@ -201,8 +203,14 @@ function mapRepositoryError(error: AttachmentCommandRepositoryError): never {
   throw new WorkOrderCommandRequestError({ code: "INTERNAL_ERROR", status: 500, message: "첨부 요청의 idempotency 상태를 확인하지 못했습니다.", retryable: true });
 }
 
-function successResponse(
-  commandResult: Awaited<ReturnType<typeof completeWorkOrderAttachmentUploadV2>>,
+function successResponse<T>(
+  commandResult: {
+    readonly result: T;
+    readonly statementCount: number;
+    readonly transactionCount: 1;
+    readonly dbMs: number;
+    readonly idempotentReplay: boolean;
+  },
   correlationId: CorrelationId,
   status = 200,
 ) {
@@ -427,6 +435,57 @@ export async function handleDeleteWorkOrderAttachment(
         requestHash,
       });
       await deleteR2ObjectViaWorker({ key: commandResult.storageObjectKey });
+      return successResponse(commandResult, correlationId);
+    } catch (error) {
+      if (error instanceof AttachmentCommandRepositoryError) mapRepositoryError(error);
+      throw error;
+    }
+  } catch (error) {
+    return routeError(error, correlationId);
+  }
+}
+
+export async function handleSetWorkOrderAttachmentOutputInclude(
+  request: Request,
+  workOrderId: string,
+  attachmentId: string,
+) {
+  const correlationId = randomUUID() as CorrelationId;
+  try {
+    if (!UUID_PATTERN.test(workOrderId) || !UUID_PATTERN.test(attachmentId)) {
+      throw new WorkOrderCommandRequestError({ code: "NOT_FOUND", status: 404, message: "작업지시서 첨부를 찾을 수 없습니다." });
+    }
+    const { guard, tenantScope } = await requireScope(correlationId);
+    const idempotencyKey = readIdempotencyKey(request);
+    const body = await readBoundedCommandJson(request);
+    const versioned = readVersionedBody(body);
+    if (!isObject(body) || typeof body.includeInDocument !== "boolean") {
+      throw new WorkOrderCommandRequestError({ code: "VALIDATION_ERROR", status: 400, message: "출력 포함 여부를 확인해 주세요." });
+    }
+    const scopedKeyHash = sha256([
+      ATTACHMENT_OUTPUT_INCLUDE_COMMAND_CODE,
+      tenantScope.companyId,
+      tenantScope.companyMemberId,
+      idempotencyKey,
+    ].join("\0"));
+    const requestHash = sha256(JSON.stringify({
+      workOrderId,
+      attachmentId,
+      expectedVersion: versioned.expectedVersion,
+      includeInDocument: body.includeInDocument,
+    }));
+    try {
+      const commandResult = await setWorkOrderAttachmentOutputIncludeV2({
+        scope: tenantScope,
+        assignedCompanyMemberId: assignedMemberId(guard.scope),
+        workOrderId: workOrderId as WorkOrderId,
+        attachmentId,
+        expectedVersion: versioned.expectedVersion,
+        clientRequestId: versioned.clientRequestId,
+        includeInDocument: body.includeInDocument,
+        scopedIdempotencyKeyHash: scopedKeyHash,
+        requestHash,
+      });
       return successResponse(commandResult, correlationId);
     } catch (error) {
       if (error instanceof AttachmentCommandRepositoryError) mapRepositoryError(error);

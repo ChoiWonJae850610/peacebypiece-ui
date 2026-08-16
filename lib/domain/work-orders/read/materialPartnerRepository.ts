@@ -8,6 +8,9 @@ import { createDbPartnerRepository } from "@/lib/partners/dbPartnerRepository";
 export type WorkOrderMaterialPartnerOption = {
   readonly id: string;
   readonly name: string;
+  readonly role: "factory" | "fabric" | "subsidiary" | "outsourcing";
+  readonly contactPerson: string | null;
+  readonly contact: string | null;
 };
 
 export async function listWorkOrderMaterialPartnerOptions(input: {
@@ -30,6 +33,12 @@ export async function listWorkOrderMaterialPartnerOptions(input: {
   return {
     workOrderId: input.workOrderId,
     entityVersion: Number(target.entity_version),
-    items: partners.slice(0, 200).map((row): WorkOrderMaterialPartnerOption => ({ id: String(row.id), name: String(row.name) })),
+    items: partners.slice(0, 200).map((row): WorkOrderMaterialPartnerOption => ({
+      id: String(row.id),
+      name: String(row.name),
+      role: row.type,
+      contactPerson: row.contact_person ?? null,
+      contact: row.contact ?? null,
+    })),
   };
 }

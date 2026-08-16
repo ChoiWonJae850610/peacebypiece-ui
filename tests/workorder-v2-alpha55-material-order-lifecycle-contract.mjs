@@ -118,6 +118,7 @@ const repository = read("lib/domain/work-orders/command/materialCommandRepositor
 const transitionContract = read("lib/domain/work-orders/contracts/state-transitions.ts");
 const detailRepository = read("lib/domain/work-orders/read/detailRepository.ts");
 const runtimeGuard = read("lib/domain/work-orders/command/runtimeGuard.ts");
+const capabilityOwner = read("lib/external-qa/makerQaCapabilities.mjs");
 const runner = read("tools/dev/start-wafl-external-qa.ps1");
 const apiClient = readMobileApiSource();
 const mutationController = read("apps/mobile/features/work-orders/workOrderMutationController.ts");
@@ -174,7 +175,8 @@ assert.match(repository, /changedFields: input\.kind === "cancel" \? \["status",
 assert.match(transitionContract, /from: "cancelled", allowedTo: \[\], editable: false/);
 assert.match(detailRepository, /locked: input\.lifecycle === "archived" \|\| status !== "editing"/);
 
-assert.match(runtimeGuard, /2\.0\.0-alpha\.55-dev-test-mobile-material-order-lifecycle-runtime/);
+assert.match(capabilityOwner, /2\.0\.0-alpha\.55-dev-test-mobile-material-order-lifecycle-runtime/);
+assert.match(runtimeGuard, /getWorkOrderV2MaterialOrderMutationRuntimeGuard[\s\S]*MAKER_QA_CAPABILITY\.MATERIAL_ORDER/);
 assert.match(runner, /EnableAlpha55MaterialOrderLifecycleMutation/);
 assert.match(runner, /material-order-request-cancel-complete/);
 assert.match(apiClient, /export async function transitionWorkOrderMaterialOrder/);

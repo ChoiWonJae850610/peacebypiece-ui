@@ -54,7 +54,8 @@ assert.match(apiClient, /\/api\/dev\/mobile-connect\/disconnect/);
 const alpha44ListReadClient = apiClient.slice(apiClient.indexOf("export async function getWorkOrderList"), apiClient.indexOf("export async function createWorkOrderDraft"));
 const alpha44DetailReadClient = apiClient.slice(apiClient.indexOf("export async function getWorkOrderDetail"), apiClient.indexOf("export async function getWorkOrderSizeColor"));
 assert.doesNotMatch(`${alpha44ListReadClient}\n${alpha44DetailReadClient}`, /method: "(POST|PATCH|PUT|DELETE)"/);
-assert.doesNotMatch(apiClient, /\/processes|\/documents|\/history/, "later mobile reads must not unlock process/document/history");
+assert.doesNotMatch(apiClient, /\/history/, "later mobile reads must not unlock history");
+assert.match(apiClient, /export async function getWorkOrderProcesses[\s\S]*method: "GET"/, "the current Production tab may reuse only the existing process read owner");
 const imageReadClient = apiClient.slice(
   apiClient.indexOf("export async function getWorkOrderImages"),
   apiClient.indexOf("export async function prepareWorkOrderImageUpload"),

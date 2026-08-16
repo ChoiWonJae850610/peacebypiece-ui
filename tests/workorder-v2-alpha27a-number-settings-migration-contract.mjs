@@ -44,7 +44,7 @@ assert.doesNotMatch(migration, /raw_token|idempotency|storage|secret|email/i, "b
 
 assert.match(repository, /CROSS JOIN LATERAL public\.wafl_v2_document_number_settings\(\) AS settings/, "issue transaction must use the bounded settings function");
 assert.doesNotMatch(repository, /JOIN\s+(?:public\.)?company_settings\b|FROM\s+(?:public\.)?company_settings\b/i, "repository must not directly read company_settings");
-assert.match(repository, /withWaflV2TenantWriteTransaction[\s\S]*installTenantClaims[\s\S]*wafl_v2_document_number_settings/, "settings read must remain inside the tenant issue transaction after claims");
+assert.match(repository, /withDbTransaction[\s\S]*SET LOCAL ROLE wafl_v2_tenant_runtime[\s\S]*installTenantClaims[\s\S]*wafl_v2_document_number_settings/, "settings read must remain inside the same transaction after restricted role and tenant claims");
 assert.match(preflight, /has_table_privilege\('wafl_v2_tenant_runtime', 'company_settings', 'SELECT'\)/, "post-apply preflight must verify no direct table grant");
 
 for (const token of [

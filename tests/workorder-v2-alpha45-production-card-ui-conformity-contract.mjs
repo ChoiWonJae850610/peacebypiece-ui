@@ -20,11 +20,11 @@ assert.doesNotMatch(detail, /mockProductionCard|productionCards|summaryMetrics|c
 assert.match(detail, /WorkOrderDetailCore/);
 assert.match(detail, /testID="production-card-sheet"/);
 assert.match(detail, /testID="production-card-sheet"[\s\S]*styles\.hero[\s\S]*styles\.tabRailFrame[\s\S]*styles\.overviewSection/);
-assert.match(detail, /productionCardSheet: \{ backgroundColor: "#fffdf8"[\s\S]*borderRadius: 14/);
+assert.match(detail, /productionCardSheet: \{ backgroundColor: WAFL_THEME\.color\.paper[\s\S]*borderRadius: WAFL_THEME\.radius\.cardMajor/);
 assert.match(detail, /hero: \{ flexDirection: "row"/);
 assert.match(detail, /miniStat: \{ backgroundColor: "#f7f0e5"/);
 assert.match(detail, /tabUnderlineSelected: \{ backgroundColor: "#17263d"/);
-assert.match(detail, /sectionBlock: \{ borderTopColor: "#eee3d5", borderTopWidth: 1/);
+assert.match(detail, /WaflSectionCard/);
 
 for (const removedPrimitive of ["primaryMetrics", "primaryMetric", "sectionGrid", "countItem", "totalLine"]) {
   assert.doesNotMatch(detail, new RegExp(`styles\\.${removedPrimitive}|${removedPrimitive}:`), `dashboard primitive remains: ${removedPrimitive}`);
@@ -45,22 +45,23 @@ for (const field of ["header.productName", "header.totalQuantity", "header.dueDa
   assert.match(detail, new RegExp(field.replaceAll(".", "\\.")), `actual field missing: ${field}`);
 }
 assert.doesNotMatch(detail, /Revision\s*R/);
-assert.doesNotMatch(detail, /header\.id/);
+assert.doesNotMatch(detail, /value=\{header\.id\}|<Text[^>]*>\{header\.id\}<\/Text>/, "the identifier may route a read component but must not be rendered");
 assert.match(detail, /대표 이미지 없음/);
 assert.match(detail, /WorkOrderImageGallery/);
 assert.match(apiClient, /\/assets\?limit=50/);
-assert.doesNotMatch(apiClient, /\/processes|\/documents|\/history/, "later work must not unlock process/document/history");
+assert.doesNotMatch(apiClient, /\/history/, "later work must not unlock history");
+assert.match(apiClient, /export async function getWorkOrderProcesses[\s\S]*method: "GET"/);
 assert.match(apiClient, /target\.method/);
 assert.match(apiClient, /export async function deleteWorkOrderMaterial/);
 assert.match(apiClient, /method: "DELETE"/);
 
-for (const tab of ["개요", "이미지·첨부", "사이즈·색상", "원단", "부자재", "제작", "문서"]) assert.match(detail, new RegExp(tab));
+for (const tab of ["개요", "이미지·첨부", "사이즈·색상", "원부자재", "제작", "문서"]) assert.match(detail, new RegExp(tab));
 assert.equal(resolveWorkOrderTabVisualState({ selected: false, locked: true }), "locked");
 assert.equal(resolveWorkOrderTabVisualState({ selected: true, locked: false }), "active");
 assert.match(detail, /disabled=\{disabled\}/);
 assert.match(detail, /setActiveSection/);
 assert.doesNotMatch(detail, /setActiveTab|activeTab/);
-assert.match(detail, /tab\.id === "fabric" \|\| tab\.id === "accessory"/);
+assert.match(detail, /tab\.id === "materials"/);
 assert.match(detail, /activeSection === "media"[\s\S]*WorkOrderImageGallery/);
 
 assert.match(detail, /navigationBar:[^\n]+minHeight: 44/);

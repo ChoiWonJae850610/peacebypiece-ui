@@ -66,7 +66,7 @@ The exception is native binary configuration. Reload or JavaScript delivery cann
 Process-local mobile public inputs:
 
 - `EXPO_PUBLIC_WAFL_API_BASE_URL`: exact Tailscale Serve HTTPS origin for developer authentication and business API;
-- `EXPO_PUBLIC_WAFL_WEB_BASE_URL`: exact Cloudflare Quick Tunnel HTTPS origin for Preview/Viewer;
+- `EXPO_PUBLIC_WAFL_WEB_BASE_URL`: exact approved Tailscale Serve HTTPS origin for Preview/Viewer;
 - the existing external-QA flag and Tailscale Metro advertisement.
 
 Do not inject identity hashes, DB fingerprints, mutation approvals, session secrets, credentials, or connection codes into Metro/public bundle variables.
@@ -87,7 +87,7 @@ The accepted Apple account and build history is immutable evidence in `42-ios-de
 
 ## Setup safety
 
-- Never persist temporary Quick Tunnel origins, Tailscale identity, auth keys, login URLs, account credentials, certificate identifiers, DB fingerprints, or runtime mutation approvals in tracked config.
+- Never persist temporary origins, Tailscale identity, auth keys, login URLs, account credentials, certificate identifiers, DB fingerprints, or runtime mutation approvals in tracked config. Quick Tunnel, cloudflared, and Funnel are not current App-first QA transports.
 - Do not add a firewall rule by default. A proven reachability failure requires a separate narrow approval.
 - Do not change Tailscale account, policy, Funnel, service state, or device sharing as routine setup.
 - Do not introduce another Expo tunnel provider or fallback transport.

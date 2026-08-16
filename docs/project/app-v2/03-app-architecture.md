@@ -17,7 +17,7 @@ Next.js remains active for:
 
 ## Infrastructure baseline
 
-Alpha.47 external developer QA uses three bounded transports: Expo Metro over private Tailscale LAN HTTP, authentication and WorkOrder API over tailnet-only Tailscale Serve HTTPS, and Preview/Viewer over the process-owned Cloudflare Quick Tunnel. The Serve backend binds only `127.0.0.1`; Funnel is forbidden. Request `Host` selects one exact transport allowlist, and `x-forwarded-host` is never an authority input.
+Current App-first external developer QA uses two bounded transports: Expo Metro over the dynamically resolved private Tailscale IPv4, and authentication, WorkOrder API, Preview, and controlled Viewer over tailnet-only Tailscale Serve HTTPS. The Serve backend binds only `127.0.0.1`; Funnel, Quick Tunnel, and cloudflared are forbidden. Request `Host` selects one exact transport allowlist; forwarded origin data is accepted only after the canonical exact Serve host guard.
 
 The App-first line preserves the existing infrastructure direction:
 

@@ -4,12 +4,12 @@ import type { WorkspaceApiCompanyScope } from "@/lib/auth/apiRouteGuards";
 import type { DbTransactionClient } from "@/lib/db/client";
 import type { CompanyId, CompanyMemberId, CorrelationId, TenantMemberScope } from "@/lib/domain/work-orders/contracts";
 import { R2WorkerGeneratedDocumentTransport } from "@/lib/generated-documents/work-order-pdf/r2WorkerTransport";
+import { createR2WorkerFileUrl } from "@/lib/storage/r2/r2WorkerUpload";
 import {
   DOCUMENT_ACCESS_DEFAULT_EXPIRY_DAYS,
-  DOCUMENT_ACCESS_MAX_EXPIRY_DAYS,
+  DOCUMENT_MANUAL_SHARE_EXPIRY_DAY_CHOICES,
   DOCUMENT_ACCESS_RAW_TOKEN_PATTERN,
   DOCUMENT_ACCESS_UUID_PATTERN,
-  DOCUMENT_EMBEDDED_QR_EXPIRY_DAYS,
   DOCUMENT_EMBEDDED_QR_PURPOSE,
   DOCUMENT_SHARE_COMMAND_CODE,
   DOCUMENT_SHARE_ROTATE_COMMAND_CODE,
@@ -67,8 +67,8 @@ export async function createEmbeddedQrAccessToken(input: {
     idempotencyKey,
   });
   const tokenHash = hashDocumentAccessToken(rawToken);
-  const now = input.now ?? new Date();
-  const expiresAt = new Date(now.getTime() + DOCUMENT_EMBEDDED_QR_EXPIRY_DAYS * 86_400_000).toISOString();
+  void input.now;
+  const expiresAt = null;
   try {
     const token = await insertEmbeddedQrAccessToken({
       client: input.client,
@@ -141,8 +141,8 @@ function mapRepositoryError(error: unknown): never {
 
 function expiry(days: number | undefined): { readonly days: number; readonly expiresAt: string } {
   const normalized = days ?? DOCUMENT_ACCESS_DEFAULT_EXPIRY_DAYS;
-  if (!Number.isInteger(normalized) || normalized < 1 || normalized > DOCUMENT_ACCESS_MAX_EXPIRY_DAYS) {
-    throw new DocumentAccessServiceError("VALIDATION_ERROR", 400, `만료일은 1일부터 ${DOCUMENT_ACCESS_MAX_EXPIRY_DAYS}일까지 지정할 수 있습니다.`);
+  if (!(DOCUMENT_MANUAL_SHARE_EXPIRY_DAY_CHOICES as readonly number[]).includes(normalized)) {
+    throw new DocumentAccessServiceError("VALIDATION_ERROR", 400, "공유 기간은 1일, 7일, 30일 중에서 선택해 주세요.");
   }
   return { days: normalized, expiresAt: new Date(Date.now() + normalized * 86_400_000).toISOString() };
 }
@@ -184,6 +184,7 @@ export async function createDocumentShare(input: {
     const viewerUrl = createDocumentViewerUrl(input.origin, rawToken);
     return {
       ...result.token,
+      expiresAt: policy.expiresAt,
       generatedDocumentId: input.generatedDocumentId,
       displayDocumentNumber: result.displayDocumentNumber,
       rawToken,
@@ -268,6 +269,7 @@ export async function rotateDocumentShare(input: {
     const viewerUrl = createDocumentViewerUrl(input.origin, rawToken);
     return {
       ...result.token,
+      expiresAt: policy.expiresAt,
       generatedDocumentId: input.generatedDocumentId,
       displayDocumentNumber: result.displayDocumentNumber,
       rawToken,
@@ -303,5 +305,24 @@ export async function readPublicDocumentPdf(metadata: PublicDocumentAccessMetada
   const { createHash } = await import("node:crypto");
   if (createHash("sha256").update(body).digest("hex") !== metadata.contentSha256) return null;
   if (body.subarray(0, 5).toString("ascii") !== "%PDF-") return null;
+  return body;
+}
+
+export async function readPublicDocumentAttachment(input: {
+  readonly storageObjectKey: string;
+  readonly mimeType: string;
+  readonly sizeBytes: number;
+  readonly contentSha256: string;
+}): Promise<Buffer | null> {
+  assertRuntime(false);
+  const request = createR2WorkerFileUrl({ key: input.storageObjectKey });
+  const response = await fetch(request.url, { method: request.method });
+  if (!response.ok) return null;
+  const contentType = response.headers.get("content-type")?.split(";", 1)[0]?.trim().toLowerCase();
+  if (contentType !== input.mimeType.toLowerCase()) return null;
+  const body = Buffer.from(await response.arrayBuffer());
+  if (body.byteLength !== input.sizeBytes) return null;
+  const { createHash } = await import("node:crypto");
+  if (createHash("sha256").update(body).digest("hex") !== input.contentSha256) return null;
   return body;
 }

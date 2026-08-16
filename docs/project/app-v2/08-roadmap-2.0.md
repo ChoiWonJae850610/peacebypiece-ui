@@ -2,7 +2,105 @@
 
 Document role: canonical owner for the current result, next candidate, and Version Delta boundary. It is not the historical implementation ledger; completed details live in numbered immutable evidence.
 
-## Current result — 2.0.0-alpha.63
+## Current result — 2.0.0-alpha.64
+
+Status: `ALPHA64_FINALIZATION_COMPLETE`.
+
+Alpha.64 finalizes the cumulative Maker mobile release candidate after owner physical-iPhone
+approval. The accepted boundary includes the six-tab Maker IA, Design System v2, one shared
+input/sheet architecture, WorkOrder Size/Color and Finished Spec authoring, saved specs,
+Fabric/Accessory lifecycle, in-app Juso search, session-local Quick Delivery, and Maker R0
+document issue/PDF/R2/Viewer/share/managed-QR behavior. The verified editable table geometry is
+the stable `82×44` cell with a centered `60×34` value surface, `11/11` horizontal breathing
+room, a `5`-point bottom-grid gap, one hairline, and zero focus geometry shift. Migration ledger
+`18/18` is preserved; migration `019`, production mutation, and owner-fixture mutation are zero.
+
+The detailed paragraphs below preserve the pre-finalization implementation checkpoints. Their
+interim re-QA labels and alpha.63 version boundary are historical facts and do not override the
+final result above.
+
+The current alpha.64 stabilization keeps `11a-mobile-design-system-v2.md` and `11b-maker-workorder-tab-ia-v2.md` as the mobile visual/IA owners. It extends the existing same-company structure catalog with reusable spec items, adds one WorkOrder POM-selection batch command, and makes only the WorkOrder feature rail sticky. The physical-iPhone remediation replaces the insufficient source-only sheet PASS with a mounted 44-point header responder, continuous translation, medium/expanded/dismiss snaps, and bottom-origin enter/exit motion while keeping fixed X/V actions. Finished Spec now offers category-specific practical `WAFL 제공` sets plus tenant/category-scoped `우리 회사` options; null/category changes preserve current rows until explicit V. WorkOrder and saved-template POM rows remain historical snapshots; catalog management does not rewrite them. Existing cumulative Maker capability, projections, Juso search, local-only Quick Delivery boundary, and R0 document lifecycle remain unchanged. Migration `017` remains the spec-item kind extension and additive dev/test-only migration `018` adds nullable category scope without backfill; production mutation is zero and APP_VERSION remains alpha.63 until owner physical QA.
+
+The latest focused candidate preserves that shared sheet architecture while removing dead child V actions, using one nested close/unmount/reopen handoff for reusable catalog creation, and auto-staging successful Size/Color/Spec options for the parent batch. Saved Spec load/save use measured `adaptiveExpandable`; the numeric(14,3) material precision is owned once across DB-facing validation and mobile direct input; keyboard-safe focus reveal and keypad mode-switch reachability stay in the common body owner. Quick direct entry is address-first and remains local-only. No migration `019`, version bump, commit, release, fixture mutation, or production mutation is part of this pre-owner-QA boundary.
+
+The current focus/nested stability candidate measures a complete semantic field block through the shared sheet owner, scrolls that block before applying only the minimum required free-height expansion, and keeps Fabric/Accessory on one paired editor path. Quick origin/destination partner, direct entry, and Juso search share one generation-aware close/reset/presentation coordinator; select and cancel use identical native-sheet sequencing, while endpoint-scoped focus runs only after the matching returned direct sheet mounts. Physical iPhone re-QA remains required, APP_VERSION stays alpha.63, and migration/schema/fixture/production effects remain zero.
+
+The latest focused Quick candidate brings the request-preview child into that same nested coordinator. Its adaptive measurement identity includes the presentation generation, and the shared Sheet entrance can no longer lose its queued slide-up when current-generation layout changes before the first frame. Direct endpoints reopen their prefilled direct editor immediately, while registered or unspecified endpoints keep the picker route through one pure origin/destination policy. Quick remains session-local with no persistence, schema, Event, Receipt, or production effect.
+
+The current WorkOrder-create/table-input candidate removes the last live text-entry form that used fixed `contentFit` and raw mount-time `autoFocus`. Creation now opens through the shared compact `adaptiveExpandable` policy and asks the product-name field to focus only after the current atomic entrance is presentation-ready; X remains cancel and V remains the one create command. The live Finished Spec inch surface is retained as the shared numeric-table baseline and is the same geometry owner used by cm and Size/Color quantity, with focus limited to tint/color and zero grid shift. This pre-owner-QA boundary adds no migration, schema/API expansion, fixture write, version bump, commit, release, or production effect.
+
+The current Finished Spec bootstrap candidate preserves the physically accepted `82×44` cell and centered `60×34` editable surface unchanged. An editable draft now exposes the existing `스펙 항목 〉` chooser even when the projection has zero POM rows and when major category is null. Category determines recommendation contents rather than authoring availability; category-neutral company options reuse migration `018`'s existing nullable scope, and the canonical `set-pom-selection` transaction bootstraps the absent measurement snapshot and Size-aligned projection on the first explicit V. Valid zero-row state remains a normal read model and technical measurement repository errors are mapped to product-safe messages. Issued/locked behavior, schema ledger `18/18`, production mutation zero, and pre-finalization version/Git boundaries remain unchanged.
+
+The latest owner physical result overrides that automated sheet claim: the movement-threshold PanResponder returned false at touch-down and relied on later capture after native descendants could own the gesture. The canonical sheet header now captures the native responder immediately, follows touch `pageY`, and preserves slide-in/snap/slide-out motion. Central `contentFit` / `expandable` / `fullView` sizing removes large short-content gaps without losing scroll or fixed-footer semantics. Overview total quantity shares the exact inner ValueSurface component tree, `제작` is restored from the existing tenant-scoped process Read owner, and all six tab bodies share one top inset. `ProductionCardMock` remains Runtime-unused. This is a physical iPhone re-QA checkpoint, not a physical gesture PASS.
+
+The current owner IA simplification variant keeps that canonical system and adds shared metric affordance, matrix/spec presentation, section-header actions, and a presentation-only combined Materials tab. Overview metrics share one surface while editable child controls alone provide one thin underline. Size/Color now opens on the real Color × Size matrix with compact header actions, and Finished Spec is also expanded. The visible Maker rail is `개요 / 이미지·첨부 / 사이즈·색상 / 원부자재 / 제작 / 문서`; historical material tab intents map safely to that combined presentation. These changes are marked `OWNER_PHYSICAL_REVIEW_REQUIRED`; domain entities, business behavior, and the alpha.64 effect boundary are unchanged.
+
+The latest owner refinement removes the duplicate metric underline, introduces one shared frozen-axis table for Color × Size and Finished Spec, and bases `전체보기` only on the left-axis row count: Color or POM rows six and above. Size columns remain horizontally available while the left label stays fixed; full view freezes both headers and synchronizes x/y scrolling. The combined Materials screen now uses a same-page Fabric/Accessory category switch with typed semantic count badges and one selected-category add action. Only the selected normal list renders, and the former four-card presentation clipping is removed. This remains `OWNER_PHYSICAL_REVIEW_REQUIRED`; Size/Color and material business owners are unchanged.
+
+The current focused footer remediation preserves the owner-confirmed physical sheet drag, slide motion, shared tab-body inset, and Quick direct-address child routing. The first-open action fix had inverse-translated the X/V footer against the whole-sheet detent while the body retained the expanded viewport, so the visible footer floated over lower controls. `WaflInputSheet` now owns a real ordered `HEADER / BODY VIEWPORT / FOOTER / SAFE AREA` frame: the body viewport contracts by the live detent offset, the measured footer remains a normal sibling, and long content alone scrolls. Short Saved Spec save/update uses measured `contentFit` rather than the expandable medium floor. This is an owner physical-iPhone re-QA checkpoint; automation does not infer visual or gesture acceptance.
+
+The shared-sheet stability remediation confirms one canonical staged-sheet module rather than feature-local bottom sheets. `WaflInputSheet` owns geometry, drag/detents, lifecycle, vertical extent, keyboard inset, safe area, and X/V. The former outer `KeyboardAvoidingView` shifted the entire expanded sheet, while a stale native animation value could seed the first drag after reopen. Keyboard handling now reserves an internal bottom inset and shrinks only the body; each open generation cancels stale animation and acquires the actual stopped visual offset before MOVE. The shared body-end gap restores true-bottom reachability for long Color, material, Quick, address, Spec, and attachment bodies. Physical re-QA remains mandatory.
+
+Alpha.64 completes only the first Maker R0 document path on the existing immutable Revision/PDF/R2/controlled-Viewer foundation: one canonical server issue-readiness policy, issuance-time material supplier snapshots, selected image-attachment output, immediate post-issue generation with typed failure retry, the real mobile `문서` workbench, manual 1/7/30-day sharing, and explicitly revocable managed embedded QR access. The current owner-QA runtime is also corrected from a document-only island to one cumulative Maker capability profile shared by internal command guards and the exact Tailscale method/path gate. The mobile tab follows the established ProductionCard document-workbench grammar using real data, with practical production information, compact output actions, and an explicit irreversible `작업지시서 생성` confirmation rather than redundant document framing or permanent ready copy. Historical mock/showroom sources remain visual evidence only and are not connected to normal Runtime. R1 correction, Factory/AI expansion, delivery-request behavior, PDF attachment merging, successful-PDF regeneration, and generated-document deletion remain deferred. Migration `016` is additive dev/test-only; production mutation is zero. APP_VERSION remains alpha.63 until owner physical-iPhone QA and a separate finalization.
+
+The latest owner-approved UI refinement removes pre-generation document-system metadata and
+optional-content badge clouds, presents the actual product image/name, due date, quantity,
+active fabric/accessory counts, factory placeholder, and factory-delivery memo in the same
+live WAFL mobile grammar, and uses `작업지시서 생성` as the normal action. The current v2
+model has no persisted production-category owner equivalent to legacy `workOrderKind` /
+`orderType` / `reorderRound`, so that row remains deferred without a migration or inferred
+mapping. The latest owner-approved remediation exposes the truthful non-interactive
+`생산 구분 · 미지정` position without persistence. It also extends `output_include` as the
+single issuance-time selection owner for two distinct outputs: supported images may render
+inside the main PDF, while every selected attachment is frozen in the immutable snapshot and
+served through the same controlled Viewer/session as a delivery bundle. Raw object keys and
+signed URLs remain server-only.
+
+The same remediation adds a bounded Quick Delivery UI foundation from real `requested`
+fabric/accessory rows grouped by their actual supplier. Origin, factory-capability destination,
+driver, and memo changes are local staging only, and the action produces a read-only preview.
+`QUICK_DELIVERY_PERSISTENCE_DEFERRED` and `PRODUCTION_CATEGORY_V2_POLICY_DEFERRED` are explicit;
+no delivery row, PDF, event, receipt, token, object, or migration `017` is created.
+
+The current bounded remediation extends the canonical single-choice WAFL reel with an explicit
+nullable contract: only callers that opt in receive `미지정` as the first item, while required
+pickers retain their existing behavior. Quick Delivery opt-in pickers order that nullable item
+before registered partners/factories; `직접 입력` is no longer a list value. Picker mode uses
+`직접 입력으로 변경`, and direct mode uses `WAFL PICK으로 변경` from the shared input-mode
+owner. The child direct editor preserves
+the parent staged session across X/reopen and applies only to local preview state on V. Address
+search now remains inside a native WAFL sheet and calls the official Juso Search API only through
+an authenticated, no-store Next proxy. The existing `JUSO_API_KEY` is server-only; mobile receives
+only bounded normalized fields, ignores stale responses, supports first-page/more paging, and
+returns to the preserved direct-input draft for detail-address entry. The rejected Kakao script,
+system-browser route, and address-specific deep-link callback are removed. No WebView, native
+dependency, EAS input, backend delivery persistence, or schema is added.
+
+The document quantity disclosure remains collapsed by default, shows at most the first six
+non-zero cells in canonical Color/Size display order, and opens a separate read-only full-list
+sheet when more values exist. This avoids an unbounded nested main-tab scroll without changing
+the matrix projection or owner fixture.
+
+The current UI remediation extracts the live image/attachment icon-and-short-label action tile
+as one visual-only owner and reuses it for Size, Color, fabric/accessory add, document attachment,
+and Quick Delivery. Business behavior, authorization, lifecycle, and mutation ownership do not
+move. The document production overview and selected attachments form one visual container with
+a weak divider, and attachment/Quick actions are not a nested tab bar. Quick preview displays the
+staged place name or address for direct locations instead of exposing the mode name.
+
+## Next boundaries after alpha.64
+
+1. Develop the existing `제작` tab boundary without reopening alpha.64 finalization.
+2. Integrate the Sketch/drawing API only after the Production boundary is separately approved.
+
+Deferred product policy (`POST-alpha.64`): changing or clearing a WorkOrder major category
+never auto-deletes Finished Spec rows or measurement values and never silently remaps them to
+the new category. The category only changes future recommendation/default-catalog scope. A
+future non-destructive informational warning may say
+`대분류가 변경되었습니다. 기존 완성 스펙 항목과 치수를 확인해주세요.`; it is not a
+confirmation gate and must not reset operational data.
+
+## Previous result — 2.0.0-alpha.63
 
 Status: `ALPHA63_FINALIZATION_COMPLETE`.
 
@@ -168,6 +266,8 @@ Permanent Rules, Current Baseline, Version Delta, Immutable Evidence, responsibi
 | alpha.60 | draft-child hard delete and shared-architecture completion | `60-draft-child-hard-delete-and-shared-architecture-evidence.md` |
 | alpha.61 | mobile WorkOrder create and DeveloperAutoConnect finalization | `61-mobile-work-order-create-and-runtime-autoconnect-evidence.md` |
 | alpha.62 | size measurement standards/templates, Maker authoring, and shared mobile architecture | `62-size-measurement-standards-templates-evidence.md` |
+| alpha.63 | mobile architecture stabilization | `63-mobile-architecture-stabilization-evidence.md` |
+| alpha.64 | cumulative Maker WorkOrder/document UX and shared mobile architecture | `64-maker-workorder-document-ux-evidence.md` |
 | maintenance | canonical Codex rule normalization without APP_VERSION change | `54-canonical-codex-working-rules-normalization-evidence.md` |
 
 Older results remain in numbered evidence files indexed and task-routed by `00-start-here.md`. Their detailed outcomes are not duplicated here.
@@ -327,10 +427,13 @@ APP_VERSION is `2.0.0-alpha.62`, and the result is finalized at
 read-only audit only. Factory, AI image generation, production mutation, R2 mutation,
 dependency/native/EAS work, and alpha.63 expansion remain outside this boundary.
 
-## Next candidate — 2.0.0-alpha.64
+## Next boundary — alpha.64 owner QA and finalization
 
-Status: `NOT_STARTED`.
-
-Alpha.63 finalization grants no alpha.64 product, Factory/PDF/AI, production,
-dependency/native/EAS, or migration/schema authority. A new owner-approved Version Delta is
-required before any alpha.64 work begins.
+The current alpha.64 candidate stops at physical-iPhone re-QA. Owner visual/IA acceptance
+must cover actionable readiness feedback, collapsed size/color quantity disclosure, image/PDF
+delivery attachments in the controlled Viewer, the truthful production-category placeholder,
+and real requested-material Quick Delivery local preview before the already approved R0
+issue/PDF/download/share/managed-QR flow. Version promotion, commit, push, and release artifacts
+require a separate finalization after that owner evidence. Quick Delivery persistence/PDF,
+R1 correction, Factory/AI, production mutation, dependency/native/EAS work, and migration `017`
+remain outside the current boundary.

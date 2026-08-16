@@ -40,7 +40,8 @@ assert.match(service, /command\.workOrderId[\s\S]*command\.revisionId[\s\S]*comm
 assert.doesNotMatch(repository, /input\.command\.idempotencyKey/, "repository must not receive raw idempotency key");
 
 for (const token of [
-  "withWaflV2TenantWriteTransaction",
+  "withDbTransaction",
+  "SET LOCAL ROLE wafl_v2_tenant_runtime",
   "installTenantClaims",
   "FOR UPDATE OF w, r",
   "expectedRevisionVersion",

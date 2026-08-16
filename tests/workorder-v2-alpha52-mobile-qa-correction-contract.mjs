@@ -38,7 +38,7 @@ assert.match(controlled, /<X /);
 assert.match(controlled, /<Check /);
 assert.doesNotMatch(controlled, />\s*취소\s*</);
 assert.doesNotMatch(controlled, />\s*완료\s*</);
-assert.match(materials, /<Plus /);
+assert.match(materials, /<WaflSectionHeaderAction[\s\S]{0,420}onPress=\{onAdd\}/);
 assert.match(materials, /accessibilityLabel=\{`\$\{materialLabel\} 추가`\}/);
 
 assert.doesNotMatch(materials, /field="orderQuantity"/);
@@ -46,7 +46,7 @@ assert.doesNotMatch(editor, /field="orderQuantity"/);
 assert.match(materials, /material-order-quantity-calculated/);
 assert.match(mobileValidation, /if \(field === "orderQuantity" \|\| field === "inventoryUsageQuantity"\) continue/);
 assert.match(repository, /function canonicalOrderQuantity/);
-assert.match(repository, /scaled\(input\.requiredQuantity\) \+ scaled\(input\.allowanceQuantity\)/);
+assert.match(repository, /parseMaterialQuantityScaled\(input\.requiredQuantity\)[\s\S]*parseMaterialQuantityScaled\(input\.allowanceQuantity\)[\s\S]*formatMaterialQuantityScaled\(required \+ allowance\)/);
 assert.doesNotMatch(repository.slice(repository.indexOf("function canonicalOrderQuantity"), repository.indexOf("function assertMaterialOrderReady")), /- scaled\(input\.inventoryUsageQuantity\)/);
 assert.match(historicalEvidence, /max\(required \+ allowance - inventory, 0\)/);
 assert.match(repository, /order_quantity = \$20::numeric/);

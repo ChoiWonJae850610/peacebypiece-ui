@@ -404,6 +404,15 @@ if ($VerificationProfile -eq "automation-infrastructure" -and $ExpectedAppVersio
         "db/v2/migrations/015_v2_company_work_order_structure_options.sql"
     )
 }
+if ($VerificationProfile -eq "automation-infrastructure" -and
+    $ExpectedAppVersion -in @("2.0.0-alpha.63", "2.0.0-alpha.64") -and
+    (Test-Path (Join-Path $ProjectDir "tests/workorder-v2-alpha64-maker-document-r0-e2e-contract.mjs"))) {
+    $allowedMigrationChanges = @(
+        "db/v2/migrations/016_v2_r0_document_snapshot_and_managed_qr.sql",
+        "db/v2/migrations/017_v2_company_spec_item_catalog.sql",
+        "db/v2/migrations/018_v2_company_spec_item_category_scope.sql"
+    )
+}
 $pendingApprovedMigrationChanges = @($migrationChanges | Where-Object { $allowedMigrationChanges -notcontains $_ })
 if ($VerificationProfile -eq "automation-infrastructure" -and
     $ExpectedAppVersion -in @("2.0.0-alpha.41", "2.0.0-alpha.42") -and

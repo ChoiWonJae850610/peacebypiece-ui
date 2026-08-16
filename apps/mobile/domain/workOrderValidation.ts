@@ -9,6 +9,12 @@ import {
   normalizeNumericCommitValue,
   stripDecimalTrailingZeros,
 } from "../lib/mobileDisplay.ts";
+import {
+  MATERIAL_QUANTITY_FACTOR,
+  MATERIAL_QUANTITY_PATTERN,
+  MATERIAL_QUANTITY_SCALE,
+  materialQuantityPrecisionMessage,
+} from "./materialQuantityPrecision.ts";
 
 export type BasicInfoDraft = {
   readonly productName: string;
@@ -53,7 +59,6 @@ export function materialCreateDraft(materialType: MaterialType): MaterialDraftFi
   };
 }
 
-const MATERIAL_QUANTITY_PATTERN = /^(?:0|[1-9]\d{0,10})(?:\.\d{1,3})?$/;
 const MATERIAL_PRICE_PATTERN = /^(?:0|[1-9]\d{0,11})$/;
 
 type MaterialDraftInput = Partial<Record<keyof MaterialDraftFields, unknown>>;
@@ -166,16 +171,16 @@ export function validateMaterialDraft(input: MaterialDraftInput, materialType: M
   if (draft.memo.trim().length > 2000) errors.memo = "메모는 2,000자 이하여야 합니다.";
   if (draft.unitCode.trim().length < 1 || draft.unitCode.trim().length > 32) errors.unitCode = "단위는 1자 이상 32자 이하여야 합니다.";
   for (const field of ["requiredQuantity", "allowanceQuantity"] as const) {
-    if (!MATERIAL_QUANTITY_PATTERN.test(numericDraft[field])) errors[field] = "0 이상의 소수점 3자리 이하 숫자를 입력해 주세요.";
+    if (!MATERIAL_QUANTITY_PATTERN.test(numericDraft[field])) errors[field] = materialQuantityPrecisionMessage();
   }
   if (!MATERIAL_PRICE_PATTERN.test(numericDraft.unitPrice)) errors.unitPrice = "단가는 0 이상의 정수 원 단위로 입력해 주세요.";
   const calculatedOrderQuantity = calculateOrderQuantity(numericDraft);
   if (calculatedOrderQuantity !== null && !errors.unitPrice) {
     const [quantityWhole, quantityFraction = ""] = calculatedOrderQuantity.split(".");
     const [priceWhole, priceFraction = ""] = numericDraft.unitPrice.split(".");
-    const quantityScaled = BigInt(quantityWhole) * 1000n + BigInt(quantityFraction.padEnd(3, "0"));
+    const quantityScaled = BigInt(quantityWhole) * MATERIAL_QUANTITY_FACTOR + BigInt(quantityFraction.padEnd(MATERIAL_QUANTITY_SCALE, "0"));
     const priceScaled = BigInt(priceWhole) * 100n + BigInt(priceFraction.padEnd(2, "0"));
-    const amountCents = (quantityScaled * priceScaled + 500n) / 1000n;
+    const amountCents = (quantityScaled * priceScaled + (MATERIAL_QUANTITY_FACTOR / 2n)) / MATERIAL_QUANTITY_FACTOR;
     if (amountCents > 99999999999999n) errors.unitPrice = "계산 금액이 허용 범위를 넘지 않도록 단가를 줄여 주세요.";
   }
   return errors;

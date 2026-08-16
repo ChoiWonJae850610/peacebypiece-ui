@@ -3,7 +3,8 @@ export type MeasurementProjectionCommandKind =
   | "set-unit"
   | "apply-template"
   | "save-company-template"
-  | "update-company-template";
+  | "update-company-template"
+  | "set-pom-selection";
 
 export type MeasurementProjectionImpact = {
   readonly matrix: "unchanged";
@@ -48,6 +49,13 @@ const IMPACTS: Readonly<Record<MeasurementProjectionCommandKind, MeasurementProj
     workOrderSizeColorGets: 0,
     workOrderSizeSpecGets: 0,
     templateList: "refresh-separately",
+  },
+  "set-pom-selection": {
+    matrix: "unchanged",
+    specifications: "targeted-refresh",
+    workOrderSizeColorGets: 0,
+    workOrderSizeSpecGets: 1,
+    templateList: "unchanged",
   },
 };
 

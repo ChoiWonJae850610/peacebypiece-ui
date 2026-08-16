@@ -22,11 +22,13 @@ const editor = read("apps/mobile/features/materials/WorkOrderMaterialEditor.tsx"
 const materialFieldPolicy = read("apps/mobile/features/materials/materialFieldPolicy.ts");
 const apiClient = readMobileApiSource();
 const apiTypes = read("apps/mobile/domain/mobileContract.ts");
+const materialLineTypes = apiTypes.slice(apiTypes.indexOf("export type WorkOrderMaterialLine"), apiTypes.indexOf("export type WorkOrderMaterialPage"));
 const mobileValidation = read("apps/mobile/domain/workOrderValidation.ts");
 const mobilePolicy = read("apps/mobile/domain/workOrderPolicy.ts");
 const materialOrderPolicy = read("apps/mobile/domain/materialOrderPolicy.ts");
 const draftExitPolicy = read("apps/mobile/application/draftExitPolicy.ts");
 const runtime = read("lib/domain/work-orders/command/runtimeGuard.ts");
+const makerQaCapabilities = read("lib/external-qa/makerQaCapabilities.mjs");
 const commandService = read("lib/domain/work-orders/command/commandService.ts");
 const materialService = read("lib/domain/work-orders/command/materialCommandService.ts");
 const collectionRoute = read("app/api/v2/work-orders/[workOrderId]/materials/route.ts");
@@ -52,7 +54,9 @@ assert.match(alpha26, /alpha\.60 material hard delete must be mounted/);
 assert.match(alpha26, /hard delete must preserve every ordered material lifecycle/);
 
 assert.match(runtime, /WAFL_V2_ALPHA50_MATERIAL_DRAFT_MUTATION_APPROVAL/);
-assert.match(runtime, /2\.0\.0-alpha\.50-dev-test-mobile-material-draft-runtime/);
+assert.match(runtime, /MAKER_QA_APPROVAL\.ALPHA50/);
+assert.match(makerQaCapabilities, /ALPHA50: "2\.0\.0-alpha\.50-dev-test-mobile-material-draft-runtime"/);
+assert.match(makerQaCapabilities, /P\.ALPHA50, A\.ALPHA50[\s\S]{0,160}\[C\.MATERIAL_DRAFT\]/);
 assert.match(runtime, /getWorkOrderV2MaterialDraftMutationRuntimeGuard/);
 const genericApprovals = runtime.match(/const SUPPORTED_MUTATION_APPROVALS = new Set\(\[[\s\S]*?\]\);/)?.[0] ?? "";
 assert.doesNotMatch(genericApprovals, /ALPHA50|alpha\.50/, "alpha.50 must not enable the generic Command set");
@@ -62,10 +66,7 @@ const patchSlice = materialService.slice(materialService.indexOf("export async f
 const transitionSlice = materialService.slice(materialService.indexOf("export async function transitionMaterialOrder"));
 assert.match(createSlice, /requireMaterialDraftMutationApproval\(\)/);
 assert.match(patchSlice, /requireMaterialDraftMutationApproval\(\)/);
-assert.match(transitionSlice, /const configuredApproval = process\.env\.WAFL_V2_COMMAND_MUTATION_APPROVED/);
-assert.match(transitionSlice, /requireCommandMutationApproval\(/);
-assert.match(transitionSlice, /WAFL_V2_ALPHA55_MATERIAL_ORDER_LIFECYCLE_MUTATION_APPROVAL/);
-assert.match(transitionSlice, /WAFL_V2_ALPHA26_MUTATION_APPROVAL/);
+assert.match(transitionSlice, /requireMaterialOrderMutationApproval\(\)/);
 
 const workOrderId = "11111111-1111-1111-1111-111111111111";
 const materialLineId = "22222222-2222-2222-2222-222222222222";
@@ -115,7 +116,7 @@ assert.ok(evidence.includes("inventory usage"), "immutable alpha.50 evidence mus
 assert.match(apiTypes, /readonly orderQuantity: string/);
 assert.doesNotMatch(editor, /field="orderQuantity"/);
 assert.match(editor, /발주수량, 자동 계산, 읽기 전용/);
-assert.doesNotMatch(apiTypes + editor, /materialId|supplierPartnerId|applicationColorTarget/);
+assert.doesNotMatch(materialLineTypes + editor, /materialId|supplierPartnerId|applicationColorTarget/);
 assert.match(apiTypes, /readonly partnerId: string/);
 assert.match(editor, /partnerOptions/);
 assert.match(apiClient, /export async function createWorkOrderMaterial/);
@@ -162,7 +163,7 @@ assert.match(materialOrderPolicy, /status === "editing"/);
 assert.doesNotMatch(app + editor, /setInterval|automaticSave|autoSave|order-request|order-cancel|order-complete/);
 
 assert.match(materials, /accessibilityLabel=\{`\$\{materialLabel\} 추가`\}/);
-assert.match(materials, /<Plus /);
+assert.match(materials, /<WaflSectionHeaderAction[\s\S]{0,420}onPress=\{onAdd\}/);
 assert.match(materials, /field="name"[\s\S]{0,120}label=\{materialNameLabel\}/);
 assert.doesNotMatch(materials, /PencilLine|editActionButton/);
 assert.match(materials, /orderPolicy\.canEdit/);

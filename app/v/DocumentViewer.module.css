@@ -1,4 +1,4 @@
-.shell { min-height: 100vh; display: grid; grid-template-rows: auto minmax(0, 1fr); background: #e9e7e2; color: #172033; }
+.shell { min-height: 100vh; display: grid; grid-template-rows: auto minmax(70vh, 1fr) auto; background: #e9e7e2; color: #172033; }
 .header { min-height: 64px; display: flex; align-items: center; justify-content: space-between; gap: 20px; padding: 10px 18px; border-bottom: 1px solid #cfd2d5; background: #fff; }
 .header div:first-child { min-width: 0; }
 .header span { display: block; color: #687080; font-size: 12px; }
@@ -7,6 +7,22 @@
 .meta a { display: inline-flex; align-items: center; gap: 6px; min-height: 36px; padding: 0 10px; border: 1px solid #172c4c; border-radius: 6px; color: #172c4c; font-size: 13px; font-weight: 800; text-decoration: none; }
 .meta svg { width: 17px; height: 17px; }
 .viewer { width: 100%; height: 100%; min-height: calc(100vh - 65px); border: 0; background: #fff; }
+.attachments { padding: 22px 18px 32px; border-top: 1px solid #cfd2d5; background: #f7f4ee; }
+.attachmentHeading { display: flex; align-items: center; gap: 10px; max-width: 1080px; margin: 0 auto 14px; }
+.attachmentHeading svg { width: 20px; height: 20px; color: #a9472a; }
+.attachmentHeading strong, .attachmentHeading span { display: block; }
+.attachmentHeading strong { font-size: 16px; }
+.attachmentHeading span { margin-top: 2px; color: #687080; font-size: 12px; }
+.attachmentGrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; max-width: 1080px; margin: 0 auto; }
+.attachmentCard { display: grid; grid-template-columns: 72px minmax(0, 1fr) auto; align-items: center; gap: 10px; min-height: 88px; padding: 8px; border: 1px solid #d8d0c5; border-radius: 10px; background: #fff; }
+.attachmentCard > img, .attachmentCard > iframe { width: 72px; height: 72px; border: 0; border-radius: 7px; object-fit: cover; background: #ece8e0; }
+.attachmentCard > svg { width: 28px; height: 28px; margin: 22px; color: #687080; }
+.attachmentInfo { min-width: 0; }
+.attachmentInfo strong, .attachmentInfo span { display: block; overflow-wrap: anywhere; }
+.attachmentInfo strong { font-size: 13px; }
+.attachmentInfo span { margin-top: 4px; color: #687080; font-size: 11px; }
+.attachmentCard > a { display: inline-flex; align-items: center; gap: 5px; padding: 8px; border: 1px solid #172c4c; border-radius: 7px; color: #172c4c; font-size: 11px; font-weight: 800; text-decoration: none; }
+.attachmentCard > a svg { width: 15px; height: 15px; }
 .message { min-height: 100vh; display: grid; place-content: center; justify-items: center; gap: 10px; padding: 24px; background: #f2f0eb; color: #172033; text-align: center; }
 .message svg { width: 28px; height: 28px; color: #a9472a; }
 .message h1, .message p { margin: 0; }
@@ -16,4 +32,7 @@
   .header { align-items: flex-start; flex-direction: column; gap: 8px; }
   .meta { width: 100%; justify-content: space-between; }
   .viewer { min-height: calc(100vh - 108px); }
+  .attachmentCard { grid-template-columns: 64px minmax(0, 1fr); }
+  .attachmentCard > img, .attachmentCard > iframe { width: 64px; height: 64px; }
+  .attachmentCard > a { grid-column: 1 / -1; justify-content: center; }
 }

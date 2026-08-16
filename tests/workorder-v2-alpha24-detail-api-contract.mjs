@@ -94,7 +94,7 @@ const assetsSql = sqlBlock("WORK_ORDER_V2_ASSETS_SQL");
 const documentsSql = sqlBlock("WORK_ORDER_V2_DOCUMENTS_SQL");
 const historySql = sqlBlock("WORK_ORDER_V2_HISTORY_SQL");
 
-assert.doesNotMatch(coreSql, /snapshot|token_hash|document_access_tokens/i, "core payload SQL must not read document or token internals");
+assert.doesNotMatch(coreSql, /snapshot_json|token_hash|document_access_tokens/i, "core payload SQL must not read document immutable payloads or token internals");
 assert.match(coreSql, /COALESCE\(i\.thumbnail_object_key, i\.storage_object_key\) AS image_key/, "core payload may select only the representative image proxy input");
 const coreMapper = repository.slice(
   repository.indexOf("export async function getWorkOrderDetailCoreV2"),

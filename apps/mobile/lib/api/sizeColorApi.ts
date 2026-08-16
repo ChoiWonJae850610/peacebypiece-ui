@@ -37,7 +37,8 @@ export async function getWorkOrderStructureOptions(workOrderId: string): Promise
     `/api/v2/work-orders/${encodeURIComponent(workOrderId)}/size-color/options`,
     { method: "GET" },
   );
-  if (!body.ok || !body.data || !Number.isSafeInteger(body.data.entityVersion) || !Array.isArray(body.data.items)) {
+  if (!body.ok || !body.data || !Number.isSafeInteger(body.data.entityVersion) || !Array.isArray(body.data.items)
+    || !(body.data.categoryCode === null || ["T", "B", "O", "D", "S", "X"].includes(body.data.categoryCode))) {
     throw new MobileApiError({ code: "MALFORMED_RESPONSE", message: "회사 사이즈·색상 선택지 응답이 올바르지 않습니다." });
   }
   return body.data;
@@ -46,7 +47,7 @@ export async function getWorkOrderStructureOptions(workOrderId: string): Promise
 
 export async function createWorkOrderStructureOption(
   workOrderId: string,
-  command: { readonly clientRequestId: string; readonly expectedVersion: number; readonly kind: "size" | "color"; readonly displayName: string; readonly hexValue?: string | null },
+  command: { readonly clientRequestId: string; readonly expectedVersion: number; readonly kind: "size" | "color" | "spec_item"; readonly displayName: string; readonly hexValue?: string | null },
   idempotencyKey: string,
 ) {
   const body = await requestJson<{ readonly ok: boolean; readonly data?: { readonly item?: import("@/domain/mobileContract").CompanyWorkOrderStructureOption; readonly entityVersion?: number } }>(
@@ -71,6 +72,22 @@ export async function removeWorkOrderStructureOption(
   );
   if (!body.ok || body.data?.optionId !== optionId || body.data.removed !== true || body.data.entityVersion !== command.expectedVersion) {
     throw new MobileApiError({ code: "MALFORMED_RESPONSE", message: "회사 선택지 삭제 응답이 올바르지 않습니다." });
+  }
+  return body.data;
+}
+
+export async function renameWorkOrderStructureOption(
+  workOrderId: string,
+  optionId: string,
+  command: { readonly clientRequestId: string; readonly expectedVersion: number; readonly displayName: string },
+  idempotencyKey: string,
+) {
+  const body = await requestJson<{ readonly ok: boolean; readonly data?: { readonly item?: import("@/domain/mobileContract").CompanyWorkOrderStructureOption; readonly entityVersion?: number } }>(
+    `/api/v2/work-orders/${encodeURIComponent(workOrderId)}/size-color/options/${encodeURIComponent(optionId)}`,
+    { method: "PATCH", body: command, idempotencyKey },
+  );
+  if (!body.ok || body.data?.item?.id !== optionId || body.data.item.kind !== "spec_item" || body.data.entityVersion !== command.expectedVersion) {
+    throw new MobileApiError({ code: "MALFORMED_RESPONSE", message: "회사 스펙 항목 변경 응답이 올바르지 않습니다." });
   }
   return body.data;
 }

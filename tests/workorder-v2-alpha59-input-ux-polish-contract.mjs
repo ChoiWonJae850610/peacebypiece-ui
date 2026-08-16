@@ -9,6 +9,7 @@ const read = (relativePath) => fs.readFileSync(path.join(root, relativePath), "u
 const shell = read("apps/mobile/features/inputs/WaflInputSheet.tsx");
 const reel = read("apps/mobile/features/inputs/reel-picker/WaflReelPickerSheet.tsx");
 const structure = read("apps/mobile/features/work-orders/size-color/WorkOrderSizeColorStructureEditor.tsx");
+const sectionAction = read("apps/mobile/features/layout/WaflSectionHeaderAction.tsx");
 const materials = read("apps/mobile/features/materials/WorkOrderMaterialsReadOnly.tsx");
 const materialEditor = read("apps/mobile/features/materials/WorkOrderMaterialEditor.tsx");
 const experience = read("apps/mobile/features/MobileWorkOrderExperience.tsx");
@@ -19,7 +20,8 @@ const sizeColorRepository = read("lib/domain/work-orders/command/sizeColorStruct
 const runtimeQa = read("scripts/run-wafl-v2-alpha59-size-color-structure-runtime-qa.mjs");
 
 assert.match(shell, />WAFL INPUT</);
-assert.match(shell, /KeyboardAvoidingView/);
+assert.doesNotMatch(shell, /KeyboardAvoidingView/);
+assert.match(shell, /Keyboard\.addListener/);
 assert.match(shell, /Math\.max\(insets\.bottom, WAFL_THEME\.spacing\.md\)/);
 assert.match(shell, /createWaflInputCommitGuard/);
 assert.match(shell, /accessibilityState=\{\{ busy: actionPending, disabled: actionPending \|\| confirmDisabled \}\}/);
@@ -31,9 +33,9 @@ assert.match(structure, /title="색상 선택"/);
 assert.doesNotMatch(structure, /doneButton|doneButtonText|>완료<|>변경 저장</);
 assert.doesNotMatch(structure, /onSubmitEditing=\{\(\) => void save\(\)\}/);
 
-assert.match(structure, /structureAction:[\s\S]{0,240}backgroundColor: "#17263d"[\s\S]{0,180}borderRadius: 8[\s\S]{0,220}minHeight: 44/);
-assert.match(structure, /addAction:[\s\S]{0,220}minHeight: 44/);
-assert.match(structure, /editAction:[\s\S]{0,220}minHeight: 44/);
+assert.match(structure, /onEditSize|onEditColor/);
+assert.match(sectionAction, /WAFL_THEME\.touch\.minimum/);
+assert.match(sectionAction, /WAFL_THEME\.radius\.actionTile/);
 assert.doesNotMatch(structure, /structureCard:|countLink:|textDecorationLine: "underline"/);
 
 assert.match(materials, /MaterialInlineField[^\n]+field="unitPrice"[^\n]+label="단가"[^\n]+testID="material-inline-unit-price"/);

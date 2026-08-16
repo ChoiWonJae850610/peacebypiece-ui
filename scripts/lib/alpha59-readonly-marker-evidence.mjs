@@ -75,15 +75,20 @@ export function buildReadOnlyMarkerEvidence({ compiled, runtime, sources }) {
     && editor.includes("edit.canEdit && chooser === \"color\"");
   const historicalNestedEditorGuardPresent = editor.includes("edit.canEdit && chooser")
     && editor.includes("edit.canEdit && editor");
-  const editorGuardPresent = editor.includes("editable={edit.canEdit}")
-    && (currentCatalogGuardPresent || historicalNestedEditorGuardPresent);
+  const currentHeaderActionGuardPresent = readOnly.includes("edit?.canEdit && onEditSize && onEditColor")
+    && readOnly.includes("WaflSectionHeaderAction");
+  const historicalEditorGuardPresent = editor.includes("editable={edit.canEdit}")
+    && historicalNestedEditorGuardPresent;
+  const editorGuardPresent = (currentCatalogGuardPresent && currentHeaderActionGuardPresent)
+    || historicalEditorGuardPresent;
   const addReachableOnlyThroughGuard = editorGuardPresent
-    && editor.includes("StructureCard")
-    && editor.includes("editable={edit.canEdit}")
+    && (currentHeaderActionGuardPresent || editor.includes("StructureCard"))
     && !/\bon(?:Add|Create)(?:Size|Color|Sizes|Colors)?\b|StructureCard|SizeChooser|ColorChooser/.test(readOnly);
   const manualDragAbsent = !/GripVertical|dragHandle|onLongPress|PanResponder/.test(`${editor} ${readOnly}`);
   const mobileReorderAbsent = !/accessibilityMoveActions|accessibilityActions\s*=|onReorder(?:Size|Color)Ids/.test(`${editor} ${readOnly}`);
-  const readOnlyMatrixSourcePresent = (readOnly.includes("색상×사이즈") || readOnly.includes("색상·사이즈"))
+  const readOnlyMatrixSourcePresent = (readOnly.includes("size-color-expanded-matrix-card")
+      || readOnly.includes("색상×사이즈")
+      || readOnly.includes("색상·사이즈"))
     && /matrix\.sizes/.test(readOnly)
     && /specifications/.test(readOnly);
 

@@ -29,6 +29,7 @@ export const WORK_ORDER_COMMAND_CODES = {
     pomPatch: "work_order.measurement.pom.patch",
     pomDelete: "work_order.measurement.pom.delete",
     pomReorder: "work_order.measurement.pom.reorder",
+    pomSelectionBatch: "work_order.measurement.pom_selection.batch",
     saveCompanyTemplate: "work_order.measurement.save_company_template",
     updateCompanyTemplate: "work_order.measurement.update_company_template",
   },
@@ -66,4 +67,5 @@ export const MEASUREMENT_SNAPSHOT_CONTENT_COMMAND_CODES = [
   WORK_ORDER_COMMAND_CODES.measurement.pomPatch,
   WORK_ORDER_COMMAND_CODES.measurement.pomDelete,
   WORK_ORDER_COMMAND_CODES.measurement.pomReorder,
+  WORK_ORDER_COMMAND_CODES.measurement.pomSelectionBatch,
 ] as const satisfies readonly WorkOrderCommandCode[];

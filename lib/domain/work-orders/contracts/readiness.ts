@@ -1,6 +1,11 @@
 import type { EntityVersion, IsoDateTime } from "@/lib/domain/work-orders/contracts/primitives";
 
 export const READINESS_HARD_BLOCKER_CODES = [
+  "PRODUCT_NAME_REQUIRED",
+  "PRODUCT_TYPE_REQUIRED",
+  "SEASON_REQUIRED",
+  "ITEM_REQUIRED",
+  "COMPANY_DOCUMENT_CODE_REQUIRED",
   "REPRESENTATIVE_IMAGE_REQUIRED",
   "TOTAL_QUANTITY_REQUIRED",
   "QUANTITY_TOTAL_MISMATCH",

@@ -45,12 +45,15 @@ export type WorkOrderDetailCore = {
     readonly totalQuantity: number;
     readonly status: WorkOrderStatus;
     readonly currentRevisionNumber: number;
+    readonly currentRevisionId: string;
+    readonly currentRevisionVersion: number;
     readonly readiness: {
       readonly canIssue: boolean;
       readonly hardBlockers: readonly { readonly code: string; readonly message: string }[];
       readonly warnings: readonly { readonly code: string; readonly message: string }[];
     };
     readonly document: {
+      readonly latestDocumentId: string | null;
       readonly status: string | null;
       readonly displayDocumentNumber: string | null;
       readonly generatedAt: string | null;
@@ -87,6 +90,71 @@ export type WorkOrderDetailCore = {
     readonly documents: number;
     readonly history: number;
   };
+};
+
+export type WorkOrderProcessStatus = "ready" | "in_progress" | "completed";
+
+export type WorkOrderProcess = {
+  readonly id: string;
+  readonly processTypeCode: string;
+  readonly processName: string;
+  readonly partnerId: string | null;
+  readonly partnerName: string | null;
+  readonly quantity: string;
+  readonly dueDate: string | null;
+  readonly unitCode: string;
+  readonly currency: string;
+  readonly unitPrice: string;
+  readonly amount: string;
+  readonly memo: string | null;
+  readonly applicationArea: string | null;
+  readonly applicationColorTarget: string | null;
+  readonly status: WorkOrderProcessStatus;
+  readonly displayOrder: number;
+  readonly editable: boolean;
+  readonly locked: boolean;
+};
+
+export type WorkOrderProcesses = {
+  readonly workOrderId: string;
+  readonly revisionId: string;
+  readonly flowSummary: readonly {
+    readonly stepCode: "order" | "material" | "cutting" | "process" | "inspection" | "shipment";
+    readonly status: WorkOrderProcessStatus;
+  }[];
+  readonly processes: readonly WorkOrderProcess[];
+  readonly entityVersion: number;
+};
+
+export type GeneratedWorkOrderDocument = {
+  readonly id: string;
+  readonly revisionId: string;
+  readonly documentType: "factory_instruction" | "work_order" | "order_request";
+  readonly generationNumber: number;
+  readonly displayDocumentNumber: string;
+  readonly status: "pending" | "generated" | "failed" | "revoked" | "deleted";
+  readonly fileSizeBytes: number | null;
+  readonly generatedAt: string | null;
+  readonly accessTokenAvailable: boolean;
+  readonly inlineUrl: string | null;
+  readonly downloadUrl: string | null;
+};
+
+export type WorkOrderDocumentPage = {
+  readonly workOrderId: string;
+  readonly currentRevisionId: string;
+  readonly items: readonly GeneratedWorkOrderDocument[];
+  readonly entityVersion: number;
+};
+
+export type DocumentAccessTokenSummary = {
+  readonly tokenId: string;
+  readonly tokenPurpose: "manual_share" | "embedded_qr";
+  readonly createdAt: string;
+  readonly expiresAt: string | null;
+  readonly revokedAt: string | null;
+  readonly accessCount: number;
+  readonly status: "active" | "expired" | "revoked";
 };
 
 export type WorkOrderImageAsset = {
@@ -147,15 +215,17 @@ export type WorkOrderColorRow = {
 
 export type CompanyWorkOrderStructureOption = {
   readonly id: string;
-  readonly kind: "size" | "color";
+  readonly kind: "size" | "color" | "spec_item";
   readonly displayName: string;
   readonly hexValue: string | null;
   readonly active: boolean;
   readonly sourceKind: "company";
+  readonly categoryCode: "T" | "B" | "O" | "D" | "S" | "X" | null;
 };
 
 export type WorkOrderStructureOptionPage = {
   readonly entityVersion: number;
+  readonly categoryCode: "T" | "B" | "O" | "D" | "S" | "X" | null;
   readonly items: readonly CompanyWorkOrderStructureOption[];
 };
 
@@ -259,6 +329,7 @@ export type MeasurementCommandInput = MeasurementCommandBase & (
   | { readonly kind: "rename-pom"; readonly pomColumnId: string; readonly displayName: string }
   | { readonly kind: "remove-pom"; readonly pomColumnId: string }
   | { readonly kind: "reorder-poms"; readonly orderedIds: readonly string[] }
+  | { readonly kind: "set-pom-selection"; readonly selectedItems: readonly { readonly catalogOptionId: string | null; readonly systemSpecItemKey: string | null; readonly currentPomId: string | null; readonly displayName: string }[] }
   | { readonly kind: "save-company-template"; readonly templateName: string; readonly templateId?: never }
   | { readonly kind: "update-company-template"; readonly templateId: string }
 );
@@ -354,6 +425,9 @@ export type MaterialDraftFields = {
 export type MaterialPartnerOption = {
   readonly id: string;
   readonly name: string;
+  readonly role?: "factory" | "fabric" | "subsidiary" | "outsourcing";
+  readonly contactPerson?: string | null;
+  readonly contact?: string | null;
 };
 
 export type WorkOrderMaterialPartnerPage = {

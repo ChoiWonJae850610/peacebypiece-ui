@@ -23,8 +23,14 @@ import {
   parseRequiredText,
   WorkOrderCommandValidationError,
 } from "@/lib/domain/work-orders/command/validation";
+import {
+  formatMaterialQuantityScaled,
+  MATERIAL_QUANTITY_FACTOR,
+  MATERIAL_QUANTITY_PATTERN,
+  MATERIAL_QUANTITY_SCALE,
+  parseMaterialQuantityScaled,
+} from "@/lib/domain/work-orders/materialQuantityPrecision.mjs";
 
-const QUANTITY_PATTERN = /^(?:0|[1-9]\d{0,10})(?:\.\d{1,3})?$/;
 const PRICE_PATTERN = /^(?:0|[1-9]\d{0,11})(?:\.\d{1,2})?$/;
 
 function parseExpectedVersion(value: unknown): EntityVersion {
@@ -60,7 +66,7 @@ function parseDecimal(
 }
 
 function parseQuantity(value: unknown, field: string): DecimalString {
-  return parseDecimal(value, field, QUANTITY_PATTERN, 3);
+  return parseDecimal(value, field, MATERIAL_QUANTITY_PATTERN, MATERIAL_QUANTITY_SCALE);
 }
 
 function assertPositiveRequiredQuantity(value: DecimalString): void {
@@ -79,14 +85,10 @@ function canonicalOrderQuantity(
   requiredQuantity: DecimalString,
   allowanceQuantity: DecimalString,
 ): DecimalString {
-  const scaled = (value: DecimalString) => {
-    const [whole, fraction = ""] = value.split(".");
-    return BigInt(whole) * BigInt(1000) + BigInt(fraction.padEnd(3, "0"));
-  };
-  const bounded = scaled(requiredQuantity) + scaled(allowanceQuantity);
-  const whole = bounded / BigInt(1000);
-  const fraction = (bounded % BigInt(1000)).toString().padStart(3, "0").replace(/0+$/, "");
-  return `${whole}${fraction ? `.${fraction}` : ""}` as DecimalString;
+  const required = parseMaterialQuantityScaled(requiredQuantity);
+  const allowance = parseMaterialQuantityScaled(allowanceQuantity);
+  if (required === null || allowance === null) throw new Error("validated-material-quantity-invalid");
+  return formatMaterialQuantityScaled(required + allowance) as DecimalString;
 }
 
 function parseOptionalReference(value: unknown, field: string, present: boolean) {
@@ -106,9 +108,9 @@ function parseDisplayOrder(value: unknown): number | undefined {
 function assertAmountWithinRange(orderQuantity: DecimalString, unitPrice: DecimalString) {
   const [quantityWhole, quantityFraction = ""] = orderQuantity.split(".");
   const [priceWhole, priceFraction = ""] = unitPrice.split(".");
-  const quantityScaled = BigInt(quantityWhole) * BigInt(1000) + BigInt(quantityFraction.padEnd(3, "0"));
+  const quantityScaled = BigInt(quantityWhole) * MATERIAL_QUANTITY_FACTOR + BigInt(quantityFraction.padEnd(MATERIAL_QUANTITY_SCALE, "0"));
   const priceScaled = BigInt(priceWhole) * BigInt(100) + BigInt(priceFraction.padEnd(2, "0"));
-  const amountCents = (quantityScaled * priceScaled + BigInt(500)) / BigInt(1000);
+  const amountCents = (quantityScaled * priceScaled + (MATERIAL_QUANTITY_FACTOR / BigInt(2))) / MATERIAL_QUANTITY_FACTOR;
   if (amountCents > BigInt("99999999999999")) {
     throw new WorkOrderCommandValidationError([
       fieldError("orderQuantity", "AMOUNT_OVERFLOW", "발주수량과 단가의 계산 금액이 허용 범위를 초과합니다."),

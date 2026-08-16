@@ -62,6 +62,7 @@ const shell = read("apps/mobile/features/inputs/WaflInputSheet.tsx");
 const controlled = read("apps/mobile/components/ControlledInlineEditValue.tsx");
 const overview = read("apps/mobile/features/work-orders/overview/WorkOrderDetailOverview.tsx");
 const materials = read("apps/mobile/features/materials/WorkOrderMaterialsReadOnly.tsx");
+const sectionAction = read("apps/mobile/features/layout/WaflSectionHeaderAction.tsx");
 const materialEditor = read("apps/mobile/features/materials/WorkOrderMaterialEditor.tsx");
 const reel = read("apps/mobile/features/inputs/reel-picker/WaflReelPickerSheet.tsx");
 const structure = read("apps/mobile/features/work-orders/size-color/WorkOrderSizeColorStructureEditor.tsx");
@@ -115,12 +116,10 @@ assert.match(reel, /composeQuarterQuantity/);
 assert.match(reel, /기존값 \{quantityParts\.preservedValue\}/);
 assert.doesNotMatch(QUARTER_FRACTION_VALUES.join("/"), /(?:^|\/)1(?:\/|$)|(?:^|\/)5(?:\/|$)|(?:^|\/)10(?:\/|$)/);
 
-const materialAddStyle = materials.match(/addButton:\s*\{[^}]+\}/)?.[0] ?? "";
-const structureActionStyle = structure.match(/structureAction:\s*\{[^}]+\}/)?.[0] ?? "";
-for (const token of ['backgroundColor: "#17263d"', "borderRadius: 8", "minHeight: 44"]) {
-  assert.ok(materialAddStyle.includes(token), `material add grammar missing ${token}`);
-  assert.ok(structureActionStyle.includes(token), `size/color action must reuse ${token}`);
-}
+assert.match(materials, /WaflSectionHeaderAction/);
+assert.match(structure, /onEditSize|onEditColor/);
+assert.match(sectionAction, /WAFL_THEME\.touch\.minimum/);
+assert.match(sectionAction, /WAFL_THEME\.radius\.actionTile/);
 assert.doesNotMatch(structure, /structureCard:|fontSize: 2[0-9].*count|textDecorationLine: "underline"/);
 
 assert.match(migration, /total_quantity integer NOT NULL/);
@@ -131,7 +130,7 @@ assert.match(overview, /label="총 수량"[\s\S]{0,120}header\.totalQuantity\.to
 assert.doesNotMatch(overview, /field="totalQuantity"|onBeginEdit\("totalQuantity"\)|overview-inline-total-quantity/);
 assert.match(runtime, /TOTAL_QUANTITY_DECIMAL_MIGRATION_REQUIRED/);
 
-assert.match(structure, /onAddSizes|onAddColors|COLOR_PALETTE_PRESETS|CUSTOM_COLOR_GROUPS/);
+assert.match(structure, /onEditSize|onEditColor|COLOR_PALETTE_PRESETS|CUSTOM_COLOR_GROUPS/);
 assert.match(structure, /confirmWaflDestructiveAction/);
 assert.doesNotMatch(structure, /archive|restore/i);
 

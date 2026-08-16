@@ -87,6 +87,7 @@ export type WorkOrderDetailHeader = {
   readonly status: WorkOrderStatus;
   readonly currentRevisionId: WorkOrderRevisionId;
   readonly currentRevisionNumber: RevisionNumber;
+  readonly currentRevisionVersion: EntityVersion;
   readonly representativeImage: RepresentativeThumbnailReadModel | null;
   readonly readiness: ReadinessReadModel;
   readonly document: WorkOrderDocumentSummary;

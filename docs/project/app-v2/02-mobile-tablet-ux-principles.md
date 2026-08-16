@@ -1,5 +1,7 @@
 # WAFL v2 Mobile and Tablet UX Principles - 2.0.0-alpha.1
 
+Current detailed visual tokens, shared component grammar, and responsive layout rules are owned by `11a-mobile-design-system-v2.md`; current Maker six-tab IA is owned by `11b-maker-workorder-tab-ia-v2.md`. This document retains product-level mobile/tablet principles and does not duplicate those owners.
+
 ## 2.0.0-alpha.4 app design theme direction
 
 `2.0.0-alpha.4` applies App Design Theme v1:

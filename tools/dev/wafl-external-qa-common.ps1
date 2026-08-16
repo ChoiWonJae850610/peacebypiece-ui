@@ -1,4 +1,6 @@
 Set-StrictMode -Version Latest
+Add-Type -AssemblyName System.Net.Http
+Add-Type -AssemblyName System.Web
 
 function Get-WaflQaRepositoryRoot {
     return [System.IO.Path]::GetFullPath((Join-Path $PSScriptRoot "..\.."))
@@ -44,6 +46,29 @@ function Convert-WaflQaResponseContentToText {
     return [string]$Content
 }
 
+function Get-WaflQaRedirectResponse {
+    param(
+        [Parameter(Mandatory = $true)][string]$Uri,
+        [int]$TimeoutSeconds = 10
+    )
+
+    $handler = [System.Net.Http.HttpClientHandler]::new()
+    $handler.AllowAutoRedirect = $false
+    $client = [System.Net.Http.HttpClient]::new($handler)
+    $client.Timeout = [TimeSpan]::FromSeconds($TimeoutSeconds)
+    try {
+        $response = $client.GetAsync($Uri).GetAwaiter().GetResult()
+        return [pscustomobject]@{
+            StatusCode = [int]$response.StatusCode
+            Location = if ($null -eq $response.Headers.Location) { "" } else { [string]$response.Headers.Location }
+        }
+    }
+    finally {
+        $client.Dispose()
+        $handler.Dispose()
+    }
+}
+
 function Test-WaflQaPackagerStatusRunning {
     param([AllowNull()]$Content)
 
@@ -56,6 +81,240 @@ function Get-WaflQaExecutablePath {
     $command = Get-Command $Name -ErrorAction SilentlyContinue | Select-Object -First 1
     if (-not $command) { return $null }
     return [System.IO.Path]::GetFullPath($command.Source)
+}
+
+function Resolve-WaflQaCanonicalNodeToolchain {
+    param([string]$RequiredVersion = "v24.14.0")
+
+    $candidates = New-Object System.Collections.Generic.List[string]
+    $pathNode = Get-WaflQaExecutablePath -Name "node"
+    if ($pathNode) { $candidates.Add($pathNode) }
+
+    foreach ($candidate in @(
+        (Join-Path $env:ProgramFiles "nodejs\node.exe"),
+        (Join-Path $env:LOCALAPPDATA "Programs\nodejs\node.exe")
+    )) {
+        if (-not [string]::IsNullOrWhiteSpace($candidate)) { $candidates.Add($candidate) }
+    }
+
+    $runtimeCache = Join-Path $env:USERPROFILE ".cache\codex-runtimes"
+    if (Test-Path -LiteralPath $runtimeCache -PathType Container) {
+        foreach ($runtimeDirectory in @(Get-ChildItem -LiteralPath $runtimeCache -Directory -ErrorAction SilentlyContinue | Sort-Object FullName)) {
+            $candidates.Add((Join-Path $runtimeDirectory.FullName "dependencies\node\bin\node.exe"))
+        }
+    }
+
+    $seen = New-Object 'System.Collections.Generic.HashSet[string]' ([System.StringComparer]::OrdinalIgnoreCase)
+    foreach ($candidate in $candidates) {
+        if ([string]::IsNullOrWhiteSpace($candidate)) { continue }
+        try { $resolved = [System.IO.Path]::GetFullPath($candidate) } catch { continue }
+        if (-not $seen.Add($resolved) -or -not (Test-Path -LiteralPath $resolved -PathType Leaf)) { continue }
+
+        $version = ""
+        try { $version = ([string](& $resolved --version 2>$null)).Trim() } catch { continue }
+        if ($version -ne $RequiredVersion) { continue }
+
+        return [pscustomobject]@{
+            Node = $resolved
+            Version = $version
+        }
+    }
+
+    throw "CANONICAL_NODE_24_14_0_NOT_FOUND"
+}
+
+function Invoke-WaflQaHttpRequest {
+    param(
+        [Parameter(Mandatory = $true)][System.Net.Http.HttpClient]$Client,
+        [Parameter(Mandatory = $true)][ValidateSet("GET", "POST")][string]$Method,
+        [Parameter(Mandatory = $true)][string]$Uri,
+        [string]$JsonBody = ""
+    )
+
+    $httpMethod = if ($Method -eq "POST") { [System.Net.Http.HttpMethod]::Post } else { [System.Net.Http.HttpMethod]::Get }
+    $request = [System.Net.Http.HttpRequestMessage]::new($httpMethod, [Uri]$Uri)
+    if ($Method -eq "POST" -and -not [string]::IsNullOrWhiteSpace($JsonBody)) {
+        $request.Content = [System.Net.Http.StringContent]::new($JsonBody, [System.Text.Encoding]::UTF8, "application/json")
+    }
+    try {
+        $response = $Client.SendAsync($request).GetAwaiter().GetResult()
+        try {
+            $content = $response.Content.ReadAsStringAsync().GetAwaiter().GetResult()
+            $json = $null
+            if (-not [string]::IsNullOrWhiteSpace($content)) {
+                try { $json = $content | ConvertFrom-Json -ErrorAction Stop } catch { $json = $null }
+            }
+            return [pscustomobject]@{ StatusCode = [int]$response.StatusCode; Json = $json }
+        }
+        finally { $response.Dispose() }
+    }
+    finally { $request.Dispose() }
+}
+
+function Invoke-WaflQaBundleTransfer {
+    param(
+        [Parameter(Mandatory = $true)][string]$Uri,
+        [int]$TimeoutSeconds = 180
+    )
+
+    $handler = [System.Net.Http.HttpClientHandler]::new()
+    $handler.AllowAutoRedirect = $true
+    $client = [System.Net.Http.HttpClient]::new($handler)
+    $client.Timeout = [TimeSpan]::FromSeconds($TimeoutSeconds)
+    try {
+        $response = $client.GetAsync($Uri, [System.Net.Http.HttpCompletionOption]::ResponseHeadersRead).GetAwaiter().GetResult()
+        try {
+            $stream = $response.Content.ReadAsStreamAsync().GetAwaiter().GetResult()
+            try {
+                $buffer = New-Object byte[] 65536
+                [long]$bytes = 0
+                while (($read = $stream.Read($buffer, 0, $buffer.Length)) -gt 0) { $bytes += $read }
+                return [pscustomobject]@{ StatusCode = [int]$response.StatusCode; Bytes = $bytes }
+            }
+            finally { $stream.Dispose() }
+        }
+        finally { $response.Dispose() }
+    }
+    finally {
+        $client.Dispose()
+        $handler.Dispose()
+    }
+}
+
+function Resolve-WaflQaOwnerFixture {
+    $alpha64Path = Join-Path (Get-WaflQaStateDirectory) "alpha64-real-sheet-owner-fixture-readonly-audit.json"
+    if (Test-Path -LiteralPath $alpha64Path -PathType Leaf) {
+        try {
+            $alpha64 = Get-Content -LiteralPath $alpha64Path -Raw -Encoding UTF8 | ConvertFrom-Json -ErrorAction Stop
+            $marker = ([string]$alpha64.marker).Trim()
+            if (-not [string]::IsNullOrWhiteSpace($marker)) {
+                return [pscustomobject]@{ Mode = "marker"; Value = $marker; Source = "alpha64-owner-readonly-audit" }
+            }
+        } catch {}
+    }
+
+    $alpha62Path = Join-Path (Get-WaflQaStateDirectory) "alpha62-owner-iphone-fixture.json"
+    if (Test-Path -LiteralPath $alpha62Path -PathType Leaf) {
+        try {
+            $alpha62 = Get-Content -LiteralPath $alpha62Path -Raw -Encoding UTF8 | ConvertFrom-Json -ErrorAction Stop
+            $workOrderId = ([string]$alpha62.workOrderId).Trim()
+            if ($workOrderId -match '^[0-9a-fA-F-]{36}$') {
+                return [pscustomobject]@{ Mode = "id"; Value = $workOrderId; Source = "alpha62-owner-fixture" }
+            }
+        } catch {}
+    }
+
+    throw "OWNER_FIXTURE_REFERENCE_UNAVAILABLE"
+}
+
+function Invoke-WaflQaDeveloperReadSmoke {
+    param([Parameter(Mandatory = $true)]$State)
+
+    $result = [ordered]@{
+        Passed = $false
+        FailureStage = "preflight"
+        AutoConnectHttp = 0
+        AuthMeHttp = 0
+        CompanyContextReady = $false
+        WorkOrderListHttp = 0
+        WorkOrderListReady = $false
+        OwnerFixtureSource = "unresolved"
+        OwnerFixtureDetailHttp = 0
+        OwnerFixtureDetailReady = $false
+    }
+    if ([string]$State.mobileTransport -ne "DeveloperAutoConnect" -or [string]::IsNullOrWhiteSpace([string]$State.publicOrigin)) {
+        return [pscustomobject]$result
+    }
+
+    $handler = [System.Net.Http.HttpClientHandler]::new()
+    $handler.AllowAutoRedirect = $false
+    $handler.UseCookies = $true
+    $handler.CookieContainer = [System.Net.CookieContainer]::new()
+    $client = [System.Net.Http.HttpClient]::new($handler)
+    $client.Timeout = [TimeSpan]::FromSeconds(45)
+    $autoConnected = $false
+    try {
+        $origin = ([Uri][string]$State.publicOrigin).GetLeftPart([UriPartial]::Authority)
+        $auto = Invoke-WaflQaHttpRequest -Client $client -Method POST -Uri ($origin + "/api/dev/mobile-connect/auto") -JsonBody "{}"
+        $result.AutoConnectHttp = $auto.StatusCode
+        if ($auto.StatusCode -ne 200 -or $null -eq $auto.Json -or $auto.Json.ok -ne $true -or $auto.Json.connected -ne $true -or [string]$auto.Json.mode -ne "tailscale-developer") {
+            $result.FailureStage = "developer-auto-connect"
+            return [pscustomobject]$result
+        }
+        $autoConnected = $true
+
+        $me = Invoke-WaflQaHttpRequest -Client $client -Method GET -Uri ($origin + "/api/auth/me")
+        $result.AuthMeHttp = $me.StatusCode
+        $result.CompanyContextReady = $me.StatusCode -eq 200 `
+            -and $null -ne $me.Json `
+            -and $me.Json.authenticated -eq $true `
+            -and [string]$me.Json.user.role -eq "company_admin" `
+            -and [string]$me.Json.user.companyId -eq "wafl-fn-company-a" `
+            -and -not [string]::IsNullOrWhiteSpace([string]$me.Json.user.companyMemberId)
+        if (-not $result.CompanyContextReady) {
+            $result.FailureStage = "auth-company-context"
+            return [pscustomobject]$result
+        }
+
+        $list = Invoke-WaflQaHttpRequest -Client $client -Method GET -Uri ($origin + "/api/v2/work-orders?limit=30")
+        $result.WorkOrderListHttp = $list.StatusCode
+        $result.WorkOrderListReady = $list.StatusCode -eq 200 `
+            -and $null -ne $list.Json `
+            -and $list.Json.ok -eq $true `
+            -and $null -ne $list.Json.data `
+            -and $null -ne $list.Json.data.items
+        if (-not $result.WorkOrderListReady) {
+            $result.FailureStage = "work-order-list"
+            return [pscustomobject]$result
+        }
+
+        $fixture = Resolve-WaflQaOwnerFixture
+        $result.OwnerFixtureSource = $fixture.Source
+        $fixtureId = ""
+        if ($fixture.Mode -eq "marker") {
+            $searchUri = $origin + "/api/v2/work-orders?limit=30&q=" + [Uri]::EscapeDataString([string]$fixture.Value)
+            $search = Invoke-WaflQaHttpRequest -Client $client -Method GET -Uri $searchUri
+            if ($search.StatusCode -ne 200 -or $null -eq $search.Json -or $search.Json.ok -ne $true -or $null -eq $search.Json.data) {
+                $result.FailureStage = "owner-fixture-search"
+                return [pscustomobject]$result
+            }
+            $matches = @($search.Json.data.items | Where-Object { [string]$_.productName -eq [string]$fixture.Value })
+            if ($matches.Count -ne 1 -or [string]::IsNullOrWhiteSpace([string]$matches[0].workOrderId)) {
+                $result.FailureStage = "owner-fixture-resolution"
+                return [pscustomobject]$result
+            }
+            $fixtureId = [string]$matches[0].workOrderId
+        }
+        else { $fixtureId = [string]$fixture.Value }
+
+        $detail = Invoke-WaflQaHttpRequest -Client $client -Method GET -Uri ($origin + "/api/v2/work-orders/" + [Uri]::EscapeDataString($fixtureId))
+        $result.OwnerFixtureDetailHttp = $detail.StatusCode
+        $result.OwnerFixtureDetailReady = $detail.StatusCode -eq 200 `
+            -and $null -ne $detail.Json `
+            -and $detail.Json.ok -eq $true `
+            -and $null -ne $detail.Json.data `
+            -and $null -ne $detail.Json.data.header `
+            -and [string]$detail.Json.data.header.id -eq $fixtureId
+        if (-not $result.OwnerFixtureDetailReady) {
+            $result.FailureStage = "owner-fixture-detail"
+            return [pscustomobject]$result
+        }
+
+        $result.Passed = $true
+        $result.FailureStage = "none"
+        return [pscustomobject]$result
+    }
+    catch {
+        $result.FailureStage = "request-failed"
+        return [pscustomobject]$result
+    }
+    finally {
+        if ($autoConnected) {
+            try { Invoke-WaflQaHttpRequest -Client $client -Method POST -Uri (([Uri][string]$State.publicOrigin).GetLeftPart([UriPartial]::Authority) + "/api/dev/mobile-connect/disconnect") | Out-Null } catch {}
+        }
+        $client.Dispose()
+        $handler.Dispose()
+    }
 }
 
 function Get-WaflQaCloudflaredPath {

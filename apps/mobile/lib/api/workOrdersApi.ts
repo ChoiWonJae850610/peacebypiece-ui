@@ -6,6 +6,7 @@ import type {
   WorkOrderDetailCore,
   WorkOrderListPage,
   WorkOrderListStatusFilter,
+  WorkOrderProcesses,
 } from "@/domain/mobileContract";
 import { MobileApiError } from "@/domain/mobileContract";
 import { requestJson } from "../apiTransport";
@@ -66,6 +67,17 @@ export async function createWorkOrderDraft(
 export async function getWorkOrderDetail(workOrderId: string): Promise<WorkOrderDetailCore> {
   const body = await requestJson<{ readonly ok: boolean; readonly data?: WorkOrderDetailCore }>(`/api/v2/work-orders/${encodeURIComponent(workOrderId)}`, { method: "GET" });
   if (!body.ok || !body.data?.header) throw new MobileApiError({ code: "MALFORMED_RESPONSE", message: "제작 카드 상세 응답이 올바르지 않습니다." });
+  return body.data;
+}
+
+export async function getWorkOrderProcesses(workOrderId: string): Promise<WorkOrderProcesses> {
+  const body = await requestJson<{ readonly ok: boolean; readonly data?: WorkOrderProcesses }>(
+    `/api/v2/work-orders/${encodeURIComponent(workOrderId)}/processes`,
+    { method: "GET" },
+  );
+  if (!body.ok || !body.data || !Array.isArray(body.data.flowSummary) || !Array.isArray(body.data.processes)) {
+    throw new MobileApiError({ code: "MALFORMED_RESPONSE", message: "제작 정보를 불러오지 못했습니다." });
+  }
   return body.data;
 }
 

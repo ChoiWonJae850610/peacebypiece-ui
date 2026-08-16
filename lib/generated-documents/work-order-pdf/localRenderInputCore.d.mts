@@ -6,6 +6,10 @@ export type LocalIssuedPdfRenderInput = {
   readonly snapshotSha256: string;
   readonly objectKeyPlan: string;
   readonly representativeImageDataUrl: string | null;
+  readonly includedAttachmentImages?: readonly {
+    readonly filename: string;
+    readonly dataUrl: string;
+  }[];
 };
 
 export function getLocalIssuedPdfRenderInputPath(runToken: string): string;

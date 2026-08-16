@@ -25,6 +25,11 @@ import {
   evaluateMaterialOrderReadiness,
   type MaterialOrderReadinessBlocker,
 } from "@/lib/domain/work-orders/command/materialOrderReadiness";
+import {
+  formatMaterialQuantityScaled,
+  MATERIAL_QUANTITY_FACTOR,
+  parseMaterialQuantityScaled,
+} from "@/lib/domain/work-orders/materialQuantityPrecision.mjs";
 
 export const MATERIAL_CREATE_COMMAND_CODE = WORK_ORDER_COMMAND_CODES.material.create;
 export const MATERIAL_PATCH_COMMAND_CODE = WORK_ORDER_COMMAND_CODES.material.patch;
@@ -168,9 +173,10 @@ function assertAmountWithinDatabaseRange(orderQuantity: string | number, unitPri
     const [whole, fraction = ""] = String(value).split(".");
     return BigInt(whole) * (BigInt(10) ** BigInt(scale)) + BigInt(fraction.padEnd(scale, "0").slice(0, scale));
   };
-  const quantityScaled = toScaled(orderQuantity, 3);
+  const quantityScaled = parseMaterialQuantityScaled(orderQuantity);
+  if (quantityScaled === null) throw new Error("validated-order-quantity-precision-invalid");
   const priceScaled = toScaled(unitPrice, 2);
-  const amountCents = (quantityScaled * priceScaled + BigInt(500)) / BigInt(1_000);
+  const amountCents = (quantityScaled * priceScaled + (MATERIAL_QUANTITY_FACTOR / BigInt(2))) / MATERIAL_QUANTITY_FACTOR;
   if (amountCents > BigInt("99999999999999")) {
     throw new MaterialCommandRepositoryError("amount_out_of_range");
   }
@@ -181,14 +187,10 @@ function canonicalOrderQuantity(input: {
   readonly allowanceQuantity: string | number;
   readonly inventoryUsageQuantity: string | number;
 }) {
-  const scaled = (value: string | number) => {
-    const [whole, fraction = ""] = String(value).split(".");
-    return BigInt(whole) * BigInt(1000) + BigInt(fraction.padEnd(3, "0").slice(0, 3));
-  };
-  const bounded = scaled(input.requiredQuantity) + scaled(input.allowanceQuantity);
-  const whole = bounded / BigInt(1000);
-  const fraction = (bounded % BigInt(1000)).toString().padStart(3, "0").replace(/0+$/, "");
-  return `${whole}${fraction ? `.${fraction}` : ""}`;
+  const required = parseMaterialQuantityScaled(input.requiredQuantity);
+  const allowance = parseMaterialQuantityScaled(input.allowanceQuantity);
+  if (required === null || allowance === null) throw new Error("validated-material-quantity-precision-invalid");
+  return formatMaterialQuantityScaled(required + allowance);
 }
 
 function assertMaterialOrderReady(

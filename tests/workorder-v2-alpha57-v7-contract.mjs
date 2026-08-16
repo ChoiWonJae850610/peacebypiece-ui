@@ -83,7 +83,7 @@ assert.match(attachmentRoute, /deleteR2ObjectViaWorker/);
 assert.match(externalQaConfig, /pathname === "\/api\/v2\/work-orders\/files\/upload"/);
 assert.match(externalQaConfig, /attachments\\\/upload\(\?:\\\/complete\)\?/);
 assert.match(externalQaConfig, /attachments\\\/\[0-9a-f\].+\\\/delete/);
-assert.match(externalQaConfig, /\|\| alpha57WorkOrderImageEnabled\(env\)/);
+assert.match(externalQaConfig, /makerAuthoringAssetMutationEnabled\(env\)/);
 
 for (const route of [
   "app/api/v2/work-orders/[workOrderId]/attachments/upload/route.ts",

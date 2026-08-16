@@ -15,6 +15,7 @@ const detail = read("lib/domain/work-orders/read/detailRepository.ts");
 const route = read("lib/domain/work-orders/command/materialCommandRoute.ts");
 const guard = read("lib/domain/work-orders/command/runtimeGuard.ts");
 const proxy = read("lib/external-qa/configCore.mjs");
+const makerQaCapabilities = read("lib/external-qa/makerQaCapabilities.mjs");
 const reel = read("apps/mobile/features/inputs/reel-picker/WaflReelPickerSheet.tsx");
 
 for (const token of ["normalizeMeasurementSizeSemanticKey", "projectMeasurementSizesFromWorkOrder"]) assert.ok(policy.includes(token));
@@ -36,6 +37,7 @@ assert.match(controller, /scope === "measurement-unit"[\s\S]{0,80}markVisibleCom
 assert.match(reel, /reelColumn: \{ backgroundColor: "transparent"/);
 assert.match(reel, /optionSwatch: \{[^}]*borderRadius: 11/);
 assert.match(route, /getWorkOrderV2MaterialHardDeleteMutationRuntimeGuard/);
-assert.match(guard, /getWorkOrderV2MaterialHardDeleteMutationRuntimeGuard[\s\S]{0,500}WAFL_V2_ALPHA62_MEASUREMENT_MUTATION_APPROVAL/);
-assert.match(proxy, /materials\$[\s\S]{0,1500}alpha62SizeMeasurementEnabled/);
+assert.match(guard, /getWorkOrderV2MaterialHardDeleteMutationRuntimeGuard[\s\S]{0,500}MAKER_QA_CAPABILITY\.MATERIAL_HARD_DELETE/);
+assert.match(makerQaCapabilities, /P\.ALPHA62, A\.ALPHA62[\s\S]{0,500}C\.MEASUREMENT[\s\S]{0,300}C\.MATERIAL_HARD_DELETE/);
+assert.match(proxy, /MAKER_QA_CAPABILITY\.MATERIAL_HARD_DELETE/);
 console.log("workorder v2 alpha.62 spec source-of-truth authoring contract: PASS");

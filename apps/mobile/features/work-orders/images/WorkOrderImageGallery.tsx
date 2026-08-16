@@ -26,6 +26,7 @@ import {
 } from "lucide-react-native";
 
 import { WAFL_FONTS } from "@/constants/fonts";
+import { WAFL_THEME } from "@/constants/theme";
 import {
   clampFactoryDeliveryMemo,
   FACTORY_DELIVERY_MEMO_MAX_LENGTH,
@@ -38,6 +39,8 @@ import {
   formatAttachmentBytes,
 } from "@/features/work-orders/images/attachmentPresentation";
 import { resolveMobileApiUrl } from "@/lib/apiTransport";
+import WaflActionTile from "@/features/inputs/WaflActionTile";
+import WaflActionTileGroup from "@/features/inputs/WaflActionTileGroup";
 
 type Props = {
   readonly images: readonly WorkOrderImageAsset[];
@@ -150,38 +153,33 @@ export default function WorkOrderImageGallery(props: Props) {
 
   return (
     <View style={styles.container} testID="work-order-image-gallery">
-      <View style={styles.compactActions} testID="work-order-image-compact-actions">
-        <Pressable
+      <WaflActionTileGroup testID="work-order-image-compact-actions">
+        <WaflActionTile
           accessibilityLabel="사진 보관함에서 작업지시서 이미지 선택"
           disabled={!props.canEdit || props.busy}
+          icon={Images}
+          label="사진"
           onPress={() => props.onAcquire("library")}
-          style={({ pressed }) => [styles.compactAction, (!props.canEdit || props.busy) && styles.disabled, pressed && styles.pressed]}
           testID="work-order-image-library"
-        >
-          <Images color="#23375a" size={18} /><Text style={styles.compactActionText}>사진</Text>
-        </Pressable>
-        <Pressable
+        />
+        <WaflActionTile
           accessibilityLabel="카메라로 작업지시서 이미지 촬영"
           disabled={!props.canEdit || props.busy}
+          icon={Camera}
+          label="카메라"
           onPress={() => props.onAcquire("camera")}
-          style={({ pressed }) => [styles.compactAction, (!props.canEdit || props.busy) && styles.disabled, pressed && styles.pressed]}
           testID="work-order-image-camera"
-        >
-          <Camera color="#23375a" size={18} /><Text style={styles.compactActionText}>카메라</Text>
-        </Pressable>
-        <View accessibilityLabel="스케치, 준비 중" style={[styles.compactAction, styles.disabled]} testID="work-order-image-sketch">
-          <PencilLine color="#23375a" size={18} /><Text style={styles.compactActionText}>스케치</Text>
-        </View>
-        <Pressable
+        />
+        <WaflActionTile accessibilityLabel="스케치, 준비 중" disabled icon={PencilLine} label="스케치" onPress={() => undefined} testID="work-order-image-sketch" />
+        <WaflActionTile
           accessibilityLabel="일반 첨부파일 선택"
           disabled={!props.canEdit || props.busy}
+          icon={Paperclip}
+          label="첨부"
           onPress={props.onAcquireAttachment}
-          style={({ pressed }) => [styles.compactAction, (!props.canEdit || props.busy) && styles.disabled, pressed && styles.pressed]}
           testID="work-order-image-attachment"
-        >
-          <Paperclip color="#23375a" size={18} /><Text style={styles.compactActionText}>첨부</Text>
-        </Pressable>
-      </View>
+        />
+      </WaflActionTileGroup>
 
       {props.busy && !props.busyImageId ? (
         <View style={styles.progress}><ActivityIndicator color="#9b4a27" /><Text style={styles.progressText}>파일을 처리하고 있습니다.</Text></View>
@@ -343,15 +341,12 @@ export default function WorkOrderImageGallery(props: Props) {
 }
 
 const styles = StyleSheet.create({
-  container: { gap: 12, padding: 12, paddingBottom: 22 },
-  compactActions: { flexDirection: "row", gap: 6 },
-  compactAction: { alignItems: "center", backgroundColor: "#fffdf8", borderColor: "#d3c5b6", borderRadius: 10, borderWidth: 1, flex: 1, gap: 3, justifyContent: "center", minHeight: 54, paddingHorizontal: 3, paddingVertical: 7 },
-  compactActionText: { color: "#23375a", fontFamily: WAFL_FONTS.bold, fontSize: 10 },
+  container: { gap: WAFL_THEME.layout.sectionGap, paddingBottom: WAFL_THEME.spacing.xl, paddingHorizontal: WAFL_THEME.layout.cardPadding },
   disabled: { opacity: 0.42 },
   pressed: { opacity: 0.68 },
   progress: { alignItems: "center", flexDirection: "row", gap: 8 },
   progressText: { color: "#6f6257", fontFamily: WAFL_FONTS.medium, fontSize: 11 },
-  carouselCard: { backgroundColor: "#fffaf2", borderColor: "#dfd3c4", borderRadius: 14, borderWidth: 1, overflow: "hidden", padding: 9 },
+  carouselCard: { backgroundColor: WAFL_THEME.color.paper, borderColor: WAFL_THEME.color.border, borderRadius: WAFL_THEME.radius.cardMajor, borderWidth: WAFL_THEME.border.hairline, overflow: "hidden", padding: WAFL_THEME.layout.compactCardPadding },
   carouselStatus: { alignItems: "center", flexDirection: "row", justifyContent: "space-between", marginBottom: 7 },
   carouselIndex: { color: "#4d5563", fontFamily: WAFL_FONTS.bold, fontSize: 11 },
   badge: { alignItems: "center", backgroundColor: "#9b4a27", borderRadius: 999, flexDirection: "row", gap: 3, paddingHorizontal: 7, paddingVertical: 4 },
@@ -375,10 +370,10 @@ const styles = StyleSheet.create({
   thumbnailSelected: { borderColor: "#9b4a27" },
   thumbnailImage: { height: "100%", width: "100%" },
   thumbnailStar: { backgroundColor: "#9b4a27", borderRadius: 8, padding: 2, position: "absolute", right: 2, top: 2 },
-  empty: { alignItems: "center", backgroundColor: "#f5eee4", borderColor: "#ded1c2", borderRadius: 12, borderStyle: "dashed", borderWidth: 1, gap: 4, justifyContent: "center", minHeight: 180, padding: 20 },
+  empty: { alignItems: "center", backgroundColor: WAFL_THEME.color.paperMuted, borderColor: WAFL_THEME.color.border, borderRadius: WAFL_THEME.radius.cardMajor, borderStyle: "dashed", borderWidth: WAFL_THEME.border.hairline, gap: WAFL_THEME.layout.tightGap, justifyContent: "center", minHeight: 180, padding: WAFL_THEME.layout.sectionGapLarge },
   emptyTitle: { color: "#4f463f", fontFamily: WAFL_FONTS.bold, fontSize: 13 },
   emptyBody: { color: "#7b6f64", fontFamily: WAFL_FONTS.regular, fontSize: 10, lineHeight: 15, textAlign: "center" },
-  infoSection: { backgroundColor: "#f8f2e9", borderColor: "#e2d5c7", borderRadius: 12, borderWidth: 1, gap: 8, padding: 11 },
+  infoSection: { backgroundColor: WAFL_THEME.color.paper, borderColor: WAFL_THEME.color.border, borderRadius: WAFL_THEME.radius.cardMajor, borderWidth: WAFL_THEME.border.hairline, gap: WAFL_THEME.layout.controlGap, padding: WAFL_THEME.layout.cardPadding },
   sectionHeading: { alignItems: "center", flexDirection: "row", justifyContent: "space-between" },
   sectionTitle: { color: "#403933", fontFamily: WAFL_FONTS.bold, fontSize: 12 },
   sectionCount: { color: "#7f7164", fontFamily: WAFL_FONTS.bold, fontSize: 9 },

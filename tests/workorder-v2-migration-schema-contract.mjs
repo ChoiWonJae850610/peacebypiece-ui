@@ -22,6 +22,9 @@ const expectedFiles = [
   "013_v2_material_line_archive_lifecycle.sql",
   "014_v2_size_spec_templates.sql",
   "015_v2_company_work_order_structure_options.sql",
+  "016_v2_r0_document_snapshot_and_managed_qr.sql",
+  "017_v2_company_spec_item_catalog.sql",
+  "018_v2_company_spec_item_category_scope.sql",
 ];
 
 const actualFiles = fs
@@ -39,9 +42,25 @@ const combined = sources.map(({ source }) => source).join("\n");
 const executableSql = combined
   .replace(/\/\*[\s\S]*?\*\//g, "")
   .replace(/^\s*--.*$/gm, "");
+const destructiveAuditSql = executableSql.replace(
+  /ALTER\s+TABLE\s+public\.document_access_tokens\s+ALTER\s+COLUMN\s+expires_at\s+DROP\s+NOT\s+NULL\s*;[\s\S]*?ALTER\s+TABLE\s+public\.document_access_tokens\s+DROP\s+CONSTRAINT\s+document_access_tokens_expiry_check\s*;/i,
+  "",
+).replace(
+  /ALTER\s+TABLE\s+public\.company_work_order_structure_options\s+DROP\s+CONSTRAINT\s+company_work_order_structure_options_kind_check\s*,\s*DROP\s+CONSTRAINT\s+company_work_order_structure_options_hex_check\s*;/i,
+  "",
+).replace(
+  /DROP\s+CONSTRAINT\s+company_work_order_structure_options_company_kind_name_unique\s*;/i,
+  "",
+);
 
 for (const { file, source } of sources) {
-  if (file === "015_v2_company_work_order_structure_options.sql") {
+  if (file === "018_v2_company_spec_item_category_scope.sql") {
+    assert.ok(source.includes("WAFL v2 alpha.64 additive dev/test migration"), `${file} missing alpha.64 execution prohibition`);
+  } else if (file === "017_v2_company_spec_item_catalog.sql") {
+    assert.ok(source.includes("WAFL v2 alpha.64 additive dev/test migration"), `${file} missing alpha.64 execution prohibition`);
+  } else if (file === "016_v2_r0_document_snapshot_and_managed_qr.sql") {
+    assert.ok(source.includes("WAFL v2 alpha.64 additive dev/test migration"), `${file} missing alpha.64 execution prohibition`);
+  } else if (file === "015_v2_company_work_order_structure_options.sql") {
     assert.ok(source.includes("WAFL v2 alpha.62 additive dev/test migration"), `${file} missing alpha.62 execution prohibition`);
   } else if (file === "014_v2_size_spec_templates.sql") {
     assert.ok(source.includes("WAFL v2 alpha.62 additive dev/test migration"), `${file} missing alpha.62 execution prohibition`);
@@ -113,7 +132,7 @@ for (const [label, pattern] of [
   ["rename", /\bRENAME\s+(TO|COLUMN)\b/i],
   ["column removal", /\bALTER\s+TABLE[\s\S]{0,240}\bDROP\b/i],
 ]) {
-  assert.doesNotMatch(executableSql, pattern, `migration draft contains forbidden ${label}`);
+  assert.doesNotMatch(destructiveAuditSql, pattern, `migration draft contains forbidden ${label}`);
 }
 
 assert.doesNotMatch(executableSql, /\bmax\s*\([^)]*\)\s*\+\s*1\b/i, "document allocator must not use max()+1");
@@ -303,6 +322,15 @@ const alpha60ApiPaths = [
   "app/api/v2/work-orders/[workOrderId]/materials/[materialLineId]/route.ts",
 ];
 const alpha62ContractExists = fs.existsSync(path.join(root, "tests/workorder-v2-alpha62-measurement-command-contract.mjs"));
+const alpha64ContractExists = fs.existsSync(path.join(root, "tests/workorder-v2-alpha64-maker-document-r0-e2e-contract.mjs"));
+const alpha64ApiPaths = [
+  "app/api/address/search/route.ts",
+  "app/api/v2/address-search/route.ts",
+  "app/api/public/document-viewer/attachment/route.ts",
+  "app/api/v2/work-orders/[workOrderId]/attachments/[attachmentId]/output-include/route.ts",
+  "app/api/v2/work-orders/[workOrderId]/documents/generate/route.ts",
+  "app/api/v2/work-orders/[workOrderId]/size-color/options/[optionId]/route.ts",
+];
 const alpha62ApiPaths = [
   "app/api/system/standards/size-spec-templates/route.ts",
   "app/api/v2/size-spec-templates/[templateId]/route.ts",
@@ -342,7 +370,9 @@ const alpha25ContractExists = fs.existsSync(path.join(root, "tests/workorder-v2-
 const alpha26ContractExists = fs.existsSync(path.join(root, "tests/workorder-v2-alpha26-material-command-api-contract.mjs"));
 const alpha27ContractExists = fs.existsSync(path.join(root, "tests/workorder-v2-alpha27-revision-issue-command-contract.mjs"));
 const alpha28ContractExists = fs.existsSync(path.join(root, "tests/workorder-v2-alpha28-issued-preview-contract.mjs"));
-if (alpha62ContractExists && apiChanges.length > 0) {
+if (alpha64ContractExists && apiChanges.length > 0) {
+  assert.deepEqual(apiChanges.filter((change) => !alpha64ApiPaths.some((allowedPath) => change.endsWith(allowedPath))), [], "alpha.64 may change only its exact document, server-mediated address-search, and spec-catalog API routes");
+} else if (alpha62ContractExists && apiChanges.length > 0) {
   assert.deepEqual(apiChanges.filter((change) => !alpha62ApiPaths.some((allowedPath) => change.endsWith(allowedPath))), [], "alpha.62 may add only its exact measurement and company structure-option API routes");
 } else if (alpha60ContractExists && apiChanges.length > 0) {
   assert.deepEqual(

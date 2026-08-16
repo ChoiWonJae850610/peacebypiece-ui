@@ -174,10 +174,11 @@ export function inspectSamePositionInlineCoreFieldSources(sources) {
       "원단과 부자재는 materialType만 바꾸는 같은 view/controller와 단가 필드를 사용한다",
       sources.materialView.includes('materialType === "accessory" ? "부자재" : "원단"')
         && materialUnitPriceTags.length === 1
-        && sources.overview.includes("materialType={props.materialType}")
-        && sources.experience.includes("materialType={activeMaterialType}")
-        && sources.experience.includes("materialCacheKey(detail.header.id, activeMaterialType)"),
-      `sharedUnitPriceTag=${materialUnitPriceTags.length === 1}; overviewMaterialTypePassThrough=${sources.overview.includes("materialType={props.materialType}")}; experienceActiveType=${sources.experience.includes("materialType={activeMaterialType}")}`,
+        && (sources.overview.includes("materialType={props.materialType}")
+          || sources.overview.includes("materialType={materialType}"))
+        && sources.experience.includes('materialCacheKey(detail.header.id, "fabric")')
+        && sources.experience.includes('materialCacheKey(detail.header.id, "accessory")'),
+      `sharedUnitPriceTag=${materialUnitPriceTags.length === 1}; overviewMaterialTypePassThrough=${sources.overview.includes("materialType={props.materialType}") || sources.overview.includes("materialType={materialType}")}; combinedMaterialCaches=${sources.experience.includes('materialCacheKey(detail.header.id, "fabric")') && sources.experience.includes('materialCacheKey(detail.header.id, "accessory")')}`,
       "fabric and accessory do not share the same material view/controller path",
     ),
     sourceCheck(

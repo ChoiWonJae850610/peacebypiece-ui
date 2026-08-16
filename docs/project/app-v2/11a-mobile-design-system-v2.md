@@ -1,0 +1,122 @@
+# WAFL Mobile Design System v2
+
+Document role: current normative owner for App-first React Native mobile visual tokens, layout, shared component grammar, and responsive behavior.
+
+When this document conflicts with `11-app-design-theme-v1.md`, preserved `docs/project/v2/*`, `/ui`, `ProductionCardMock`, or proposal images, this document and the current typed source owners win. Product behavior, authorization, data contracts, and mutation policy remain owned by their specialist contracts.
+
+## Canonical source owner
+
+`apps/mobile/constants/theme.ts` owns the single typed `WAFL_THEME`. Extend that owner; do not create competing screen-local theme objects. Shared layout components consume semantic roles from it.
+
+### Palette
+
+The implemented palette remains authoritative: paper `#fffdf8`, muted paper `#f3eee4`, deep navy `#17263d`, navy ink `#23375a`, brick orange `#9b4a27`, fabric beige `#f7f0e5`, olive `#667052`, border `#dfd5c8`, disabled `#8f857b`, read-only `#75695d`, edit-active `#8b5e3c`, error `#a13933`. Proposal-image approximations are not token values.
+
+### Spacing and layout
+
+- base spacing: `4 / 8 / 12 / 16 / 24 / 32`
+- phone/tablet screen gutter: `16 / 24`
+- card/compact-card padding: `12 / 8`
+- section/large-section/control/tight gap: `12 / 16 / 8 / 4`
+- action-tile gap: `6`
+- action-tile min/preferred/max width: `72 / 88 / 112`
+
+One page shell owns the outer gutter and centered/max-width behavior. A selected feature root must not reapply a second screen gutter. Internal card padding is not a screen gutter.
+
+### Radius, border, and touch
+
+- field `10`, action tile `10`, major card `14`, compact card `10`, sheet `18`, pill `999`
+- canonical border/hairline is the shared theme border role
+- minimum touch and inline control `44`, action tile minimum height `54`, tab rail minimum height `48`
+- icon roles: small `18`, standard `20`, large `24`
+
+Special image, swatch, carousel, and fullscreen geometry may remain intentionally local when it expresses a distinct product role.
+
+### Typography
+
+A2Z remains the font-family owner. Semantic roles are product title `20/26` (compact `18/24`), section title `15/20`, card title and body-strong `13/18`, body `12/18`, field label `11/16`, meta `10/15`, action label `10/14`, badge `9/13`, and text input `16/20` or greater. Screens map content to roles before retaining a domain-specific exception.
+
+## Shared component grammar
+
+- `MobileWorkOrderExperience` is the current WorkOrder page shell and consumes the canonical gutters.
+- `WaflSectionCard` owns major card surface, border, radius, padding, and optional header.
+- `WaflActionTile` owns icon/short-label action appearance.
+- `WaflActionTileGroup` owns tile gap, wrap, balanced width, and the `112` maximum; one action is not forced full width and two actions do not inflate on tablets.
+- `WaflInputSheet` owns the WAFL Sheet System v2 X/V and deep-editor presentation. It has five explicit sizing classes: measured fixed `contentFit`, compact-initial draggable `adaptiveExpandable`, intrinsic reel-driven `reelAdaptive`, normal-initial draggable `expandable` (the canonical medium `0.68` initial ratio and expanded `0.94` maximum), and near-full draggable `fullView`. `reelAdaptive` uses the visible reel rows plus its actual label, mode switch, validation/help, staged actions, and safe area instead of inheriting the general form-sheet medium floor. In `contentFit`, actions immediately follow measured body content and the measured footer participates in compact height. Sizing selects only the initial/minimum/maximum geometry; every draggable class uses the same continuous release physics. Slow release settles at the actual released height, bounded flick projection remains continuous, and only min/max/dismiss boundaries constrain the result. No consumer may restore rigid medium/expanded release snapping. Swipe/backdrop/X dismissal is cancel-only and never implies V/confirm.
+- Sheet drag arbitration belongs to the shared owner. At body offset zero a downward gesture may move the sheet; while content is scrolled the body retains the gesture. The settled free height persists only for the current open session. Close/reopen starts from that surface's canonical initial height, while late content measurement raises an unsafe minimum only as far as required and never shrinks a user-expanded sheet. Nested editors keep independent staged state and return to the parent without committing the parent.
+- Every staged X/V sheet exposes both actions before keyboard entry. `contentFit` places them immediately after measured content; draggable sheets reserve header, bounded body viewport, footer, and safe area in their initial geometry. A disabled V remains visible. X/V are whole-sheet actions, not field completion or an input accessory: keyboard appearance does not lift them to keyboard top and may occlude them until keyboard dismissal. Nested child routing closes the outgoing native sheet before presenting the next sheet, fully resets its lifecycle before focusing the new route, preserves the parent draft, and leaves no invisible modal overlay after return.
+- Staged-action layout is one real ordered sibling frame: `HEADER -> BODY VIEWPORT -> X/V FOOTER -> SAFE AREA`. The footer never uses inverse translation, absolute positioning, or per-feature bottom padding to float over fields. At every expandable detent the shared owner subtracts the current sheet offset from the body viewport while the footer keeps its own measured layout space; only the body workspace grows when the sheet expands. A long body scrolls its last field fully above the footer. `contentFit` includes the measured footer and action gap exactly once in its compact target instead of inheriting the expandable medium floor. Disabled actions reserve the same space.
+- `WaflInputSheet` is the canonical staged-sheet owner for presentation, root geometry, slide and detents, open/close/reopen lifecycle, gesture base, body viewport and vertical scroll extent, keyboard inset, safe area, X/V footer, and nested parent/child handoff. Feature consumers supply content, sizing class, staged state, X/V callbacks, and feature-specific horizontal/reel/grid interaction. A staged consumer must not add its own root `Modal`, root `KeyboardAvoidingView`, vertical body `ScrollView`, detent transform, gesture responder, animation, or footer offset unless the Result records a distinct intentional exception.
+- True-bottom is permanent: the shared body-end semantic gap makes the last real item scroll fully through the keyboard-occluded viewport. Keyboard appearance never applies an outer root shift, rewrites the gesture base, or lifts the sibling X/V footer. The shared owner measures the focused field, label/help context, and semantic gap; it first scrolls, and only when needed expands the free-settled sheet by the minimum required rise. It remembers the pre-keyboard settled height and restores it when the keyboard closes, except when the user manually drags while the keyboard is open, in which case that new height becomes authoritative.
+- Every open generation cancels stale animation, aligns visual translation and logical detent, clears drag/velocity/closing refs, and derives the next gesture base from the stopped animation's actual value. In the repeated `OPEN -> DRAG -> SNAP -> CLOSE -> REOPEN -> TOUCH_DOWN -> MOVE -> SNAP` contract, `TOUCH_DOWN` alone changes position by exactly zero; this includes Quick preview/parent return and Attachment reopen paths.
+- Reusable-catalog direct creation is a child route, not a second staged commit surface. It uses one explicit `추가` action, has no dead V, returns through the shared close/unmount/reopen handoff, and stages the newly created option in its parent. The parent V alone owns the later WorkOrder selection batch.
+- Size, Color, and Spec Item reusable-create children share the semantic `adaptiveExpandable` create policy: compact content-measured initial height, visible handle, free-settle drag, and the canonical sheet focus/keyboard path. Initial pixel height may differ with content (for example, the Color palette), but a text-entry creator must not fall back to fixed `contentFit`. Fixed `contentFit` remains for truly fixed/simple surfaces without draggable text-entry behavior.
+- Every live WAFL TextInput form sheet, including WorkOrder creation, uses the semantic `adaptiveExpandable` text-entry policy: a compact content-appropriate initial height, visible handle, common free-settle drag, and the canonical sheet focus/reveal lifecycle. `contentFit` is reserved for truly fixed/simple non-form surfaces. Automatic focus is requested only from the current open generation's presentation-ready `onAfterOpen` boundary; raw mount-time `autoFocus` must not race body measurement or entrance animation.
+- `adaptiveExpandable` is the canonical Saved Spec and variable catalog sizing policy: short measured content opens compact with a real handle, longer content grows only to the bounded medium maximum and then scrolls, and expanded remains available. Measurement is scoped to the current title/sizing/action generation. A late async measurement may grow a medium sheet, but it never collapses a sheet after the user has interacted or expanded it.
+- A sheet open is one atomic bottom-origin entrance. Deterministic `reelAdaptive` geometry resolves from the known reel body plus measured shared chrome before animation; measured `contentFit`/`adaptiveExpandable` content waits off-screen for a stable current-open-generation measurement. A visible fallback stop followed by a second correction animation is forbidden. Drag capture begins only after entrance completion, when the gesture base equals the actual visual position; close/reopen discards prior-generation measurement and repeats the same single entrance.
+- A dynamically measured nested child uses the canonical nested presentation generation in its measurement identity. It may enter from a bounded safe fallback, but only a measurement from the current generation may reconcile that fallback to the usable adaptive target. Layout changes must not cancel the queued entrance and leave a title-only strip; after manual drag, late measurement may raise an unsafe minimum but must not shrink the user-settled height.
+- Focus reveal belongs to the shared sheet body. The canonical reveal target is the whole semantic field block—label/context, complete input, inline validation/help, and breathing room—not only the native TextInput. The owner measures that block and the live body viewport, scrolls the body first, and expands a free-settled sheet only by the minimum rise that scrolling cannot supply. Fabric and Accessory share the same field-block path; feature consumers do not add per-field offsets. Numeric direct entry reserves enough context for the input, decimal reason, and `WAFL PICK으로 변경`; X/V remains at physical sheet bottom and is not part of that keyboard-visible requirement. Multiline content/caret movement reuses the same body reveal path.
+- Every editable field mounted in a WAFL sheet registers both its actual native TextInput target and its enclosing semantic field block through the canonical sheet focus provider. Tap-to-focus, post-presentation focus, content-size changes, and multiline caret movement all reuse that owner; screen-local `KeyboardAvoidingView` or hard-coded reveal offsets are forbidden.
+- Editable and read-only sheet values use one semantic surface family. Editable values expose the canonical thin underline and may become first responder; read-only values use the same geometry with muted treatment, no underline, cursor, keyboard, or edit handler. A display-format toggle such as Finished Spec cm/inch never changes this editability affordance.
+- Numeric precision is a domain-owned validation semantic. Direct entry shows the canonical red reason immediately, preserves the typed value without truncation or rounding, and keeps V visible but disabled until valid. Input-mode switching remains keyboard-reachable.
+- `WaflReelPickerSheet` is the only live reel-sheet owner. A reel body owns value scrolling while the shared sheet header owns free drag. Single-choice and dual numeric reels may have different intrinsic initial body heights, but both route through `reelAdaptive`; direct numeric mode keeps the same sheet session and `WaflInputModeSwitch` route.
+- The compact visual handle is `42×4`, but its responder owner is a full-width header drag zone with a minimum `44`-point hit height. The dedicated mounted header captures the native responder from touch-down on iOS and derives continuous `translateY` updates from the actual touch `pageY`; it does not defer acquisition to a movement-threshold PanResponder callback after a child has already taken the responder. Custom body scrolling and `bodyScrollable=false` never disable that header path. A bottom-origin sheet starts below its target and slides up, and every cancel/dismiss path slides down before unmount. A visible handle therefore means real draggable behavior; an intentionally fixed `contentFit` sheet removes the handle.
+- `WaflWorkOrderTabBody` owns one shared top inset for every live Maker tab. Feature roots keep their internal card padding but must not add a second outer top offset.
+- `WaflMetricField` owns the common outer metric tile and the same inner `ValueSurface` for editable and read-only values. Editable child controls alone provide one thin underline; matrix-derived total quantity uses the same inner surface with underline zero and no edit handler.
+- Definition rows use a consistent label/value hierarchy, touch/read height, and divider inset.
+- Primary irreversible business actions retain their domain hierarchy and are not converted into generic tiles.
+
+### Mobile input component routing
+
+| Input responsibility | Current canonical owner | Boundary |
+| --- | --- | --- |
+| Sheet root, gesture, sizing, scroll, keyboard, footer, lifecycle | `WaflInputSheet` | Every active bottom-origin WAFL input surface |
+| Labeled editable/read-only sheet field, help/error display | `WaflSheetValueField` | Composes the focus-aware primitive; domain validation stays outside |
+| Native text entry inside a sheet | `WaflSheetTextInput` and `WaflSheetFocusBlock` | Registers semantic field geometry with the sheet focus owner |
+| Single-choice/numeric reel and direct-mode switch | `WaflReelPickerSheet`, `WaflInputModeSwitch` | `reelAdaptive`; reel scrolling and sheet dragging remain separate |
+| Live inline edit | `ControlledInlineEditValue` | Overview, Materials, Size/Color and later live Maker authoring |
+| Choice and option grids | `WaflChoiceButtons`, `WaflOptionGrid` | Typed staged choice semantics |
+| Numeric draft/commit | `mobileDisplay.ts` plus the relevant domain precision/conversion owner | Material scale and Finished Spec cm/inch are not copied into generic UI |
+| Search or developer connection | Intentional local input | Different lifecycle; raw `TextInput` alone is not a consolidation reason |
+| Historical/showroom inline fields | `InlineEditableFields` | `ProductionCardMock` reference only; forbidden as a new live Maker owner |
+
+New sheet forms search this matrix before composing label, input, focus, read-only, help, or error grammar locally. `WaflSheetValueField` owns presentation and focus registration only; feature-specific normalization, validation, mutation, and reconciliation remain with the typed domain owner. Numeric inline and numeric sheet controls remain separate interaction components while sharing `normalizeNumericDraft`/`normalizeNumericCommitValue` and their domain precision policy.
+
+## Responsive and accessibility rules
+
+Phone is portrait-first. Tablet supports portrait and landscape using useful width without becoming compressed desktop administration. Action tiles cap and wrap rather than stretch. Horizontal tab rails and data tables may scroll; first/last content keeps shell alignment. Accessible names, state, 44-point targets, readable input type, non-color state cues, and sheet return behavior are required.
+
+## Ownership discipline
+
+Before adding visual code, classify the responsibility as `REUSE`, `EXTEND`, `EXTRACT`, `NEW`, or `INTENTIONALLY LOCAL`. Same-semantics screen gutter, major card, section gap, action tile, and typography roles have one active owner. Local arbitrary substitutes in a new tab or alpha.65+ feature are a completion blocker.
+
+The mechanical alpha.64 audit found 218 repeated literal groups. That count is context, not a mandate for indiscriminate replacement. This contract requires semantic convergence in the current Maker six-tab presentation scope while preserving bounded domain-specific literals and historical evidence.
+
+## Owner IA simplification review variant
+
+Status: `OWNER_PHYSICAL_REVIEW_REQUIRED`.
+
+- `WaflMetricGrid` owns a two-column normal-phone metric layout and promotes to four columns only when each cell retains the canonical readable minimum width. Metric cells use the shared `64` minimum height and the section-card content width without a second nested gutter.
+- Definition-row groups use one semantic divider inset. Normal rows in one group do not invent row-specific widths; a separately emphasized total surface may use its own explicit semantic separator.
+- `WaflMetricField` owns one metric surface and geometry. Its child inline-control owner supplies exactly one thin editable underline; the metric wrapper does not add a second underline. Read-only and derived values such as total quantity keep the same surface without an underline.
+- `WaflFrozenAxisTable` owns the shared presentation-only matrix grammar. In the main card the left label column is fixed while the header and body share horizontal Size scrolling; there is no nested vertical main-card scroll. In full view the corner, Size header, and left labels remain frozen on their respective axes while x/y body scrolling is synchronized.
+- Editable frozen-table cells use one geometry-preserving presentation in Size/Color and Finished Spec. Focus may change the thin underline color, text/caret emphasis, or an inset-only surface tint, but it never changes outer width/height, row/column position, grid-border position, padding, or participating border width. A large rounded outer focus box is forbidden. The cm/inch display toggle continues to change formatting only; both editable modes use the same focus grammar and only locked/read-only cells omit the underline.
+- The earlier owner-approved Finished Spec inch cell is the visual baseline for editable frozen-table numerics. Its canonical underline is a short, bounded, centered value-surface affordance with clear breathing room from both cell borders; it must not expand into a near-full-width second grid line. Finished Spec cm/inch and Size/Color quantity use that exact same shared surface. The line length is independent of whether the value is `0`, `-`, an integer, or a fractional inch. Focus changes color/tint only and never underline length, thickness, inset, or participating geometry, while genuinely locked/read-only cells omit it.
+- That same shared surface owns the vertical relationship: its underline remains separated from the frozen-table bottom grid border by one consistent nonzero visual gap. Finished Spec cm/inch and Size/Color quantity inherit the same bounded value-surface height and centered row placement; neither a local renderer nor focus state may move the line toward the grid border.
+- Size and Color use one default-expanded `색상·사이즈` matrix card. Compact 44-point `사이즈` and `색상` header actions use ruler and palette semantics and open the unchanged selection flows without putting counts in buttons. Five or fewer Color rows stay inline; six or more show the first five plus `전체보기`. Size count never triggers full view.
+- Finished Spec is default-expanded and reuses the frozen-axis owner. Five or fewer POM rows stay inline; six or more show the first five plus `전체보기`. Size count never triggers full view, and WorkOrder Size source-of-truth and measurement mutation ownership remain unchanged.
+- The combined Materials presentation uses a same-page category switch, not a second global tab bar. Its Fabric and Accessory count badges use the typed `WAFL_THEME.badge.fabric` and `WAFL_THEME.badge.accessory` semantic roles. Only the selected typed list renders, and one shared 44-point trailing plus opens that category's existing add flow.
+- The selected material category uses the normal full list and existing paging behavior; there is no presentation-only four-card clipping. Fabric and Accessory remain separate typed domain/API/service entities.
+
+These review variants change presentation only. WorkOrder mutation, Size/Color source-of-truth, batch X/V, hard delete, quantity synchronization, and material lifecycle owners are unchanged until physical review accepts the visual result.
+
+## Alpha.64 Spec Catalog / Sheet review variant
+
+Status: `OWNER_PHYSICAL_REVIEW_REQUIRED`.
+
+- Finished Spec uses the table corner label `스펙 항목 〉` as the entry to the same-company reusable spec-item catalog. Selection is locally staged; X is zero WorkOrder mutation and V emits one logical batch command and one transaction.
+- An editable draft keeps that same `스펙 항목 〉` entry in the Finished Spec empty state. Existing POM rows, saved-template application, a pre-existing measurement aggregate, and major-category presence are not prerequisites for opening the chooser. Major category scopes WAFL recommendations only; without it the chooser explains how to unlock recommendations while category-neutral company items and `직접 만들기` remain available. Issued/locked surfaces remain read-only.
+- Catalog rows are reusable company authoring data. WorkOrder POM rows and saved-template POM rows remain independent historical snapshots, so catalog rename/deactivation never rewrites issued or existing snapshot display values.
+- The WorkOrder feature tab rail is the only sticky element inside the detail page shell. The list/back control and product identity summary scroll away; the global WAFL/company header remains owned outside the detail scroller.
+- All long Maker editors using `WaflInputSheet` inherit the same draggable detent, scroll-body, fixed-footer, safe-area, keyboard, and cancel semantics rather than implementing local sheet chrome.
+- Reusable Size, Color, and Spec Item chooser creation uses the shared copy `직접 만들기`. Domain record creation such as fabric/accessory add keeps its domain action label.

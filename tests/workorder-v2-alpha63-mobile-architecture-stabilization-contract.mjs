@@ -26,10 +26,10 @@ assert.match(materialController, /createSerializedMutationQueue|SerializedMutati
 assert.match(sizeSpecCoordination, /useSizeColorReadController/);
 assert.match(sizeSpecCoordination, /useSizeColorStructureEditController/);
 
-for (const domain of ["sessionApi", "workOrdersApi", "materialsApi", "sizeColorApi", "measurementApi", "assetsApi"]) {
+for (const domain of ["sessionApi", "workOrdersApi", "materialsApi", "sizeColorApi", "measurementApi", "assetsApi", "documentsApi"]) {
   assert.match(facade, new RegExp(`api/${domain}`));
 }
-assert.equal(facade.split(/\r?\n/).filter(Boolean).length, 7);
+assert.equal(facade.split(/\r?\n/).filter(Boolean).length, 9);
 assert.match(transport, /export async function requestJson/);
 assert.doesNotMatch(transport, /WorkOrderMaterial|WorkOrderSizeColor|MeasurementTemplate/);
 

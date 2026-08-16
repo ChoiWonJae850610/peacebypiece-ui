@@ -232,6 +232,14 @@ Company/brand code는 customer admin setting에서, season/item code는 approved
 
 이 command는 upload bytes를 전달하지 않는다. upload prepare/complete contract는 별도 file lifecycle phase다.
 
+Alpha.64 uses this one toggle as the canonical issuance-time selection owner. Supported image
+attachments may additionally render inside the main work-instruction PDF. Every selected
+attachment type is frozen in the immutable generated-document asset manifest and becomes a
+controlled delivery attachment under the same Viewer token/session. The public read model
+contains only bounded filename/MIME/size plus opaque attachment references; storage keys,
+signed Worker URLs, and raw revision-asset IDs remain server-only. Viewer attachment reads
+revalidate active token/document state and object size/SHA/MIME on every request.
+
 ### Materials
 
 - add/patch/reorder/remove line.
@@ -370,6 +378,10 @@ QR/share:
 - token has expiry/revoke/rotate policy.
 - rotation creates new token and revokes previous token.
 - work order trash immediately revokes active external access; 30-day purge removes eligible document objects by manifest.
+
+Alpha.64 controlled delivery attachments inherit the same expiry/revoke/session boundary as
+the main PDF. Inline disposition is limited to supported images and PDF; other selected file
+types are controlled download only. This does not merge arbitrary attachments into the PDF.
 
 ## 13. Payload and query budget
 

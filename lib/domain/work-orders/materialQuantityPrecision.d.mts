@@ -1,0 +1,10 @@
+export const MATERIAL_QUANTITY_SCALE: 3;
+export const MATERIAL_QUANTITY_MAX_WHOLE_DIGITS: 11;
+export const MATERIAL_QUANTITY_FACTOR: bigint;
+export const MATERIAL_QUANTITY_MAX: string;
+export const MATERIAL_QUANTITY_MAX_SCALED: bigint;
+export const MATERIAL_QUANTITY_PATTERN: RegExp;
+export function parseMaterialQuantityScaled(value: string | number): bigint | null;
+export function formatMaterialQuantityScaled(value: bigint): string;
+export function exceedsMaterialQuantityPrecision(value: string): boolean;
+export function materialQuantityPrecisionMessage(): string;

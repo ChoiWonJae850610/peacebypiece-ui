@@ -3,6 +3,7 @@ import "server-only";
 import { canonicalPomDisplayName } from "@/lib/catalog/systemCatalogPolicy";
 import { MEASUREMENT_SNAPSHOT_CONTENT_COMMAND_CODES, WORK_ORDER_COMMAND_CODES } from "@/lib/domain/work-orders/command/workOrderCommandCodes";
 import { formatMeasurementFromCm, isMeasurementSnapshotModified } from "@/lib/domain/work-orders/measurement/measurementPolicy";
+import { evaluateWorkOrderIssueReadiness } from "@/lib/domain/work-orders/issueReadiness";
 
 import { performance } from "perf_hooks";
 
@@ -69,17 +70,20 @@ const TARGET_SQL = `
 export const WORK_ORDER_V2_DETAIL_CORE_SQL = `
   WITH target AS MATERIALIZED (
     SELECT w.id, w.product_name, w.product_type_code, w.season_code, w.item_code,
-           w.status, w.due_date::text AS due_date,
+           w.status, w.due_date::text AS due_date, w.total_quantity AS work_order_total,
            (SELECT COALESCE(sum(q.quantity), 0)::integer
             FROM color_size_quantities q
-            WHERE q.company_id = w.company_id AND q.revision_id = w.current_revision_id) AS total_quantity,
+            WHERE q.company_id = w.company_id AND q.revision_id = w.current_revision_id) AS matrix_total,
+           r.total_quantity_snapshot AS revision_total,
+           settings.document_code AS company_document_code,
            w.document_number_base,
            w.current_revision_id, w.representative_image_id, w.entity_version, w.updated_at,
-           r.revision_no, r.revision_status, r.finalized_at, r.factory_delivery_memo, r.unit_price,
+           r.revision_no, r.entity_version AS revision_version, r.revision_status, r.finalized_at, r.factory_delivery_memo, r.unit_price,
            r.fabric_total, r.accessory_total, r.process_total, r.estimated_total
     FROM work_orders w
     JOIN work_order_revisions r
       ON r.id = w.current_revision_id AND r.company_id = w.company_id
+    CROSS JOIN LATERAL public.wafl_v2_document_number_settings() AS settings
     WHERE w.company_id = $1
       AND w.id = $2::uuid
       AND w.deleted_at IS NULL
@@ -92,8 +96,9 @@ export const WORK_ORDER_V2_DETAIL_CORE_SQL = `
     WHERE d.company_id = $1 AND d.deleted_at IS NULL
   )
   SELECT t.id, t.product_name, t.product_type_code, t.season_code, t.item_code,
-         t.status, t.due_date, t.total_quantity, t.document_number_base,
-         t.current_revision_id, t.entity_version, t.updated_at, t.revision_no,
+         t.status, t.due_date, t.work_order_total, t.matrix_total, t.revision_total,
+         t.company_document_code, t.document_number_base,
+         t.current_revision_id, t.entity_version, t.updated_at, t.revision_no, t.revision_version,
          t.revision_status, t.finalized_at, t.factory_delivery_memo, t.unit_price, t.fabric_total,
          t.accessory_total, t.process_total, t.estimated_total,
          i.id AS image_id, i.title AS image_title,
@@ -114,6 +119,9 @@ export const WORK_ORDER_V2_DETAIL_CORE_SQL = `
           WHERE ri.company_id = $1 AND ri.revision_id = t.current_revision_id) AS image_count,
          (SELECT count(*)::integer FROM work_order_revision_attachments ra
           WHERE ra.company_id = $1 AND ra.revision_id = t.current_revision_id) AS attachment_count,
+         (SELECT count(*)::integer FROM work_order_revision_attachments ra
+          WHERE ra.company_id = $1 AND ra.revision_id = t.current_revision_id
+            AND ra.output_include = true) AS included_attachment_count,
          (SELECT count(*)::integer FROM generated_documents d
           WHERE d.company_id = $1 AND d.work_order_id = t.id AND d.deleted_at IS NULL) AS document_count,
          (SELECT count(*)::integer FROM domain_events e
@@ -290,7 +298,8 @@ export const WORK_ORDER_V2_DOCUMENTS_SQL = `
          EXISTS (
            SELECT 1 FROM document_access_tokens token
            WHERE token.company_id = $1 AND token.generated_document_id = d.id
-             AND token.revoked_at IS NULL AND token.expires_at > now()
+             AND token.revoked_at IS NULL
+             AND (token.expires_at IS NULL OR token.expires_at > now())
          ) AS access_token_available
   FROM target t
   LEFT JOIN generated_documents d
@@ -380,15 +389,21 @@ export async function getWorkOrderDetailCoreV2(input: {
   const accessory = asCount(row.accessory_count);
   const images = asCount(row.image_count);
   const attachments = asCount(row.attachment_count);
-  const hardBlockers = [
-    ...(images === 0 ? [{ code: "REPRESENTATIVE_IMAGE_REQUIRED" as const, message: "대표 이미지가 필요합니다." }] : []),
-    ...(asCount(row.total_quantity) === 0 ? [{ code: "TOTAL_QUANTITY_REQUIRED" as const, message: "총수량이 필요합니다." }] : []),
-    ...(row.due_date ? [] : [{ code: "DUE_DATE_REQUIRED" as const, message: "납기가 필요합니다." }]),
-    ...(fabric === 0 ? [{ code: "MATERIAL_REQUIRED" as const, message: "원단 정보가 필요합니다." }] : []),
-  ];
-  const warnings = [
-    ...(attachments === 0 ? [{ code: "NO_INCLUDED_ATTACHMENT" as const, message: "포함할 첨부파일이 없습니다." }] : []),
-  ];
+  const readiness = evaluateWorkOrderIssueReadiness({
+    productName: row.product_name === null ? null : String(row.product_name),
+    productTypeCode: row.product_type_code === null ? null : String(row.product_type_code),
+    seasonCode: row.season_code === null ? null : String(row.season_code),
+    itemCode: row.item_code === null ? null : String(row.item_code),
+    dueDate: row.due_date === null ? null : String(row.due_date),
+    companyDocumentCode: row.company_document_code === null ? null : String(row.company_document_code),
+    workOrderTotal: asCount(row.work_order_total),
+    revisionTotal: asCount(row.revision_total),
+    matrixTotal: asCount(row.matrix_total),
+    representativeImageCount: row.image_id ? 1 : 0,
+    fabricCount: fabric,
+    accessoryCount: accessory,
+    includedAttachmentCount: asCount(row.included_attachment_count),
+  });
   const revisionNo = asCount(row.revision_no) as RevisionNumber;
   const documentStatus = row.latest_document_status === null
     ? null
@@ -402,10 +417,11 @@ export async function getWorkOrderDetailCoreV2(input: {
       seasonCode: row.season_code === null ? null : String(row.season_code),
       itemCode: row.item_code === null ? null : String(row.item_code),
       dueDate: serializePostgresDateOnly(row.due_date, "WORK_ORDER_DETAIL_INVALID_DUE_DATE"),
-      totalQuantity: asCount(row.total_quantity),
+      totalQuantity: asCount(row.matrix_total),
       status: asEnum(row.status, WORK_ORDER_STATUSES, "WORK_ORDER_DETAIL_INVALID_STATUS"),
       currentRevisionId: String(row.current_revision_id) as WorkOrderRevisionId,
       currentRevisionNumber: revisionNo,
+      currentRevisionVersion: asCount(row.revision_version) as EntityVersion,
       representativeImage: row.image_id
         ? {
             imageId: String(row.image_id) as ImageId,
@@ -416,9 +432,9 @@ export async function getWorkOrderDetailCoreV2(input: {
           }
         : null,
       readiness: {
-        canIssue: hardBlockers.length === 0,
-        hardBlockers,
-        warnings,
+        canIssue: readiness.canIssue,
+        hardBlockers: readiness.hardBlockers,
+        warnings: readiness.warnings,
         checkedAt: new Date().toISOString() as IsoDateTime,
         basedOnVersion: entityVersion,
         source: "server_canonical",

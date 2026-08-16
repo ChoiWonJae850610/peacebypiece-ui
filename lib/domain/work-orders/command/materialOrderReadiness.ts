@@ -1,3 +1,8 @@
+import {
+  formatMaterialQuantityScaled,
+  parseMaterialQuantityScaled,
+} from "../materialQuantityPrecision.mjs";
+
 export type MaterialOrderReadinessField =
   | "requiredQuantity"
   | "allowanceQuantity"
@@ -32,13 +37,6 @@ function parseScaled(value: DecimalInput, scale: number): bigint | null {
   return BigInt(match[1]) * (BigInt(10) ** BigInt(scale)) + BigInt(fraction || "0");
 }
 
-function formatScaled(value: bigint, scale: number): string {
-  const divisor = BigInt(10) ** BigInt(scale);
-  const whole = value / divisor;
-  const fraction = (value % divisor).toString().padStart(scale, "0").replace(/0+$/, "");
-  return `${whole}${fraction ? `.${fraction}` : ""}`;
-}
-
 function addBlocker(
   blockers: MaterialOrderReadinessBlocker[],
   field: MaterialOrderReadinessField,
@@ -60,10 +58,10 @@ export function evaluateMaterialOrderReadiness(input: {
   readonly calculationPolicy?: "legacy-inventory" | "draft-required-plus-allowance";
 }): MaterialOrderReadiness {
   const blockers: MaterialOrderReadinessBlocker[] = [];
-  const required = parseScaled(input.requiredQuantity, 3);
-  const allowance = parseScaled(input.allowanceQuantity, 3);
-  const stock = parseScaled(input.inventoryUsageQuantity, 3);
-  const storedOrderQuantity = parseScaled(input.orderQuantity, 3);
+  const required = input.requiredQuantity === null || input.requiredQuantity === undefined ? null : parseMaterialQuantityScaled(input.requiredQuantity);
+  const allowance = input.allowanceQuantity === null || input.allowanceQuantity === undefined ? null : parseMaterialQuantityScaled(input.allowanceQuantity);
+  const stock = input.inventoryUsageQuantity === null || input.inventoryUsageQuantity === undefined ? null : parseMaterialQuantityScaled(input.inventoryUsageQuantity);
+  const storedOrderQuantity = input.orderQuantity === null || input.orderQuantity === undefined ? null : parseMaterialQuantityScaled(input.orderQuantity);
 
   if (required === null) addBlocker(blockers, "requiredQuantity", "INVALID");
   if (allowance === null) addBlocker(blockers, "allowanceQuantity", "INVALID");
@@ -112,8 +110,8 @@ export function evaluateMaterialOrderReadiness(input: {
   return {
     ready: blockers.length === 0,
     mode,
-    demand: formatScaled(demand, 3),
-    orderQuantity: formatScaled(calculatedOrderQuantity, 3),
+    demand: formatMaterialQuantityScaled(demand),
+    orderQuantity: formatMaterialQuantityScaled(calculatedOrderQuantity),
     blockers,
   };
 }

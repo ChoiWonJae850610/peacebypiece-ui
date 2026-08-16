@@ -1,15 +1,24 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Download, FileText } from "lucide-react";
+import { Download, FileText, Paperclip } from "lucide-react";
 
 import styles from "./DocumentViewer.module.css";
 
 type ViewerMetadata = {
   readonly title: "작업지시서";
   readonly displayDocumentNumber: string;
-  readonly expiresAt: string;
+  readonly expiresAt: string | null;
   readonly accessCount: number;
+  readonly attachments: readonly {
+    readonly ref: string;
+    readonly filename: string;
+    readonly mimeType: string;
+    readonly sizeBytes: number;
+    readonly inlineSupported: boolean;
+    readonly inlineUrl: string | null;
+    readonly downloadUrl: string;
+  }[];
 };
 
 type SessionEnvelope =
@@ -64,11 +73,23 @@ export default function DocumentViewerClient() {
       <header className={styles.header}>
         <div><span>{metadata.title}</span><strong>{metadata.displayDocumentNumber}</strong></div>
         <div className={styles.meta}>
-          <span>만료 {new Intl.DateTimeFormat("ko-KR", { dateStyle: "medium" }).format(new Date(metadata.expiresAt))}</span>
+          <span>{metadata.expiresAt ? `만료 ${new Intl.DateTimeFormat("ko-KR", { dateStyle: "medium" }).format(new Date(metadata.expiresAt))}` : "관리형 접근"}</span>
           <a href="/api/public/document-viewer/download"><Download aria-hidden="true"/>다운로드</a>
         </div>
       </header>
       <iframe className={styles.viewer} src="/api/public/document-viewer/file" title={`${metadata.displayDocumentNumber} PDF`}/>
+      {metadata.attachments.length > 0 ? <section className={styles.attachments}>
+        <div className={styles.attachmentHeading}><Paperclip aria-hidden="true"/><div><strong>전달 첨부</strong><span>작업지시서와 함께 선택된 파일 {metadata.attachments.length}개</span></div></div>
+        <div className={styles.attachmentGrid}>{metadata.attachments.map((attachment) => <article className={styles.attachmentCard} key={attachment.ref}>
+          {attachment.inlineUrl && /^image\//.test(attachment.mimeType) ? <>
+            {/* The controlled token/session route is intentionally not compatible with Next image optimization. */}
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img alt={attachment.filename} src={attachment.inlineUrl}/>
+          </> : attachment.inlineUrl && attachment.mimeType === "application/pdf" ? <iframe src={attachment.inlineUrl} title={`${attachment.filename} 미리보기`}/> : <FileText aria-hidden="true"/>}
+          <div className={styles.attachmentInfo}><strong>{attachment.filename}</strong><span>{attachment.mimeType} · {Math.max(1, Math.ceil(attachment.sizeBytes / 1024)).toLocaleString("ko-KR")} KB</span></div>
+          <a href={attachment.downloadUrl}><Download aria-hidden="true"/>다운로드</a>
+        </article>)}</div>
+      </section> : null}
     </main>
   );
 }

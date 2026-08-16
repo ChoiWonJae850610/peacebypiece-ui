@@ -20,7 +20,10 @@ export async function getWorkOrderMaterialPartners(workOrderId: string): Promise
   );
   const data = body.data;
   if (!body.ok || !data || data.workOrderId !== workOrderId || !Number.isSafeInteger(data.entityVersion) || !Array.isArray(data.items)
-    || data.items.some((item) => !item || typeof item.id !== "string" || typeof item.name !== "string" || !item.id || !item.name.trim())) {
+    || data.items.some((item) => !item || typeof item.id !== "string" || typeof item.name !== "string" || !item.id || !item.name.trim()
+      || (item.role !== undefined && !["factory", "fabric", "subsidiary", "outsourcing"].includes(item.role))
+      || (item.contactPerson !== undefined && item.contactPerson !== null && typeof item.contactPerson !== "string")
+      || (item.contact !== undefined && item.contact !== null && typeof item.contact !== "string"))) {
     throw new MobileApiError({ code: "MALFORMED_RESPONSE", message: "거래처 목록 응답이 올바르지 않습니다." });
   }
   return data;

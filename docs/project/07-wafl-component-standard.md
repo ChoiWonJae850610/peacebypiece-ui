@@ -4,6 +4,8 @@
 
 WAFL is the shared visual and interaction system for PeaceByPiece. Repeated UI structures must converge on shared tokens, primitives, and composed patterns.
 
+For the current App-first React Native implementation, concrete mobile tokens/layout/components are owned by `app-v2/11a-mobile-design-system-v2.md`, with Maker WorkOrder tab IA in `app-v2/11b-maker-workorder-tab-ia-v2.md`. Preserved v2 design docs, `/ui`, and `ProductionCardMock` remain references unless a current owner explicitly adopts a rule.
+
 ## Required Component Families
 
 - page shell, page hero, workspace shell
@@ -30,6 +32,7 @@ WAFL is the shared visual and interaction system for PeaceByPiece. Repeated UI s
 - Buttons have explicit default, hover, focus, disabled, loading, and destructive states.
 - Modals and drawers lock background scroll, preserve return focus, support ESC where applicable, and prevent accidental duplicate submission.
 - Mobile numeric inputs request numeric keyboards where valid.
+- App-first mobile inputs follow the typed routing matrix in `app-v2/11a-mobile-design-system-v2.md`: sheet root/field/reel, live inline, choice/grid, and numeric domain semantics have distinct canonical owners. `ProductionCardMock` and its inline fields remain historical/showroom references.
 - Tables define overflow, sticky behavior, empty state, and mobile fallback.
 - Save feedback must distinguish saving, saved, failed, stale, and locked states.
 

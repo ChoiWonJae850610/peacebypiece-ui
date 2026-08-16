@@ -7,12 +7,13 @@ import styles from "./DocumentShareControl.module.css";
 
 type TokenItem = {
   readonly tokenId: string;
-  readonly expiresAt: string;
+  readonly tokenPurpose: "manual_share" | "embedded_qr";
+  readonly expiresAt: string | null;
   readonly lastAccessedAt: string | null;
   readonly accessCount: number;
   readonly status: "active" | "expired" | "revoked";
 };
-type CreatedToken = TokenItem & { readonly viewerUrl: string; readonly qrSvg: string };
+type CreatedToken = Omit<TokenItem, "expiresAt"> & { readonly expiresAt: string; readonly viewerUrl: string; readonly qrSvg: string };
 
 export default function DocumentShareControl({ generatedDocumentId }: { readonly generatedDocumentId: string }) {
   const [open, setOpen] = useState(false);
@@ -105,9 +106,9 @@ export default function DocumentShareControl({ generatedDocumentId }: { readonly
         <div className={styles.history}>
           {items.length === 0 && <p>생성된 공유 링크가 없습니다.</p>}
           {items.map((item) => <div key={item.tokenId} className={styles.row}>
-            <div><strong>{item.status === "active" ? "활성" : item.status === "expired" ? "만료" : "회수"}</strong><span>열람 {item.accessCount}회 · 만료 {new Date(item.expiresAt).toLocaleDateString("ko-KR")}</span><span>마지막 열람 {item.lastAccessedAt ? new Date(item.lastAccessedAt).toLocaleString("ko-KR") : "없음"}</span></div>
+            <div><strong>{item.status === "active" ? "활성" : item.status === "expired" ? "만료" : "회수"}</strong><span>열람 {item.accessCount}회 · {item.expiresAt ? `만료 ${new Date(item.expiresAt).toLocaleDateString("ko-KR")}` : "관리형 접근"}</span><span>마지막 열람 {item.lastAccessedAt ? new Date(item.lastAccessedAt).toLocaleString("ko-KR") : "없음"}</span></div>
             {item.status === "active" && <div className={styles.actions}>
-              <button type="button" onClick={() => rotate(item.tokenId)} disabled={busy} title="링크 재발급"><RefreshCw aria-hidden="true"/></button>
+              {item.tokenPurpose === "manual_share" ? <button type="button" onClick={() => rotate(item.tokenId)} disabled={busy} title="링크 재발급"><RefreshCw aria-hidden="true"/></button> : null}
               <button type="button" onClick={() => revoke(item.tokenId)} disabled={busy} title="링크 회수"><Link2Off aria-hidden="true"/></button>
             </div>}
           </div>)}

@@ -52,7 +52,8 @@ assert.match(apiClient, /`\/api\/v2\/work-orders\?\$\{query\.toString\(\)\}`/);
 assert.match(apiClient, /\/api\/v2\/work-orders\/\$\{encodeURIComponent\(workOrderId\)\}/);
 assert.match(apiClient, /credentials: "include"/);
 assert.match(apiClient, /\/assets\?limit=50/);
-assert.doesNotMatch(apiClient, /\/processes|\/documents|\/history/, "process/document/history remain outside the connected mobile detail");
+assert.doesNotMatch(apiClient, /\/history/, "history remains outside the connected mobile detail");
+assert.match(apiClient, /export async function getWorkOrderProcesses[\s\S]*method: "GET"/);
 assert.match(apiClient, /target\.method/);
 assert.match(apiClient, /export async function deleteWorkOrderMaterial/);
 assert.match(apiClient, /method: "DELETE"/);
@@ -70,7 +71,7 @@ for (const actualField of [
 ]) assert.match(detail, new RegExp(actualField.replaceAll(".", "\\.")), `missing actual core mapping: ${actualField}`);
 assert.doesNotMatch(detail, /Revision\s*R/);
 
-assert.doesNotMatch(detail, /header\.id/);
+assert.doesNotMatch(detail, /value=\{header\.id\}|<Text[^>]*>\{header\.id\}<\/Text>/, "the identifier may route a read component but must not be rendered");
 assert.doesNotMatch(detail, /header\.entityVersion|Entity version/);
 assert.match(display, /"apparel\.onepiece_set": "원피스·세트"/);
 assert.match(display, /finalized: "확정됨"/);
@@ -86,14 +87,16 @@ for (const removedOverviewLabel of ["문서 요약", "구성 요약", "Revision 
   assert.doesNotMatch(detail, new RegExp(`>[\\s\\S]*?${removedOverviewLabel}[\\s\\S]*?<`), `overview must not render ${removedOverviewLabel}`);
 }
 
-for (const label of ["개요", "이미지·첨부", "사이즈·색상", "원단", "부자재", "제작", "문서"]) {
+for (const label of ["개요", "이미지·첨부", "사이즈·색상", "원부자재", "제작", "문서"]) {
   assert.match(detail, new RegExp(`(?:label=|label: )["']${label}["']`), `tab must be visible: ${label}`);
 }
 assert.equal(resolveWorkOrderTabVisualState({ selected: false, locked: true }), "locked");
 assert.equal(resolveWorkOrderTabVisualState({ selected: true, locked: false }), "active");
-assert.match(detail, /const locked = tab\.id === "flow" \|\| tab\.id === "output"/);
+assert.match(detail, /\{ id: "production", label: "제작"/);
+assert.match(detail, /activeSection === "production"[\s\S]*WorkOrderProductionReadOnly/);
+assert.match(detail, /activeSection === "output"[\s\S]*WorkOrderDocumentWorkbench/);
 assert.match(detail, /disabled=\{disabled\}/);
-assert.match(detail, /tab\.id === "fabric" \|\| tab\.id === "accessory"/);
+assert.match(detail, /\{ id: "materials", label: "원부자재"/);
 assert.match(detail, /activeSection === "media"[\s\S]*WorkOrderImageGallery/);
 assert.match(detail, /setActiveSection/);
 assert.doesNotMatch(detail, /setActiveTab|activeTab/);

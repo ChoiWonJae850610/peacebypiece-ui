@@ -37,6 +37,9 @@ This folder contains the ordered, additive, reviewed v2 migration SQL drafts int
 - alpha.42 preparation: guarded additive migration `012` defines token purpose, its CHECK, and the one-embedded-token-per-document partial unique index. Apply is not authorized by this document; ledger remains 11/11 until explicit approval.
 - alpha.62 preparation: guarded additive migration `014` adds versioned system/company size-spec templates and their size/POM/value rows. It has no seed, backfill, or destructive SQL; approved dev/test apply and post-apply audit are required before runtime use.
 - alpha.62 Maker authoring continuation: guarded additive migration `015` adds tenant-owned reusable company size/color choices with normalized uniqueness and active/inactive history safety. WorkOrder size/color rows remain independent historical snapshots. It has no seed, backfill, or production apply authority.
+- alpha.64 preparation: guarded additive migration `016` adds issuance-time material supplier-name snapshots and permits only managed `embedded_qr` tokens to use a nullable expiry. Manual-share expiry remains mandatory. Viewer SECURITY DEFINER predicates accept a null expiry without weakening revoke or generated-document lifecycle checks. Apply is dev/test-only and separately audited.
+- alpha.64 spec-catalog preparation: guarded migration `017` extends the existing same-company reusable size/color option catalog with `spec_item`. WorkOrder and saved-template POM rows remain independent snapshots; no catalog foreign key or backfill is introduced. Apply is dev/test-only and separately audited.
+- alpha.64 category-aware Spec Item remediation: guarded migration `018` adds nullable major-category scope to company `spec_item` options, preserves existing unscoped rows without backfill, and replaces only the catalog name uniqueness owner so category-scoped names remain independent. Apply is dev/test-only and separately audited.
 - production use: forbidden until the production migration gate is explicitly approved.
 - next version: alpha.23 consumes the measured schema through a bounded Read API only; no migration rerun is implied.
 
@@ -58,5 +61,9 @@ The existing `db/migrations/` path remains the legacy/current executable baselin
 12. `012_v2_document_access_token_purpose.sql`
 13. `013_v2_material_line_archive_lifecycle.sql`
 14. `014_v2_size_spec_templates.sql`
+15. `015_v2_company_work_order_structure_options.sql`
+16. `016_v2_r0_document_snapshot_and_managed_qr.sql`
+17. `017_v2_company_spec_item_catalog.sql`
+18. `018_v2_company_spec_item_category_scope.sql`
 
 The order is a static contract. No file is applied, validated, backfilled, seeded, or benchmarked in alpha.21.

@@ -28,6 +28,7 @@ import {
   getWorkOrderV2CreateMutationRuntimeGuard,
   getWorkOrderV2CommandRuntimeGuard,
   getWorkOrderV2MaterialDraftMutationRuntimeGuard,
+  getWorkOrderV2MaterialOrderMutationRuntimeGuard,
   getWorkOrderV2SizeColorStructureMutationRuntimeGuard,
 } from "@/lib/domain/work-orders/command/runtimeGuard";
 
@@ -153,6 +154,17 @@ export function requireMaterialDraftMutationApproval() {
       code: "FORBIDDEN",
       status: 403,
       message: "원단 draft 추가와 수정은 별도 승인된 dev/test runtime에서만 실행할 수 있습니다.",
+    });
+  }
+}
+
+export function requireMaterialOrderMutationApproval() {
+  const guard = getWorkOrderV2MaterialOrderMutationRuntimeGuard();
+  if (!guard.ok) {
+    throw new WorkOrderCommandRequestError({
+      code: "FORBIDDEN",
+      status: 403,
+      message: "원단·부자재 발주 변경은 별도 승인된 dev/test runtime에서만 실행할 수 있습니다.",
     });
   }
 }

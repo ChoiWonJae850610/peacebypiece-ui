@@ -45,8 +45,8 @@ export type WorkOrderIssuedPdfSnapshot = {
   readonly businessTimezone: string;
   readonly embeddedQrPolicy?: {
     readonly tokenPurpose: "embedded_qr";
-    readonly expiresAt: string;
-    readonly qrPolicyVersion: "wafl-embedded-qr/1";
+    readonly expiresAt: string | null;
+    readonly qrPolicyVersion: "wafl-embedded-qr/2";
     readonly viewerOriginPolicy: "controlled-fragment-viewer";
     readonly qrPlacementVersion: "cover-top-right/1";
   };
@@ -132,7 +132,9 @@ export function createWorkOrderIssuedPdfSnapshot(input: {
 
   const embeddedQrPolicy = input.embeddedQrPolicy ? {
     ...input.embeddedQrPolicy,
-    expiresAt: assertIsoDateTime(input.embeddedQrPolicy.expiresAt),
+    expiresAt: input.embeddedQrPolicy.expiresAt === null
+      ? null
+      : assertIsoDateTime(input.embeddedQrPolicy.expiresAt),
   } : undefined;
   return {
     documentIdentity: {

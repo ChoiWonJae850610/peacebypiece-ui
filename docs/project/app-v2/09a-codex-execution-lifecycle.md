@@ -56,6 +56,8 @@ For architecture-impacting work, record each responsibility as `reuse`, `extend`
 
 Shared status names, command codes, route/action identifiers, field keys, units, limits, labels, version literals, and other cross-path magic values have one typed canonical owner. Reusable WAFL interaction grammar belongs in common components or hooks; do not duplicate alerts, destructive actions, inline editors, reels, cards, buttons, or loading/error patterns in a screen when a matching primitive exists.
 
+Current mobile input work must use the routing matrix in `11a-mobile-design-system-v2.md`: staged sheet geometry/focus/footer belongs to `WaflInputSheet`, sheet fields to `WaflSheetValueField`/`WaflSheetTextInput`, reels to `WaflReelPickerSheet`, and live inline editing to `ControlledInlineEditValue`. Historical `InlineEditableFields`/`ProductionCardMock` must not become a new live Runtime owner.
+
 Keep shared deterministic domain logic alias-free and framework-free where practical so Node contracts and React Native Runtime can consume the same implementation. Common modules must have a clear owner and obey dependency direction: a feature must not depend on another feature's private implementation, and infrastructure or permission policy must not move into UI helpers.
 
 Do not extract merely because two fragments look alike. One-off presentation detail may remain local when lifecycle, policy, or change cadence differs. Do not introduce a speculative framework, generic registry, or future-facing abstraction without a current bounded need. Shared rules are tested at their canonical owner; tests must not duplicate product logic to preserve an obsolete source-location assertion.

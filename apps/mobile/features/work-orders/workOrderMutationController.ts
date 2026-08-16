@@ -27,6 +27,7 @@ import {
   deleteWorkOrderSize,
   patchWorkOrderColor,
   removeWorkOrderStructureOption,
+  renameWorkOrderStructureOption,
   renameWorkOrderSize,
   reorderWorkOrderColors,
   reorderWorkOrderSizes,
@@ -62,6 +63,7 @@ export const workOrderMutationController = {
   mutateMeasurement: mutateWorkOrderMeasurement,
   createStructureOption: createWorkOrderStructureOption,
   removeStructureOption: removeWorkOrderStructureOption,
+  renameStructureOption: renameWorkOrderStructureOption,
   batchStructureSelection: batchWorkOrderStructureSelection,
   createMaterial(workOrderId: string, command: CreateMaterialLineInput, idempotencyKey: string) {
     return createWorkOrderMaterial(workOrderId, command, idempotencyKey);

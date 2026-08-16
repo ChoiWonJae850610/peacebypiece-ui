@@ -6,6 +6,7 @@ import { isExternalQaPathAllowed, isTailscaleServePathAllowed } from "../lib/ext
 
 const read = (relativePath) => fs.readFileSync(path.resolve(relativePath), "utf8");
 const runtime = read("lib/domain/work-orders/command/runtimeGuard.ts");
+const capabilities = read("lib/external-qa/makerQaCapabilities.mjs");
 const service = read("lib/domain/work-orders/command/commandService.ts");
 const validation = read("lib/domain/work-orders/command/validation.ts");
 const route = read("lib/domain/work-orders/command/commandRoute.ts");
@@ -18,14 +19,14 @@ const createQaDraft = read("scripts/run-wafl-v2-alpha46-create-qa-draft.mjs");
 const uuidPath = "/api/v2/work-orders/9c2325ba-3b70-fd71-0eb5-c68db954829a";
 
 assert.match(runtime, /WAFL_V2_ALPHA46_BASIC_INFO_MUTATION_APPROVAL/);
-assert.match(runtime, /2\.0\.0-alpha\.46-dev-test-mobile-basic-info-runtime/);
+assert.match(capabilities, /2\.0\.0-alpha\.46-dev-test-mobile-basic-info-runtime/);
 const genericApprovals = runtime.match(/const SUPPORTED_MUTATION_APPROVALS = new Set\(\[[\s\S]*?\]\);/)?.[0] ?? "";
 assert.ok(genericApprovals);
 assert.doesNotMatch(genericApprovals, /ALPHA46|alpha\.46/, "alpha.46 must not enter the generic mutation approval set");
 assert.match(runtime, /getWorkOrderV2BasicInfoMutationRuntimeGuard/);
-assert.match(runtime, /WAFL_V2_ALPHA25_MUTATION_APPROVAL[\s\S]*WAFL_V2_ALPHA46_BASIC_INFO_MUTATION_APPROVAL/);
+assert.match(runtime, /WAFL_V2_ALPHA25_MUTATION_APPROVAL[\s\S]*MAKER_QA_CAPABILITY\.BASIC_INFO/);
 assert.match(runtime, /getWorkOrderV2CreateMutationRuntimeGuard/);
-assert.match(runtime, /WAFL_V2_ALPHA25_MUTATION_APPROVAL[\s\S]*WAFL_V2_ALPHA61_MOBILE_WORK_ORDER_CREATE_MUTATION_APPROVAL/);
+assert.match(runtime, /WAFL_V2_ALPHA25_MUTATION_APPROVAL[\s\S]*MAKER_QA_CAPABILITY\.WORK_ORDER_CREATE/);
 assert.match(service, /createWorkOrderDraft[\s\S]*requireWorkOrderCreateMutationApproval\(\)/);
 assert.match(service, /patchWorkOrderBasicInfo[\s\S]*requireBasicInfoMutationApproval\(\)/);
 assert.match(validation, /mobileBasicInfoOnly/);
@@ -89,8 +90,8 @@ for (const name of ["WAFL_V2_COMMAND_API_ENABLED", "WAFL_V2_COMMAND_MUTATION_APP
 const mobileEnvironment = start.slice(start.indexOf("$mobileEnvironment = @{"));
 assert.doesNotMatch(mobileEnvironment, /WAFL_V2_COMMAND|WAFL_EXTERNAL_QA_ALPHA46_BASIC_INFO_MUTATION_ENABLED/);
 assert.doesNotMatch(start, /SetEnvironmentVariable\([^\n]+(?:User|Machine)/);
-assert.match(status, /Command API:/);
-assert.match(status, /Mutation mode:/);
+assert.match(status, /Next canonical environment contract:/);
+assert.match(status, /Profile: \{0\} \/ \{1\}/);
 
 assert.match(preflight, /BEGIN READ ONLY/);
 assert.match(preflight, /QA_DRAFT_A/);
