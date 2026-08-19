@@ -27,6 +27,9 @@ for (const routePath of routePaths) {
   } else if (routePath === "app/api/v2/work-orders/[workOrderId]/materials/route.ts" && alpha26ContractExists) {
     assert.doesNotMatch(route, /export async function (PATCH|PUT|DELETE)/, `${routePath} may add only alpha.26 POST beside GET`);
     assert.match(route, /handleAddMaterialLineV2/, `${routePath} must use the bounded alpha.26 POST handler`);
+  } else if (routePath === "app/api/v2/work-orders/[workOrderId]/processes/route.ts") {
+    assert.doesNotMatch(route, /export async function (PATCH|PUT|DELETE)/, `${routePath} may add only alpha.65 POST beside GET`);
+    assert.match(route, /handleCreateProcessV2/, `${routePath} must use the bounded alpha.65 POST handler`);
   } else {
     assert.doesNotMatch(route, /export async function (POST|PATCH|PUT|DELETE)/, `${routePath} must remain read-only`);
   }

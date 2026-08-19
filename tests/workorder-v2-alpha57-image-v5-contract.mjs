@@ -29,7 +29,6 @@ for (const marker of [
   "work-order-image-next",
   "work-order-image-thumbnail-strip",
   "work-order-attachment-list",
-  "work-order-factory-delivery-memo",
 ]) assert.match(gallery, new RegExp(marker));
 
 for (const label of [
@@ -40,8 +39,8 @@ for (const label of [
   "대표 지정",
   "현재 대표",
   "첨부 목록",
-  "공장 전달 메모",
 ]) assert.match(gallery, new RegExp(label));
+assert.doesNotMatch(gallery, /공장 전달 메모|work-order-factory-delivery-memo/u);
 
 assert.match(gallery, /selectedIndex \+ 1/);
 assert.match(gallery, /props\.onSetRepresentative\(selected\)/);
@@ -50,7 +49,7 @@ assert.doesNotMatch(gallery, /첫 이미지만 자동 대표/, "historical imple
 assert.match(experience, /첫 이미지를 등록하고 대표이미지로 지정했습니다/);
 assert.match(experience, /다른 이미지가 자동으로 대표 지정되지는 않습니다/);
 assert.match(overview, /attachments=\{props\.attachments\}/);
-assert.match(overview, /factoryDeliveryMemo=\{detail\.revision\.factoryDeliveryMemo\}/);
+assert.doesNotMatch(overview, /factoryDeliveryMemo=\{detail\.revision\.factoryDeliveryMemo\}/);
 
 assert.match(mobileContract, /type WorkOrderAttachmentAsset/);
 assert.match(apiClient, /item\.assetType === "attachment"/);

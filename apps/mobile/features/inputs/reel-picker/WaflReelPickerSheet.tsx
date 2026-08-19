@@ -47,6 +47,7 @@ import {
   exceedsMaterialQuantityPrecision,
   materialQuantityPrecisionMessage,
 } from "@/domain/materialQuantityPrecision";
+import { resolveWaflReelOpeningValue } from "./waflRequiredChoicePolicy";
 
 const ITEM_HEIGHT = WAFL_REEL_ROW_HEIGHT;
 const REEL_HEIGHT = WAFL_REEL_VIEWPORT_HEIGHT;
@@ -70,6 +71,9 @@ type Props = {
   readonly options?: readonly string[];
   readonly optionItems?: readonly WaflPickerOption[];
   readonly allowUnset?: boolean;
+  readonly requireSpecifiedValue?: boolean;
+  readonly selectFirstRealOption?: boolean;
+  readonly emptyMessage?: string;
   readonly footer?: ReactNode;
   readonly pending?: boolean;
   readonly presentationGeneration?: number;
@@ -107,13 +111,17 @@ function ReelColumn({
     selectedIndexRef.current = selectedIndex;
   }, [selectedIndex]);
   useEffect(() => {
+    if (options.length === 0) {
+      selectedIndexRef.current = 0;
+      lastCommittedIndexRef.current = 0;
+      return undefined;
+    }
     const nextIndex = selectedIndexRef.current;
     lastCommittedIndexRef.current = nextIndex;
-    setVisibleSelectedIndex(nextIndex);
-    const frame = requestAnimationFrame(() => ref.current?.scrollToIndex({
-      animated: false,
-      index: nextIndex,
-    }));
+    const frame = requestAnimationFrame(() => {
+      setVisibleSelectedIndex(nextIndex);
+      ref.current?.scrollToIndex({ animated: false, index: nextIndex });
+    });
     return () => cancelAnimationFrame(frame);
   }, [options]);
   function commitScrollIndex(event: NativeSyntheticEvent<NativeScrollEvent>) {
@@ -140,7 +148,7 @@ function ReelColumn({
         decelerationRate="normal"
         extraData={visibleSelectedIndex}
         getItemLayout={(_data, index) => ({ index, length: ITEM_HEIGHT, offset: ITEM_HEIGHT * index })}
-        initialScrollIndex={selectedIndex}
+        initialScrollIndex={options.length ? selectedIndex : undefined}
         keyExtractor={(item) => item.key}
         onMomentumScrollEnd={commitScrollIndex}
         onScrollEndDrag={(event) => {
@@ -201,6 +209,7 @@ export function WaflOptionReel(props: {
   readonly selectedValue: string;
   readonly onSelect: (value: string) => void;
 }) {
+  if (props.options.length === 0) return null;
   return <FiniteOptionReelColumn
     accessibilityLabel={props.accessibilityLabel}
     onSelect={(index) => {
@@ -214,23 +223,28 @@ export function WaflOptionReel(props: {
   />;
 }
 
-export default function WaflReelPickerSheet({ visible, field, label, value, unitCode, kind = "quantity", options = [], optionItems: suppliedOptionItems, allowUnset = false, footer, pending = false, presentationGeneration, onCancel, onAfterClose, onApply }: Props) {
+export default function WaflReelPickerSheet({ visible, field, label, value, unitCode, kind = "quantity", options = [], optionItems: suppliedOptionItems, allowUnset = false, requireSpecifiedValue = false, selectFirstRealOption = false, emptyMessage = "선택할 수 있는 항목이 없습니다.", footer, pending = false, presentationGeneration, onCancel, onAfterClose, onApply }: Props) {
   const integerOnly = kind === "integer";
   const optionOnly = kind === "option";
   const eighthInch = kind === "eighth-inch";
   const [state, dispatch] = useReducer(reelPickerReducer, INITIAL_REEL_PICKER_STATE);
   const [windowAnchor, setWindowAnchor] = useState(value);
+  const openValue = resolveWaflReelOpeningValue({
+    candidateValues: (suppliedOptionItems ?? options.map((option) => ({ value: option, label: option }))).map((option) => option.value),
+    currentValue: value,
+    stageFirstRealOption: selectFirstRealOption,
+  });
   const openExternalSession = useCallback(() => {
-    setWindowAnchor(value);
+    setWindowAnchor(openValue);
     dispatch({
       type: "open",
       field,
       label,
-      value,
+      value: openValue,
       unit: unitCode.trim() || materialUnitOptions("")[0] || "개",
       step: integerOnly || eighthInch ? "1" : defaultReelStep(unitCode),
     });
-  }, [eighthInch, field, integerOnly, label, unitCode, value]);
+  }, [eighthInch, field, integerOnly, label, openValue, unitCode]);
   const closeExternalSession = useCallback(() => dispatch({ type: "cancel" }), []);
   const { markCurrentSessionClosed } = useExternalReelVisibilityLifecycle({
     visible,
@@ -276,7 +290,7 @@ export default function WaflReelPickerSheet({ visible, field, label, value, unit
   const applyDisabled = kind === "unit"
     ? !state.selectedUnit.trim()
     : optionOnly
-      ? !optionItems.some((option) => option.value === state.selectedValue)
+      ? !optionItems.some((option) => option.value === state.selectedValue) || (requireSpecifiedValue && !state.selectedValue.trim())
       : normalized === null || quantityPrecisionError !== null;
   const renderPath = resolveWaflPickerRenderPath(kind, state.mode);
   const reelAdaptiveBodyHeight = resolveWaflReelAdaptiveBodyHeight({
@@ -371,12 +385,13 @@ export default function WaflReelPickerSheet({ visible, field, label, value, unit
     >
           {renderPath === "single-choice-reel" ? (
             <View style={styles.optionReel}>
-              <WaflOptionReel
+              <Text style={styles.reelLabel}>{label}</Text>
+              {optionItems.length ? <WaflOptionReel
                 accessibilityLabel={`${label} 선택 릴`}
                 onSelect={(next) => selectOption(next, optionItems.findIndex((option) => option.value === next))}
                 options={optionItems}
                 selectedValue={state.selectedValue}
-              />
+              /> : <View accessibilityRole="text" style={styles.emptyState}><Text style={styles.emptyStateText}>{emptyMessage}</Text></View>}
             </View>
           ) : renderPath === "numeric-reel" ? (
             <View style={styles.reels}>
@@ -427,6 +442,8 @@ export default function WaflReelPickerSheet({ visible, field, label, value, unit
 const styles = StyleSheet.create({
   reels: { alignItems: "flex-end", flexDirection: "row", gap: 12, marginTop: 14 },
   optionReel: { marginTop: 14 },
+  emptyState: { alignItems: "center", justifyContent: "center", minHeight: 180, paddingHorizontal: WAFL_THEME.spacing.lg },
+  emptyStateText: { color: WAFL_THEME.color.readOnly, fontFamily: WAFL_FONTS.medium, fontSize: WAFL_THEME.typography.bodyText.fontSize, lineHeight: WAFL_THEME.typography.bodyText.lineHeight, textAlign: "center" },
   numberReel: { flex: 1, minWidth: 0 },
   intervalReel: { flexBasis: 108, flexGrow: 0, flexShrink: 1, minWidth: 84 },
   unitOnlyReel: { flex: 1, minWidth: 0 },

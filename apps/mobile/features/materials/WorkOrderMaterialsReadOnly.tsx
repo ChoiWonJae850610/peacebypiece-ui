@@ -23,6 +23,8 @@ import MaterialQuantityValue from "@/features/materials/MaterialQuantityValue";
 import MaterialPartnerPickerSheet from "@/features/materials/MaterialPartnerPickerSheet";
 import WaflSectionCard from "@/features/layout/WaflSectionCard";
 import WaflSectionHeaderAction from "@/features/layout/WaflSectionHeaderAction";
+import { WaflCompactActionRow, WaflCompactCardAction, WaflCompactEntityCard, WaflCompactSummaryLine } from "@/features/layout/WaflCompactEntityCard";
+import { WaflCompactSelectionField } from "@/features/layout/WaflCompactField";
 import { createMaterialMemoDisclosureModel } from "@/features/materials/materialMemoDisclosureModel";
 import DelayedLoadingMessage from "@/features/work-orders/loading/DelayedLoadingMessage";
 import {
@@ -266,27 +268,15 @@ function MaterialOrderActionButton({
   readonly onPress: () => void;
 }) {
   const { Icon } = action;
-  const color = action.emphasized ? "#ffffff" : action.danger ? "#9a4035" : "#17263d";
-  return (
-    <Pressable
-      accessibilityLabel={action.label}
-      accessibilityRole="button"
-      accessibilityState={{ busy, disabled: busy }}
-      disabled={busy}
-      onPress={onPress}
-      style={({ pressed }) => [
-        styles.iconActionButton,
-        compact && styles.iconActionButtonCompact,
-        action.emphasized && styles.iconActionEmphasized,
-        action.danger && styles.iconActionDanger,
-        busy && styles.disabledAction,
-        pressed && styles.pressed,
-      ]}
-    >
-      {busy ? <ActivityIndicator color={color} size="small" /> : <Icon color={color} size={17} strokeWidth={2.25} />}
-      {!compact ? <Text style={[styles.iconActionCaption, action.emphasized && styles.iconActionCaptionEmphasized, action.danger && styles.iconActionCaptionDanger]}>{action.caption}</Text> : null}
-    </Pressable>
-  );
+  return <WaflCompactCardAction
+    Icon={Icon}
+    accessibilityLabel={action.label}
+    busy={busy}
+    caption={compact ? undefined : action.caption}
+    danger={action.danger}
+    emphasized={action.emphasized}
+    onPress={onPress}
+  />;
 }
 
 function MaterialCard({ line, expanded, canEdit, lifecycleBusy, orderBusyAction, orderPolicy, editor, activeField, activeInlineSession, onEdit, onChangeEdit, onCancelEdit, onSaveEdit, onDelete, onOrderAction, onToggle, onFieldFocus, onOpenReel, onOpenPartner, partnerOptions }: {
@@ -347,7 +337,7 @@ function MaterialCard({ line, expanded, canEdit, lifecycleBusy, orderBusyAction,
     statusLabel: orderPolicy.label,
   });
   return (
-    <View style={[styles.card, materialAccent(orderPolicy.tone)]}>
+    <WaflCompactEntityCard style={materialAccent(orderPolicy.tone)}>
       <View style={styles.summaryButton}>
         <View style={styles.cardHeader}>
           <View style={styles.materialIdentity}>
@@ -403,10 +393,7 @@ function MaterialCard({ line, expanded, canEdit, lifecycleBusy, orderBusyAction,
 
         <View testID="material-core-row" style={styles.coreRow}>
           <View style={styles.compactField}>
-            <Text style={styles.compactLabel}>{MOBILE_MATERIAL_FIELD_LABELS.partner}</Text>
-            <Pressable accessibilityRole="button" disabled={!fieldEditable} onPress={onOpenPartner} style={({ pressed }) => [styles.compactInline, pressed && styles.pressed]}>
-              <Text numberOfLines={2} style={styles.compactValue}>{line.partnerName?.trim() || partnerOptions.find((item) => item.id === line.partnerId)?.name || "미선택"}</Text>
-            </Pressable>
+            <WaflCompactSelectionField accessibilityLabel={MOBILE_MATERIAL_FIELD_LABELS.partner} editable={fieldEditable} label={MOBILE_MATERIAL_FIELD_LABELS.partner} onPress={onOpenPartner} value={line.partnerName?.trim() || partnerOptions.find((item) => item.id === line.partnerId)?.name || "미선택"} />
             {editor?.materialLineId === line.id && activeField === "partnerId" && editor.fieldErrors.partnerId ? <Text style={styles.fieldError}>{editor.fieldErrors.partnerId}</Text> : null}
           </View>
           <View style={styles.compactField}>
@@ -491,25 +478,7 @@ function MaterialCard({ line, expanded, canEdit, lifecycleBusy, orderBusyAction,
         </View>
       ) : null}
 
-      <View testID="material-order-action-row" style={styles.materialOrderActionRow}>
-        <View testID="material-order-summary-lines" style={styles.materialOrderLineStack}>
-          <View style={styles.orderInlineRow}>
-            <Text style={styles.materialOrderLineText}>발주수량</Text>
-            <MaterialQuantityValue
-              accessibilityLabel={`발주수량, 자동 계산, 읽기 전용, ${formatQuantity(calculatedOrderQuantity, line.unitCode)}`}
-              testID="material-order-quantity-calculated"
-              textStyle={styles.materialOrderLineText}
-              unitCode={line.unitCode}
-              value={calculatedOrderQuantity}
-            />
-            <Text style={styles.materialOrderLineText}>· 단가 {formatWon(calculationDraft.unitPrice)}</Text>
-          </View>
-          <Text testID="material-order-summary-amount" numberOfLines={1} style={styles.materialOrderLineText}>
-            금액 {formatWon(calculatedAmount)}
-          </Text>
-        </View>
-        {actions.length || orderPolicy.canEdit ? (
-          <View testID="material-order-actions" style={styles.materialOrderActions}>
+      <WaflCompactActionRow actions={actions.length || orderPolicy.canEdit ? <>
             {actions.map((action) => (
               <MaterialOrderActionButton
                 action={action}
@@ -520,22 +489,34 @@ function MaterialCard({ line, expanded, canEdit, lifecycleBusy, orderBusyAction,
               />
             ))}
             {orderPolicy.canEdit && line.deletable ? (
-              <Pressable
+              <WaflCompactCardAction
+                Icon={Trash2}
                 accessibilityLabel={`${line.name} ${materialLabel} 삭제`}
-                accessibilityRole="button"
-                accessibilityState={{ disabled: lifecycleBusy }}
-                disabled={lifecycleBusy}
+                busy={lifecycleBusy}
+                caption={compactActions ? undefined : "삭제"}
+                danger
                 onPress={onDelete}
-                style={({ pressed }) => [styles.archiveActionButton, lifecycleBusy && styles.disabledAction, pressed && styles.pressed]}
-              >
-                {lifecycleBusy ? <ActivityIndicator color="#9a4035" size="small" /> : <Trash2 color="#9a4035" size={17} strokeWidth={2.25} />}
-                {!compactActions ? <Text style={styles.iconActionCaptionDanger}>삭제</Text> : null}
-              </Pressable>
+              />
             ) : null}
+          </> : undefined} testID="material-order-action-row">
+        <View testID="material-order-summary-lines" style={styles.materialOrderLineStack}>
+          <View style={styles.orderInlineRow}>
+            <WaflCompactSummaryLine>발주수량</WaflCompactSummaryLine>
+            <MaterialQuantityValue
+              accessibilityLabel={`발주수량, 자동 계산, 읽기 전용, ${formatQuantity(calculatedOrderQuantity, line.unitCode)}`}
+              testID="material-order-quantity-calculated"
+              textStyle={styles.materialOrderLineText}
+              unitCode={line.unitCode}
+              value={calculatedOrderQuantity}
+            />
+            <WaflCompactSummaryLine>· 단가 {formatWon(calculationDraft.unitPrice)}</WaflCompactSummaryLine>
           </View>
-        ) : null}
-      </View>
-    </View>
+          <WaflCompactSummaryLine testID="material-order-summary-amount">
+            금액 {formatWon(calculatedAmount)}
+          </WaflCompactSummaryLine>
+        </View>
+      </WaflCompactActionRow>
+    </WaflCompactEntityCard>
   );
 }
 
@@ -702,16 +683,16 @@ const styles = StyleSheet.create({
   pressed: { opacity: 0.7 },
   list: { gap: WAFL_THEME.layout.sectionGap },
   embeddedList: { gap: WAFL_THEME.layout.sectionGap },
-  card: { backgroundColor: WAFL_THEME.color.paper, borderColor: WAFL_THEME.color.border, borderLeftWidth: 4, borderRadius: WAFL_THEME.radius.cardCompact, borderWidth: WAFL_THEME.border.hairline, overflow: "hidden" },
+  card: { backgroundColor: WAFL_THEME.color.paper, borderColor: WAFL_THEME.color.border, borderLeftWidth: WAFL_THEME.accentCard.width, borderRadius: WAFL_THEME.radius.cardCompact, borderWidth: WAFL_THEME.border.hairline, overflow: "hidden" },
   cardEditing: { borderLeftColor: "#a89d90" },
   cardRequested: { borderLeftColor: "#c75f35" },
   cardCompleted: { backgroundColor: "#fbfaf6", borderLeftColor: "#4d6a3a" },
   cardCancelled: { borderLeftColor: "#963d34" },
   cardUnknown: { borderLeftColor: "#7c746d" },
-  summaryButton: { minHeight: 84, paddingHorizontal: 10, paddingVertical: 9 },
+  summaryButton: { minHeight: 84, paddingHorizontal: WAFL_THEME.layout.compactCardInsetHorizontal, paddingVertical: WAFL_THEME.layout.compactCardInsetVertical },
   cardHeader: { alignItems: "flex-start", flexDirection: "row", gap: 6, justifyContent: "space-between" },
   materialIdentity: { flex: 1, minWidth: 0 },
-  materialName: { color: "#17263d", flexShrink: 1, fontFamily: WAFL_FONTS.bold, fontSize: 14, lineHeight: 20, minWidth: 0, width: "100%" },
+  materialName: { color: "#17263d", flexShrink: 1, fontFamily: WAFL_FONTS.bold, fontSize: WAFL_THEME.typography.compactCardPrimary.fontSize, lineHeight: WAFL_THEME.typography.compactCardPrimary.lineHeight, minWidth: 0, width: "100%" },
   unitInline: { flexShrink: 0, minHeight: 0 },
   unitChip: { backgroundColor: "#f2eadf", borderRadius: 999, color: "#6b5b4d", flexShrink: 0, fontFamily: WAFL_FONTS.bold, fontSize: 9, lineHeight: 13, overflow: "hidden", paddingHorizontal: 7, paddingVertical: 3 },
   colorRow: { alignItems: "center", flexDirection: "row", gap: 5, minWidth: 0 },
@@ -730,12 +711,12 @@ const styles = StyleSheet.create({
   coreRowExpanded: { alignItems: "stretch", marginTop: 7, minWidth: 0, width: "100%" },
   compactField: { flex: 1, minWidth: 0 },
   compactInline: { flex: 1, minWidth: 0 },
-  compactLabel: { color: "#8b7e72", fontFamily: WAFL_FONTS.medium, fontSize: 9, lineHeight: 13 },
-  compactValue: { color: "#3f352d", flexShrink: 1, fontFamily: WAFL_FONTS.semibold, fontSize: 11, lineHeight: 16, marginTop: 1, minWidth: 0 },
+  compactLabel: { color: "#8b7e72", fontFamily: WAFL_FONTS.medium, fontSize: WAFL_THEME.typography.compactCardLabel.fontSize, lineHeight: WAFL_THEME.typography.compactCardLabel.lineHeight },
+  compactValue: { color: "#3f352d", flexShrink: 1, fontFamily: WAFL_FONTS.semibold, fontSize: WAFL_THEME.typography.compactCardValue.fontSize, lineHeight: WAFL_THEME.typography.compactCardValue.lineHeight, marginTop: 1, minWidth: 0 },
   readOnlyRows: { marginTop: 4 },
   readOnlyLine: { alignItems: "flex-start", borderTopColor: "#f0e7dc", borderTopWidth: 1, flexDirection: "row", gap: 10, minHeight: 28, paddingVertical: 5 },
   readOnlyLabel: { color: "#827568", flexShrink: 0, fontFamily: WAFL_FONTS.medium, fontSize: 10, lineHeight: 17, width: 54 },
-  readOnlyValue: { color: "#3f352d", flex: 1, fontFamily: WAFL_FONTS.regular, fontSize: 11, lineHeight: 17, minWidth: 0 },
+  readOnlyValue: { color: "#3f352d", flex: 1, fontFamily: WAFL_FONTS.regular, fontSize: WAFL_THEME.typography.compactCardMemo.fontSize, lineHeight: WAFL_THEME.typography.compactCardMemo.lineHeight, minWidth: 0 },
   readOnlyInline: { flex: 1, minWidth: 0 },
   memoColumn: { flex: 1, minWidth: 0, position: "relative" },
   memoMeasure: { left: 0, opacity: 0, position: "absolute", right: 0, top: 0 },

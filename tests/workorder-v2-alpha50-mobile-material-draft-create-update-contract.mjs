@@ -168,10 +168,12 @@ assert.match(materials, /field="name"[\s\S]{0,120}label=\{materialNameLabel\}/);
 assert.doesNotMatch(materials, /PencilLine|editActionButton/);
 assert.match(materials, /orderPolicy\.canEdit/);
 const materialOrderAction = materials.slice(materials.indexOf("function MaterialOrderActionButton"), materials.indexOf("function MaterialCard"));
-assert.match(materialOrderAction, /accessibilityRole="button"/);
-assert.match(materialOrderAction, /accessibilityState=\{\{ busy, disabled: busy \}\}/);
-assert.match(materialOrderAction, /disabled=\{busy\}/);
 assert.match(materialOrderAction, /onPress=\{onPress\}/);
+assert.match(materialOrderAction, /<WaflCompactCardAction/u);
+const compactCardAction = fs.readFileSync("apps/mobile/features/layout/WaflCompactEntityCard.tsx", "utf8");
+assert.match(compactCardAction, /accessibilityRole="button"/u);
+assert.match(compactCardAction, /accessibilityState=\{\{ busy, disabled: busy \}\}/u);
+assert.match(compactCardAction, /disabled=\{busy\}/u);
 const editableOrderPolicy = resolveMaterialOrderPolicy({
   status: "editing",
   lifecycle: "active",
@@ -195,7 +197,7 @@ const legacyCancelledPolicy = resolveMaterialOrderPolicy({
 assert.equal(legacyCancelledPolicy.canEdit, false);
 assert.deepEqual(legacyCancelledPolicy.actions, []);
 assert.match(materials, /caption: "발주"/);
-assert.match(materials, /orderPolicy\.canEdit && line\.deletable[\s\S]{0,500}onPress=\{onDelete\}[\s\S]{0,500}<Trash2/);
+assert.match(materials, /orderPolicy\.canEdit && line\.deletable[\s\S]{0,500}<WaflCompactCardAction[\s\S]{0,300}Icon=\{Trash2\}[\s\S]{0,300}onPress=\{onDelete\}/);
 assert.match(detail, /canEditMaterials/);
 assert.match(detail, /materialEditor\?\.mode === "create"/);
 assert.match(detail, /onRequestSectionChange/);

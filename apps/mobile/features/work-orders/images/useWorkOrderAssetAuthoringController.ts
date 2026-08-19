@@ -2,7 +2,6 @@ import { useCallback, useRef, useState } from "react";
 import { Linking } from "react-native";
 
 import { createExplicitMutationController } from "@/application/mutationController";
-import { FACTORY_DELIVERY_MEMO_MAX_LENGTH, factoryDeliveryMemoLength } from "@/domain/factoryDeliveryMemoPolicy";
 import type {
   MobileCurrentUser,
   WorkOrderAttachmentAsset,
@@ -13,7 +12,6 @@ import type {
 import { MobileApiError } from "@/domain/mobileContract";
 import { canEditWorkOrder } from "@/domain/workOrderPolicy";
 import { confirmWaflDestructiveAction } from "@/features/feedback/confirmWaflDestructiveAction";
-import { decideInlineEditCommit } from "@/lib/inlineEditFinalization";
 import { resolveMobileApiUrl } from "@/lib/apiTransport";
 import { workOrderMutationController } from "../workOrderMutationController";
 import { workOrderQueryController } from "../workOrderQueryController";
@@ -33,7 +31,7 @@ type Input = {
   readonly detail: WorkOrderDetailCore | null;
   readonly selected: WorkOrderListItem | null;
   readonly user: MobileCurrentUser | null;
-  readonly nextIdentity: (kind: "upload" | "representative" | "delete" | "attachment-upload" | "attachment-delete" | "memo") => RequestIdentity;
+  readonly nextIdentity: (kind: "upload" | "representative" | "delete" | "attachment-upload" | "attachment-delete") => RequestIdentity;
   readonly onDetailProjection: (detail: WorkOrderDetailCore) => void;
   readonly onMessage: (message: string) => void;
 };
@@ -180,36 +178,6 @@ export function useWorkOrderAssetAuthoringController(input: Input) {
     }
   }
 
-  async function saveFactoryDeliveryMemo(memo: string): Promise<boolean> {
-    if (!input.detail || !input.selected || !canEditWorkOrder(input.detail, input.user)) return false;
-    if (factoryDeliveryMemoLength(memo) > FACTORY_DELIVERY_MEMO_MAX_LENGTH) {
-      setMessage(`공장 전달 메모는 ${FACTORY_DELIVERY_MEMO_MAX_LENGTH}자까지 입력할 수 있습니다.`);
-      return false;
-    }
-    const decision = decideInlineEditCommit({ activationValue: input.detail.revision.factoryDeliveryMemo ?? "", draftValue: memo, semantics: "nullable-text" });
-    if (!decision.changed) return true;
-    if (mutation.tryBegin() !== "started") return false;
-    setBusy(true);
-    setBusyId(null);
-    try {
-      const saved = await workOrderMutationController.updateOverview(input.selected.workOrderId, {
-        clientRequestId: input.nextIdentity("memo").clientRequestId,
-        expectedVersion: input.detail.header.entityVersion,
-        patch: { factoryDeliveryMemo: decision.nullableValue },
-      });
-      await refreshProjection(input.selected.workOrderId, saved.nextVersion);
-      setMessage("공장 전달 메모를 저장했습니다.");
-      return true;
-    } catch (error) {
-      setMessage(error instanceof MobileApiError ? error.message : "공장 전달 메모를 저장하지 못했습니다.");
-      return false;
-    } finally {
-      mutation.complete();
-      setBusy(false);
-      setBusyId(null);
-    }
-  }
-
   async function setRepresentativeImage(image: WorkOrderImageAsset) {
     if (!input.detail || !input.selected || image.isRepresentative || !canEditWorkOrder(input.detail, input.user)) return;
     if (mutation.tryBegin() !== "started") return;
@@ -273,7 +241,6 @@ export function useWorkOrderAssetAuthoringController(input: Input) {
     acquireAttachment,
     requestDeleteAttachment,
     openAttachment,
-    saveFactoryDeliveryMemo,
     setRepresentativeImage,
     requestDeleteImage,
   } as const;

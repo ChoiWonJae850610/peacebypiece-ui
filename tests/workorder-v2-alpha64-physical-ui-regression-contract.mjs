@@ -9,7 +9,10 @@ const metric = read("apps/mobile/features/layout/WaflMetricField.tsx");
 const tabBody = read("apps/mobile/features/layout/WaflWorkOrderTabBody.tsx");
 const overview = read("apps/mobile/features/work-orders/overview/WorkOrderDetailOverview.tsx");
 const intent = read("apps/mobile/features/work-orders/overview/workOrderSectionIntent.ts");
-const production = read("apps/mobile/features/work-orders/production/WorkOrderProductionReadOnly.tsx");
+const alpha65ProductionAuthoring = fs.existsSync("tests/workorder-v2-alpha65-production-factory-process-authoring-contract.mjs");
+const production = read(alpha65ProductionAuthoring
+  ? "apps/mobile/features/work-orders/production/WorkOrderProductionAuthoring.tsx"
+  : "apps/mobile/features/work-orders/production/WorkOrderProductionReadOnly.tsx");
 const api = read("apps/mobile/lib/api/workOrdersApi.ts");
 const sizeColor = read("apps/mobile/features/work-orders/size-color/WorkOrderSizeColorReadOnly.tsx");
 const templates = read("apps/mobile/features/work-orders/size-color/MeasurementTemplateSheets.tsx");
@@ -33,9 +36,13 @@ assert.equal((overview.match(/<WaflMetricField/g) ?? []).length, 6);
 
 for (const label of ["이미지·첨부", "사이즈·색상", "원부자재", "제작", "문서"]) assert.match(overview, new RegExp(`label: "${label}"`));
 assert.match(intent, /"production"/u);
-assert.match(overview, /<WorkOrderProductionReadOnly workOrderId=\{detail\.header\.id\} \/>/u);
+assert.match(overview, alpha65ProductionAuthoring
+  ? /<WorkOrderProductionAuthoring[\s\S]*workOrderId=\{detail\.header\.id\}/u
+  : /<WorkOrderProductionReadOnly workOrderId=\{detail\.header\.id\} \/>/u);
 assert.match(api, /\/processes/u);
-assert.match(production, /testID="work-order-production-read-only"/u);
+assert.match(production, alpha65ProductionAuthoring
+  ? /testID="work-order-production-authoring"/u
+  : /testID="work-order-production-read-only"/u);
 assert.doesNotMatch(`${overview}\n${production}`, /ProductionCardMock/u);
 assert.ok(mock.length > 0, "historical mock remains preserved");
 

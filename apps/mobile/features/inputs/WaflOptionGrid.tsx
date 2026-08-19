@@ -1,5 +1,5 @@
 import { Pressable, StyleSheet, Text, View } from "react-native";
-import { Check, X } from "lucide-react-native";
+import { Check, Pencil, X } from "lucide-react-native";
 
 import { WAFL_FONTS } from "@/constants/fonts";
 
@@ -9,6 +9,7 @@ export type WaflOptionGridItem = {
   readonly selected: boolean;
   readonly swatchHex?: string | null;
   readonly removable?: boolean;
+  readonly editable?: boolean;
 };
 
 type Props = {
@@ -17,6 +18,7 @@ type Props = {
   readonly disabled?: boolean;
   readonly items: readonly WaflOptionGridItem[];
   readonly onRemove?: (item: WaflOptionGridItem) => void;
+  readonly onEdit?: (item: WaflOptionGridItem) => void;
   readonly onToggle?: (item: WaflOptionGridItem) => void;
   readonly variant?: "selection" | "summary";
 };
@@ -53,6 +55,14 @@ export default function WaflOptionGrid(props: Props) {
         onPress={() => props.onRemove?.(item)}
         style={[styles.remove, props.disabled && styles.disabled]}
       ><X color="#a94f32" size={13} /></Pressable> : null}
+      {!summary && item.editable && props.onEdit ? <Pressable
+        accessibilityLabel={`${item.label} 등록 선택지 이름 변경`}
+        accessibilityRole="button"
+        disabled={props.disabled}
+        hitSlop={5}
+        onPress={() => props.onEdit?.(item)}
+        style={[styles.edit, props.disabled && styles.disabled]}
+      ><Pencil color="#23375a" size={13} /></Pressable> : null}
     </View>)}
   </View>;
 }
@@ -70,4 +80,5 @@ const styles = StyleSheet.create({
   summaryLabel: { color: "#17263d", fontFamily: WAFL_FONTS.bold },
   swatch: { borderColor: "#b9af9f", borderRadius: 999, borderWidth: 1, height: 18, width: 18 },
   remove: { alignItems: "center", backgroundColor: "#fffdf8", borderColor: "#e2a5aa", borderRadius: 999, borderWidth: 1, height: 24, justifyContent: "center", position: "absolute", right: -4, top: -4, width: 24 },
+  edit: { alignItems: "center", backgroundColor: "#fffdf8", borderColor: "#cbd3df", borderRadius: 999, borderWidth: 1, height: 24, justifyContent: "center", position: "absolute", right: 22, top: -4, width: 24 },
 });

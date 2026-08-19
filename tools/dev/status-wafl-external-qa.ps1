@@ -26,7 +26,27 @@ $metroListener = @(Get-NetTCPConnection -State Listen -LocalPort ([int]$state.ex
 $port3000Listener = @(Get-NetTCPConnection -State Listen -LocalPort 3000 -ErrorAction SilentlyContinue)
 $checks.NextListener = $nextPid -gt 0 -and @($nextListener | Where-Object OwningProcess -eq $nextPid).Count -gt 0
 $checks.MetroListener = $metroPid -gt 0 -and @($metroListener | Where-Object OwningProcess -eq $metroPid).Count -gt 0
-$checks.Port3000Clear = $port3000Listener.Count -eq 0
+$port3000Metadata = @()
+foreach ($listenerPid in @($port3000Listener | ForEach-Object { [int]$_.OwningProcess } | Sort-Object -Unique)) {
+    try {
+        $metadata = Get-CimInstance Win32_Process -Filter ("ProcessId = {0}" -f $listenerPid) -ErrorAction Stop
+        if ($null -ne $metadata) { $port3000Metadata += $metadata }
+    } catch {}
+}
+$port3000Policy = Get-WaflQaPort3000ListenerPolicy -State $state -Listeners $port3000Listener -ProcessMetadata $port3000Metadata
+$checks.Port3000Clear = $port3000Policy.Ready
+$checks.MetroFirewall = $false
+if ($metroPid -gt 0) {
+    try {
+        $metroProcessPath = (Get-Process -Id $metroPid -ErrorAction Stop).Path
+        $checks.MetroFirewall = (Test-WaflQaMetroFirewallRule -NodePath $metroProcessPath -Port ([int]$state.expoPort)).Ready
+    } catch {}
+}
+$expoStderrPath = Join-Path (Get-WaflQaStateDirectory) "expo.stderr.log"
+$metroStaleStreamErrors = if (Test-Path -LiteralPath $expoStderrPath -PathType Leaf) {
+    @(Select-String -LiteralPath $expoStderrPath -Pattern "ERR_STREAM_UNABLE_TO_PIPE" -SimpleMatch -ErrorAction SilentlyContinue).Count
+} else { 0 }
+$checks.MetroStreamHealthy = $metroStaleStreamErrors -eq 0
 
 $nextHttp = 0
 try { $nextHttp = [int](Invoke-WebRequest -UseBasicParsing -Uri ("http://127.0.0.1:{0}/v" -f $state.nextPort) -Method Get -TimeoutSec 10).StatusCode } catch {}
@@ -46,7 +66,54 @@ $funnelJson = ""
 if ($tailscalePath) { try { $funnelJson = (@(& $tailscalePath funnel status --json 2>$null) -join "`n") } catch {} }
 $funnelSemantic = Get-WaflQaFunnelSemanticState -JsonText $funnelJson
 $checks.FunnelClear = $funnelSemantic.Parsed -and $funnelSemantic.SchemaValid -and $funnelSemantic.Enabled -eq $false
-$checks.CloudflaredClear = @(Get-Process -Name cloudflared -ErrorAction SilentlyContinue).Count -eq 0
+$cloudflaredProcesses = @(Get-Process -Name cloudflared -ErrorAction SilentlyContinue)
+$cloudflaredMetadata = @()
+$cloudflaredDiagnostics = @()
+foreach ($cloudflaredProcess in $cloudflaredProcesses) {
+    $metadata = $null
+    try { $metadata = Get-CimInstance Win32_Process -Filter ("ProcessId = {0}" -f $cloudflaredProcess.Id) -ErrorAction Stop } catch {}
+    if ($null -ne $metadata) {
+        $service = $null
+        try { $service = Get-CimInstance Win32_Service -Filter ("ProcessId = {0}" -f $cloudflaredProcess.Id) -ErrorAction Stop | Select-Object -First 1 } catch {}
+        $signatureStatus = ''
+        $cloudflareSigner = $false
+        try {
+            $signature = Get-AuthenticodeSignature -FilePath ([string]$metadata.ExecutablePath) -ErrorAction Stop
+            $signatureStatus = [string]$signature.Status
+            $cloudflareSigner = [string]$signature.SignerCertificate.Subject -match '(?i)Cloudflare'
+        } catch {}
+        $cloudflaredMetadata += [pscustomobject]@{
+            ProcessId = [int]$metadata.ProcessId
+            ParentProcessId = [int]$metadata.ParentProcessId
+            ExecutablePath = [string]$metadata.ExecutablePath
+            CommandLine = [string]$metadata.CommandLine
+            IsWindowsService = $null -ne $service
+            SignatureStatus = $signatureStatus
+            CloudflareSigner = $cloudflareSigner
+        }
+    }
+
+    $configText = ''
+    try {
+        $diagnosticListeners = @(Get-NetTCPConnection -State Listen -OwningProcess $cloudflaredProcess.Id -ErrorAction Stop)
+        foreach ($diagnosticPort in @($diagnosticListeners.LocalPort | Sort-Object -Unique)) {
+            try {
+                $response = Invoke-WebRequest -UseBasicParsing -Uri ("http://127.0.0.1:{0}/config" -f $diagnosticPort) -Method Get -TimeoutSec 5
+                if ([int]$response.StatusCode -eq 200 -and -not [string]::IsNullOrWhiteSpace([string]$response.Content)) {
+                    $configText = [string]$response.Content
+                    break
+                }
+            } catch {}
+        }
+    } catch {}
+    $cloudflaredDiagnostics += [pscustomobject]@{
+        ProcessId = [int]$cloudflaredProcess.Id
+        Available = -not [string]::IsNullOrWhiteSpace($configText)
+        JsonText = $configText
+    }
+}
+$cloudflaredPolicy = Get-WaflQaCloudflaredProcessPolicy -State $state -Processes $cloudflaredProcesses -ProcessMetadata $cloudflaredMetadata -DiagnosticConfigs $cloudflaredDiagnostics
+$checks.CloudflaredClear = $cloudflaredPolicy.Ready
 
 $manifestHttp = 0
 $bundleHttp = 0
@@ -81,8 +148,8 @@ $checks.EnvironmentContract = ($state.PSObject.Properties.Name -contains 'databa
     -and ($state.PSObject.Properties.Name -contains 'capabilityProfileReady') `
     -and [bool]$state.capabilityProfileReady `
     -and [string]$state.runtimeQaMode -eq "current-maker" `
-    -and [string]$state.makerQaProfile -eq "alpha64-current-maker" `
-    -and [string]$state.mutationMode -eq "current-maker-alpha64"
+    -and [string]$state.makerQaProfile -in @("alpha64-current-maker", "alpha65-current-maker") `
+    -and [string]$state.mutationMode -in @("current-maker-alpha64", "current-maker-alpha65")
 
 $readSmoke = Invoke-WaflQaDeveloperReadSmoke -State $state
 $checks.DeveloperAutoConnect = $readSmoke.AutoConnectHttp -eq 200
@@ -99,6 +166,8 @@ Write-Host ("Node 24.14.0: {0}" -f $checks.NodeVersion)
 Write-Host ("Profile: {0} / {1}" -f $state.makerQaProfile, $state.mutationMode)
 Write-Host ("Next: PID {0}, 3100 listener={1}, HTTP={2}" -f $nextRecord.pid, $checks.NextListener, $nextHttp)
 Write-Host ("Metro: PID {0}, 8081 listener={1}, manifest/bundle={2}/{3}, bytes>0={4}" -f $metroRecord.pid, $checks.MetroListener, $manifestHttp, $bundleHttp, ($bundleBytes -gt 0))
+Write-Host ("Metro Tailscale inbound firewall: {0}" -f $checks.MetroFirewall)
+Write-Host ("Metro stream healthy: {0}, stale-stream-errors={1}" -f $checks.MetroStreamHealthy, $metroStaleStreamErrors)
 Write-Host ("Serve: PID {0}, 443->3100={1}" -f $serveRecord.pid, $checks.ServeRoute)
 Write-Host ("Tailscale/Metro/manifest/client host equality: {0}" -f $checks.HostEquality)
 Write-Host ("Next canonical environment contract: {0}" -f $checks.EnvironmentContract)
@@ -107,6 +176,7 @@ Write-Host ("DeveloperAutoConnect: HTTP {0}, ready={1}" -f $readSmoke.AutoConnec
 Write-Host ("Auth/company context: HTTP {0}, ready={1}" -f $readSmoke.AuthMeHttp, $checks.CompanyContext)
 Write-Host ("WorkOrder list read: HTTP {0}, ready={1}" -f $readSmoke.WorkOrderListHttp, $checks.WorkOrderList)
 Write-Host ("Owner fixture detail read: HTTP {0}, ready={1}" -f $readSmoke.OwnerFixtureDetailHttp, $checks.OwnerFixtureDetail)
-Write-Host ("Port 3000 clear: {0}; forbidden tunnel clear: {1}" -f $checks.Port3000Clear, ($checks.CloudflaredClear -and $checks.FunnelClear))
+Write-Host ("WAFL-owned port 3000 clear: {0}; verified unrelated listeners={1}; unverified={2}; forbidden tunnel clear: {3}" -f $checks.Port3000Clear, $port3000Policy.VerifiedUnrelatedCount, $port3000Policy.UnverifiedCount, ($checks.CloudflaredClear -and $checks.FunnelClear))
+Write-Host ("Cloudflared provenance: clear={0}; WAFL-owned={1}; forbidden={2}; verified unrelated={3}; unverified={4}" -f $cloudflaredPolicy.Ready, $cloudflaredPolicy.WaflOwnedCount, $cloudflaredPolicy.ForbiddenCount, $cloudflaredPolicy.VerifiedUnrelatedCount, $cloudflaredPolicy.UnverifiedCount)
 Write-Host ("Runtime canonical READY: {0}" -f $canonicalReady)
 if (-not $canonicalReady) { exit 1 }

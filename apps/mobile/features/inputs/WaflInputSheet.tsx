@@ -584,26 +584,27 @@ export default function WaflInputSheet({
   const startDrag = useCallback((event: GestureResponderEvent) => {
     animationRef.current?.stop();
     animationRef.current = null;
-    dragReadyRef.current = false;
+    translateY.stopAnimation();
+    layoutOffset.stopAnimation();
+    const stableOffset = resolveWaflSheetDragStartOffset(translatedRef.current, expandedHeight);
+    translatedRef.current = stableOffset;
+    settledOffsetRef.current = stableOffset;
+    dragStartRef.current = stableOffset;
     dragMovedRef.current = false;
     dragStartPageYRef.current = event.nativeEvent.pageY;
     dragLastPageYRef.current = event.nativeEvent.pageY;
     dragLastAtRef.current = Date.now();
     dragVelocityRef.current = 0;
+    translateY.setValue(stableOffset);
+    layoutOffset.setValue(stableOffset);
+    // Native iOS can deliver the first MOVE before stopAnimation's callback.
+    // The mounted responder must therefore be ready synchronously at GRANT.
+    dragReadyRef.current = true;
     if (keyboardInset > 0) {
       userDraggedDuringKeyboardRef.current = true;
       keyboardSystemExpandedRef.current = false;
     }
     setDragging(true);
-    translateY.stopAnimation((value) => {
-      if (!mountedRef.current || dismissingRef.current) return;
-      const stableOffset = resolveWaflSheetDragStartOffset(value, expandedHeight);
-      translatedRef.current = stableOffset;
-      dragStartRef.current = stableOffset;
-      layoutOffset.stopAnimation();
-      layoutOffset.setValue(stableOffset);
-      dragReadyRef.current = true;
-    });
   }, [expandedHeight, keyboardInset, layoutOffset, translateY]);
   const moveDrag = useCallback((event: GestureResponderEvent) => {
     if (!dragReadyRef.current) return;

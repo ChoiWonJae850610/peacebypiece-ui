@@ -7,6 +7,7 @@ const policy = read("apps/mobile/domain/measurementPolicy.ts");
 const mobile = read("apps/mobile/features/work-orders/size-color/WorkOrderSizeColorReadOnly.tsx");
 const sheets = read("apps/mobile/features/work-orders/size-color/MeasurementTemplateSheets.tsx");
 const editor = read("apps/mobile/features/work-orders/size-color/WorkOrderSizeColorStructureEditor.tsx");
+const reusableCreate = read("apps/mobile/features/inputs/WaflReusableCreateForm.tsx");
 const controller = read("apps/mobile/features/work-orders/size-color/useSizeColorStructureEditController.ts");
 const timing = read("apps/mobile/lib/devMutationTiming.ts");
 const measurement = read("lib/domain/work-orders/measurement/measurementCommandRepository.ts");
@@ -30,7 +31,8 @@ for (const token of ["WAFL 추천", "사용자 저장 스펙", "새 스펙 저�
 assert.doesNotMatch(sheets, /현재 완성 스펙의 항목과 일치하는 값을|작업지시서 사이즈는 그대로 유지됩니다|아래 V를 누를 때만 변경됩니다/);
 assert.doesNotMatch(sheets, /회사 치수표|기준 치수/);
 assert.doesNotMatch(editor, /\d+개 추가|영구 삭제/);
-assert.equal((editor.match(/<Text style=\{styles\.primaryButtonText\}>추가<\/Text>/g) ?? []).length, 2, "direct size/color creation must keep the fixed 추가 label");
+assert.equal((editor.match(/<WaflReusableCreateForm/g) ?? []).length, 2, "direct size/color creation must use the shared create action");
+assert.match(reusableCreate, /<Text style=\{styles\.createText\}>추가<\/Text>/u);
 for (const token of ["markVisibleComplete", "measurement-unit", "mutationQueue.enqueue", "authoritativeVersion"]) assert.ok(controller.includes(token));
 for (const token of ["visible-complete", "visibleCompleteMs"]) assert.ok(timing.includes(token));
 assert.match(controller, /scope === "measurement-unit"[\s\S]{0,80}markVisibleComplete\(\)/);

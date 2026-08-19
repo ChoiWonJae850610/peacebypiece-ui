@@ -25,6 +25,7 @@ assert.match(startScript, /GetSha256HexPrefix/);
 assert.match(startScript, /readApiGuard = "ready"/);
 assert.match(startScript, /fingerprintVerified = \$true/);
 assert.match(startScript, /Resolve-WaflQaCanonicalNodeToolchain/);
+assert.match(startScript, /Ensure-WaflQaMetroFirewallRule/);
 assert.match(startScript, /DATABASE_URL = \$readApiTarget\.DatabaseUrl/);
 assert.match(startScript, /serverEnvironmentContractReady/);
 assert.match(startScript, /Invoke-WaflQaBundleTransfer/);
@@ -41,9 +42,20 @@ assert.doesNotMatch(startScript.slice(startScript.indexOf("$mobileEnvironment = 
 assert.match(statusScript, /Read API guard:/);
 assert.match(statusScript, /DB fingerprint verified:/);
 assert.match(statusScript, /Invoke-WaflQaDeveloperReadSmoke/);
+assert.match(statusScript, /Test-WaflQaMetroFirewallRule/);
+assert.match(statusScript, /ERR_STREAM_UNABLE_TO_PIPE/);
+assert.match(statusScript, /Metro stream healthy:/);
 assert.match(statusScript, /WorkOrder list read:/);
 assert.match(statusScript, /Owner fixture detail read:/);
 assert.match(statusScript, /Runtime canonical READY:/);
+assert.match(commonScript, /Get-WaflQaPort3000ListenerPolicy/);
+assert.match(commonScript, /Get-WaflQaCloudflaredProcessPolicy/);
+assert.match(statusScript, /WAFL-owned port 3000 clear:/);
+assert.match(statusScript, /VerifiedUnrelatedCount/);
+assert.match(statusScript, /Cloudflared provenance:/);
+assert.match(commonScript, /live-ingress-targets-wafl-runtime/);
+assert.doesNotMatch(statusScript, /\$port3000Listener\.Count -eq 0/);
+assert.doesNotMatch(statusScript, /Get-Process -Name cloudflared[^\n]+Count -eq 0/);
 assert.doesNotMatch(`${startScript}\n${commonScript}`, /authkey|nodekey|loginurl/i);
 
 const legacy = spawnSync(process.execPath, [rejectScript], { encoding: "utf8" });

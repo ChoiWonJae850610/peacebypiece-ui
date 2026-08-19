@@ -29,6 +29,8 @@ Ownership requires marker role and run identity plus exact PID, normalized Start
 
 Stop only exact runner-owned roles. Verify ownership count, role PIDs, ports, Serve ownership release, Funnel state, and unrelated-process impact afterward.
 
+Port availability gates are scoped to WAFL ownership, not the entire PC. In particular, the external-QA `port 3000` invariant means that no WAFL-owned or unresolved-provenance listener may own port 3000. A listener from another project is allowed only when exact PID, parent PID, executable path, and CommandLine path provenance are available and prove that neither the process nor its parent/command belongs to the current WAFL repository or runner records. Unknown or incomplete metadata fails closed. Never stop, alter, or relabel a verified unrelated listener merely to make WAFL READY.
+
 ## 3. Transport and Funnel
 
 Unless an exact Delta changes the specialist environment:
@@ -36,6 +38,7 @@ Unless an exact Delta changes the specialist environment:
 - Metro uses private Tailscale LAN HTTP under Development-only ATS.
 - Developer authentication and business API use tailnet-only Tailscale Serve HTTPS.
 - Current App-first Preview/Viewer uses the same tailnet-only Tailscale Serve HTTPS origin. Quick Tunnel, cloudflared, and Funnel are not current physical-QA transports.
+- The forbidden-tunnel gate is provenance-aware like the port-3000 gate. WAFL-owned cloudflared, any Quick Tunnel, any Funnel, any cloudflared ingress targeting the WAFL repository/runtime, Next 3100, Metro 8081, the current Tailscale Serve host, or any unresolved cloudflared provenance fails closed. A signed, foreign, named-tunnel Windows service may remain running only when exact process/service provenance and its live diagnostic ingress config prove that every route is parseable and disjoint from WAFL hosts and ports. Never print the token, tunnel identity, ingress hostname, credentials, or raw diagnostic config, and never stop or relabel a verified unrelated shared service merely to make WAFL READY.
 - Next DeveloperAutoConnect binds `127.0.0.1`, never `0.0.0.0` or a public/LAN address.
 - Tailscale Funnel is forbidden.
 - Host/path allowlists are exact; request `Host` is authority and `x-forwarded-host` is not.

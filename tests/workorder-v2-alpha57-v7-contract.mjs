@@ -68,7 +68,7 @@ assert.match(gallery, /selected\.originalUrl/);
 assert.match(gallery, /onAcquireAttachment/);
 assert.match(gallery, /onDeleteAttachment/);
 assert.match(gallery, /onOpenAttachment/);
-assert.match(gallery, /onSaveMemo/);
+assert.doesNotMatch(gallery, /onSaveMemo|공장 전달 메모/);
 assert.doesNotMatch(gallery, /selected\.mimeType/);
 assert.doesNotMatch(gallery, /selected\.sizeBytes/);
 assert.doesNotMatch(gallery, /selected\.filename\}\<\/Text\>/);

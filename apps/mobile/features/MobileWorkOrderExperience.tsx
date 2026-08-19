@@ -1022,7 +1022,6 @@ export default function MobileWorkOrderExperience() {
       onDeleteImage={assetAuthoring.requestDeleteImage}
       onDeleteAttachment={assetAuthoring.requestDeleteAttachment}
       onOpenAttachment={(attachment) => void assetAuthoring.openAttachment(attachment)}
-      onSaveFactoryDeliveryMemo={assetAuthoring.saveFactoryDeliveryMemo}
       onSetRepresentativeImage={(image) => void assetAuthoring.setRepresentativeImage(image)}
       onSave={(override) => void saveBasicInfo(override)}
       onSaveDate={(value) => {

@@ -1,5 +1,6 @@
 export const WORK_ORDER_TARGET_AUDIENCES = ["여성", "남성", "공용", "키즈", "기타"] as const;
 export const WORK_ORDER_CATEGORY_MAJORS = ["상의", "하의", "아우터", "원피스", "셋업", "기타"] as const;
+export const WORK_ORDER_NEW_CATEGORY_MAJORS = ["상의", "하의", "아우터", "원피스", "기타"] as const;
 export const WORK_ORDER_MAJOR_CATEGORY_CODES = ["T", "B", "O", "D", "S", "X"] as const;
 
 export type WorkOrderTargetAudience = (typeof WORK_ORDER_TARGET_AUDIENCES)[number] | "";
@@ -85,4 +86,11 @@ export function encodeWorkOrderProductType(input: {
 export function workOrderCategorySummary(selection: WorkOrderCategorySelection): string | null {
   const values = [selection.targetAudience, selection.categoryMajor, selection.categoryDetail, selection.seasonCode].filter(Boolean);
   return values.length > 0 ? values.join(" · ") : null;
+}
+
+/** New authoring omits retired setup while an existing persisted setup remains representable until explicitly changed. */
+export function workOrderMajorCategoryPickerOptions(currentCategory: string): readonly WorkOrderCategoryMajor[] {
+  return currentCategory === "셋업"
+    ? ["", "셋업", ...WORK_ORDER_NEW_CATEGORY_MAJORS]
+    : ["", ...WORK_ORDER_NEW_CATEGORY_MAJORS];
 }

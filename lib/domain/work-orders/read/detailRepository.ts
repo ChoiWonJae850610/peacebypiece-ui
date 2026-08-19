@@ -54,13 +54,16 @@ import { serializePostgresDateOnly } from "@/lib/domain/work-orders/dateOnly.mjs
 import { withWaflV2TenantReadOnlyTransaction, type DbQueryResultRow } from "@/lib/db/client";
 import { createV2WorkOrderImageFileProxyUrl } from "@/lib/storage/r2/r2Client";
 import { createWorkOrderImageDerivativeKeys } from "@/lib/storage/r2/r2Keys";
+import { classifyWorkOrderProductionRole } from "@/lib/domain/work-orders/productionProcessPolicy";
 
 export const WORK_ORDER_V2_DETAIL_REPOSITORY_STATEMENT_COUNT = 2;
 const MEASUREMENT_CONTENT_COMMAND_CODES_SQL = MEASUREMENT_SNAPSHOT_CONTENT_COMMAND_CODES.map((code) => `'${code}'`).join(",");
 
 const TARGET_SQL = `
-  SELECT w.id, w.current_revision_id, w.entity_version, w.total_quantity AS work_order_total
+  SELECT w.id, w.current_revision_id, w.entity_version, w.total_quantity AS work_order_total,
+         w.status AS work_order_status, r.revision_status
   FROM work_orders w
+  JOIN work_order_revisions r ON r.company_id=w.company_id AND r.id=w.current_revision_id
   WHERE w.company_id = $1
     AND w.id = $2::uuid
     AND w.deleted_at IS NULL
@@ -137,7 +140,7 @@ export const WORK_ORDER_V2_DETAIL_CORE_SQL = `
 
 export const WORK_ORDER_V2_MATERIALS_SQL = `
   WITH target AS MATERIALIZED (${TARGET_SQL})
-  SELECT t.id AS work_order_id, t.current_revision_id, t.entity_version,
+  SELECT t.id AS work_order_id, t.current_revision_id, t.entity_version, t.work_order_total,
          m.id, m.material_id, m.material_type, m.name, m.color_option, m.usage_area,
          m.supplier_partner_id, NULL::text AS partner_name, m.required_quantity,
          m.allowance_quantity, m.inventory_usage_quantity, m.order_quantity,
@@ -250,6 +253,7 @@ export const WORK_ORDER_V2_SIZE_SPEC_SQL = `
 export const WORK_ORDER_V2_PROCESSES_SQL = `
   WITH target AS MATERIALIZED (${TARGET_SQL})
   SELECT t.id AS work_order_id, t.current_revision_id, t.entity_version,
+         t.work_order_total, t.work_order_status, t.revision_status,
          p.id, p.process_type_code, p.process_name_snapshot, p.partner_id,
          p.partner_name_snapshot, p.quantity, p.due_date::text AS due_date, p.unit_code,
          p.unit_price, p.amount, p.memo, p.application_area, p.application_color_target, p.status, p.display_order
@@ -630,7 +634,9 @@ export async function getWorkOrderProcessesV2(input: Omit<CommonCollectionInput,
       applicationArea: row.application_area === null ? null : String(row.application_area),
       applicationColorTarget: row.application_color_target === null ? null : String(row.application_color_target),
       status, displayOrder: asCount(row.display_order),
-      editable: status !== "completed", locked: status === "completed",
+      editable: meta.work_order_status === "draft" && meta.revision_status === "draft" && status === "ready",
+      locked: meta.work_order_status !== "draft" || meta.revision_status !== "draft" || status !== "ready",
+      role: classifyWorkOrderProductionRole(String(row.process_type_code)),
     };
   });
   const flowCodes = ["order", "material", "cutting", "process", "inspection", "shipment"] as const;
@@ -644,6 +650,8 @@ export async function getWorkOrderProcessesV2(input: Omit<CommonCollectionInput,
         status: (index < completedCount ? "completed" : index === completedCount ? "in_progress" : "ready") as ProcessStatus,
       })),
       processes,
+      totalQuantity: asDecimal(meta.work_order_total),
+      editable: meta.work_order_status === "draft" && meta.revision_status === "draft",
       entityVersion: asCount(meta.entity_version) as EntityVersion,
     },
     ...timing(result),

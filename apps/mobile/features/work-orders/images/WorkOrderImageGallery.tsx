@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useMemo, useState } from "react";
 import {
   ActivityIndicator,
   Image,
@@ -8,7 +8,6 @@ import {
   ScrollView,
   StyleSheet,
   Text,
-  TextInput,
   View,
 } from "react-native";
 import {
@@ -27,11 +26,6 @@ import {
 
 import { WAFL_FONTS } from "@/constants/fonts";
 import { WAFL_THEME } from "@/constants/theme";
-import {
-  clampFactoryDeliveryMemo,
-  FACTORY_DELIVERY_MEMO_MAX_LENGTH,
-  factoryDeliveryMemoLength,
-} from "@/domain/factoryDeliveryMemoPolicy";
 import type { WorkOrderAttachmentAsset, WorkOrderImageAsset } from "@/domain/mobileContract";
 import type { WorkOrderImageAcquisitionSource } from "@/features/work-orders/images/workOrderImageAcquisition";
 import {
@@ -45,7 +39,6 @@ import WaflActionTileGroup from "@/features/inputs/WaflActionTileGroup";
 type Props = {
   readonly images: readonly WorkOrderImageAsset[];
   readonly attachments: readonly WorkOrderAttachmentAsset[];
-  readonly factoryDeliveryMemo: string | null;
   readonly canEdit: boolean;
   readonly busy: boolean;
   readonly busyImageId: string | null;
@@ -55,9 +48,7 @@ type Props = {
   readonly onDelete: (image: WorkOrderImageAsset) => void;
   readonly onDeleteAttachment: (attachment: WorkOrderAttachmentAsset) => void;
   readonly onOpenAttachment: (attachment: WorkOrderAttachmentAsset) => void;
-  readonly onSaveMemo: (memo: string) => Promise<boolean>;
   readonly onSetRepresentative: (image: WorkOrderImageAsset) => void;
-  readonly onFocusTarget?: (target: TextInput) => void;
 };
 
 function ImageWithFallback(props: {
@@ -87,11 +78,6 @@ function ImageWithFallback(props: {
 export default function WorkOrderImageGallery(props: Props) {
   const [selectedId, setSelectedId] = useState<string | null>(props.images[0]?.id ?? null);
   const [fullscreen, setFullscreen] = useState(false);
-  const [memoDraft, setMemoDraft] = useState(props.factoryDeliveryMemo ?? "");
-  const memoInputRef = useRef<TextInput>(null);
-  const memoFocusedRef = useRef(false);
-  const memoSavingRef = useRef(false);
-  const memoActivationValueRef = useRef(props.factoryDeliveryMemo ?? "");
 
   const selectedIndex = useMemo(() => {
     const index = props.images.findIndex((image) => image.id === selectedId);
@@ -130,27 +116,6 @@ export default function WorkOrderImageGallery(props: Props) {
     },
   }), [props.images]);
   const selectedBusy = Boolean(selected && props.busyImageId === selected.id);
-  const memoLength = factoryDeliveryMemoLength(memoDraft);
-
-  useEffect(() => {
-    if (memoFocusedRef.current || memoSavingRef.current) return;
-    const current = props.factoryDeliveryMemo ?? "";
-    memoActivationValueRef.current = current;
-    setMemoDraft(current);
-  }, [props.factoryDeliveryMemo]);
-
-  async function saveMemoInline(nativeValue: string) {
-    if (props.busy || memoSavingRef.current) return;
-    const finalValue = clampFactoryDeliveryMemo(nativeValue);
-    setMemoDraft(finalValue);
-    if (finalValue === memoActivationValueRef.current) return;
-    memoSavingRef.current = true;
-    const saved = await props.onSaveMemo(finalValue);
-    if (saved) memoActivationValueRef.current = finalValue;
-    else setMemoDraft(props.factoryDeliveryMemo ?? "");
-    memoSavingRef.current = false;
-  }
-
   return (
     <View style={styles.container} testID="work-order-image-gallery">
       <WaflActionTileGroup testID="work-order-image-compact-actions">
@@ -259,7 +224,6 @@ export default function WorkOrderImageGallery(props: Props) {
         <View style={styles.empty}>
           <Images color="#8a7d70" size={28} strokeWidth={1.5} />
           <Text style={styles.emptyTitle}>등록된 이미지가 없습니다.</Text>
-          <Text style={styles.emptyBody}>첫 이미지를 추가하면 서버 정책에 따라 대표로 지정됩니다.</Text>
         </View>
       )}
 
@@ -279,44 +243,6 @@ export default function WorkOrderImageGallery(props: Props) {
             ) : null}
           </View>
         ))}
-      </View>
-
-      <View style={styles.infoSection} testID="work-order-factory-delivery-memo">
-        <View style={styles.sectionHeading}><Text style={styles.sectionTitle}>공장 전달 메모</Text></View>
-        {props.canEdit ? (
-          <>
-            <TextInput
-              ref={memoInputRef}
-              accessibilityLabel="공장 전달 메모 입력"
-              editable={!props.busy}
-              maxLength={FACTORY_DELIVERY_MEMO_MAX_LENGTH}
-              multiline
-              onChangeText={(value) => setMemoDraft(clampFactoryDeliveryMemo(value))}
-              onEndEditing={(event) => {
-                memoFocusedRef.current = false;
-                void saveMemoInline(event.nativeEvent.text);
-              }}
-              onFocus={() => {
-                memoFocusedRef.current = true;
-                memoActivationValueRef.current = props.factoryDeliveryMemo ?? "";
-                setMemoDraft(props.factoryDeliveryMemo ?? "");
-                if (memoInputRef.current) props.onFocusTarget?.(memoInputRef.current);
-              }}
-              placeholder="공장에 전달할 내용을 입력하세요."
-              style={styles.memoInput}
-              testID="work-order-factory-delivery-memo-input"
-              textAlignVertical="top"
-              value={memoDraft}
-            />
-            <Text style={styles.memoCounter} testID="work-order-factory-delivery-memo-counter">
-              {memoLength}자 / {FACTORY_DELIVERY_MEMO_MAX_LENGTH}자
-            </Text>
-          </>
-        ) : (
-          <Text style={props.factoryDeliveryMemo ? styles.memoText : styles.emptyLine}>
-            {props.factoryDeliveryMemo || "등록된 공장 전달 메모가 없습니다."}
-          </Text>
-        )}
       </View>
 
       <Modal animationType="fade" onRequestClose={() => setFullscreen(false)} presentationStyle="fullScreen" visible={fullscreen}>
@@ -341,7 +267,7 @@ export default function WorkOrderImageGallery(props: Props) {
 }
 
 const styles = StyleSheet.create({
-  container: { gap: WAFL_THEME.layout.sectionGap, paddingBottom: WAFL_THEME.spacing.xl, paddingHorizontal: WAFL_THEME.layout.cardPadding },
+  container: { gap: WAFL_THEME.layout.sectionGap, paddingBottom: WAFL_THEME.spacing.xl },
   disabled: { opacity: 0.42 },
   pressed: { opacity: 0.68 },
   progress: { alignItems: "center", flexDirection: "row", gap: 8 },
@@ -382,15 +308,6 @@ const styles = StyleSheet.create({
   attachmentText: { flex: 1, minWidth: 0 },
   attachmentName: { color: "#4b433c", fontFamily: WAFL_FONTS.semibold, fontSize: 10 },
   attachmentOpen: { color: "#8a7d70", fontFamily: WAFL_FONTS.regular, fontSize: 8, marginTop: 2 },
-  memoText: { color: "#4f463f", fontFamily: WAFL_FONTS.regular, fontSize: 11, lineHeight: 18 },
-  memoReadSurface: { borderRadius: 9, minHeight: 44, paddingHorizontal: 2, paddingVertical: 8 },
-  memoInput: { backgroundColor: "#fffdf8", borderColor: "#cfc0af", borderRadius: 9, borderWidth: 1, color: "#403933", fontFamily: WAFL_FONTS.regular, fontSize: 11, minHeight: 108, padding: 10 },
-  memoCounter: { color: "#817469", fontFamily: WAFL_FONTS.medium, fontSize: 10, marginTop: -3, textAlign: "right" },
-  memoActions: { flexDirection: "row", gap: 8, justifyContent: "flex-end" },
-  memoButton: { alignItems: "center", borderColor: "#cfc0af", borderRadius: 8, borderWidth: 1, flexDirection: "row", gap: 5, minHeight: 36, paddingHorizontal: 12 },
-  memoButtonText: { color: "#72523f", fontFamily: WAFL_FONTS.bold, fontSize: 10 },
-  memoSave: { backgroundColor: "#9b4a27", borderColor: "#9b4a27" },
-  memoSaveText: { color: "#fff", fontFamily: WAFL_FONTS.bold, fontSize: 10 },
   fullscreen: { alignItems: "center", backgroundColor: "#080b10", flex: 1, justifyContent: "center" },
   fullscreenImage: { height: "100%", width: "100%" },
   fullscreenClose: { backgroundColor: "rgba(0,0,0,0.55)", borderRadius: 999, padding: 9, position: "absolute", right: 18, top: 52, zIndex: 2 },

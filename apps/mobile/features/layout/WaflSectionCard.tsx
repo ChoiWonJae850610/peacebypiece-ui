@@ -8,14 +8,16 @@ type Props = {
   readonly children: ReactNode;
   readonly title?: string;
   readonly headerAction?: ReactNode;
+  readonly accentColor?: string;
   readonly style?: StyleProp<ViewStyle>;
   readonly testID?: string;
+  readonly variant?: "major" | "compact";
 };
 
-export default function WaflSectionCard({ children, title, headerAction, style, testID }: Props) {
-  return <View style={[styles.card, style]} testID={testID}>
+export default function WaflSectionCard({ accentColor, children, title, headerAction, style, testID, variant = "major" }: Props) {
+  return <View style={[styles.card, variant === "compact" && styles.compactCard, accentColor ? { borderLeftColor: accentColor, borderLeftWidth: WAFL_THEME.accentCard.width } : null, style]} testID={testID}>
     {title || headerAction ? <View style={styles.header}>
-      {title ? <Text style={styles.title}>{title}</Text> : <View />}
+      {title ? <Text style={[styles.title, variant === "compact" && styles.compactTitle]}>{title}</Text> : <View />}
       {headerAction}
     </View> : null}
     {children}
@@ -31,6 +33,11 @@ const styles = StyleSheet.create({
     gap: WAFL_THEME.layout.controlGap,
     padding: WAFL_THEME.layout.cardPadding,
   },
+  compactCard: {
+    borderRadius: WAFL_THEME.radius.cardCompact,
+    paddingHorizontal: WAFL_THEME.layout.compactCardInsetHorizontal,
+    paddingVertical: WAFL_THEME.layout.compactCardInsetVertical,
+  },
   header: {
     alignItems: "center",
     flexDirection: "row",
@@ -42,5 +49,9 @@ const styles = StyleSheet.create({
     fontFamily: WAFL_FONTS.bold,
     fontSize: WAFL_THEME.typography.sectionTitle.fontSize,
     lineHeight: WAFL_THEME.typography.sectionTitle.lineHeight,
+  },
+  compactTitle: {
+    fontSize: WAFL_THEME.typography.compactCardPrimary.fontSize,
+    lineHeight: WAFL_THEME.typography.compactCardPrimary.lineHeight,
   },
 });

@@ -25,7 +25,7 @@ Before start, verify read-only:
 - production blocked and Command mode/effect budget exactly as declared;
 - selected ports free or owned exactly as allowed by the Delta;
 - no active unrelated Serve/Funnel configuration;
-- Node, mobile dependencies, and installed Development Build remain compatible; cloudflared is absent.
+- Node, mobile dependencies, and installed Development Build remain compatible; WAFL-owned, Quick Tunnel, and unresolved-provenance cloudflared are absent. A verified unrelated shared named-tunnel service may remain running only under the provenance gate below.
 
 An existing Serve/Funnel configuration, HTTPS consent requirement, ambiguous identity/company mapping, production target, or unknown listener ownership is a stop condition. Do not reset, merge, approve, or kill broadly.
 
@@ -88,6 +88,10 @@ Before user QA, verify the exact checks named by the Delta. The standard read-on
 - bounded session/auto-connect, `auth/me`, expected Company context, allowed reads, and disconnect;
 - business/DB/R2/PDF/token/production effects zero.
 
+The `port 3000` readiness check is WAFL-scoped. PASS requires zero WAFL-owned port-3000 listeners and zero listeners with unresolved provenance. A listener may be classified as verified unrelated only from its exact PID/parent PID, executable path, and CommandLine path evidence showing another repository and no WAFL runner/repository ownership. Such a listener is preserved and does not block WAFL READY. PID/name alone, missing process metadata, or an ambiguous relative command remains a stop condition.
+
+The cloudflared gate uses the same fail-closed provenance principle. WAFL-owned cloudflared, Quick Tunnel, Funnel, repository/runtime references, origins on Next 3100 or Metro 8081, the current Tailscale Serve host, and unknown/unparseable live ingress all block READY. A non-WAFL shared Windows service is allowed only when the executable is foreign and Cloudflare-signed, the process is an exact named-tunnel service, and the local read-only diagnostic config proves all ingress routes parseable and disjoint from WAFL hosts and runtime ports. Status output reports counts/classifications only; tokens, tunnel IDs, hostnames, and raw ingress config never enter logs or handoff evidence. The unrelated service remains untouched.
+
 Never reconstruct or log raw origins, manifest bodies, bundle source, cookie jars, identities, or UUIDs. Do not exceed request counts fixed by the active Delta.
 
 ## Status
@@ -98,7 +102,7 @@ Use:
 .\tools\dev\status-wafl-external-qa.ps1
 ```
 
-Status is read-only. Report sanitized state, transport, readiness booleans, process-role liveness, guard mode, and short approved prefixes. Do not print session, token, raw identity, full fingerprint, or sensitive CommandLine arguments.
+Status is read-only. Report sanitized state, transport, readiness booleans, process-role liveness, guard mode, WAFL-owned/verified-unrelated/unresolved port-3000 counts, and short approved prefixes. Do not print session, token, raw identity, full fingerprint, or sensitive CommandLine arguments.
 
 ## Device handoff
 

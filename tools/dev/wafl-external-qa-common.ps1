@@ -123,6 +123,66 @@ function Resolve-WaflQaCanonicalNodeToolchain {
     throw "CANONICAL_NODE_24_14_0_NOT_FOUND"
 }
 
+function Test-WaflQaMetroFirewallRule {
+    param(
+        [Parameter(Mandatory = $true)][string]$NodePath,
+        [int]$Port = 8081
+    )
+
+    $ruleName = "WAFL-Metro-8081-Tailscale-Node24"
+    $rule = Get-NetFirewallRule -Name $ruleName -ErrorAction SilentlyContinue
+    if ($null -eq $rule) {
+        return [pscustomobject]@{ Exists = $false; ScopeReady = $false; ProgramMatches = $false; Ready = $false }
+    }
+    $portFilter = $rule | Get-NetFirewallPortFilter
+    $addressFilter = $rule | Get-NetFirewallAddressFilter
+    $applicationFilter = $rule | Get-NetFirewallApplicationFilter
+    $remoteAddress = [string]($addressFilter.RemoteAddress -join ",")
+    $scopeReady = [string]$rule.Enabled -eq "True" `
+        -and [string]$rule.Direction -eq "Inbound" `
+        -and [string]$rule.Action -eq "Allow" `
+        -and [string]$rule.Profile -match "Private" `
+        -and [string]$portFilter.Protocol -eq "TCP" `
+        -and [string]$portFilter.LocalPort -eq [string]$Port `
+        -and $remoteAddress -match '^100\.64\.0\.0/(10|255\.192\.0\.0)$'
+    $programMatches = $false
+    try {
+        $programMatches = [System.IO.Path]::GetFullPath([string]$applicationFilter.Program) -eq [System.IO.Path]::GetFullPath($NodePath)
+    } catch {}
+    return [pscustomobject]@{
+        Exists = $true
+        ScopeReady = $scopeReady
+        ProgramMatches = $programMatches
+        Ready = $scopeReady -and $programMatches
+    }
+}
+
+function Ensure-WaflQaMetroFirewallRule {
+    param(
+        [Parameter(Mandatory = $true)][string]$NodePath,
+        [int]$Port = 8081
+    )
+
+    $ruleName = "WAFL-Metro-8081-Tailscale-Node24"
+    $current = Test-WaflQaMetroFirewallRule -NodePath $NodePath -Port $Port
+    if (-not $current.Exists) {
+        New-NetFirewallRule -Name $ruleName `
+            -DisplayName "WAFL Metro 8081 via Tailscale (Node 24.14.0)" `
+            -Direction Inbound -Action Allow -Enabled True -Profile Private `
+            -Program $NodePath -Protocol TCP -LocalPort $Port -RemoteAddress "100.64.0.0/10" | Out-Null
+    }
+    elseif (-not $current.ScopeReady) {
+        throw "WAFL_METRO_FIREWALL_RULE_SCOPE_MISMATCH"
+    }
+    elseif (-not $current.ProgramMatches) {
+        Get-NetFirewallRule -Name $ruleName | Get-NetFirewallApplicationFilter | Set-NetFirewallApplicationFilter -Program $NodePath | Out-Null
+    }
+
+    $verified = Test-WaflQaMetroFirewallRule -NodePath $NodePath -Port $Port
+    if (-not $verified.Ready) { throw "WAFL_METRO_FIREWALL_RULE_NOT_READY" }
+    return $verified
+}
+
 function Invoke-WaflQaHttpRequest {
     param(
         [Parameter(Mandatory = $true)][System.Net.Http.HttpClient]$Client,
@@ -524,7 +584,7 @@ function Test-WaflQaServeMetadataFallbackEligibility {
         return [pscustomobject]@{ Eligible = $false; Reason = 'metadata-fallback-marker-mismatch' }
     }
 
-    $expectedStart = [DateTime]::Parse([string]$Record.startedAtUtc).ToUniversalTime()
+    $expectedStart = Convert-WaflQaRecordedStartTimeToUtc -Value ([string]$Record.startedAtUtc)
     $actualStart = $Process.StartTime.ToUniversalTime()
     $expectedSecond = $expectedStart.ToString('yyyy-MM-ddTHH:mm:ss', [Globalization.CultureInfo]::InvariantCulture)
     $actualSecond = $actualStart.ToString('yyyy-MM-ddTHH:mm:ss', [Globalization.CultureInfo]::InvariantCulture)
@@ -556,7 +616,7 @@ function Get-WaflQaRunnerProcessDisposition {
     }
 
     try {
-        $markerStart = [DateTime]::Parse([string]$Marker.startedAtUtc).ToUniversalTime()
+        $markerStart = Convert-WaflQaRecordedStartTimeToUtc -Value ([string]$Marker.startedAtUtc)
         $currentStart = $Process.StartTime.ToUniversalTime()
     }
     catch {
@@ -568,6 +628,260 @@ function Get-WaflQaRunnerProcessDisposition {
         return [pscustomobject]@{ Outcome = 'pid-reused-runner-already-stopped'; Reason = 'start-time-mismatch'; Terminate = $false }
     }
     return [pscustomobject]@{ Outcome = 'ownership-candidate'; Reason = 'start-time-match'; Terminate = $true }
+}
+
+function Get-WaflQaPort3000ListenerPolicy {
+    param(
+        [Parameter(Mandatory = $true)]$State,
+        [Parameter(Mandatory = $true)][AllowEmptyCollection()][object[]]$Listeners,
+        [Parameter(Mandatory = $true)][AllowEmptyCollection()][object[]]$ProcessMetadata
+    )
+
+    $repositoryRoot = [System.IO.Path]::GetFullPath([string]$State.repositoryRoot).TrimEnd('\\')
+    $repositoryPrefix = $repositoryRoot + '\\'
+    $runnerPids = @(@($State.processes) | ForEach-Object { [int]$_.pid })
+    $details = New-Object System.Collections.Generic.List[object]
+    $waflOwnedCount = 0
+    $verifiedUnrelatedCount = 0
+    $unverifiedCount = 0
+
+    foreach ($listener in @($Listeners)) {
+        $listenerPid = [int]$listener.OwningProcess
+        $metadata = @($ProcessMetadata | Where-Object { [int]$_.ProcessId -eq $listenerPid }) | Select-Object -First 1
+        if ($listenerPid -in $runnerPids) {
+            $waflOwnedCount++
+            $details.Add([pscustomobject]@{ Pid = $listenerPid; Classification = 'wafl-owned'; Reason = 'runner-record-pid' })
+            continue
+        }
+        if ($null -eq $metadata) {
+            $unverifiedCount++
+            $details.Add([pscustomobject]@{ Pid = $listenerPid; Classification = 'unverified'; Reason = 'process-metadata-unavailable' })
+            continue
+        }
+        if ([int]$metadata.ParentProcessId -in $runnerPids) {
+            $waflOwnedCount++
+            $details.Add([pscustomobject]@{ Pid = $listenerPid; Classification = 'wafl-owned'; Reason = 'runner-record-parent-pid' })
+            continue
+        }
+
+        $executablePath = [string]$metadata.ExecutablePath
+        $commandLine = [string]$metadata.CommandLine
+        $normalizedExecutable = ''
+        if (-not [string]::IsNullOrWhiteSpace($executablePath)) {
+            try { $normalizedExecutable = [System.IO.Path]::GetFullPath($executablePath) } catch {}
+        }
+        $executableInRepository = -not [string]::IsNullOrWhiteSpace($normalizedExecutable) `
+            -and ($normalizedExecutable -eq $repositoryRoot -or $normalizedExecutable.StartsWith($repositoryPrefix, [System.StringComparison]::OrdinalIgnoreCase))
+        $commandMentionsRepository = -not [string]::IsNullOrWhiteSpace($commandLine) `
+            -and $commandLine.IndexOf($repositoryRoot, [System.StringComparison]::OrdinalIgnoreCase) -ge 0
+        if ($executableInRepository -or $commandMentionsRepository) {
+            $waflOwnedCount++
+            $reason = if ($executableInRepository) { 'repository-executable-path' } else { 'repository-command-path' }
+            $details.Add([pscustomobject]@{ Pid = $listenerPid; Classification = 'wafl-owned'; Reason = $reason })
+            continue
+        }
+
+        $foreignExecutableVerified = -not [string]::IsNullOrWhiteSpace($normalizedExecutable) `
+            -and [System.IO.Path]::IsPathRooted($normalizedExecutable) `
+            -and -not $executableInRepository
+        $foreignCommandPathVerified = $false
+        if (-not [string]::IsNullOrWhiteSpace($commandLine)) {
+            foreach ($match in [regex]::Matches($commandLine, '(?i)[A-Z]:\\[^"\r\n]+')) {
+                if ([string]$match.Value -notlike "$repositoryRoot*") {
+                    $foreignCommandPathVerified = $true
+                    break
+                }
+            }
+        }
+        if ($foreignExecutableVerified -and $foreignCommandPathVerified) {
+            $verifiedUnrelatedCount++
+            $details.Add([pscustomobject]@{ Pid = $listenerPid; Classification = 'verified-unrelated'; Reason = 'foreign-executable-and-command-path' })
+            continue
+        }
+
+        $unverifiedCount++
+        $details.Add([pscustomobject]@{ Pid = $listenerPid; Classification = 'unverified'; Reason = 'insufficient-exact-path-command-provenance' })
+    }
+
+    return [pscustomobject]@{
+        Ready = $waflOwnedCount -eq 0 -and $unverifiedCount -eq 0
+        WaflOwnedCount = $waflOwnedCount
+        VerifiedUnrelatedCount = $verifiedUnrelatedCount
+        UnverifiedCount = $unverifiedCount
+        Details = [object[]]$details
+    }
+}
+
+function Get-WaflQaCloudflaredProcessPolicy {
+    param(
+        [Parameter(Mandatory = $true)]$State,
+        [Parameter(Mandatory = $true)][AllowEmptyCollection()][object[]]$Processes,
+        [Parameter(Mandatory = $true)][AllowEmptyCollection()][object[]]$ProcessMetadata,
+        [Parameter(Mandatory = $true)][AllowEmptyCollection()][object[]]$DiagnosticConfigs
+    )
+
+    $repositoryRoot = [System.IO.Path]::GetFullPath([string]$State.repositoryRoot).TrimEnd('\\')
+    $repositoryPrefix = $repositoryRoot + '\\'
+    $runnerPids = @(@($State.processes) | ForEach-Object { [int]$_.pid })
+    $details = New-Object System.Collections.Generic.List[object]
+    $waflOwnedCount = 0
+    $forbiddenCount = 0
+    $verifiedUnrelatedCount = 0
+    $unverifiedCount = 0
+
+    $runtimeMarkers = New-Object System.Collections.Generic.List[string]
+    foreach ($candidate in @(
+        $repositoryRoot,
+        [string]$State.ownerMarker,
+        [string]$State.tailscaleIpv4,
+        [string]$State.tailscaleServeHostname,
+        [string]$State.publicOrigin,
+        [string]$State.expoUrl,
+        [string]$State.metroAdvertisedHost,
+        [string]$State.iosManifestLaunchHost,
+        [string]$State.developerClientLaunchHost,
+        'peacebypiece',
+        'wafl'
+    )) {
+        if (-not [string]::IsNullOrWhiteSpace($candidate)) { $runtimeMarkers.Add($candidate) }
+    }
+
+    foreach ($process in @($Processes)) {
+        $processPid = [int]$process.Id
+        $metadata = @($ProcessMetadata | Where-Object { [int]$_.ProcessId -eq $processPid }) | Select-Object -First 1
+        if ($processPid -in $runnerPids) {
+            $waflOwnedCount++
+            $details.Add([pscustomobject]@{ Pid = $processPid; Classification = 'wafl-owned'; Reason = 'runner-record-pid' })
+            continue
+        }
+        if ($null -eq $metadata) {
+            $unverifiedCount++
+            $details.Add([pscustomobject]@{ Pid = $processPid; Classification = 'unverified'; Reason = 'process-metadata-unavailable' })
+            continue
+        }
+        if ([int]$metadata.ParentProcessId -in $runnerPids) {
+            $waflOwnedCount++
+            $details.Add([pscustomobject]@{ Pid = $processPid; Classification = 'wafl-owned'; Reason = 'runner-record-parent-pid' })
+            continue
+        }
+
+        $executablePath = [string]$metadata.ExecutablePath
+        $commandLine = [string]$metadata.CommandLine
+        $normalizedExecutable = ''
+        if (-not [string]::IsNullOrWhiteSpace($executablePath)) {
+            try { $normalizedExecutable = [System.IO.Path]::GetFullPath($executablePath) } catch {}
+        }
+        $executableInRepository = -not [string]::IsNullOrWhiteSpace($normalizedExecutable) `
+            -and ($normalizedExecutable -eq $repositoryRoot -or $normalizedExecutable.StartsWith($repositoryPrefix, [System.StringComparison]::OrdinalIgnoreCase))
+        $commandMentionsRuntime = $false
+        foreach ($marker in $runtimeMarkers) {
+            if (-not [string]::IsNullOrWhiteSpace($commandLine) `
+                -and $commandLine.IndexOf($marker, [System.StringComparison]::OrdinalIgnoreCase) -ge 0) {
+                $commandMentionsRuntime = $true
+                break
+            }
+        }
+        if ($executableInRepository -or $commandMentionsRuntime) {
+            $waflOwnedCount++
+            $reason = if ($executableInRepository) { 'repository-executable-path' } else { 'runtime-command-reference' }
+            $details.Add([pscustomobject]@{ Pid = $processPid; Classification = 'wafl-owned'; Reason = $reason })
+            continue
+        }
+
+        $isQuickTunnel = $commandLine -match '(?i)\btunnel\b[\s\S]*--url(?:\s|=)'
+        if ($isQuickTunnel) {
+            $forbiddenCount++
+            $details.Add([pscustomobject]@{ Pid = $processPid; Classification = 'forbidden'; Reason = 'quick-tunnel-command' })
+            continue
+        }
+
+        $namedServiceProvenance = -not [string]::IsNullOrWhiteSpace($normalizedExecutable) `
+            -and [System.IO.Path]::IsPathRooted($normalizedExecutable) `
+            -and [bool]$metadata.IsWindowsService `
+            -and [string]$metadata.SignatureStatus -eq 'Valid' `
+            -and [bool]$metadata.CloudflareSigner `
+            -and $commandLine -match '(?i)\btunnel\s+run\b' `
+            -and $commandLine -match '(?i)--token-file(?:\s|=)'
+        if (-not $namedServiceProvenance) {
+            $unverifiedCount++
+            $details.Add([pscustomobject]@{ Pid = $processPid; Classification = 'unverified'; Reason = 'named-service-provenance-incomplete' })
+            continue
+        }
+
+        $diagnostic = @($DiagnosticConfigs | Where-Object { [int]$_.ProcessId -eq $processPid }) | Select-Object -First 1
+        if ($null -eq $diagnostic -or -not [bool]$diagnostic.Available -or [string]::IsNullOrWhiteSpace([string]$diagnostic.JsonText)) {
+            $unverifiedCount++
+            $details.Add([pscustomobject]@{ Pid = $processPid; Classification = 'unverified'; Reason = 'live-ingress-config-unavailable' })
+            continue
+        }
+
+        try {
+            $config = ([string]$diagnostic.JsonText | ConvertFrom-Json -ErrorAction Stop)
+            $ingress = @($config.config.ingress)
+        }
+        catch {
+            $ingress = @()
+        }
+        if ($ingress.Count -eq 0) {
+            $unverifiedCount++
+            $details.Add([pscustomobject]@{ Pid = $processPid; Classification = 'unverified'; Reason = 'live-ingress-config-empty-or-invalid' })
+            continue
+        }
+
+        $routeTouchesWafl = $false
+        $unknownRoute = $false
+        foreach ($route in $ingress) {
+            $hostname = [string]$route.hostname
+            $service = [string]$route.service
+            foreach ($marker in $runtimeMarkers) {
+                if ((-not [string]::IsNullOrWhiteSpace($hostname) -and $hostname.IndexOf($marker, [System.StringComparison]::OrdinalIgnoreCase) -ge 0) `
+                    -or (-not [string]::IsNullOrWhiteSpace($service) -and $service.IndexOf($marker, [System.StringComparison]::OrdinalIgnoreCase) -ge 0)) {
+                    $routeTouchesWafl = $true
+                    break
+                }
+            }
+            if ($routeTouchesWafl) { break }
+            if ($service -match '(?i)^http_status:\d+$') { continue }
+
+            $originUri = $null
+            try { $originUri = [Uri]$service } catch {}
+            if ($null -eq $originUri -or -not $originUri.IsAbsoluteUri) {
+                $unknownRoute = $true
+                break
+            }
+            $originPort = if ($originUri.IsDefaultPort) { if ($originUri.Scheme -eq 'https') { 443 } else { 80 } } else { [int]$originUri.Port }
+            $originHost = [string]$originUri.Host
+            $hostIsWafl = $originHost -eq [string]$State.tailscaleIpv4 `
+                -or (-not [string]::IsNullOrWhiteSpace([string]$State.tailscaleServeHostname) -and $originHost -eq [string]$State.tailscaleServeHostname)
+            if ($originPort -in @([int]$State.nextPort, [int]$State.expoPort) -or $hostIsWafl) {
+                $routeTouchesWafl = $true
+                break
+            }
+        }
+
+        if ($routeTouchesWafl) {
+            $forbiddenCount++
+            $details.Add([pscustomobject]@{ Pid = $processPid; Classification = 'forbidden'; Reason = 'live-ingress-targets-wafl-runtime' })
+            continue
+        }
+        if ($unknownRoute) {
+            $unverifiedCount++
+            $details.Add([pscustomobject]@{ Pid = $processPid; Classification = 'unverified'; Reason = 'live-ingress-route-unparseable' })
+            continue
+        }
+
+        $verifiedUnrelatedCount++
+        $details.Add([pscustomobject]@{ Pid = $processPid; Classification = 'verified-unrelated'; Reason = 'signed-foreign-service-and-live-ingress-disjoint' })
+    }
+
+    return [pscustomobject]@{
+        Ready = $waflOwnedCount -eq 0 -and $forbiddenCount -eq 0 -and $unverifiedCount -eq 0
+        WaflOwnedCount = $waflOwnedCount
+        ForbiddenCount = $forbiddenCount
+        VerifiedUnrelatedCount = $verifiedUnrelatedCount
+        UnverifiedCount = $unverifiedCount
+        Details = [object[]]$details
+    }
 }
 
 function Convert-WaflQaProcessCreationDateToUtc {
@@ -582,6 +896,19 @@ function Convert-WaflQaProcessCreationDateToUtc {
     catch {
         return $null
     }
+}
+
+function Convert-WaflQaRecordedStartTimeToUtc {
+    param([Parameter(Mandatory = $true)][string]$Value)
+
+    # ConvertTo-Json may round-trip an already-UTC DateTime string without its
+    # offset. Treat an offset-less runner ownership timestamp as UTC; treating
+    # it as Windows local time creates a false nine-hour PID-reuse mismatch.
+    return [DateTime]::Parse(
+        $Value,
+        [Globalization.CultureInfo]::InvariantCulture,
+        [Globalization.DateTimeStyles]::AssumeUniversal -bor [Globalization.DateTimeStyles]::AdjustToUniversal
+    )
 }
 
 function Test-WaflQaAlternativeServeProcessMetadata {
@@ -609,7 +936,7 @@ function Test-WaflQaAlternativeServeProcessMetadata {
     if ($null -eq $metadataStart) {
         return [pscustomobject]@{ Owned = $false; UsedFallback = $false; Reason = 'metadata-fallback-creation-date-unavailable' }
     }
-    $expectedStart = [DateTime]::Parse([string]$Record.startedAtUtc).ToUniversalTime()
+    $expectedStart = Convert-WaflQaRecordedStartTimeToUtc -Value ([string]$Record.startedAtUtc)
     $expectedSecond = $expectedStart.ToString('yyyy-MM-ddTHH:mm:ss', [Globalization.CultureInfo]::InvariantCulture)
     $metadataSecond = $metadataStart.ToString('yyyy-MM-ddTHH:mm:ss', [Globalization.CultureInfo]::InvariantCulture)
     if ($metadataSecond -ne $expectedSecond) {
@@ -656,7 +983,7 @@ function Test-WaflQaStopProcessOwnership {
         -and [int]$CimProcess.ProcessId -eq [int]$Record.pid
     if (-not $baseOwned) { return [pscustomobject]@{ Owned = $false; UsedFallback = $false; Reason = 'marker-or-pid-mismatch' } }
 
-    $expectedStart = [DateTime]::Parse([string]$Record.startedAtUtc).ToUniversalTime()
+    $expectedStart = Convert-WaflQaRecordedStartTimeToUtc -Value ([string]$Record.startedAtUtc)
     $actualStart = $Process.StartTime.ToUniversalTime()
     if ([Math]::Abs(($actualStart - $expectedStart).TotalSeconds) -ge 2) {
         return [pscustomobject]@{ Owned = $false; UsedFallback = $false; Reason = 'start-time-mismatch' }

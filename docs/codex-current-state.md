@@ -4,8 +4,8 @@ Document type: **Current Baseline**
 
 Canonical owner: `docs/codex-current-state.md`
 
-Result version: `2.0.0-alpha.64`
-Status: `ALPHA64_FINALIZATION_COMPLETE`
+Result version: `2.0.0-alpha.65`
+Status: `ALPHA65_FINALIZATION_COMPLETE`
 
 This file is a compact present-state snapshot. It is not a version history, Permanent Rules owner, runtime process ledger, or evidence archive. Historical implementation details belong to numbered immutable evidence under `docs/project/app-v2/`.
 
@@ -15,25 +15,25 @@ This file is a compact present-state snapshot. It is not a version history, Perm
 | --- | --- |
 | Repository | `C:\CWJ_Project\peacebypiece-2.0` |
 | Branch | `master` |
-| Alpha.64 entry HEAD/origin | `3d126e6be487d9b9022a8202a7d08563b68d6b32` |
-| Entry commit | `feat: WAFL v2 alpha.63 모바일 아키텍처 안정화 완성` |
+| Alpha.65 entry HEAD/origin | `0a11a50fc02eec32682ba82a1c70b97eaabe3e87` |
+| Entry commit | `feat: WAFL v2 alpha.64 Maker 작업지시서·문서 UX 완성` |
 | Entry ahead/behind | `0/0` |
 | Entry working tree | clean |
-| APP_VERSION | `2.0.0-alpha.64` |
-| Mobile package version | `2.0.0-alpha.64` |
+| APP_VERSION | `2.0.0-alpha.65` |
+| Mobile package version | `2.0.0-alpha.65` |
 | Root package version | `0.5.637` |
 | Expo public version | `2.0.0` |
 | iOS Development Build | build number `1`, reusable while native inputs remain unchanged |
 | iOS bundle identifier | `com.wafl.app` |
 | Android package | `com.wafl.app` |
 
-The source cannot contain the hash of the commit that contains itself. Final alpha.64 HEAD, origin synchronization, Git cleanliness, ZIP hash/size/entry count, and exact repo-state filename are owned by the matching post-push alpha.64 repo-state.
+The source cannot contain the hash of the commit that contains itself. Final alpha.65 HEAD, origin synchronization, Git cleanliness, ZIP hash/size/entry count, and exact repo-state filename are owned by the matching post-push alpha.65 repo-state.
 
 ## Latest delivery boundary
 
-- Target Source ZIP: `peacebypiece-ui-2.0.0-alpha.64.zip`.
-- Target repo-state: `repo-state-2.0.0-alpha.64-<actual timestamp>.txt`.
-- The accepted release handoff is the matching alpha.64 ZIP/repo-state pair generated from the final synchronized pushed HEAD; the explicitly required clean-final source snapshot is a separate analysis handoff in `4. Newest`.
+- Target Source ZIP: `peacebypiece-ui-2.0.0-alpha.65.zip`.
+- Target repo-state: `repo-state-2.0.0-alpha.65-<actual timestamp>.txt`.
+- The accepted release handoff is the matching alpha.65 ZIP/repo-state pair generated from the final synchronized pushed HEAD.
 
 ## Current product and transport baseline
 
@@ -48,7 +48,45 @@ The source cannot contain the hash of the commit that contains itself. Final alp
 - Normal flow dependency on localhost:3000: none.
 - Production access and mutation: blocked by default.
 
-Alpha.64 is the current finalized result. It promotes the existing Revision/PDF/R2/controlled-Viewer foundation into the Maker R0 product path and preserves the complete cumulative Maker authoring profile, owner-approved Mobile Design System v2, shared input/sheet architecture, and the accepted physical-iPhone behavior.
+Alpha.65 is the current finalized result at `ALPHA65_MAKER_INPUT_FINISHED_SPEC_VISUAL_COMPLETE`. It preserves the complete alpha.64 Maker/document foundation while finalizing cumulative Production authoring, common WAFL INPUT/PICK and reusable direct-create behavior, Finished Spec Size source-of-truth with cm/exact 1/8-inch input, Address Search interaction, and the visual Finished Spec selector. The selector keeps eight authored T/B/O/D front/back technical-flat assets, one focused preview at most, and all 55 stable side routes. The owner accepted the current garment art for release under `OWNER_RELEASE_ACCEPTED_WITH_PROVISIONAL_GARMENT_ASSETS`; designer-authored replacement of the same eight SVG views remains `DESIGNER_AUTHORED_GARMENT_SVG_REPLACEMENT_DEFERRED` and must preserve the renderer, focused-preview, routing, grid and X/V contracts.
+
+The following alpha.65 checkpoint paragraphs are cumulative implementation history. Their interim re-QA labels and alpha.64 version boundary do not override the finalized result above.
+
+The active dirty alpha.65 candidate is a post-alpha.64 Production authoring Delta and does not replace the finalized version baseline. It removes the historical read-only six-step flow presentation from the live `제작` tab and adds one draft-only Production factory plus zero-to-many additional processes through the canonical sheet/value-field/reel owners. Factory/process eligibility comes from the existing tenant partner and company-enabled system process standards. The client does not own process quantity or amount: current WorkOrder total is projected server-side into every mutable current-revision process row, and process/revision totals update in the same command transaction. The schema and migration ledger remain unchanged. This candidate stops at `ALPHA65_PRODUCTION_FACTORY_AND_PROCESS_AUTHORING_IPHONE_QA_REQUIRED`; APP_VERSION stays `2.0.0-alpha.64`, and commit/push/release remain prohibited until owner physical-iPhone approval and a separate finalization.
+
+The current alpha.65 continuation moves active factory instructions to the Production row owner without rewriting historical data. Image/Attachment no longer renders or edits the revision-scoped `공장전달메모`; its existing persisted value remains intact and continues to serve unchanged document/PDF consumers. Factory and additional-process sheets now share one `메모 (선택)` multiline field backed by each row's existing `work_order_processes.memo`; unrelated partner, cost, and total-quantity synchronization preserves that memo, nullable clear uses the existing null semantics, and row deletion removes it with the row. No schema or migration is added. This continuation stops at `ALPHA65_PRODUCTION_MEMO_OWNERSHIP_IPHONE_REQA_REQUIRED`; APP_VERSION, Git delivery, production data, and the owner fixture remain unchanged.
+
+The current alpha.65 Production presentation candidate preserves those process/domain contracts while replacing the normal multi-field factory/process form sheets with shared card + inline authoring. Factory, process, and eligible partner remain WAFL PICK decisions; unit price and process-row memo use the live `ControlledInlineEditValue` owner and serialized version queue. `WaflWorkOrderTabBody` now owns the common horizontal body inset as well as the accepted top inset, and Production authoring no longer shows derived expected cost. Server `amount`, `process_total`, `estimated_total`, memo ownership, quantity synchronization, locks, and document consumers remain unchanged. The checkpoint is `ALPHA65_PRODUCTION_CARD_INLINE_UI_IPHONE_REQA_REQUIRED`; owner physical-iPhone review, version delivery, migration `019`, production mutation, and owner-fixture mutation remain pending/zero.
+
+The latest alpha.65 Production refinement keeps one outer Production section with the shared `기본 공정 / 추가 공정` category switch and a contextual action. Production and Materials now share the compact entity-card root and compact lifecycle action family while retaining separate domain owners. Basic Production uses the existing process status as `발주 전 → 발주 요청 → 발주 완료`, with request cancellation returning to editable `ready`; Additional Process stays authoring-only. Unit labor cost is integer-won input, process memo is a counted 100-character multiline value, new eligible-partner PICK stages its first real result, and an empty eligible list remains a usable X-only reel with disabled V. The retained isolated fixture verified request/cancel locking, memo preservation, aggregate synchronization, and current process-option projection; completion remains an owner physical-iPhone action because it is terminal. This candidate stops at `ALPHA65_PRODUCTION_MATERIAL_STYLE_LIFECYCLE_IPHONE_REQA_REQUIRED`; APP_VERSION remains `2.0.0-alpha.64`, migration ledger remains `18/18`, and version delivery, production mutation, and owner-fixture mutation remain zero.
+
+The current alpha.65 physical-parity remediation moves compact selection/value typography, lifecycle action rows, and the one-line summary into shared Material/Production presentation owners. Production summaries now expose only authoritative WorkOrder quantity and process amount. Inline process mutations pre-read and publish the current process projection inside the serialized queue so a lifecycle delete/recreate cannot leave a stale process identity; the unique factory role may reconcile to its sole current row, while additional processes require an exact current ID. The prior physical generic 404 was traced to an alpha.64 external capability profile serving an alpha.65 UI, not to the process repository; canonical Runtime is now `alpha65-current-maker`. Factory/process/partner PICK routes share one active reel-sheet invocation, required partner PICK stages its first real option before entrance, the new-process `미지정` sentinel remains non-persistable, and memo staging is hard-clamped to 100 characters. Isolated Runtime QA completed 35/35 HTTP 200 requests with zero 404 across price, memo, rapid sequential edits, request/cancel, and delete/recreate/new-ID saves. This candidate stops at `ALPHA65_PRODUCTION_PHYSICAL_PARITY_SAVE_PICKER_IPHONE_REQA_REQUIRED`; physical drag parity still requires owner iPhone re-QA. APP_VERSION stays `2.0.0-alpha.64`, ledger stays `18/18`, and migration `019`, production mutation, owner-fixture mutation, version bump, commit, push, and release remain zero.
+
+The common-picker physical-drag continuation fixes the shared mounted responder boundary rather than any Production-local sheet. `WaflInputSheet` now establishes its stable visual offset, touch page-Y base, and ready flag synchronously on responder grant; it no longer waits for an asynchronous native animation-stop callback that could discard the first MOVE. Target, Major Category, Unit, Factory, Process, and Partner therefore retain one `WaflReelPickerSheet`/`reelAdaptive`/free-settle path. Required-choice opening also normalizes an empty or invalid current candidate to the first real option before the reducer opens, while nullable pickers, the new-Process `미지정` sentinel, and zero-result safe state remain unchanged. Automation preserves the mounted contract but does not infer physical iPhone success. The checkpoint is `ALPHA65_COMMON_PICKER_PHYSICAL_DRAG_IPHONE_REQA_REQUIRED`; all delivery, migration, production-data, and owner-fixture boundaries remain unchanged.
+
+The current alpha.65 common-UI continuation fixes the remaining caller-side Partner staging gap: every required eligible-partner route opts into first-real staging even when an existing process row currently has no valid partner, so the reducer value, reel index, and V state agree on first open. `ControlledInlineEditValue` now uses the same shared single-line geometry before and during focus; only colour/tint/caret emphasis changes, while multiline growth remains content-driven. WorkOrder tabs retain usable cached/parent data during refresh, and uncached asynchronous Size/Color, Materials, or Production sources use one shared delayed tab loader with safe retry on real failure. The Overview issue-summary suffix, Image empty-state policy sentence, and due-date sheet eyebrow are normalized without changing readiness, attachment, or calendar behavior. The checkpoint is `ALPHA65_COMMON_UI_CONSISTENCY_IPHONE_REQA_REQUIRED`; APP_VERSION, ledger, migration, production/owner data, Git delivery, and release boundaries remain unchanged.
+
+The current alpha.65 sheet-inventory continuation declares 25 live mobile sheet surfaces: 22 canonical draggable/free-settle routes, one intentionally fixed short confirmation, and two interaction-specific fixed exceptions. Address Search remains on `WaflInputSheet` and requests focus only after its atomic presentation, so the common 44-point header responder and the result-body scroll do not compete during entrance. Size, Color, and Spec direct creation now reuse one `WaflReusableCreateForm` field/action shell while Color retains its palette. Overview reel/date, Material reel, and Production selection source fields keep identical participating geometry while their child sheet is open; active state changes paint only. The checkpoint is `ALPHA65_SHEET_INVENTORY_REUSABLE_CREATE_ACTIVE_GEOMETRY_IPHONE_REQA_REQUIRED`; automation explicitly does not infer physical gesture or visual acceptance, and all version, migration, production/owner-data, Git, and release boundaries remain unchanged.
+
+The latest alpha.65 visual-spec correction preserves the 55/55 stable catalog mapping and grid-only multi-selection while moving garment recognition out of annotation code. Four supplied fixed technical-flat SVG assets now render through one selection-free static garment owner, and the existing category-authored measurement paths render above them as a separate dynamic overlay. The renderer contains no procedural silhouette fallback, selected state changes overlay styling only, and unsupported/legacy categories remain truthful grid-only surfaces. The checkpoint is `ALPHA65_STATIC_GARMENT_ASSET_OVERLAY_IPHONE_REQA_REQUIRED`; owner physical-iPhone visual acceptance remains required, while APP_VERSION, ledger, schema, data, Git delivery, and release boundaries remain unchanged.
+
+Owner physical review found that painting every inactive measurement span, connector, endpoint, and extension above the fixed garment still read as a pale second drawing. The completed declutter phase removed inactive full geometry while retaining four garment owners and all 55 authored mappings. It is now historical input to the focused-measurement state below: current no-preview has no neutral label index, and grid selection remains the sole staging owner.
+
+The current focused-measurement continuation preserves arbitrary grid multi-selection while giving the diagram one non-persisted preview key. A fresh chooser is garment-only; one mapped toggle shows one warm measurement explanation, another mapped toggle switches that single preview without clearing checks, and an unmapped/custom/current toggle or preview toggle-off returns to garment-only. V still applies all staged items and X applies none. Four fixed assets retain authored SVG/TS path parity and now use uniform scale/translation; the upper is shortened to a neutral top, the lower is reauthored as a conventional front trouser flat, and quiet construction details use the deep-navy family. The target is `ALPHA65_FOCUSED_MEASUREMENT_PREVIEW_TECHNICAL_FLAT_IPHONE_REQA_REQUIRED`; `PHYSICAL_VISUAL_RESULT_NOT_INFERRED` remains mandatory and all version, ledger, data, Git, and release boundaries remain unchanged.
+
+The current front/back continuation replaces those four single-view flats with eight authored views: front-left and back-right for upper, lower, outer, and dress. Each pair is rendered together in garment-only state with no measurement geometry or label. All 55 stable mapped system specs own an explicit `front` or `back` side, and the existing singular ephemeral preview paints one explanation only on that side; staged multi-selection and V remain independent. The target is `ALPHA65_FRONT_BACK_TECHNICAL_FLAT_PREVIEW_IPHONE_REQA_REQUIRED`. Automated evidence is a rejection gate only, so `PHYSICAL_VISUAL_RESULT_NOT_INFERRED` remains mandatory and version, ledger, data, Git, and release boundaries remain unchanged.
+
+The current bounded fidelity continuation preserves that front/back architecture and corrects only the upper, outer and dress shoulder/armhole joins rejected on physical iPhone. Each affected view now has one continuous outer garment silhouette plus quiet armhole construction seams, eliminating the detached closed sleeve loops that made the shoulder and sleeve connection read as doubled geometry. Lower stays byte-identical to the accepted reference, the 55 side routes and singular focused preview are unchanged, and the checkpoint is `ALPHA65_FRONT_BACK_SHOULDER_ARMHOLE_FIDELITY_IPHONE_REQA_REQUIRED`. `PHYSICAL_VISUAL_RESULT_NOT_INFERRED` remains mandatory.
+
+The current narrow visual continuation keeps that accepted two-view and shoulder/armhole structure while correcting the remaining owner-reported neckline and pocket fidelity only. Upper and dress front/back now use simple symmetric round necklines; outer front/back use a restrained rounded neck/collar construction and the front owns two straight axis-aligned pockets. Lower remains byte-identical, all 55 side routes and the singular focused preview remain unchanged, and the checkpoint is `ALPHA65_NECKLINE_OUTER_POCKET_FIDELITY_IPHONE_REQA_REQUIRED`. Automated evidence remains a rejection gate and `PHYSICAL_VISUAL_RESULT_NOT_INFERRED` is mandatory.
+
+External-QA Runtime port policy is WAFL-owned rather than PC-global. Port 3000 blocks strict READY only when a listener is WAFL-owned or its process provenance cannot be resolved. A listener proven unrelated by exact PID/parent, executable path, and CommandLine path is preserved and reported separately without weakening Next 3100, Metro 8081, Serve 443→3100, host-equality, manifest/bundle, read, or forbidden-tunnel gates.
+
+The direct-create CTA parity continuation gives the Size, Color, and Spec parent choosers one `WaflReusableCreateEntryAction` owner for the visible plus icon, `직접 만들기` label, 44-point hit target, spacing, and pressed/disabled states. Their child forms keep the single `WaflReusableCreateForm` owner for the full-width `추가` action. Size and Color direct-create routes no longer inherit the selection-list wrapper's extra top and horizontal inset, so their child action slot now matches Spec while Color palette behavior and parent staged X/V semantics remain unchanged. The checkpoint is `ALPHA65_DIRECT_CREATE_CTA_ACTION_PARITY_IPHONE_REQA_REQUIRED`; physical iPhone acceptance and all version, migration, production/owner-data, Git, and release boundaries remain unchanged.
+
+The current alpha.65 visual-spec continuation replaces the long Finished Spec chooser rows with one data-driven visual selector and one four-column staged grid. Canonical system keys map every current WAFL-provided item for upper, lower, outer, and dress categories to labeled technical measurement geometry; the diagram is feedback-only and grid buttons remain the only selection targets. Company/custom and retained current items preserve X/V staging, rename/deactivation, and direct creation, while Other and legacy Setup remain grid-only. New Overview authoring omits Setup without deleting, migrating, remapping, or hiding persisted setup WorkOrders or their Finished Spec values. The checkpoint is `ALPHA65_VISUAL_SPEC_SELECTOR_IPHONE_REQA_REQUIRED`; APP_VERSION stays `2.0.0-alpha.64`, migration ledger stays `18/18`, and version delivery, production mutation, owner-fixture mutation, and migration `019` remain zero.
+
+Owner physical iPhone review rejected the first diagram's generic midpoint-to-rail connectors because intersecting diagonals made the garment read as a wireframe. The current fidelity continuation preserves the generic renderer, stable 55-item mapping, grid staging, and setup compatibility while replacing annotation layout with four hand-authored technical-flat definitions. Every mapped item now owns explicit measurement, extension, connector, and label geometry; inactive lines are quiet, selected styling is geometry-neutral, and the compact footprint keeps the four-column grid usable. Phone-viewport base/selected evidence for all four categories is inspected before handoff, but physical visual acceptance is not inferred. The checkpoint is `ALPHA65_VISUAL_SPEC_DIAGRAM_FIDELITY_IPHONE_REQA_REQUIRED`; all version, migration, production/owner-data, Git-delivery, and release boundaries remain unchanged.
 
 The implementation-checkpoint paragraphs below record the bounded source states that were accepted into alpha.64. Their interim `OWNER_PHYSICAL_REVIEW_REQUIRED`, re-QA checkpoint, and alpha.63 pre-finalization statements are historical boundary facts; they do not override the final result and owner approval above.
 
@@ -253,24 +291,27 @@ Final TypeScript, ESLint, Next, Expo, contracts, mutation audit, Canonical Verif
 - Alpha.62 size measurement standards, saved specs, Maker authoring, and shared mobile architecture: `docs/project/app-v2/62-size-measurement-standards-templates-evidence.md`.
 - Alpha.63 mobile architecture stabilization: `docs/project/app-v2/63-mobile-architecture-stabilization-evidence.md`.
 - Alpha.64 cumulative Maker WorkOrder/document UX and shared mobile architecture: `docs/project/app-v2/64-maker-workorder-document-ux-evidence.md`.
+- Alpha.65 Maker input, Production authoring, Finished Spec visual selector and technical-flat architecture: `docs/project/app-v2/65-maker-input-finished-spec-visual-evidence.md`.
 
 Older facts remain in their numbered evidence. They are not recopied here.
 
 ## Current completion boundary
 
-Current completed result: `2.0.0-alpha.64` — cumulative Maker WorkOrder authoring, Design
-System v2, shared input/sheet architecture, Finished Spec and saved-spec workflows, material
-and accessory lifecycle, in-app Juso and session-local Quick Delivery, and the Maker R0
-document/PDF/Viewer/share/managed-QR path are complete. Owner physical-iPhone QA, Node 24.14.0
-verification, version synchronization, and finalization are complete. The migration ledger is
-`18/18`; migration `019`, production mutation, and owner-fixture mutation remain zero.
+Current completed result: `2.0.0-alpha.65` — the alpha.64 Maker/document baseline plus
+Production process authoring, shared physical WAFL INPUT/PICK and direct-create behavior,
+Finished Spec Size SOT and exact cm/inch input, Address Search, and the eight-view visual
+Finished Spec selector are finalized. The owner accepted the current garment art only as
+provisional release assets. Node 24.14.0 verification, version synchronization, delivery and
+finalization are complete. The migration ledger is `18/18`; migration `019`, production
+mutation, and owner-fixture mutation remain zero.
 
 Post-alpha.64 policy is explicitly non-destructive: changing or clearing a WorkOrder major
 category never deletes or remaps existing Finished Spec rows or measurement values. The new
 category changes only future recommendation/default-catalog scope. A future informational
 warning may say `대분류가 변경되었습니다. 기존 완성 스펙 항목과 치수를 확인해주세요.`;
 the warning is deferred, is not a destructive confirmation gate, and cannot reset data.
-The next implementation boundary is the `제작` tab; Sketch/drawing API integration follows it.
+Designer-authored replacement of the same eight SVG views is deferred and must not change the
+front/back renderer, singular focused preview, 55/55 routing, grid staging or X/V semantics.
 
 The detailed paragraphs below preserve the accepted alpha.62 implementation checkpoints
 that led to finalization. Their interim `NOT_EXECUTED` device labels describe those earlier
@@ -396,11 +437,23 @@ owner fixture was read-only audited at draft/draft version 140/140, one snapshot
 generated documents, and zero public tokens. Owner physical iPhone final QA is
 `NOT_EXECUTED`.
 
-The display version is `2.0.0-alpha.64`; alpha.64 is finalized at
-`ALPHA64_FINALIZATION_COMPLETE`. Mobile API calls use typed domain owners above the single
+The display version is `2.0.0-alpha.65`; alpha.65 is finalized at
+`ALPHA65_FINALIZATION_COMPLETE`. Mobile API calls use typed domain owners above the single
 low-level transport, and the top-level Maker experience composes separate material, asset,
 size/spec, document, and session-local delivery foundations while preserving all accepted
-alpha.63 behavior. Applicable alpha.47-alpha.64 contracts, Next/Expo build, import-cycle
-checks, Canonical Verify, DeveloperAutoConnect, and owner physical-iPhone regression pass.
+alpha.64 behavior. Applicable alpha.47-alpha.65 contracts, Next/Expo build, import-cycle
+checks, Canonical Verify, DeveloperAutoConnect, and owner release acceptance pass.
 The exact owner fixture remains read-only preserved. Factory/AI expansion, production
 mutation, dependency/native/EAS changes, migration `019`, and new schema remain excluded.
+
+## Next candidate — 2.0.0-alpha.66
+
+Candidate: `2.0.0-alpha.66`
+
+Status: `NOT_STARTED`.
+
+Candidate label: `Derived WorkOrder architecture foundation`.
+
+Alpha.65 finalization grants no alpha.66 product scope or implementation authority. A separate
+owner-approved Version Delta is required before any alpha.66 source, data, schema, Runtime or
+delivery work begins.

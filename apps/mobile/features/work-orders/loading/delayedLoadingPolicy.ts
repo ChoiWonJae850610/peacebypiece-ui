@@ -6,6 +6,7 @@ export const WORK_ORDER_LOADING_MESSAGES = {
   sizeColor: "사이즈·색상 정보를 불러오는 중입니다.",
   fabric: "원단 정보를 불러오는 중입니다.",
   accessory: "부자재 정보를 불러오는 중입니다.",
+  production: "제작 정보를 불러오는 중입니다.",
 } as const;
 
 type TimerHandle = ReturnType<typeof setTimeout>;

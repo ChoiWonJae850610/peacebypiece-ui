@@ -396,6 +396,18 @@ export async function patchWorkOrderBasicInfoV2(input: {
     }
     const nextVersion = toInteger(workOrderUpdate.rows[0].entity_version);
 
+    if (changedFields.includes("totalQuantity")) {
+      await client.query(`
+        UPDATE work_order_processes
+        SET quantity = $3::numeric,
+            amount = round($3::numeric * unit_price, 2),
+            entity_version = entity_version + 1,
+            updated_at = now()
+        WHERE company_id = $1 AND revision_id = $2::uuid
+      `, [input.scope.companyId, current.revision_id, nextQuantity]);
+      statementCount += 1;
+    }
+
     const revisionUpdate = await client.query<WorkOrderCommandRow>(`
       UPDATE work_order_revisions
       SET product_name_snapshot = CASE WHEN $4 THEN $5 ELSE product_name_snapshot END,
@@ -406,6 +418,8 @@ export async function patchWorkOrderBasicInfoV2(input: {
           total_quantity_snapshot = CASE WHEN $14 THEN $15 ELSE total_quantity_snapshot END,
           memo = CASE WHEN $16 THEN $17 ELSE memo END,
           factory_delivery_memo = CASE WHEN $18 THEN $19 ELSE factory_delivery_memo END,
+          process_total = (SELECT COALESCE(sum(amount), 0)::numeric(14,2) FROM work_order_processes WHERE company_id = $1 AND revision_id = $2::uuid),
+          estimated_total = fabric_total + accessory_total + (SELECT COALESCE(sum(amount), 0)::numeric(14,2) FROM work_order_processes WHERE company_id = $1 AND revision_id = $2::uuid),
           entity_version = entity_version + 1,
           updated_at = now()
       WHERE company_id = $1 AND id = $2::uuid AND revision_status = 'draft'

@@ -113,6 +113,7 @@ export type WorkOrderProcess = {
   readonly displayOrder: number;
   readonly editable: boolean;
   readonly locked: boolean;
+  readonly role: "factory" | "additional";
 };
 
 export type WorkOrderProcesses = {
@@ -123,7 +124,26 @@ export type WorkOrderProcesses = {
     readonly status: WorkOrderProcessStatus;
   }[];
   readonly processes: readonly WorkOrderProcess[];
+  readonly totalQuantity: string;
+  readonly editable: boolean;
   readonly entityVersion: number;
+};
+
+export type WorkOrderProductionOptions = {
+  readonly workOrderId: string;
+  readonly entityVersion: number;
+  readonly totalQuantity: string;
+  readonly editable: boolean;
+  readonly factoryPartners: readonly { readonly id: string; readonly name: string }[];
+  readonly processStandards: readonly { readonly id: string; readonly code: string; readonly name: string }[];
+  readonly processPartners: readonly { readonly processCode: string; readonly partnerId: string; readonly partnerName: string }[];
+};
+
+export type WorkOrderProductionMutationResult = {
+  readonly workOrderId: string;
+  readonly revisionId: string;
+  readonly processId: string | null;
+  readonly nextVersion: number;
 };
 
 export type GeneratedWorkOrderDocument = {

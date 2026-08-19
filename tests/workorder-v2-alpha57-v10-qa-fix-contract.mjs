@@ -13,6 +13,7 @@ import {
   encodeWorkOrderProductType,
   WORK_ORDER_CATEGORY_MAJORS,
   WORK_ORDER_TARGET_AUDIENCES,
+  workOrderMajorCategoryPickerOptions,
 } from "../apps/mobile/domain/workOrderCategoryPolicy.ts";
 
 const read = (file) => fs.readFileSync(file, "utf8");
@@ -30,6 +31,8 @@ const validation = read("apps/mobile/domain/workOrderValidation.ts");
 
 assert.deepEqual(["", ...WORK_ORDER_TARGET_AUDIENCES], ["", "여성", "남성", "공용", "키즈", "기타"]);
 assert.deepEqual(["", ...WORK_ORDER_CATEGORY_MAJORS], ["", "상의", "하의", "아우터", "원피스", "셋업", "기타"]);
+assert.deepEqual(workOrderMajorCategoryPickerOptions(""), ["", "상의", "하의", "아우터", "원피스", "기타"]);
+assert.deepEqual(workOrderMajorCategoryPickerOptions("셋업"), ["", "셋업", "상의", "하의", "아우터", "원피스", "기타"]);
 const other = encodeWorkOrderProductType({ targetAudience: "기타", categoryMajor: "기타" });
 assert.equal(other, "wafl-c1|X|X");
 assert.deepEqual(decodeWorkOrderCategory({ productTypeCode: other, itemCode: null, seasonCode: null }), {
@@ -68,7 +71,7 @@ assert.match(overview, /<InlineDatePicker[\s\S]*label="납기"|label="납기"[\s
 assert.equal((overview.match(/commitMode="blur-submit"/g) ?? []).length, 3);
 assert.equal((overview.match(/kind="option"/g) ?? []).length, 2);
 assert.match(overview, /options=\{\["", \.\.\.WORK_ORDER_TARGET_AUDIENCES\]\}/);
-assert.match(overview, /options=\{\["", \.\.\.WORK_ORDER_CATEGORY_MAJORS\]\}/);
+assert.match(overview, /options=\{workOrderMajorCategoryPickerOptions\(props\.draft\.categoryMajor\)\}/);
 
 assert.match(reel, /renderPath === "single-choice-reel" \? \(/);
 assert.match(reel, /kind !== "unit" && !optionOnly/);
@@ -81,10 +84,7 @@ assert.match(controlled, /if \(inlineCommit\) finalizationRef\.current\.requestS
 assert.match(controlled, /!\s*inlineCommit \? <View style=\{styles\.actions\}>/);
 assert.doesNotMatch(`${controlled}\n${gallery}\n${materials}\n${experience}`, /setInterval|setTimeout\([^,]+,\s*\d+\).*save/is);
 
-assert.match(gallery, /work-order-factory-delivery-memo-input/);
-assert.match(gallery, /onEndEditing=.*saveMemoInline/s);
-assert.doesNotMatch(gallery, /공장 전달 메모 편집 취소|공장 전달 메모 저장/);
-assert.match(gallery, /FACTORY_DELIVERY_MEMO_MAX_LENGTH/);
+assert.doesNotMatch(gallery, /work-order-factory-delivery-memo|saveMemoInline|FACTORY_DELIVERY_MEMO_MAX_LENGTH|공장 전달 메모/);
 
 assert.match(materials, /commitMode=\{\["name", "colorOption", "unitPrice", "usageArea", "memo"\]\.includes\(field\) \? "blur-submit" : "explicit"\}/);
 assert.match(materials, /const fieldEditable = canEdit && orderPolicy\.canEdit/);

@@ -6,6 +6,14 @@
 
 $ErrorActionPreference = "Stop"
 
+# Evidence objects are populated only by their matching historical version profile.
+# Initialize them so current-version verification remains compatible with strict mode.
+$script:WaflV2Alpha22Evidence = $null
+$script:WaflV2Alpha23Evidence = $null
+$script:WaflV2Alpha24Evidence = $null
+$script:WaflV2Alpha25Evidence = $null
+$script:WaflV2Alpha26Evidence = $null
+
 $PipelineCommonPath = Join-Path $PSScriptRoot "pipeline-common.ps1"
 if (-not (Test-Path -LiteralPath $PipelineCommonPath)) {
     throw "Pipeline common script not found: $PipelineCommonPath"
@@ -276,11 +284,11 @@ function InvokePowerShellParseCheck {
 
     if ($failed.Count -gt 0) {
         Write-Host "[FAIL] PowerShell parse check: $($failed -join ', ')" -ForegroundColor Red
-        return [pscustomobject]@{ Name = "PowerShell parse check"; Passed = $false; Skipped = $false; ExitCode = 1 }
+        return [pscustomobject]@{ Name = "PowerShell parse check"; CommandLine = "PowerShell parser"; Passed = $false; Skipped = $false; ExitCode = 1; FindingCount = $failed.Count; HighRiskCount = ""; OutputSummary = ($failed -join ", ") }
     }
 
     Write-Host "[PASS] PowerShell parse check"
-    return [pscustomobject]@{ Name = "PowerShell parse check"; Passed = $true; Skipped = $false; ExitCode = 0 }
+    return [pscustomobject]@{ Name = "PowerShell parse check"; CommandLine = "PowerShell parser"; Passed = $true; Skipped = $false; ExitCode = 0; FindingCount = 0; HighRiskCount = ""; OutputSummary = "" }
 }
 
 function InvokeWaflV2Alpha22EvidenceCheck {
@@ -1214,6 +1222,24 @@ $profileCommands = @{
           @{ Name = "workorder v2 alpha.64 table editable underline proportion contract"; Command = "node"; Arguments = @("tests/workorder-v2-alpha64-table-editable-underline-proportion-contract.mjs") },
           @{ Name = "workorder v2 alpha.64 table underline vertical alignment contract"; Command = "node"; Arguments = @("tests/workorder-v2-alpha64-table-underline-vertical-alignment-contract.mjs") },
           @{ Name = "workorder v2 alpha.64 empty Finished Spec bootstrap contract"; Command = "node"; Arguments = @("tests/workorder-v2-alpha64-empty-finished-spec-bootstrap-contract.mjs") },
+          @{ Name = "workorder v2 alpha.65 Production factory and process authoring contract"; Command = "node"; Arguments = @("tests/workorder-v2-alpha65-production-factory-process-authoring-contract.mjs") },
+          @{ Name = "workorder v2 alpha.65 Production memo ownership contract"; Command = "node"; Arguments = @("tests/workorder-v2-alpha65-production-memo-ownership-contract.mjs") },
+          @{ Name = "workorder v2 alpha.65 Production card inline UI contract"; Command = "node"; Arguments = @("tests/workorder-v2-alpha65-production-card-inline-ui-contract.mjs") },
+          @{ Name = "workorder v2 alpha.65 Production card picker refinement contract"; Command = "node"; Arguments = @("tests/workorder-v2-alpha65-production-card-picker-refinement-contract.mjs") },
+          @{ Name = "workorder v2 alpha.65 Production material-style lifecycle contract"; Command = "node"; Arguments = @("tests/workorder-v2-alpha65-production-material-style-lifecycle-contract.mjs") },
+          @{ Name = "workorder v2 alpha.65 Production physical parity save picker contract"; Command = "node"; Arguments = @("tests/workorder-v2-alpha65-production-physical-parity-save-picker-contract.mjs") },
+          @{ Name = "workorder v2 alpha.65 common picker physical drag contract"; Command = "node"; Arguments = @("tests/workorder-v2-alpha65-common-picker-physical-drag-contract.mjs") },
+          @{ Name = "workorder v2 alpha.65 common UI consistency contract"; Command = "node"; Arguments = @("tests/workorder-v2-alpha65-common-ui-consistency-contract.mjs") },
+          @{ Name = "workorder v2 alpha.65 sheet inventory reusable create active geometry contract"; Command = "node"; Arguments = @("tests/workorder-v2-alpha65-sheet-inventory-reusable-create-active-geometry-contract.mjs") },
+          @{ Name = "workorder v2 alpha.65 direct create CTA action parity contract"; Command = "node"; Arguments = @("tests/workorder-v2-alpha65-direct-create-cta-action-parity-contract.mjs") },
+          @{ Name = "workorder v2 alpha.65 visual spec selector contract"; Command = "node"; Arguments = @("tests/workorder-v2-alpha65-visual-spec-selector-contract.mjs") },
+          @{ Name = "workorder v2 alpha.65 visual spec diagram fidelity contract"; Command = "node"; Arguments = @("tests/workorder-v2-alpha65-visual-spec-diagram-fidelity-contract.mjs") },
+          @{ Name = "workorder v2 alpha.65 static garment asset overlay contract"; Command = "node"; Arguments = @("tests/workorder-v2-alpha65-static-garment-asset-overlay-contract.mjs") },
+          @{ Name = "workorder v2 alpha.65 static garment overlay declutter contract"; Command = "node"; Arguments = @("tests/workorder-v2-alpha65-static-garment-overlay-declutter-contract.mjs") },
+          @{ Name = "workorder v2 alpha.65 focused measurement preview technical flat contract"; Command = "node"; Arguments = @("tests/workorder-v2-alpha65-focused-measurement-preview-technical-flat-contract.mjs") },
+          @{ Name = "workorder v2 alpha.65 front back technical flat preview contract"; Command = "node"; Arguments = @("tests/workorder-v2-alpha65-front-back-technical-flat-preview-contract.mjs") },
+          @{ Name = "workorder v2 alpha.65 front back shoulder armhole fidelity contract"; Command = "node"; Arguments = @("tests/workorder-v2-alpha65-front-back-shoulder-armhole-fidelity-contract.mjs") },
+          @{ Name = "workorder v2 alpha.65 neckline outer pocket fidelity contract"; Command = "node"; Arguments = @("tests/workorder-v2-alpha65-neckline-outer-pocket-fidelity-contract.mjs") },
           @{ Name = "WAFL external QA stop-state regression contract"; Command = "node"; Arguments = @("tests/wafl-external-qa-stop-state-contract.mjs") },
           @{ Name = "WAFL external QA Tailscale transport contract"; Command = "node"; Arguments = @("tests/wafl-external-qa-tailscale-transport-contract.mjs") },
           @{ Name = "WAFL external QA Tailscale runtime contract"; Command = "powershell.exe"; Arguments = @("-NoProfile", "-File", "tests/wafl-external-qa-tailscale-runtime-contract.ps1") },
@@ -1689,11 +1715,11 @@ $results.Add((InvokePowerShellParseCheck))
 $packageChanges = @($changedFiles | Where-Object { $_ -in @("package.json", "package-lock.json", "pnpm-lock.yaml", "yarn.lock") })
 if ($packageChanges.Count -gt 0) {
     Write-Host "[FAIL] package/lockfile changed: $($packageChanges -join ', ')" -ForegroundColor Red
-    $results.Add([pscustomobject]@{ Name = "package/lockfile unchanged"; Passed = $false; Skipped = $false; ExitCode = 1 })
+    $results.Add([pscustomobject]@{ Name = "package/lockfile unchanged"; CommandLine = "git diff -- package manifests"; Passed = $false; Skipped = $false; ExitCode = 1; FindingCount = ""; HighRiskCount = ""; OutputSummary = "package or lockfile changed" })
 }
 else {
     Write-Host "[PASS] package/lockfile unchanged"
-    $results.Add([pscustomobject]@{ Name = "package/lockfile unchanged"; Passed = $true; Skipped = $false; ExitCode = 0 })
+    $results.Add([pscustomobject]@{ Name = "package/lockfile unchanged"; CommandLine = "git diff -- package manifests"; Passed = $true; Skipped = $false; ExitCode = 0; FindingCount = ""; HighRiskCount = ""; OutputSummary = "" })
 }
 
 $migrationChanges = @($changedFiles | Where-Object { $_ -match '^(db/migrations/|db/schema/|.*migration.*\.sql$)' })
@@ -1754,26 +1780,26 @@ if ($Profile -eq "automation-infrastructure" -and (GetProjectAppVersion) -in @("
 $unexpectedMigrationChanges = @($migrationChanges | Where-Object { $allowedMigrationChanges -notcontains $_ })
 if ($unexpectedMigrationChanges.Count -gt 0) {
     Write-Host "[FAIL] unexpected DB migration/schema changes: $($migrationChanges -join ', ')" -ForegroundColor Red
-    $results.Add([pscustomobject]@{ Name = "DB migration unchanged"; Passed = $false; Skipped = $false; ExitCode = 1 })
+    $results.Add([pscustomobject]@{ Name = "DB migration unchanged"; CommandLine = "git diff -- migration paths"; Passed = $false; Skipped = $false; ExitCode = 1; FindingCount = ""; HighRiskCount = ""; OutputSummary = "unexpected migration or schema change" })
 }
 elseif ($migrationChanges.Count -gt 0) {
     Write-Host "[PASS] DB migration scoped to profile: $($migrationChanges -join ', ')"
-    $results.Add([pscustomobject]@{ Name = "DB migration scoped"; Passed = $true; Skipped = $false; ExitCode = 0 })
+    $results.Add([pscustomobject]@{ Name = "DB migration scoped"; CommandLine = "git diff -- migration paths"; Passed = $true; Skipped = $false; ExitCode = 0; FindingCount = ""; HighRiskCount = ""; OutputSummary = "profile-approved migration paths only" })
 }
 else {
     Write-Host "[PASS] DB migration unchanged"
-    $results.Add([pscustomobject]@{ Name = "DB migration unchanged"; Passed = $true; Skipped = $false; ExitCode = 0 })
+    $results.Add([pscustomobject]@{ Name = "DB migration unchanged"; CommandLine = "git diff -- migration paths"; Passed = $true; Skipped = $false; ExitCode = 0; FindingCount = ""; HighRiskCount = ""; OutputSummary = "" })
 }
 
 $sensitiveFiles = @(FindSensitiveChangedFiles -ChangedFiles $changedFiles)
 if ($sensitiveFiles.Count -gt 0) {
     Write-Host "[FAIL] suspicious secret/production value paths:" -ForegroundColor Red
     foreach ($path in $sensitiveFiles) { Write-Host " - $path" }
-    $results.Add([pscustomobject]@{ Name = "secret/production scan"; Passed = $false; Skipped = $false; ExitCode = 1 })
+    $results.Add([pscustomobject]@{ Name = "secret/production scan"; CommandLine = "changed-path sensitive-file scan"; Passed = $false; Skipped = $false; ExitCode = 1; FindingCount = $sensitiveFiles.Count; HighRiskCount = $sensitiveFiles.Count; OutputSummary = "suspicious sensitive changed paths" })
 }
 else {
     Write-Host "[PASS] secret/production scan"
-    $results.Add([pscustomobject]@{ Name = "secret/production scan"; Passed = $true; Skipped = $false; ExitCode = 0 })
+    $results.Add([pscustomobject]@{ Name = "secret/production scan"; CommandLine = "changed-path sensitive-file scan"; Passed = $true; Skipped = $false; ExitCode = 0; FindingCount = 0; HighRiskCount = 0; OutputSummary = "" })
 }
 
 $results.Add((InvokePackageScriptCheck -Name "npm run build" -ScriptName "build"))

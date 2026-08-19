@@ -331,6 +331,16 @@ const alpha64ApiPaths = [
   "app/api/v2/work-orders/[workOrderId]/documents/generate/route.ts",
   "app/api/v2/work-orders/[workOrderId]/size-color/options/[optionId]/route.ts",
 ];
+const alpha65ContractExists = fs.existsSync(path.join(root, "tests/workorder-v2-alpha65-production-factory-process-authoring-contract.mjs"));
+const alpha65ApiPaths = [
+  ...alpha64ApiPaths,
+  "app/api/v2/work-orders/[workOrderId]/processes/route.ts",
+  "app/api/v2/work-orders/[workOrderId]/processes/[processId]/route.ts",
+  "app/api/v2/work-orders/[workOrderId]/processes/[processId]/order-request/route.ts",
+  "app/api/v2/work-orders/[workOrderId]/processes/[processId]/order-cancel/route.ts",
+  "app/api/v2/work-orders/[workOrderId]/processes/[processId]/order-complete/route.ts",
+  "app/api/v2/work-orders/[workOrderId]/production-options/route.ts",
+];
 const alpha62ApiPaths = [
   "app/api/system/standards/size-spec-templates/route.ts",
   "app/api/v2/size-spec-templates/[templateId]/route.ts",
@@ -370,7 +380,9 @@ const alpha25ContractExists = fs.existsSync(path.join(root, "tests/workorder-v2-
 const alpha26ContractExists = fs.existsSync(path.join(root, "tests/workorder-v2-alpha26-material-command-api-contract.mjs"));
 const alpha27ContractExists = fs.existsSync(path.join(root, "tests/workorder-v2-alpha27-revision-issue-command-contract.mjs"));
 const alpha28ContractExists = fs.existsSync(path.join(root, "tests/workorder-v2-alpha28-issued-preview-contract.mjs"));
-if (alpha64ContractExists && apiChanges.length > 0) {
+if (alpha65ContractExists && apiChanges.length > 0) {
+  assert.deepEqual(apiChanges.filter((change) => !alpha65ApiPaths.some((allowedPath) => change.endsWith(allowedPath))), [], "alpha.65 may change only the inherited alpha.64 routes and its exact production process/options routes");
+} else if (alpha64ContractExists && apiChanges.length > 0) {
   assert.deepEqual(apiChanges.filter((change) => !alpha64ApiPaths.some((allowedPath) => change.endsWith(allowedPath))), [], "alpha.64 may change only its exact document, server-mediated address-search, and spec-catalog API routes");
 } else if (alpha62ContractExists && apiChanges.length > 0) {
   assert.deepEqual(apiChanges.filter((change) => !alpha62ApiPaths.some((allowedPath) => change.endsWith(allowedPath))), [], "alpha.62 may add only its exact measurement and company structure-option API routes");

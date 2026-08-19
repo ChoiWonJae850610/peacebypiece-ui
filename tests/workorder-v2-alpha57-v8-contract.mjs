@@ -26,20 +26,13 @@ assert.match(validation, /factoryDeliveryMemo[\s\S]*FACTORY_DELIVERY_MEMO_MAX_LE
 assert.doesNotMatch(validation, /factoryDeliveryMemo[\s\S]{0,180}5_000/);
 
 const gallery = read("apps/mobile/features/work-orders/images/WorkOrderImageGallery.tsx");
-assert.match(gallery, /work-order-factory-delivery-memo-input/);
-assert.match(gallery, /onEndEditing=.*saveMemoInline/s);
-assert.match(gallery, /clampFactoryDeliveryMemo/);
-assert.match(gallery, /\{memoLength\}자\s*\/\s*\{FACTORY_DELIVERY_MEMO_MAX_LENGTH\}자/);
-assert.match(gallery, /onSaveMemo:\s*\(memo: string\) => Promise<boolean>/);
-assert.doesNotMatch(gallery, /공장 전달 메모 편집 취소|공장 전달 메모 저장|styles\.memoAction\b|>편집</);
+assert.doesNotMatch(gallery, /work-order-factory-delivery-memo|saveMemoInline|clampFactoryDeliveryMemo|onSaveMemo|공장 전달 메모/);
 
 const experience = [
   read("apps/mobile/features/MobileWorkOrderExperience.tsx"),
   read("apps/mobile/features/work-orders/images/useWorkOrderAssetAuthoringController.ts"),
 ].join("\n");
-assert.match(experience, /saveFactoryDeliveryMemo\(memo: string\): Promise<boolean>/);
-assert.match(experience, /factoryDeliveryMemoLength\(memo\) > FACTORY_DELIVERY_MEMO_MAX_LENGTH/);
-assert.match(experience, /onSaveFactoryDeliveryMemo=\{assetAuthoring\.saveFactoryDeliveryMemo\}/);
+assert.doesNotMatch(experience, /saveFactoryDeliveryMemo\(memo: string\): Promise<boolean>|onSaveFactoryDeliveryMemo=\{assetAuthoring\.saveFactoryDeliveryMemo\}/);
 
 const materials = read("apps/mobile/features/materials/WorkOrderMaterialsReadOnly.tsx");
 assert.match(materials, /testID=\{`material-add-\$\{materialType\}`\}/);

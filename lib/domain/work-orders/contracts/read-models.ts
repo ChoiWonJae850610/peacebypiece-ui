@@ -335,6 +335,7 @@ export type WorkOrderProcessReadModel = {
   readonly displayOrder: number;
   readonly editable: boolean;
   readonly locked: boolean;
+  readonly role: "factory" | "additional";
 };
 
 export type WorkOrderProcessesReadModel = {
@@ -345,7 +346,30 @@ export type WorkOrderProcessesReadModel = {
     readonly status: ProcessStatus;
   }[];
   readonly processes: readonly WorkOrderProcessReadModel[];
+  readonly totalQuantity: DecimalString;
+  readonly editable: boolean;
   readonly entityVersion: EntityVersion;
+};
+
+export type WorkOrderProductionOptionsReadModel = {
+  readonly workOrderId: WorkOrderId;
+  readonly entityVersion: EntityVersion;
+  readonly totalQuantity: DecimalString;
+  readonly editable: boolean;
+  readonly factoryPartners: readonly {
+    readonly id: PartnerId;
+    readonly name: string;
+  }[];
+  readonly processStandards: readonly {
+    readonly id: string;
+    readonly code: string;
+    readonly name: string;
+  }[];
+  readonly processPartners: readonly {
+    readonly processCode: string;
+    readonly partnerId: PartnerId;
+    readonly partnerName: string;
+  }[];
 };
 
 export type WorkOrderAssetReadModel = {

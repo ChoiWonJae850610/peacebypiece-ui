@@ -65,7 +65,7 @@ assert.doesNotMatch(materials, /WaflListAddCap|addCapAnchor|listWithAddCap/);
 for (const doc of [design, ia]) assert.match(doc, /OWNER_PHYSICAL_REVIEW_REQUIRED/);
 assert.match(ia, /개요 \/ 이미지·첨부 \/ 사이즈·색상 \/ 원부자재 \/ 제작 \/ 문서/);
 assert.match(ia, /presentation-only|presentation-only|presentation/i);
-assert.match(roadmap, /(?:Status target: `ALPHA64_[A-Z0-9_]+_IPHONE_REQA_REQUIRED`|Status: `ALPHA64_FINALIZATION_COMPLETE`)/);
+assert.match(roadmap, /(?:Status target: `ALPHA64_[A-Z0-9_]+_IPHONE_REQA_REQUIRED`|Status: `ALPHA[0-9]+_FINALIZATION_COMPLETE`)/);
 assert.doesNotMatch(roadmap, /Status target: `ALPHA64_[A-Z0-9_]+_COMPLETE`/);
 
 console.log("workorder-v2-alpha64-design-system-v2-ia-simplification-contract: PASS");

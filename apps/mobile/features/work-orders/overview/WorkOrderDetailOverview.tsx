@@ -27,7 +27,7 @@ import WaflSectionCard from "@/features/layout/WaflSectionCard";
 import WaflMetricGrid, { type WaflMetricGridItem } from "@/features/layout/WaflMetricGrid";
 import WaflMetricField from "@/features/layout/WaflMetricField";
 import WaflWorkOrderTabBody from "@/features/layout/WaflWorkOrderTabBody";
-import WorkOrderProductionReadOnly from "@/features/work-orders/production/WorkOrderProductionReadOnly";
+import WorkOrderProductionAuthoring from "@/features/work-orders/production/WorkOrderProductionAuthoring";
 import type { SizeColorReadBoundary } from "@/features/work-orders/size-color/useSizeColorReadController";
 import type { SizeColorStructureEditBoundary } from "@/features/work-orders/size-color/useSizeColorStructureEditController";
 import type { WorkOrderImageAcquisitionSource } from "@/features/work-orders/images/workOrderImageAcquisition";
@@ -46,8 +46,8 @@ import { useFocusedFieldVisibility } from "@/hooks/useFocusedFieldVisibility";
 import { formatWorkOrderStatus } from "@/lib/workOrderDisplay";
 import { displayValueOrUnset, isUnsetDisplayValue, WAFL_UNSET_PLACEHOLDER } from "@/lib/displayPlaceholder";
 import {
-  WORK_ORDER_CATEGORY_MAJORS,
   WORK_ORDER_TARGET_AUDIENCES,
+  workOrderMajorCategoryPickerOptions,
 } from "@/domain/workOrderCategoryPolicy";
 import {
   resolveWorkOrderSectionIntent,
@@ -134,9 +134,7 @@ function ReadinessPanel({ detail }: { readonly detail: WorkOrderDetailCore }) {
           {warnings.length > 0 ? <Text style={styles.warningCount}>주의 {warnings.length}건</Text> : null}
         </View>
         {blockers.slice(0, 3).map((item) => <Text key={item.code} style={styles.blocker}>• {item.message}</Text>)}
-        {blockers.length > 3 ? <Text style={styles.more}>외 {blockers.length - 3}건</Text> : null}
         {warnings.slice(0, 3).map((item) => <Text key={item.code} style={styles.warning}>• {item.message}</Text>)}
-        {warnings.length > 3 ? <Text style={styles.more}>외 {warnings.length - 3}건</Text> : null}
       </View>
     </View>
   );
@@ -203,7 +201,6 @@ type Props = {
   readonly onDeleteImage: (image: WorkOrderImageAsset) => void;
   readonly onDeleteAttachment: (attachment: WorkOrderAttachmentAsset) => void;
   readonly onOpenAttachment: (attachment: WorkOrderAttachmentAsset) => void;
-  readonly onSaveFactoryDeliveryMemo: (memo: string) => Promise<boolean>;
   readonly onSetRepresentativeImage: (image: WorkOrderImageAsset) => void;
   readonly onRefreshDocuments: () => void;
 };
@@ -552,7 +549,7 @@ export default function WorkOrderDetailOverview(props: Props) {
                       setCategoryReelField(null);
                       props.onCancelEdit();
                     }}
-                    options={["", ...WORK_ORDER_CATEGORY_MAJORS]}
+                    options={workOrderMajorCategoryPickerOptions(props.draft.categoryMajor)}
                     unitCode=""
                     value={props.draft.categoryMajor}
                     visible
@@ -579,15 +576,12 @@ export default function WorkOrderDetailOverview(props: Props) {
               canEdit={props.canEdit}
               images={props.images}
               attachments={props.attachments}
-              factoryDeliveryMemo={detail.revision.factoryDeliveryMemo}
-                message={props.imageMessage}
+              message={props.imageMessage}
                 onAcquire={props.onAcquireImage}
                 onAcquireAttachment={props.onAcquireAttachment}
                 onDelete={props.onDeleteImage}
                 onDeleteAttachment={props.onDeleteAttachment}
                 onOpenAttachment={props.onOpenAttachment}
-                onFocusTarget={onFieldFocus}
-                onSaveMemo={props.onSaveFactoryDeliveryMemo}
               onSetRepresentative={props.onSetRepresentativeImage}
             />
           ) : activeSection === "sizes" ? (
@@ -599,7 +593,7 @@ export default function WorkOrderDetailOverview(props: Props) {
               state={props.sizeColor.state}
             />
           ) : activeSection === "production" ? (
-            <WorkOrderProductionReadOnly workOrderId={detail.header.id} />
+            <WorkOrderProductionAuthoring key={detail.header.id} workOrderId={detail.header.id} />
           ) : activeSection === "output" ? (
             <WorkOrderDocumentWorkbench
               attachments={props.attachments}
@@ -725,8 +719,8 @@ const styles = StyleSheet.create({
   tabUnderline: { backgroundColor: "transparent", borderRadius: 999, height: 2, marginTop: 4, width: 28 },
   tabUnderlineSelected: { backgroundColor: "#17263d" },
   tabCount: { backgroundColor: "#e2d8ca", borderRadius: 999, color: "#5d544b", fontFamily: WAFL_FONTS.bold, fontSize: 9, minWidth: 18, overflow: "hidden", paddingHorizontal: 5, paddingVertical: 2, textAlign: "center" },
-  overviewSection: { gap: WAFL_THEME.layout.sectionGap, paddingBottom: WAFL_THEME.layout.sectionGapLarge, paddingHorizontal: WAFL_THEME.layout.cardPadding },
-  materialsCombined: { gap: WAFL_THEME.layout.sectionGap, paddingBottom: WAFL_THEME.layout.sectionGapLarge, paddingHorizontal: WAFL_THEME.layout.cardPadding },
+  overviewSection: { gap: WAFL_THEME.layout.sectionGap, paddingBottom: WAFL_THEME.layout.sectionGapLarge },
+  materialsCombined: { gap: WAFL_THEME.layout.sectionGap, paddingBottom: WAFL_THEME.layout.sectionGapLarge },
   nextCheckPanel: { alignItems: "flex-start", borderLeftWidth: 4, borderRadius: 11, flexDirection: "row", gap: 10, marginBottom: 8, paddingHorizontal: 11, paddingVertical: 10 },
   nextCheckReady: { backgroundColor: "#edf2e7", borderLeftColor: "#4d6a3a" },
   nextCheckWarning: { backgroundColor: "#fff1d3", borderLeftColor: "#c75f35" },

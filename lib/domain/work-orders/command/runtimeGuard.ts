@@ -39,6 +39,8 @@ export const WAFL_V2_ALPHA62_MEASUREMENT_MUTATION_APPROVAL =
   MAKER_QA_APPROVAL.ALPHA62;
 export const WAFL_V2_ALPHA64_DOCUMENT_R0_MUTATION_APPROVAL =
   MAKER_QA_APPROVAL.ALPHA64_CURRENT;
+export const WAFL_V2_ALPHA65_PRODUCTION_AUTHORING_MUTATION_APPROVAL =
+  MAKER_QA_APPROVAL.ALPHA65_CURRENT;
 
 const SUPPORTED_MUTATION_APPROVALS = new Set([
   WAFL_V2_ALPHA25_MUTATION_APPROVAL,
@@ -53,6 +55,7 @@ const SUPPORTED_MUTATION_APPROVALS = new Set([
   WAFL_V2_ALPHA61_MOBILE_WORK_ORDER_CREATE_MUTATION_APPROVAL,
   WAFL_V2_ALPHA62_MEASUREMENT_MUTATION_APPROVAL,
   WAFL_V2_ALPHA64_DOCUMENT_R0_MUTATION_APPROVAL,
+  WAFL_V2_ALPHA65_PRODUCTION_AUTHORING_MUTATION_APPROVAL,
 ]);
 
 export type WorkOrderV2CommandRuntimeGuard =
@@ -168,6 +171,14 @@ export function getWorkOrderV2MeasurementMutationRuntimeGuard(): WorkOrderV2Comm
     requireMutationApproval: true,
     requiredMutationApproval: configuredApproval,
   });
+}
+
+export function getWorkOrderV2ProductionMutationRuntimeGuard(): WorkOrderV2CommandRuntimeGuard {
+  const configuredApproval = process.env.WAFL_V2_COMMAND_MUTATION_APPROVED ?? "";
+  if (!isMakerQaCapabilityEnabled(process.env, MAKER_QA_CAPABILITY.PRODUCTION_AUTHORING)) {
+    return { ok: false, reason: "production-authoring-mutation-approval-missing" };
+  }
+  return getWorkOrderV2CommandRuntimeGuard({ requireMutationApproval: true, requiredMutationApproval: configuredApproval });
 }
 
 export function getWorkOrderV2DraftChildHardDeleteMutationRuntimeGuard(): WorkOrderV2CommandRuntimeGuard {

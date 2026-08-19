@@ -39,13 +39,15 @@ for (const required of [
   "animationRef",
   "dragReadyRef",
   "dragMovedRef",
-  "translateY.stopAnimation((value)",
+  "translateY.stopAnimation();",
   "resolveWaflSheetDragStartOffset",
   '"wafl-sheet-header-drag-zone"',
   'testID="wafl-sheet-body-viewport"',
   'testID="wafl-sheet-actions"',
   'testID="wafl-sheet-bottom-inset"',
 ]) assert.ok(sheet.includes(required), `shared owner missing ${required}`);
+assert.match(sheet, /const stableOffset = resolveWaflSheetDragStartOffset\(translatedRef\.current, expandedHeight\)[\s\S]*dragStartRef\.current = stableOffset[\s\S]*dragStartPageYRef\.current = event\.nativeEvent\.pageY[\s\S]*translateY\.setValue\(stableOffset\)[\s\S]*dragReadyRef\.current = true/u);
+assert.doesNotMatch(sheet, /translateY\.stopAnimation\(\(value\)/u);
 assert.doesNotMatch(sheet, /KeyboardAvoidingView/u);
 assert.match(sheet, /if \(!dragReadyRef\.current \|\| !dragMovedRef\.current\)[\s\S]*setDragging\(false\);[\s\S]*return;/u);
 assert.ok(sheet.indexOf('testID="wafl-sheet-body-viewport"') < sheet.indexOf('testID="wafl-sheet-actions"'));

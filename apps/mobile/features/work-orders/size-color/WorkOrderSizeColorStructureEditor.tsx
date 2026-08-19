@@ -1,13 +1,12 @@
 import { useCallback, useMemo, useRef, useState, type ReactNode } from "react";
 import {
-  ActivityIndicator,
   Pressable,
   StyleSheet,
   Text,
   type TextInput,
   View,
 } from "react-native";
-import { Check, ChevronLeft } from "lucide-react-native";
+import { Check } from "lucide-react-native";
 
 import { WAFL_FONTS } from "@/constants/fonts";
 import { WAFL_THEME } from "@/constants/theme";
@@ -41,7 +40,8 @@ import { workOrderMutationController } from "@/features/work-orders/workOrderMut
 import { workOrderQueryController } from "@/features/work-orders/workOrderQueryController";
 import WaflOptionGrid, { type WaflOptionGridItem } from "@/features/inputs/WaflOptionGrid";
 import WaflInputSheet from "@/features/inputs/WaflInputSheet";
-import WaflSheetTextInput from "@/features/inputs/WaflSheetTextInput";
+import WaflReusableCreateForm from "@/features/inputs/WaflReusableCreateForm";
+import WaflReusableCreateEntryAction from "@/features/inputs/WaflReusableCreateEntryAction";
 import { WAFL_REUSABLE_CATALOG_CREATE_SIZING } from "@/domain/waflSheetDetentPolicy";
 import { decodeWorkOrderMajorCategoryCode } from "@/domain/workOrderCategoryPolicy";
 import { listWaflSystemSpecItems } from "@/domain/systemSpecItemCatalog";
@@ -56,12 +56,12 @@ type Props = {
   readonly productTypeCode: string | null;
 };
 
-function StructureSelectionSheet(props: { readonly title: string; readonly onClose: () => void; readonly onAfterClose?: () => void; readonly onAfterOpen?: () => void; readonly onApply?: () => void; readonly applyDisabled?: boolean; readonly busy?: boolean; readonly children: ReactNode; readonly sizing?: WaflSheetSizing; readonly visible?: boolean }) {
+function StructureSelectionSheet(props: { readonly title: string; readonly onClose: () => void; readonly onAfterClose?: () => void; readonly onAfterOpen?: () => void; readonly onApply?: () => void; readonly applyDisabled?: boolean; readonly busy?: boolean; readonly children: ReactNode; readonly reusableCreate?: boolean; readonly sizing?: WaflSheetSizing; readonly visible?: boolean }) {
   return <WaflInputSheet
     cancelAccessibilityLabel={`${props.title} 변경 취소`}
     confirmAccessibilityLabel={`${props.title} 변경 적용`}
     confirmDisabled={props.applyDisabled}
-    contentStyle={styles.structureSheetContent}
+    contentStyle={props.reusableCreate ? undefined : styles.structureSheetContent}
     onCancel={props.onClose}
     onAfterClose={props.onAfterClose}
     onAfterOpen={props.onAfterOpen}
@@ -71,7 +71,7 @@ function StructureSelectionSheet(props: { readonly title: string; readonly onClo
     title={props.title}
     visible={props.visible ?? true}
   >
-    <View style={styles.sheetContent}>{props.children}</View>
+    {props.reusableCreate ? props.children : <View style={styles.sheetContent}>{props.children}</View>}
   </WaflInputSheet>;
 }
 
@@ -89,14 +89,8 @@ function SizeChooser(props: {
   const [direct, setDirect] = useState("");
   const [selectedKeys, setSelectedKeys] = useState<readonly string[]>(() => createStagedStructureSelection(props.rows.map((row) => ({ id: row.id, displayName: row.displayLabel, hexValue: null }))));
   const selected = useMemo(() => new Set(selectedKeys), [selectedKeys]);
-  if (nested.route === "create") return <StructureSelectionSheet onAfterClose={nested.finishClose} onAfterOpen={() => directInputRef.current?.focus()} onClose={props.onClose} sizing={WAFL_REUSABLE_CATALOG_CREATE_SIZING} title="직접 사이즈 만들기" visible={nested.visible}>
-    <Pressable accessibilityLabel="기본 사이즈로 돌아가기" onPress={() => nested.transition("select")} style={styles.backButton}><ChevronLeft color="#23375a" size={18} /><Text style={styles.backButtonText}>기본 사이즈</Text></Pressable>
-    <Text style={styles.fieldLabel}>사이즈명</Text>
-    <WaflSheetTextInput maxLength={40} onChangeText={setDirect} placeholder="예: 프리사이즈" ref={directInputRef} style={styles.input} value={direct} />
-    <Text style={styles.catalogHint}>추가하면 회사에서 다음 작업지시서에도 다시 선택할 수 있습니다.</Text>
-    <Pressable disabled={props.busy || !direct.trim()} onPress={() => { void props.onCreate(direct).then((created) => { if (created) { setSelectedKeys((current) => [...new Set([...current, structureSelectionKey(created.displayName)])]); setDirect(""); nested.transition("select"); } }); }} style={[styles.primaryButton, (props.busy || !direct.trim()) && styles.disabled]}>
-      {props.busy ? <ActivityIndicator color="#fff" /> : <Text style={styles.primaryButtonText}>추가</Text>}
-    </Pressable>
+  if (nested.route === "create") return <StructureSelectionSheet onAfterClose={nested.finishClose} onAfterOpen={() => directInputRef.current?.focus()} onClose={props.onClose} reusableCreate sizing={WAFL_REUSABLE_CATALOG_CREATE_SIZING} title="직접 사이즈 만들기" visible={nested.visible}>
+    <WaflReusableCreateForm backLabel="기본 사이즈" fieldLabel="사이즈명" helpText="추가하면 회사에서 다음 작업지시서에도 다시 선택할 수 있습니다." inputRef={directInputRef} maxLength={40} onBack={() => nested.transition("select")} onChange={setDirect} onCreate={() => { void props.onCreate(direct).then((created) => { if (created) { setSelectedKeys((current) => [...new Set([...current, structureSelectionKey(created.displayName)])]); setDirect(""); nested.transition("select"); } }); }} pending={props.busy} placeholder="예: 프리사이즈" value={direct} />
   </StructureSelectionSheet>;
   const system = [...SIZE_ALPHA_PRESETS, ...SIZE_NUMERIC_PRESETS];
   const candidates = [...system.map((displayName) => ({ displayName, hexValue: null })), ...props.companyOptions.map((option) => ({ displayName: option.displayName, hexValue: null }))];
@@ -110,7 +104,7 @@ function SizeChooser(props: {
     <WaflOptionGrid accessibilityLabel="WAFL 기본 사이즈 선택" columns={4} disabled={props.busy} items={systemItems} onToggle={(item) => setSelectedKeys((current) => toggleStagedStructureSelection(current, item.label))} />
     <Text style={styles.catalogSectionTitle}>등록 사이즈</Text>
     {companyItems.length > 0 ? <WaflOptionGrid accessibilityLabel="등록 사이즈 선택" columns={4} disabled={props.busy} items={companyItems} onRemove={(item) => { const option = companyById.get(item.key); if (option) props.onRemove(option); }} onToggle={(item) => setSelectedKeys((current) => toggleStagedStructureSelection(current, item.label))} /> : <Text style={styles.catalogEmpty}>등록한 사이즈가 없습니다.</Text>}
-    <Pressable onPress={() => nested.transition("create")} style={styles.secondaryButton}><Text style={styles.secondaryButtonText}>직접 만들기</Text></Pressable>
+    <WaflReusableCreateEntryAction disabled={props.busy} onPress={() => nested.transition("create")} testID="size-direct-create-entry" />
   </StructureSelectionSheet>;
 }
 
@@ -154,16 +148,11 @@ function ColorChooser(props: {
   const [selectedHex, setSelectedHex] = useState("#FFFFFF");
   const [selectedKeys, setSelectedKeys] = useState<readonly string[]>(() => createStagedStructureSelection(props.rows.map((row) => ({ id: row.id, displayName: row.displayName, hexValue: row.hexValue }))));
   const selected = useMemo(() => new Set(selectedKeys), [selectedKeys]);
-  if (nested.route === "custom") return <StructureSelectionSheet onAfterClose={nested.finishClose} onAfterOpen={() => nameInputRef.current?.focus()} onClose={props.onClose} sizing={WAFL_REUSABLE_CATALOG_CREATE_SIZING} title="직접 색상 만들기" visible={nested.visible}>
-    <Pressable accessibilityLabel="기본 색상으로 돌아가기" onPress={() => nested.transition("base")} style={styles.backButton}><ChevronLeft color="#23375a" size={18} /><Text style={styles.backButtonText}>기본 색상</Text></Pressable>
-    <Text style={styles.fieldLabel}>색상명</Text>
-    <WaflSheetTextInput maxLength={80} onChangeText={setName} placeholder="색상 이름" ref={nameInputRef} style={styles.input} value={name} />
-    <ColorGrid onChange={setSelectedHex} value={selectedHex} />
-    <View style={styles.colorPreviewRow}><View style={[styles.customPreview, { backgroundColor: selectedHex }]} /><ReadOnlyColorValues hex={selectedHex} /></View>
-    <Text style={styles.catalogHint}>추가하면 회사에서 다음 작업지시서에도 다시 선택할 수 있습니다.</Text>
-    <Pressable disabled={props.busy || !name.trim()} onPress={() => { void props.onCreate({ displayName: name, hexValue: selectedHex }).then((created) => { if (created) { setSelectedKeys((current) => [...new Set([...current, structureSelectionKey(created.displayName)])]); setName(""); nested.transition("base"); } }); }} style={[styles.primaryButton, (props.busy || !name.trim()) && styles.disabled]}>
-      {props.busy ? <ActivityIndicator color="#fff" /> : <Text style={styles.primaryButtonText}>추가</Text>}
-    </Pressable>
+  if (nested.route === "custom") return <StructureSelectionSheet onAfterClose={nested.finishClose} onAfterOpen={() => nameInputRef.current?.focus()} onClose={props.onClose} reusableCreate sizing={WAFL_REUSABLE_CATALOG_CREATE_SIZING} title="직접 색상 만들기" visible={nested.visible}>
+    <WaflReusableCreateForm backLabel="기본 색상" fieldLabel="색상명" helpText="추가하면 회사에서 다음 작업지시서에도 다시 선택할 수 있습니다." inputRef={nameInputRef} maxLength={80} onBack={() => nested.transition("base")} onChange={setName} onCreate={() => { void props.onCreate({ displayName: name, hexValue: selectedHex }).then((created) => { if (created) { setSelectedKeys((current) => [...new Set([...current, structureSelectionKey(created.displayName)])]); setName(""); nested.transition("base"); } }); }} pending={props.busy} placeholder="색상 이름" value={name}>
+      <ColorGrid onChange={setSelectedHex} value={selectedHex} />
+      <View style={styles.colorPreviewRow}><View style={[styles.customPreview, { backgroundColor: selectedHex }]} /><ReadOnlyColorValues hex={selectedHex} /></View>
+    </WaflReusableCreateForm>
   </StructureSelectionSheet>;
   const candidates: readonly StructureSelectionCandidate[] = [...COLOR_PALETTE_PRESETS.map((preset) => ({ displayName: preset.name, hexValue: preset.hex })), ...props.companyOptions.map((option) => ({ displayName: option.displayName, hexValue: option.hexValue }))];
   const diff = diffStagedStructureSelection({ existing: props.rows.map((row) => ({ id: row.id, displayName: row.displayName, hexValue: row.hexValue })), candidates, selectedKeys });
@@ -176,7 +165,7 @@ function ColorChooser(props: {
     <WaflOptionGrid accessibilityLabel="WAFL 기본 색상 선택" columns={3} disabled={props.busy} items={systemItems} onToggle={(item) => setSelectedKeys((current) => toggleStagedStructureSelection(current, item.label))} />
     <Text style={styles.catalogSectionTitle}>등록 색상</Text>
     {companyItems.length > 0 ? <WaflOptionGrid accessibilityLabel="등록 색상 선택" columns={3} disabled={props.busy} items={companyItems} onRemove={(item) => { const option = companyById.get(item.key); if (option) props.onRemove(option); }} onToggle={(item) => setSelectedKeys((current) => toggleStagedStructureSelection(current, item.label))} /> : <Text style={styles.catalogEmpty}>등록한 색상이 없습니다.</Text>}
-    <Pressable onPress={() => nested.transition("custom")} style={styles.secondaryButton}><Text style={styles.secondaryButtonText}>직접 만들기</Text></Pressable>
+    <WaflReusableCreateEntryAction disabled={props.busy} onPress={() => nested.transition("custom")} testID="color-direct-create-entry" />
   </StructureSelectionSheet>;
 }
 
@@ -270,6 +259,7 @@ export default function WorkOrderSizeColorStructureEditor({ identity, state, edi
       {edit.canEdit && chooser === "color" ? <ColorChooser busy={structureBusy} companyOptions={companyOptions.filter((item) => item.kind === "color")} onApply={(diff) => applyBatch("color", diff)} onClose={() => { edit.onCancel(); setChooser(null); }} onCreate={(draft) => createOption("color", draft.displayName, draft.hexValue)} onRemove={removeOption} rows={matrix.colors} /> : null}
       {edit.canEdit && chooser === "spec_item" ? <SpecItemSelectionSheet
         busy={structureBusy}
+        categoryCode={categoryCode}
         currentPoms={state.bundle?.specifications.pomColumns ?? []}
         onApply={(items) => edit.onSetPomSelection(items)}
         onClose={() => { edit.onCancel(); setChooser(null); }}
@@ -295,7 +285,7 @@ export default function WorkOrderSizeColorStructureEditor({ identity, state, edi
 }
 
 const styles = StyleSheet.create({
-  cards: { gap: WAFL_THEME.layout.controlGap, paddingHorizontal: WAFL_THEME.layout.cardPadding, paddingTop: WAFL_THEME.layout.cardPadding },
+  cards: { gap: WAFL_THEME.layout.controlGap, paddingTop: WAFL_THEME.layout.cardPadding },
   addAction: { alignItems: "center", flex: 1, flexDirection: "row", gap: 6, justifyContent: "center", minHeight: 44, paddingHorizontal: 8 },
   editAction: { alignItems: "center", justifyContent: "center", minHeight: 44, minWidth: 54, paddingHorizontal: 9 },
   actionDivider: { alignSelf: "stretch", backgroundColor: "rgba(255,255,255,0.22)", width: 1 },
@@ -325,15 +315,6 @@ const styles = StyleSheet.create({
   catalogRemove: { alignItems: "center", borderLeftColor: "#d7c9bd", borderLeftWidth: 1, justifyContent: "center", minHeight: 44, width: 44 },
   catalogHint: { color: "#75695e", fontFamily: WAFL_FONTS.regular, fontSize: 11, lineHeight: 17 },
   paletteSwatch: { borderColor: "#b9af9f", borderRadius: 999, borderWidth: 1, height: 16, width: 16 },
-  fieldLabel: { color: "#53647e", fontFamily: WAFL_FONTS.semibold, fontSize: 10, marginTop: 2 },
-  input: { backgroundColor: "#fff", borderColor: "#b9c2d0", borderRadius: 8, borderWidth: 1, color: "#17263d", fontFamily: WAFL_FONTS.medium, minHeight: 44, paddingHorizontal: 10 },
-  primaryButton: { alignItems: "center", backgroundColor: "#23375a", borderRadius: 9, justifyContent: "center", marginTop: 2, minHeight: 46 },
-  primaryButtonText: { color: "#fff", fontFamily: WAFL_FONTS.bold, fontSize: 12 },
-  secondaryButton: { alignItems: "center", borderColor: "#aeb9c9", borderRadius: 8, borderWidth: 1, justifyContent: "center", minHeight: 44, paddingHorizontal: 10 },
-  secondaryButtonText: { color: "#334561", fontFamily: WAFL_FONTS.semibold, fontSize: 11 },
-  backButton: { alignItems: "center", alignSelf: "flex-start", flexDirection: "row", gap: 4, minHeight: 44, paddingRight: 12 },
-  backButtonText: { color: "#23375a", fontFamily: WAFL_FONTS.bold, fontSize: 11 },
-  disabled: { opacity: 0.4 },
   pressed: { opacity: 0.68 },
   groupedPalette: { gap: 10 },
   colorGroup: { gap: 5 },

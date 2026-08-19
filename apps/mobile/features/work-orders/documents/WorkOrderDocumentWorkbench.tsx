@@ -553,7 +553,7 @@ const styles = StyleSheet.create({
   integratedDivider: { backgroundColor: "#eee3d5", height: StyleSheet.hairlineWidth, marginHorizontal: WAFL_THEME.spacing.md, marginTop: WAFL_THEME.spacing.sm },
   container: { gap: WAFL_THEME.spacing.md, paddingBottom: WAFL_THEME.spacing.xl },
   flex: { flex: 1, minWidth: 0 },
-  previewSheet: { marginHorizontal: WAFL_THEME.layout.cardPadding },
+  previewSheet: {},
   previewHeader: { alignItems: "center", flexDirection: "row", gap: 11 },
   previewImage: { alignItems: "center", aspectRatio: 1, backgroundColor: WAFL_THEME.color.fabricBeige, borderRadius: WAFL_THEME.radius.card, justifyContent: "center", overflow: "hidden", width: 72 },
   previewImageAsset: { height: "100%", width: "100%" },

@@ -20,7 +20,7 @@ const current = {
   WAFL_V2_DOCUMENT_VIEWER_MUTATION_APPROVED: MAKER_QA_APPROVAL.ALPHA64_CURRENT,
 };
 const uuid = "10000000-0000-4000-8000-000000000001";
-const capabilities = Object.values(MAKER_QA_CAPABILITY).filter((item) => item !== MAKER_QA_CAPABILITY.LEGACY_MATERIAL_ARCHIVE);
+const capabilities = Object.values(MAKER_QA_CAPABILITY).filter((item) => ![MAKER_QA_CAPABILITY.LEGACY_MATERIAL_ARCHIVE, MAKER_QA_CAPABILITY.PRODUCTION_AUTHORING].includes(item));
 
 assert.equal(resolveMakerQaProfile(current)?.id, MAKER_QA_PROFILE.ALPHA64_CURRENT);
 assert.deepEqual(new Set(listMakerQaCapabilities(current)), new Set(capabilities));

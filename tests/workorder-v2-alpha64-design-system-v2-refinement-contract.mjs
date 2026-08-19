@@ -16,7 +16,7 @@ const sizeColorRead = read("apps/mobile/features/work-orders/size-color/WorkOrde
 const materials = read("apps/mobile/features/materials/WorkOrderMaterialsReadOnly.tsx");
 
 for (const source of [design, ia]) assert.match(source, /OWNER_PHYSICAL_REVIEW_REQUIRED/);
-assert.match(roadmap, /(?:Status target: `ALPHA64_[A-Z0-9_]+_IPHONE_REQA_REQUIRED`|Status: `ALPHA64_FINALIZATION_COMPLETE`)/);
+assert.match(roadmap, /(?:Status target: `ALPHA64_[A-Z0-9_]+_IPHONE_REQA_REQUIRED`|Status: `ALPHA[0-9]+_FINALIZATION_COMPLETE`)/);
 assert.doesNotMatch(roadmap, /Status target: `ALPHA64_[A-Z0-9_]+_COMPLETE`/);
 
 for (const role of [

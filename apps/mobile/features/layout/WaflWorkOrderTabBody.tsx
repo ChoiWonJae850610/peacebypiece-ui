@@ -14,5 +14,8 @@ export default function WaflWorkOrderTabBody({ children, testID }: Props) {
 }
 
 const styles = StyleSheet.create({
-  body: { paddingTop: WAFL_THEME.layout.tabBodyTopInset },
+  body: {
+    paddingHorizontal: WAFL_THEME.layout.cardPadding,
+    paddingTop: WAFL_THEME.layout.tabBodyTopInset,
+  },
 });

@@ -87,7 +87,7 @@ The accepted Apple account and build history is immutable evidence in `42-ios-de
 
 ## Setup safety
 
-- Never persist temporary origins, Tailscale identity, auth keys, login URLs, account credentials, certificate identifiers, DB fingerprints, or runtime mutation approvals in tracked config. Quick Tunnel, cloudflared, and Funnel are not current App-first QA transports.
+- Never persist temporary origins, Tailscale identity, auth keys, login URLs, account credentials, certificate identifiers, DB fingerprints, or runtime mutation approvals in tracked config. Quick Tunnel, WAFL-owned cloudflared, and Funnel are not current App-first QA transports. A separately owned shared cloudflared named-tunnel service may coexist only under the fail-closed process/service plus live-ingress provenance rule in `09b` and `41`; it is never treated as a WAFL transport.
 - Do not add a firewall rule by default. A proven reachability failure requires a separate narrow approval.
 - Do not change Tailscale account, policy, Funnel, service state, or device sharing as routine setup.
 - Do not introduce another Expo tunnel provider or fallback transport.

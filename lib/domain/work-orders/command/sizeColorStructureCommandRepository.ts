@@ -284,11 +284,32 @@ async function advanceVersions(input: {
         AND current_revision_id = $4::uuid AND status = 'draft'
       RETURNING entity_version
     ),
+    updated_processes AS (
+      UPDATE work_order_processes
+      SET quantity = $6::numeric,
+          amount = round($6::numeric * unit_price, 2),
+          entity_version = entity_version + 1,
+          updated_at = now()
+      WHERE company_id = $1 AND revision_id = $4::uuid AND $5::boolean
+      RETURNING amount
+    ),
+    process_totals AS (
+      SELECT COALESCE(sum(amount), 0)::numeric(14,2) AS total
+      FROM (
+        SELECT amount FROM updated_processes
+        UNION ALL
+        SELECT amount FROM work_order_processes
+        WHERE company_id = $1 AND revision_id = $4::uuid AND NOT $5::boolean
+      ) current_processes
+    ),
     updated_revision AS (
-      UPDATE work_order_revisions
+      UPDATE work_order_revisions r
       SET entity_version = entity_version + 1,
           total_quantity_snapshot = CASE WHEN $5::boolean THEN $6::integer ELSE total_quantity_snapshot END,
+          process_total = totals.total,
+          estimated_total = r.fabric_total + r.accessory_total + totals.total,
           updated_at = now()
+      FROM process_totals totals
       WHERE company_id = $1 AND id = $4::uuid AND revision_status = 'draft'
       RETURNING entity_version
     )

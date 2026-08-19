@@ -139,7 +139,7 @@ assert.match(read("docs/project/app-v2/47-mobile-materials-real-read-evidence.md
 for (const status of ["발주 전", "발주요청", "발주완료", "과거 취소", "상태 확인 필요"]) {
   assert.match(materialOrderPolicy, new RegExp(status), `material status label missing: ${status}`);
 }
-assert.match(materials, /card: \{[^\n]*borderLeftWidth: 4[^\n]*borderRadius: WAFL_THEME\.radius\.cardCompact/);
+assert.match(materials, /card: \{[^\n]*borderLeftWidth: WAFL_THEME\.accentCard\.width[^\n]*borderRadius: WAFL_THEME\.radius\.cardCompact/);
 for (const accent of ["cardEditing", "cardRequested", "cardCompleted", "cardCancelled", "cardUnknown"]) {
   assert.match(materials, new RegExp(`${accent}: \\{[^\\n]*borderLeftColor`), `material status accent missing: ${accent}`);
 }
@@ -167,10 +167,12 @@ assert.match(materials, /materialOrderLineStack: \{[^\n]*flex: 1[^\n]*minWidth: 
 assert.match(materials, /materialOrderActions: \{[^\n]*flexDirection: "row"[^\n]*flexShrink: 0/);
 assert.match(materials, /MATERIAL_ORDER_ACTION_VIEW[\s\S]{0,900}request:[\s\S]{0,240}caption: "발주"[\s\S]{0,300}complete:[\s\S]{0,240}caption: "완료"[\s\S]{0,300}cancel:[\s\S]{0,240}caption: "취소"/);
 const materialOrderActionButton = materials.slice(materials.indexOf("function MaterialOrderActionButton"), materials.indexOf("function MaterialCard"));
-assert.match(materialOrderActionButton, /accessibilityRole="button"/);
-assert.match(materialOrderActionButton, /accessibilityState=\{\{ busy, disabled: busy \}\}/);
-assert.match(materialOrderActionButton, /disabled=\{busy\}/);
+assert.match(materialOrderActionButton, /<WaflCompactCardAction/u);
 assert.match(materialOrderActionButton, /onPress=\{onPress\}/);
+const compactCardAction = fs.readFileSync("apps/mobile/features/layout/WaflCompactEntityCard.tsx", "utf8");
+assert.match(compactCardAction, /accessibilityRole="button"/u);
+assert.match(compactCardAction, /accessibilityState=\{\{ busy, disabled: busy \}\}/u);
+assert.match(compactCardAction, /disabled=\{busy\}/u);
 assert.match(materials, /orderPolicy\.actions\.map/);
 assert.match(materials, /actions\.map\(\(action\) =>/);
 assert.match(materials, /onPress=\{\(\) => onOrderAction\(action\.kind\)\}/);
@@ -197,7 +199,7 @@ assert.match(mobileDisplay, /const DECIMAL_PATTERN = \/\^\(-\?\)\(\\d\+\)/);
 assert.doesNotMatch(materials, /Number\(line\.|parseFloat\(line\.|parseInt\(line\./);
 const materialCardBody = materials.slice(materials.indexOf("function MaterialCard"), materials.indexOf("export default function WorkOrderMaterialsReadOnly"));
 const materialSummaryBody = materialCardBody.slice(materialCardBody.indexOf("<Pressable"), materialCardBody.indexOf("testID=\"material-order-action-row\""));
-assert.match(materialCardBody, /return \(\s*<View style=\{\[styles\.card, materialAccent\(orderPolicy\.tone\)\]\}>/);
+assert.match(materialCardBody, /return \(\s*<WaflCompactEntityCard style=\{materialAccent\(orderPolicy\.tone\)\}>/);
 assert.match(materialSummaryBody, /accessibilityState=\{\{ expanded \}\}[\s\S]{0,240}onPress=\{onToggle\}/);
 assert.match(materialSummaryBody, /testID="material-memo-disclosure"/);
 

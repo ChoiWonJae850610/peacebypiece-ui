@@ -15,6 +15,7 @@ import {
   MATERIAL_QUANTITY_SCALE,
   materialQuantityPrecisionMessage,
 } from "./materialQuantityPrecision.ts";
+import { isIntegerWonValue } from "./integerWonInputPolicy.ts";
 
 export type BasicInfoDraft = {
   readonly productName: string;
@@ -58,8 +59,6 @@ export function materialCreateDraft(materialType: MaterialType): MaterialDraftFi
     unitCode: materialType === "accessory" ? "개" : "yd",
   };
 }
-
-const MATERIAL_PRICE_PATTERN = /^(?:0|[1-9]\d{0,11})$/;
 
 type MaterialDraftInput = Partial<Record<keyof MaterialDraftFields, unknown>>;
 
@@ -173,7 +172,7 @@ export function validateMaterialDraft(input: MaterialDraftInput, materialType: M
   for (const field of ["requiredQuantity", "allowanceQuantity"] as const) {
     if (!MATERIAL_QUANTITY_PATTERN.test(numericDraft[field])) errors[field] = materialQuantityPrecisionMessage();
   }
-  if (!MATERIAL_PRICE_PATTERN.test(numericDraft.unitPrice)) errors.unitPrice = "단가는 0 이상의 정수 원 단위로 입력해 주세요.";
+  if (!isIntegerWonValue(numericDraft.unitPrice)) errors.unitPrice = "단가는 0 이상의 정수 원 단위로 입력해 주세요.";
   const calculatedOrderQuantity = calculateOrderQuantity(numericDraft);
   if (calculatedOrderQuantity !== null && !errors.unitPrice) {
     const [quantityWhole, quantityFraction = ""] = calculatedOrderQuantity.split(".");
@@ -236,7 +235,7 @@ export function validateMaterialOrderRequest(line: WorkOrderMaterialLine): Mater
     errors.orderQuantity = "발주수량 계산값을 확인해 주세요.";
   }
   const unitPrice = draft.unitPrice.trim();
-  if (externalOrder && (!MATERIAL_PRICE_PATTERN.test(unitPrice) || Number(unitPrice) <= 0)) {
+  if (externalOrder && (!isIntegerWonValue(unitPrice) || Number(unitPrice) <= 0)) {
     errors.unitPrice = "단가를 0보다 크게 입력해 주세요.";
   }
   return errors;

@@ -18,7 +18,7 @@ export function resolveWaflReelAdaptiveBodyHeight(input: {
   readonly hasValidationMessage: boolean;
 }) {
   const mainHeight = input.renderPath === "single-choice-reel"
-    ? WAFL_REEL_VIEWPORT_HEIGHT
+    ? WAFL_REEL_VIEWPORT_HEIGHT + REEL_LABEL_HEIGHT
     : input.renderPath === "numeric-reel"
       ? WAFL_REEL_VIEWPORT_HEIGHT + REEL_LABEL_HEIGHT
       : DIRECT_INPUT_BLOCK_HEIGHT;

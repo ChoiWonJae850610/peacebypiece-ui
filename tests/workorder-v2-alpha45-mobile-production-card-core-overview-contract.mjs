@@ -93,7 +93,11 @@ for (const label of ["개요", "이미지·첨부", "사이즈·색상", "원부
 assert.equal(resolveWorkOrderTabVisualState({ selected: false, locked: true }), "locked");
 assert.equal(resolveWorkOrderTabVisualState({ selected: true, locked: false }), "active");
 assert.match(detail, /\{ id: "production", label: "제작"/);
-assert.match(detail, /activeSection === "production"[\s\S]*WorkOrderProductionReadOnly/);
+if (fs.existsSync(path.resolve("tests/workorder-v2-alpha65-production-factory-process-authoring-contract.mjs"))) {
+  assert.match(detail, /activeSection === "production"[\s\S]*WorkOrderProductionAuthoring/);
+} else {
+  assert.match(detail, /activeSection === "production"[\s\S]*WorkOrderProductionReadOnly/);
+}
 assert.match(detail, /activeSection === "output"[\s\S]*WorkOrderDocumentWorkbench/);
 assert.match(detail, /disabled=\{disabled\}/);
 assert.match(detail, /\{ id: "materials", label: "원부자재"/);

@@ -15,6 +15,7 @@ const metric = read("apps/mobile/features/layout/WaflMetricField.tsx");
 const frozen = read("apps/mobile/features/layout/WaflFrozenAxisTable.tsx");
 const sizeRead = read("apps/mobile/features/work-orders/size-color/WorkOrderSizeColorReadOnly.tsx");
 const category = read("apps/mobile/features/materials/WaflMaterialsCategorySwitch.tsx");
+const sharedCategory = read("apps/mobile/features/layout/WaflSectionCategorySwitch.tsx");
 const materials = read("apps/mobile/features/materials/WorkOrderMaterialsReadOnly.tsx");
 const overview = read("apps/mobile/features/work-orders/overview/WorkOrderDetailOverview.tsx");
 const design = read("docs/project/app-v2/11a-mobile-design-system-v2.md");
@@ -48,7 +49,7 @@ assert.doesNotMatch(sizeRead, /createBoundedPreview\(props\.specifications\.size
 
 assert.match(category, /WAFL_THEME\.badge\.fabric/);
 assert.match(category, /WAFL_THEME\.badge\.accessory/);
-assert.match(category, /accessibilityState=\{\{ selected \}\}/);
+assert.match(sharedCategory, /accessibilityState=\{\{ selected: active \}\}/);
 assert.match(category, /accessibilityLabel=\{`\$\{selectedLabel\} 추가`\}/);
 assert.match(overview, /renderMaterialSection\(activeMaterialCategory\)/);
 assert.match(overview, /<WaflInputSheet[\s\S]*title=\{`\$\{activeMaterialCategory === "fabric" \? "원단" : "부자재"\} 추가`\}[\s\S]*<WorkOrderMaterialEditor/);

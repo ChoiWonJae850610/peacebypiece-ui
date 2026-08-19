@@ -15,6 +15,7 @@ const sheet = read("apps/mobile/features/inputs/WaflInputSheet.tsx");
 const nested = read("apps/mobile/features/inputs/useWaflNestedSheetHandoff.ts");
 const structure = read("apps/mobile/features/work-orders/size-color/WorkOrderSizeColorStructureEditor.tsx");
 const spec = read("apps/mobile/features/work-orders/size-color/SpecItemSelectionSheet.tsx");
+const reusableCreate = read("apps/mobile/features/inputs/WaflReusableCreateForm.tsx");
 const saved = read("apps/mobile/features/work-orders/size-color/MeasurementTemplateSheets.tsx");
 const reel = read("apps/mobile/features/inputs/reel-picker/WaflReelPickerSheet.tsx");
 const mobileValidation = read("apps/mobile/domain/workOrderValidation.ts");
@@ -44,7 +45,8 @@ assert.equal((structure.match(/sizing=\{WAFL_REUSABLE_CATALOG_CREATE_SIZING\}/gu
 assert.match(structure, /setSelectedKeys[\s\S]*structureSelectionKey\(created\.displayName\)/u);
 assert.match(structure, /return created\.item \?\? null/u);
 
-for (const copy of ["직접 스펙 만들기", "기본 스펙", "추가"]) assert.ok(spec.includes(copy));
+for (const copy of ["직접 스펙 만들기", "기본 스펙"]) assert.ok(spec.includes(copy));
+assert.ok(reusableCreate.includes("추가"));
 assert.match(spec, /onConfirm=\{nested\.route === "rename"[\s\S]*: undefined\}/u);
 assert.match(spec, /`catalog:\$\{created\.id\}`/u);
 assert.match(spec, /nested\.transition\("add"\)/u);

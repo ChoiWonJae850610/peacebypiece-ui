@@ -6,6 +6,7 @@ const read = (file) => fs.readFileSync(file, "utf8");
 const readOnly = read("apps/mobile/features/work-orders/size-color/WorkOrderSizeColorReadOnly.tsx");
 const editor = read("apps/mobile/features/work-orders/size-color/WorkOrderSizeColorStructureEditor.tsx");
 const selector = read("apps/mobile/features/work-orders/size-color/SpecItemSelectionSheet.tsx");
+const reusableCreateEntry = read("apps/mobile/features/inputs/WaflReusableCreateEntryAction.tsx");
 const measurementRepository = read("lib/domain/work-orders/measurement/measurementCommandRepository.ts");
 const measurementService = read("lib/domain/work-orders/measurement/measurementCommandService.ts");
 const measurementRoute = read("lib/domain/work-orders/measurement/measurementCommandRoute.ts");
@@ -24,7 +25,8 @@ assert.match(editor, /edit\.canEdit && chooser === "spec_item"/u);
 assert.doesNotMatch(editor, /categoryCode && chooser === "spec_item"|onEditSpecItems=\{categoryCode \?/u);
 assert.match(selector, /recommendationAvailable/u);
 assert.match(selector, /대분류를 선택하면 WAFL 추천 스펙 항목을 볼 수 있습니다/u);
-assert.match(selector, /직접 만들기/u);
+assert.match(selector, /WaflReusableCreateEntryAction/u);
+assert.match(reusableCreateEntry, /\+ 직접 만들기/u);
 
 assert.match(optionRepository, /const categoryCode = input\.kind === "spec_item" \? decodeWorkOrderMajorCategoryCode/u);
 assert.doesNotMatch(optionRepository, /input\.kind === "spec_item" && !categoryCode/u, "nullable migration-018 scope must remain reusable");

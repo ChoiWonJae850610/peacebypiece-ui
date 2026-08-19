@@ -63,13 +63,16 @@ for (const token of [
   "createStructureOption",
   "removeStructureOption",
   "회사 선택지 제거",
-  "직접 만들기",
-  ">추가</Text>",
   "summarizeStagedDeletionQuantity",
   "diffStagedStructureSelection",
   "onEditSize",
   "onEditColor",
 ]) assert.ok(editor.includes(token), `mobile catalog UX missing ${token}`);
+const reusableCreateEntry = read("apps/mobile/features/inputs/WaflReusableCreateEntryAction.tsx");
+const reusableCreateForm = read("apps/mobile/features/inputs/WaflReusableCreateForm.tsx");
+assert.ok(editor.includes("WaflReusableCreateEntryAction"), "mobile catalog must route direct creation through the shared entry owner");
+assert.ok(reusableCreateEntry.includes("직접 만들기"), "shared catalog entry must preserve direct-create copy");
+assert.ok(reusableCreateForm.includes(">추가</Text>"), "shared catalog child must preserve the explicit create action");
 assert.ok(!editor.includes("ExistingStructureEditor"), "legacy duplicate structure editor must be removed");
 assert.ok(!editor.includes("<WaflOptionReel"), "size/color two-way selection must not regress to a reel");
 

@@ -1,35 +1,43 @@
-import type { EntityVersion, ProcessPatch } from "@/lib/domain/work-orders/contracts";
-import { WorkOrderCommandValidationError } from "@/lib/domain/work-orders/command/validation";
+import type { EntityVersion, IdempotencyKey } from "@/lib/domain/work-orders/contracts";
+import { assertAllowedKeys, fieldError, isJsonObject, parseClientRequestId, parseIdempotencyKey, WorkOrderCommandValidationError } from "@/lib/domain/work-orders/command/validation";
 
-const keys = new Set(["processName", "partnerId", "quantity", "dueDate", "unitCode", "unitPrice", "memo", "applicationArea", "applicationColorTarget"]);
-const object = (value: unknown): value is Record<string, unknown> => typeof value === "object" && value !== null && !Array.isArray(value);
-const text = (value: unknown, field: string, max: number) => {
-  if (value === null) return null;
-  if (typeof value !== "string") throw new WorkOrderCommandValidationError([{ field, code: "INVALID_TYPE", message: "문자열을 입력해 주세요." }]);
-  const normalized = value.trim();
-  if (!normalized) return null;
-  if (normalized.length > max) throw new WorkOrderCommandValidationError([{ field, code: "TOO_LONG", message: `${max}자 이하로 입력해 주세요.` }]);
-  return normalized;
-};
+export type ProductionRole = "factory" | "additional";
+export type ProductionProcessWrite = { readonly role: ProductionRole; readonly processCode: string | null; readonly partnerId: string; readonly unitPrice: string; readonly memo: string | null };
+export type ProductionProcessCommand = { readonly clientRequestId: string; readonly idempotencyKey: IdempotencyKey; readonly expectedVersion: EntityVersion; readonly process: ProductionProcessWrite };
+export type DeleteProductionProcessCommand = Omit<ProductionProcessCommand, "process">;
+export type ProductionOrderTransitionKind = "request" | "cancel" | "complete";
 
-export function validatePatchProcess(body: unknown): { readonly clientRequestId: string; readonly expectedVersion: EntityVersion; readonly patch: ProcessPatch } {
-  if (!object(body) || !object(body.patch)) throw new WorkOrderCommandValidationError([{ field: "body", code: "INVALID_TYPE", message: "JSON object 요청이 필요합니다." }]);
-  for (const key of Object.keys(body.patch)) if (!keys.has(key)) throw new WorkOrderCommandValidationError([{ field: `patch.${key}`, code: "UNKNOWN_FIELD", message: "허용되지 않은 필드입니다." }]);
-  if (Object.keys(body.patch).length === 0) throw new WorkOrderCommandValidationError([{ field: "patch", code: "EMPTY_PATCH", message: "변경할 공정 정보를 입력해 주세요." }]);
-  if (typeof body.clientRequestId !== "string" || !body.clientRequestId.trim()) throw new WorkOrderCommandValidationError([{ field: "clientRequestId", code: "REQUIRED", message: "clientRequestId가 필요합니다." }]);
-  if (!Number.isSafeInteger(body.expectedVersion) || Number(body.expectedVersion) < 1) throw new WorkOrderCommandValidationError([{ field: "expectedVersion", code: "REQUIRED", message: "expectedVersion이 필요합니다." }]);
-  const patch = body.patch;
-  const result: Record<string, unknown> = {};
-  for (const field of ["processName", "partnerId", "unitCode"] as const) if (field in patch) result[field] = text(patch[field], `patch.${field}`, field === "processName" ? 200 : 120);
-  for (const field of ["memo", "applicationArea", "applicationColorTarget"] as const) if (field in patch) result[field] = text(patch[field], `patch.${field}`, field === "memo" ? 2000 : 1000);
-  for (const field of ["quantity", "unitPrice"] as const) if (field in patch) {
-    if (typeof patch[field] !== "string" || !/^\d+(\.\d{1,4})?$/.test(patch[field])) throw new WorkOrderCommandValidationError([{ field: `patch.${field}`, code: "INVALID_FORMAT", message: "0 이상의 숫자 문자열을 입력해 주세요." }]);
-    result[field] = patch[field];
-  }
-  if ("dueDate" in patch) {
-    const dueDate = text(patch.dueDate, "patch.dueDate", 10);
-    if (dueDate !== null && !/^\d{4}-\d{2}-\d{2}$/.test(dueDate)) throw new WorkOrderCommandValidationError([{ field: "patch.dueDate", code: "INVALID_FORMAT", message: "YYYY-MM-DD 형식이 필요합니다." }]);
-    result.dueDate = dueDate;
-  }
-  return { clientRequestId: body.clientRequestId.trim(), expectedVersion: Number(body.expectedVersion) as EntityVersion, patch: result as ProcessPatch };
+const PARTNER_ID = /^[a-z0-9][a-z0-9._:-]{0,127}$/iu;
+const CODE = /^[a-z0-9][a-z0-9._-]{0,119}$/u;
+const MONEY = /^(?:0|[1-9]\d{0,11})$/u;
+
+function parseExpectedVersion(value: unknown) {
+  if (!Number.isSafeInteger(value) || Number(value) < 1) throw new WorkOrderCommandValidationError([fieldError("expectedVersion", "REQUIRED", "expectedVersion이 필요합니다.")]);
+  return Number(value) as EntityVersion;
+}
+
+function parseProcess(value: unknown): ProductionProcessWrite {
+  if (!isJsonObject(value)) throw new WorkOrderCommandValidationError([fieldError("process", "INVALID_TYPE", "제작 정보를 입력해 주세요.")]);
+  assertAllowedKeys(value, new Set(["role", "processCode", "partnerId", "unitPrice", "memo"]), "process.");
+  const role = value.role;
+  if (role !== "factory" && role !== "additional") throw new WorkOrderCommandValidationError([fieldError("process.role", "INVALID_VALUE", "제작 구분을 확인해 주세요.")]);
+  const processCode = role === "factory" ? null : typeof value.processCode === "string" && CODE.test(value.processCode) ? value.processCode : null;
+  if (role === "additional" && !processCode) throw new WorkOrderCommandValidationError([fieldError("process.processCode", "REQUIRED", "공정을 선택해 주세요.")]);
+  if (typeof value.partnerId !== "string" || !PARTNER_ID.test(value.partnerId)) throw new WorkOrderCommandValidationError([fieldError("process.partnerId", "REQUIRED", "업체를 선택해 주세요.")]);
+  if (typeof value.unitPrice !== "string" || !MONEY.test(value.unitPrice)) throw new WorkOrderCommandValidationError([fieldError("process.unitPrice", "INVALID_FORMAT", "장당 공임을 0 이상의 정수 원 단위로 입력해 주세요.")]);
+  const memo = value.memo === null || value.memo === undefined || value.memo === "" ? null : typeof value.memo === "string" && value.memo.trim().length <= 100 ? value.memo.trim() : undefined;
+  if (memo === undefined) throw new WorkOrderCommandValidationError([fieldError("process.memo", "INVALID_LENGTH", "메모는 100자 이하로 입력해 주세요.")]);
+  return { role, processCode, partnerId: value.partnerId, unitPrice: value.unitPrice, memo };
+}
+
+export function validateProductionProcessCommand(body: unknown, idempotencyHeader: string | null): ProductionProcessCommand {
+  if (!isJsonObject(body)) throw new WorkOrderCommandValidationError([fieldError("body", "INVALID_TYPE", "JSON object 요청이 필요합니다.")]);
+  assertAllowedKeys(body, new Set(["clientRequestId", "expectedVersion", "process"]));
+  return { clientRequestId: parseClientRequestId(body.clientRequestId), idempotencyKey: parseIdempotencyKey(idempotencyHeader), expectedVersion: parseExpectedVersion(body.expectedVersion), process: parseProcess(body.process) };
+}
+
+export function validateDeleteProductionProcessCommand(body: unknown, idempotencyHeader: string | null): DeleteProductionProcessCommand {
+  if (!isJsonObject(body)) throw new WorkOrderCommandValidationError([fieldError("body", "INVALID_TYPE", "JSON object 요청이 필요합니다.")]);
+  assertAllowedKeys(body, new Set(["clientRequestId", "expectedVersion"]));
+  return { clientRequestId: parseClientRequestId(body.clientRequestId), idempotencyKey: parseIdempotencyKey(idempotencyHeader), expectedVersion: parseExpectedVersion(body.expectedVersion) };
 }

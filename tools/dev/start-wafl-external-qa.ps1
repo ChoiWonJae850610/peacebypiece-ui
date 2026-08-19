@@ -19,14 +19,15 @@
     [switch]$EnableAlpha60DraftChildHardDeleteMutation,
     [switch]$EnableAlpha61MobileWorkOrderCreateMutation,
     [switch]$EnableAlpha62SizeMeasurementMutation,
-    [switch]$EnableAlpha64MakerDocumentR0Mutation
+    [switch]$EnableAlpha64MakerDocumentR0Mutation,
+    [switch]$EnableAlpha65ProductionAuthoringMutation
 )
 
 $ErrorActionPreference = "Stop"
 . (Join-Path $PSScriptRoot "wafl-external-qa-common.ps1")
 . (Join-Path $PSScriptRoot "..\pipeline\pipeline-common.ps1")
 
-if (@($EnableAlpha46BasicInfoMutation, $EnableAlpha50MaterialDraftMutation, $EnableAlpha51MaterialLifecycleMutation, $EnableAlpha52CoreInlineMutation, $EnableAlpha55MaterialOrderLifecycleMutation, $EnableAlpha56AccessoryLifecycleParityMutation, $EnableAlpha57WorkOrderImageMutation, $EnableAlpha59SizeColorStructureMutation, $EnableAlpha60DraftChildHardDeleteMutation, $EnableAlpha61MobileWorkOrderCreateMutation, $EnableAlpha62SizeMeasurementMutation, $EnableAlpha64MakerDocumentR0Mutation).Where({ $_ }).Count -gt 1) {
+if (@($EnableAlpha46BasicInfoMutation, $EnableAlpha50MaterialDraftMutation, $EnableAlpha51MaterialLifecycleMutation, $EnableAlpha52CoreInlineMutation, $EnableAlpha55MaterialOrderLifecycleMutation, $EnableAlpha56AccessoryLifecycleParityMutation, $EnableAlpha57WorkOrderImageMutation, $EnableAlpha59SizeColorStructureMutation, $EnableAlpha60DraftChildHardDeleteMutation, $EnableAlpha61MobileWorkOrderCreateMutation, $EnableAlpha62SizeMeasurementMutation, $EnableAlpha64MakerDocumentR0Mutation, $EnableAlpha65ProductionAuthoringMutation).Where({ $_ }).Count -gt 1) {
     throw "EXTERNAL_QA_MUTATION_MODES_ARE_MUTUALLY_EXCLUSIVE"
 }
 $internalMemoImeMode = $RuntimeQaMode -eq "memo-ime-display"
@@ -86,7 +87,7 @@ if ($internalSizeMeasurementMode -and $MobileTransport -ne "DeveloperAutoConnect
 if ($internalSizeMeasurementMode -and -not $EnableAlpha62SizeMeasurementMutation) { throw "SIZE_MEASUREMENT_STANDARDS_REQUIRES_ALPHA62_MUTATION_MODE" }
 if ($internalSizeMeasurementMode -and ($NextPort -ne 3100 -or $ExpoPort -ne 8081)) { throw "SIZE_MEASUREMENT_STANDARDS_REQUIRES_CANONICAL_PORTS" }
 if ($internalMakerDocumentR0Mode -and $MobileTransport -ne "DeveloperAutoConnect") { throw "MAKER_DOCUMENT_R0_REQUIRES_DEVELOPER_AUTO_CONNECT" }
-if ($internalMakerDocumentR0Mode -and -not $EnableAlpha64MakerDocumentR0Mutation) { throw "MAKER_DOCUMENT_R0_REQUIRES_ALPHA64_MUTATION_MODE" }
+if ($internalMakerDocumentR0Mode -and -not ($EnableAlpha64MakerDocumentR0Mutation -or $EnableAlpha65ProductionAuthoringMutation)) { throw "CURRENT_MAKER_REQUIRES_CUMULATIVE_MUTATION_MODE" }
 if ($internalMakerDocumentR0Mode -and ($NextPort -ne 3100 -or $ExpoPort -ne 8081)) { throw "MAKER_DOCUMENT_R0_REQUIRES_CANONICAL_PORTS" }
 
 function Get-WaflQaDatabaseUrl {
@@ -155,6 +156,9 @@ $nodeVersion = $nodeToolchain.Version
 $usesTailscaleServeOrigin = $internalRuntimeMode -or $MobileTransport -eq "DeveloperAutoConnect"
 $cloudflared = if ($usesTailscaleServeOrigin) { $null } else { Get-WaflQaCloudflaredPath -ExplicitPath $CloudflaredPath }
 if ($nodeVersion -ne "v24.14.0") { throw "CANONICAL_NODE_VERSION_MISMATCH" }
+$metroFirewall = if ($MobileTransport -in @("TailscaleLan", "DeveloperAutoConnect")) {
+    Ensure-WaflQaMetroFirewallRule -NodePath $node -Port $ExpoPort
+} else { $null }
 if (-not $usesTailscaleServeOrigin -and -not $cloudflared) {
     throw "cloudflared was not found. Installation is not automatic. Approval command: winget install --id Cloudflare.cloudflared --exact"
 }
@@ -188,6 +192,7 @@ $state = [ordered]@{
     failureCode = $null
     appVersion = $appVersion
     nodeVersion = $nodeVersion.TrimStart('v')
+    metroFirewallReady = $null -eq $metroFirewall -or $metroFirewall.Ready
     workingTreeEntryCount = $gitStatus.Count
     nextMode = $NextMode
     mobileTransport = $MobileTransport
@@ -450,13 +455,29 @@ try {
         $state.mutationMode = "current-maker-alpha64"
         $state.makerQaProfile = "alpha64-current-maker"
     }
+    if ($EnableAlpha65ProductionAuthoringMutation) {
+        $serverEnvironment.WAFL_V2_COMMAND_API_ENABLED = "1"
+        $serverEnvironment.WAFL_V2_COMMAND_MUTATION_APPROVED = "2.0.0-alpha.65-dev-test-production-authoring-runtime"
+        $serverEnvironment.WAFL_V2_DOCUMENT_VIEWER_ENABLED = "1"
+        $serverEnvironment.WAFL_V2_DOCUMENT_VIEWER_MUTATION_APPROVED = "2.0.0-alpha.65-dev-test-production-authoring-runtime"
+        $serverEnvironment.WAFL_PDF_RENDER_ORIGIN = "http://127.0.0.1:$NextPort"
+        $serverEnvironment.WAFL_EXTERNAL_QA_ALPHA65_PRODUCTION_AUTHORING_MUTATION_ENABLED = "true"
+        $state.commandApi = "ready"
+        $state.mutationMode = "current-maker-alpha65"
+        $state.makerQaProfile = "alpha65-current-maker"
+    }
     $state.databaseEnvironmentInjected = -not [string]::IsNullOrWhiteSpace([string]$serverEnvironment.DATABASE_URL) `
         -and [string]$serverEnvironment.DATABASE_URL -eq [string]$readApiTarget.DatabaseUrl
+    $currentMakerMutationGuardReady = $serverEnvironment.ContainsKey("WAFL_EXTERNAL_QA_ALPHA64_DOCUMENT_R0_MUTATION_ENABLED") `
+        -and [string]$serverEnvironment["WAFL_EXTERNAL_QA_ALPHA64_DOCUMENT_R0_MUTATION_ENABLED"] -eq "true"
+    $currentMakerMutationGuardReady = $currentMakerMutationGuardReady `
+        -or ($serverEnvironment.ContainsKey("WAFL_EXTERNAL_QA_ALPHA65_PRODUCTION_AUTHORING_MUTATION_ENABLED") `
+            -and [string]$serverEnvironment["WAFL_EXTERNAL_QA_ALPHA65_PRODUCTION_AUTHORING_MUTATION_ENABLED"] -eq "true")
     $state.capabilityProfileReady = if ($RuntimeQaMode -eq "current-maker") {
-        [string]$state.makerQaProfile -eq "alpha64-current-maker" `
-            -and [string]$state.mutationMode -eq "current-maker-alpha64" `
+        [string]$state.makerQaProfile -in @("alpha64-current-maker", "alpha65-current-maker") `
+            -and [string]$state.mutationMode -in @("current-maker-alpha64", "current-maker-alpha65") `
             -and [string]$serverEnvironment.WAFL_V2_COMMAND_API_ENABLED -eq "1" `
-            -and [string]$serverEnvironment.WAFL_EXTERNAL_QA_ALPHA64_DOCUMENT_R0_MUTATION_ENABLED -eq "true"
+            -and $currentMakerMutationGuardReady
     } else { $true }
     $state.serverEnvironmentContractReady = $state.databaseEnvironmentInjected `
         -and [string]$serverEnvironment.WAFL_SERVER_RUNTIME_MODE -eq "dev" `

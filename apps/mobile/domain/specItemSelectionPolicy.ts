@@ -72,6 +72,29 @@ export function toggleSpecItemSelection(selectedKeys: readonly string[], key: st
   return [...selected];
 }
 
+/**
+ * The diagram is transient feedback for the most recently activated mapped item,
+ * not a second selection source. Unmapped choices deliberately clear the preview.
+ */
+export function nextSpecItemPreviewKey(
+  currentPreviewKey: string | null,
+  candidate: Pick<StagedSpecItem, "systemSpecItemKey">,
+  wasSelected: boolean,
+) {
+  const mappedKey = candidate.systemSpecItemKey;
+  if (!mappedKey) return null;
+  if (!wasSelected) return mappedKey;
+  return currentPreviewKey === mappedKey ? null : currentPreviewKey;
+}
+
+export function reconcileSpecItemPreviewKey(
+  currentPreviewKey: string | null,
+  candidates: readonly Pick<StagedSpecItem, "systemSpecItemKey">[],
+) {
+  if (!currentPreviewKey) return null;
+  return candidates.some((candidate) => candidate.systemSpecItemKey === currentPreviewKey) ? currentPreviewKey : null;
+}
+
 export function selectedSpecItems(candidates: readonly StagedSpecItem[], selectedKeys: readonly string[]) {
   const selected = new Set(selectedKeys);
   return candidates.filter((item) => selected.has(item.key));

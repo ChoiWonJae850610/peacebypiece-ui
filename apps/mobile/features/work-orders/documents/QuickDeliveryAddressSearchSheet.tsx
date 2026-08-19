@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { ActivityIndicator, Pressable, StyleSheet, Text, View } from "react-native";
+import { ActivityIndicator, Pressable, StyleSheet, Text, type TextInput, View } from "react-native";
 import { MapPin, Search } from "lucide-react-native";
 
 import { WAFL_FONTS } from "@/constants/fonts";
@@ -33,6 +33,7 @@ export default function QuickDeliveryAddressSearchSheet(props: {
   const [status, setStatus] = useState<"idle" | "loading" | "loaded" | "error">("idle");
   const [message, setMessage] = useState<string | null>(null);
   const generationRef = useRef(0);
+  const searchInputRef = useRef<TextInput>(null);
 
   useEffect(() => {
     const normalized = keyword.normalize("NFC").trim();
@@ -102,6 +103,7 @@ export default function QuickDeliveryAddressSearchSheet(props: {
     confirmAccessibilityLabel="주소 검색 닫기"
     onCancel={props.onCancel}
     onAfterClose={props.onAfterClose}
+    onAfterOpen={() => searchInputRef.current?.focus()}
     onConfirm={props.onCancel}
     presentationGeneration={props.presentationGeneration}
     sizing="expandable"
@@ -113,10 +115,10 @@ export default function QuickDeliveryAddressSearchSheet(props: {
       <WaflSheetTextInput
         autoCapitalize="none"
         autoCorrect={false}
-        autoFocus
         onChangeText={changeKeyword}
         placeholder="도로명, 건물명 또는 지번 검색"
         placeholderTextColor={WAFL_THEME.color.disabled}
+        ref={searchInputRef}
         returnKeyType="search"
         style={styles.searchInput}
         value={keyword}

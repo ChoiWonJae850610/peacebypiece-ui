@@ -43,6 +43,14 @@ export const WORK_ORDER_COMMAND_CODES = {
     legacyArchive: "work_order.material.archive",
     legacyRestore: "work_order.material.restore",
   },
+  productionProcess: {
+    create: "work_order.production_process.create",
+    update: "work_order.production_process.update",
+    delete: "work_order.production_process.delete",
+    orderRequest: "work_order.production_process.order_request",
+    orderCancel: "work_order.production_process.order_cancel",
+    orderComplete: "work_order.production_process.order_complete",
+  },
 } as const;
 
 export type WorkOrderCommandCode =
@@ -51,7 +59,8 @@ export type WorkOrderCommandCode =
   | (typeof WORK_ORDER_COMMAND_CODES.colorSizeQuantity)[keyof typeof WORK_ORDER_COMMAND_CODES.colorSizeQuantity]
   | (typeof WORK_ORDER_COMMAND_CODES.structureSelection)[keyof typeof WORK_ORDER_COMMAND_CODES.structureSelection]
   | (typeof WORK_ORDER_COMMAND_CODES.measurement)[keyof typeof WORK_ORDER_COMMAND_CODES.measurement]
-  | (typeof WORK_ORDER_COMMAND_CODES.material)[keyof typeof WORK_ORDER_COMMAND_CODES.material];
+  | (typeof WORK_ORDER_COMMAND_CODES.material)[keyof typeof WORK_ORDER_COMMAND_CODES.material]
+  | (typeof WORK_ORDER_COMMAND_CODES.productionProcess)[keyof typeof WORK_ORDER_COMMAND_CODES.productionProcess];
 
 export const MEASUREMENT_SNAPSHOT_CONTENT_COMMAND_CODES = [
   WORK_ORDER_COMMAND_CODES.sizeStructure.create,

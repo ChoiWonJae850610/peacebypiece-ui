@@ -19,6 +19,7 @@ import { Check, X } from "lucide-react-native";
 import { WAFL_FONTS } from "@/constants/fonts";
 import { WAFL_THEME } from "@/constants/theme";
 import {
+  WAFL_EDITABLE_VALUE_FOCUSED_SURFACE,
   WAFL_EDITABLE_VALUE_SURFACE,
   WAFL_TABLE_EDITABLE_CELL_FOCUSED_SURFACE,
   WAFL_TABLE_EDITABLE_CELL_SURFACE,
@@ -246,7 +247,7 @@ export default function ControlledInlineEditValue({
   }
 
   return (
-    <View accessibilityLabel={`${accessibilityLabel} 입력 중`} style={[presentation === "tableCell" ? WAFL_TABLE_EDITABLE_CELL_FOCUSED_SURFACE : styles.active, containerStyle]} testID={testID}>
+    <View accessibilityLabel={`${accessibilityLabel} 입력 중`} style={[presentation === "tableCell" ? WAFL_TABLE_EDITABLE_CELL_FOCUSED_SURFACE : multiline ? styles.activeMultiline : WAFL_EDITABLE_VALUE_FOCUSED_SURFACE, containerStyle]} testID={testID}>
       <TextInput
         ref={inputRef}
         accessibilityLabel={`${accessibilityLabel} 입력`}
@@ -268,7 +269,7 @@ export default function ControlledInlineEditValue({
         placeholder={emptyNumericDraft ? "0" : placeholder}
         returnKeyType={numeric ? undefined : multiline ? "default" : "done"}
         submitBehavior={numeric ? undefined : multiline ? "newline" : inlineCommit ? "blurAndSubmit" : "submit"}
-        style={[styles.input, presentation === "tableCell" && styles.tableCellInput, !inlineCommit && styles.inputWithActions, multiline && styles.inputMultiline, displayStyle, inputStyle, invalid && styles.inputInvalid]}
+        style={[styles.input, !multiline && styles.inputSingleLine, presentation === "tableCell" && styles.tableCellInput, !inlineCommit && styles.inputWithActions, multiline && styles.inputMultiline, displayStyle, inputStyle, invalid && styles.inputInvalid]}
         textAlignVertical={multiline ? "top" : "center"}
         value={value}
       />
@@ -297,8 +298,9 @@ const styles = StyleSheet.create({
   editable: WAFL_EDITABLE_VALUE_SURFACE,
   pressed: { backgroundColor: "#f7ead9", opacity: 0.82 },
   placeholder: { color: "#9b9288" },
-  active: { backgroundColor: "#fff9ed", borderColor: WAFL_THEME.color.editActive, borderRadius: WAFL_THEME.radius.field, borderWidth: WAFL_THEME.border.hairline, minHeight: 54, minWidth: 0, padding: WAFL_THEME.spacing.xs, position: "relative", width: "100%" },
-  input: { color: WAFL_THEME.color.deepNavy, minHeight: 44, minWidth: 0, paddingHorizontal: 6, paddingVertical: 4 },
+  activeMultiline: { backgroundColor: "#fff9ed", borderBottomColor: WAFL_THEME.color.editActive, borderBottomWidth: WAFL_THEME.border.hairline, borderRadius: WAFL_THEME.radius.field, minHeight: 76, minWidth: 0, paddingHorizontal: WAFL_THEME.spacing.xs, paddingVertical: 3, position: "relative", width: "100%" },
+  input: { color: WAFL_THEME.color.deepNavy, minWidth: 0 },
+  inputSingleLine: { minHeight: 30, paddingHorizontal: 0, paddingVertical: 0 },
   tableCellInput: { height: WAFL_THEME.layout.frozenTableEditableValueHeight, minHeight: WAFL_THEME.layout.frozenTableEditableValueHeight, paddingHorizontal: WAFL_THEME.spacing.xs, paddingVertical: 0, width: "100%" },
   inputWithActions: { paddingRight: 98 },
   inputMultiline: { minHeight: 76, paddingTop: 8 },

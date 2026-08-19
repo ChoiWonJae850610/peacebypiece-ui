@@ -4,6 +4,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Check, ChevronLeft, ChevronRight, X } from "lucide-react-native";
 
 import { WAFL_FONTS } from "@/constants/fonts";
+import { WAFL_THEME } from "@/constants/theme";
 import { calendarMonthCells, useDatePickerState } from "@/hooks/useDatePickerState";
 import { formatKoreanCalendarDate } from "@/lib/mobileDisplay";
 import {
@@ -102,7 +103,7 @@ export default function InlineDatePicker({
           >
             <View style={styles.titleRow}>
               <View>
-                <Text style={styles.eyebrow}>작업지시서</Text>
+                <Text style={styles.eyebrow}>WAFL INPUT</Text>
                 <Text style={styles.title}>납기일 선택</Text>
               </View>
               <Pressable accessibilityLabel="변경 취소" accessibilityRole="button" disabled={saving} onPress={cancel} style={styles.cancelButton}>
@@ -188,7 +189,7 @@ export default function InlineDatePicker({
 const styles = StyleSheet.create({
   pressed: { opacity: 0.72 },
   editable: { backgroundColor: "#fffaf2", borderBottomColor: "#b98c5a", borderBottomWidth: 1, borderRadius: 5, minHeight: 36, paddingHorizontal: 4, paddingVertical: 6 },
-  activeAnchor: { backgroundColor: "#fff9ed", borderColor: "#8b5e3c", borderRadius: 7, borderWidth: 1, minHeight: 44, paddingHorizontal: 8, paddingVertical: 9 },
+  activeAnchor: { backgroundColor: "#fff9ed", borderBottomColor: WAFL_THEME.color.editActive, borderBottomWidth: WAFL_THEME.border.hairline, borderRadius: 5, minHeight: 36, paddingHorizontal: 4, paddingVertical: 6 },
   display: { color: "#17263d", fontFamily: WAFL_FONTS.bold, fontSize: 11, lineHeight: 17 },
   backdrop: { backgroundColor: "rgba(20, 28, 40, 0.44)", flex: 1, justifyContent: "flex-end" },
   sheet: { alignSelf: "center", backgroundColor: "#fffdf8", borderTopLeftRadius: 18, borderTopRightRadius: 18, maxHeight: "92%", maxWidth: 520, paddingHorizontal: 16, paddingTop: 10, width: "100%" },
