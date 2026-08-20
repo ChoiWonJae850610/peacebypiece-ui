@@ -17,6 +17,7 @@ const entry = read("apps/mobile/app/index.tsx");
 const app = read("apps/mobile/features/MobileWorkOrderExperience.tsx");
 const list = read("apps/mobile/features/work-orders/list/WorkOrderListScreen.tsx");
 const detail = read("apps/mobile/features/work-orders/overview/WorkOrderDetailOverview.tsx");
+const readinessActionRow = read("apps/mobile/features/layout/WaflReadinessActionRow.tsx");
 const display = read("apps/mobile/lib/workOrderDisplay.ts");
 const apiClient = readMobileApiSource();
 const proxy = read("proxy.ts");
@@ -67,7 +68,7 @@ assert.doesNotMatch(entry, /ProductionCardMock/);
 for (const actualField of [
   "header.productName", "header.status", "header.totalQuantity", "header.dueDate",
   "detail.amounts.unitPrice", "detail.amounts.fabricTotal", "detail.amounts.accessoryTotal", "detail.amounts.processTotal",
-  "detail.amounts.estimatedTotal", "header.readiness.hardBlockers", "header.readiness.warnings", "detail.tabCounts",
+  "detail.amounts.estimatedTotal", "header.readiness.issues", "detail.tabCounts",
 ]) assert.match(detail, new RegExp(actualField.replaceAll(".", "\\.")), `missing actual core mapping: ${actualField}`);
 assert.doesNotMatch(detail, /Revision\s*R/);
 
@@ -80,8 +81,8 @@ assert.match(detail, /대표 이미지 없음/);
 assert.match(detail, /WorkOrderImageGallery/);
 assert.match(detail, /1벌 원가/);
 assert.doesNotMatch(detail, /한 벌 예상/);
-assert.match(detail, /발행 준비 가능/);
-assert.match(detail, /발행 전 확인/);
+assert.match(readinessActionRow, /발행 준비 완료/);
+assert.match(readinessActionRow, /발행 전 확인/);
 assert.match(detail, /비용 구성/);
 for (const removedOverviewLabel of ["문서 요약", "구성 요약", "Revision 상태", "Revision 확정", "최종 수정", "문서 상태", "문서번호", "생성 시각"]) {
   assert.doesNotMatch(detail, new RegExp(`>[\\s\\S]*?${removedOverviewLabel}[\\s\\S]*?<`), `overview must not render ${removedOverviewLabel}`);

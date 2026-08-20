@@ -1106,8 +1106,8 @@ $profileCommands = @{
                   "tests/workorder-v2-alpha22-dev-test-runner-contract.mjs"
             )
         },
-        @{ Name = "mobile typecheck"; Command = "npm"; Arguments = @("--prefix", "apps/mobile", "run", "typecheck") },
-        @{ Name = "mobile Expo config"; Command = "npm"; Arguments = @("--prefix", "apps/mobile", "run", "expo:config") },
+        @{ Name = "mobile typecheck"; Command = "node"; Arguments = @("apps/mobile/node_modules/typescript/lib/tsc.js", "--noEmit", "--project", "apps/mobile/tsconfig.json") },
+        @{ Name = "mobile Expo config"; Command = "node"; Arguments = @("apps/mobile/node_modules/expo/bin/cli", "config", "apps/mobile", "--type", "public") },
         @{ Name = "workorder v2 API contract"; Command = "node"; Arguments = @("tests/workorder-v2-api-contract.mjs") },
         @{ Name = "workorder v2 migration schema contract"; Command = "node"; Arguments = @("tests/workorder-v2-migration-schema-contract.mjs") },
         @{ Name = "workorder v2 alpha.22 dev/test runner contract"; Command = "node"; Arguments = @("tests/workorder-v2-alpha22-dev-test-runner-contract.mjs") },
@@ -1240,6 +1240,11 @@ $profileCommands = @{
           @{ Name = "workorder v2 alpha.65 front back technical flat preview contract"; Command = "node"; Arguments = @("tests/workorder-v2-alpha65-front-back-technical-flat-preview-contract.mjs") },
           @{ Name = "workorder v2 alpha.65 front back shoulder armhole fidelity contract"; Command = "node"; Arguments = @("tests/workorder-v2-alpha65-front-back-shoulder-armhole-fidelity-contract.mjs") },
           @{ Name = "workorder v2 alpha.65 neckline outer pocket fidelity contract"; Command = "node"; Arguments = @("tests/workorder-v2-alpha65-neckline-outer-pocket-fidelity-contract.mjs") },
+          @{ Name = "workorder v2 alpha.66 WorkOrder lineage Sample list filter contract"; Command = "node"; Arguments = @("tests/workorder-v2-alpha66-lineage-sample-list-filter-contract.mjs") },
+          @{ Name = "workorder v2 alpha.66 identity filter segmented UX contract"; Command = "node"; Arguments = @("tests/workorder-v2-alpha66-identity-filter-segmented-ux-contract.mjs") },
+          @{ Name = "workorder v2 alpha.66 header identity compact control contract"; Command = "node"; Arguments = @("tests/workorder-v2-alpha66-header-identity-compact-control-contract.mjs") },
+          @{ Name = "workorder v2 alpha.66 Sample Reorder invariant and pre-issue checklist contract"; Command = "node"; Arguments = @("tests/workorder-v2-alpha66-sample-reorder-invariant-preissue-checklist-contract.mjs") },
+          @{ Name = "workorder v2 alpha.66 header status layout and readiness refresh contract"; Command = "node"; Arguments = @("tests/workorder-v2-alpha66-header-status-layout-readiness-refresh-contract.mjs") },
           @{ Name = "WAFL external QA stop-state regression contract"; Command = "node"; Arguments = @("tests/wafl-external-qa-stop-state-contract.mjs") },
           @{ Name = "WAFL external QA Tailscale transport contract"; Command = "node"; Arguments = @("tests/wafl-external-qa-tailscale-transport-contract.mjs") },
           @{ Name = "WAFL external QA Tailscale runtime contract"; Command = "powershell.exe"; Arguments = @("-NoProfile", "-File", "tests/wafl-external-qa-tailscale-runtime-contract.ps1") },
@@ -1775,6 +1780,12 @@ if ($Profile -eq "automation-infrastructure" -and (GetProjectAppVersion) -in @("
         "db/v2/migrations/016_v2_r0_document_snapshot_and_managed_qr.sql",
         "db/v2/migrations/017_v2_company_spec_item_catalog.sql",
         "db/v2/migrations/018_v2_company_spec_item_category_scope.sql"
+    )
+}
+if ($Profile -eq "automation-infrastructure" -and (GetProjectAppVersion) -in @("2.0.0-alpha.65", "2.0.0-alpha.66") -and (Test-Path (Join-Path $ProjectDir "tests/workorder-v2-alpha66-lineage-sample-list-filter-contract.mjs"))) {
+    $allowedMigrationChanges = @(
+        "db/v2/migrations/019_v2_work_order_lineage_sample.sql",
+        "db/v2/migrations/020_v2_sample_reorder_invariant.sql"
     )
 }
 $unexpectedMigrationChanges = @($migrationChanges | Where-Object { $allowedMigrationChanges -notcontains $_ })

@@ -28,6 +28,7 @@ function present(value: string | null): boolean {
 
 export function evaluateWorkOrderIssueReadiness(facts: WorkOrderIssueReadinessFacts): {
   readonly canIssue: boolean;
+  readonly issues: readonly ReadinessIssue[];
   readonly hardBlockers: readonly ReadinessIssue[];
   readonly warnings: readonly ReadinessIssue[];
 } {
@@ -49,5 +50,5 @@ export function evaluateWorkOrderIssueReadiness(facts: WorkOrderIssueReadinessFa
   const warnings: ReadinessIssue[] = facts.includedAttachmentCount < 1
     ? [blocker("NO_INCLUDED_ATTACHMENT", "문서에 포함할 첨부파일이 없습니다.")]
     : [];
-  return { canIssue: hardBlockers.length === 0, hardBlockers, warnings };
+  return { canIssue: hardBlockers.length === 0, issues: [...hardBlockers, ...warnings], hardBlockers, warnings };
 }

@@ -34,6 +34,7 @@ import type {
   WorkOrderRevisionId,
 } from "@/lib/domain/work-orders/contracts/primitives";
 import type { ReadinessReadModel } from "@/lib/domain/work-orders/contracts/readiness";
+import type { WorkOrderIdentityReadModel } from "@/lib/domain/work-orders/contracts/lineage";
 
 export type RepresentativeThumbnailReadModel = {
   readonly imageId: ImageId;
@@ -64,6 +65,7 @@ export type WorkOrderListItem = {
   readonly processCount: number;
   readonly latestDocumentStatus: GeneratedDocumentStatus | null;
   readonly updatedAt: IsoDateTime;
+  readonly identity: WorkOrderIdentityReadModel;
 };
 
 export type WorkOrderListPage = CursorPage<WorkOrderListItem>;
@@ -93,6 +95,14 @@ export type WorkOrderDetailHeader = {
   readonly document: WorkOrderDocumentSummary;
   readonly entityVersion: EntityVersion;
   readonly updatedAt: IsoDateTime;
+  readonly identity: WorkOrderIdentityReadModel;
+  readonly sourceSummary: {
+    readonly workOrderId: WorkOrderId;
+    readonly productName: string;
+    readonly isSample: boolean;
+    readonly derivationKind: import("@/lib/domain/work-orders/contracts/lineage").WorkOrderDerivationKind;
+    readonly reorderRound: number;
+  } | null;
 };
 
 export type WorkOrderDetailCoreReadModel = {

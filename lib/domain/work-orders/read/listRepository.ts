@@ -15,6 +15,9 @@ import {
   type IsoDateTime,
   type TenantMemberScope,
   type WorkOrderId,
+  type WorkOrderCharacterFilter,
+  type WorkOrderLineageFilter,
+  type WorkOrderDerivationKind,
   type WorkOrderListItem,
   type WorkOrderStatus,
 } from "@/lib/domain/work-orders/contracts";
@@ -41,12 +44,24 @@ export const WORK_ORDER_V2_LIST_SQL = `
         OR COALESCE(w.season_code, '') ILIKE '%' || $5 || '%'
       )
       AND ($6::text[] IS NULL OR w.status = ANY($6::text[]))
+      AND (
+        $7::text = 'all'
+        OR ($7::text = 'production' AND w.is_sample = false)
+        OR ($7::text = 'sample' AND w.is_sample = true)
+      )
+      AND (
+        cardinality($8::text[]) = 0
+        OR ('reorder' = ANY($8::text[]) AND w.reorder_round >= 1)
+        OR ('rework' = ANY($8::text[]) AND w.derivation_kind = 'rework')
+      )
     ORDER BY w.updated_at DESC, w.id DESC
-    LIMIT $7
+    LIMIT $9
   ), page_rows AS MATERIALIZED (
     SELECT w.id, w.document_number_base, w.product_name, w.status, w.due_date::text AS due_date,
            w.current_revision_id, w.representative_image_id,
-           w.updated_at, r.revision_no, r.estimated_total
+           w.updated_at, w.is_sample, w.derivation_kind, w.source_work_order_id,
+           w.source_revision_id, w.series_root_work_order_id, w.reorder_round,
+           r.revision_no, r.estimated_total
     FROM page_ids p
     JOIN work_orders w ON w.id = p.id AND w.company_id = $1
     LEFT JOIN work_order_revisions r
@@ -91,7 +106,8 @@ export const WORK_ORDER_V2_LIST_SQL = `
   )
   SELECT p.id, p.document_number_base, p.product_name, p.status, p.due_date,
          COALESCE(qt.total_quantity, 0)::integer AS total_quantity,
-         p.revision_no, p.estimated_total, p.updated_at,
+         p.revision_no, p.estimated_total, p.updated_at, p.is_sample, p.derivation_kind,
+         p.source_work_order_id, p.source_revision_id, p.series_root_work_order_id, p.reorder_round,
          i.id AS image_id, i.title AS image_title,
          COALESCE(i.thumbnail_object_key, i.storage_object_key) AS image_key,
          COALESCE(m.incomplete_fabric_count, 0)::integer AS incomplete_fabric_count,
@@ -125,6 +141,12 @@ type WorkOrderListRow = DbQueryResultRow & {
   readonly incomplete_accessory_count: number | string;
   readonly process_count: number | string;
   readonly latest_document_status: string | null;
+  readonly is_sample: boolean;
+  readonly derivation_kind: WorkOrderDerivationKind;
+  readonly source_work_order_id: string | null;
+  readonly source_revision_id: string | null;
+  readonly series_root_work_order_id: string | null;
+  readonly reorder_round: number | string;
 };
 
 export type WorkOrderListRepositoryResult = {
@@ -193,6 +215,14 @@ function mapRow(row: WorkOrderListRow): WorkOrderListItem {
     processCount: toCount(row.process_count),
     latestDocumentStatus: toDocumentStatus(row.latest_document_status),
     updatedAt: toIsoDateTime(row.updated_at),
+    identity: {
+      isSample: row.is_sample,
+      derivationKind: row.derivation_kind,
+      reorderRound: toCount(row.reorder_round),
+      sourceWorkOrderId: row.source_work_order_id,
+      sourceRevisionId: row.source_revision_id,
+      seriesRootWorkOrderId: row.series_root_work_order_id,
+    },
   };
 }
 
@@ -203,6 +233,8 @@ export async function listWorkOrdersV2(input: {
   readonly cursorWorkOrderId: WorkOrderId | null;
   readonly searchQuery: string | null;
   readonly statuses: readonly string[] | null;
+  readonly characterFilter: WorkOrderCharacterFilter;
+  readonly lineageFilters: readonly WorkOrderLineageFilter[];
   readonly limit: number;
 }): Promise<WorkOrderListRepositoryResult> {
   const transactionStartedAt = performance.now();
@@ -223,6 +255,8 @@ export async function listWorkOrdersV2(input: {
       input.assignedCompanyMemberId,
       input.searchQuery,
       input.statuses,
+      input.characterFilter,
+      input.lineageFilters,
       input.limit + 1,
     ]);
     const listQueryMs = performance.now() - listStartedAt;

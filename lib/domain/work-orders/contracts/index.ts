@@ -2,6 +2,7 @@ export * from "@/lib/domain/work-orders/contracts/authorization";
 export * from "@/lib/domain/work-orders/contracts/commands";
 export * from "@/lib/domain/work-orders/contracts/enums";
 export * from "@/lib/domain/work-orders/contracts/errors";
+export * from "@/lib/domain/work-orders/contracts/lineage";
 export * from "@/lib/domain/work-orders/contracts/pagination";
 export * from "@/lib/domain/work-orders/contracts/primitives";
 export * from "@/lib/domain/work-orders/contracts/read-models";

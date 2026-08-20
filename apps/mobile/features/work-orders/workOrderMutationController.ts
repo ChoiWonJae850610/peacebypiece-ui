@@ -9,7 +9,7 @@ import {
   setRepresentativeWorkOrderImage,
   issueWorkOrderAttachmentPreview,
 } from "../../lib/api/assetsApi";
-import { createWorkOrderDraft, patchWorkOrderBasicInfo } from "../../lib/api/workOrdersApi";
+import { createWorkOrderDraft, patchWorkOrderBasicInfo, setWorkOrderSample } from "../../lib/api/workOrdersApi";
 import {
   archiveWorkOrderMaterial,
   createWorkOrderMaterial,
@@ -51,6 +51,7 @@ export const workOrderMutationController = {
   updateOverview(workOrderId: string, command: PatchWorkOrderBasicInfoInput) {
     return patchWorkOrderBasicInfo(workOrderId, command);
   },
+  setSample: setWorkOrderSample,
   addSize: addWorkOrderSize,
   renameSize: renameWorkOrderSize,
   deleteSize: deleteWorkOrderSize,

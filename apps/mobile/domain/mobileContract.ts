@@ -10,6 +10,17 @@ export type MobileCurrentUser = {
 
 export type WorkOrderStatus = "draft" | "ready_to_issue" | "issued" | "revised" | "completed" | "cancelled";
 export type WorkOrderListStatusFilter = "all" | "draft" | "delivery" | "progress" | "completed" | "hold_cancel";
+export type WorkOrderCharacterFilter = "all" | "production" | "sample";
+export type WorkOrderLineageFilter = "reorder" | "rework";
+export type WorkOrderDerivationKind = "original" | "reorder" | "rework";
+export type WorkOrderIdentity = {
+  readonly isSample: boolean;
+  readonly derivationKind: WorkOrderDerivationKind;
+  readonly reorderRound: number;
+  readonly sourceWorkOrderId: string | null;
+  readonly sourceRevisionId: string | null;
+  readonly seriesRootWorkOrderId: string | null;
+};
 
 export type WorkOrderListItem = {
   readonly workOrderId: string;
@@ -24,6 +35,7 @@ export type WorkOrderListItem = {
   readonly processCount: number;
   readonly latestDocumentStatus: string | null;
   readonly updatedAt: string;
+  readonly identity: WorkOrderIdentity;
 };
 
 export type WorkOrderListPage = {
@@ -49,8 +61,12 @@ export type WorkOrderDetailCore = {
     readonly currentRevisionVersion: number;
     readonly readiness: {
       readonly canIssue: boolean;
+      readonly issues: readonly { readonly code: string; readonly message: string }[];
       readonly hardBlockers: readonly { readonly code: string; readonly message: string }[];
       readonly warnings: readonly { readonly code: string; readonly message: string }[];
+      readonly checkedAt: string;
+      readonly basedOnVersion: number;
+      readonly source: "server_canonical" | "client_preview";
     };
     readonly document: {
       readonly latestDocumentId: string | null;
@@ -65,6 +81,14 @@ export type WorkOrderDetailCore = {
     } | null;
     readonly entityVersion: number;
     readonly updatedAt: string;
+    readonly identity: WorkOrderIdentity;
+    readonly sourceSummary: {
+      readonly workOrderId: string;
+      readonly productName: string;
+      readonly isSample: boolean;
+      readonly derivationKind: WorkOrderDerivationKind;
+      readonly reorderRound: number;
+    } | null;
   };
   readonly revision: {
     readonly status: string;
@@ -581,6 +605,7 @@ export type PatchWorkOrderBasicInfoInput = {
 export type CreateWorkOrderDraftInput = {
   readonly clientRequestId: string;
   readonly productName: string;
+  readonly isSample: boolean;
 };
 
 export type CreateWorkOrderDraftResult = {
@@ -599,7 +624,21 @@ export type CreateWorkOrderDraftResult = {
     readonly totalQuantity: 0;
     readonly memo: null;
     readonly factoryDeliveryMemo: null;
+    readonly isSample: boolean;
+    readonly derivationKind: "original";
+    readonly reorderRound: 0;
   };
+  readonly nextVersion: number;
+};
+
+export type SetWorkOrderSampleInput = {
+  readonly clientRequestId: string;
+  readonly expectedVersion: number;
+  readonly isSample: boolean;
+};
+
+export type SetWorkOrderSampleResult = {
+  readonly result: { readonly workOrderId: string; readonly isSample: boolean; readonly nextVersion: number };
   readonly nextVersion: number;
 };
 

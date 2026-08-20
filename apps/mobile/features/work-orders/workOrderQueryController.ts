@@ -12,13 +12,17 @@ import {
   getWorkOrderSizeSpec,
   getWorkOrderStructureOptions,
 } from "../../lib/api/sizeColorApi";
-import type { MaterialType, WorkOrderListStatusFilter } from "../../domain/mobileContract";
+import type { MaterialType, WorkOrderCharacterFilter, WorkOrderLineageFilter, WorkOrderListStatusFilter } from "../../domain/mobileContract";
+export { workOrderReadinessNeedsCanonicalRefresh } from "../../domain/workOrderReadinessRefreshPolicy";
 
 export const workOrderQueryController = {
-  list(input: { readonly query?: string; readonly status?: WorkOrderListStatusFilter; readonly cursor?: string | null } = {}) {
+  list(input: { readonly query?: string; readonly status?: WorkOrderListStatusFilter; readonly character?: WorkOrderCharacterFilter; readonly lineage?: readonly WorkOrderLineageFilter[]; readonly cursor?: string | null } = {}) {
     return getWorkOrderList(input);
   },
   detail(workOrderId: string) {
+    return getWorkOrderDetail(workOrderId);
+  },
+  detailAfterReadinessRelevantMutation(workOrderId: string) {
     return getWorkOrderDetail(workOrderId);
   },
   images(workOrderId: string) {

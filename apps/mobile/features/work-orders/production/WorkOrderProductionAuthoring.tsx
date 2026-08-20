@@ -62,7 +62,7 @@ const ORDER_ACTION_VIEW = {
   cancel: { label: "발주취소", caption: "취소", Icon: RotateCcw, emphasized: false, danger: true },
 } as const;
 
-export default function WorkOrderProductionAuthoring({ workOrderId }: { readonly workOrderId: string }) {
+export default function WorkOrderProductionAuthoring({ workOrderId, onMutationCommitted }: { readonly workOrderId: string; readonly onMutationCommitted?: () => void }) {
   const cachedSnapshot = productionPresentationCache.get(workOrderId) ?? null;
   const [data, setData] = useState<WorkOrderProcesses | null>(cachedSnapshot?.data ?? null);
   const dataRef = useRef<WorkOrderProcesses | null>(cachedSnapshot?.data ?? null);
@@ -92,7 +92,7 @@ export default function WorkOrderProductionAuthoring({ workOrderId }: { readonly
 
   async function runMutation(key: string, command: (current: WorkOrderProcesses) => Promise<unknown>) {
     setPendingKey(key);
-    try { await mutationQueue.enqueue(async () => { const current = await getWorkOrderProcesses(workOrderId); publishData(current); await command(current); publishData(await getWorkOrderProcesses(workOrderId)); }); setInlineSession(null); }
+    try { await mutationQueue.enqueue(async () => { const current = await getWorkOrderProcesses(workOrderId); publishData(current); await command(current); publishData(await getWorkOrderProcesses(workOrderId)); }); setInlineSession(null); onMutationCommitted?.(); }
     catch (reason) { Alert.alert("저장할 수 없습니다.", reason instanceof Error ? reason.message : "제작 정보를 확인해 주세요."); }
     finally { setPendingKey((current) => current === key ? null : current); }
   }

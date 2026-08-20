@@ -20,6 +20,7 @@ import type {
   WorkOrderId,
   WorkOrderRevisionId,
 } from "@/lib/domain/work-orders/contracts/primitives";
+import type { WorkOrderDerivationKind } from "@/lib/domain/work-orders/contracts/lineage";
 
 export const COLOR_SIZE_CELL_BATCH_MAX = 250;
 export const REORDER_ITEM_BATCH_MAX = 100;
@@ -47,6 +48,7 @@ export type CreateWorkOrderDraftCommand = CommandRequest & {
   readonly totalQuantity?: number | null;
   readonly memo?: string | null;
   readonly factoryDeliveryMemo?: string | null;
+  readonly isSample: boolean;
 };
 
 export type PatchWorkOrderBasicInfoCommand = VersionedWorkOrderCommand & {
@@ -77,6 +79,19 @@ export type WorkOrderDraftCommandResult = {
   readonly totalQuantity: number;
   readonly memo: string | null;
   readonly factoryDeliveryMemo: string | null;
+  readonly isSample: boolean;
+  readonly derivationKind: WorkOrderDerivationKind;
+  readonly reorderRound: number;
+};
+
+export type SetWorkOrderSampleCommand = IdempotentWorkOrderCommand & {
+  readonly isSample: boolean;
+};
+
+export type SetWorkOrderSampleCommandResult = {
+  readonly workOrderId: WorkOrderId;
+  readonly isSample: boolean;
+  readonly nextVersion: EntityVersion;
 };
 
 export type AddWorkOrderImageCommand = VersionedWorkOrderCommand & {

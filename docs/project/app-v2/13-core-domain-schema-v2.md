@@ -517,3 +517,8 @@ Neon/PostgreSQL과 Next/Expo API의 실제 region/latency를 아직 측정하지
 ## 20. 다음 action
 
 `14-v2-schema-migration-and-performance-plan.md`에 따라 additive shadow schema, dual-read 검증, backfill, performance gate 순서로 진행한다. 이 문서는 migration 실행을 승인하지 않는다.
+## Alpha.66 WorkOrder identity and lineage extension
+
+Migration `019` adds WorkOrder-level `is_sample`, `derivation_kind`, `source_work_order_id`, `source_revision_id`, `series_root_work_order_id`, and nonnegative `reorder_round`. Existing rows become non-Sample `original` round zero through additive defaults; there is no destructive backfill. Original rows have no source and round zero. Reorder and Rework rows require tenant-safe source WorkOrder, source revision, and stable series root references with `RESTRICT` deletion and no self-source. Reorder rounds are positive and unique only within one reorder series; Rework may retain its source series round.
+
+These fields represent identity only. They do not replace `work_orders.status`, revision status/number, or document status/revision. Additive migration `020` narrows Sample coexistence: Sample original and Sample Rework at round zero are valid, while direct Reorder and any inherited positive reorder-round context require 본생산. Source display values are joined at read time and are not copied columns. Migrations `019` and `020` are approved only for the canonical DEV/TEST target; production apply remains separately prohibited.

@@ -131,7 +131,14 @@ export function validateCreateWorkOrderDraft(input: {
     "totalQuantity",
     "memo",
     "factoryDeliveryMemo",
+    "isSample",
   ]));
+
+  if (hasOwn(input.body, "isSample") && typeof input.body.isSample !== "boolean") {
+    throw new WorkOrderCommandValidationError([
+      fieldError("isSample", "INVALID_TYPE", "작업 구분 값이 올바르지 않습니다."),
+    ]);
+  }
 
   return {
     clientRequestId: parseClientRequestId(input.body.clientRequestId),
@@ -149,6 +156,7 @@ export function validateCreateWorkOrderDraft(input: {
       FACTORY_DELIVERY_MEMO_MAX_LENGTH,
       hasOwn(input.body, "factoryDeliveryMemo"),
     ) ?? null,
+    isSample: typeof input.body.isSample === "boolean" ? input.body.isSample : false,
   };
 }
 

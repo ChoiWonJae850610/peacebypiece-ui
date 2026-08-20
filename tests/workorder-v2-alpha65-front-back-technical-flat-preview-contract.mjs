@@ -74,7 +74,7 @@ for (const token of ["front/back", "garment-only", "stable side", "singular ephe
   assert.ok(`${design}\n${ia}`.toLocaleLowerCase("en-US").includes(token.toLocaleLowerCase("en-US")), `canonical front/back guidance missing ${token}`);
 }
 
-assert.equal(fs.readdirSync("db/v2/migrations").filter((name) => /^\d{3}_.*\.sql$/u.test(name)).length, 18);
+assert.equal(fs.readdirSync("db/v2/migrations").filter((name) => /^\d{3}_.*\.sql$/u.test(name)).length, fs.existsSync("db/v2/migrations/020_v2_sample_reorder_invariant.sql") ? 20 : fs.existsSync("db/v2/migrations/019_v2_work_order_lineage_sample.sql") ? 19 : 18);
 assert.equal(fs.existsSync("db/v2/migrations/019_v2_front_back_technical_flat.sql"), false);
 
 console.log(JSON.stringify({

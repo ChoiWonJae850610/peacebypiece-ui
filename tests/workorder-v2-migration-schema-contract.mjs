@@ -25,6 +25,8 @@ const expectedFiles = [
   "016_v2_r0_document_snapshot_and_managed_qr.sql",
   "017_v2_company_spec_item_catalog.sql",
   "018_v2_company_spec_item_category_scope.sql",
+  "019_v2_work_order_lineage_sample.sql",
+  "020_v2_sample_reorder_invariant.sql",
 ];
 
 const actualFiles = fs
@@ -54,7 +56,9 @@ const destructiveAuditSql = executableSql.replace(
 );
 
 for (const { file, source } of sources) {
-  if (file === "018_v2_company_spec_item_category_scope.sql") {
+  if (file === "020_v2_sample_reorder_invariant.sql" || file === "019_v2_work_order_lineage_sample.sql") {
+    assert.ok(source.includes("WAFL v2 alpha.66 additive"), `${file} missing alpha.66 execution prohibition`);
+  } else if (file === "018_v2_company_spec_item_category_scope.sql") {
     assert.ok(source.includes("WAFL v2 alpha.64 additive dev/test migration"), `${file} missing alpha.64 execution prohibition`);
   } else if (file === "017_v2_company_spec_item_catalog.sql") {
     assert.ok(source.includes("WAFL v2 alpha.64 additive dev/test migration"), `${file} missing alpha.64 execution prohibition`);
@@ -341,6 +345,11 @@ const alpha65ApiPaths = [
   "app/api/v2/work-orders/[workOrderId]/processes/[processId]/order-complete/route.ts",
   "app/api/v2/work-orders/[workOrderId]/production-options/route.ts",
 ];
+const alpha66ContractExists = fs.existsSync(path.join(root, "tests/workorder-v2-alpha66-lineage-sample-list-filter-contract.mjs"));
+const alpha66ApiPaths = [
+  ...alpha65ApiPaths,
+  "app/api/v2/work-orders/[workOrderId]/sample/route.ts",
+];
 const alpha62ApiPaths = [
   "app/api/system/standards/size-spec-templates/route.ts",
   "app/api/v2/size-spec-templates/[templateId]/route.ts",
@@ -380,7 +389,9 @@ const alpha25ContractExists = fs.existsSync(path.join(root, "tests/workorder-v2-
 const alpha26ContractExists = fs.existsSync(path.join(root, "tests/workorder-v2-alpha26-material-command-api-contract.mjs"));
 const alpha27ContractExists = fs.existsSync(path.join(root, "tests/workorder-v2-alpha27-revision-issue-command-contract.mjs"));
 const alpha28ContractExists = fs.existsSync(path.join(root, "tests/workorder-v2-alpha28-issued-preview-contract.mjs"));
-if (alpha65ContractExists && apiChanges.length > 0) {
+if (alpha66ContractExists && apiChanges.length > 0) {
+  assert.deepEqual(apiChanges.filter((change) => !alpha66ApiPaths.some((allowedPath) => change.endsWith(allowedPath))), [], "alpha.66 may change only inherited routes and the exact WorkOrder Sample route");
+} else if (alpha65ContractExists && apiChanges.length > 0) {
   assert.deepEqual(apiChanges.filter((change) => !alpha65ApiPaths.some((allowedPath) => change.endsWith(allowedPath))), [], "alpha.65 may change only the inherited alpha.64 routes and its exact production process/options routes");
 } else if (alpha64ContractExists && apiChanges.length > 0) {
   assert.deepEqual(apiChanges.filter((change) => !alpha64ApiPaths.some((allowedPath) => change.endsWith(allowedPath))), [], "alpha.64 may change only its exact document, server-mediated address-search, and spec-catalog API routes");

@@ -40,6 +40,8 @@ This folder contains the ordered, additive, reviewed v2 migration SQL drafts int
 - alpha.64 preparation: guarded additive migration `016` adds issuance-time material supplier-name snapshots and permits only managed `embedded_qr` tokens to use a nullable expiry. Manual-share expiry remains mandatory. Viewer SECURITY DEFINER predicates accept a null expiry without weakening revoke or generated-document lifecycle checks. Apply is dev/test-only and separately audited.
 - alpha.64 spec-catalog preparation: guarded migration `017` extends the existing same-company reusable size/color option catalog with `spec_item`. WorkOrder and saved-template POM rows remain independent snapshots; no catalog foreign key or backfill is introduced. Apply is dev/test-only and separately audited.
 - alpha.64 category-aware Spec Item remediation: guarded migration `018` adds nullable major-category scope to company `spec_item` options, preserves existing unscoped rows without backfill, and replaces only the catalog name uniqueness owner so category-scoped names remain independent. Apply is dev/test-only and separately audited.
+- alpha.66 WorkOrder identity foundation: guarded migration `019` adds independent Sample and derivation-lineage columns, tenant-safe source/root/revision references, and list/filter indexes. Existing rows remain non-Sample original round zero; apply is additive DEV/TEST-only with no production execution.
+- alpha.66 Sample/Reorder invariant: guarded additive migration `020` prevents Sample from carrying direct Reorder or inherited reorder-round context while preserving Sample Rework at round zero. Apply is DEV/TEST-only after exact synthetic-fixture reconciliation; production execution remains forbidden.
 - production use: forbidden until the production migration gate is explicitly approved.
 - next version: alpha.23 consumes the measured schema through a bounded Read API only; no migration rerun is implied.
 
@@ -65,5 +67,7 @@ The existing `db/migrations/` path remains the legacy/current executable baselin
 16. `016_v2_r0_document_snapshot_and_managed_qr.sql`
 17. `017_v2_company_spec_item_catalog.sql`
 18. `018_v2_company_spec_item_category_scope.sql`
+19. `019_v2_work_order_lineage_sample.sql`
+20. `020_v2_sample_reorder_invariant.sql`
 
 The order is a static contract. No file is applied, validated, backfilled, seeded, or benchmarked in alpha.21.

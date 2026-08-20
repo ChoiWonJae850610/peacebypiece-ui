@@ -81,6 +81,8 @@ export const WORK_ORDER_V2_DETAIL_CORE_SQL = `
            settings.document_code AS company_document_code,
            w.document_number_base,
            w.current_revision_id, w.representative_image_id, w.entity_version, w.updated_at,
+           w.is_sample, w.derivation_kind, w.source_work_order_id, w.source_revision_id,
+           w.series_root_work_order_id, w.reorder_round,
            r.revision_no, r.entity_version AS revision_version, r.revision_status, r.finalized_at, r.factory_delivery_memo, r.unit_price,
            r.fabric_total, r.accessory_total, r.process_total, r.estimated_total
     FROM work_orders w
@@ -104,6 +106,10 @@ export const WORK_ORDER_V2_DETAIL_CORE_SQL = `
          t.current_revision_id, t.entity_version, t.updated_at, t.revision_no, t.revision_version,
          t.revision_status, t.finalized_at, t.factory_delivery_memo, t.unit_price, t.fabric_total,
          t.accessory_total, t.process_total, t.estimated_total,
+         t.is_sample, t.derivation_kind, t.source_work_order_id, t.source_revision_id,
+         t.series_root_work_order_id, t.reorder_round,
+         source.product_name AS source_product_name, source.is_sample AS source_is_sample,
+         source.derivation_kind AS source_derivation_kind, source.reorder_round AS source_reorder_round,
          i.id AS image_id, i.title AS image_title,
          COALESCE(i.thumbnail_object_key, i.storage_object_key) AS image_key,
          (SELECT count(*)::integer FROM work_order_material_lines m
@@ -133,6 +139,8 @@ export const WORK_ORDER_V2_DETAIL_CORE_SQL = `
          ld.display_document_number AS latest_display_document_number,
          ld.generated_at AS latest_document_generated_at
   FROM target t
+  LEFT JOIN work_orders source
+    ON source.company_id = $1 AND source.id = t.source_work_order_id AND source.deleted_at IS NULL
   LEFT JOIN work_order_images i
     ON i.id = t.representative_image_id AND i.company_id = $1 AND i.deleted_at IS NULL
   LEFT JOIN latest_document ld ON ld.row_number = 1
@@ -437,6 +445,7 @@ export async function getWorkOrderDetailCoreV2(input: {
         : null,
       readiness: {
         canIssue: readiness.canIssue,
+        issues: readiness.issues,
         hardBlockers: readiness.hardBlockers,
         warnings: readiness.warnings,
         checkedAt: new Date().toISOString() as IsoDateTime,
@@ -453,6 +462,21 @@ export async function getWorkOrderDetailCoreV2(input: {
       },
       entityVersion,
       updatedAt: asIsoDateTime(row.updated_at) as IsoDateTime,
+      identity: {
+        isSample: Boolean(row.is_sample),
+        derivationKind: asEnum(row.derivation_kind, ["original", "reorder", "rework"] as const, "WORK_ORDER_DETAIL_INVALID_DERIVATION"),
+        reorderRound: asCount(row.reorder_round),
+        sourceWorkOrderId: row.source_work_order_id === null ? null : String(row.source_work_order_id),
+        sourceRevisionId: row.source_revision_id === null ? null : String(row.source_revision_id),
+        seriesRootWorkOrderId: row.series_root_work_order_id === null ? null : String(row.series_root_work_order_id),
+      },
+      sourceSummary: row.source_work_order_id === null || row.source_product_name === null ? null : {
+        workOrderId: String(row.source_work_order_id) as WorkOrderId,
+        productName: String(row.source_product_name),
+        isSample: Boolean(row.source_is_sample),
+        derivationKind: asEnum(row.source_derivation_kind, ["original", "reorder", "rework"] as const, "WORK_ORDER_DETAIL_INVALID_SOURCE_DERIVATION"),
+        reorderRound: asCount(row.source_reorder_round),
+      },
     },
     revision: {
       status: asEnum(row.revision_status, WORK_ORDER_REVISION_STATUSES, "WORK_ORDER_DETAIL_INVALID_REVISION_STATUS"),

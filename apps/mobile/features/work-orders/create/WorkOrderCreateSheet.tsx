@@ -3,6 +3,7 @@ import { StyleSheet, View, type TextInput } from "react-native";
 
 import WaflInputSheet from "@/features/inputs/WaflInputSheet";
 import WaflSheetValueField from "@/features/inputs/WaflSheetValueField";
+import WorkOrderCharacterChoice from "@/features/work-orders/identity/WorkOrderCharacterChoice";
 import { WAFL_THEME } from "@/constants/theme";
 import { WAFL_TEXT_ENTRY_FORM_SIZING } from "@/domain/waflSheetDetentPolicy";
 import { WORK_ORDER_PRODUCT_NAME_MAX_LENGTH } from "@/domain/workOrderValidation";
@@ -12,6 +13,8 @@ type Props = {
   readonly productName: string;
   readonly error: string | null;
   readonly pending: boolean;
+  readonly isSample: boolean;
+  readonly onChangeSample: (value: boolean) => void;
   readonly onChangeProductName: (value: string) => void;
   readonly onCancel: () => void;
   readonly onConfirm: () => Promise<void>;
@@ -33,6 +36,11 @@ export default function WorkOrderCreateSheet(props: Props) {
         placeholder="제품명을 입력하세요"
         returnKeyType="done"
         value={props.productName}
+      />
+      <WorkOrderCharacterChoice
+        disabled={props.pending}
+        isSample={props.isSample}
+        onChange={props.onChangeSample}
       />
     </View>
   </WaflInputSheet>;

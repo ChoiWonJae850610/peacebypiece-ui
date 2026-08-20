@@ -4,10 +4,16 @@ Document type: **Current Baseline**
 
 Canonical owner: `docs/codex-current-state.md`
 
-Result version: `2.0.0-alpha.65`
-Status: `ALPHA65_FINALIZATION_COMPLETE`
+Result version: `2.0.0-alpha.66`
+Status: `ALPHA66_FINALIZATION_COMPLETE`
 
 This file is a compact present-state snapshot. It is not a version history, Permanent Rules owner, runtime process ledger, or evidence archive. Historical implementation details belong to numbered immutable evidence under `docs/project/app-v2/`.
+
+## Current alpha.66 result
+
+The current candidate introduces the WorkOrder identity/lineage foundation without reviving the v1 sample/main/rework state model. Sample character, derivation lineage (`original`/`reorder`/`rework`), workflow status, and document revision remain independent axes. Additive DEV/TEST-only migration `019` owns the identity columns and tenant-safe lineage references, while additive DEV/TEST-only migration `020` enforces that Sample never carries direct Reorder or inherited reorder-round context. Sample Rework remains valid at round zero; Reorder and Rework inherited from Reorder are forced 본생산. Production migration and production/owner-fixture business mutation remain zero. Normal create defaults Sample ON in each fresh mobile session while an omitted API value defaults false, and the WorkOrder-level Sample flag remains editable only where it cannot violate the lineage invariant.
+
+The WorkOrder list stays flat. Existing workflow status chips remain the only permanent rail. Create and detail share the canonical `본생산 / 샘플` WorkOrder-character semantics while using context-appropriate variants: create retains the labeled form-sized `작업 구분` control and fresh `샘플` default; eligible round-zero detail uses a compact grouped control anchored at the hero top-right, while forced-본생산 reorder context hides the invalid switch. Detail places the strong workflow status directly below the representative image, omits the redundant informational Sample pill, and retains only applicable Reorder/Rework lineage pills in the text-side identity row. The passive `원본 · ... / N차 계보` subtitle remains hidden without deleting lineage data. The two-axis filter truthfully yields zero for Sample+Reorder and preserves Sample Rework. Overview no longer renders partial `다음 확인` copy: the complete canonical readiness issue array owns the compact `발행 전 확인 N건` row and every row in its read-only WAFL Sheet, with stable issue-code navigation and an explicit `발행 준비 완료` zero state. Successful readiness-relevant mutations now reconcile the same canonical detail projection whenever `readiness.basedOnVersion` trails the WorkOrder entity version; Production also publishes its successful local command through that shared refresh boundary. No mobile counter exists. Actual Reorder and Rework creation/copy E2E and source navigation remain deferred to alpha.67/alpha.68. Physical iPhone results are not inferred from automated verification.
 
 ## Repository and version
 
@@ -15,25 +21,25 @@ This file is a compact present-state snapshot. It is not a version history, Perm
 | --- | --- |
 | Repository | `C:\CWJ_Project\peacebypiece-2.0` |
 | Branch | `master` |
-| Alpha.65 entry HEAD/origin | `0a11a50fc02eec32682ba82a1c70b97eaabe3e87` |
-| Entry commit | `feat: WAFL v2 alpha.64 Maker 작업지시서·문서 UX 완성` |
+| Alpha.66 entry HEAD/origin | `55f812b0f8300032ae55c9f222d9f671f947c044` |
+| Entry commit | `feat: WAFL v2 alpha.65 Maker 입력 UX와 완성치수 도식 완성` |
 | Entry ahead/behind | `0/0` |
 | Entry working tree | clean |
-| APP_VERSION | `2.0.0-alpha.65` |
-| Mobile package version | `2.0.0-alpha.65` |
+| APP_VERSION | `2.0.0-alpha.66` |
+| Mobile package version | `2.0.0-alpha.66` |
 | Root package version | `0.5.637` |
 | Expo public version | `2.0.0` |
 | iOS Development Build | build number `1`, reusable while native inputs remain unchanged |
 | iOS bundle identifier | `com.wafl.app` |
 | Android package | `com.wafl.app` |
 
-The source cannot contain the hash of the commit that contains itself. Final alpha.65 HEAD, origin synchronization, Git cleanliness, ZIP hash/size/entry count, and exact repo-state filename are owned by the matching post-push alpha.65 repo-state.
+The source cannot contain the hash of the commit that contains itself. Final alpha.66 HEAD, origin synchronization, Git cleanliness, ZIP hash/size/entry count, and exact repo-state filename are owned by the matching post-push alpha.66 repo-state.
 
 ## Latest delivery boundary
 
-- Target Source ZIP: `peacebypiece-ui-2.0.0-alpha.65.zip`.
-- Target repo-state: `repo-state-2.0.0-alpha.65-<actual timestamp>.txt`.
-- The accepted release handoff is the matching alpha.65 ZIP/repo-state pair generated from the final synchronized pushed HEAD.
+- Target Source ZIP: `peacebypiece-ui-2.0.0-alpha.66.zip`.
+- Target repo-state: `repo-state-2.0.0-alpha.66-<actual timestamp>.txt`.
+- The accepted release handoff is the matching alpha.66 ZIP/repo-state pair generated from the final synchronized pushed HEAD.
 
 ## Current product and transport baseline
 
@@ -292,6 +298,7 @@ Final TypeScript, ESLint, Next, Expo, contracts, mutation audit, Canonical Verif
 - Alpha.63 mobile architecture stabilization: `docs/project/app-v2/63-mobile-architecture-stabilization-evidence.md`.
 - Alpha.64 cumulative Maker WorkOrder/document UX and shared mobile architecture: `docs/project/app-v2/64-maker-workorder-document-ux-evidence.md`.
 - Alpha.65 Maker input, Production authoring, Finished Spec visual selector and technical-flat architecture: `docs/project/app-v2/65-maker-input-finished-spec-visual-evidence.md`.
+- Alpha.66 WorkOrder identity/lineage, header identity layout, canonical readiness refresh, and accepted final boundary: `docs/project/app-v2/66-workorder-lineage-sample-list-filter-evidence.md` through `docs/project/app-v2/71-workorder-lineage-sample-filter-preissue-evidence.md`.
 
 Older facts remain in their numbered evidence. They are not recopied here.
 
@@ -446,14 +453,14 @@ checks, Canonical Verify, DeveloperAutoConnect, and owner release acceptance pas
 The exact owner fixture remains read-only preserved. Factory/AI expansion, production
 mutation, dependency/native/EAS changes, migration `019`, and new schema remain excluded.
 
-## Next candidate — 2.0.0-alpha.66
+## Next candidate — 2.0.0-alpha.67
 
-Candidate: `2.0.0-alpha.66`
+Candidate: `2.0.0-alpha.67`
 
 Status: `NOT_STARTED`.
 
-Candidate label: `Derived WorkOrder architecture foundation`.
+Candidate label: `N차 리오더 E2E`.
 
-Alpha.65 finalization grants no alpha.66 product scope or implementation authority. A separate
-owner-approved Version Delta is required before any alpha.66 source, data, schema, Runtime or
-delivery work begins.
+Alpha.66 finalization grants no alpha.67 implementation authority. Actual Reorder creation/copy
+E2E remains `NOT STARTED`; a separate owner-approved Version Delta is required before any
+alpha.67 source, data, schema, Runtime, or delivery work begins.

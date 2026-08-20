@@ -6,6 +6,10 @@ import type {
   WorkOrderDetailCore,
   WorkOrderListPage,
   WorkOrderListStatusFilter,
+  WorkOrderCharacterFilter,
+  WorkOrderLineageFilter,
+  SetWorkOrderSampleInput,
+  SetWorkOrderSampleResult,
   WorkOrderProcesses,
 } from "@/domain/mobileContract";
 import { MobileApiError } from "@/domain/mobileContract";
@@ -15,11 +19,15 @@ import { isNonEmptyString } from "./apiValidation";
 export async function getWorkOrderList(input: {
   readonly query?: string;
   readonly status?: WorkOrderListStatusFilter;
+  readonly character?: WorkOrderCharacterFilter;
+  readonly lineage?: readonly WorkOrderLineageFilter[];
   readonly cursor?: string | null;
 } = {}): Promise<WorkOrderListPage> {
   const query = new URLSearchParams({ limit: "30" });
   if (input.query?.trim()) query.set("q", input.query.trim());
   if (input.status && input.status !== "all") query.set("status", input.status);
+  if (input.character && input.character !== "all") query.set("character", input.character);
+  if (input.lineage?.length) query.set("lineage", ["reorder", "rework"].filter((value) => input.lineage?.includes(value as WorkOrderLineageFilter)).join(","));
   if (input.cursor) query.set("cursor", input.cursor);
   const body = await requestJson<{ readonly ok: boolean; readonly data?: WorkOrderListPage }>(`/api/v2/work-orders?${query.toString()}`, { method: "GET" });
   if (!body.ok || !body.data || !Array.isArray(body.data.items)) throw new MobileApiError({ code: "MALFORMED_RESPONSE", message: "제작 카드 목록 응답이 올바르지 않습니다." });
@@ -35,7 +43,7 @@ export async function createWorkOrderDraft(
     readonly data?: CreateWorkOrderDraftResult;
   }>("/api/v2/work-orders", {
     method: "POST",
-    body: { clientRequestId: command.clientRequestId, productName: command.productName },
+    body: { clientRequestId: command.clientRequestId, productName: command.productName, isSample: command.isSample },
     idempotencyKey,
   });
   const result = body.data?.result;
@@ -56,10 +64,24 @@ export async function createWorkOrderDraft(
     || result.totalQuantity !== 0
     || result.memo !== null
     || result.factoryDeliveryMemo !== null
+    || typeof result.isSample !== "boolean"
+    || result.derivationKind !== "original"
+    || result.reorderRound !== 0
     || !Number.isSafeInteger(body.data.nextVersion)
     || body.data.nextVersion < 1
   ) {
     throw new MobileApiError({ code: "MALFORMED_RESPONSE", message: "작업지시서 생성 응답이 올바르지 않습니다." });
+  }
+  return body.data;
+}
+
+export async function setWorkOrderSample(workOrderId: string, command: SetWorkOrderSampleInput, idempotencyKey: string): Promise<SetWorkOrderSampleResult> {
+  const body = await requestJson<{ readonly ok: boolean; readonly data?: SetWorkOrderSampleResult }>(
+    `/api/v2/work-orders/${encodeURIComponent(workOrderId)}/sample`,
+    { method: "PATCH", body: command, idempotencyKey },
+  );
+  if (!body.ok || !body.data?.result || typeof body.data.result.isSample !== "boolean" || !Number.isSafeInteger(body.data.nextVersion)) {
+    throw new MobileApiError({ code: "MALFORMED_RESPONSE", message: "작업 구분 변경 응답이 올바르지 않습니다." });
   }
   return body.data;
 }

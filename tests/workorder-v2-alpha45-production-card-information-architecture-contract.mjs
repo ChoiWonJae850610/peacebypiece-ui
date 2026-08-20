@@ -16,7 +16,7 @@ const externalQa = read("lib/external-qa/configCore.mjs");
 const mock = read("apps/mobile/components/ProductionCardMock.tsx");
 
 assert.match(detail, /testID="production-card-sheet"/);
-assert.match(detail, /styles\.hero[\s\S]*styles\.tabRailFrame[\s\S]*WaflMetricGrid[\s\S]*ReadinessPanel[\s\S]*title="비용 구성"/);
+assert.match(detail, /styles\.hero[\s\S]*styles\.tabRailFrame[\s\S]*WaflMetricGrid[\s\S]*title="비용 구성"[\s\S]*WaflReadinessActionRow/);
 
 for (const removedSection of ["문서 요약", "구성 요약"]) {
   assert.doesNotMatch(detail, new RegExp(removedSection), `removed section remains: ${removedSection}`);
@@ -29,8 +29,8 @@ for (const removedPrimitive of ["InfoRow", "countList", "countRow", "countLabel"
 }
 
 for (const actualField of [
-  "header.productName", "header.status", "header.totalQuantity", "header.dueDate", "header.readiness.hardBlockers",
-  "header.readiness.warnings", "detail.amounts.fabricTotal", "detail.amounts.accessoryTotal", "detail.amounts.processTotal",
+  "header.productName", "header.status", "header.totalQuantity", "header.dueDate", "header.readiness.issues",
+  "detail.amounts.fabricTotal", "detail.amounts.accessoryTotal", "detail.amounts.processTotal",
   "detail.amounts.unitPrice", "detail.amounts.estimatedTotal", "detail.tabCounts.images", "detail.tabCounts.attachments",
   "detail.tabCounts.sizes", "detail.tabCounts.colors", "detail.tabCounts.fabric", "detail.tabCounts.accessory",
   "detail.tabCounts.documents",

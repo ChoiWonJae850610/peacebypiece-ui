@@ -2,6 +2,21 @@
 
 Document role: canonical owner for the current result, next candidate, and Version Delta boundary. It is not the historical implementation ledger; completed details live in numbered immutable evidence.
 
+## Current result — 2.0.0-alpha.66
+
+Status: `ALPHA66_FINALIZATION_COMPLETE`.
+
+Accepted product checkpoint: `ALPHA66_WORKORDER_LINEAGE_SAMPLE_FILTER_PREISSUE_COMPLETE`.
+
+Alpha.66 adds an additive DEV/TEST-only WorkOrder identity foundation: Sample is a display/character flag, `original / reorder / rework` is derivation lineage, the existing lifecycle is workflow status, and R0/R1/R2 remains document revision. These axes never collapse into one enum. Migration `019` preserves all existing rows as non-Sample original round zero and adds tenant-safe source/root/revision references plus server-list indexes. Additive migration `020` enforces the owner invariant that Sample can be original or round-zero Rework but can never be direct Reorder or carry inherited reorder-round context. The approved DEV/TEST ledger is `20/20`, while production migration/mutation and owner-fixture mutation are zero.
+
+Fresh normal WorkOrder creation defaults Sample ON in the mobile UI and permits opt-out. Omitted API input has an explicit false default, and the WorkOrder-level Sample flag may change without revision or PDF rewrite only on round-zero original/Rework rows. Reorder-context detail hides the invalid Sample switch. Detail now anchors the compact character control at hero top-right, moves workflow status below the representative image, removes only its duplicate informational Sample pill, and retains Reorder/Rework lineage pills. The synthetic family contains production original, Sample original, production Reorders, production Reworks including inherited reorder context, and Sample Rework—never Sample+Reorder. Overview reuses one canonical readiness array for the exact compact issue count and complete `발행 전 확인` WAFL Sheet. Mutation-driven entity-version changes invalidate stale readiness and reconcile the canonical detail projection; no local counter patches N. Stable issue codes, never Korean message parsing, route actionable rows to current WorkOrder tabs; unknown issues remain visible, and zero issues show `발행 준비 완료`. Reorder creation/copy, Rework creation/reason E2E, and source navigation remain alpha.67/alpha.68 scope.
+
+APP_VERSION is `2.0.0-alpha.66`. The owner approved this bounded alpha.66 scope for finalization
+under `OWNER_ACCEPTED_ALPHA66_SCOPE_FOR_FINALIZATION`. Actual Reorder and Rework creation E2E
+remain `0/0`; alpha.67 implementation has not started. Final synchronized Git and artifact facts
+are owned by the matching post-push repo-state.
+
 ## Current result — 2.0.0-alpha.65
 
 Status: `ALPHA65_FINALIZATION_COMPLETE`.
@@ -293,6 +308,7 @@ Permanent Rules, Current Baseline, Version Delta, Immutable Evidence, responsibi
 | alpha.63 | mobile architecture stabilization | `63-mobile-architecture-stabilization-evidence.md` |
 | alpha.64 | cumulative Maker WorkOrder/document UX and shared mobile architecture | `64-maker-workorder-document-ux-evidence.md` |
 | alpha.65 | Maker input, Production authoring, Finished Spec visual selector and technical-flat architecture | `65-maker-input-finished-spec-visual-evidence.md` |
+| alpha.66 | WorkOrder identity/lineage, segmented work character, two-axis list filters, compact detail-header layout, canonical readiness refresh, and accepted final boundary | `66-workorder-lineage-sample-list-filter-evidence.md` through `71-workorder-lineage-sample-filter-preissue-evidence.md` |
 | maintenance | canonical Codex rule normalization without APP_VERSION change | `54-canonical-codex-working-rules-normalization-evidence.md` |
 
 Older results remain in numbered evidence files indexed and task-routed by `00-start-here.md`. Their detailed outcomes are not duplicated here.
@@ -477,12 +493,12 @@ The physical shoulder/armhole fidelity follow-up keeps the accepted two-view and
 
 The subsequent neckline/outer-pocket correction preserves that two-view, focused-preview, and shoulder/armhole result. It changes only authored T/D front/back neck openings to clean round necklines and simplifies O front/back neck/collar construction plus the O-front pocket pair to straight non-tilted geometry. B remains byte-stable, the 55/55 routes and overlay `0..1` remain unchanged, and the target is `ALPHA65_NECKLINE_OUTER_POCKET_FIDELITY_IPHONE_REQA_REQUIRED`. Owner physical-iPhone acceptance remains pending and is never inferred from automated evidence.
 
-## Next candidate — 2.0.0-alpha.66
+## Next candidate — 2.0.0-alpha.67
 
 Status: `NOT_STARTED`.
 
-Candidate label: `Derived WorkOrder architecture foundation`.
+Candidate label: `N차 리오더 E2E`.
 
-This is candidate metadata only. Alpha.65 finalization grants no alpha.66 product scope or
-implementation authority. A separate owner-approved Version Delta is required before any
-alpha.66 work begins.
+This is candidate metadata only. Actual Reorder creation/copy E2E is `NOT STARTED` and is not
+part of alpha.66 finalization. A separate owner-approved Version Delta is required before any
+alpha.67 work begins.

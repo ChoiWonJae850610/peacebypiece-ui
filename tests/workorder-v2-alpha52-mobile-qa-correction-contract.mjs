@@ -85,7 +85,7 @@ assert.match(list, /WORK_ORDER_STATUS_FILTER_OPTIONS\.map/);
 assert.match(list, /matchesWorkOrderStatusFilter\(item\.status, statusFilter\)/);
 assert.match(list, /getWorkOrderWorkflowPresentation\(item\.status\)/);
 assert.doesNotMatch(list, />발행됨</);
-assert.match(listService, /new Set\(\["limit", "cursor", "q", "status"\]\)/);
+assert.match(listService, /new Set\(\["limit", "cursor", "q", "status", "character", "lineage"\]\)/);
 assert.match(listService, /query parameter는 한 번만 사용할 수 있습니다/);
 assert.match(listService, /filterHash/);
 assert.match(listRepository, /w\.product_name ILIKE/);

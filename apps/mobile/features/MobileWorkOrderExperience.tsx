@@ -36,12 +36,12 @@ import {
 import { EMPTY_MATERIAL_STATE, materialCacheKey } from "@/features/materials/materialCache";
 import { useWorkOrderSizeSpecCoordination } from "@/features/work-orders/size-color/useWorkOrderSizeSpecCoordination";
 import { workOrderMutationController } from "@/features/work-orders/workOrderMutationController";
-import { workOrderQueryController } from "@/features/work-orders/workOrderQueryController";
+import { workOrderQueryController, workOrderReadinessNeedsCanonicalRefresh } from "@/features/work-orders/workOrderQueryController";
 import { useWorkOrderAssetAuthoringController } from "@/features/work-orders/images/useWorkOrderAssetAuthoringController";
 import { encodeWorkOrderProductType } from "@/domain/workOrderCategoryPolicy";
 import { materialNoun } from "@/domain/materialSemanticCopy";
 import { reconcileCreatedWorkOrderListItem, resolveWorkOrderCreateAttempt, type WorkOrderCreateAttemptIdentity } from "@/domain/workOrderCreatePolicy";
-import { MobileApiError, type MaterialPartnerOption, type MaterialType, type MobileCurrentUser, type WorkOrderDetailCore, type WorkOrderListItem, type WorkOrderListStatusFilter } from "@/domain/mobileContract";
+import { MobileApiError, type MaterialPartnerOption, type MaterialType, type MobileCurrentUser, type WorkOrderCharacterFilter, type WorkOrderDetailCore, type WorkOrderLineageFilter, type WorkOrderListItem, type WorkOrderListStatusFilter } from "@/domain/mobileContract";
 
 type AppPhase =
   | "booting"
@@ -77,12 +77,16 @@ export default function MobileWorkOrderExperience() {
   const [listNextCursor, setListNextCursor] = useState<string | null>(null);
   const [listQuery, setListQuery] = useState("");
   const [listStatusFilter, setListStatusFilter] = useState<WorkOrderListStatusFilter>("all");
+  const [listCharacterFilter, setListCharacterFilter] = useState<WorkOrderCharacterFilter>("all");
+  const [listLineageFilters, setListLineageFilters] = useState<readonly WorkOrderLineageFilter[]>([]);
   const [listLoadingMore, setListLoadingMore] = useState(false);
   const [listSearching, setListSearching] = useState(false);
   const [createSheetVisible, setCreateSheetVisible] = useState(false);
   const [createProductName, setCreateProductName] = useState("");
+  const [createIsSample, setCreateIsSample] = useState(true);
   const [createError, setCreateError] = useState<string | null>(null);
   const [createPending, setCreatePending] = useState(false);
+  const [samplePending, setSamplePending] = useState(false);
   const { selected, setSelected, selectedWorkOrderId: selectedWorkOrderIdRef } = useWorkOrderNavigation();
   const [detail, setDetail] = useState<WorkOrderDetailCore | null>(null);
   const detailRef = useRef<WorkOrderDetailCore | null>(null);
@@ -111,10 +115,11 @@ export default function MobileWorkOrderExperience() {
   const [, setConflictVersion] = useState<number | null>(null);
   const detailRequestInFlight = useRef(false);
   const listRequestInFlight = useRef(false);
-  const pendingListSearch = useRef<{ readonly query: string; readonly status: WorkOrderListStatusFilter } | null>(null);
+  const pendingListSearch = useRef<{ readonly query: string; readonly status: WorkOrderListStatusFilter; readonly character: WorkOrderCharacterFilter; readonly lineage: readonly WorkOrderLineageFilter[] } | null>(null);
   const overviewMutation = useRef(createExplicitMutationController()).current;
   const createMutation = useRef(createExplicitMutationController()).current;
   const [inlineMutationQueue] = useState(createSerializedMutationQueue);
+  const [canonicalDetailRefreshQueue] = useState(createSerializedMutationQueue);
   const clientRequestCounter = useRef(0);
   const createAttemptIdentity = useRef<WorkOrderCreateAttemptIdentity | null>(null);
   const autoConnectInFlight = useRef(false);
@@ -126,13 +131,41 @@ export default function MobileWorkOrderExperience() {
   const forwardSizeColorAuthenticationError = useCallback((error: MobileApiError) => {
     sizeColorAuthenticationErrorRef.current(error);
   }, []);
-  const reconcileSizeSpecDetail = useCallback((refreshed: WorkOrderDetailCore) => {
+  const reconcileCanonicalDetail = useCallback((refreshed: WorkOrderDetailCore) => {
     const workOrderId = refreshed.header.id;
+    detailRef.current = refreshed;
     setDetail(refreshed);
-    setBasicInfoDraft(basicInfoDraftFromDetail(refreshed));
-    setItems((current) => current.map((item) => item.workOrderId === workOrderId ? { ...item, productName: refreshed.header.productName, dueDate: refreshed.header.dueDate, totalQuantity: refreshed.header.totalQuantity, updatedAt: refreshed.header.updatedAt } : item));
-    setSelected((current) => current?.workOrderId === workOrderId ? { ...current, productName: refreshed.header.productName, dueDate: refreshed.header.dueDate, totalQuantity: refreshed.header.totalQuantity, updatedAt: refreshed.header.updatedAt } : current);
+    setBasicInfoDraft((currentDraft) => {
+      const next = basicInfoDraftFromDetail(refreshed);
+      const currentOwner = activeBasicSessionRef.current;
+      return currentOwner ? { ...next, [currentOwner.field]: currentDraft[currentOwner.field] } : next;
+    });
+    setItems((current) => current.map((item) => item.workOrderId === workOrderId ? {
+      ...item,
+      productName: refreshed.header.productName,
+      dueDate: refreshed.header.dueDate,
+      totalQuantity: refreshed.header.totalQuantity,
+      representativeThumbnail: refreshed.header.representativeImage,
+      identity: refreshed.header.identity,
+      updatedAt: refreshed.header.updatedAt,
+    } : item));
+    setSelected((current) => current?.workOrderId === workOrderId ? {
+      ...current,
+      productName: refreshed.header.productName,
+      dueDate: refreshed.header.dueDate,
+      totalQuantity: refreshed.header.totalQuantity,
+      representativeThumbnail: refreshed.header.representativeImage,
+      identity: refreshed.header.identity,
+      updatedAt: refreshed.header.updatedAt,
+    } : current);
   }, [setSelected]);
+  const refreshCanonicalDetailAfterMutation = useCallback((workOrderId: string) => canonicalDetailRefreshQueue.enqueue(async () => {
+    const refreshed = await workOrderQueryController.detailAfterReadinessRelevantMutation(workOrderId);
+    const latest = detailRef.current;
+    if (!latest || latest.header.id !== workOrderId || refreshed.header.entityVersion < latest.header.entityVersion) return;
+    reconcileCanonicalDetail(refreshed);
+  }), [canonicalDetailRefreshQueue, reconcileCanonicalDetail]);
+  const reconcileSizeSpecDetail = reconcileCanonicalDetail;
   const reconcileSizeSpecTotal = useCallback((totalQuantity: number, nextVersion: number) => {
     const workOrderId = selectedWorkOrderIdRef.current;
     if (!workOrderId) return;
@@ -212,18 +245,7 @@ export default function MobileWorkOrderExperience() {
       idempotencyKey: `alpha57-image-${kind}-${suffix}`,
     };
   }, []);
-  const reconcileAssetDetail = useCallback((refreshed: WorkOrderDetailCore) => {
-    const workOrderId = refreshed.header.id;
-    setDetail(refreshed);
-    setBasicInfoDraft(basicInfoDraftFromDetail(refreshed));
-    const representativeThumbnail = refreshed.header.representativeImage;
-    setItems((current) => current.map((item) => item.workOrderId === workOrderId
-      ? { ...item, representativeThumbnail, updatedAt: refreshed.header.updatedAt }
-      : item));
-    setSelected((current) => current?.workOrderId === workOrderId
-      ? { ...current, representativeThumbnail, updatedAt: refreshed.header.updatedAt }
-      : current);
-  }, [setSelected]);
+  const reconcileAssetDetail = reconcileCanonicalDetail;
   const assetAuthoring = useWorkOrderAssetAuthoringController({
     detail,
     selected,
@@ -289,9 +311,9 @@ export default function MobileWorkOrderExperience() {
     sizeColorAuthenticationErrorRef.current = (error) => setRequestError(error, "boot");
   }, [setRequestError]);
 
-  async function loadListFor(query: string, status: WorkOrderListStatusFilter, mode: "blocking" | "search" = "blocking") {
+  async function loadListFor(query: string, status: WorkOrderListStatusFilter, character: WorkOrderCharacterFilter = listCharacterFilter, lineage: readonly WorkOrderLineageFilter[] = listLineageFilters, mode: "blocking" | "search" = "blocking") {
     if (listRequestInFlight.current) {
-      if (mode === "search") pendingListSearch.current = { query, status };
+      if (mode === "search") pendingListSearch.current = { query, status, character, lineage };
       return;
     }
     listRequestInFlight.current = true;
@@ -299,12 +321,14 @@ export default function MobileWorkOrderExperience() {
     if (mode === "search") setListSearching(true);
     else setPhase("authenticated-loading-list");
     try {
-      const page = await workOrderQueryController.list({ query, status });
+      const page = await workOrderQueryController.list({ query, status, character, lineage });
       setItems(page.items);
       setHasMore(page.hasMore);
       setListNextCursor(page.nextCursor);
       setListQuery(query);
       setListStatusFilter(status);
+      setListCharacterFilter(character);
+      setListLineageFilters(lineage);
       if (mode === "blocking") {
         setSelected(null);
         selectedWorkOrderIdRef.current = null;
@@ -319,12 +343,12 @@ export default function MobileWorkOrderExperience() {
       if (mode === "search") setListSearching(false);
       const pending = pendingListSearch.current;
       pendingListSearch.current = null;
-      if (pending && (pending.query !== query || pending.status !== status)) void loadListFor(pending.query, pending.status, "search");
+      if (pending && (pending.query !== query || pending.status !== status || pending.character !== character || pending.lineage.join(",") !== lineage.join(","))) void loadListFor(pending.query, pending.status, pending.character, pending.lineage, "search");
     }
   }
 
   async function loadList() {
-    await loadListFor(listQuery, listStatusFilter);
+    await loadListFor(listQuery, listStatusFilter, listCharacterFilter, listLineageFilters);
   }
 
   const authenticateAndLoadList = useCallback(async (authenticatedUser?: MobileCurrentUser) => {
@@ -336,6 +360,8 @@ export default function MobileWorkOrderExperience() {
     setListNextCursor(page.nextCursor);
     setListQuery("");
     setListStatusFilter("all");
+    setListCharacterFilter("all");
+    setListLineageFilters([]);
     setPhase("list-ready");
   }, []);
 
@@ -371,6 +397,13 @@ export default function MobileWorkOrderExperience() {
     detailRef.current = detail;
     activeBasicFieldRef.current = activeBasicField;
   }, [activeBasicField, detail]);
+
+  useEffect(() => {
+    if (!detail || !workOrderReadinessNeedsCanonicalRefresh(detail)) return;
+    void refreshCanonicalDetailAfterMutation(detail.header.id).catch(() => {
+      showToast("저장됐지만 발행 전 확인을 새로고침하지 못했습니다. 최신 내용을 다시 불러와 주세요.", "warning");
+    });
+  }, [detail, refreshCanonicalDetailAfterMutation, showToast]);
 
   useEffect(() => {
     if (bootStarted.current) return;
@@ -477,6 +510,7 @@ export default function MobileWorkOrderExperience() {
     if (createMutation.inFlight) return;
     createAttemptIdentity.current = null;
     setCreateProductName("");
+    setCreateIsSample(true);
     setCreateError(null);
     setCreateSheetVisible(true);
   }
@@ -508,6 +542,7 @@ export default function MobileWorkOrderExperience() {
       processCount: 0,
       latestDocumentStatus: created.header.document.status,
       updatedAt: created.header.updatedAt,
+      identity: created.header.identity,
     };
   }
 
@@ -525,11 +560,12 @@ export default function MobileWorkOrderExperience() {
     const identity = resolveWorkOrderCreateAttempt(
       createAttemptIdentity.current,
       productName,
+      createIsSample,
       `${Date.now()}-${clientRequestCounter.current}`,
     );
     createAttemptIdentity.current = identity;
     try {
-      const created = await workOrderMutationController.createDraft({ clientRequestId: identity.clientRequestId, productName }, identity.idempotencyKey);
+      const created = await workOrderMutationController.createDraft({ clientRequestId: identity.clientRequestId, productName, isSample: createIsSample }, identity.idempotencyKey);
       const [createdDetail, createdImages, partnerPage] = await Promise.all([
         workOrderQueryController.detail(created.result.workOrderId),
         workOrderQueryController.images(created.result.workOrderId),
@@ -577,12 +613,18 @@ export default function MobileWorkOrderExperience() {
   function applyListSearch(query: string) {
     const normalized = query.trim();
     if (normalized === listQuery) return;
-    void loadListFor(normalized, listStatusFilter, "search");
+    void loadListFor(normalized, listStatusFilter, listCharacterFilter, listLineageFilters, "search");
   }
 
   function applyListStatusFilter(status: WorkOrderListStatusFilter) {
     if (status === listStatusFilter) return;
-    void loadListFor(listQuery, status, "search");
+    void loadListFor(listQuery, status, listCharacterFilter, listLineageFilters, "search");
+  }
+
+  function applyListIdentityFilters(character: WorkOrderCharacterFilter, lineage: readonly WorkOrderLineageFilter[]) {
+    const normalizedLineage = (["reorder", "rework"] as const).filter((value) => lineage.includes(value));
+    if (character === listCharacterFilter && normalizedLineage.join(",") === listLineageFilters.join(",")) return;
+    void loadListFor(listQuery, listStatusFilter, character, normalizedLineage, "search");
   }
 
   async function loadMoreList() {
@@ -590,7 +632,7 @@ export default function MobileWorkOrderExperience() {
     listRequestInFlight.current = true;
     setListLoadingMore(true);
     try {
-      const page = await workOrderQueryController.list({ query: listQuery, status: listStatusFilter, cursor: listNextCursor });
+      const page = await workOrderQueryController.list({ query: listQuery, status: listStatusFilter, character: listCharacterFilter, lineage: listLineageFilters, cursor: listNextCursor });
       setItems((current) => {
         const known = new Set(current.map((item) => item.workOrderId));
         return [...current, ...page.items.filter((item) => !known.has(item.workOrderId))];
@@ -912,6 +954,29 @@ export default function MobileWorkOrderExperience() {
     void load();
   }
 
+  async function setSelectedWorkOrderSample(isSample: boolean) {
+    if (!detail || samplePending || detail.header.identity.isSample === isSample) return;
+    setSamplePending(true);
+    clientRequestCounter.current += 1;
+    const requestId = `alpha66-sample-${Date.now()}-${clientRequestCounter.current}`;
+    try {
+      await workOrderMutationController.setSample(detail.header.id, {
+        clientRequestId: requestId,
+        expectedVersion: detail.header.entityVersion,
+        isSample,
+      }, requestId);
+      const refreshed = await workOrderQueryController.detail(detail.header.id);
+      setDetail(refreshed);
+      setItems((current) => current.map((item) => item.workOrderId === refreshed.header.id ? { ...item, identity: refreshed.header.identity, updatedAt: refreshed.header.updatedAt } : item));
+      setSelected((current) => current?.workOrderId === refreshed.header.id ? { ...current, identity: refreshed.header.identity, updatedAt: refreshed.header.updatedAt } : current);
+      showToast(isSample ? "샘플로 변경했습니다." : "본생산으로 변경했습니다.", "success");
+    } catch (error) {
+      showToast(customerMessage(error), "error");
+    } finally {
+      setSamplePending(false);
+    }
+  }
+
   function retry() {
     if (!errorState) return;
     if (errorState.retryTarget === "detail" && selected) void selectItem(selected);
@@ -994,6 +1059,8 @@ export default function MobileWorkOrderExperience() {
       onChangeMaterialDraft={materialAuthoring.changeDraft}
       onChangeMaterialInlineDraft={(field, value, owner) => materialAuthoring.changeDraft(field, value, owner)}
       onReloadLatest={reloadLatestBasicInfo}
+      onSetSample={(isSample) => void setSelectedWorkOrderSample(isSample)}
+      samplePending={samplePending}
       onRefreshDocuments={reloadLatestBasicInfo}
       onReloadLatestMaterial={materialAuthoring.reloadLatest}
       materials={{
@@ -1023,6 +1090,12 @@ export default function MobileWorkOrderExperience() {
       onDeleteAttachment={assetAuthoring.requestDeleteAttachment}
       onOpenAttachment={(attachment) => void assetAuthoring.openAttachment(attachment)}
       onSetRepresentativeImage={(image) => void assetAuthoring.setRepresentativeImage(image)}
+      onRefreshReadinessAfterMutation={() => {
+        if (!detail) return;
+        void refreshCanonicalDetailAfterMutation(detail.header.id).catch(() => {
+          showToast("저장됐지만 발행 전 확인을 새로고침하지 못했습니다. 최신 내용을 다시 불러와 주세요.", "warning");
+        });
+      }}
       onSave={(override) => void saveBasicInfo(override)}
       onSaveDate={(value) => {
         changeBasicInfoDraft("dueDate", value);
@@ -1058,7 +1131,7 @@ export default function MobileWorkOrderExperience() {
         {globalError && errorState ? <ErrorPanel error={errorState} onRetry={retry} /> : tablet ? (
           <View style={styles.split}>
             <View style={styles.listPane}>
-              <WorkOrderListScreen items={items} hasMore={hasMore} selectedId={selected?.workOrderId ?? null} loading={phase === "authenticated-loading-list"} loadingMore={listLoadingMore} searching={listSearching} query={listQuery} statusFilter={listStatusFilter} onCreate={openCreateSheet} onLoadMore={() => void loadMoreList()} onRefresh={loadListSafely} onSearch={applyListSearch} onStatusFilter={applyListStatusFilter} onSelect={selectItemSafely} />
+              <WorkOrderListScreen items={items} hasMore={hasMore} selectedId={selected?.workOrderId ?? null} loading={phase === "authenticated-loading-list"} loadingMore={listLoadingMore} searching={listSearching} query={listQuery} statusFilter={listStatusFilter} characterFilter={listCharacterFilter} lineageFilters={listLineageFilters} onCreate={openCreateSheet} onIdentityFilters={applyListIdentityFilters} onLoadMore={() => void loadMoreList()} onRefresh={loadListSafely} onSearch={applyListSearch} onStatusFilter={applyListStatusFilter} onSelect={selectItemSafely} />
             </View>
             <View style={styles.detailPane}>{detailPane}</View>
           </View>
@@ -1066,11 +1139,11 @@ export default function MobileWorkOrderExperience() {
           <View style={styles.phoneBody}>{detailPane}</View>
         ) : (
           <View style={styles.phoneBody}>
-            <WorkOrderListScreen items={items} hasMore={hasMore} selectedId={null} loading={phase === "authenticated-loading-list"} loadingMore={listLoadingMore} searching={listSearching} query={listQuery} statusFilter={listStatusFilter} onCreate={openCreateSheet} onLoadMore={() => void loadMoreList()} onRefresh={loadListSafely} onSearch={applyListSearch} onStatusFilter={applyListStatusFilter} onSelect={selectItemSafely} />
+            <WorkOrderListScreen items={items} hasMore={hasMore} selectedId={null} loading={phase === "authenticated-loading-list"} loadingMore={listLoadingMore} searching={listSearching} query={listQuery} statusFilter={listStatusFilter} characterFilter={listCharacterFilter} lineageFilters={listLineageFilters} onCreate={openCreateSheet} onIdentityFilters={applyListIdentityFilters} onLoadMore={() => void loadMoreList()} onRefresh={loadListSafely} onSearch={applyListSearch} onStatusFilter={applyListStatusFilter} onSelect={selectItemSafely} />
           </View>
         )}
       </View>
-      <WorkOrderCreateSheet error={createError} onCancel={cancelCreateSheet} onChangeProductName={changeCreateProductName} onConfirm={createWorkOrderDraftFromMobile} pending={createPending} productName={createProductName} visible={createSheetVisible} />
+      <WorkOrderCreateSheet error={createError} isSample={createIsSample} onCancel={cancelCreateSheet} onChangeProductName={changeCreateProductName} onChangeSample={(value) => { createAttemptIdentity.current = null; setCreateIsSample(value); }} onConfirm={createWorkOrderDraftFromMobile} pending={createPending} productName={createProductName} visible={createSheetVisible} />
     </SafeAreaView>
   );
 }

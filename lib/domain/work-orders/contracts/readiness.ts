@@ -34,6 +34,8 @@ export type ReadinessIssue = {
 
 export type ReadinessReadModel = {
   readonly canIssue: boolean;
+  /** Canonical complete pre-issue collection. Count and UI membership derive only from this array. */
+  readonly issues: readonly ReadinessIssue[];
   readonly hardBlockers: readonly ReadinessIssue[];
   readonly warnings: readonly ReadinessIssue[];
   readonly checkedAt: IsoDateTime;

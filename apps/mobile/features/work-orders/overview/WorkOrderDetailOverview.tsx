@@ -9,7 +9,7 @@ import {
   useWindowDimensions,
   View,
 } from "react-native";
-import { ChevronLeft, ImageIcon, LockKeyhole } from "lucide-react-native";
+import { ChevronLeft, ChevronRight, ImageIcon, LockKeyhole } from "lucide-react-native";
 
 import { WAFL_FONTS } from "@/constants/fonts";
 import { WAFL_THEME } from "@/constants/theme";
@@ -27,7 +27,9 @@ import WaflSectionCard from "@/features/layout/WaflSectionCard";
 import WaflMetricGrid, { type WaflMetricGridItem } from "@/features/layout/WaflMetricGrid";
 import WaflMetricField from "@/features/layout/WaflMetricField";
 import WaflWorkOrderTabBody from "@/features/layout/WaflWorkOrderTabBody";
+import WaflReadinessActionRow from "@/features/layout/WaflReadinessActionRow";
 import WorkOrderProductionAuthoring from "@/features/work-orders/production/WorkOrderProductionAuthoring";
+import WorkOrderCharacterChoice from "@/features/work-orders/identity/WorkOrderCharacterChoice";
 import type { SizeColorReadBoundary } from "@/features/work-orders/size-color/useSizeColorReadController";
 import type { SizeColorStructureEditBoundary } from "@/features/work-orders/size-color/useSizeColorStructureEditController";
 import type { WorkOrderImageAcquisitionSource } from "@/features/work-orders/images/workOrderImageAcquisition";
@@ -45,6 +47,7 @@ import { resolveMobileApiUrl } from "@/lib/apiTransport";
 import { useFocusedFieldVisibility } from "@/hooks/useFocusedFieldVisibility";
 import { formatWorkOrderStatus } from "@/lib/workOrderDisplay";
 import { displayValueOrUnset, isUnsetDisplayValue, WAFL_UNSET_PLACEHOLDER } from "@/lib/displayPlaceholder";
+import { resolveReadinessIssueDestination } from "@/domain/workOrderReadinessNavigation";
 import {
   WORK_ORDER_TARGET_AUDIENCES,
   workOrderMajorCategoryPickerOptions,
@@ -120,26 +123,6 @@ function DetailTab({
   );
 }
 
-function ReadinessPanel({ detail }: { readonly detail: WorkOrderDetailCore }) {
-  const blockers = detail.header.readiness.hardBlockers;
-  const warnings = detail.header.readiness.warnings;
-  const ready = detail.header.readiness.canIssue && blockers.length === 0;
-
-  return (
-    <View style={[styles.nextCheckPanel, ready ? styles.nextCheckReady : styles.nextCheckWarning]}>
-      <Text style={styles.nextCheckEyebrow}>다음 확인</Text>
-      <View style={styles.nextCheckBody}>
-        <View style={styles.nextCheckTitleRow}>
-          <Text style={styles.nextCheckTitle}>{ready ? "발행 준비 가능" : `발행 전 확인 ${blockers.length}건`}</Text>
-          {warnings.length > 0 ? <Text style={styles.warningCount}>주의 {warnings.length}건</Text> : null}
-        </View>
-        {blockers.slice(0, 3).map((item) => <Text key={item.code} style={styles.blocker}>• {item.message}</Text>)}
-        {warnings.slice(0, 3).map((item) => <Text key={item.code} style={styles.warning}>• {item.message}</Text>)}
-      </View>
-    </View>
-  );
-}
-
 export type { BasicInfoDraft, BasicInfoFieldErrors } from "@/domain/workOrderValidation";
 export type BasicInfoSaveState = "read-only" | "editing" | "saving" | "saved" | "validation-error" | "conflict" | "locked" | "save-error";
 export type BasicInfoInlineField = Exclude<keyof BasicInfoDraft, "totalQuantity">;
@@ -161,6 +144,8 @@ type Props = {
   readonly onSave: (override?: Partial<BasicInfoDraft>) => void;
   readonly onSaveDate: (value: string) => void;
   readonly onReloadLatest: () => void;
+  readonly onSetSample: (isSample: boolean) => void;
+  readonly samplePending: boolean;
   readonly materials: Readonly<Record<MaterialType, MaterialReadViewState>>;
   readonly materialLifecycleBusyId: string | null;
   readonly materialOrderBusyId: string | null;
@@ -203,6 +188,7 @@ type Props = {
   readonly onOpenAttachment: (attachment: WorkOrderAttachmentAsset) => void;
   readonly onSetRepresentativeImage: (image: WorkOrderImageAsset) => void;
   readonly onRefreshDocuments: () => void;
+  readonly onRefreshReadinessAfterMutation: () => void;
 };
 
 export default function WorkOrderDetailOverview(props: Props) {
@@ -210,6 +196,8 @@ export default function WorkOrderDetailOverview(props: Props) {
   const [activeSection, setActiveSection] = useState<WorkOrderVisibleSection>("overview");
   const [activeMaterialCategory, setActiveMaterialCategory] = useState<MaterialType>("fabric");
   const [categoryReelField, setCategoryReelField] = useState<"targetAudience" | "categoryMajor" | null>(null);
+  const [readinessSheetVisible, setReadinessSheetVisible] = useState(false);
+  const pendingReadinessIntentRef = useRef<WorkOrderSectionIntent | null>(null);
   const { width } = useWindowDimensions();
   const { header } = detail;
   const compactPhoneHero = phone && width < 390;
@@ -226,6 +214,12 @@ export default function WorkOrderDetailOverview(props: Props) {
     if (resolved.materialFocus) setActiveMaterialCategory(resolved.materialFocus);
     if (resolved.section === "sizes" || resolved.section === "output") props.sizeColor.onOpen();
     if (resolved.section === "materials") props.onOpenMaterials(resolved.materialFocus ?? undefined);
+  };
+  const readinessIssues = detail.header.readiness.issues;
+  const finishReadinessClose = () => {
+    const intent = pendingReadinessIntentRef.current;
+    pendingReadinessIntentRef.current = null;
+    if (intent) openSection(intent);
   };
   const overviewMetricItems: readonly WaflMetricGridItem[] = [
     {
@@ -426,25 +420,34 @@ export default function WorkOrderDetailOverview(props: Props) {
         </View>
         <View testID="production-card-sheet" style={[styles.productionCardSheet, styles.productionCardSheetHero]}>
           <View style={[styles.hero, compactPhoneHero && styles.heroCompactPhone]}>
-            <Pressable
-              accessibilityLabel={representative ? `대표 이미지 ${representative.filename}, 이미지 ${props.images.length}건` : `대표 이미지 없음, 이미지 ${props.images.length}건`}
-              accessibilityRole="button"
-              onPress={() => props.onRequestSectionChange(() => openSection("media"))}
-              style={[styles.mediaFrame, compactPhoneHero && styles.mediaFrameCompactPhone, !phone && styles.mediaFrameTablet]}
-            >
-              {representativeUrl ? (
-                <NativeImage resizeMode="cover" source={{ uri: representativeUrl }} style={styles.heroMediaImage} />
-              ) : (
-                <>
-                  <ImageIcon color="#6f6255" size={phone ? 26 : 34} strokeWidth={1.5} />
-                  <Text style={styles.mediaLabel}>대표 이미지 없음</Text>
-                </>
-              )}
-            </Pressable>
+            <View style={styles.mediaColumn}>
+              <Pressable
+                accessibilityLabel={representative ? `대표 이미지 ${representative.filename}, 이미지 ${props.images.length}건` : `대표 이미지 없음, 이미지 ${props.images.length}건`}
+                accessibilityRole="button"
+                onPress={() => props.onRequestSectionChange(() => openSection("media"))}
+                style={[styles.mediaFrame, compactPhoneHero && styles.mediaFrameCompactPhone, !phone && styles.mediaFrameTablet]}
+              >
+                {representativeUrl ? (
+                  <NativeImage resizeMode="cover" source={{ uri: representativeUrl }} style={styles.heroMediaImage} />
+                ) : (
+                  <>
+                    <ImageIcon color="#6f6255" size={phone ? 26 : 34} strokeWidth={1.5} />
+                    <Text style={styles.mediaLabel}>대표 이미지 없음</Text>
+                  </>
+                )}
+              </Pressable>
+              <Text style={styles.statusBadge}>{formatWorkOrderStatus(header.status)}</Text>
+            </View>
 
             <View style={styles.heroText}>
-              <View style={styles.statusRow}>
-                <Text style={styles.statusBadge}>{formatWorkOrderStatus(header.status)}</Text>
+              <View style={styles.identityRow}>
+                <View style={styles.statusRow}>
+                  {header.identity.reorderRound > 0 ? <Text style={styles.identityBadge}>{header.identity.reorderRound}차 리오더</Text> : null}
+                  {header.identity.derivationKind === "rework" ? <Text style={styles.identityBadge}>재작업</Text> : null}
+                </View>
+                {header.identity.reorderRound === 0
+                  ? <WorkOrderCharacterChoice disabled={props.samplePending} isSample={header.identity.isSample} onChange={props.onSetSample} presentation="compact" />
+                  : null}
               </View>
               <ControlledInlineEditValue
                 accessibilityLabel="제품명"
@@ -556,7 +559,6 @@ export default function WorkOrderDetailOverview(props: Props) {
                   />
                 ) : null}
               </Section>
-              <ReadinessPanel detail={detail} />
               <Section title="비용 구성">
                 <View style={styles.costRowGroup}>
                   <MetricLine label="원단" value={formatWon(detail.amounts.fabricTotal)} />
@@ -568,6 +570,35 @@ export default function WorkOrderDetailOverview(props: Props) {
                   <MetricLine emphasized label="예상 총원가" value={formatWon(detail.amounts.estimatedTotal)} />
                 </View>
               </Section>
+              <WaflReadinessActionRow issueCount={readinessIssues.length} onPress={() => setReadinessSheetVisible(true)} />
+              <WaflInputSheet
+                cancelAccessibilityLabel="발행 전 확인 닫기"
+                measurementVariant={`preissue-${readinessIssues.length}`}
+                onAfterClose={finishReadinessClose}
+                onCancel={() => setReadinessSheetVisible(false)}
+                sizing="adaptiveExpandable"
+                title="발행 전 확인"
+                visible={readinessSheetVisible}
+              >
+                <View style={styles.readinessSheetBody} testID="preissue-readiness-sheet-list">
+                  <Text style={styles.readinessSheetSubtitle}>{readinessIssues.length}개의 항목을 확인해 주세요</Text>
+                  {readinessIssues.map((issue) => {
+                    const destination = resolveReadinessIssueDestination(issue.code);
+                    const content = <>
+                      <View style={styles.readinessIssueText}>
+                        <Text style={styles.readinessIssueMessage}>{issue.message}</Text>
+                        {destination ? <Text style={styles.readinessIssueDestination}>{destination.label}</Text> : null}
+                      </View>
+                      {destination ? <ChevronRight color={WAFL_THEME.color.readOnly} size={WAFL_THEME.icon.small} /> : null}
+                    </>;
+                    if (!destination) return <View key={issue.code} style={styles.readinessIssueRow} testID={`preissue-row-${issue.code}`}>{content}</View>;
+                    return <Pressable accessibilityLabel={`${issue.message} ${destination.label} 탭으로 이동`} accessibilityRole="button" key={issue.code} onPress={() => {
+                      pendingReadinessIntentRef.current = destination.intent;
+                      setReadinessSheetVisible(false);
+                    }} style={({ pressed }) => [styles.readinessIssueRow, pressed && styles.pressed]} testID={`preissue-row-${issue.code}`}>{content}</Pressable>;
+                  })}
+                </View>
+              </WaflInputSheet>
             </View>
           ) : activeSection === "media" ? (
             <WorkOrderImageGallery
@@ -593,7 +624,11 @@ export default function WorkOrderDetailOverview(props: Props) {
               state={props.sizeColor.state}
             />
           ) : activeSection === "production" ? (
-            <WorkOrderProductionAuthoring key={detail.header.id} workOrderId={detail.header.id} />
+            <WorkOrderProductionAuthoring
+              key={detail.header.id}
+              onMutationCommitted={props.onRefreshReadinessAfterMutation}
+              workOrderId={detail.header.id}
+            />
           ) : activeSection === "output" ? (
             <WorkOrderDocumentWorkbench
               attachments={props.attachments}
@@ -668,14 +703,17 @@ const styles = StyleSheet.create({
   productionCardSheetBody: { borderTopLeftRadius: 0, borderTopRightRadius: 0 },
   hero: { flexDirection: "row", gap: WAFL_THEME.layout.controlGap, padding: WAFL_THEME.layout.cardPadding, paddingBottom: WAFL_THEME.layout.compactCardPadding },
   heroCompactPhone: { gap: 8, paddingHorizontal: 10 },
+  mediaColumn: { alignItems: "center", flexShrink: 0, gap: WAFL_THEME.layout.tightGap },
   mediaFrame: { alignItems: "center", backgroundColor: "#efe4d3", borderRadius: 12, flexShrink: 0, height: 96, justifyContent: "center", overflow: "hidden", padding: 7, position: "relative", width: 80 },
   mediaFrameCompactPhone: { height: 90, width: 72 },
   mediaFrameTablet: { height: 148, width: 132 },
   heroMediaImage: { height: "100%", width: "100%" },
   mediaLabel: { bottom: 7, color: "#51483e", fontFamily: WAFL_FONTS.semibold, fontSize: 8, left: 5, lineHeight: 11, position: "absolute", right: 5, textAlign: "center" },
-  heroText: { flex: 1, flexGrow: 1, flexShrink: 1, gap: 6, justifyContent: "center", minWidth: 0 },
-  statusRow: { alignItems: "center", flexDirection: "row", flexWrap: "wrap", gap: 7 },
-  statusBadge: { backgroundColor: "#23375a", borderRadius: 999, color: "#ffffff", fontFamily: WAFL_FONTS.bold, fontSize: 11, overflow: "hidden", paddingHorizontal: 9, paddingVertical: 4 },
+  heroText: { flex: 1, flexGrow: 1, flexShrink: 1, gap: 6, justifyContent: "flex-start", minWidth: 0 },
+  identityRow: { alignItems: "flex-start", columnGap: 7, flexDirection: "row", justifyContent: "space-between", minHeight: WAFL_THEME.touch.minimum },
+  statusRow: { alignItems: "center", flex: 1, flexDirection: "row", flexWrap: "wrap", gap: 7, minWidth: 0, paddingTop: WAFL_THEME.spacing.xs },
+  statusBadge: { alignSelf: "center", backgroundColor: "#23375a", borderRadius: 999, color: "#ffffff", fontFamily: WAFL_FONTS.bold, fontSize: 11, overflow: "hidden", paddingHorizontal: 9, paddingVertical: 4 },
+  identityBadge: { backgroundColor: WAFL_THEME.color.paperMuted, borderRadius: 999, color: "#67584c", fontFamily: WAFL_FONTS.semibold, fontSize: 10, overflow: "hidden", paddingHorizontal: 8, paddingVertical: 4 },
   revision: { color: "#6d6257", fontFamily: WAFL_FONTS.semibold, fontSize: 11 },
   title: { color: "#141f33", flexShrink: 1, fontFamily: WAFL_FONTS.black, fontSize: WAFL_THEME.typography.productTitle.fontSize, lineHeight: WAFL_THEME.typography.productTitle.lineHeight, minWidth: 0 },
   titleCompactPhone: { fontSize: WAFL_THEME.typography.productTitleCompact.fontSize, lineHeight: WAFL_THEME.typography.productTitleCompact.lineHeight },
@@ -721,17 +759,12 @@ const styles = StyleSheet.create({
   tabCount: { backgroundColor: "#e2d8ca", borderRadius: 999, color: "#5d544b", fontFamily: WAFL_FONTS.bold, fontSize: 9, minWidth: 18, overflow: "hidden", paddingHorizontal: 5, paddingVertical: 2, textAlign: "center" },
   overviewSection: { gap: WAFL_THEME.layout.sectionGap, paddingBottom: WAFL_THEME.layout.sectionGapLarge },
   materialsCombined: { gap: WAFL_THEME.layout.sectionGap, paddingBottom: WAFL_THEME.layout.sectionGapLarge },
-  nextCheckPanel: { alignItems: "flex-start", borderLeftWidth: 4, borderRadius: 11, flexDirection: "row", gap: 10, marginBottom: 8, paddingHorizontal: 11, paddingVertical: 10 },
-  nextCheckReady: { backgroundColor: "#edf2e7", borderLeftColor: "#4d6a3a" },
-  nextCheckWarning: { backgroundColor: "#fff1d3", borderLeftColor: "#c75f35" },
-  nextCheckEyebrow: { backgroundColor: "#17263d", borderRadius: 999, color: "#ffffff", flexShrink: 0, fontFamily: WAFL_FONTS.bold, fontSize: 9, overflow: "hidden", paddingHorizontal: 7, paddingVertical: 4 },
-  nextCheckBody: { flex: 1, minWidth: 0 },
-  nextCheckTitleRow: { alignItems: "center", flexDirection: "row", flexWrap: "wrap", gap: 7, justifyContent: "space-between" },
-  nextCheckTitle: { color: "#17263d", fontFamily: WAFL_FONTS.bold, fontSize: 12, lineHeight: 17 },
-  warningCount: { color: "#8b611c", fontFamily: WAFL_FONTS.bold, fontSize: 10 },
-  blocker: { color: "#9a3f31", fontFamily: WAFL_FONTS.regular, fontSize: 10, lineHeight: 16, marginTop: 3 },
-  warning: { color: "#79591e", fontFamily: WAFL_FONTS.regular, fontSize: 10, lineHeight: 16, marginTop: 3 },
-  more: { color: "#756b62", fontFamily: WAFL_FONTS.regular, fontSize: 9, marginTop: 3 },
+  readinessSheetBody: { gap: WAFL_THEME.layout.tightGap, paddingBottom: WAFL_THEME.spacing.sm },
+  readinessSheetSubtitle: { color: WAFL_THEME.color.readOnly, fontFamily: WAFL_FONTS.medium, fontSize: WAFL_THEME.typography.bodyText.fontSize, lineHeight: WAFL_THEME.typography.bodyText.lineHeight, paddingBottom: WAFL_THEME.spacing.sm },
+  readinessIssueRow: { alignItems: "center", borderBottomColor: WAFL_THEME.color.border, borderBottomWidth: WAFL_THEME.border.hairline, flexDirection: "row", gap: WAFL_THEME.layout.controlGap, minHeight: WAFL_THEME.touch.minimum, paddingVertical: WAFL_THEME.spacing.sm },
+  readinessIssueText: { flex: 1, minWidth: 0 },
+  readinessIssueMessage: { color: WAFL_THEME.color.deepNavy, fontFamily: WAFL_FONTS.medium, fontSize: WAFL_THEME.typography.bodyText.fontSize, lineHeight: WAFL_THEME.typography.bodyText.lineHeight },
+  readinessIssueDestination: { color: WAFL_THEME.color.brickOrange, fontFamily: WAFL_FONTS.semibold, fontSize: WAFL_THEME.typography.meta.fontSize, lineHeight: WAFL_THEME.typography.meta.lineHeight, marginTop: 2 },
   metricLine: { alignItems: "center", borderBottomColor: "#f0e7dc", borderBottomWidth: 1, flexDirection: "row", gap: 10, justifyContent: "space-between", minHeight: 38, paddingVertical: 7 },
   metricLineEmphasized: { borderBottomWidth: 0 },
   metricLabel: { color: "#7a6c5c", flexShrink: 0, fontFamily: WAFL_FONTS.medium, fontSize: 11 },

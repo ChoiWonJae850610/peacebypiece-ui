@@ -237,6 +237,7 @@ const alpha64ApiPaths = [
   "app/api/v2/work-orders/[workOrderId]/size-color/options/[optionId]/route.ts",
 ];
 const alpha65ContractExists = fs.existsSync(path.join(root, "tests/workorder-v2-alpha65-production-factory-process-authoring-contract.mjs"));
+const alpha66ContractExists = fs.existsSync(path.join(root, "tests/workorder-v2-alpha66-lineage-sample-list-filter-contract.mjs"));
 const alpha65ApiPaths = [
   ...alpha64ApiPaths,
   "app/api/v2/work-orders/[workOrderId]/processes/route.ts",
@@ -245,6 +246,10 @@ const alpha65ApiPaths = [
   "app/api/v2/work-orders/[workOrderId]/processes/[processId]/order-cancel/route.ts",
   "app/api/v2/work-orders/[workOrderId]/processes/[processId]/order-complete/route.ts",
   "app/api/v2/work-orders/[workOrderId]/production-options/route.ts",
+];
+const alpha66ApiPaths = [
+  ...alpha65ApiPaths,
+  "app/api/v2/work-orders/[workOrderId]/sample/route.ts",
 ];
 const alpha51ContractExists = fs.existsSync(path.join(root, "tests/workorder-v2-alpha51-material-soft-delete-restore-contract.mjs"));
 const alpha26ContractExists = fs.existsSync(path.join(root, "tests/workorder-v2-alpha26-material-command-api-contract.mjs"));
@@ -274,7 +279,9 @@ const alpha40ContractExists = fs.existsSync(path.join(root, "tests/workorder-v2-
 const alpha30ContractExists = fs.existsSync(path.join(root, "tests/workorder-v2-alpha30-factory-instruction-contract.mjs"));
 const alpha27ContractExists = fs.existsSync(path.join(root, "tests/workorder-v2-alpha27-revision-issue-command-contract.mjs"));
 const alpha28ContractExists = fs.existsSync(path.join(root, "tests/workorder-v2-alpha28-issued-preview-contract.mjs"));
-if (alpha65ContractExists && apiChanges.length > 0) {
+if (alpha66ContractExists && apiChanges.length > 0) {
+  assert.deepEqual(apiChanges.filter((change) => !alpha66ApiPaths.some((allowedPath) => change.endsWith(allowedPath))), [], "alpha.66 may change only the inherited alpha.65 routes and its exact WorkOrder Sample route");
+} else if (alpha65ContractExists && apiChanges.length > 0) {
   assert.deepEqual(apiChanges.filter((change) => !alpha65ApiPaths.some((allowedPath) => change.endsWith(allowedPath))), [], "alpha.65 may change only the inherited alpha.64 routes and its exact production process/options routes");
 } else if (alpha64ContractExists && apiChanges.length > 0) {
   assert.deepEqual(apiChanges.filter((change) => !alpha64ApiPaths.some((allowedPath) => change.endsWith(allowedPath))), [], "alpha.64 may change only its exact document, server-mediated address-search, and Spec Item catalog API routes");

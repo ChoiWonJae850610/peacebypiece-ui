@@ -348,3 +348,10 @@ alpha.19에서는 위 command를 추가하지 않았다.
 ## 16. 다음 action
 
 다음 버전은 migration 구현이 아니라 API DTO/command와 read model 계약을 더 좁게 설계한 뒤, 사용자 승인된 별도 버전에서 dev/test additive migration을 시작하는 것이 안전하다. alpha.19의 문서는 production SQL 실행 승인이 아니다.
+## Alpha.66 applied DEV/TEST migration 019 boundary
+
+Alpha.66 migration `019_v2_work_order_lineage_sample.sql` is one explicitly approved additive DEV/TEST step. Preflight requires the canonical target fingerprint, ledger `18/18`, unchanged business-row counts, and absence of the new columns. Apply installs the migration gate, adds columns/checks/tenant-safe foreign keys/indexes, and records ledger row 19 in one transaction. Post-apply audit requires ledger `19/19`, exact migration hash, existing rows as original/round-zero/non-Sample, and zero production execution. Synthetic lineage rows are fixture data, not migration backfill, and use exact cleanup/retention ownership distinct from owner fixtures.
+
+## Alpha.66 additive DEV/TEST migration 020 boundary
+
+Migration `020_v2_sample_reorder_invariant.sql` does not rewrite applied migration `019`. Read-only preflight distinguishes the exact `QA A66 계보 필터` synthetic family from unknown violations; any unknown violating row is a stop. The approved fixture owner may exact-clean and reseed only that synthetic family so the valid seven-row matrix contains Sample Rework at round zero and no Sample+Reorder row. Migration `020` then adds one check constraint and ledger row 20 in one DEV/TEST transaction. Post-apply audit requires ledger `20/20`, the exact hash and constraint, zero invalid rows, unchanged business-row counts, and production execution zero.

@@ -413,6 +413,11 @@ if ($VerificationProfile -eq "automation-infrastructure" -and
         "db/v2/migrations/018_v2_company_spec_item_category_scope.sql"
     )
 }
+if ($VerificationProfile -eq "automation-infrastructure" -and
+    $ExpectedAppVersion -in @("2.0.0-alpha.65", "2.0.0-alpha.66") -and
+    (Test-Path (Join-Path $ProjectDir "tests/workorder-v2-alpha66-lineage-sample-list-filter-contract.mjs"))) {
+    $allowedMigrationChanges = @("db/v2/migrations/019_v2_work_order_lineage_sample.sql")
+}
 $pendingApprovedMigrationChanges = @($migrationChanges | Where-Object { $allowedMigrationChanges -notcontains $_ })
 if ($VerificationProfile -eq "automation-infrastructure" -and
     $ExpectedAppVersion -in @("2.0.0-alpha.41", "2.0.0-alpha.42") -and

@@ -32,9 +32,9 @@ assert.equal(validateWorkOrderProductName(" "), "제품명은 1자 이상 200자
 assert.equal(validateWorkOrderProductName("신규 티셔츠"), null);
 assert.ok(validateWorkOrderProductName("x".repeat(201)));
 
-const first = resolveWorkOrderCreateAttempt(null, "신규 티셔츠", "one");
-const replay = resolveWorkOrderCreateAttempt(first, "신규 티셔츠", "two");
-const changed = resolveWorkOrderCreateAttempt(first, "다른 티셔츠", "three");
+const first = resolveWorkOrderCreateAttempt(null, "신규 티셔츠", false, "one");
+const replay = resolveWorkOrderCreateAttempt(first, "신규 티셔츠", false, "two");
+const changed = resolveWorkOrderCreateAttempt(first, "다른 티셔츠", false, "three");
 assert.equal(replay, first);
 assert.notEqual(changed.idempotencyKey, first.idempotencyKey);
 assert.deepEqual(reconcileCreatedWorkOrderListItem([item("old", "기존"), item("new", "이전")], item("new", "신규")), [item("new", "신규"), item("old", "기존")]);
@@ -50,7 +50,7 @@ const sizeColorService = read("lib/domain/work-orders/command/sizeColorStructure
 const runner = read("tools/dev/start-wafl-external-qa.ps1");
 
 assert.match(api, /createWorkOrderDraft[\s\S]+method: "POST"[\s\S]+\/api\/v2\/work-orders/);
-assert.match(api, /body: \{ clientRequestId: command\.clientRequestId, productName: command\.productName \}/);
+assert.match(api, /body: \{ clientRequestId: command\.clientRequestId, productName: command\.productName, isSample: command\.isSample \}/);
 assert.match(api, /idempotencyKey,/);
 assert.doesNotMatch(api, /body: \{[^}]*companyId/);
 assert.match(mutation, /createDraft\(command: CreateWorkOrderDraftInput, idempotencyKey: string\)/);

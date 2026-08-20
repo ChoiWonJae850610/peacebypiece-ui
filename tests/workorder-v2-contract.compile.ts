@@ -38,6 +38,14 @@ const sampleListItem = {
   },
   processCount: 3,
   latestDocumentStatus: null,
+  identity: {
+    isSample: false,
+    derivationKind: "original",
+    sourceWorkOrderId: null,
+    sourceRevisionId: null,
+    seriesRootWorkOrderId: null,
+    reorderRound: 0,
+  },
   updatedAt: "2026-07-11T12:00:00+09:00" as WorkOrderListItem["updatedAt"],
 } satisfies WorkOrderListItem;
 

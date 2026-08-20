@@ -1,10 +1,12 @@
 import { useEffect, useRef, useState } from "react";
 import { ActivityIndicator, Image, Keyboard, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
-import { Plus, RefreshCw, Search, X } from "lucide-react-native";
+import { Plus, RefreshCw, Search, SlidersHorizontal, X } from "lucide-react-native";
 
 import { WAFL_FONTS } from "@/constants/fonts";
 import { WAFL_THEME } from "@/constants/theme";
-import type { WorkOrderListItem, WorkOrderListStatusFilter } from "@/domain/mobileContract";
+import type { WorkOrderCharacterFilter, WorkOrderLineageFilter, WorkOrderListItem, WorkOrderListStatusFilter } from "@/domain/mobileContract";
+import WaflInputSheet from "@/features/inputs/WaflInputSheet";
+import WaflChoiceButtons from "@/features/inputs/WaflChoiceButtons";
 import { resolveMobileApiUrl } from "@/lib/apiTransport";
 import {
   WORK_ORDER_SEARCH_DEBOUNCE_MS,
@@ -33,19 +35,25 @@ type Props = {
   readonly searching?: boolean;
   readonly query: string;
   readonly statusFilter: WorkOrderListStatusFilter;
+  readonly characterFilter: WorkOrderCharacterFilter;
+  readonly lineageFilters: readonly WorkOrderLineageFilter[];
   readonly onCreate: () => void;
   readonly onRefresh: () => void;
   readonly onLoadMore: () => void;
   readonly onSearch: (query: string) => void;
   readonly onStatusFilter: (status: WorkOrderListStatusFilter) => void;
+  readonly onIdentityFilters: (character: WorkOrderCharacterFilter, lineage: readonly WorkOrderLineageFilter[]) => void;
   readonly onSelect: (item: WorkOrderListItem) => void;
 };
 
 export default function WorkOrderListScreen({
-  items, hasMore, selectedId, loading = false, loadingMore = false, searching = false, query, statusFilter,
-  onCreate, onRefresh, onLoadMore, onSearch, onStatusFilter, onSelect,
+  items, hasMore, selectedId, loading = false, loadingMore = false, searching = false, query, statusFilter, characterFilter, lineageFilters,
+  onCreate, onRefresh, onLoadMore, onSearch, onStatusFilter, onIdentityFilters, onSelect,
 }: Props) {
   const [searchDraft, setSearchDraft] = useState(query);
+  const [filterVisible, setFilterVisible] = useState(false);
+  const [stagedCharacterFilter, setStagedCharacterFilter] = useState<WorkOrderCharacterFilter>(characterFilter);
+  const [stagedLineageFilters, setStagedLineageFilters] = useState<readonly WorkOrderLineageFilter[]>(lineageFilters);
   const onSearchRef = useRef(onSearch);
   useEffect(() => {
     onSearchRef.current = onSearch;
@@ -102,7 +110,19 @@ export default function WorkOrderListScreen({
             ) : null}
           </View>
         </View>
+        <Pressable accessibilityLabel="작업지시서 구분 필터" accessibilityRole="button" onPress={() => { setStagedCharacterFilter(characterFilter); setStagedLineageFilters(lineageFilters); setFilterVisible(true); }} style={styles.filterAction}>
+          <SlidersHorizontal color={WAFL_THEME.color.navyInk} size={18} />
+          <Text style={styles.filterActionText}>필터</Text>
+        </Pressable>
       </View>
+      {characterFilter === "all" && lineageFilters.length === 0 ? null : <View style={styles.activeFilterChips}>
+        {characterFilter === "all" ? null : <Pressable accessibilityLabel={`${characterFilter === "production" ? "본생산" : "샘플"} 필터 해제`} accessibilityRole="button" onPress={() => onIdentityFilters("all", lineageFilters)} style={styles.activeFilterChip}>
+          <Text style={styles.activeFilterText}>{characterFilter === "production" ? "본생산" : "샘플"}</Text><X color="#67584c" size={14} />
+        </Pressable>}
+        {lineageFilters.map((lineage) => <Pressable accessibilityLabel={`${lineage === "reorder" ? "리오더" : "재작업"} 필터 해제`} accessibilityRole="button" key={lineage} onPress={() => onIdentityFilters(characterFilter, lineageFilters.filter((value) => value !== lineage))} style={styles.activeFilterChip}>
+          <Text style={styles.activeFilterText}>{lineage === "reorder" ? "리오더" : "재작업"}</Text><X color="#67584c" size={14} />
+        </Pressable>)}
+      </View>}
       <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.filters} style={styles.filterRail}>
         {WORK_ORDER_STATUS_FILTER_OPTIONS.map((filter) => (
           <Pressable
@@ -134,10 +154,11 @@ export default function WorkOrderListScreen({
             const selected = selectedId === item.workOrderId;
             const workflowStatus = getWorkOrderWorkflowPresentation(item.status);
             const representativeLabel = item.representativeThumbnail ? "이미지 있음" : "이미지 없음";
+            const identityLabels = [item.identity.isSample ? "샘플" : null, item.identity.reorderRound > 0 ? `${item.identity.reorderRound}차 리오더` : null, item.identity.derivationKind === "rework" ? "재작업" : null].filter((label): label is string => label !== null);
             const representativeUrl = resolveMobileApiUrl(item.representativeThumbnail?.thumbnailUrl ?? null);
             return (
               <Pressable
-                accessibilityLabel={`${item.productName}, ${WORK_ORDER_STATUS_LABEL[item.status]}, 수량 ${item.totalQuantity}`}
+                accessibilityLabel={`${item.productName}${identityLabels.length ? `, ${identityLabels.join(", ")}` : ""}, ${WORK_ORDER_STATUS_LABEL[item.status]}, 수량 ${item.totalQuantity}`}
                 accessibilityRole="button"
                 key={item.workOrderId}
                 onPress={() => {
@@ -160,6 +181,7 @@ export default function WorkOrderListScreen({
                   </View>
                   <View style={styles.cardMain}>
                     <Text numberOfLines={2} style={styles.productName}>{item.productName}</Text>
+                    {identityLabels.length ? <View style={styles.identityBadges}>{identityLabels.map((label) => <Text key={label} style={styles.identityBadge}>{label}</Text>)}</View> : null}
                   </View>
                   <Text style={[styles.status, STATUS_BADGE_STYLES[workflowStatus.variant]]}>{workflowStatus.label}</Text>
                 </View>
@@ -178,6 +200,18 @@ export default function WorkOrderListScreen({
           ) : null}
         </ScrollView>
       )}
+      <WaflInputSheet cancelAccessibilityLabel="작업지시서 구분 필터 취소" confirmAccessibilityLabel="작업지시서 구분 필터 적용" onCancel={() => setFilterVisible(false)} onConfirm={() => { setFilterVisible(false); onIdentityFilters(stagedCharacterFilter, stagedLineageFilters); }} sizing="adaptiveExpandable" title="필터" visible={filterVisible}>
+        <View style={styles.filterSheetBody}>
+          <View style={styles.filterGroup}>
+            <Text style={styles.filterGroupLabel}>작업 구분</Text>
+            <WaflChoiceButtons accessibilityLabel="작업 구분" onSelect={setStagedCharacterFilter} options={[{ value: "all", label: "전체" }, { value: "production", label: "본생산" }, { value: "sample", label: "샘플" }] as const} selectedValue={stagedCharacterFilter} />
+          </View>
+          <View style={styles.filterGroup}>
+            <Text style={styles.filterGroupLabel}>작업 계보</Text>
+            <WaflChoiceButtons accessibilityLabel="작업 계보" onToggle={(value) => setStagedLineageFilters((current) => current.includes(value) ? current.filter((item) => item !== value) : ["reorder", "rework"].filter((item): item is WorkOrderLineageFilter => item === value || current.includes(item as WorkOrderLineageFilter)))} options={[{ value: "reorder", label: "리오더" }, { value: "rework", label: "재작업" }] as const} selectedValues={stagedLineageFilters} selectionMode="multiple" />
+          </View>
+        </View>
+      </WaflInputSheet>
     </View>
   );
 }
@@ -196,6 +230,14 @@ const styles = StyleSheet.create({
   searchField: { alignItems: "center", backgroundColor: "#fffdf8", borderColor: "#d9cdbf", borderRadius: 10, borderWidth: 1, flex: 1, flexDirection: "row", gap: 6, height: WORK_ORDER_SEARCH_LAYOUT.fieldHeight, maxHeight: WORK_ORDER_SEARCH_LAYOUT.fieldHeight, minHeight: WORK_ORDER_SEARCH_LAYOUT.fieldHeight, overflow: "hidden", paddingHorizontal: 10 },
   searchInput: { color: "#17263d", flex: 1, fontFamily: WAFL_FONTS.regular, fontSize: 12, height: WORK_ORDER_SEARCH_LAYOUT.inputHeight, includeFontPadding: false, lineHeight: WORK_ORDER_SEARCH_LAYOUT.inputLineHeight, maxHeight: WORK_ORDER_SEARCH_LAYOUT.inputHeight, minHeight: WORK_ORDER_SEARCH_LAYOUT.inputHeight, minWidth: 0, paddingBottom: 0, paddingTop: 0, paddingVertical: 0 },
   searchAccessory: { alignItems: "center", flexShrink: 0, height: WORK_ORDER_SEARCH_LAYOUT.accessorySize, justifyContent: "center", width: WORK_ORDER_SEARCH_LAYOUT.accessorySize },
+  filterAction: { alignItems: "center", borderColor: "#d9cdbf", borderRadius: 10, borderWidth: 1, flexDirection: "row", gap: 4, height: WORK_ORDER_SEARCH_LAYOUT.fieldHeight, justifyContent: "center", paddingHorizontal: 10 },
+  filterActionText: { color: WAFL_THEME.color.navyInk, fontFamily: WAFL_FONTS.semibold, fontSize: 12 },
+  activeFilterChips: { flexDirection: "row", flexWrap: "wrap", gap: 6, marginBottom: 8 },
+  activeFilterChip: { alignItems: "center", backgroundColor: "#f4eee5", borderColor: "#ddd0bf", borderRadius: 999, borderWidth: 1, flexDirection: "row", gap: 5, minHeight: 32, paddingHorizontal: 10 },
+  activeFilterText: { color: "#67584c", fontFamily: WAFL_FONTS.semibold, fontSize: 11 },
+  filterSheetBody: { gap: WAFL_THEME.spacing.md, paddingTop: WAFL_THEME.spacing.md },
+  filterGroup: { gap: WAFL_THEME.layout.tightGap },
+  filterGroupLabel: { color: WAFL_THEME.color.readOnly, fontFamily: WAFL_FONTS.semibold, fontSize: WAFL_THEME.typography.fieldLabel.fontSize, lineHeight: WAFL_THEME.typography.fieldLabel.lineHeight },
   clearButton: { alignItems: "center", height: WORK_ORDER_SEARCH_LAYOUT.accessorySize, justifyContent: "center", width: WORK_ORDER_SEARCH_LAYOUT.accessorySize },
   filterRail: { flexGrow: 0, flexShrink: 0, height: WORK_ORDER_SEARCH_LAYOUT.filterRailHeight, maxHeight: WORK_ORDER_SEARCH_LAYOUT.filterRailHeight, minHeight: WORK_ORDER_SEARCH_LAYOUT.filterRailHeight },
   filters: { alignItems: "flex-start", gap: 6, height: WORK_ORDER_SEARCH_LAYOUT.filterRailHeight, paddingBottom: 10 },
@@ -214,6 +256,8 @@ const styles = StyleSheet.create({
   imageMark: { color: "#75695d", fontFamily: WAFL_FONTS.medium, fontSize: 9, textAlign: "center" },
   cardMain: { flex: 1, minWidth: 0 },
   productName: { color: "#17263d", fontFamily: WAFL_FONTS.bold, fontSize: 16, lineHeight: 21 },
+  identityBadges: { flexDirection: "row", flexWrap: "wrap", gap: 5, marginTop: 5 },
+  identityBadge: { backgroundColor: WAFL_THEME.color.paperMuted, borderRadius: 999, color: "#67584c", fontFamily: WAFL_FONTS.semibold, fontSize: 10, overflow: "hidden", paddingHorizontal: 7, paddingVertical: 3 },
   status: { backgroundColor: "#f2e2d3", borderRadius: 999, color: "#874423", fontFamily: WAFL_FONTS.bold, fontSize: 11, overflow: "hidden", paddingHorizontal: 8, paddingVertical: 5 },
   statusDraft: { backgroundColor: "#f2e2d3", color: "#874423" },
   statusDelivery: { backgroundColor: "#e7e0d3", color: "#67584c" },

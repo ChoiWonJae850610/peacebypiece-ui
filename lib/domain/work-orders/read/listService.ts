@@ -12,6 +12,8 @@ import type {
   TenantMemberScope,
   WorkOrderApiErrorCode,
   WorkOrderId,
+  WorkOrderCharacterFilter,
+  WorkOrderLineageFilter,
   WorkOrderListPage,
 } from "@/lib/domain/work-orders/contracts";
 import {
@@ -25,9 +27,11 @@ import {
 } from "@/lib/domain/work-orders/read/listCursor";
 import { listWorkOrdersV2 } from "@/lib/domain/work-orders/read/listRepository";
 
-const ALLOWED_QUERY_KEYS = new Set(["limit", "cursor", "q", "status"]);
+const ALLOWED_QUERY_KEYS = new Set(["limit", "cursor", "q", "status", "character", "lineage"]);
 const STATUS_FILTERS = ["all", "draft", "delivery", "progress", "completed", "hold_cancel"] as const;
 type StatusFilter = (typeof STATUS_FILTERS)[number];
+const CHARACTER_FILTERS = ["all", "production", "sample"] as const;
+const LINEAGE_FILTERS = ["reorder", "rework"] as const;
 
 const STATUS_MAPPING: Record<Exclude<StatusFilter, "all">, readonly string[]> = {
   draft: ["draft", "revised"],
@@ -73,11 +77,21 @@ function parseLimit(value: string | null): number {
   return limit;
 }
 
-function visibilityKey(scope: WorkspaceApiCompanyScope, query: string | null, status: StatusFilter): string {
+function normalizeLineageFilters(raw: string | null): readonly WorkOrderLineageFilter[] {
+  if (raw === null || raw === "") return [];
+  const values = raw.split(",");
+  if (new Set(values).size !== values.length || values.some((value) => !LINEAGE_FILTERS.includes(value as WorkOrderLineageFilter))) {
+    throw new WorkOrderListRequestError({ code: "VALIDATION_ERROR", status: 400, message: "지원하지 않는 작업 계보 필터입니다." });
+  }
+  const selected = new Set(values as WorkOrderLineageFilter[]);
+  return LINEAGE_FILTERS.filter((value) => selected.has(value));
+}
+
+function visibilityKey(scope: WorkspaceApiCompanyScope, query: string | null, status: StatusFilter, character: WorkOrderCharacterFilter, lineage: readonly WorkOrderLineageFilter[]): string {
   const scopeKey = scope.visibility?.mode === "assigned"
     ? `assigned:${scope.visibility.companyMemberId ?? "missing"}`
     : "company";
-  const filterHash = createHash("sha256").update(`${query ?? ""}\0${status}`).digest("hex").slice(0, 16);
+  const filterHash = createHash("sha256").update(`${query ?? ""}\0${status}\0${character}\0${lineage.join(",")}`).digest("hex").slice(0, 16);
   return `${scopeKey}:filter:${filterHash}`;
 }
 
@@ -108,7 +122,13 @@ export async function getWorkOrderListPage(input: {
   }
   const statusFilter = rawStatus as StatusFilter;
   const statuses = statusFilter === "all" ? null : STATUS_MAPPING[statusFilter];
-  const scopeVisibilityKey = visibilityKey(input.scope, searchQuery, statusFilter);
+  const rawCharacter = input.searchParams.get("character") ?? "all";
+  if (!CHARACTER_FILTERS.includes(rawCharacter as WorkOrderCharacterFilter)) {
+    throw new WorkOrderListRequestError({ code: "VALIDATION_ERROR", status: 400, message: "지원하지 않는 작업 구분 필터입니다." });
+  }
+  const characterFilter = rawCharacter as WorkOrderCharacterFilter;
+  const lineageFilters = normalizeLineageFilters(input.searchParams.get("lineage"));
+  const scopeVisibilityKey = visibilityKey(input.scope, searchQuery, statusFilter, characterFilter, lineageFilters);
   const cursorValue = input.searchParams.get("cursor");
   let cursorUpdatedAt: IsoDateTime | null = null;
   let cursorWorkOrderId: WorkOrderId | null = null;
@@ -147,6 +167,8 @@ export async function getWorkOrderListPage(input: {
     cursorWorkOrderId,
     searchQuery,
     statuses,
+    characterFilter,
+    lineageFilters,
     limit,
   });
   const nextCursor = result.hasMore && result.lastPosition

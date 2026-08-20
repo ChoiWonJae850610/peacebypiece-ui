@@ -97,6 +97,12 @@ export const WAFL_THEME = {
     actionDangerBackground: "#fff5f0",
     actionDangerBorder: "#e5b7ac",
   },
+  segmentedControl: {
+    compactHeight: 26,
+    compactRadius: 7,
+    compactSegmentWidth: 52,
+    compactTouchInset: 9,
+  },
   badge: {
     fabric: { background: "#f7f0e5", border: "#cfa789", foreground: "#7b452d" },
     accessory: { background: "#edf0e8", border: "#aab395", foreground: "#4d583c" },

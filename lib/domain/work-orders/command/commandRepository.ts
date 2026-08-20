@@ -11,6 +11,7 @@ import type {
   RevisionNumber,
   TenantMemberScope,
   WorkOrderDraftCommandResult,
+  WorkOrderDerivationKind,
   WorkOrderId,
   WorkOrderRevisionId,
 } from "@/lib/domain/work-orders/contracts";
@@ -59,6 +60,9 @@ type WorkOrderCommandRow = DbQueryResultRow & {
   readonly total_quantity: number | string;
   readonly memo: string | null;
   readonly factory_delivery_memo: string | null;
+  readonly is_sample: boolean;
+  readonly derivation_kind: WorkOrderDerivationKind;
+  readonly reorder_round: number | string;
 };
 
 type CommandReceiptRow = DbQueryResultRow & {
@@ -108,6 +112,9 @@ function mapCommandRow(row: WorkOrderCommandRow): WorkOrderDraftCommandResult {
     totalQuantity: toInteger(row.total_quantity),
     memo: row.memo,
     factoryDeliveryMemo: row.factory_delivery_memo,
+    isSample: row.is_sample,
+    derivationKind: row.derivation_kind,
+    reorderRound: toInteger(row.reorder_round),
   };
 }
 
@@ -174,7 +181,8 @@ export async function createWorkOrderDraftV2(input: {
         SELECT w.id AS work_order_id, r.id AS revision_id, r.revision_no,
                w.status AS work_order_status, r.revision_status,
                w.entity_version, w.product_name, w.product_type_code,
-               w.season_code, w.item_code, w.due_date, w.total_quantity, r.memo, r.factory_delivery_memo
+               w.season_code, w.item_code, w.due_date, w.total_quantity, r.memo, r.factory_delivery_memo,
+               w.is_sample, w.derivation_kind, w.reorder_round
         FROM work_orders w
         JOIN work_order_revisions r
           ON r.company_id = w.company_id AND r.id = w.current_revision_id
@@ -193,8 +201,9 @@ export async function createWorkOrderDraftV2(input: {
     const workOrder = await client.query<DbQueryResultRow & { readonly id: string }>(`
       INSERT INTO work_orders (
         company_id, product_name, product_type_code, season_code, item_code,
-        status, due_date, total_quantity, created_by_member_id, entity_version
-      ) VALUES ($1, $2, $3, $4, $5, 'draft', $6::date, $7, $8, 1)
+        status, due_date, total_quantity, created_by_member_id, entity_version, is_sample,
+        derivation_kind, reorder_round
+      ) VALUES ($1, $2, $3, $4, $5, 'draft', $6::date, $7, $8, 1, $9, 'original', 0)
       RETURNING id
     `, [
       input.scope.companyId,
@@ -205,6 +214,7 @@ export async function createWorkOrderDraftV2(input: {
       input.command.dueDate ?? null,
       input.command.totalQuantity ?? 0,
       input.scope.companyMemberId,
+      input.command.isSample,
     ]);
     statementCount += 1;
     const workOrderId = workOrder.rows[0]?.id;
@@ -242,7 +252,8 @@ export async function createWorkOrderDraftV2(input: {
       RETURNING id AS work_order_id, $3::uuid AS revision_id, 0 AS revision_no,
                 status AS work_order_status, 'draft'::text AS revision_status,
                 entity_version, product_name, product_type_code, season_code,
-                item_code, due_date::text AS due_date, total_quantity, $4::text AS memo, $5::text AS factory_delivery_memo
+                item_code, due_date::text AS due_date, total_quantity, $4::text AS memo, $5::text AS factory_delivery_memo,
+                is_sample, derivation_kind, reorder_round
     `, [input.scope.companyId, workOrderId, revisionId, input.command.memo ?? null, input.command.factoryDeliveryMemo ?? null]);
     statementCount += 1;
     if (!linked.rows[0]) throw new Error("WORK_ORDER_CURRENT_REVISION_LINK_FAILED");
@@ -261,7 +272,7 @@ export async function createWorkOrderDraftV2(input: {
       "draft WorkOrder와 R0 revision 생성",
       JSON.stringify({
         clientRequestId: input.command.clientRequestId,
-        changedFields: ["productName", "productTypeCode", "seasonCode", "itemCode", "dueDate", "totalQuantity", "memo", "factoryDeliveryMemo"],
+        changedFields: ["productName", "productTypeCode", "seasonCode", "itemCode", "dueDate", "totalQuantity", "memo", "factoryDeliveryMemo", "isSample"],
         versionTransition: { from: null, to: 1 },
         revisionNumber: 0,
       }),
@@ -285,7 +296,7 @@ export async function createWorkOrderDraftV2(input: {
       result: mapCommandRow(linked.rows[0]),
       nextVersion: 1 as EntityVersion,
       idempotentReplay: false,
-      changedFields: ["productName", "productTypeCode", "seasonCode", "itemCode", "dueDate", "totalQuantity", "memo", "factoryDeliveryMemo"],
+      changedFields: ["productName", "productTypeCode", "seasonCode", "itemCode", "dueDate", "totalQuantity", "memo", "factoryDeliveryMemo", "isSample"],
     };
   });
 
@@ -320,7 +331,8 @@ export async function patchWorkOrderBasicInfoV2(input: {
       SELECT w.id AS work_order_id, r.id AS revision_id, r.revision_no,
              w.status AS work_order_status, r.revision_status,
              w.entity_version, w.product_name, w.product_type_code,
-             w.season_code, w.item_code, w.due_date::text AS due_date, w.total_quantity, r.memo, r.factory_delivery_memo
+             w.season_code, w.item_code, w.due_date::text AS due_date, w.total_quantity, r.memo, r.factory_delivery_memo,
+             w.is_sample, w.derivation_kind, w.reorder_round
       FROM work_orders w
       JOIN work_order_revisions r
         ON r.company_id = w.company_id AND r.id = w.current_revision_id
@@ -428,7 +440,10 @@ export async function patchWorkOrderBasicInfoV2(input: {
                 $20::integer AS entity_version, product_name_snapshot AS product_name,
                 product_type_code_snapshot AS product_type_code,
                 season_code_snapshot AS season_code, item_code_snapshot AS item_code,
-                due_date_snapshot::text AS due_date, total_quantity_snapshot AS total_quantity, memo, factory_delivery_memo
+                due_date_snapshot::text AS due_date, total_quantity_snapshot AS total_quantity, memo, factory_delivery_memo,
+                (SELECT is_sample FROM work_orders WHERE company_id=$1 AND id=$3::uuid) AS is_sample,
+                (SELECT derivation_kind FROM work_orders WHERE company_id=$1 AND id=$3::uuid) AS derivation_kind,
+                (SELECT reorder_round FROM work_orders WHERE company_id=$1 AND id=$3::uuid) AS reorder_round
     `, [
       input.scope.companyId,
       current.revision_id,

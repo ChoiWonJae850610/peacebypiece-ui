@@ -8,25 +8,42 @@ export type WaflChoiceOption<T extends string> = {
   readonly label: string;
 };
 
-export default function WaflChoiceButtons<T extends string>(props: {
+type CommonProps<T extends string> = {
   readonly accessibilityLabel: string;
   readonly options: readonly WaflChoiceOption<T>[];
-  readonly selectedValue: T;
   readonly disabled?: boolean;
+  readonly layout?: "row" | "wrap";
+  readonly presentation?: "form" | "compact";
+};
+
+type SingleChoiceProps<T extends string> = CommonProps<T> & {
+  readonly selectionMode?: "single";
+  readonly selectedValue: T;
   readonly onSelect: (value: T) => void;
-}) {
-  return <View accessibilityLabel={props.accessibilityLabel} accessibilityRole="radiogroup" style={styles.group}>
-    {props.options.map((option) => {
-      const selected = option.value === props.selectedValue;
+};
+
+type MultipleChoiceProps<T extends string> = CommonProps<T> & {
+  readonly selectionMode: "multiple";
+  readonly selectedValues: readonly T[];
+  readonly onToggle: (value: T) => void;
+};
+
+export default function WaflChoiceButtons<T extends string>(props: SingleChoiceProps<T> | MultipleChoiceProps<T>) {
+  const multiple = props.selectionMode === "multiple";
+  const compact = props.presentation === "compact";
+  return <View accessibilityLabel={props.accessibilityLabel} accessibilityRole={multiple ? undefined : "radiogroup"} style={[styles.group, compact && styles.groupCompact, props.layout === "wrap" && styles.groupWrap]}>
+    {props.options.map((option, index) => {
+      const selected = multiple ? props.selectedValues.includes(option.value) : option.value === props.selectedValue;
       return <Pressable
-        accessibilityRole="radio"
-        accessibilityState={{ disabled: props.disabled, selected }}
+        accessibilityRole={multiple ? "checkbox" : "radio"}
+        accessibilityState={{ checked: multiple ? selected : undefined, disabled: props.disabled, selected: multiple ? undefined : selected }}
         disabled={props.disabled}
+        hitSlop={compact ? WAFL_THEME.segmentedControl.compactTouchInset : undefined}
         key={option.value}
-        onPress={() => props.onSelect(option.value)}
-        style={({ pressed }) => [styles.button, selected && styles.buttonSelected, props.disabled && styles.disabled, pressed && styles.pressed]}
+        onPress={() => multiple ? props.onToggle(option.value) : props.onSelect(option.value)}
+        style={({ pressed }) => [styles.button, compact && styles.buttonCompact, compact && index === 0 && styles.buttonCompactFirst, compact && index === props.options.length - 1 && styles.buttonCompactLast, props.layout === "wrap" && styles.buttonWrap, selected && styles.buttonSelected, props.disabled && styles.disabled, pressed && styles.pressed]}
       >
-        <Text style={[styles.text, selected && styles.textSelected]}>{option.label}</Text>
+        <Text style={[styles.text, compact && styles.textCompact, selected && styles.textSelected]}>{option.label}</Text>
       </Pressable>;
     })}
   </View>;
@@ -34,9 +51,16 @@ export default function WaflChoiceButtons<T extends string>(props: {
 
 const styles = StyleSheet.create({
   group: { flexDirection: "row", gap: 8 },
+  groupCompact: { alignSelf: "flex-start", gap: 0, minHeight: WAFL_THEME.segmentedControl.compactHeight },
+  groupWrap: { flexWrap: "wrap" },
   button: { alignItems: "center", backgroundColor: "#f4ede3", borderColor: "#d7cabc", borderRadius: 10, borderWidth: 1, flex: 1, justifyContent: "center", minHeight: 44, paddingHorizontal: 10 },
+  buttonCompact: { borderRadius: 0, flex: 0, height: WAFL_THEME.segmentedControl.compactHeight, minHeight: WAFL_THEME.segmentedControl.compactHeight, paddingHorizontal: 4, width: WAFL_THEME.segmentedControl.compactSegmentWidth },
+  buttonCompactFirst: { borderBottomLeftRadius: WAFL_THEME.segmentedControl.compactRadius, borderTopLeftRadius: WAFL_THEME.segmentedControl.compactRadius },
+  buttonCompactLast: { borderBottomRightRadius: WAFL_THEME.segmentedControl.compactRadius, borderLeftWidth: 0, borderTopRightRadius: WAFL_THEME.segmentedControl.compactRadius },
+  buttonWrap: { flexBasis: "30%", flexGrow: 1 },
   buttonSelected: { backgroundColor: WAFL_THEME.color.navyInk, borderColor: WAFL_THEME.color.navyInk },
   text: { color: "#5d5147", fontFamily: WAFL_FONTS.semibold, fontSize: 12, textAlign: "center" },
+  textCompact: { fontSize: WAFL_THEME.typography.meta.fontSize, lineHeight: WAFL_THEME.typography.meta.lineHeight },
   textSelected: { color: "#fffdf8", fontFamily: WAFL_FONTS.bold },
   pressed: { opacity: 0.72 },
   disabled: { opacity: 0.4 },

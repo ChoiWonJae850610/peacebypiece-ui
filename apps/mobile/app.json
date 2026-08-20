@@ -36,7 +36,7 @@
       }
     },
     "extra": {
-      "appVersion": "2.0.0-alpha.65",
+      "appVersion": "2.0.0-alpha.66",
       "mockOnly": false,
       "dataMode": "dev-test-tailscale-auto-connect",
       "router": {},
