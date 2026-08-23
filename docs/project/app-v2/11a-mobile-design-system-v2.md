@@ -1,5 +1,11 @@
 # WAFL Mobile Design System v2
 
+## Alpha.67 identity PICK and PDF renderer grammar
+
+Issued/finalized/read-only WorkOrders render the persisted `본생산 / 샘플` identity as fixed text or a badge, never as an interactive segmented control. Draft identity alone is editable; Reorder remains forced to 본생산. Overview `시즌` and `세부 품목` use canonical draggable `reelAdaptive` WAFL PICK surfaces. Season uses the paired option-reel owner with year on the left and `SS / FW / 상시` on the right; Detail Item uses the single option-reel owner. Both retain centered-selection physics, staged X/V, and the exact shared `직접 입력으로 변경 / WAFL PICK으로 변경` mode switch. Their bounded data never nests a same-orientation `FlatList`/`VirtualizedList`, and WorkOrder-local direct values never mutate a global catalog. Legacy persisted strings remain readable.
+
+Public `/v` renders authenticated PDF bytes into self-hosted PDF.js canvas pages. The primary document body never depends on browser-native `object`/`embed` PDF plug-ins; Download remains secondary. Chromium and WebKit-class QA must observe a nonzero rendered first-page canvas, not only the hydrated metadata shell. The native authenticated viewer uses vertical scroll and zoom for document navigation; its canonical visible exit is a sticky bottom WAFL `닫기` action in a footer sibling outside the PDF gesture surface.
+
 Document role: current normative owner for App-first React Native mobile visual tokens, layout, shared component grammar, and responsive behavior.
 
 When this document conflicts with `11-app-design-theme-v1.md`, preserved `docs/project/v2/*`, `/ui`, `ProductionCardMock`, or proposal images, this document and the current typed source owners win. Product behavior, authorization, data contracts, and mutation policy remain owned by their specialist contracts.
@@ -97,6 +103,19 @@ New sheet forms search this matrix before composing label, input, focus, read-on
 
 Phone is portrait-first. Tablet supports portrait and landscape using useful width without becoming compressed desktop administration. Action tiles cap and wrap rather than stretch. Horizontal tab rails and data tables may scroll; first/last content keeps shell alignment. Accessible names, state, 44-point targets, readable input type, non-color state cues, and sheet return behavior are required.
 
+### Document viewer close and Finished Spec full-view ownership
+
+- The native PDF gesture surface and the canonical exit have separate sibling layout planes. A
+  sticky bottom WAFL primary action labeled `닫기`, with a minimum 44-point target and accessible
+  name `작업지시서 보기 닫기`, exits to the current WorkOrder Document context. The visible top
+  back affordance and explicit previous/next page buttons are not active viewer grammar; a passive
+  page indicator may remain synchronized with vertical scrolling.
+- Finished Spec full view has one vertical scroll owner: the `WaflInputSheet` body. The table
+  expands all POM rows, reports `총 N개 항목`, and derives any quiet below-content affordance from
+  actual body scroll metrics. A single selected Size expands into remaining table width; multiple
+  Sizes retain the canonical horizontal frozen-axis behavior. The X/V footer remains outside and
+  sticky to that body scroll.
+
 ## Ownership discipline
 
 Before adding visual code, classify the responsibility as `REUSE`, `EXTEND`, `EXTRACT`, `NEW`, or `INTENTIONALLY LOCAL`. Same-semantics screen gutter, major card, section gap, action tile, and typography roles have one active owner. Local arbitrary substitutes in a new tab or alpha.65+ feature are a completion blocker.
@@ -129,6 +148,8 @@ Status: `OWNER_PHYSICAL_REVIEW_REQUIRED`.
 - An editable draft keeps that same `스펙 항목 〉` entry in the Finished Spec empty state. Existing POM rows, saved-template application, a pre-existing measurement aggregate, and major-category presence are not prerequisites for opening the chooser. Major category scopes WAFL recommendations only; without it the chooser explains how to unlock recommendations while category-neutral company items and `직접 만들기` remain available. Issued/locked surfaces remain read-only.
 - Catalog rows are reusable company authoring data. WorkOrder POM rows and saved-template POM rows remain independent historical snapshots, so catalog rename/deactivation never rewrites issued or existing snapshot display values.
 - The WorkOrder feature tab rail is the only sticky element inside the detail page shell. The list/back control and product identity summary scroll away; the global WAFL/company header remains owned outside the detail scroller.
+- An authenticated full-screen document viewer is an app-level reading surface, not a staged input sheet. It owns one safe-area header/back action, the actual native PDF page canvas, a stable `현재 / 전체` page indicator, explicit previous/next controls, vertical page navigation, bounded zoom, and a bounded retry state. Scroll-driven page changes and button-driven renderer jumps update the same page state; endpoint controls remain disabled. Closing it restores the existing Document-tab context. It never substitutes an external browser, a public share URL, or a raw object URL for authenticated in-app viewing.
+- Document actions are role-specific. `보기` reuses the authenticated native viewer. `공유` alone creates one controlled public `/v` link and sends that URL exactly once in restrained business copy. `저장` downloads the workspace-authenticated internal PDF to a verified temporary local PDF and opens the native file/save surface without Safari, a public token, raw R2, or a secret-bearing URL; temporary bytes are removed after handoff. Share/QR metadata uses one row each for creation, expiry, last access, and access count rather than punctuation-compressed prose.
 - All long Maker editors using `WaflInputSheet` inherit the same draggable detent, scroll-body, fixed-footer, safe-area, keyboard, and cancel semantics rather than implementing local sheet chrome.
 - Reusable Size, Color, and Spec Item chooser creation uses the shared parent action `+ 직접 만들기`. Domain record creation such as fabric/accessory add keeps its domain action label.
 
@@ -157,6 +178,12 @@ Status: `OWNER_PHYSICAL_REVIEW_REQUIRED`.
 Overview places one compact readiness row immediately after 비용 구성. A nonzero canonical issue collection uses the quiet warm-accent `발행 전 확인 N건` action with a chevron; zero uses the compact positive `발행 준비 완료` state. The action never embeds a top-three preview. Its read-only `WaflInputSheet` renders the complete current issue collection with ordinary scrolling and close grammar. Count and sheet membership share the same server-canonical array. Actionable rows show a quiet current-tab destination based on stable issue code; unknown issues remain visible without a fabricated destination.
 
 Readiness is version-reconciled, not locally counted. A successful readiness-relevant mutation that advances the WorkOrder entity version invalidates any detail projection whose canonical `readiness.basedOnVersion` trails that version. The shared mutation/query controller fetches and publishes one current canonical detail projection; Overview count and the open Sheet therefore continue to read the same refreshed `readiness.issues` array. Failed mutations do not create refresh success, and screens must not increment, decrement, or rebuild a second issue counter.
+
+## Alpha.67 post-clean-base input and reconciliation grammar
+
+Fabric and Accessory share the Basic Process memo character-count presentation owner. `사용부위` is a hard 30-character field and `메모` is a hard 100-character field in both create-sheet and same-position inline editing. The counter is `N / maximum`, is derived from the staged value, and never substitutes silent client or server truncation.
+
+After Size or Color removal, the visible frozen-axis projection must publish one reconciled matrix: cells, row/column/grand totals, WorkOrder total, revision total, and Finished Spec Size columns advance together. A stale footer total is not an acceptable intermediate UI state after command success.
 ## Alpha.66 WorkOrder identity badges and list filter
 
 Create and detail share one WorkOrder-character semantic owner with `본생산 / 샘플`, but presentation follows context. Create uses the labeled form-sized `작업 구분` variant and fresh `샘플` default. Detail uses a compact two-segment grouped-button variant anchored at the hero text area's top-right: its visible height follows the badge family, its equal-width segments and smaller grouped radius distinguish action from pill badges, and the canonical minimum touch area is preserved invisibly. The pair never drops below the title or returns to full width. Workflow status remains the single strong badge and is positioned directly below the representative image in detail. WorkOrder identity is secondary: the duplicate detail Sample pill is absent because the interactive control already communicates character; applicable `N차 리오더` and `재작업` pills remain, while list-card identity badges remain unchanged. A passive source-title/lineage sentence is not header copy; source data stays in the read model until a future actionable relation is approved. Identity filtering uses a separate shared WAFL INPUT action/sheet with a single-choice `전체 / 본생산 / 샘플` group and an independent multi-select `리오더 / 재작업` group. Zero to three removable active chips may sit near search, but they never become a second persistent rail. The filter surface reuses the canonical staged X/V, sheet, choice, touch-target, and accessibility owners.

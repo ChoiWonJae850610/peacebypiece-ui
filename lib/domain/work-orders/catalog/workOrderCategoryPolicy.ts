@@ -1,7 +1,13 @@
+import {
+  decodeWorkOrderMajorCategoryCode,
+  WORK_ORDER_MAJOR_CATEGORY_CODES,
+} from "./workOrderCategoryCodePolicy.mjs";
+
+export { decodeWorkOrderMajorCategoryCode, WORK_ORDER_MAJOR_CATEGORY_CODES };
+
 export const WORK_ORDER_TARGET_AUDIENCES = ["여성", "남성", "공용", "키즈", "기타"] as const;
 export const WORK_ORDER_CATEGORY_MAJORS = ["상의", "하의", "아우터", "원피스", "셋업", "기타"] as const;
 export const WORK_ORDER_NEW_CATEGORY_MAJORS = ["상의", "하의", "아우터", "원피스", "기타"] as const;
-export const WORK_ORDER_MAJOR_CATEGORY_CODES = ["T", "B", "O", "D", "S", "X"] as const;
 
 export type WorkOrderTargetAudience = (typeof WORK_ORDER_TARGET_AUDIENCES)[number] | "";
 export type WorkOrderCategoryMajor = (typeof WORK_ORDER_CATEGORY_MAJORS)[number] | "";
@@ -32,13 +38,6 @@ export const WORK_ORDER_MAJOR_CATEGORY_LABEL_BY_CODE = Object.fromEntries(
   Object.entries(WORK_ORDER_MAJOR_CATEGORY_CODE_BY_LABEL).map(([label, code]) => [code, label]),
 ) as Readonly<Record<WorkOrderMajorCategoryCode, Exclude<WorkOrderCategoryMajor, "">>>;
 
-const LEGACY_MAJOR_CODE_BY_PRODUCT_TYPE: Readonly<Record<string, WorkOrderMajorCategoryCode>> = {
-  "apparel.top": "T",
-  "apparel.bottom": "B",
-  "apparel.outer": "O",
-  "apparel.onepiece_set": "D",
-};
-
 const CATEGORY_PREFIX = "wafl-c1";
 
 export type WorkOrderCategorySelection = {
@@ -47,15 +46,6 @@ export type WorkOrderCategorySelection = {
   readonly categoryDetail: string;
   readonly seasonCode: string;
 };
-
-export function decodeWorkOrderMajorCategoryCode(productTypeCode: string | null): WorkOrderMajorCategoryCode | null {
-  const code = productTypeCode?.trim() ?? "";
-  const [prefix, , majorCode = "", extra] = code.split("|");
-  if (prefix === CATEGORY_PREFIX && extra === undefined && WORK_ORDER_MAJOR_CATEGORY_CODES.includes(majorCode as WorkOrderMajorCategoryCode)) {
-    return majorCode as WorkOrderMajorCategoryCode;
-  }
-  return LEGACY_MAJOR_CODE_BY_PRODUCT_TYPE[code] ?? null;
-}
 
 export function decodeWorkOrderCategory(input: {
   readonly productTypeCode: string | null;
@@ -85,6 +75,15 @@ export function encodeWorkOrderProductType(input: {
 
 export function workOrderCategorySummary(selection: WorkOrderCategorySelection): string | null {
   const values = [selection.targetAudience, selection.categoryMajor, selection.categoryDetail, selection.seasonCode].filter(Boolean);
+  return values.length > 0 ? values.join(" · ") : null;
+}
+
+export function workOrderProductClassificationSummary(input: {
+  readonly productTypeCode: string | null;
+  readonly itemCode: string | null;
+}): string | null {
+  const selection = decodeWorkOrderCategory({ ...input, seasonCode: null });
+  const values = [selection.targetAudience, selection.categoryMajor, selection.categoryDetail].filter(Boolean);
   return values.length > 0 ? values.join(" · ") : null;
 }
 

@@ -49,6 +49,8 @@ type Props = {
   readonly contentStyle?: StyleProp<ViewStyle>;
   readonly cancelAccessibilityLabel?: string;
   readonly confirmAccessibilityLabel?: string;
+  readonly cancelActionLabel?: string;
+  readonly confirmActionLabel?: string;
   readonly bodyScrollable?: boolean;
   readonly keyboardAutoExpand?: boolean;
   readonly keyboardFocusRevealContext?: number;
@@ -59,7 +61,15 @@ type Props = {
   readonly onCancel: () => void;
   readonly onAfterClose?: () => void;
   readonly onAfterOpen?: () => void;
+  readonly onBodyScrollMetrics?: (metrics: WaflSheetBodyScrollMetrics) => void;
   readonly onConfirm?: () => Promise<unknown> | unknown;
+};
+
+export type WaflSheetBodyScrollMetrics = {
+  readonly canScrollFurther: boolean;
+  readonly contentHeight: number;
+  readonly offsetY: number;
+  readonly viewportHeight: number;
 };
 
 export default function WaflInputSheet({
@@ -71,6 +81,8 @@ export default function WaflInputSheet({
   contentStyle,
   cancelAccessibilityLabel = "변경 취소",
   confirmAccessibilityLabel = "변경 저장",
+  cancelActionLabel,
+  confirmActionLabel,
   bodyScrollable = true,
   keyboardAutoExpand = false,
   keyboardFocusRevealContext = WAFL_THEME.sheet.focusRevealContext,
@@ -81,6 +93,7 @@ export default function WaflInputSheet({
   onCancel,
   onAfterClose,
   onAfterOpen,
+  onBodyScrollMetrics,
   onConfirm,
 }: Props) {
   const insets = useSafeAreaInsets();
@@ -98,6 +111,8 @@ export default function WaflInputSheet({
   const guardRef = useRef(createWaflInputCommitGuard());
   const mountedRef = useRef(true);
   const bodyOffsetRef = useRef(0);
+  const bodyContentHeightRef = useRef(0);
+  const bodyViewportHeightRef = useRef(0);
   const bodyScrollRef = useRef<ScrollView>(null);
   const focusedTargetRef = useRef<WaflSheetFocusTarget | null>(null);
   const focusedMeasurementIdentityRef = useRef(measurementIdentity);
@@ -631,8 +646,24 @@ export default function WaflInputSheet({
     finishDrag(dy, dragVelocityRef.current / 1000);
   }, [finishDrag]);
 
+  const publishBodyScrollMetrics = useCallback((offsetY = bodyOffsetRef.current) => {
+    if (!onBodyScrollMetrics) return;
+    const contentHeight = bodyContentHeightRef.current;
+    const viewportHeight = bodyViewportHeightRef.current;
+    onBodyScrollMetrics({
+      canScrollFurther: contentHeight > viewportHeight + 1
+        && offsetY + viewportHeight < contentHeight - WAFL_THEME.spacing.lg,
+      contentHeight,
+      offsetY,
+      viewportHeight,
+    });
+  }, [onBodyScrollMetrics]);
+
   function onBodyScroll(event: NativeSyntheticEvent<NativeScrollEvent>) {
     bodyOffsetRef.current = event.nativeEvent.contentOffset.y;
+    bodyContentHeightRef.current = event.nativeEvent.contentSize.height;
+    bodyViewportHeightRef.current = event.nativeEvent.layoutMeasurement.height;
+    publishBodyScrollMetrics(bodyOffsetRef.current);
   }
 
   const measureHeader = useCallback((height: number) => {
@@ -716,7 +747,15 @@ export default function WaflInputSheet({
                 contentContainerStyle={[styles.scrollBodyContent, { paddingBottom: WAFL_THEME.sheet.bodyEndGap + keyboardInset }]}
                 keyboardShouldPersistTaps="handled"
                 nestedScrollEnabled
-                onContentSizeChange={(_width, height) => measureBody(height)}
+                onContentSizeChange={(_width, height) => {
+                  bodyContentHeightRef.current = height;
+                  measureBody(height);
+                  publishBodyScrollMetrics();
+                }}
+                onLayout={(event) => {
+                  bodyViewportHeightRef.current = event.nativeEvent.layout.height;
+                  publishBodyScrollMetrics();
+                }}
                 onScroll={onBodyScroll}
                 ref={bodyScrollRef}
                 scrollEnabled={!dragging}
@@ -741,7 +780,7 @@ export default function WaflInputSheet({
               onPress={cancel}
               style={[styles.cancelButton, actionPending && styles.disabled]}
             >
-              <X color={WAFL_THEME.color.deepNavy} size={21} strokeWidth={2.4} />
+              {cancelActionLabel ? <Text style={styles.cancelActionLabel}>{cancelActionLabel}</Text> : <X color={WAFL_THEME.color.deepNavy} size={21} strokeWidth={2.4} />}
             </Pressable>
             <Pressable
               accessibilityLabel={confirmAccessibilityLabel}
@@ -751,7 +790,7 @@ export default function WaflInputSheet({
               onPress={() => void confirm()}
               style={[styles.applyButton, (actionPending || confirmDisabled) && styles.disabled]}
             >
-              <Check color="#fff" size={21} strokeWidth={2.5} />
+              {confirmActionLabel ? <Text style={styles.confirmActionLabel}>{confirmActionLabel}</Text> : <Check color="#fff" size={21} strokeWidth={2.5} />}
             </Pressable>
           </View> : null}
           <View style={{ height: keyboardLayout.bottomInset }} testID="wafl-sheet-bottom-inset" />
@@ -795,7 +834,9 @@ const styles = StyleSheet.create({
   contentFitScrollBody: { flexGrow: 1 },
   scrollBodyContent: { flexGrow: 1, paddingBottom: WAFL_THEME.sheet.bodyEndGap },
   actions: { flexDirection: "row", gap: WAFL_THEME.spacing.sm, justifyContent: "flex-end", marginTop: WAFL_THEME.spacing.sm },
-  cancelButton: { alignItems: "center", borderColor: "#cfc2b4", borderRadius: 10, borderWidth: 1, height: 48, justifyContent: "center", width: 48 },
-  applyButton: { alignItems: "center", backgroundColor: WAFL_THEME.color.navyInk, borderRadius: 10, height: 48, justifyContent: "center", width: 48 },
+  cancelButton: { alignItems: "center", borderColor: "#cfc2b4", borderRadius: 10, borderWidth: 1, height: 48, justifyContent: "center", minWidth: 48, paddingHorizontal: WAFL_THEME.spacing.md },
+  applyButton: { alignItems: "center", backgroundColor: WAFL_THEME.color.navyInk, borderRadius: 10, height: 48, justifyContent: "center", minWidth: 48, paddingHorizontal: WAFL_THEME.spacing.md },
+  cancelActionLabel: { color: WAFL_THEME.color.deepNavy, fontFamily: WAFL_FONTS.bold, fontSize: WAFL_THEME.typography.actionLabel.fontSize },
+  confirmActionLabel: { color: "#fff", fontFamily: WAFL_FONTS.bold, fontSize: WAFL_THEME.typography.actionLabel.fontSize },
   disabled: { opacity: 0.4 },
 });

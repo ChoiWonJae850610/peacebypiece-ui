@@ -30,6 +30,7 @@ import {
   MATERIAL_QUANTITY_SCALE,
   parseMaterialQuantityScaled,
 } from "@/lib/domain/work-orders/materialQuantityPrecision.mjs";
+import { MATERIAL_MEMO_MAX_LENGTH, MATERIAL_USAGE_AREA_MAX_LENGTH } from "@/lib/domain/work-orders/materialTextPolicy.mjs";
 
 const PRICE_PATTERN = /^(?:0|[1-9]\d{0,11})(?:\.\d{1,2})?$/;
 
@@ -157,8 +158,8 @@ export function validateAddMaterialLine(input: {
     orderQuantity,
     unitCode: parseRequiredText(input.body.unitCode, "unitCode", 32),
     unitPrice,
-    memo: parseOptionalText(input.body.memo, "memo", 2_000, hasOwn(input.body, "memo")) ?? null,
-    usageArea: parseOptionalText(input.body.usageArea, "usageArea", 1_000, hasOwn(input.body, "usageArea")) ?? null,
+    memo: parseOptionalText(input.body.memo, "memo", MATERIAL_MEMO_MAX_LENGTH, hasOwn(input.body, "memo")) ?? null,
+    usageArea: parseOptionalText(input.body.usageArea, "usageArea", MATERIAL_USAGE_AREA_MAX_LENGTH, hasOwn(input.body, "usageArea")) ?? null,
     displayOrder: parseDisplayOrder(input.body.displayOrder),
   };
 }
@@ -192,8 +193,8 @@ export function validatePatchMaterialLine(body: unknown): ValidatedPatchMaterial
     ...(hasOwn(body.patch, "orderQuantity") ? { orderQuantity: parseQuantity(body.patch.orderQuantity, "patch.orderQuantity") } : {}),
     ...(hasOwn(body.patch, "unitCode") ? { unitCode: parseRequiredText(body.patch.unitCode, "patch.unitCode", 32) } : {}),
     ...(hasOwn(body.patch, "unitPrice") ? { unitPrice: parsePrice(body.patch.unitPrice, "patch.unitPrice") } : {}),
-    ...(hasOwn(body.patch, "memo") ? { memo: parseOptionalText(body.patch.memo, "patch.memo", 2_000, true) } : {}),
-    ...(hasOwn(body.patch, "usageArea") ? { usageArea: parseOptionalText(body.patch.usageArea, "patch.usageArea", 1_000, true) } : {}),
+    ...(hasOwn(body.patch, "memo") ? { memo: parseOptionalText(body.patch.memo, "patch.memo", MATERIAL_MEMO_MAX_LENGTH, true) } : {}),
+    ...(hasOwn(body.patch, "usageArea") ? { usageArea: parseOptionalText(body.patch.usageArea, "patch.usageArea", MATERIAL_USAGE_AREA_MAX_LENGTH, true) } : {}),
   };
 
   return {

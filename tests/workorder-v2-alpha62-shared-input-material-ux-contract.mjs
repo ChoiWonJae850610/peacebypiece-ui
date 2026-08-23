@@ -55,7 +55,11 @@ for (const token of ["decideInlineEditCommit", "valueSemantics", "activationValu
 }
 assert.ok(materialRead.includes("materialDraftFromLine(line)"), "material inline activation must use the persisted line value");
 assert.ok(materialRead.includes('valueSemantics={nullableText ? "nullable-text" : undefined}'));
-assert.equal((overview.match(/valueSemantics="nullable-text"/g) ?? []).length >= 2, true);
+assert.ok(
+  (overview.match(/valueSemantics="nullable-text"/g) ?? []).length >= 2
+    || (overview.includes('categoryReelField === "seasonCode"') && overview.includes('categoryReelField === "categoryDetail"')),
+  "overview nullable scalar inputs must retain explicit-null semantics or route through canonical staged PICK",
+);
 assert.ok(controlledInline.includes("semantics,"));
 assert.ok(controlledInline.includes("onSave(decision.value)"));
 for (const token of ["usage_area = CASE WHEN", "memo = CASE WHEN", "hasOwn(patch, \"usageArea\")", "hasOwn(patch, \"memo\")"]) {

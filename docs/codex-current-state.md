@@ -1,13 +1,98 @@
 # WAFL Current Baseline
 
+Alpha.67 is finalized at the owner-approved Reorder/PDF/branded-share boundary. Nth Reorder creation remains server-assigned, transactional, idempotent and series-safe; product/spec truth is copied while Size/Color quantities and lifecycle execution state reset. Issued documents retain the accepted monochrome print grammar, private R2 transport, authenticated in-app viewer, single branded public Viewer URL, and generation-only PDF retry. Overview now derives `예상 1벌 원가` from the canonical estimated total divided by canonical WorkOrder total quantity through an exact decimal-string KRW rounding owner; zero or unset quantity renders `미산정`. Canonical Verify is `180/180`, migration ledger remains `20/20`, and APP_VERSION is `2.0.0-alpha.67`.
+
 Document type: **Current Baseline**
 
 Canonical owner: `docs/codex-current-state.md`
 
-Result version: `2.0.0-alpha.66`
-Status: `ALPHA66_FINALIZATION_COMPLETE`
+Result version: `2.0.0-alpha.67`
+Status: `ALPHA67_FINALIZATION_COMPLETE`
 
 This file is a compact present-state snapshot. It is not a version history, Permanent Rules owner, runtime process ledger, or evidence archive. Historical implementation details belong to numbered immutable evidence under `docs/project/app-v2/`.
+
+## Final alpha.67 result
+
+Alpha.67 activates one bounded Reorder creation command on top of the finalized alpha.66
+identity foundation. Only an issued, finalized, non-Sample original or direct Reorder may be
+the direct source. The server locks the stable original series root, allocates the next global
+round transactionally, and owns source/root/revision identity; the client confirmation supplies
+the canonical zero/unset quantity and null due date for the new draft. Receipt idempotency plus the migration `019`
+series-round unique index make retry and concurrency deterministic without migration `021`.
+
+The new draft copies product identity, Size/Color options, Finished Spec, editable material and
+process configuration, the current representative image, and only final-revision attachments
+explicitly marked `output_include`. Asset copies receive independent IDs and R2 keys; filename
+heuristics are forbidden. Size/Color production cells start at zero, and material/process order
+or execution state, document history, Events, Receipts, generated documents, and public tokens
+do not carry over. WorkOrder total quantity starts at zero and due date starts unset. Overview
+exposes `리오더 만들기` and an original-plus-direct-Reorders `작업 이력`; success navigates
+straight to the new Reorder Overview. Detail entry now treats Series History as contextual:
+core detail, images, and partner data remain the required hydration set, while Sample skips the
+inapplicable history read and a history-only failure cannot collapse an otherwise valid detail.
+After a successful Reorder command, the returned WorkOrder ID is committed before any list or
+detail refresh. A filtered-list miss is valid, and recovery retries only that committed row's
+read/hydration; it never resends the create command. The image-complete pipeline uses the
+canonical R2 Worker with both `R2_BUCKET` and `IMAGES` bindings and supplies a `ReadableStream`
+to the Images transform input before derivative persistence. Actual Rework creation and Additional Process Order remain
+outside this result. APP_VERSION is `2.0.0-alpha.67`; production and owner-fixture mutation
+remain zero.
+
+The current physical-blocker remediation also makes one server resolver own both readiness and
+issued document-number item segments. A non-ASCII detail item falls back to the already persisted
+canonical major-category code rather than asking the user for an English item code. Generated-
+document authorization now consumes the canonical `DOCUMENT_R0` capability guard for ordinary
+and Reorder WorkOrders without an alpha.64 profile name. Issue success remains committed when PDF
+generation fails; the workbench reports partial success and retries only PDF generation. Draft
+material removal is explicit: never-requested rows hard-delete, cancelled history-bearing editing
+rows use the existing archive lifecycle, and requested/completed rows stay protected. Production
+complete/cancel actions share the same compact icon-only action geometry. This does not imply full
+alpha.67 or owner physical-iPhone acceptance.
+
+The current PDF parity continuation preserves issue and Reorder truth while correcting two
+mobile-only boundaries. Generated PDF calls no longer inherit the generic 15-second transport
+deadline: the document client uses the bounded 120-second render budget and reconciles a returned,
+pending, timed-out, or already-generated identity through the canonical document list. A retry with
+a new request key reuses a current generated or recent pending row and never re-issues, creates a
+revision, or duplicates R1/R2. Mobile `보기` no longer opens the workspace-session internal file
+route. It resolves the existing embedded-QR token identity through an authenticated viewer-target
+read and opens `/v`; that page establishes its own public viewer session before serving the PDF.
+The internal file route remains workspace-session protected, and no raw R2 URL is exposed. Owner's
+Reorder copy/zero-quantity/history/source-immutability observations remain partial physical PASS;
+the full physical result remains uninferred.
+
+The current mobile image asset integrity continuation makes the bytes fetched from the iOS asset
+URI the upload-size source of truth. Image completion reads the uploaded R2 object before creating
+derivatives, validates its actual MIME and bounded byte length, computes SHA-256, rechecks quota
+against actual bytes, and persists those actual values. PDF generation keeps strict size/hash
+verification for canonical hashed assets; a legacy image with no stored hash may use the existing
+safe R2 object after MIME/size bounds are verified and its actual hash is computed in memory,
+without DB backfill. Read-only owner-failure tracing disproved a metadata-size mismatch for the
+recent attempts and instead isolated the first failure to a cover DOM taller than one A4 landscape
+page, which emitted extra landscape pages before portrait content and failed page-orientation
+validation. Print geometry now bounds the cover to one page. This checkpoint still requires owner
+physical-iPhone re-QA; `PHYSICAL_RESULT_NOT_INFERRED` remains authoritative.
+
+The current Document UX continuation preserves the owner-confirmed native PDF view and extends its
+single renderer with explicit previous/next page controls synchronized to scroll-driven page state.
+Basic Process requested state now exposes only status and cancel; WorkOrder issue remains its sole
+normal Maker completion trigger. Document Save reuses the workspace-authenticated byte transport,
+verifies PDF signature/size and copied SHA-256, opens the native local-file save/share surface, and
+cleans its temporary file without Safari or public-token creation. Share/QR metadata uses four rows,
+native share copy contains one controlled viewer URL, and `/v` mounts the session-authorized PDF
+inline before its secondary Download action. `BRANDED_PUBLIC_VIEWER_DOMAIN_DEFERRED` remains until a
+verified production viewer-origin owner exists. APP_VERSION remains `2.0.0-alpha.66`; owner physical
+result is not inferred.
+
+The current pagination/viewer-touch continuation preserves that document architecture. The native
+renderer can no longer cover the safe-area header touch plane: chevron and label share one 44-point
+Pressable whose activation closes the viewer back to the current WorkOrder Document context.
+Finished Spec pagination keeps a section together whenever it fits a page, moves it intact when only
+the current remainder is insufficient, and emits repeated headers plus `(계속)` only for a truly
+oversized section. Full-view Finished Spec expands all POM rows under the sheet body scroll owner,
+reports the actual item count and remaining-scroll affordance, and lets a single selected Size use
+the available table width. Issued PDF quantity display preserves decimal-string precision while
+removing trailing fractional zeroes. Public `/v` and Download remain regression-only physical PASS.
 
 ## Current alpha.66 result
 
@@ -25,8 +110,8 @@ The WorkOrder list stays flat. Existing workflow status chips remain the only pe
 | Entry commit | `feat: WAFL v2 alpha.65 Maker 입력 UX와 완성치수 도식 완성` |
 | Entry ahead/behind | `0/0` |
 | Entry working tree | clean |
-| APP_VERSION | `2.0.0-alpha.66` |
-| Mobile package version | `2.0.0-alpha.66` |
+| APP_VERSION | `2.0.0-alpha.67` |
+| Mobile package version | `2.0.0-alpha.67` |
 | Root package version | `0.5.637` |
 | Expo public version | `2.0.0` |
 | iOS Development Build | build number `1`, reusable while native inputs remain unchanged |
@@ -37,9 +122,9 @@ The source cannot contain the hash of the commit that contains itself. Final alp
 
 ## Latest delivery boundary
 
-- Target Source ZIP: `peacebypiece-ui-2.0.0-alpha.66.zip`.
-- Target repo-state: `repo-state-2.0.0-alpha.66-<actual timestamp>.txt`.
-- The accepted release handoff is the matching alpha.66 ZIP/repo-state pair generated from the final synchronized pushed HEAD.
+- Target Source ZIP: `peacebypiece-ui-2.0.0-alpha.67.zip`.
+- Target repo-state: `repo-state-2.0.0-alpha.67-<actual timestamp>.txt`.
+- The accepted release handoff is the matching alpha.67 ZIP/repo-state pair generated from the final synchronized pushed HEAD.
 
 ## Current product and transport baseline
 
@@ -444,23 +529,42 @@ owner fixture was read-only audited at draft/draft version 140/140, one snapshot
 generated documents, and zero public tokens. Owner physical iPhone final QA is
 `NOT_EXECUTED`.
 
-The display version is `2.0.0-alpha.65`; alpha.65 is finalized at
-`ALPHA65_FINALIZATION_COMPLETE`. Mobile API calls use typed domain owners above the single
+The display version is `2.0.0-alpha.67`; alpha.67 is finalized at
+`ALPHA67_FINALIZATION_COMPLETE`. Mobile API calls use typed domain owners above the single
 low-level transport, and the top-level Maker experience composes separate material, asset,
-size/spec, document, and session-local delivery foundations while preserving all accepted
-alpha.64 behavior. Applicable alpha.47-alpha.65 contracts, Next/Expo build, import-cycle
-checks, Canonical Verify, DeveloperAutoConnect, and owner release acceptance pass.
-The exact owner fixture remains read-only preserved. Factory/AI expansion, production
-mutation, dependency/native/EAS changes, migration `019`, and new schema remain excluded.
+size/spec, production, document, Reorder, and session-local delivery foundations while preserving
+the accepted alpha.64-alpha.66 behavior. The exact owner fixture remains read-only preserved;
+production mutation and new migration remain excluded.
 
-## Next candidate — 2.0.0-alpha.67
+## Completed result — 2.0.0-alpha.67
 
-Candidate: `2.0.0-alpha.67`
+Result: `2.0.0-alpha.67`
 
-Status: `NOT_STARTED`.
+Status: `ALPHA67_FINALIZATION_COMPLETE`.
 
-Candidate label: `N차 리오더 E2E`.
+Accepted product checkpoint: `ALPHA67_REORDER_PDF_BRANDED_SHARE_COMPLETE`.
 
-Alpha.66 finalization grants no alpha.67 implementation authority. Actual Reorder creation/copy
-E2E remains `NOT STARTED`; a separate owner-approved Version Delta is required before any
-alpha.67 source, data, schema, Runtime, or delivery work begins.
+The owner-approved alpha.67 Version Delta implements Nth Reorder creation/copy and the bounded
+detail-entry, post-create reconciliation, and image-derivative corrections summarized at the top
+of this baseline. Rework creation and Additional Process Order remain deferred. APP_VERSION stays
+alpha.67 after the owner-approved finalization.
+
+The active alpha.67 viewer/share/reset clean-base checkpoint fixes the public viewer shell that
+could not hydrate because Tailscale Serve omitted exact `/_next` assets. Viewer loading is now
+bounded, native share carries one structured viewer URL, and link rows expose lifecycle/access
+metadata. The owner-authorized DEV/TEST reset is manifest-bound: a verified logical backup and
+KEEP/DELETE/R2 manifests precede deletion of target-company authored WorkOrder graphs and exact
+owned objects. Shared system/reference/template/configuration, unrelated data, document-number
+sequences, production, and owner fixtures remain immutable. APP_VERSION remains alpha.66 and
+Owner physical result is `PHYSICAL_RESULT_NOT_INFERRED`.
+
+The post-clean-base continuation has implemented every non-viewer physical correction in source:
+same-identity image-completion ambiguity reconciliation, immediate Size/Color delete total/spec
+reconciliation, Basic Process issue readiness and issue-time auto-completion, shared Material 30/100
+limits/counters, Basic Process memo-first factory-delivery truth, and human-readable PDF product
+classification. Mobile `보기` no longer falls back to Safari: Expo 55 now uses one native PDF owner
+over the existing authenticated internal file route, with native temporary-cache cleanup, internal
+back navigation, vertical pages, page count, zoom, and bounded retry. Public `/v` remains share-only
+and Save remains actual download. The matching EAS iOS Development Build, owner installation, and
+strict runtime restoration remain the device handoff gate. Canonical contracts are `169`; APP_VERSION
+remains alpha.66 and physical result is not inferred.

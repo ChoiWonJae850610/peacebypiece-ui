@@ -2,6 +2,8 @@ import type { DocumentAccessTokenSummary, WorkOrderDocumentPage } from "@/domain
 import { MobileApiError } from "@/domain/mobileContract";
 import { requestJson } from "../apiTransport";
 
+const DOCUMENT_GENERATION_REQUEST_TIMEOUT_MS = 120_000;
+
 export async function getWorkOrderDocuments(workOrderId: string): Promise<WorkOrderDocumentPage> {
   const body = await requestJson<{ ok: boolean; data?: WorkOrderDocumentPage }>(`/api/v2/work-orders/${encodeURIComponent(workOrderId)}/documents?limit=50`, { method: "GET" });
   if (!body.ok || !body.data || !Array.isArray(body.data.items)) throw new MobileApiError({ code: "MALFORMED_RESPONSE", message: "문서 목록 응답이 올바르지 않습니다." });
@@ -36,9 +38,23 @@ export async function issueWorkOrderR0(input: {
 export async function generateWorkOrderR0(workOrderId: string, revisionId: string, clientRequestId: string) {
   const body = await requestJson<{ ok: boolean; data?: { generatedDocumentId: string; status: string; displayDocumentNumber: string } }>(
     `/api/v2/work-orders/${encodeURIComponent(workOrderId)}/documents/generate`,
-    { method: "POST", idempotencyKey: clientRequestId, body: { revisionId } },
+    {
+      method: "POST",
+      idempotencyKey: clientRequestId,
+      body: { revisionId },
+      timeoutMs: DOCUMENT_GENERATION_REQUEST_TIMEOUT_MS,
+    },
   );
   if (!body.ok || !body.data?.generatedDocumentId) throw new MobileApiError({ code: "MALFORMED_RESPONSE", message: "PDF 생성 응답이 올바르지 않습니다." });
+  return body.data;
+}
+
+export async function getDocumentViewerTarget(documentId: string) {
+  const body = await requestJson<{ ok: boolean; data?: { viewerUrl: string } }>(
+    `/api/v2/work-orders/documents/${encodeURIComponent(documentId)}/viewer-target`,
+    { method: "GET" },
+  );
+  if (!body.ok || !body.data?.viewerUrl) throw new MobileApiError({ code: "MALFORMED_RESPONSE", message: "문서 보기 응답이 올바르지 않습니다." });
   return body.data;
 }
 

@@ -6,14 +6,15 @@ import { WAFL_THEME } from "@/constants/theme";
 
 type Props = {
   readonly disabled?: boolean;
+  readonly label?: string;
   readonly onPress: () => void;
   readonly testID?: string;
 };
 
 /** Canonical parent-catalog entry for Size, Color, and Spec reusable creation. */
-export default function WaflReusableCreateEntryAction({ disabled = false, onPress, testID }: Props) {
+export default function WaflReusableCreateEntryAction({ disabled = false, label = "직접 만들기", onPress, testID }: Props) {
   return <Pressable
-    accessibilityLabel="+ 직접 만들기"
+    accessibilityLabel={`+ ${label}`}
     accessibilityRole="button"
     accessibilityState={{ disabled }}
     disabled={disabled}
@@ -22,7 +23,7 @@ export default function WaflReusableCreateEntryAction({ disabled = false, onPres
     testID={testID}
   >
     <Plus color={WAFL_THEME.color.navyInk} size={WAFL_THEME.icon.small} />
-    <Text style={styles.label}>직접 만들기</Text>
+    <Text style={styles.label}>{label}</Text>
   </Pressable>;
 }
 

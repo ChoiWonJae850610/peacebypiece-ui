@@ -6,6 +6,7 @@
     [int]$NextPort = 3000,
     [int]$ExpoPort = 8081,
     [string]$CloudflaredPath = "",
+    [string]$PublicDocumentViewerOrigin = "https://share.wafl.co.kr",
     [ValidateSet("external-device", "memo-ime-display", "accessory-lifecycle-parity", "work-order-image", "size-color-structure", "draft-child-hard-delete", "size-measurement-standards", "maker-document-r0", "current-maker")]
     [string]$RuntimeQaMode = "external-device",
     [switch]$EnableAlpha46BasicInfoMutation,
@@ -20,14 +21,28 @@
     [switch]$EnableAlpha61MobileWorkOrderCreateMutation,
     [switch]$EnableAlpha62SizeMeasurementMutation,
     [switch]$EnableAlpha64MakerDocumentR0Mutation,
-    [switch]$EnableAlpha65ProductionAuthoringMutation
+    [switch]$EnableAlpha65ProductionAuthoringMutation,
+    [switch]$EnableAlpha67NthReorderMutation
 )
 
 $ErrorActionPreference = "Stop"
 . (Join-Path $PSScriptRoot "wafl-external-qa-common.ps1")
 . (Join-Path $PSScriptRoot "..\pipeline\pipeline-common.ps1")
 
-if (@($EnableAlpha46BasicInfoMutation, $EnableAlpha50MaterialDraftMutation, $EnableAlpha51MaterialLifecycleMutation, $EnableAlpha52CoreInlineMutation, $EnableAlpha55MaterialOrderLifecycleMutation, $EnableAlpha56AccessoryLifecycleParityMutation, $EnableAlpha57WorkOrderImageMutation, $EnableAlpha59SizeColorStructureMutation, $EnableAlpha60DraftChildHardDeleteMutation, $EnableAlpha61MobileWorkOrderCreateMutation, $EnableAlpha62SizeMeasurementMutation, $EnableAlpha64MakerDocumentR0Mutation, $EnableAlpha65ProductionAuthoringMutation).Where({ $_ }).Count -gt 1) {
+try {
+    $publicDocumentViewerUri = [Uri]$PublicDocumentViewerOrigin
+} catch {
+    throw "PUBLIC_DOCUMENT_VIEWER_ORIGIN_INVALID"
+}
+if ($publicDocumentViewerUri.Scheme -ne "https" -or $publicDocumentViewerUri.AbsolutePath -ne "/" -or -not [string]::IsNullOrWhiteSpace($publicDocumentViewerUri.Query) -or -not [string]::IsNullOrWhiteSpace($publicDocumentViewerUri.Fragment)) {
+    throw "PUBLIC_DOCUMENT_VIEWER_ORIGIN_MUST_BE_HTTPS_ORIGIN_ONLY"
+}
+if ($publicDocumentViewerUri.Host -in @("localhost", "127.0.0.1", "::1") -or $publicDocumentViewerUri.Host.EndsWith(".trycloudflare.com") -or $publicDocumentViewerUri.Host.EndsWith(".ts.net")) {
+    throw "PUBLIC_DOCUMENT_VIEWER_BRANDED_ORIGIN_REQUIRED"
+}
+$publicDocumentViewerOriginNormalized = $publicDocumentViewerUri.GetLeftPart([UriPartial]::Authority)
+
+if (@($EnableAlpha46BasicInfoMutation, $EnableAlpha50MaterialDraftMutation, $EnableAlpha51MaterialLifecycleMutation, $EnableAlpha52CoreInlineMutation, $EnableAlpha55MaterialOrderLifecycleMutation, $EnableAlpha56AccessoryLifecycleParityMutation, $EnableAlpha57WorkOrderImageMutation, $EnableAlpha59SizeColorStructureMutation, $EnableAlpha60DraftChildHardDeleteMutation, $EnableAlpha61MobileWorkOrderCreateMutation, $EnableAlpha62SizeMeasurementMutation, $EnableAlpha64MakerDocumentR0Mutation, $EnableAlpha65ProductionAuthoringMutation, $EnableAlpha67NthReorderMutation).Where({ $_ }).Count -gt 1) {
     throw "EXTERNAL_QA_MUTATION_MODES_ARE_MUTUALLY_EXCLUSIVE"
 }
 $internalMemoImeMode = $RuntimeQaMode -eq "memo-ime-display"
@@ -87,7 +102,7 @@ if ($internalSizeMeasurementMode -and $MobileTransport -ne "DeveloperAutoConnect
 if ($internalSizeMeasurementMode -and -not $EnableAlpha62SizeMeasurementMutation) { throw "SIZE_MEASUREMENT_STANDARDS_REQUIRES_ALPHA62_MUTATION_MODE" }
 if ($internalSizeMeasurementMode -and ($NextPort -ne 3100 -or $ExpoPort -ne 8081)) { throw "SIZE_MEASUREMENT_STANDARDS_REQUIRES_CANONICAL_PORTS" }
 if ($internalMakerDocumentR0Mode -and $MobileTransport -ne "DeveloperAutoConnect") { throw "MAKER_DOCUMENT_R0_REQUIRES_DEVELOPER_AUTO_CONNECT" }
-if ($internalMakerDocumentR0Mode -and -not ($EnableAlpha64MakerDocumentR0Mutation -or $EnableAlpha65ProductionAuthoringMutation)) { throw "CURRENT_MAKER_REQUIRES_CUMULATIVE_MUTATION_MODE" }
+if ($internalMakerDocumentR0Mode -and -not ($EnableAlpha64MakerDocumentR0Mutation -or $EnableAlpha65ProductionAuthoringMutation -or $EnableAlpha67NthReorderMutation)) { throw "CURRENT_MAKER_REQUIRES_CUMULATIVE_MUTATION_MODE" }
 if ($internalMakerDocumentR0Mode -and ($NextPort -ne 3100 -or $ExpoPort -ne 8081)) { throw "MAKER_DOCUMENT_R0_REQUIRES_CANONICAL_PORTS" }
 
 function Get-WaflQaDatabaseUrl {
@@ -202,6 +217,7 @@ $state = [ordered]@{
     tailscaleIpv4 = $null
     expoUrl = $null
     publicOrigin = $null
+    publicDocumentViewerOrigin = $publicDocumentViewerOriginNormalized
     previewTransport = $(if ($usesTailscaleServeOrigin) { "tailscale-serve-internal" } else { "cloudflare-quick-tunnel" })
     quickTunnelReady = $false
     startedAtUtc = [DateTime]::UtcNow.ToString("o")
@@ -351,6 +367,7 @@ try {
         WAFL_EXTERNAL_QA_ORIGIN = $state.publicOrigin
         WAFL_EXTERNAL_QA_HOST_ALLOWLIST = $originUri.Host
         WAFL_EXTERNAL_QA_RUN_TOKEN = $runToken
+        WAFL_PUBLIC_DOCUMENT_VIEWER_ORIGIN = $publicDocumentViewerOriginNormalized
         WAFL_V2_READ_API_ENABLED = "1"
         WAFL_V2_READ_APPROVED = "1"
         WAFL_V2_RUNTIME = $readApiTarget.Runtime
@@ -466,6 +483,17 @@ try {
         $state.mutationMode = "current-maker-alpha65"
         $state.makerQaProfile = "alpha65-current-maker"
     }
+    if ($EnableAlpha67NthReorderMutation) {
+        $serverEnvironment.WAFL_V2_COMMAND_API_ENABLED = "1"
+        $serverEnvironment.WAFL_V2_COMMAND_MUTATION_APPROVED = "2.0.0-alpha.67-dev-test-nth-reorder-runtime"
+        $serverEnvironment.WAFL_V2_DOCUMENT_VIEWER_ENABLED = "1"
+        $serverEnvironment.WAFL_V2_DOCUMENT_VIEWER_MUTATION_APPROVED = "2.0.0-alpha.67-dev-test-nth-reorder-runtime"
+        $serverEnvironment.WAFL_PDF_RENDER_ORIGIN = "http://127.0.0.1:$NextPort"
+        $serverEnvironment.WAFL_EXTERNAL_QA_ALPHA67_NTH_REORDER_MUTATION_ENABLED = "true"
+        $state.commandApi = "ready"
+        $state.mutationMode = "current-maker-alpha67"
+        $state.makerQaProfile = "alpha67-current-maker"
+    }
     $state.databaseEnvironmentInjected = -not [string]::IsNullOrWhiteSpace([string]$serverEnvironment.DATABASE_URL) `
         -and [string]$serverEnvironment.DATABASE_URL -eq [string]$readApiTarget.DatabaseUrl
     $currentMakerMutationGuardReady = $serverEnvironment.ContainsKey("WAFL_EXTERNAL_QA_ALPHA64_DOCUMENT_R0_MUTATION_ENABLED") `
@@ -473,14 +501,18 @@ try {
     $currentMakerMutationGuardReady = $currentMakerMutationGuardReady `
         -or ($serverEnvironment.ContainsKey("WAFL_EXTERNAL_QA_ALPHA65_PRODUCTION_AUTHORING_MUTATION_ENABLED") `
             -and [string]$serverEnvironment["WAFL_EXTERNAL_QA_ALPHA65_PRODUCTION_AUTHORING_MUTATION_ENABLED"] -eq "true")
+    $currentMakerMutationGuardReady = $currentMakerMutationGuardReady `
+        -or ($serverEnvironment.ContainsKey("WAFL_EXTERNAL_QA_ALPHA67_NTH_REORDER_MUTATION_ENABLED") `
+            -and [string]$serverEnvironment["WAFL_EXTERNAL_QA_ALPHA67_NTH_REORDER_MUTATION_ENABLED"] -eq "true")
     $state.capabilityProfileReady = if ($RuntimeQaMode -eq "current-maker") {
-        [string]$state.makerQaProfile -in @("alpha64-current-maker", "alpha65-current-maker") `
-            -and [string]$state.mutationMode -in @("current-maker-alpha64", "current-maker-alpha65") `
+        [string]$state.makerQaProfile -in @("alpha64-current-maker", "alpha65-current-maker", "alpha67-current-maker") `
+            -and [string]$state.mutationMode -in @("current-maker-alpha64", "current-maker-alpha65", "current-maker-alpha67") `
             -and [string]$serverEnvironment.WAFL_V2_COMMAND_API_ENABLED -eq "1" `
             -and $currentMakerMutationGuardReady
     } else { $true }
     $state.serverEnvironmentContractReady = $state.databaseEnvironmentInjected `
         -and [string]$serverEnvironment.WAFL_SERVER_RUNTIME_MODE -eq "dev" `
+        -and [string]$serverEnvironment.WAFL_PUBLIC_DOCUMENT_VIEWER_ORIGIN -eq $publicDocumentViewerOriginNormalized `
         -and [string]$serverEnvironment.WAFL_V2_READ_API_ENABLED -eq "1" `
         -and [string]$serverEnvironment.WAFL_V2_RUNTIME -eq [string]$readApiTarget.Runtime `
         -and [string]$serverEnvironment.WAFL_V2_TEST_PREFIX -eq [string]$readApiTarget.TestPrefix `

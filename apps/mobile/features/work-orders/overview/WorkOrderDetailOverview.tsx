@@ -40,9 +40,10 @@ import {
 import ReelInlineEditValue from "@/features/inputs/reel-picker/ReelInlineEditValue";
 import WaflReelPickerSheet from "@/features/inputs/reel-picker/WaflReelPickerSheet";
 import WaflInputSheet from "@/features/inputs/WaflInputSheet";
+import { WaflWorkActionRow } from "@/features/work-orders/reorder/WorkOrderReorderSheets";
 import type { MaterialDraftFields, MaterialDraftUpdate, MaterialPartnerOption, MaterialType, WorkOrderAttachmentAsset, WorkOrderDetailCore, WorkOrderImageAsset, WorkOrderMaterialLine } from "@/domain/mobileContract";
 import type { MaterialOrderAction, MaterialOrderPolicy } from "@/domain/materialOrderPolicy";
-import { formatWon } from "@/lib/mobileDisplay";
+import { formatEstimatedUnitCost, formatWon } from "@/lib/mobileDisplay";
 import { resolveMobileApiUrl } from "@/lib/apiTransport";
 import { useFocusedFieldVisibility } from "@/hooks/useFocusedFieldVisibility";
 import { formatWorkOrderStatus } from "@/lib/workOrderDisplay";
@@ -50,8 +51,10 @@ import { displayValueOrUnset, isUnsetDisplayValue, WAFL_UNSET_PLACEHOLDER } from
 import { resolveReadinessIssueDestination } from "@/domain/workOrderReadinessNavigation";
 import {
   WORK_ORDER_TARGET_AUDIENCES,
+  WORK_ORDER_MAJOR_CATEGORY_CODE_BY_LABEL,
   workOrderMajorCategoryPickerOptions,
 } from "@/domain/workOrderCategoryPolicy";
+import { WorkOrderDetailItemPickerSheet, WorkOrderSeasonPickerSheet } from "./WorkOrderOverviewPickerSheets";
 import {
   resolveWorkOrderSectionIntent,
   type WorkOrderSectionIntent,
@@ -187,15 +190,19 @@ type Props = {
   readonly onDeleteAttachment: (attachment: WorkOrderAttachmentAsset) => void;
   readonly onOpenAttachment: (attachment: WorkOrderAttachmentAsset) => void;
   readonly onSetRepresentativeImage: (image: WorkOrderImageAsset) => void;
-  readonly onRefreshDocuments: () => void;
+  readonly onRefreshDocuments: () => Promise<void> | void;
   readonly onRefreshReadinessAfterMutation: () => void;
+  readonly canCreateReorder: boolean;
+  readonly seriesHistoryCount: number;
+  readonly onOpenReorder: () => void;
+  readonly onOpenSeriesHistory: () => void;
 };
 
 export default function WorkOrderDetailOverview(props: Props) {
   const { detail, phone, onBack } = props;
   const [activeSection, setActiveSection] = useState<WorkOrderVisibleSection>("overview");
   const [activeMaterialCategory, setActiveMaterialCategory] = useState<MaterialType>("fabric");
-  const [categoryReelField, setCategoryReelField] = useState<"targetAudience" | "categoryMajor" | null>(null);
+  const [categoryReelField, setCategoryReelField] = useState<"targetAudience" | "categoryMajor" | "categoryDetail" | "seasonCode" | null>(null);
   const [readinessSheetVisible, setReadinessSheetVisible] = useState(false);
   const pendingReadinessIntentRef = useRef<WorkOrderSectionIntent | null>(null);
   const { width } = useWindowDimensions();
@@ -297,27 +304,18 @@ export default function WorkOrderDetailOverview(props: Props) {
         label="세부 품목"
         placeholder={isUnsetDisplayValue(props.draft.categoryDetail)}
         value={displayValueOrUnset(props.draft.categoryDetail)}
-      ><ControlledInlineEditValue
+      ><ReelInlineEditValue
           accessibilityLabel="세부 품목"
           active={props.activeBasicField === "categoryDetail"}
-          commitMode="blur-submit"
-          dirty={props.dirty}
+          displayStyle={styles.miniValue}
           displayValue={props.draft.categoryDetail}
-          displayPlaceholder={WAFL_UNSET_PLACEHOLDER}
           editable={props.canEdit && !basicLocked}
           errorMessage={props.fieldErrors.categoryDetail ?? null}
-          invalid={Boolean(props.fieldErrors.categoryDetail)}
-          maxLength={24}
           onActivate={() => props.onRequestSectionChange(() => props.onBeginEdit("categoryDetail"))}
-          onCancel={props.onCancelEdit}
-          onChange={(value) => props.onChangeDraft("categoryDetail", value)}
-          onSave={(value) => props.onSave({ categoryDetail: value })}
-          onFocusTarget={onFieldFocus}
-          placeholder="예: 반팔 티셔츠"
+          onOpenPicker={() => setCategoryReelField("categoryDetail")}
+          placeholder={WAFL_UNSET_PLACEHOLDER}
           saving={savingBasic}
           testID="overview-inline-category-detail"
-          value={props.draft.categoryDetail}
-          valueSemantics="nullable-text"
         /></WaflMetricField>,
     },
     {
@@ -328,27 +326,18 @@ export default function WorkOrderDetailOverview(props: Props) {
         label="시즌"
         placeholder={isUnsetDisplayValue(props.draft.seasonCode)}
         value={displayValueOrUnset(props.draft.seasonCode)}
-      ><ControlledInlineEditValue
+      ><ReelInlineEditValue
           accessibilityLabel="시즌"
           active={props.activeBasicField === "seasonCode"}
-          commitMode="blur-submit"
-          dirty={props.dirty}
+          displayStyle={styles.miniValue}
           displayValue={props.draft.seasonCode}
-          displayPlaceholder={WAFL_UNSET_PLACEHOLDER}
           editable={props.canEdit && !basicLocked}
           errorMessage={props.fieldErrors.seasonCode ?? null}
-          invalid={Boolean(props.fieldErrors.seasonCode)}
-          maxLength={16}
           onActivate={() => props.onRequestSectionChange(() => props.onBeginEdit("seasonCode"))}
-          onCancel={props.onCancelEdit}
-          onChange={(value) => props.onChangeDraft("seasonCode", value)}
-          onSave={(value) => props.onSave({ seasonCode: value })}
-          onFocusTarget={onFieldFocus}
-          placeholder="예: 26FW"
+          onOpenPicker={() => setCategoryReelField("seasonCode")}
+          placeholder={WAFL_UNSET_PLACEHOLDER}
           saving={savingBasic}
           testID="overview-inline-season"
-          value={props.draft.seasonCode}
-          valueSemantics="nullable-text"
         /></WaflMetricField>,
     },
   ];
@@ -445,9 +434,9 @@ export default function WorkOrderDetailOverview(props: Props) {
                   {header.identity.reorderRound > 0 ? <Text style={styles.identityBadge}>{header.identity.reorderRound}차 리오더</Text> : null}
                   {header.identity.derivationKind === "rework" ? <Text style={styles.identityBadge}>재작업</Text> : null}
                 </View>
-                {header.identity.reorderRound === 0
+                {header.identity.reorderRound === 0 && props.canEdit && !basicLocked
                   ? <WorkOrderCharacterChoice disabled={props.samplePending} isSample={header.identity.isSample} onChange={props.onSetSample} presentation="compact" />
-                  : null}
+                  : <Text style={styles.identityFixed}>{header.identity.isSample ? "샘플" : "본생산"}</Text>}
               </View>
               <ControlledInlineEditValue
                 accessibilityLabel="제품명"
@@ -558,19 +547,40 @@ export default function WorkOrderDetailOverview(props: Props) {
                     visible
                   />
                 ) : null}
+                {categoryReelField === "categoryDetail" ? <WorkOrderDetailItemPickerSheet
+                  categoryCode={WORK_ORDER_MAJOR_CATEGORY_CODE_BY_LABEL[props.draft.categoryMajor as keyof typeof WORK_ORDER_MAJOR_CATEGORY_CODE_BY_LABEL] ?? null}
+                  onApply={(value) => {
+                    setCategoryReelField(null);
+                    props.onChangeDraft("categoryDetail", value);
+                    props.onSave({ categoryDetail: value });
+                  }}
+                  onCancel={() => { setCategoryReelField(null); props.onCancelEdit(); }}
+                  value={props.draft.categoryDetail}
+                /> : null}
+                {categoryReelField === "seasonCode" ? <WorkOrderSeasonPickerSheet
+                  onApply={(value) => {
+                    setCategoryReelField(null);
+                    props.onChangeDraft("seasonCode", value);
+                    props.onSave({ seasonCode: value });
+                  }}
+                  onCancel={() => { setCategoryReelField(null); props.onCancelEdit(); }}
+                  value={props.draft.seasonCode}
+                /> : null}
               </Section>
               <Section title="비용 구성">
                 <View style={styles.costRowGroup}>
                   <MetricLine label="원단" value={formatWon(detail.amounts.fabricTotal)} />
                   <MetricLine label="부자재" value={formatWon(detail.amounts.accessoryTotal)} />
                   <MetricLine label="공정" value={formatWon(detail.amounts.processTotal)} />
-                  <MetricLine label="1벌 원가" value={formatWon(detail.amounts.unitPrice)} />
+                  <MetricLine label="예상 1벌 원가" value={formatEstimatedUnitCost(detail.amounts.estimatedTotal, header.totalQuantity)} />
                 </View>
                 <View style={styles.costFinalResult}>
                   <MetricLine emphasized label="예상 총원가" value={formatWon(detail.amounts.estimatedTotal)} />
                 </View>
               </Section>
               <WaflReadinessActionRow issueCount={readinessIssues.length} onPress={() => setReadinessSheetVisible(true)} />
+              {props.seriesHistoryCount >= 2 ? <WaflWorkActionRow kind="history" label={`작업 이력 ${props.seriesHistoryCount}건`} onPress={props.onOpenSeriesHistory} /> : null}
+              {props.canCreateReorder ? <WaflWorkActionRow kind="reorder" label="리오더 만들기" onPress={props.onOpenReorder} /> : null}
               <WaflInputSheet
                 cancelAccessibilityLabel="발행 전 확인 닫기"
                 measurementVariant={`preissue-${readinessIssues.length}`}
@@ -714,6 +724,7 @@ const styles = StyleSheet.create({
   statusRow: { alignItems: "center", flex: 1, flexDirection: "row", flexWrap: "wrap", gap: 7, minWidth: 0, paddingTop: WAFL_THEME.spacing.xs },
   statusBadge: { alignSelf: "center", backgroundColor: "#23375a", borderRadius: 999, color: "#ffffff", fontFamily: WAFL_FONTS.bold, fontSize: 11, overflow: "hidden", paddingHorizontal: 9, paddingVertical: 4 },
   identityBadge: { backgroundColor: WAFL_THEME.color.paperMuted, borderRadius: 999, color: "#67584c", fontFamily: WAFL_FONTS.semibold, fontSize: 10, overflow: "hidden", paddingHorizontal: 8, paddingVertical: 4 },
+  identityFixed: { alignSelf: "center", color: WAFL_THEME.color.readOnly, fontFamily: WAFL_FONTS.semibold, fontSize: 10, paddingHorizontal: 8, paddingVertical: 4 },
   revision: { color: "#6d6257", fontFamily: WAFL_FONTS.semibold, fontSize: 11 },
   title: { color: "#141f33", flexShrink: 1, fontFamily: WAFL_FONTS.black, fontSize: WAFL_THEME.typography.productTitle.fontSize, lineHeight: WAFL_THEME.typography.productTitle.lineHeight, minWidth: 0 },
   titleCompactPhone: { fontSize: WAFL_THEME.typography.productTitleCompact.fontSize, lineHeight: WAFL_THEME.typography.productTitleCompact.lineHeight },

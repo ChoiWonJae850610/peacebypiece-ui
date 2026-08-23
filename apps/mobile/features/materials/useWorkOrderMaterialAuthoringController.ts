@@ -426,12 +426,20 @@ export function useWorkOrderMaterialAuthoringController(input: Input) {
         clientRequestId: nextMaterialRequestIdentity("client"),
         expectedVersion: currentDetail.header.entityVersion,
       };
-      const result = await workOrderMutationController.deleteMaterial(
-        currentDetail.header.id,
-        line.id,
-        command,
-        nextMaterialRequestIdentity("idempotency"),
-      );
+      const historyPreserving = line.removalMode === "history_preserving_remove";
+      const result = historyPreserving
+        ? await workOrderMutationController.archiveMaterial(
+          currentDetail.header.id,
+          line.id,
+          command,
+          nextMaterialRequestIdentity("idempotency"),
+        )
+        : await workOrderMutationController.deleteMaterial(
+          currentDetail.header.id,
+          line.id,
+          command,
+          nextMaterialRequestIdentity("idempotency"),
+        );
       const [refreshed, activePage] = await Promise.all([
         workOrderQueryController.detail(currentDetail.header.id),
         workOrderQueryController.materials(currentDetail.header.id, line.materialType, null, "active"),
@@ -440,7 +448,7 @@ export function useWorkOrderMaterialAuthoringController(input: Input) {
         result.nextVersion !== refreshed.header.entityVersion
         || activePage.entityVersion !== result.nextVersion
         || result.result.materialType !== line.materialType
-        || result.result.deleted !== true
+        || (historyPreserving ? result.result.lifecycle !== "archived" : result.result.deleted !== true)
         || activePage.materialType !== line.materialType
         || refreshed.header.id !== currentDetail.header.id
       ) throw new MobileApiError({ code: "MALFORMED_RESPONSE", message: `${materialInformationSubject(line.materialType)}의 최신 상태를 확인할 수 없습니다.` });
@@ -451,7 +459,9 @@ export function useWorkOrderMaterialAuthoringController(input: Input) {
       ) return;
       applyRefreshedMaterialSnapshot(currentDetail.header.id, line.materialType, refreshed, activePage);
       if (materialEditorRef.current?.materialLineId === line.id) closeMaterialEditorSession();
-      setMaterialSaveNotice(materialMutationSuccessCopy(line.materialType, "delete"));
+      setMaterialSaveNotice(historyPreserving
+        ? `${materialInformationSubject(line.materialType)}를 목록에서 삭제하고 발주 이력을 보존했습니다.`
+        : materialMutationSuccessCopy(line.materialType, "delete"));
     } catch (error) {
       if (materialSessionGeneration.current !== sessionGeneration || materialLifecycleSequence.current !== requestToken) return;
       setMaterialSaveNotice(error instanceof MobileApiError ? error.message : materialMutationFailureCopy(line.materialType, "state"));
@@ -572,12 +582,15 @@ export function useWorkOrderMaterialAuthoringController(input: Input) {
   }
 
   function requestDeleteMaterial(line: WorkOrderMaterialLine) {
-    if (!line.deletable) return;
+    if (!line.deletable || line.removalMode === "not_allowed") return;
     const label = materialLabel(line.materialType);
+    const historyPreserving = line.removalMode === "history_preserving_remove";
     input.requestFeatureTransition(() => {
       confirmWaflDestructiveAction({
         title: `${label} 삭제`,
-        message: `“${line.name}” ${materialInformationSubject(line.materialType)}를 이 작업지시서 초안에서 삭제합니다. 발주 이력이 없는 항목만 삭제할 수 있습니다.`,
+        message: historyPreserving
+          ? `“${line.name}” ${materialInformationSubject(line.materialType)}를 현재 목록에서 삭제합니다. 발주요청과 취소 이력은 그대로 보존됩니다.`
+          : `“${line.name}” ${materialInformationSubject(line.materialType)}를 이 작업지시서 초안에서 삭제합니다.`,
         onConfirm: () => void executeMaterialDelete(line),
       });
     });

@@ -175,7 +175,7 @@ async function main() {
       assert.ok(result.pdf.subarray(0, 5).toString("ascii").startsWith("%PDF-"));
       assert.match(result.contentSha256, /^[0-9a-f]{64}$/);
       assert.equal(result.pageCount, 3);
-      assert.deepEqual(result.pageOrientations, ["landscape", "portrait", "portrait"]);
+    assert.ok(result.pageOrientations.every((orientation) => orientation === "portrait"));
       assert.equal(result.blankPageCount, 0);
       assert.equal(result.clippingViolationCount, 0);
       assert.equal(result.consoleErrorCount, 0);

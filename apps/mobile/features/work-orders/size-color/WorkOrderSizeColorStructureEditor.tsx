@@ -272,6 +272,7 @@ export default function WorkOrderSizeColorStructureEditor({ identity, state, edi
       /> : null}
     </View> : null}
     <WorkOrderSizeColorReadOnly
+      categoryCode={categoryCode}
       edit={edit}
       identity={identity}
       onEditColor={() => { edit.onBegin(); setChooser("color"); void loadOptions(); }}

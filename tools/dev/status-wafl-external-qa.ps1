@@ -148,14 +148,14 @@ $checks.EnvironmentContract = ($state.PSObject.Properties.Name -contains 'databa
     -and ($state.PSObject.Properties.Name -contains 'capabilityProfileReady') `
     -and [bool]$state.capabilityProfileReady `
     -and [string]$state.runtimeQaMode -eq "current-maker" `
-    -and [string]$state.makerQaProfile -in @("alpha64-current-maker", "alpha65-current-maker") `
-    -and [string]$state.mutationMode -in @("current-maker-alpha64", "current-maker-alpha65")
+    -and [string]$state.makerQaProfile -in @("alpha64-current-maker", "alpha65-current-maker", "alpha67-current-maker") `
+    -and [string]$state.mutationMode -in @("current-maker-alpha64", "current-maker-alpha65", "current-maker-alpha67")
 
 $readSmoke = Invoke-WaflQaDeveloperReadSmoke -State $state
 $checks.DeveloperAutoConnect = $readSmoke.AutoConnectHttp -eq 200
 $checks.CompanyContext = $readSmoke.AuthMeHttp -eq 200 -and $readSmoke.CompanyContextReady
 $checks.WorkOrderList = $readSmoke.WorkOrderListHttp -eq 200 -and $readSmoke.WorkOrderListReady
-$checks.OwnerFixtureDetail = $readSmoke.OwnerFixtureDetailHttp -eq 200 -and $readSmoke.OwnerFixtureDetailReady
+$checks.OwnerFixtureDetail = $readSmoke.OwnerFixtureDetailHttp -in @(200, 204) -and $readSmoke.OwnerFixtureDetailReady
 
 $canonicalReady = @($checks.Values | Where-Object { $_ -ne $true }).Count -eq 0
 Write-Host ("Status record: {0}" -f $state.status)
@@ -175,8 +175,8 @@ Write-Host ("Developer auto-connect ready: {0}" -f $checks.DeveloperAutoConnect)
 Write-Host ("DeveloperAutoConnect: HTTP {0}, ready={1}" -f $readSmoke.AutoConnectHttp, $checks.DeveloperAutoConnect)
 Write-Host ("Auth/company context: HTTP {0}, ready={1}" -f $readSmoke.AuthMeHttp, $checks.CompanyContext)
 Write-Host ("WorkOrder list read: HTTP {0}, ready={1}" -f $readSmoke.WorkOrderListHttp, $checks.WorkOrderList)
-Write-Host ("Owner fixture detail read: HTTP {0}, ready={1}" -f $readSmoke.OwnerFixtureDetailHttp, $checks.OwnerFixtureDetail)
+Write-Host ("WorkOrder read target: HTTP {0}, source={1}, ready={2}" -f $readSmoke.OwnerFixtureDetailHttp, $readSmoke.OwnerFixtureSource, $checks.OwnerFixtureDetail)
 Write-Host ("WAFL-owned port 3000 clear: {0}; verified unrelated listeners={1}; unverified={2}; forbidden tunnel clear: {3}" -f $checks.Port3000Clear, $port3000Policy.VerifiedUnrelatedCount, $port3000Policy.UnverifiedCount, ($checks.CloudflaredClear -and $checks.FunnelClear))
-Write-Host ("Cloudflared provenance: clear={0}; WAFL-owned={1}; forbidden={2}; verified unrelated={3}; unverified={4}" -f $cloudflaredPolicy.Ready, $cloudflaredPolicy.WaflOwnedCount, $cloudflaredPolicy.ForbiddenCount, $cloudflaredPolicy.VerifiedUnrelatedCount, $cloudflaredPolicy.UnverifiedCount)
+Write-Host ("Cloudflared provenance: clear={0}; WAFL-owned={1}; forbidden={2}; approved public viewer={3}; verified unrelated={4}; unverified={5}" -f $cloudflaredPolicy.Ready, $cloudflaredPolicy.WaflOwnedCount, $cloudflaredPolicy.ForbiddenCount, $cloudflaredPolicy.ApprovedPublicViewerCount, $cloudflaredPolicy.VerifiedUnrelatedCount, $cloudflaredPolicy.UnverifiedCount)
 Write-Host ("Runtime canonical READY: {0}" -f $canonicalReady)
 if (-not $canonicalReady) { exit 1 }

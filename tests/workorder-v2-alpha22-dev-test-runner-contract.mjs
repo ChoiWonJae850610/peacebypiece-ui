@@ -155,7 +155,9 @@ for (const forbiddenPath of [
 const cloudflareChanges = gitChanged("cloudflare").split(/\r?\n/).filter(Boolean);
 if (cloudflareChanges.length > 0) {
   assert.equal(fs.existsSync(path.join(root, "tests/workorder-v2-alpha57-worker-read-contract.mjs")), true);
-  assert.deepEqual(cloudflareChanges, ["M cloudflare/r2-upload-worker.js"], "only the alpha.57-approved R2 worker may differ");
+  assert.equal(fs.existsSync(path.join(root, "tests/workorder-v2-alpha67-detail-reorder-image-pipeline-contract.mjs")), true);
+  assert.equal(fs.existsSync(path.join(root, "scripts/deploy-wafl-r2-upload-worker.mjs")), true);
+  assert.deepEqual(cloudflareChanges, ["M cloudflare/README.md", " M cloudflare/r2-upload-worker.js"], "only the approved Worker source and binding-deployment guidance may differ");
 }
 
 const appVersion = fs.readFileSync(path.join(root, "lib/constants/version.ts"), "utf8");
@@ -251,6 +253,12 @@ const alpha66ApiPaths = [
   ...alpha65ApiPaths,
   "app/api/v2/work-orders/[workOrderId]/sample/route.ts",
 ];
+const alpha67ApiPaths = [
+  ...alpha66ApiPaths,
+  "app/api/v2/work-orders/[workOrderId]/reorder/route.ts",
+  "app/api/v2/work-orders/[workOrderId]/images/upload/complete/route.ts",
+  "app/api/v2/work-orders/documents/[documentRef]/viewer-target/route.ts",
+];
 const alpha51ContractExists = fs.existsSync(path.join(root, "tests/workorder-v2-alpha51-material-soft-delete-restore-contract.mjs"));
 const alpha26ContractExists = fs.existsSync(path.join(root, "tests/workorder-v2-alpha26-material-command-api-contract.mjs"));
 const alpha27ApiPaths = ["app/api/v2/work-orders/[workOrderId]/revisions/issue/route.ts"];
@@ -279,7 +287,10 @@ const alpha40ContractExists = fs.existsSync(path.join(root, "tests/workorder-v2-
 const alpha30ContractExists = fs.existsSync(path.join(root, "tests/workorder-v2-alpha30-factory-instruction-contract.mjs"));
 const alpha27ContractExists = fs.existsSync(path.join(root, "tests/workorder-v2-alpha27-revision-issue-command-contract.mjs"));
 const alpha28ContractExists = fs.existsSync(path.join(root, "tests/workorder-v2-alpha28-issued-preview-contract.mjs"));
-if (alpha66ContractExists && apiChanges.length > 0) {
+const alpha67ContractExists = fs.existsSync(path.join(root, "tests/workorder-v2-alpha67-nth-reorder-e2e-contract.mjs"));
+if (alpha67ContractExists && apiChanges.length > 0) {
+  assert.deepEqual(apiChanges.filter((change) => !alpha67ApiPaths.some((allowedPath) => change.endsWith(allowedPath))), [], "alpha.67 may change only inherited routes and its exact WorkOrder Reorder route");
+} else if (alpha66ContractExists && apiChanges.length > 0) {
   assert.deepEqual(apiChanges.filter((change) => !alpha66ApiPaths.some((allowedPath) => change.endsWith(allowedPath))), [], "alpha.66 may change only the inherited alpha.65 routes and its exact WorkOrder Sample route");
 } else if (alpha65ContractExists && apiChanges.length > 0) {
   assert.deepEqual(apiChanges.filter((change) => !alpha65ApiPaths.some((allowedPath) => change.endsWith(allowedPath))), [], "alpha.65 may change only the inherited alpha.64 routes and its exact production process/options routes");

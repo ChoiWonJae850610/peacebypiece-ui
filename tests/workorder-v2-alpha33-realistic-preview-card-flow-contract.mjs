@@ -38,7 +38,7 @@ assert.match(renderer, /PRODUCT_TYPE_LABELS\[code\] \?\? code/);
 
 for (const token of [
   "리넨 라운드 셔츠 원피스",
-  "여성 원피스 / 여름 1차 생산",
+  "26FW",
   "WAFN-26FW-O-LNDRS-260713-001-R0",
   "성수 어패럴",
   "김생산",
@@ -72,7 +72,7 @@ assert.ok((sample.match(/\["(?:재단|봉제|워싱|검품·포장)"/g) ?? []).l
 const processHeader = renderer.match(/<table className=\{styles\.processTable\}[\s\S]*?<\/thead>/)?.[0] ?? "";
 assert.equal((processHeader.match(/<th>/g) ?? []).length, 6);
 assert.doesNotMatch(processHeader, /적용 부위|적용 색상|적용 대상/);
-assert.match(css, /@page cover \{ size: A4 landscape/);
+assert.match(css, /@page cover \{ size: A4 portrait/);
 assert.match(css, /@page content \{ size: A4 portrait/);
 
 const materialRow = mobile.match(/function MaterialRow\([\s\S]*?\n\}\n\ntype MaterialEditValues/)?.[0] ?? "";

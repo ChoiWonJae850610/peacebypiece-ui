@@ -8,8 +8,9 @@ import {
   putWorkOrderImageBlob,
   setRepresentativeWorkOrderImage,
   issueWorkOrderAttachmentPreview,
+  reconcileWorkOrderImageUpload,
 } from "../../lib/api/assetsApi";
-import { createWorkOrderDraft, patchWorkOrderBasicInfo, setWorkOrderSample } from "../../lib/api/workOrdersApi";
+import { createWorkOrderDraft, createWorkOrderReorder, patchWorkOrderBasicInfo, setWorkOrderSample } from "../../lib/api/workOrdersApi";
 import {
   archiveWorkOrderMaterial,
   createWorkOrderMaterial,
@@ -37,6 +38,7 @@ import { mutateWorkOrderMeasurement } from "../../lib/api/measurementApi";
 import type {
   CreateMaterialLineInput,
   CreateWorkOrderDraftInput,
+  CreateWorkOrderReorderInput,
   MaterialLifecycleCommandInput,
   MaterialOrderCommandInput,
   MaterialOrderCommandKind,
@@ -47,6 +49,9 @@ import type {
 export const workOrderMutationController = {
   createDraft(command: CreateWorkOrderDraftInput, idempotencyKey: string) {
     return createWorkOrderDraft(command, idempotencyKey);
+  },
+  createReorder(sourceWorkOrderId: string, command: CreateWorkOrderReorderInput, idempotencyKey: string) {
+    return createWorkOrderReorder(sourceWorkOrderId, command, idempotencyKey);
   },
   updateOverview(workOrderId: string, command: PatchWorkOrderBasicInfoInput) {
     return patchWorkOrderBasicInfo(workOrderId, command);
@@ -98,6 +103,9 @@ export const workOrderMutationController = {
   },
   completeImageUpload(workOrderId: string, input: Parameters<typeof completeWorkOrderImageUpload>[1]) {
     return completeWorkOrderImageUpload(workOrderId, input);
+  },
+  reconcileImageUpload(workOrderId: string, input: Parameters<typeof reconcileWorkOrderImageUpload>[1]) {
+    return reconcileWorkOrderImageUpload(workOrderId, input);
   },
   setRepresentativeImage(workOrderId: string, imageId: string, input: Parameters<typeof setRepresentativeWorkOrderImage>[2]) {
     return setRepresentativeWorkOrderImage(workOrderId, imageId, input);

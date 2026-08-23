@@ -1,6 +1,7 @@
 import {
   getWorkOrderDetail,
   getWorkOrderList,
+  getWorkOrderSeriesHistory,
 } from "../../lib/api/workOrdersApi";
 import { getWorkOrderImages } from "../../lib/api/assetsApi";
 import {
@@ -21,6 +22,9 @@ export const workOrderQueryController = {
   },
   detail(workOrderId: string) {
     return getWorkOrderDetail(workOrderId);
+  },
+  seriesHistory(workOrderId: string) {
+    return getWorkOrderSeriesHistory(workOrderId);
   },
   detailAfterReadinessRelevantMutation(workOrderId: string) {
     return getWorkOrderDetail(workOrderId);

@@ -7,6 +7,7 @@ export function isLocalHost(hostname: string): boolean;
 export function normalizeRequestHost(rawHost: string | null | undefined): string | null;
 export function validateQaOrigin(rawOrigin: string | null | undefined, options?: { readonly externalQa?: boolean; readonly production?: boolean }): string;
 export function validateTailscaleServeOrigin(rawOrigin: string | null | undefined, options?: { readonly production?: boolean }): string;
+export function validatePublicDocumentViewerOrigin(rawOrigin: string | null | undefined, options?: { readonly production?: boolean }): string;
 export function readExternalQaServerConfig(env?: NodeJS.ProcessEnv):
   | { readonly enabled: false }
   | {
@@ -24,6 +25,10 @@ export function readExternalQaServerConfig(env?: NodeJS.ProcessEnv):
         readonly developerLoginSha256: string;
         readonly developerSystemAdminEmailSha256: string;
       };
+      readonly publicDocumentViewer: null | {
+        readonly origin: string;
+        readonly hostname: string;
+      };
     };
 export function readMobileQaConfig(env?: NodeJS.ProcessEnv, options?: { readonly requireExternalQa?: boolean }): {
   readonly externalQa: boolean;
@@ -32,5 +37,6 @@ export function readMobileQaConfig(env?: NodeJS.ProcessEnv, options?: { readonly
   readonly webOrigin: string | null;
   readonly developerAutoConnect: boolean;
 };
+export function isPublicDocumentViewerPathAllowed(pathname: string, method?: string): boolean;
 export function isExternalQaPathAllowed(pathname: string, method?: string, env?: NodeJS.ProcessEnv): boolean;
 export function isTailscaleServePathAllowed(pathname: string, method?: string, env?: NodeJS.ProcessEnv): boolean;

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 
 import {
   isExternalQaPathAllowed,
+  isPublicDocumentViewerPathAllowed,
   isTailscaleServePathAllowed,
   isLocalHost,
   normalizeRequestHost,
@@ -33,6 +34,14 @@ export function proxy(request: NextRequest) {
   const requestHost = normalizeRequestHost(request.headers.get("host"));
   if (!requestHost) return blocked();
   if (isLocalHost(requestHost)) return NextResponse.next();
+  if (
+    qaConfig.publicDocumentViewer
+    && requestHost === qaConfig.publicDocumentViewer.hostname
+  ) {
+    return isPublicDocumentViewerPathAllowed(request.nextUrl.pathname, request.method)
+      ? NextResponse.next()
+      : blocked();
+  }
   if (
     qaConfig.developerAutoConnectEnabled
     && qaConfig.tailscaleServe

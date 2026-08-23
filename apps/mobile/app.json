@@ -9,6 +9,8 @@
     "userInterfaceStyle": "light",
     "plugins": [
       "expo-router",
+      "@config-plugins/react-native-blob-util",
+      "@config-plugins/react-native-pdf",
       [
         "expo-image-picker",
         {
@@ -36,7 +38,7 @@
       }
     },
     "extra": {
-      "appVersion": "2.0.0-alpha.66",
+      "appVersion": "2.0.0-alpha.67",
       "mockOnly": false,
       "dataMode": "dev-test-tailscale-auto-connect",
       "router": {},

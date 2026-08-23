@@ -522,3 +522,10 @@ Neon/PostgreSQL과 Next/Expo API의 실제 region/latency를 아직 측정하지
 Migration `019` adds WorkOrder-level `is_sample`, `derivation_kind`, `source_work_order_id`, `source_revision_id`, `series_root_work_order_id`, and nonnegative `reorder_round`. Existing rows become non-Sample `original` round zero through additive defaults; there is no destructive backfill. Original rows have no source and round zero. Reorder and Rework rows require tenant-safe source WorkOrder, source revision, and stable series root references with `RESTRICT` deletion and no self-source. Reorder rounds are positive and unique only within one reorder series; Rework may retain its source series round.
 
 These fields represent identity only. They do not replace `work_orders.status`, revision status/number, or document status/revision. Additive migration `020` narrows Sample coexistence: Sample original and Sample Rework at round zero are valid, while direct Reorder and any inherited positive reorder-round context require 본생산. Source display values are joined at read time and are not copied columns. Migrations `019` and `020` are approved only for the canonical DEV/TEST target; production apply remains separately prohibited.
+
+Alpha.67 needs no migration `021`. The existing partial unique index on company, stable series
+root, and positive direct-Reorder round is the database collision boundary. The create command
+locks the original root before reading the series maximum and inserting the new draft, so round
+allocation is server-owned and transactional. Reorder copies are new WorkOrder/revision/child
+and asset rows with independent IDs; source rows and R2 objects remain immutable and independently
+manageable.

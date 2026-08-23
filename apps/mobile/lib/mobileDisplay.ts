@@ -92,6 +92,27 @@ export function formatWon(value: string | null | undefined): string {
   return `${sign === "-" && rounded !== 0n ? "-" : ""}${grouped}원`;
 }
 
+export function formatEstimatedUnitCost(
+  estimatedTotal: string | null | undefined,
+  totalQuantity: number | null | undefined,
+): string {
+  const matched = DECIMAL_PATTERN.exec(estimatedTotal?.trim() ?? "");
+  if (
+    !matched
+    || matched[1] === "-"
+    || typeof totalQuantity !== "number"
+    || !Number.isSafeInteger(totalQuantity)
+    || totalQuantity <= 0
+  ) return "미산정";
+
+  const rawFraction = matched[3] ?? "";
+  const scale = 10n ** BigInt(rawFraction.length);
+  const scaledTotal = BigInt(`${matched[2]}${rawFraction}`);
+  const denominator = scale * BigInt(totalQuantity);
+  const roundedWon = (scaledTotal * 2n + denominator) / (denominator * 2n);
+  return formatWon(roundedWon.toString());
+}
+
 function quantityToScaled(value: string | null | undefined): bigint | null {
   if (typeof value !== "string") return null;
   const matched = /^(\d+)(?:\.(\d{1,3}))?$/.exec(value.trim());

@@ -41,6 +41,8 @@ export const WAFL_V2_ALPHA64_DOCUMENT_R0_MUTATION_APPROVAL =
   MAKER_QA_APPROVAL.ALPHA64_CURRENT;
 export const WAFL_V2_ALPHA65_PRODUCTION_AUTHORING_MUTATION_APPROVAL =
   MAKER_QA_APPROVAL.ALPHA65_CURRENT;
+export const WAFL_V2_ALPHA67_NTH_REORDER_MUTATION_APPROVAL =
+  MAKER_QA_APPROVAL.ALPHA67_CURRENT;
 
 const SUPPORTED_MUTATION_APPROVALS = new Set([
   WAFL_V2_ALPHA25_MUTATION_APPROVAL,
@@ -56,6 +58,7 @@ const SUPPORTED_MUTATION_APPROVALS = new Set([
   WAFL_V2_ALPHA62_MEASUREMENT_MUTATION_APPROVAL,
   WAFL_V2_ALPHA64_DOCUMENT_R0_MUTATION_APPROVAL,
   WAFL_V2_ALPHA65_PRODUCTION_AUTHORING_MUTATION_APPROVAL,
+  WAFL_V2_ALPHA67_NTH_REORDER_MUTATION_APPROVAL,
 ]);
 
 export type WorkOrderV2CommandRuntimeGuard =
@@ -177,6 +180,25 @@ export function getWorkOrderV2ProductionMutationRuntimeGuard(): WorkOrderV2Comma
   const configuredApproval = process.env.WAFL_V2_COMMAND_MUTATION_APPROVED ?? "";
   if (!isMakerQaCapabilityEnabled(process.env, MAKER_QA_CAPABILITY.PRODUCTION_AUTHORING)) {
     return { ok: false, reason: "production-authoring-mutation-approval-missing" };
+  }
+  return getWorkOrderV2CommandRuntimeGuard({ requireMutationApproval: true, requiredMutationApproval: configuredApproval });
+}
+
+export function getWorkOrderV2DocumentR0MutationRuntimeGuard(): WorkOrderV2CommandRuntimeGuard {
+  const configuredApproval = process.env.WAFL_V2_COMMAND_MUTATION_APPROVED ?? "";
+  if (!isMakerQaCapabilityEnabled(process.env, MAKER_QA_CAPABILITY.DOCUMENT_R0)) {
+    return { ok: false, reason: "document-r0-mutation-approval-missing" };
+  }
+  return getWorkOrderV2CommandRuntimeGuard({
+    requireMutationApproval: true,
+    requiredMutationApproval: configuredApproval,
+  });
+}
+
+export function getWorkOrderV2ReorderMutationRuntimeGuard(): WorkOrderV2CommandRuntimeGuard {
+  const configuredApproval = process.env.WAFL_V2_COMMAND_MUTATION_APPROVED ?? "";
+  if (!isMakerQaCapabilityEnabled(process.env, MAKER_QA_CAPABILITY.REORDER_CREATE)) {
+    return { ok: false, reason: "reorder-create-mutation-approval-missing" };
   }
   return getWorkOrderV2CommandRuntimeGuard({ requireMutationApproval: true, requiredMutationApproval: configuredApproval });
 }

@@ -3,6 +3,9 @@ import "server-only";
 import { withWaflV2TenantReadOnlyTransaction, type DbQueryResultRow } from "@/lib/db/client";
 import { installTenantClaims } from "@/lib/domain/work-orders/command/commandRepository";
 import type { TenantMemberScope } from "@/lib/domain/work-orders/contracts";
+import { getWaflBasicSpecTemplate } from "@/lib/domain/work-orders/measurement/waflBasicSpecV1";
+import { filterMakerVisibleMeasurementTemplates } from "@/lib/domain/work-orders/measurement/measurementTemplateVisibilityPolicy";
+import type { WorkOrderMajorCategoryCode } from "@/lib/domain/work-orders/catalog/workOrderCategoryPolicy";
 
 export type MeasurementTemplateSummary = {
   readonly id: string;
@@ -40,10 +43,24 @@ export async function listCompatibleMeasurementTemplates(input: {
         AND (gender_code IS NULL OR gender_code = $3)
       ORDER BY source_kind, name, template_version DESC, id
     `, [input.scope.companyId, input.categoryCode, input.genderCode]);
-    return result.rows.map((row) => ({
+    const persisted = result.rows.map((row) => ({
       id: row.id, sourceKind: row.source_kind, name: row.name, templateVersion: Number(row.template_version),
       categoryCode: row.category_code, genderCode: row.gender_code, sizeSetCode: row.size_set_code,
       sizeCount:Number(row.size_count),pomCount:Number(row.pom_count),valueCount:Number(row.value_count),
     }));
+    const basic = getWaflBasicSpecTemplate(input.categoryCode as WorkOrderMajorCategoryCode | null);
+    const currentBasicSummary = basic ? {
+      id: basic.id, sourceKind: "system" as const, name: basic.name, templateVersion: basic.templateVersion,
+      categoryCode: basic.categoryCode, genderCode: null, sizeSetCode: "WAFL_BASIC_SPEC_V1",
+      sizeCount: basic.sizes.length, pomCount: basic.poms.length,
+      valueCount: basic.sizes.length * basic.poms.length,
+    } : null;
+    return filterMakerVisibleMeasurementTemplates(
+      [
+        ...(currentBasicSummary ? [currentBasicSummary] : []),
+        ...persisted.filter((template) => template.id !== currentBasicSummary?.id),
+      ],
+      currentBasicSummary?.id ?? null,
+    );
   });
 }

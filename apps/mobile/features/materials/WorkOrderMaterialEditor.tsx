@@ -9,6 +9,8 @@ import type { MaterialDraftFields, MaterialPartnerOption, MaterialType } from "@
 import MaterialPartnerPickerSheet from "@/features/materials/MaterialPartnerPickerSheet";
 import WaflReelPickerSheet from "@/features/inputs/reel-picker/WaflReelPickerSheet";
 import WaflSheetTextInput, { WaflSheetFocusBlock } from "@/features/inputs/WaflSheetTextInput";
+import WaflCharacterCounter from "@/features/inputs/WaflCharacterCounter";
+import { MATERIAL_MEMO_MAX_LENGTH, MATERIAL_USAGE_AREA_MAX_LENGTH } from "@/domain/materialTextPolicy";
 import MaterialQuantityValue from "@/features/materials/MaterialQuantityValue";
 import { MOBILE_MATERIAL_FIELD_LABELS } from "@/features/materials/materialFieldPolicy";
 import { WAFL_UNSET_PLACEHOLDER } from "@/lib/displayPlaceholder";
@@ -92,6 +94,7 @@ function EditorField({ label, field, state, onChange, keyboardType = "default", 
         value={state.draft[field]}
       />
       {state.fieldErrors[field] ? <Text style={styles.fieldError}>{state.fieldErrors[field]}</Text> : null}
+      {(field === "usageArea" || field === "memo") ? <WaflCharacterCounter current={state.draft[field].length} maximum={maxLength} /> : null}
     </WaflSheetFocusBlock>
   );
 }
@@ -192,8 +195,8 @@ export default function WorkOrderMaterialEditor({ state, dirty, onChange, onCanc
           <Text style={styles.label}>금액</Text>
           <View style={styles.calculatedValue}><Text style={styles.calculatedText}>{formatWon(calculatedAmount)}</Text></View>
         </View>
-        <EditorField field="usageArea" label="사용부위" maxLength={1000} multiline onChange={onChange} placeholder="사용부위를 입력하세요" state={state} />
-        <EditorField field="memo" label="메모" maxLength={2000} multiline onChange={onChange} placeholder="메모를 입력하세요" state={state} />
+        <EditorField field="usageArea" label="사용부위" maxLength={MATERIAL_USAGE_AREA_MAX_LENGTH} multiline onChange={onChange} placeholder="사용부위를 입력하세요" state={state} />
+        <EditorField field="memo" label="메모" maxLength={MATERIAL_MEMO_MAX_LENGTH} multiline onChange={onChange} placeholder="메모를 입력하세요" state={state} />
       </View>
 
       {reloadAvailable ? (

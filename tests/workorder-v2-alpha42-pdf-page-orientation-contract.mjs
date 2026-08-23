@@ -26,10 +26,10 @@ function fixture(pages) {
 }
 
 const standard = inspectPdfPageOrientations(fixture([
-  { mediaBox: "[0 0 842 595]" },
+  { mediaBox: "[0 0 595 842]" },
   { mediaBox: "[0 0 595 842]" },
 ]));
-assert.deepEqual(standard.map((page) => page.classifiedOrientation), ["landscape", "portrait"]);
+assert.deepEqual(standard.map((page) => page.classifiedOrientation), ["portrait", "portrait"]);
 assert.equal(validatePdfPageOrientations(standard).valid, true);
 
 const rotatedPortrait = inspectPdfPageOrientations(fixture([{ mediaBox: "[0 0 595 842]", rotate: 90 }]));
@@ -54,14 +54,14 @@ assert.throws(() => inspectPdfPageOrientations(fixture([{ rotate: 45 }])), /PDF_
 assert.throws(() => inspectPdfPageOrientations(fixture([{ mediaBox: "[0 0 0 842]" }])), /PDF_MEDIA_BOX_INVALID/);
 assert.throws(() => inspectPdfPageOrientations(fixture([])), /PDF_PAGE_COUNT_INVALID|PDF_PAGE_TREE_INVALID/);
 
-const wrongFirst = inspectPdfPageOrientations(fixture([{ mediaBox: "[0 0 595 842]" }]));
+const wrongFirst = inspectPdfPageOrientations(fixture([{ mediaBox: "[0 0 842 595]" }]));
 assert.deepEqual(validatePdfPageOrientations(wrongFirst), {
   valid: false,
   firstMismatchPageIndex: 0,
-  mismatchReason: "expected-landscape-actual-portrait",
+  mismatchReason: "expected-portrait-actual-landscape",
 });
 const wrongContinuation = inspectPdfPageOrientations(fixture([
-  { mediaBox: "[0 0 842 595]" },
+  { mediaBox: "[0 0 595 842]" },
   { mediaBox: "[0 0 842 595]" },
 ]));
 assert.equal(validatePdfPageOrientations(wrongContinuation).firstMismatchPageIndex, 1);
@@ -89,7 +89,7 @@ assert.match(smokeSource, /nextServerStart: 0/);
 assert.match(smokeSource, /chromiumStart: 0/);
 
 const css = fs.readFileSync("components/workorder/preview/IssuedWorkOrderPreview.module.css", "utf8");
-assert.match(css, /@page cover \{ size: A4 landscape; margin: 0; \}/);
+assert.match(css, /@page cover \{ size: A4 portrait; margin: 0; \}/);
 assert.match(css, /@page content \{ size: A4 portrait; margin: 0; \}/);
 assert.match(css, /\.coverPage \{ page: cover;/);
 assert.match(css, /\.contentPage \{ page: content;/);

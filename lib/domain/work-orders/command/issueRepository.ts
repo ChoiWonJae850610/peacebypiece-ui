@@ -16,7 +16,11 @@ import type {
 import { withDbTransaction, type DbQueryResultRow } from "@/lib/db/client";
 import { installTenantClaims } from "@/lib/domain/work-orders/command/commandRepository";
 import { serializePostgresDateOnly } from "@/lib/domain/work-orders/dateOnly.mjs";
+import { normalizeWorkOrderDocumentCodeSegment, resolveWorkOrderDocumentItemSegment } from "@/lib/domain/work-orders/documentNumberSegmentPolicy.mjs";
 import { evaluateWorkOrderIssueReadiness } from "@/lib/domain/work-orders/issueReadiness";
+import { resolveFactoryDeliveryMemo } from "@/lib/domain/work-orders/factoryDeliveryMemoPolicy";
+import { WORK_ORDER_FACTORY_PROCESS_CODE } from "@/lib/domain/work-orders/productionProcessPolicy";
+import { WORK_ORDER_COMMAND_CODES } from "@/lib/domain/work-orders/command/workOrderCommandCodes";
 
 export const WORK_ORDER_ISSUE_COMMAND_CODE = "work_order.revision.issue";
 
@@ -70,8 +74,13 @@ type IssueTargetRow = DbQueryResultRow & {
   readonly business_date: string;
   readonly fabric_count: number | string;
   readonly accessory_count: number | string;
+  readonly material_optional_detail_incomplete_count: number | string;
   readonly representative_image_count: number | string;
   readonly included_attachment_count: number | string;
+  readonly basic_process_count: number | string;
+  readonly basic_process_status: "ready" | "in_progress" | "completed" | null;
+  readonly basic_process_memo: string | null;
+  readonly legacy_factory_delivery_memo: string | null;
 };
 
 type IssuedRow = DbQueryResultRow & {
@@ -82,6 +91,7 @@ type IssuedRow = DbQueryResultRow & {
   readonly work_order_version: number | string;
   readonly revision_version: number | string;
   readonly finalized_at: string | Date;
+  readonly completed_basic_process_id?: string | null;
 };
 
 export type WorkOrderIssueRepositoryResult = {
@@ -118,12 +128,6 @@ function mapIssued(row: IssuedRow): IssueWorkOrderCommandResult {
     nextRevisionVersion: integer(row.revision_version) as EntityVersion,
     nextDraftCreated: false,
   };
-}
-
-function normalizedCode(value: string | null): string | null {
-  if (!value) return null;
-  const normalized = value.trim().toUpperCase().replace(/[^A-Z0-9]/g, "");
-  return normalized || null;
 }
 
 export async function issueWorkOrderRevisionV2(input: {
@@ -211,6 +215,7 @@ export async function issueWorkOrderRevisionV2(input: {
              w.entity_version AS work_order_version, r.entity_version AS revision_version,
              w.product_name, w.product_type_code, w.season_code, w.item_code,
              w.due_date::text AS due_date, w.total_quantity,
+             r.factory_delivery_memo AS legacy_factory_delivery_memo,
              r.total_quantity_snapshot AS revision_total_quantity,
              (SELECT COALESCE(sum(q.quantity), 0)::integer
               FROM color_size_quantities q
@@ -225,12 +230,26 @@ export async function issueWorkOrderRevisionV2(input: {
              (SELECT count(*) FROM work_order_material_lines m
               WHERE m.company_id = w.company_id AND m.revision_id = r.id
                 AND m.material_type = 'accessory' AND m.archived_at IS NULL) AS accessory_count
+             ,(SELECT count(*) FROM work_order_material_lines m
+               WHERE m.company_id = w.company_id AND m.revision_id = r.id AND m.archived_at IS NULL
+                 AND (m.supplier_partner_id IS NULL OR NULLIF(trim(m.usage_area), '') IS NULL OR NULLIF(trim(m.memo), '') IS NULL)) AS material_optional_detail_incomplete_count
              ,(SELECT count(*) FROM work_order_revision_images ri
                WHERE ri.company_id = w.company_id AND ri.revision_id = r.id
                  AND ri.is_representative = true) AS representative_image_count
              ,(SELECT count(*) FROM work_order_revision_attachments ra
                WHERE ra.company_id = w.company_id AND ra.revision_id = r.id
                  AND ra.output_include = true) AS included_attachment_count
+             ,(SELECT count(*) FROM work_order_processes p
+               WHERE p.company_id = w.company_id AND p.revision_id = r.id
+                 AND p.process_type_code = '${WORK_ORDER_FACTORY_PROCESS_CODE}') AS basic_process_count
+             ,(SELECT p.status FROM work_order_processes p
+               WHERE p.company_id = w.company_id AND p.revision_id = r.id
+                 AND p.process_type_code = '${WORK_ORDER_FACTORY_PROCESS_CODE}'
+               ORDER BY p.display_order, p.id LIMIT 1) AS basic_process_status
+             ,(SELECT p.memo FROM work_order_processes p
+               WHERE p.company_id = w.company_id AND p.revision_id = r.id
+                 AND p.process_type_code = '${WORK_ORDER_FACTORY_PROCESS_CODE}'
+               ORDER BY p.display_order, p.id LIMIT 1) AS basic_process_memo
       FROM work_orders w
       JOIN work_order_revisions r ON r.company_id = w.company_id AND r.id = w.current_revision_id
       CROSS JOIN LATERAL public.wafl_v2_document_number_settings() AS settings
@@ -256,9 +275,12 @@ export async function issueWorkOrderRevisionV2(input: {
       throw new WorkOrderIssueRepositoryError("revision_mismatch", workOrderVersion);
     }
 
-    const companyCode = normalizedCode(target.company_code);
-    const seasonCode = normalizedCode(target.season_code);
-    const itemCode = normalizedCode(target.item_code);
+    const companyCode = normalizeWorkOrderDocumentCodeSegment(target.company_code);
+    const seasonCode = normalizeWorkOrderDocumentCodeSegment(target.season_code);
+    const itemCode = resolveWorkOrderDocumentItemSegment({
+      itemCode: target.item_code,
+      productTypeCode: target.product_type_code,
+    });
     const matrixTotalQuantity = integer(target.matrix_total_quantity);
     const readiness = evaluateWorkOrderIssueReadiness({
       productName: target.product_name,
@@ -273,11 +295,18 @@ export async function issueWorkOrderRevisionV2(input: {
       representativeImageCount: integer(target.representative_image_count),
       fabricCount: integer(target.fabric_count),
       accessoryCount: integer(target.accessory_count),
+      materialOptionalDetailIncompleteCount: integer(target.material_optional_detail_incomplete_count),
       includedAttachmentCount: integer(target.included_attachment_count),
+      basicProcessCount: integer(target.basic_process_count),
+      basicProcessStatus: target.basic_process_status,
     });
     if (!readiness.canIssue || !companyCode || !seasonCode || !itemCode) {
       throw new WorkOrderIssueRepositoryError("precondition_failed", workOrderVersion);
     }
+    const factoryDeliveryMemo = resolveFactoryDeliveryMemo({
+      basicProcessMemo: target.basic_process_memo,
+      legacyFactoryDeliveryMemo: target.legacy_factory_delivery_memo,
+    });
 
     const sequenceResult = await client.query<DbQueryResultRow & { readonly sequence: number | string }>(
       "SELECT allocate_work_order_document_sequence($1, $2::date) AS sequence",
@@ -289,6 +318,22 @@ export async function issueWorkOrderRevisionV2(input: {
     if (!businessDate) throw new Error("WORK_ORDER_ISSUE_INVALID_BUSINESS_DATE");
     const compactDate = businessDate.replaceAll("-", "").slice(2);
     const documentNumberBase = `${companyCode}-${seasonCode}-${itemCode}-${compactDate}-${String(sequence).padStart(3, "0")}`;
+
+    const completedBasicProcessResult = await client.query<DbQueryResultRow & { readonly id: string }>(`
+      UPDATE work_order_processes
+      SET status = 'completed', completed_at = now(), completed_by_member_id = $3,
+          entity_version = entity_version + 1, updated_at = now()
+      WHERE company_id = $1 AND revision_id = $2::uuid
+        AND process_type_code = '${WORK_ORDER_FACTORY_PROCESS_CODE}'
+        AND status = 'in_progress'
+        AND EXISTS (
+          SELECT 1 FROM work_order_revisions
+          WHERE company_id = $1 AND id = $2::uuid AND revision_status = 'draft'
+        )
+      RETURNING id::text
+    `, [input.scope.companyId, input.command.revisionId, input.scope.companyMemberId]);
+    statementCount += 1;
+    const completedBasicProcessId = completedBasicProcessResult.rows[0]?.id ?? null;
 
     const issuedResult = await client.query<IssuedRow>(`
       WITH snapshotted_materials AS (
@@ -304,6 +349,7 @@ export async function issueWorkOrderRevisionV2(input: {
         UPDATE work_order_revisions
         SET revision_status = 'finalized', finalized_by_member_id = $5,
             finalized_at = now(), company_code_snapshot = $6,
+            factory_delivery_memo = $12,
             entity_version = entity_version + 1, updated_at = now()
         WHERE company_id = $1 AND id = $4::uuid AND work_order_id = $2::uuid
           AND revision_status = 'draft' AND entity_version = $7
@@ -328,10 +374,31 @@ export async function issueWorkOrderRevisionV2(input: {
       input.command.revisionId, input.scope.companyMemberId, companyCode,
       input.command.expectedRevisionVersion, documentNumberBase, businessDate, sequence,
       JSON.stringify(supplierSnapshots.rows.map((row) => ({ material_id: row.material_id, supplier_name: row.supplier_name }))),
+      factoryDeliveryMemo,
     ]);
     statementCount += 1;
+
     const issued = issuedResult.rows[0];
     if (!issued) throw new WorkOrderIssueRepositoryError("conflict", workOrderVersion);
+
+    if (completedBasicProcessId) {
+      await client.query(`
+        INSERT INTO domain_events (
+          company_id, entity_type, entity_id, command_code, actor_member_id,
+          correlation_id, change_summary, metadata, schema_version
+        ) VALUES ($1, 'work_order', $2, $3, $4, $5, $6, $7::jsonb, 1)
+      `, [
+        input.scope.companyId, input.command.workOrderId, WORK_ORDER_COMMAND_CODES.productionProcess.orderComplete,
+        input.scope.companyMemberId, input.scope.correlationId, "기본 공정 발주 완료 (작업지시서 발행)",
+        JSON.stringify({
+          processId: completedBasicProcessId,
+          trigger: WORK_ORDER_ISSUE_COMMAND_CODE,
+          statusTransition: { from: "in_progress", to: "completed" },
+          clientRequestId: input.command.clientRequestId,
+        }),
+      ]);
+      statementCount += 1;
+    }
     const mapped = mapIssued(issued);
 
     await client.query(`

@@ -7,6 +7,7 @@ import type {
   WorkOrderAttachmentAsset,
   WorkOrderDetailCore,
   WorkOrderImageAsset,
+  WorkOrderImageCommandResult,
   WorkOrderListItem,
 } from "@/domain/mobileContract";
 import { MobileApiError } from "@/domain/mobileContract";
@@ -35,6 +36,12 @@ type Input = {
   readonly onDetailProjection: (detail: WorkOrderDetailCore) => void;
   readonly onMessage: (message: string) => void;
 };
+
+const wait = (milliseconds: number) => new Promise<void>((resolve) => setTimeout(resolve, milliseconds));
+
+function isAmbiguousUploadCompletion(error: unknown): boolean {
+  return error instanceof MobileApiError && (error.code === "TIMEOUT" || error.code === "NETWORK_ERROR");
+}
 
 export function useWorkOrderAssetAuthoringController(input: Input) {
   const [images, setImages] = useState<readonly WorkOrderImageAsset[]>([]);
@@ -88,11 +95,30 @@ export function useWorkOrderAssetAuthoringController(input: Input) {
       if (file.size <= 0 || file.size > 10 * 1024 * 1024) return setMessage("이미지는 1장당 10MB 이하만 등록할 수 있습니다.");
       const uploadTarget = await workOrderMutationController.prepareImageUpload(input.selected.workOrderId, file);
       await workOrderMutationController.putImageBlob(uploadTarget, blob);
-      const result = await workOrderMutationController.completeImageUpload(input.selected.workOrderId, {
+      const uploadIdentity = input.nextIdentity("upload");
+      const completeInput = {
         expectedVersion: input.detail.header.entityVersion,
-        ...input.nextIdentity("upload"),
+        ...uploadIdentity,
         uploadTarget,
-      });
+      };
+      let result: WorkOrderImageCommandResult | null;
+      try {
+        result = await workOrderMutationController.completeImageUpload(input.selected.workOrderId, completeInput);
+      } catch (error) {
+        if (!isAmbiguousUploadCompletion(error)) throw error;
+        result = null;
+        for (let attempt = 0; attempt < 9 && !result; attempt += 1) {
+          await wait(attempt === 0 ? 1_200 : 4_000);
+          try {
+            result = await workOrderMutationController.reconcileImageUpload(input.selected.workOrderId, uploadIdentity);
+          } catch (reconcileError) {
+            if (!isAmbiguousUploadCompletion(reconcileError)) throw reconcileError;
+          }
+        }
+        if (!result) {
+          throw new MobileApiError({ code: "TIMEOUT", message: "이미지 등록 결과를 아직 확인하지 못했습니다. 잠시 후 이미지 목록을 다시 확인해 주세요." });
+        }
+      }
       await refreshProjection(input.selected.workOrderId, result.nextVersion);
       setMessage(result.isRepresentative ? "첫 이미지를 등록하고 대표이미지로 지정했습니다." : "이미지를 등록했습니다. 기존 대표이미지는 유지됩니다.");
     } catch (error) {

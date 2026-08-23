@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useReducer, useRef, useState, type ReactNode } from "react";
 import {
   FlatList,
+  Pressable,
   StyleSheet,
   Text,
   Vibration,
@@ -223,6 +224,96 @@ export function WaflOptionReel(props: {
   />;
 }
 
+export function WaflPairedOptionReelPickerSheet(props: {
+  readonly visible: boolean;
+  readonly title: string;
+  readonly leftLabel: string;
+  readonly leftAccessibilityLabel: string;
+  readonly leftOptions: readonly WaflPickerOption[];
+  readonly leftValue: string;
+  readonly onSelectLeft: (value: string) => void;
+  readonly rightLabel: string;
+  readonly rightAccessibilityLabel: string;
+  readonly rightOptions: readonly WaflPickerOption[];
+  readonly rightValue: string;
+  readonly onSelectRight: (value: string) => void;
+  readonly footer?: ReactNode;
+  readonly presentationGeneration?: number;
+  readonly onCancel: () => void;
+  readonly onAfterClose?: () => void;
+  readonly onApply: () => Promise<unknown> | unknown;
+}) {
+  const leftOptions = useMemo<readonly ReelOption[]>(() => props.leftOptions.map((option, index) => ({
+    key: `paired-left-${option.value}-${index}`,
+    label: option.label,
+    value: option.value,
+  })), [props.leftOptions]);
+  const rightOptions = useMemo<readonly ReelOption[]>(() => props.rightOptions.map((option, index) => ({
+    key: `paired-right-${option.value}-${index}`,
+    label: option.label,
+    value: option.value,
+  })), [props.rightOptions]);
+  const adaptiveMinimumBodyHeight = resolveWaflReelAdaptiveBodyHeight({
+    hasModeSwitch: Boolean(props.footer),
+    hasSupplementaryControl: false,
+    hasValidationMessage: false,
+    renderPath: "numeric-reel",
+  });
+  return <WaflInputSheet
+    adaptiveMinimumBodyHeight={adaptiveMinimumBodyHeight}
+    bodyScrollable={false}
+    cancelAccessibilityLabel={`${props.title} 변경 취소`}
+    confirmAccessibilityLabel={`${props.title} 적용`}
+    confirmDisabled={!props.leftValue || !props.rightValue}
+    onAfterClose={props.onAfterClose}
+    onCancel={props.onCancel}
+    onConfirm={props.onApply}
+    presentationGeneration={props.presentationGeneration}
+    sizing="reelAdaptive"
+    title={props.title}
+    visible={props.visible}
+  >
+    <View style={styles.reels}>
+      <View style={styles.pairedOptionReel}>
+        <Text style={styles.reelLabel}>{props.leftLabel}</Text>
+        <WaflOptionReel accessibilityLabel={props.leftAccessibilityLabel} onSelect={props.onSelectLeft} options={leftOptions} selectedValue={props.leftValue} />
+      </View>
+      <View style={styles.pairedOptionReel}>
+        <Text style={styles.reelLabel}>{props.rightLabel}</Text>
+        <WaflOptionReel accessibilityLabel={props.rightAccessibilityLabel} onSelect={props.onSelectRight} options={rightOptions} selectedValue={props.rightValue} />
+      </View>
+    </View>
+    {props.footer}
+  </WaflInputSheet>;
+}
+
+export function WaflStaticOptionList(props: {
+  readonly accessibilityLabel: string;
+  readonly options: readonly ReelOption[];
+  readonly selectedValue: string;
+  readonly onSelect: (value: string) => void;
+}) {
+  return <View accessibilityLabel={props.accessibilityLabel} accessibilityRole="radiogroup" style={styles.staticOptionList}>
+    {props.options.map((item) => {
+      const selected = item.value === props.selectedValue;
+      return <Pressable
+        accessibilityLabel={item.label || item.value}
+        accessibilityRole="radio"
+        accessibilityState={{ selected }}
+        key={item.key}
+        onPress={() => {
+          if (selected) return;
+          platformReelHaptics.selectionChanged(props.options.findIndex((candidate) => candidate.key === item.key));
+          props.onSelect(item.value);
+        }}
+        style={({ pressed }) => [styles.staticOption, selected && styles.staticOptionSelected, pressed && styles.staticOptionPressed]}
+      >
+        <Text numberOfLines={2} style={[styles.staticOptionText, selected && styles.staticOptionTextSelected]}>{item.label || item.value}</Text>
+      </Pressable>;
+    })}
+  </View>;
+}
+
 export default function WaflReelPickerSheet({ visible, field, label, value, unitCode, kind = "quantity", options = [], optionItems: suppliedOptionItems, allowUnset = false, requireSpecifiedValue = false, selectFirstRealOption = false, emptyMessage = "선택할 수 있는 항목이 없습니다.", footer, pending = false, presentationGeneration, onCancel, onAfterClose, onApply }: Props) {
   const integerOnly = kind === "integer";
   const optionOnly = kind === "option";
@@ -441,6 +532,7 @@ export default function WaflReelPickerSheet({ visible, field, label, value, unit
 
 const styles = StyleSheet.create({
   reels: { alignItems: "flex-end", flexDirection: "row", gap: 12, marginTop: 14 },
+  pairedOptionReel: { flex: 1, minWidth: 0 },
   optionReel: { marginTop: 14 },
   emptyState: { alignItems: "center", justifyContent: "center", minHeight: 180, paddingHorizontal: WAFL_THEME.spacing.lg },
   emptyStateText: { color: WAFL_THEME.color.readOnly, fontFamily: WAFL_FONTS.medium, fontSize: WAFL_THEME.typography.bodyText.fontSize, lineHeight: WAFL_THEME.typography.bodyText.lineHeight, textAlign: "center" },
@@ -461,6 +553,12 @@ const styles = StyleSheet.create({
   reelTextSelected: { color: WAFL_THEME.color.deepNavy, fontFamily: WAFL_FONTS.black, fontSize: 22 },
   reelTextNear: { opacity: 0.58 },
   reelTextFar: { opacity: 0.24 },
+  staticOptionList: { gap: WAFL_THEME.spacing.xs },
+  staticOption: { alignItems: "center", borderBottomColor: WAFL_THEME.color.border, borderBottomWidth: WAFL_THEME.border.hairline, justifyContent: "center", minHeight: WAFL_THEME.touch.minimum, paddingHorizontal: WAFL_THEME.spacing.sm },
+  staticOptionSelected: { backgroundColor: WAFL_THEME.color.fabricBeige, borderBottomColor: WAFL_THEME.color.brickOrange },
+  staticOptionPressed: { opacity: 0.68 },
+  staticOptionText: { color: WAFL_THEME.color.readOnly, fontFamily: WAFL_FONTS.semibold, fontSize: WAFL_THEME.typography.bodyText.fontSize, lineHeight: WAFL_THEME.typography.bodyText.lineHeight, textAlign: "center" },
+  staticOptionTextSelected: { color: WAFL_THEME.color.deepNavy, fontFamily: WAFL_FONTS.black },
   selectionBand: { borderBottomColor: WAFL_THEME.color.brickOrange, borderBottomWidth: 1, borderTopColor: WAFL_THEME.color.brickOrange, borderTopWidth: 1, height: ITEM_HEIGHT, left: 8, position: "absolute", right: 8, top: ITEM_HEIGHT * 2 },
   fadeTop: { backgroundColor: "rgba(255,253,248,0.35)", height: ITEM_HEIGHT, left: 0, position: "absolute", right: 0, top: 0 },
   fadeBottom: { backgroundColor: "rgba(255,253,248,0.35)", bottom: 0, height: ITEM_HEIGHT, left: 0, position: "absolute", right: 0 },

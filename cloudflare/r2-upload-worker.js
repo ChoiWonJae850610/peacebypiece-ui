@@ -294,9 +294,11 @@ function createFileHeaders(object, url) {
 
 async function createDerivativeResponse(env, sourceBytes, width, quality) {
   if (!env.IMAGES) throw new Error("WORKER_IMAGES_BINDING_NOT_CONFIGURED");
+  const sourceStream = new Response(sourceBytes.slice(0)).body;
+  if (!sourceStream) throw new Error("WORKER_IMAGE_SOURCE_STREAM_UNAVAILABLE");
   return (
     await env.IMAGES
-      .input(sourceBytes.slice(0))
+      .input(sourceStream)
       .transform({ width, fit: "scale-down" })
       .output({ format: "image/webp", quality, anim: false })
   ).response();

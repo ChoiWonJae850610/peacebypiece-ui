@@ -1,8 +1,28 @@
 # WAFL v2 App-first Roadmap and Version Delta
 
+Alpha.67 is finalized at `ALPHA67_FINALIZATION_COMPLETE`. The accepted product checkpoint is `ALPHA67_REORDER_PDF_BRANDED_SHARE_COMPLETE`: server-owned Nth Reorder creation/copy/reset, Work History and list/filter reconciliation, issued-document generation/retry, private R2, authenticated native viewing, branded public Viewer sharing, and the accepted monochrome print document are one completed boundary. Overview `예상 1벌 원가` uses canonical estimated total and canonical WorkOrder total quantity with exact KRW rounding and an unset-safe `미산정` state. Evidence is recorded through `89-alpha67-finalization-evidence.md`.
+
 Document role: canonical owner for the current result, next candidate, and Version Delta boundary. It is not the historical implementation ledger; completed details live in numbered immutable evidence.
 
-## Current result — 2.0.0-alpha.66
+## Current result — 2.0.0-alpha.67
+
+Status: `ALPHA67_FINALIZATION_COMPLETE`.
+
+Accepted product checkpoint: `ALPHA67_REORDER_PDF_BRANDED_SHARE_COMPLETE`.
+
+Alpha.67 completes the Nth Reorder E2E and its bounded physical-QA remediations without adding
+Rework creation or alpha.68 workflows. The server remains authoritative for lineage, global round,
+copy/reset policy, issue/readiness and document identity. Mobile uses the returned WorkOrder ID for
+post-create hydration and retains one canonical list/detail status owner. Issued PDF generation,
+generation-only retry, private asset integrity, in-app viewing, Save, and one branded public Viewer
+share URL retain their security boundaries. The final narrow cost correction derives estimated
+per-piece cost from existing canonical totals without altering component costs or persistence.
+
+APP_VERSION is `2.0.0-alpha.67`. DEV/TEST migration ledger is `20/20`; new migration,
+production mutation and owner-fixture mutation are zero. Final Git and artifact identity are owned
+by the matching post-push repo-state.
+
+## Previous result — 2.0.0-alpha.66
 
 Status: `ALPHA66_FINALIZATION_COMPLETE`.
 
@@ -309,6 +329,7 @@ Permanent Rules, Current Baseline, Version Delta, Immutable Evidence, responsibi
 | alpha.64 | cumulative Maker WorkOrder/document UX and shared mobile architecture | `64-maker-workorder-document-ux-evidence.md` |
 | alpha.65 | Maker input, Production authoring, Finished Spec visual selector and technical-flat architecture | `65-maker-input-finished-spec-visual-evidence.md` |
 | alpha.66 | WorkOrder identity/lineage, segmented work character, two-axis list filters, compact detail-header layout, canonical readiness refresh, and accepted final boundary | `66-workorder-lineage-sample-list-filter-evidence.md` through `71-workorder-lineage-sample-filter-preissue-evidence.md` |
+| alpha.67 | Nth Reorder E2E, issue/PDF/viewer/share integrity, owner-accepted monochrome PDF, and final estimated per-piece cost | `72-nth-reorder-e2e-evidence.md` through `89-alpha67-finalization-evidence.md` |
 | maintenance | canonical Codex rule normalization without APP_VERSION change | `54-canonical-codex-working-rules-normalization-evidence.md` |
 
 Older results remain in numbered evidence files indexed and task-routed by `00-start-here.md`. Their detailed outcomes are not duplicated here.
@@ -493,12 +514,135 @@ The physical shoulder/armhole fidelity follow-up keeps the accepted two-view and
 
 The subsequent neckline/outer-pocket correction preserves that two-view, focused-preview, and shoulder/armhole result. It changes only authored T/D front/back neck openings to clean round necklines and simplifies O front/back neck/collar construction plus the O-front pocket pair to straight non-tilted geometry. B remains byte-stable, the 55/55 routes and overlay `0..1` remain unchanged, and the target is `ALPHA65_NECKLINE_OUTER_POCKET_FIDELITY_IPHONE_REQA_REQUIRED`. Owner physical-iPhone acceptance remains pending and is never inferred from automated evidence.
 
-## Next candidate — 2.0.0-alpha.67
+## Completed Version Delta — 2.0.0-alpha.67
 
-Status: `NOT_STARTED`.
+Status: `ALPHA67_FINALIZATION_COMPLETE`.
 
-Candidate label: `N차 리오더 E2E`.
+Accepted product checkpoint: `ALPHA67_REORDER_PDF_BRANDED_SHARE_COMPLETE`.
 
-This is candidate metadata only. Actual Reorder creation/copy E2E is `NOT STARTED` and is not
-part of alpha.66 finalization. A separate owner-approved Version Delta is required before any
-alpha.67 work begins.
+Only issued/finalized 본생산 original or direct Reorder rows can create the next Reorder.
+The server owns direct-source/root/revision lineage and allocates the next series-wide round
+under the root lock; client round selection is forbidden. Product/spec configuration is copied,
+Size/Color production quantities and lifecycle execution state are reset, and the new total/due
+date come from the request. Representative image and explicitly output-included final-revision
+attachments are independently copied without filename inference. Mobile adds the create sheet,
+direct Overview navigation, and original-plus-direct-Reorders history while retaining the flat
+list badges/filters. The physical-blocker remediation makes Series History an optional contextual
+read instead of a detail-entry precondition, commits `created.result.workOrderId` before any
+post-create refresh, accepts exclusion by the current filter, and restricts retry to read-only
+hydration of that same created row. The derivative Worker deployment now permanently verifies
+the `IMAGES` plus `R2_BUCKET` bindings and passes a stream—not an `ArrayBuffer`—to the Images
+transform input. Migration ledger remains `20/20`, migration `021` is absent, and actual
+Rework creation and Additional Process Order remain deferred.
+
+The issue/PDF/material physical-blocker continuation keeps that Reorder architecture intact.
+Readiness and issue numbering share one item-segment resolver: ASCII item codes are retained,
+while Korean item text uses the stable canonical major-category code. PDF generation is guarded
+by `DOCUMENT_R0` capability rather than an alpha.64 runtime name, and issue success is never
+rolled back by a later PDF failure; `PDF 다시 생성` creates only a new PDF attempt. Draft
+never-requested material rows use hard delete, cancelled history-bearing editing rows use the
+existing history-preserving archive lifecycle, and requested/completed rows remain protected.
+Production complete/cancel actions use matching compact icon-only slots. Evidence is recorded in
+`74-issue-pdf-material-delete-action-ui-evidence.md`; physical-iPhone acceptance and full
+alpha.67 completion are not inferred.
+
+The next bounded PDF parity checkpoint fixes the physical mobile generation/viewer gap without
+changing Reorder copy/reset semantics. PDF generation receives a document-specific bounded
+transport deadline, current-generation status reconciliation, and generation-only retry that
+reuses an existing generated or recent pending identity. Mobile view resolves the already-created
+embedded-QR public access identity and opens `/v`; public session/file/download remain separate
+from the still-protected workspace file route. Evidence is recorded in
+`75-pdf-generation-retry-public-viewer-evidence.md`. Full alpha.67 and physical-iPhone acceptance
+remain pending.
+
+The subsequent mobile-image/PDF integrity checkpoint records actual uploaded object size and hash
+at image completion and retains strict hashed-asset validation. Existing hash-null image rows are
+not rewritten: PDF generation may consume them only through bounded MIME/object validation and an
+in-memory actual hash. Recent owner attempts had matching DB/R2 sizes; their first failing stage was
+an overflowing landscape cover that produced extra landscape pages and tripped the orientation
+gate. The cover is now physically bounded to one landscape page. Evidence is recorded in
+`76-mobile-image-asset-integrity-pdf-evidence.md`; owner physical-iPhone acceptance remains pending.
+
+The next bounded checkpoint restores actual browser hydration for `/v`, removes duplicate native
+share URL delivery, and performs the explicitly approved DEV/TEST WorkOrder clean-base reset only
+after verified backup and KEEP/DELETE/R2 manifests. It does not redesign PDF, add schema, mutate
+production/owner fixtures, bump APP_VERSION, or infer physical PASS. Evidence is recorded in
+`77-viewer-share-reset-cleanbase-evidence.md`.
+
+The post-clean-base physical-correction checkpoint then aligns image completion reconciliation,
+Size/Color deletion totals/spec columns, Basic Process issue readiness and issue-time completion,
+Material 30/100 character grammar, factory-delivery memo truth, and human-readable PDF product
+classification. Public `/v` remains the share target, not the mobile View target. Expo 55 now has
+one cross-platform native PDF renderer over the existing workspace-authenticated internal file
+route; the in-app surface owns back navigation, vertical pages, page count, zoom, bounded retry,
+and native-cache cleanup without exposing raw R2 or a secret-bearing URL. The checkpoint remains
+device-gated pending a matching EAS iOS Development Build, owner installation, and strict runtime
+restoration. Evidence is recorded in
+`78-post-cleanbase-physical-corrections-inapp-pdf-evidence.md`; physical result is not inferred.
+
+The Document UX/share/save continuation keeps that native build and renderer, adds explicit
+previous/next page controls synchronized with scroll, removes the requested Basic Process manual
+complete action, and routes Save through verified authenticated bytes plus the native local-file
+surface instead of Safari. Share/QR metadata becomes four rows, the restrained native share body
+contains one viewer URL, and public `/v` mounts the session-authorized PDF inline with Download as a
+secondary action. Branded public viewer deployment remains deferred pending an exact production
+origin owner. Evidence is recorded in `79-document-ux-share-save-evidence.md`; owner physical result
+is not inferred.
+
+The identity/PICK/basic-spec continuation then locks issued identity, adds category-aware Season and
+Detail PICK, activates the source-backed WAFL starter spec, demotes optional Material gaps to
+readiness warnings, and replaces browser plug-in PDF display with self-hosted PDF.js pages. The
+pagination/viewer-touch continuation replaces fixed Finished Spec chunks with capacity-aware packing,
+gives full-view Spec one vertical owner, and formats quantity decimals without meaningless trailing
+zeroes. Evidence is recorded in `80-identity-pick-basic-spec-readiness-public-viewer-evidence.md` and
+`81-pdf-spec-pagination-viewer-touch-format-evidence.md`.
+
+The current bounded cleanup removes same-orientation nested VirtualizedLists from Season/Detail
+PICK, filters normal WAFL recommendations to the current category basic template, and simplifies the
+native viewer to vertical scroll/zoom plus a sticky bottom WAFL `닫기` action. Issued PDF cover summary
+now owns the Basic Process human partner; its detail process table is Additional-only and omitted
+when empty, and the visible `개정차수` row is absent while internal R0 identity stays unchanged.
+Evidence is recorded in `82-viewer-close-pdf-process-picker-cleanup-evidence.md`; physical-iPhone
+acceptance remains pending and is not inferred.
+
+The picker/action/list/Reorder UX continuation promotes Season and Detail Item bodies from generic
+static rows to the canonical `WaflOptionGrid` selected-cell grammar while preserving one non-virtualized
+sheet body and moving `+ 직접입력` outside recommendation options. Requested Basic Process shows the
+shared warning action as icon plus `발주취소`. ISSUE awaits authoritative detail reconciliation, patches
+the list model through the existing workflow status owner, and performs one invalidated-query refresh
+on list return. Reorder creation is now an `아니오 / 예` confirmation: the server still allocates the
+global round, while the new draft starts at quantity zero and due null and opens by returned ID. The
+owner explicitly accepts all pending physical checks through the prior checkpoint; only these new
+changes remain physical re-QA. Evidence is recorded in
+`83-picker-action-list-reorder-ux-evidence.md`.
+
+The final PDF/PICK refinement candidate replaces Season and Detail's interim selection cells with
+the canonical paired and single option reels, shortens the visible requested Basic Process cancel
+caption to `취소`, and rebuilds the issued document around one branded landscape summary plus
+capacity-packed portrait detail pages. The PDF no longer contains QR/status/revision UI and its
+generation path no longer auto-creates embedded public access; explicit manual Share, `/v`, Save,
+in-app View, R2 persistence, and legacy token reads remain intact. Empty optional sections omit,
+Basic Process stays cover-only, Additional Process stays table-only, and wrapped tables/images have
+bounded continuation rules. Evidence is recorded in
+`84-final-pdf-redesign-picker-reel-polish-evidence.md`; physical result is not inferred.
+
+The portrait visual-fidelity continuation supersedes only that candidate's landscape presentation.
+All pages are now A4 portrait. The fixed cover follows the owner primary portrait SOT, keeps the
+document number in the title metadata instead of an information card, and uses seven compact facts,
+a warm bounded memo, and a five-cell summary with secondary context. Detail
+pages retain the accepted data and generation owners with numbered section bars, centered table
+grammar, seven-row dense Material bounds, and two-image portrait attachment pages. Normal, rich,
+and sparse evidence artifacts are rendered page-by-page at 170 dpi and compared with the approved mock before checkpoint publication.
+Evidence is recorded in `85-portrait-pdf-visual-fidelity-evidence.md`; prior non-PDF physical acceptance
+is preserved and only this PDF delta remains physical re-QA.
+
+The final alpha.67 PDF refinement makes all document chrome strictly monochrome while preserving
+source color inside representative and selected attachment images. The ten cover facts remain in
+the owner-defined order; Basic Process `unitPrice` and persisted `amount` are the sole per-piece and
+total labor-cost values. Accessory uses a reusable four-hole button icon, and Finished Spec emits a
+fresh cm section followed by a separately fresh inch section derived from cm through the canonical
+1/8 formatter. The owner-applied branded Viewer V4 is preserved: new links use the configured
+`share.wafl.co.kr` origin, only `/v`, required framework assets, and the exact public Viewer APIs are
+admitted on that host, while root/private routes stay 404 and internal file APIs remain workspace-
+authenticated. Evidence is recorded in `88-final-pdf-monochrome-branded-viewer-evidence.md`; only
+the new PDF visual delta remains physical re-QA.

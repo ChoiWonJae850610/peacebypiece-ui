@@ -4,8 +4,19 @@ $ErrorActionPreference = "Stop"
 $nodeToolchain = Resolve-WaflQaCanonicalNodeToolchain
 if ($nodeToolchain.Version -ne "v24.14.0") { throw "CANONICAL_NODE_VERSION_CONTRACT_FAILED" }
 if (-not (Test-Path -LiteralPath $nodeToolchain.Node -PathType Leaf)) { throw "CANONICAL_NODE_TOOLCHAIN_INCOMPLETE" }
-$firewallRule = Test-WaflQaMetroFirewallRule -NodePath $nodeToolchain.Node -Port 8081
-if (-not $firewallRule.Ready) { throw "CANONICAL_METRO_FIREWALL_CONTRACT_FAILED" }
+$commonSource = Get-Content -LiteralPath (Join-Path $PSScriptRoot "..\tools\dev\wafl-external-qa-common.ps1") -Raw
+foreach ($requiredFirewallContract in @(
+    'function Test-WaflQaMetroFirewallRule',
+    'WAFL-Metro-8081-Tailscale-Node24',
+    'Profile -match "Private"',
+    "RemoteAddress -join",
+    '100\.64\.0\.0',
+    'ProgramMatches'
+)) {
+    if (-not $commonSource.Contains($requiredFirewallContract)) {
+        throw "CANONICAL_METRO_FIREWALL_STATIC_CONTRACT_FAILED"
+    }
+}
 
 $values = @("100.64.0.1", "100.127.255.254", "100.128.0.1", "127.0.0.1", "192.168.1.5", "not-an-ip")
 $expected = @($true, $true, $false, $false, $false, $false)
@@ -68,6 +79,7 @@ $cloudState = [pscustomobject]@{
     tailscaleIpv4 = '100.70.80.90'
     tailscaleServeHostname = 'wafl-device.example.ts.net'
     publicOrigin = 'https://wafl-device.example.ts.net'
+    publicDocumentViewerOrigin = 'https://share.wafl.co.kr'
     expoUrl = 'http://100.70.80.90:8081'
     metroAdvertisedHost = '100.70.80.90'
     iosManifestLaunchHost = '100.70.80.90'
@@ -102,6 +114,22 @@ $waflRouteConfig = [pscustomobject]@{
 }
 $waflRouteCloudflared = Get-WaflQaCloudflaredProcessPolicy -State $cloudState -Processes @($cloudProcess) -ProcessMetadata @($cloudMetadata) -DiagnosticConfigs @($waflRouteConfig)
 if ($waflRouteCloudflared.Ready -or $waflRouteCloudflared.ForbiddenCount -ne 1) { throw 'WAFL_ROUTE_CLOUDFLARED_NOT_BLOCKED' }
+$approvedViewerConfig = [pscustomobject]@{
+    ProcessId = 26756
+    Available = $true
+    JsonText = '{"config":{"ingress":[{"hostname":"share.wafl.co.kr","service":"http://127.0.0.1:3100"},{"hostname":"","service":"http_status:404"}]}}'
+}
+$approvedViewerCloudflared = Get-WaflQaCloudflaredProcessPolicy -State $cloudState -Processes @($cloudProcess) -ProcessMetadata @($cloudMetadata) -DiagnosticConfigs @($approvedViewerConfig)
+if (-not $approvedViewerCloudflared.Ready -or $approvedViewerCloudflared.ApprovedPublicViewerCount -ne 1 -or $approvedViewerCloudflared.ForbiddenCount -ne 0) {
+    throw 'EXACT_BRANDED_PUBLIC_VIEWER_ROUTE_NOT_ALLOWED'
+}
+$wrongViewerHostConfig = [pscustomobject]@{
+    ProcessId = 26756
+    Available = $true
+    JsonText = '{"config":{"ingress":[{"hostname":"other.example.com","service":"http://127.0.0.1:3100"},{"hostname":"","service":"http_status:404"}]}}'
+}
+$wrongViewerHostCloudflared = Get-WaflQaCloudflaredProcessPolicy -State $cloudState -Processes @($cloudProcess) -ProcessMetadata @($cloudMetadata) -DiagnosticConfigs @($wrongViewerHostConfig)
+if ($wrongViewerHostCloudflared.Ready -or $wrongViewerHostCloudflared.ForbiddenCount -ne 1) { throw 'NON_VIEWER_NEXT_ROUTE_NOT_BLOCKED' }
 $unknownCloudflared = Get-WaflQaCloudflaredProcessPolicy -State $cloudState -Processes @($cloudProcess) -ProcessMetadata @($cloudMetadata) -DiagnosticConfigs @()
 if ($unknownCloudflared.Ready -or $unknownCloudflared.UnverifiedCount -ne 1) { throw 'UNKNOWN_CLOUDFLARED_PROVENANCE_NOT_BLOCKED' }
 $quickMetadata = $cloudMetadata.PSObject.Copy()

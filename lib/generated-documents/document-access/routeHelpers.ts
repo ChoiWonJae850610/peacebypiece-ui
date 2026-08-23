@@ -4,6 +4,7 @@ import { randomUUID } from "node:crypto";
 import { NextResponse } from "next/server";
 
 import { requireWorkspaceApiGuard } from "@/lib/auth/apiRouteGuards";
+import { assertPdfViewerOriginPolicy } from "@/lib/generated-documents/work-order-pdf/viewerOriginPolicy";
 import {
   DOCUMENT_VIEWER_COOKIE,
   DOCUMENT_VIEWER_COOKIE_PATH,
@@ -12,6 +13,7 @@ import {
   createDocumentShare,
   DocumentAccessServiceError,
   getDocumentShares,
+  getDocumentViewerTarget,
   getPublicDocumentSession,
   readPublicDocumentAttachment,
   readPublicDocumentPdf,
@@ -43,6 +45,19 @@ function requestOrigin(request: Request): string {
   const proto = request.headers.get("x-forwarded-proto")?.trim();
   const host = request.headers.get("x-forwarded-host")?.trim();
   return proto && host ? `${proto}://${host}` : new URL(request.url).origin;
+}
+
+function documentViewerOrigin(request: Request): string {
+  const configured = String(process.env.WAFL_PUBLIC_DOCUMENT_VIEWER_ORIGIN ?? "").trim();
+  if (!configured) return requestOrigin(request);
+  const runtime = String(process.env.WAFL_SERVER_RUNTIME_MODE ?? "").trim().toLowerCase() === "production"
+    ? "production"
+    : "development";
+  return assertPdfViewerOriginPolicy({
+    origin: configured,
+    runtime,
+    persistence: "generated-document",
+  });
 }
 
 async function readBoundedObject(request: Request, maxBytes: number): Promise<Record<string, unknown>> {
@@ -99,7 +114,7 @@ export async function handleCreateDocumentAccessToken(request: Request, generate
       generatedDocumentId,
       idempotencyKey,
       expiresInDays: body.expiresInDays === undefined ? undefined : Number(body.expiresInDays),
-      origin: requestOrigin(request),
+      origin: documentViewerOrigin(request),
       scope: guard.scope,
       companyMemberId: guard.session.companyMemberId,
       correlationId,
@@ -107,6 +122,26 @@ export async function handleCreateDocumentAccessToken(request: Request, generate
     return NextResponse.json({ ok: true, data: created }, {
       status: created.idempotentReplay ? 200 : 201,
       headers: { "Cache-Control": "no-store", "X-WAFL-Correlation-Id": correlationId },
+    });
+  } catch (error) {
+    return internalError(error, correlationId);
+  }
+}
+
+export async function handleGetDocumentViewerTarget(request: Request, generatedDocumentId: string) {
+  const correlationId = randomUUID();
+  const guard = await requireWorkspaceApiGuard({ permissionCode: "workorder.read" });
+  if (!guard.ok) return guard.response;
+  try {
+    const data = await getDocumentViewerTarget({
+      generatedDocumentId,
+      origin: documentViewerOrigin(request),
+      scope: guard.scope,
+      companyMemberId: guard.session.companyMemberId,
+      correlationId,
+    });
+    return NextResponse.json({ ok: true, data }, {
+      headers: { "Cache-Control": "private, no-store", "X-WAFL-Correlation-Id": correlationId },
     });
   } catch (error) {
     return internalError(error, correlationId);
@@ -142,7 +177,7 @@ export async function handleRotateDocumentAccessToken(request: Request, generate
       tokenId,
       idempotencyKey: request.headers.get("idempotency-key") ?? "",
       expiresInDays: body.expiresInDays === undefined ? undefined : Number(body.expiresInDays),
-      origin: requestOrigin(request),
+      origin: documentViewerOrigin(request),
       scope: guard.scope,
       companyMemberId: guard.session.companyMemberId,
       correlationId,

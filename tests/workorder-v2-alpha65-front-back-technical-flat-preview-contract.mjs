@@ -39,10 +39,12 @@ for (const categoryCode of categories) {
     assetViews += 1;
   }
   const guides = WAFL_SPEC_MEASUREMENT_DIAGRAMS[categoryCode].guides;
-  assert.equal(guides.length, WAFL_SYSTEM_SPEC_ITEM_CATALOG[categoryCode].length);
+  const catalogKeys = new Set(WAFL_SYSTEM_SPEC_ITEM_CATALOG[categoryCode].map((item) => item.key));
+  assert.ok(guides.length > 0 && guides.length <= catalogKeys.size);
   assert.ok(guides.some((guide) => guide.side === "front"), `${categoryCode} has a front-owned preview`);
   assert.ok(guides.some((guide) => guide.side === "back"), `${categoryCode} has a back-owned preview`);
   for (const guide of guides) {
+    assert.ok(catalogKeys.has(guide.specKey), `${guide.specKey} remains a canonical category POM`);
     assert.equal(WAFL_SPEC_MEASUREMENT_SIDE_BY_KEY[guide.specKey], guide.side, `${guide.specKey} has one stable side owner`);
     assert.ok(sides.includes(guide.side));
     assert.ok(guide.measurementPoints.every(([x, y]) => Number.isFinite(x) && Number.isFinite(y) && x >= 0 && x <= 360 && y >= 0 && y <= 280));

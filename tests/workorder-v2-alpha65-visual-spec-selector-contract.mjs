@@ -28,10 +28,11 @@ for (const categoryCode of ["T", "B", "O", "D"]) {
   const definition = WAFL_SPEC_MEASUREMENT_DIAGRAMS[categoryCode];
   assert.ok(definition, `${categoryCode} visual definition is required`);
   const catalog = WAFL_SYSTEM_SPEC_ITEM_CATALOG[categoryCode];
-  assert.equal(definition.guides.length, catalog.length, `${categoryCode} maps every WAFL-provided item`);
-  assert.deepEqual(definition.guides.map((item) => item.specKey), catalog.map((item) => item.key));
-  for (const [index, guide] of definition.guides.entries()) {
-    const catalogItem = catalog[index];
+  assert.ok(definition.guides.length <= catalog.length, `${categoryCode} visual guide is a stable catalog subset`);
+  for (const guide of definition.guides) assert.ok(catalog.some((item) => item.key === guide.specKey), `${guide.specKey} has one canonical catalog owner`);
+  for (const guide of definition.guides) {
+    const catalogItem = catalog.find((item) => item.key === guide.specKey);
+    assert.ok(catalogItem);
     assert.equal(guide.displayName, catalogItem.displayName);
     assert.equal(guide.code, catalogItem.code);
     assert.ok(guide.measurementPoints.length >= 2, `${guide.specKey} owns a real measurement span`);

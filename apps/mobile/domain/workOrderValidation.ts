@@ -16,6 +16,7 @@ import {
   materialQuantityPrecisionMessage,
 } from "./materialQuantityPrecision.ts";
 import { isIntegerWonValue } from "./integerWonInputPolicy.ts";
+import { MATERIAL_MEMO_MAX_LENGTH, MATERIAL_USAGE_AREA_MAX_LENGTH } from "./materialTextPolicy.ts";
 
 export type BasicInfoDraft = {
   readonly productName: string;
@@ -166,8 +167,8 @@ export function validateMaterialDraft(input: MaterialDraftInput, materialType: M
   const nameLabel = materialType === "accessory" ? "부자재명" : "원단명";
   if (draft.name.trim().length < 1 || draft.name.trim().length > 200) errors.name = `${nameLabel}은 1자 이상 200자 이하여야 합니다.`;
   if (draft.colorOption.trim().length > 200) errors.colorOption = "색상·옵션은 200자 이하여야 합니다.";
-  if (draft.usageArea.trim().length > 1000) errors.usageArea = "사용부위는 1,000자 이하여야 합니다.";
-  if (draft.memo.trim().length > 2000) errors.memo = "메모는 2,000자 이하여야 합니다.";
+  if (draft.usageArea.trim().length > MATERIAL_USAGE_AREA_MAX_LENGTH) errors.usageArea = `사용부위는 ${MATERIAL_USAGE_AREA_MAX_LENGTH}자 이하여야 합니다.`;
+  if (draft.memo.trim().length > MATERIAL_MEMO_MAX_LENGTH) errors.memo = `메모는 ${MATERIAL_MEMO_MAX_LENGTH}자 이하여야 합니다.`;
   if (draft.unitCode.trim().length < 1 || draft.unitCode.trim().length > 32) errors.unitCode = "단위는 1자 이상 32자 이하여야 합니다.";
   for (const field of ["requiredQuantity", "allowanceQuantity"] as const) {
     if (!MATERIAL_QUANTITY_PATTERN.test(numericDraft[field])) errors[field] = materialQuantityPrecisionMessage();

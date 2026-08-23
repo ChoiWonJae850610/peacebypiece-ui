@@ -62,16 +62,14 @@ assert.match(sizeRepository, /readDeleteReplay/);
 assert.match(sizeRoute, /"size-delete"[\s\S]+"color-delete"/);
 
 assert.match(materialRepository, /export async function deleteMaterialLineV2/);
-assert.match(materialRepository, /target\.requested_at !== null/);
-assert.match(materialRepository, /target\.cancelled_at !== null/);
-assert.match(materialRepository, /target\.completed_at !== null/);
+assert.match(materialRepository, /resolveMaterialRemovalMode/);
 assert.match(materialRepository, /metadata->>'materialLineId'/);
 assert.match(materialRepository, /DELETE FROM work_order_material_lines/);
 assert.match(materialRoute, /input\.kind === "delete"[\s\S]+getWorkOrderV2MaterialHardDeleteMutationRuntimeGuard/);
 assert.match(read("lib/domain/work-orders/command/runtimeGuard.ts"), /getWorkOrderV2MaterialHardDeleteMutationRuntimeGuard[\s\S]+MAKER_QA_CAPABILITY\.MATERIAL_HARD_DELETE/);
 
 assert.match(mobile, /workOrderMutationController\.deleteMaterial/);
-assert.doesNotMatch(mobile, /workOrderMutationController\.archiveMaterial/);
+assert.match(mobile, /workOrderMutationController\.archiveMaterial/);
 assert.doesNotMatch(mobile, /materials\(workOrderId, materialType, null, "archived"\)/);
 assert.match(structureEditor, /confirmWaflDestructiveAction/);
 assert.match(structureEditor, /summarizeStagedDeletionQuantity[\s\S]+createStagedDeletionMessage/);

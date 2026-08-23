@@ -108,7 +108,7 @@ assert.doesNotMatch(coreMapper, /storage_object_key|thumbnail_object_key/i, "raw
 assert.match(materialsSql, /work_order_material_lines/, "materials endpoint must read material lines");
 assert.doesNotMatch(materialsSql, /\bpartners\b/, "v2 tenant material read must not depend on ungranted legacy partner tables");
 assert.doesNotMatch(materialsSql, /work_order_processes|work_order_images|generated_documents|color_size_quantities/, "materials endpoint must not eager-load other tabs");
-assert.match(materialsSql, /NOT EXISTS[\s\S]*domain_events[\s\S]*materialLineId/, "alpha.60 delete eligibility may consult only bounded material lifecycle event history");
+assert.match(materialsSql, /EXISTS[\s\S]*domain_events[\s\S]*materialLineId/, "current removal policy may consult only bounded material lifecycle event history");
 assert.match(sizeColorSql, /work_order_colors[\s\S]*work_order_sizes[\s\S]*color_size_quantities/, "size-color endpoint must read only its matrix tables");
 assert.doesNotMatch(sizeColorSql, /work_order_material_lines|work_order_processes|work_order_images|generated_documents|domain_events/, "size-color endpoint must not eager-load other tabs");
 for (const table of ["work_order_size_specs", "work_order_size_spec_sizes", "work_order_size_spec_poms", "work_order_size_spec_values", "work_order_sizes"]) {

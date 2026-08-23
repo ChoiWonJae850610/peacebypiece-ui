@@ -1,6 +1,6 @@
 import type { WorkOrderProcessStatus } from "@/domain/mobileContract";
 
-export type ProductionOrderAction = "request" | "cancel" | "complete";
+export type ProductionOrderAction = "request" | "cancel";
 
 export type ProductionOrderPolicy = {
   readonly label: "발주 전" | "발주요청" | "발주완료";
@@ -23,7 +23,7 @@ export function resolveProductionOrderPolicy(input: {
       label: "발주요청",
       locked: true,
       canEdit: false,
-      actions: input.currentDraft ? ["complete", "cancel"] : [],
+      actions: input.currentDraft ? ["cancel"] : [],
     };
   }
   return { label: "발주완료", locked: true, canEdit: false, actions: [] };

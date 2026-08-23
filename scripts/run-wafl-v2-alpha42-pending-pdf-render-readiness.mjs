@@ -344,8 +344,7 @@ async function main() {
     assert.ok(pdf.fileSizeBytes > 0);
     assert.match(pdf.contentSha256, /^[0-9a-f]{64}$/);
     assert.equal(pdf.pageCount, 3);
-    assert.equal(pdf.pageOrientations[0], "landscape");
-    assert.ok(pdf.pageOrientations.slice(1).every((orientation) => orientation === "portrait"));
+    assert.ok(pdf.pageOrientations.every((orientation) => orientation === "portrait"));
     assert.equal(pdf.blankPageCount, 0);
     assert.equal(pdf.clippingViolationCount, 0);
     assert.ok(pdf.coverFragmentationOverflowPx <= 2);

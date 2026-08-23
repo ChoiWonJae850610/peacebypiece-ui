@@ -61,6 +61,8 @@ export function normalizeAcquiredImageFile(asset: ImagePicker.ImagePickerAsset, 
   const fileName = /\.(jpe?g|png|webp)$/i.test(candidate)
     ? candidate
     : `wafl-work-order-${Date.now()}.${extension}`;
-  const size = asset.fileSize && asset.fileSize > 0 ? asset.fileSize : blob.size;
+  // The fetched Blob is the exact payload passed to the upload transport. Expo's
+  // advisory asset.fileSize can describe the pre-export library asset on iOS.
+  const size = blob.size;
   return { name: fileName, type: mimeType, size };
 }

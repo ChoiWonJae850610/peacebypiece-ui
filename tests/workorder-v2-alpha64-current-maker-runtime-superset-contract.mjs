@@ -20,12 +20,15 @@ const current = {
   WAFL_V2_DOCUMENT_VIEWER_MUTATION_APPROVED: MAKER_QA_APPROVAL.ALPHA64_CURRENT,
 };
 const uuid = "10000000-0000-4000-8000-000000000001";
-const capabilities = Object.values(MAKER_QA_CAPABILITY).filter((item) => ![MAKER_QA_CAPABILITY.LEGACY_MATERIAL_ARCHIVE, MAKER_QA_CAPABILITY.PRODUCTION_AUTHORING].includes(item));
+const capabilities = Object.values(MAKER_QA_CAPABILITY).filter((item) => ![
+  MAKER_QA_CAPABILITY.PRODUCTION_AUTHORING,
+  MAKER_QA_CAPABILITY.REORDER_CREATE,
+].includes(item));
 
 assert.equal(resolveMakerQaProfile(current)?.id, MAKER_QA_PROFILE.ALPHA64_CURRENT);
 assert.deepEqual(new Set(listMakerQaCapabilities(current)), new Set(capabilities));
 for (const capability of capabilities) assert.equal(isMakerQaCapabilityEnabled(current, capability), true, capability);
-assert.equal(isMakerQaCapabilityEnabled(current, MAKER_QA_CAPABILITY.LEGACY_MATERIAL_ARCHIVE), false);
+assert.equal(isMakerQaCapabilityEnabled(current, MAKER_QA_CAPABILITY.LEGACY_MATERIAL_ARCHIVE), true);
 
 const boundedLegacy = {
   WAFL_SERVER_RUNTIME_MODE: "dev",
@@ -59,6 +62,7 @@ const allowed = [
   [`/api/v2/work-orders/${uuid}/materials/${uuid}`, "DELETE", "material-delete"],
   [`/api/v2/work-orders/${uuid}/materials/${uuid}/order-request`, "POST", "order-request"],
   [`/api/v2/work-orders/${uuid}/materials/${uuid}/order-cancel`, "POST", "order-cancel"],
+  [`/api/v2/work-orders/${uuid}/materials/${uuid}/archive`, "POST", "history-preserving-remove"],
   [`/api/v2/work-orders/${uuid}/attachments/${uuid}/output-include`, "PATCH", "document-attachment"],
   [`/api/v2/work-orders/${uuid}/revisions/issue`, "POST", "issue-r0"],
   [`/api/v2/work-orders/${uuid}/documents/generate`, "POST", "generate-r0"],
@@ -71,7 +75,6 @@ for (const [pathname, method, label] of allowed) {
 
 for (const [pathname, method] of [
   ["/api/v2/address-search", "POST"],
-  [`/api/v2/work-orders/${uuid}/materials/${uuid}/archive`, "POST"],
   [`/api/v2/work-orders/${uuid}/documents/generate`, "DELETE"],
   ["/api/v2/work-orders/reset", "POST"],
   ["/api/v2/system/seed", "POST"],

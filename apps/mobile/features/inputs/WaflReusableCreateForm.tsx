@@ -1,10 +1,11 @@
 import type { ReactNode, Ref } from "react";
-import { ActivityIndicator, Pressable, StyleSheet, Text, type TextInput, View } from "react-native";
+import { Pressable, StyleSheet, Text, type TextInput, View } from "react-native";
 import { ChevronLeft } from "lucide-react-native";
 
 import { WAFL_FONTS } from "@/constants/fonts";
 import { WAFL_THEME } from "@/constants/theme";
 import WaflSheetValueField from "./WaflSheetValueField";
+import WaflPrimaryActionButton from "./WaflPrimaryActionButton";
 
 type Props = {
   readonly backLabel: string;
@@ -38,9 +39,7 @@ export default function WaflReusableCreateForm(props: Props) {
       value={props.value}
     />
     {props.children}
-    <Pressable accessibilityLabel="추가" accessibilityRole="button" accessibilityState={{ busy: props.pending, disabled }} disabled={disabled} onPress={props.onCreate} style={({ pressed }) => [styles.createButton, disabled && styles.disabled, pressed && !disabled && styles.pressed]}>
-      {props.pending ? <ActivityIndicator color="#fff" /> : <Text style={styles.createText}>추가</Text>}
-    </Pressable>
+    <WaflPrimaryActionButton accessibilityLabel="추가" disabled={disabled} label="추가" onPress={props.onCreate} pending={props.pending} />
   </View>;
 }
 
@@ -48,8 +47,4 @@ const styles = StyleSheet.create({
   root: { gap: WAFL_THEME.layout.controlGap, paddingTop: WAFL_THEME.spacing.sm },
   backButton: { alignItems: "center", alignSelf: "flex-start", flexDirection: "row", minHeight: WAFL_THEME.touch.minimum, paddingRight: WAFL_THEME.spacing.md },
   backText: { color: WAFL_THEME.color.navyInk, fontFamily: WAFL_FONTS.bold, fontSize: WAFL_THEME.typography.actionLabel.fontSize },
-  createButton: { alignItems: "center", backgroundColor: WAFL_THEME.color.navyInk, borderRadius: WAFL_THEME.radius.field, justifyContent: "center", minHeight: 46, width: "100%" },
-  createText: { color: "#fff", fontFamily: WAFL_FONTS.bold, fontSize: WAFL_THEME.typography.bodyText.fontSize },
-  disabled: { opacity: 0.4 },
-  pressed: { opacity: 0.76 },
 });

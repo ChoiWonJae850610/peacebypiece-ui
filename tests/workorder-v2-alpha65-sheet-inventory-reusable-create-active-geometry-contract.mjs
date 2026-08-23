@@ -8,6 +8,7 @@ const read = (path) => fs.readFileSync(path, "utf8");
 const inputSheet = read("apps/mobile/features/inputs/WaflInputSheet.tsx");
 const address = read("apps/mobile/features/work-orders/documents/QuickDeliveryAddressSearchSheet.tsx");
 const reusable = read("apps/mobile/features/inputs/WaflReusableCreateForm.tsx");
+const primaryAction = read("apps/mobile/features/inputs/WaflPrimaryActionButton.tsx");
 const sizeColor = read("apps/mobile/features/work-orders/size-color/WorkOrderSizeColorStructureEditor.tsx");
 const spec = read("apps/mobile/features/work-orders/size-color/SpecItemSelectionSheet.tsx");
 const reelInline = read("apps/mobile/features/inputs/reel-picker/ReelInlineEditValue.tsx");
@@ -37,7 +38,8 @@ assert.doesNotMatch(address, /PanResponder|onResponderMove/u);
 
 // Size, Color and Spec use one field/action shell; palette remains Color-owned.
 assert.match(reusable, /WaflSheetValueField/u);
-assert.match(reusable, /width: "100%"/u);
+assert.match(reusable, /WaflPrimaryActionButton/u);
+assert.match(primaryAction, /width: "100%"/u);
 assert.equal((sizeColor.match(/<WaflReusableCreateForm/g) ?? []).length, 2);
 assert.equal((spec.match(/<WaflReusableCreateForm/g) ?? []).length, 1);
 assert.match(sizeColor, /<ColorGrid[\s\S]*<ReadOnlyColorValues/u);

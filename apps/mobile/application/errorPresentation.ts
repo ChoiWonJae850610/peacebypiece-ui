@@ -1,6 +1,6 @@
 import { MobileApiError } from "../domain/mobileContract.ts";
 
-export type ErrorRetryTarget = "boot" | "list" | "detail" | "disconnect";
+export type ErrorRetryTarget = "boot" | "list" | "detail" | "post-create-detail" | "disconnect";
 
 export type MobileErrorState = {
   readonly message: string;
@@ -30,6 +30,9 @@ export function customerMessage(error: unknown): string {
 }
 
 export function customerGuidance(error: unknown, retryTarget: ErrorRetryTarget): string {
+  if (retryTarget === "post-create-detail") {
+    return "생성된 리오더만 다시 불러옵니다. 리오더 생성 요청은 다시 보내지 않습니다.";
+  }
   if (retryTarget === "detail" && error instanceof MobileApiError && (error.code === "NOT_FOUND" || error.status === 404)) {
     return "목록으로 돌아가 다른 작업지시서를 선택하세요.";
   }

@@ -2,7 +2,6 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   Alert,
   Image,
-  Linking,
   Pressable,
   Share,
   StyleSheet,
@@ -18,7 +17,6 @@ import {
   FileText,
   Link2,
   Paperclip,
-  QrCode,
   RefreshCw,
   Share2,
   Truck,
@@ -53,6 +51,9 @@ import {
 import { resolveMobileApiUrl } from "@/lib/apiTransport";
 import { getWorkOrderMaterialPartners, getWorkOrderMaterials } from "@/lib/api/materialsApi";
 import QuickDeliveryFoundation from "./QuickDeliveryFoundation";
+import WaflAuthenticatedPdfViewer from "./WaflAuthenticatedPdfViewer";
+import { prepareAuthenticatedDocumentPdfForSave } from "./authenticatedPdfTransport";
+import { buildWorkOrderShareMessage } from "./documentShareMessage";
 import { DOCUMENT_QUANTITY_INLINE_LIMIT, documentQuantityDisclosureRows } from "./quantityDisclosurePolicy";
 
 const SHARE_DAYS = [
@@ -63,6 +64,7 @@ const SHARE_DAYS = [
 
 const SUPPORTED_OUTPUT_IMAGE = /^image\/(?:jpeg|png|webp)$/i;
 const requestId = (kind: string) => `alpha64-${kind}-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
+const manualShareTokens = (items: readonly DocumentAccessTokenSummary[]) => items.filter((item) => item.tokenPurpose === "manual_share");
 
 type DocumentActionIcon = typeof ExternalLink;
 
@@ -110,10 +112,20 @@ function InfoRow({ label, value, placeholder = false }: { readonly label: string
   );
 }
 
-function formatDate(value: string | null, fallback: string) {
+function formatDateTime(value: string | null, fallback: string) {
   if (!value) return fallback;
   const date = new Date(value);
-  return Number.isNaN(date.getTime()) ? fallback : date.toLocaleDateString("ko-KR");
+  return Number.isNaN(date.getTime()) ? fallback : date.toLocaleString("ko-KR", { dateStyle: "short", timeStyle: "short" });
+}
+
+function DocumentAccessMetadata({ token }: { readonly token: DocumentAccessTokenSummary }) {
+  const rows = [
+    { label: "생성", value: formatDateTime(token.createdAt, "확인 필요") },
+    { label: "만료", value: token.expiresAt ? formatDateTime(token.expiresAt, "확인 필요") : "관리형" },
+    { label: "마지막 열람", value: token.lastAccessedAt ? formatDateTime(token.lastAccessedAt, "없음") : "없음" },
+    { label: "열람 횟수", value: `${token.accessCount.toLocaleString("ko-KR")}회` },
+  ] as const;
+  return <View style={styles.accessMetadata}>{rows.map((row) => <View key={row.label} style={styles.accessMetadataRow}><Text style={styles.accessMetadataLabel}>{row.label}</Text><Text style={styles.accessMetadataValue}>{row.value}</Text></View>)}</View>;
 }
 
 export default function WorkOrderDocumentWorkbench({ detail, attachments, sizeColorMatrix, onOpenSizeColor, onRefresh }: {
@@ -121,7 +133,7 @@ export default function WorkOrderDocumentWorkbench({ detail, attachments, sizeCo
   readonly attachments: readonly WorkOrderAttachmentAsset[];
   readonly sizeColorMatrix: WorkOrderSizeColorMatrix | null;
   readonly onOpenSizeColor: () => void;
-  readonly onRefresh: () => void;
+  readonly onRefresh: () => Promise<void> | void;
 }) {
   const attachmentProjectionKey = attachments.map((item) => `${item.id}:${item.includeInDocument ? 1 : 0}`).join(",");
   return (
@@ -141,7 +153,7 @@ function WorkOrderDocumentWorkbenchBody({ detail, attachments, sizeColorMatrix, 
   readonly attachments: readonly WorkOrderAttachmentAsset[];
   readonly sizeColorMatrix: WorkOrderSizeColorMatrix | null;
   readonly onOpenSizeColor: () => void;
-  readonly onRefresh: () => void;
+  readonly onRefresh: () => Promise<void> | void;
 }) {
   const [documents, setDocuments] = useState<readonly GeneratedWorkOrderDocument[]>([]);
   const [tokens, setTokens] = useState<readonly DocumentAccessTokenSummary[]>([]);
@@ -157,6 +169,7 @@ function WorkOrderDocumentWorkbenchBody({ detail, attachments, sizeColorMatrix, 
   const [quantityOpen, setQuantityOpen] = useState(false);
   const [quantitySheetOpen, setQuantitySheetOpen] = useState(false);
   const [quickDeliveryOpen, setQuickDeliveryOpen] = useState(false);
+  const [documentViewerOpen, setDocumentViewerOpen] = useState(false);
   const [materialLines, setMaterialLines] = useState<readonly WorkOrderMaterialLine[]>([]);
   const [partnerOptions, setPartnerOptions] = useState<readonly MaterialPartnerOption[]>([]);
 
@@ -170,8 +183,35 @@ function WorkOrderDocumentWorkbenchBody({ detail, attachments, sizeColorMatrix, 
     const page = await getWorkOrderDocuments(detail.header.id);
     setDocuments(page.items);
     const current = page.items.find((item) => item.status === "generated");
-    setTokens(current ? await listDocumentAccessTokens(current.id) : []);
+    setTokens(current ? manualShareTokens(await listDocumentAccessTokens(current.id)) : []);
+    return page;
   }, [detail.header.id]);
+
+  const generateAndReconcile = useCallback(async (kind: string) => {
+    let generatedDocumentId: string | null = null;
+    let requestError: unknown = null;
+    try {
+      const result = await generateWorkOrderR0(detail.header.id, detail.header.currentRevisionId, requestId(kind));
+      generatedDocumentId = result.generatedDocumentId;
+      if (result.status === "generated") {
+        await load();
+        return;
+      }
+    } catch (error) {
+      requestError = error;
+    }
+    for (let attempt = 0; attempt < 45; attempt += 1) {
+      const page = await load();
+      const current = generatedDocumentId
+        ? page.items.find((item) => item.id === generatedDocumentId)
+        : page.items.find((item) => item.revisionId === detail.header.currentRevisionId && (item.status === "pending" || item.status === "generated"));
+      if (current?.status === "generated") return;
+      if (current?.status === "failed") throw requestError ?? new Error("PDF_GENERATION_FAILED");
+      if (!current && requestError) throw requestError;
+      await new Promise((resolve) => setTimeout(resolve, 1_000));
+    }
+    throw requestError ?? new Error("PDF_GENERATION_RECONCILIATION_TIMEOUT");
+  }, [detail.header.currentRevisionId, detail.header.id, load]);
 
   useEffect(() => {
     onOpenSizeColor();
@@ -191,7 +231,7 @@ function WorkOrderDocumentWorkbenchBody({ detail, attachments, sizeColorMatrix, 
         setMaterialLines([...fabrics.items, ...accessories.items]);
         setPartnerOptions(partners.items);
         const current = page.items.find((item) => item.status === "generated");
-        const nextTokens = current ? await listDocumentAccessTokens(current.id) : [];
+        const nextTokens = current ? manualShareTokens(await listDocumentAccessTokens(current.id)) : [];
         if (active) setTokens(nextTokens);
       })
       .catch(() => { if (active) setMessage("문서 상태를 불러오지 못했습니다."); });
@@ -253,13 +293,13 @@ function WorkOrderDocumentWorkbenchBody({ detail, attachments, sizeColorMatrix, 
       });
       setVersion(issuedResult.nextVersion);
       try {
-        await generateWorkOrderR0(detail.header.id, detail.header.currentRevisionId, requestId("generate-r0"));
+        await generateAndReconcile("generate-r0");
         setMessage("작업 내용을 확정하고 문서를 만들었습니다.");
       } catch {
-        setMessage("작업 내용은 확정됐지만 PDF를 만들지 못했습니다. 문서에서 다시 생성해 주세요.");
+        setMessage("작업지시서는 생성되었습니다. PDF만 만들지 못했습니다.");
       }
       await load();
-      onRefresh();
+      await onRefresh();
     } catch {
       setMessage("생성에 필요한 정보와 최신 내용을 확인해 주세요.");
     } finally {
@@ -271,8 +311,7 @@ function WorkOrderDocumentWorkbenchBody({ detail, attachments, sizeColorMatrix, 
     setBusy(true);
     setMessage(null);
     try {
-      await generateWorkOrderR0(detail.header.id, detail.header.currentRevisionId, requestId("retry-generation"));
-      await load();
+      await generateAndReconcile("retry-generation");
       onRefresh();
       setMessage("PDF를 생성했습니다.");
     } catch {
@@ -289,8 +328,16 @@ function WorkOrderDocumentWorkbenchBody({ detail, attachments, sizeColorMatrix, 
     try {
       const expiresInDays = Number(selectedDays) as 1 | 7 | 30;
       const created = await createDocumentShare(generated.id, expiresInDays, requestId("manual-share"));
-      await Share.share({ title: "작업지시서", message: created.viewerUrl, url: created.viewerUrl });
-      setTokens(await listDocumentAccessTokens(generated.id));
+      await Share.share({
+        title: "작업지시서",
+        message: buildWorkOrderShareMessage({
+          productName: detail.header.productName,
+          totalQuantity: detail.header.totalQuantity,
+          dueDate: detail.header.dueDate,
+          viewerUrl: created.viewerUrl,
+        }),
+      });
+      setTokens(manualShareTokens(await listDocumentAccessTokens(generated.id)));
       setShareSheetOpen(false);
     } catch {
       setMessage("공유 링크를 만들지 못했습니다.");
@@ -299,17 +346,39 @@ function WorkOrderDocumentWorkbenchBody({ detail, attachments, sizeColorMatrix, 
     }
   }
 
-  async function openDocumentUrl(url: string | null, failureMessage: string) {
-    const resolved = resolveMobileApiUrl(url);
-    if (!resolved) {
-      setMessage(failureMessage);
+  async function saveDocument() {
+    if (!generated?.inlineUrl) {
+      setMessage("문서를 저장할 수 없습니다.");
       return;
     }
+    setBusy(true);
+    setMessage(null);
+    let saveFile: Awaited<ReturnType<typeof prepareAuthenticatedDocumentPdfForSave>> | null = null;
     try {
-      await Linking.openURL(resolved);
+      saveFile = await prepareAuthenticatedDocumentPdfForSave({
+        displayDocumentNumber: generated.displayDocumentNumber,
+        documentId: generated.id,
+        inlineUrl: generated.inlineUrl,
+      });
+      await Share.share({
+        title: saveFile.filename,
+        url: `file://${saveFile.path}`,
+      });
     } catch {
-      setMessage(failureMessage);
+      setMessage("문서를 저장할 수 없습니다.");
+    } finally {
+      if (saveFile) await saveFile.dispose();
+      setBusy(false);
     }
+  }
+
+  function openInAppDocumentViewer() {
+    if (!generated?.inlineUrl) {
+      setMessage("문서를 볼 수 없습니다.");
+      return;
+    }
+    setMessage(null);
+    setDocumentViewerOpen(true);
   }
 
   function confirmIssue() {
@@ -323,7 +392,7 @@ function WorkOrderDocumentWorkbenchBody({ detail, attachments, sizeColorMatrix, 
     }
     Alert.alert(
       "작업지시서를 생성할까요?",
-      "현재 제작 정보가 작업지시서로 확정되며, 이 R0은 생성 후 수정할 수 없습니다.",
+      "현재 입력한 내용으로 작업지시서를 생성합니다. 생성 후에는 내용을 수정할 수 없으니 한 번 더 확인해 주세요.",
       [
         { text: "취소", style: "cancel" },
         { text: "생성", onPress: () => void issueAndGenerate() },
@@ -343,7 +412,7 @@ function WorkOrderDocumentWorkbenchBody({ detail, attachments, sizeColorMatrix, 
           setBusy(true);
           try {
             await revokeDocumentAccessToken(generated.id, token.tokenId);
-            setTokens(await listDocumentAccessTokens(generated.id));
+            setTokens(manualShareTokens(await listDocumentAccessTokens(generated.id)));
           } catch {
             setMessage("문서 접근을 해제하지 못했습니다.");
           } finally {
@@ -423,13 +492,13 @@ function WorkOrderDocumentWorkbenchBody({ detail, attachments, sizeColorMatrix, 
           <CompactAction disabled={busy} emphasis="primary" icon={FileText} label="작업지시서 생성" onPress={confirmIssue} />
         ) : null}
         {failed && !generated ? (
-          <CompactAction disabled={busy} emphasis="primary" icon={RefreshCw} label="다시 생성" onPress={() => void retryGeneration()} />
+          <CompactAction disabled={busy} emphasis="primary" icon={RefreshCw} label="PDF 다시 생성" onPress={() => void retryGeneration()} />
         ) : null}
         {generated ? (
           <>
-            <CompactAction disabled={busy} icon={ExternalLink} label="보기" onPress={() => void openDocumentUrl(generated.inlineUrl, "문서를 열 수 없습니다.")} />
+            <CompactAction disabled={busy} icon={ExternalLink} label="보기" onPress={openInAppDocumentViewer} />
             <CompactAction disabled={busy} icon={Share2} label="공유" onPress={() => setShareSheetOpen(true)} />
-            <CompactAction disabled={busy} icon={Download} label="저장" onPress={() => void openDocumentUrl(generated.downloadUrl, "문서를 저장할 수 없습니다.")} />
+            <CompactAction disabled={busy} icon={Download} label="저장" onPress={() => void saveDocument()} />
           </>
         ) : null}
       </View>
@@ -444,18 +513,19 @@ function WorkOrderDocumentWorkbenchBody({ detail, attachments, sizeColorMatrix, 
       {generated ? (
         <View style={styles.secondaryControls} testID="document-secondary-controls">
           <Pressable accessibilityRole="button" onPress={() => setAccessManagementOpen((current) => !current)} style={styles.secondaryControlHeader}>
-            <View style={styles.secondaryControlTitle}><Link2 color={WAFL_THEME.color.deepNavy} size={17} /><Text style={styles.subhead}>공유·QR 관리</Text></View>
+            <View style={styles.secondaryControlTitle}><Link2 color={WAFL_THEME.color.deepNavy} size={17} /><Text style={styles.subhead}>공유 링크 관리</Text></View>
             <Text style={styles.secondaryControlToggle}>{accessManagementOpen ? "닫기" : `보기 ${tokens.length}`}</Text>
           </Pressable>
           {accessManagementOpen ? (
             <View style={styles.accessRows}>
-              {tokens.length === 0 ? <Text style={styles.meta}>활성 공유 링크나 PDF QR이 없습니다.</Text> : tokens.map((token) => (
+              {tokens.length === 0 ? <Text style={styles.meta}>활성 공유 링크가 없습니다.</Text> : tokens.map((token) => (
                 <View key={token.tokenId} style={styles.tokenRow}>
                   <View style={styles.tokenIdentity}>
-                    {token.tokenPurpose === "embedded_qr" ? <QrCode color={WAFL_THEME.color.deepNavy} size={17} /> : <Link2 color={WAFL_THEME.color.deepNavy} size={17} />}
+                    <Link2 color={WAFL_THEME.color.deepNavy} size={17} />
                     <View style={styles.flex}>
-                      <Text style={styles.tokenTitle}>{token.tokenPurpose === "embedded_qr" ? "PDF QR" : "공유 링크"}</Text>
-                      <Text style={styles.meta}>{token.expiresAt ? `${formatDate(token.expiresAt, "만료일 확인 필요")}까지` : "관리형"} · 열람 {token.accessCount}회 · {token.status === "active" ? "사용 중" : token.status === "revoked" ? "해제됨" : "만료됨"}</Text>
+                      <Text style={styles.tokenTitle}>공유 링크</Text>
+                      <Text style={styles.tokenStatus}>{token.status === "active" ? "사용 중" : token.status === "revoked" ? "해제됨" : "만료됨"}</Text>
+                      <DocumentAccessMetadata token={token} />
                     </View>
                   </View>
                   {token.status === "active" ? <CompactAction disabled={busy} emphasis="danger" icon={Link2} label="해제" onPress={() => confirmRevoke(token)} /> : null}
@@ -467,6 +537,16 @@ function WorkOrderDocumentWorkbenchBody({ detail, attachments, sizeColorMatrix, 
       ) : null}
 
       {message ? <Text accessibilityLiveRegion="polite" style={styles.message}>{message}</Text> : null}
+
+      {generated?.inlineUrl ? (
+        <WaflAuthenticatedPdfViewer
+          displayDocumentNumber={generated.displayDocumentNumber}
+          documentId={generated.id}
+          inlineUrl={generated.inlineUrl}
+          onClose={() => setDocumentViewerOpen(false)}
+          visible={documentViewerOpen}
+        />
+      ) : null}
 
       <WaflInputSheet
         cancelAccessibilityLabel="퀵 전달 편집 취소"
@@ -607,6 +687,11 @@ const styles = StyleSheet.create({
   tokenRow: { alignItems: "center", borderTopColor: "#ece4da", borderTopWidth: 1, flexDirection: "row", gap: 8, justifyContent: "space-between", paddingVertical: 9 },
   tokenIdentity: { alignItems: "center", flex: 1, flexDirection: "row", gap: 8, minWidth: 0 },
   tokenTitle: { color: "#433a32", fontFamily: WAFL_FONTS.bold, fontSize: 12 },
+  tokenStatus: { color: WAFL_THEME.color.readOnly, fontFamily: WAFL_FONTS.semibold, fontSize: 10, marginTop: 2 },
+  accessMetadata: { gap: 2, marginTop: 6 },
+  accessMetadataRow: { alignItems: "baseline", flexDirection: "row", gap: 8, minHeight: 18 },
+  accessMetadataLabel: { color: WAFL_THEME.color.readOnly, fontFamily: WAFL_FONTS.medium, fontSize: 10, width: 60 },
+  accessMetadataValue: { color: WAFL_THEME.color.deepNavy, flex: 1, fontFamily: WAFL_FONTS.medium, fontSize: 10, lineHeight: 15 },
   message: { backgroundColor: "#fff5e8", borderRadius: WAFL_THEME.radius.card, color: "#784325", fontFamily: WAFL_FONTS.body, fontSize: 11, lineHeight: 17, marginHorizontal: WAFL_THEME.spacing.md, padding: 9 },
   sheetHelp: { color: "#6c6055", fontFamily: WAFL_FONTS.body, fontSize: 12, lineHeight: 18, marginBottom: 10, marginTop: 8 },
   attachmentScroll: { maxHeight: 330 },

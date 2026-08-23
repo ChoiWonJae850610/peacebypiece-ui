@@ -7,7 +7,6 @@ import IssuedWorkOrderDocument, { type WorkOrderPreviewCoverFacts } from "./Issu
 import styles from "./IssuedWorkOrderPreview.module.css";
 
 const sampleCoverFacts: WorkOrderPreviewCoverFacts = {
-  productTypeLabel: "여성 원피스 / 여름 1차 생산",
   factoryName: "성수 어패럴",
   managerName: "김생산",
 };
@@ -23,10 +22,12 @@ type PdfFoundationMetadata = {
 export default function SampleIssuedWorkOrderPreview({
   data,
   representativeImageSrc = "/dev-samples/linen-round-dress-sketch.svg",
+  includedAttachmentImages,
   pdfFoundationMetadata,
 }: {
   readonly data: WorkOrderIssuedPreviewReadModel;
   readonly representativeImageSrc?: string;
+  readonly includedAttachmentImages?: readonly { readonly filename: string; readonly dataUrl: string }[];
   readonly pdfFoundationMetadata?: PdfFoundationMetadata;
 }) {
   return (
@@ -52,7 +53,7 @@ export default function SampleIssuedWorkOrderPreview({
         <div><span>실무형 샘플 작업지시서</span><strong>{data.document.displayDocumentNumber}</strong></div>
         <a className={styles.toolbarActionLink} href="/dev/workorder-preview-sample/pdf" title="샘플 PDF 다운로드"><Download aria-hidden="true" /><span>샘플 PDF 다운로드</span></a>
       </nav>
-      <IssuedWorkOrderDocument coverFacts={sampleCoverFacts} data={data} quantityUnit="장" representativeImageLabel="리넨 라운드 셔츠 원피스 앞면·뒷면 제품 스케치" representativeImageSrc={representativeImageSrc} />
+      <IssuedWorkOrderDocument coverFacts={sampleCoverFacts} data={data} includedAttachmentImages={includedAttachmentImages} quantityUnit="장" representativeImageLabel="리넨 라운드 셔츠 원피스 앞면·뒷면 제품 스케치" representativeImageSrc={representativeImageSrc} />
     </main>
   );
 }

@@ -133,6 +133,22 @@ export type WorkOrderDetailCoreReadModel = {
   };
 };
 
+export type WorkOrderSeriesHistoryItem = {
+  readonly workOrderId: WorkOrderId;
+  readonly productName: string;
+  readonly status: WorkOrderStatus;
+  readonly dueDate: IsoDate | null;
+  readonly totalQuantity: number;
+  readonly reorderRound: number;
+  readonly current: boolean;
+};
+
+export type WorkOrderSeriesHistoryReadModel = {
+  readonly workOrderId: WorkOrderId;
+  readonly seriesRootWorkOrderId: WorkOrderId;
+  readonly items: readonly WorkOrderSeriesHistoryItem[];
+};
+
 export type ParticipatingPartnerSummary = {
   readonly partnerId: PartnerId | null;
   readonly role: "fabric_supplier" | "accessory_supplier" | "factory" | "process_partner";
@@ -269,6 +285,7 @@ export type WorkOrderMaterialLineReadModel = {
   readonly editable: boolean;
   readonly locked: boolean;
   readonly deletable: boolean;
+  readonly removalMode: import("@/lib/domain/work-orders/materialRemovalPolicy").MaterialRemovalMode;
   readonly lifecycle: "active" | "archived";
   readonly archivedAt: IsoDateTime | null;
 };
@@ -498,6 +515,11 @@ export type WorkOrderIssuedPreviewReadModel = {
     readonly totalQuantity: number;
     readonly memo: string | null;
     readonly factoryDeliveryMemo: string | null;
+    readonly identity: {
+      readonly isSample: boolean;
+      readonly derivationKind: import("@/lib/domain/work-orders/contracts/lineage").WorkOrderDerivationKind;
+      readonly reorderRound: number;
+    };
   };
   readonly amounts: {
     readonly currency: CurrencyCode;

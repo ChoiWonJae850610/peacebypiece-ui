@@ -42,6 +42,7 @@ const expectedDependencies = {
   expo: "~55.0.28", "expo-constants": "~55.0.17", "expo-dev-client": "~55.0.37", "expo-font": "~55.0.8",
   "expo-document-picker": "~55.0.15", "expo-image-picker": "~55.0.22", "expo-linking": "~55.0.16", "expo-router": "~55.0.17", "lucide-react-native": "^1.24.0", react: "19.2.0",
   "react-dom": "19.2.0", "react-native": "0.83.6", "react-native-safe-area-context": "~5.6.2",
+  "react-native-blob-util": "0.24.7", "react-native-pdf": "7.0.4",
   "react-native-screens": "~4.23.0", "react-native-svg": "15.15.3", "react-native-web": "0.21.0",
 };
 assert.deepEqual(mobilePackage.dependencies, expectedDependencies, "native/dependency baseline must remain unchanged");
@@ -67,7 +68,7 @@ assert.doesNotMatch(entry, /ProductionCardMock/);
 
 for (const actualField of [
   "header.productName", "header.status", "header.totalQuantity", "header.dueDate",
-  "detail.amounts.unitPrice", "detail.amounts.fabricTotal", "detail.amounts.accessoryTotal", "detail.amounts.processTotal",
+  "detail.amounts.fabricTotal", "detail.amounts.accessoryTotal", "detail.amounts.processTotal",
   "detail.amounts.estimatedTotal", "header.readiness.issues", "detail.tabCounts",
 ]) assert.match(detail, new RegExp(actualField.replaceAll(".", "\\.")), `missing actual core mapping: ${actualField}`);
 assert.doesNotMatch(detail, /Revision\s*R/);
@@ -79,7 +80,7 @@ assert.match(display, /finalized: "확정됨"/);
 assert.match(display, /generated: "생성 완료"/);
 assert.match(detail, /대표 이미지 없음/);
 assert.match(detail, /WorkOrderImageGallery/);
-assert.match(detail, /1벌 원가/);
+assert.match(detail, /예상 1벌 원가/);
 assert.doesNotMatch(detail, /한 벌 예상/);
 assert.match(readinessActionRow, /발행 준비 완료/);
 assert.match(readinessActionRow, /발행 전 확인/);

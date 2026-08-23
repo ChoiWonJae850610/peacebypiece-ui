@@ -52,7 +52,7 @@ assert.doesNotMatch(basicInfoClient, /idempotencyKey|Idempotency-Key/);
 assert.match(app, /Object\.keys\(patch\)\.length === 0/);
 assert.match(app, /overviewMutation\.inFlight/);
 assert.match(app, /const saved = await workOrderMutationController\.updateOverview/);
-const saveBasicInfo = app.match(/async function saveBasicInfo\([^)]*\)[\s\S]*?\n  function reloadLatestBasicInfo/)?.[0] ?? "";
+const saveBasicInfo = app.match(/async function saveBasicInfo\([^)]*\)[\s\S]*?\n  async function reloadLatestBasicInfo/)?.[0] ?? "";
 assert.match(saveBasicInfo, /const refreshed: WorkOrderDetailCore =/);
 assert.match(saveBasicInfo, /entityVersion: saved\.nextVersion/);
 assert.match(saveBasicInfo, /productName: saved\.result\.productName/);

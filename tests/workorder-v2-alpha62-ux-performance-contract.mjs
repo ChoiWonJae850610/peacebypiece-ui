@@ -23,7 +23,7 @@ for (const label of ["WAFL 추천", "저장 스펙", "새 스펙 저장", "기�
 }
 assert.doesNotMatch(sheets, /현재 완성 스펙의 항목과 일치하는 값을|작업지시서 사이즈는 그대로 유지됩니다|아래 V를 누를 때만 변경됩니다/);
 assert.match(view, /loadedTemplateIdentity\.current === templateQueryIdentity/);
-assert.match(view, /getMeasurementTemplates\(current\.workOrderId, current\.categoryCode, current\.genderCode\)/);
+assert.match(view, /getMeasurementTemplates\(current\.workOrderId, effectiveCategoryCode, current\.genderCode\)/);
 assert.match(repository, /kind==="save-company-template"\|\|kind==="update-company-template"/);
 assert.match(repository, /templateVersion=predecessor\?Number\(predecessor\.template_version\)\+1:1/);
 assert.match(repository, /UPDATE size_spec_templates SET is_active=false/);

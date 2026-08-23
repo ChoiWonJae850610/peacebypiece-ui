@@ -20,6 +20,8 @@ import ExpandedInlineField from "@/components/ExpandedInlineField";
 import ReelInlineEditValue from "@/features/inputs/reel-picker/ReelInlineEditValue";
 import WaflReelPickerSheet from "@/features/inputs/reel-picker/WaflReelPickerSheet";
 import MaterialQuantityValue from "@/features/materials/MaterialQuantityValue";
+import WaflCharacterCounter from "@/features/inputs/WaflCharacterCounter";
+import { MATERIAL_MEMO_MAX_LENGTH, MATERIAL_USAGE_AREA_MAX_LENGTH } from "@/domain/materialTextPolicy";
 import MaterialPartnerPickerSheet from "@/features/materials/MaterialPartnerPickerSheet";
 import WaflSectionCard from "@/features/layout/WaflSectionCard";
 import WaflSectionHeaderAction from "@/features/layout/WaflSectionHeaderAction";
@@ -101,6 +103,7 @@ type MaterialInlineFieldProps = {
   readonly containerStyle?: object;
   readonly testID?: string;
   readonly onFieldFocus: Props["onFieldFocus"];
+  readonly characterMaximum?: number;
 };
 
 type ReelTarget = {
@@ -113,7 +116,7 @@ type ReelTarget = {
 function MaterialInlineField({
   field, label, line, editor, activeField, activeInlineSession, canEdit, displayValue, placeholder,
   onEdit, onChange, onCancel, onSave, keyboardType = "default", maxLength,
-  multiline = false, numberOfLines = 2, displayStyle, containerStyle, testID, onFieldFocus,
+  multiline = false, numberOfLines = 2, displayStyle, containerStyle, testID, onFieldFocus, characterMaximum,
 }: MaterialInlineFieldProps) {
   const active = editor?.materialLineId === line.id
     && activeField === field
@@ -125,6 +128,7 @@ function MaterialInlineField({
   const currentValue = active ? editor?.draft[field] ?? "" : lineDraft[field];
   const nullableText = field === "colorOption" || field === "usageArea" || field === "memo";
   return (
+    <>
     <ControlledInlineEditValue
       accessibilityLabel={label}
       active={active}
@@ -151,6 +155,8 @@ function MaterialInlineField({
       value={currentValue}
       valueSemantics={nullableText ? "nullable-text" : undefined}
     />
+    {active && characterMaximum ? <WaflCharacterCounter current={currentValue.length} maximum={characterMaximum} /> : null}
+    </>
   );
 }
 
@@ -423,7 +429,7 @@ function MaterialCard({ line, expanded, canEdit, lifecycleBusy, orderBusyAction,
           </View>
           )}
           <View style={styles.readOnlyRows}>
-            <View style={styles.readOnlyLine}><Text style={styles.readOnlyLabel}>사용부위</Text><MaterialInlineField {...inlineProps} containerStyle={styles.readOnlyInline} displayStyle={styles.readOnlyValue} displayValue={usageArea} field="usageArea" label="사용부위" maxLength={1000} multiline placeholder="미입력" testID="material-inline-usage-area" /></View>
+            <View style={styles.readOnlyLine}><Text style={styles.readOnlyLabel}>사용부위</Text><MaterialInlineField {...inlineProps} characterMaximum={MATERIAL_USAGE_AREA_MAX_LENGTH} containerStyle={styles.readOnlyInline} displayStyle={styles.readOnlyValue} displayValue={usageArea} field="usageArea" label="사용부위" maxLength={MATERIAL_USAGE_AREA_MAX_LENGTH} multiline placeholder="미입력" testID="material-inline-usage-area" /></View>
             <View style={styles.readOnlyLine}>
               <Text style={styles.readOnlyLabel}>메모</Text>
               <View style={styles.memoColumn}>
@@ -434,7 +440,8 @@ function MaterialCard({ line, expanded, canEdit, lifecycleBusy, orderBusyAction,
                   displayValue={memo}
                   field="memo"
                   label="메모"
-                  maxLength={2000}
+                  characterMaximum={MATERIAL_MEMO_MAX_LENGTH}
+                  maxLength={MATERIAL_MEMO_MAX_LENGTH}
                   multiline
                   numberOfLines={memoDisclosure.numberOfLines}
                   placeholder="없음"

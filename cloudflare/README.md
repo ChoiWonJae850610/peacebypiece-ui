@@ -9,6 +9,7 @@
 | 경로 | 역할 | 현재 판단 |
 | --- | --- | --- |
 | `cloudflare/r2-upload-worker.js` | R2 업로드·다운로드·삭제 요청을 중계하는 Worker 기준 파일 | 유지 |
+| `scripts/deploy-wafl-r2-upload-worker.mjs` | 현재 R2/Images bindings를 명시하고 기존 secret variable을 보존하는 exact-owned 배포 owner | 유지 |
 | `cloudflare/pdf-generator-worker/` | PDF Generator Worker의 Wrangler 배포 기준 폴더 | 유지 |
 | `cloudflare/pdf-generator-worker/src/index.js` | PDF Generator Worker 실제 엔트리 | 유지 |
 | `cloudflare/pdf-generator-worker/wrangler.toml` | PDF Generator Worker Wrangler 설정 | 유지 |
@@ -20,4 +21,5 @@
 - `.env.local`, 실제 Worker URL, R2 URL, secret key, 토큰은 Git에 포함하지 않는다.
 - PDF Generator Worker의 실제 배포는 `cloudflare/pdf-generator-worker/`에서 Wrangler로 진행한다.
 - R2 Worker와 PDF Generator Worker는 역할을 분리한다.
+- R2 Worker의 이미지 파생본 경로는 `R2_BUCKET`과 `IMAGES` binding을 모두 요구한다. 배포는 canonical script로만 수행하며 worker/bucket identity와 secret은 repository나 로그에 기록하지 않는다.
 - `cloudflare/pdf-generator-worker/package.json`은 루트 앱의 `package.json`과 별개인 Worker 전용 package 파일이다.

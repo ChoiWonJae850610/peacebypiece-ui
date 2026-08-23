@@ -121,7 +121,7 @@ assert.equal(mobileConfig.expo.ios.config.usesNonExemptEncryption, false);
 assert.equal(mobileConfig.expo.android.package, "com.wafl.app");
 assert.deepEqual(
   mobileConfig.expo.plugins.map((plugin) => Array.isArray(plugin) ? plugin[0] : plugin),
-  ["expo-router", "expo-image-picker", "expo-document-picker"],
+  ["expo-router", "@config-plugins/react-native-blob-util", "@config-plugins/react-native-pdf", "expo-image-picker", "expo-document-picker"],
 );
 const imagePickerPlugin = mobileConfig.expo.plugins.find((plugin) => Array.isArray(plugin) && plugin[0] === "expo-image-picker");
 assert.ok(imagePickerPlugin);

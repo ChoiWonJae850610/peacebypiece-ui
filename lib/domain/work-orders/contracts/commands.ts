@@ -51,6 +51,21 @@ export type CreateWorkOrderDraftCommand = CommandRequest & {
   readonly isSample: boolean;
 };
 
+export type CreateWorkOrderReorderCommand = CommandRequest & {
+  readonly idempotencyKey: IdempotencyKey;
+  readonly totalQuantity: number;
+  readonly dueDate?: IsoDate | null;
+};
+
+export type CreateWorkOrderReorderResult = WorkOrderDraftCommandResult & {
+  readonly derivationKind: "reorder";
+  readonly isSample: false;
+  readonly sourceWorkOrderId: WorkOrderId;
+  readonly sourceRevisionId: WorkOrderRevisionId;
+  readonly seriesRootWorkOrderId: WorkOrderId;
+  readonly reorderRound: number;
+};
+
 export type PatchWorkOrderBasicInfoCommand = VersionedWorkOrderCommand & {
   readonly patch: {
     readonly productName?: string;

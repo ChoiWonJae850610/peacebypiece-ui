@@ -24,6 +24,9 @@ function optionalString(value: unknown): string | null | undefined {
 
 export function normalizeMaterialLine(value: unknown): WorkOrderMaterialLine | null {
   if (!isJsonObject(value)) return null;
+  const removalMode = value.removalMode === undefined
+    ? (value.deletable === true ? "hard_delete" : "not_allowed")
+    : String(value.removalMode);
   const decimalFields = [
     value.requiredQuantity,
     value.allowanceQuantity,
@@ -48,6 +51,7 @@ export function normalizeMaterialLine(value: unknown): WorkOrderMaterialLine | n
     || !Number.isSafeInteger(value.displayOrder)
     || typeof value.locked !== "boolean"
     || typeof value.deletable !== "boolean"
+    || !["hard_delete", "history_preserving_remove", "not_allowed"].includes(removalMode)
     || (value.lifecycle !== "active" && value.lifecycle !== "archived")
     || !(value.archivedAt === null || typeof value.archivedAt === "string")
   ) return null;
@@ -72,6 +76,7 @@ export function normalizeMaterialLine(value: unknown): WorkOrderMaterialLine | n
     displayOrder: Number(value.displayOrder),
     locked: value.locked,
     deletable: value.deletable,
+    removalMode: removalMode as WorkOrderMaterialLine["removalMode"],
     lifecycle: value.lifecycle,
     archivedAt: value.archivedAt,
   };

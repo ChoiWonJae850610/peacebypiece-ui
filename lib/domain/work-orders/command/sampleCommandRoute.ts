@@ -50,16 +50,26 @@ export async function handleSetWorkOrderSampleV2(request: Request, workOrderId: 
       const updated = await client.query<DbQueryResultRow & { entity_version: number | string }>(`
         UPDATE work_orders SET is_sample=$4, entity_version=entity_version+1, updated_at=now()
         WHERE company_id=$1 AND id=$2::uuid AND entity_version=$3 AND deleted_at IS NULL
+          AND status = 'draft'
+          AND EXISTS (
+            SELECT 1 FROM work_order_revisions r
+            WHERE r.company_id = work_orders.company_id
+              AND r.id = work_orders.current_revision_id
+              AND r.revision_status = 'draft'
+          )
           AND (NOT $4::boolean OR (derivation_kind <> 'reorder' AND reorder_round = 0))
         RETURNING entity_version
       `, [guard.scope.companyId, workOrderId, body.expectedVersion, body.isSample]);
       if (!updated.rows[0]) {
-        const current = await client.query<DbQueryResultRow & { entity_version: number | string; derivation_kind: string; reorder_round: number | string }>(`
-          SELECT entity_version,derivation_kind,reorder_round FROM work_orders
-          WHERE company_id=$1 AND id=$2::uuid AND deleted_at IS NULL
+        const current = await client.query<DbQueryResultRow & { entity_version: number | string; derivation_kind: string; reorder_round: number | string; status: string; revision_status: string }>(`
+          SELECT w.entity_version,w.derivation_kind,w.reorder_round,w.status,r.revision_status
+          FROM work_orders w
+          JOIN work_order_revisions r ON r.company_id=w.company_id AND r.id=w.current_revision_id
+          WHERE w.company_id=$1 AND w.id=$2::uuid AND w.deleted_at IS NULL
         `, [guard.scope.companyId, workOrderId]);
         const row = current.rows[0];
         if (body.isSample && row && (row.derivation_kind === "reorder" || Number(row.reorder_round) >= 1)) throw new Error("SAMPLE_REORDER_FORBIDDEN");
+        if (row && (row.status !== "draft" || row.revision_status !== "draft")) throw new Error("IDENTITY_LOCKED");
         throw new Error("VERSION_OR_NOT_FOUND");
       }
       const nextVersion = Number(updated.rows[0].entity_version) as EntityVersion;
@@ -71,6 +81,7 @@ export async function handleSetWorkOrderSampleV2(request: Request, workOrderId: 
   } catch (error) {
     const message = error instanceof Error ? error.message : "";
     if (message === "VERSION_OR_NOT_FOUND") return createCommandErrorResponse({ code: "CONFLICT", message: "최신 상태를 다시 확인해 주세요.", status: 409, correlationId });
+    if (message === "IDENTITY_LOCKED") return createCommandErrorResponse({ code: "LOCKED", message: "진행 중인 작업지시서의 작업 구분은 변경할 수 없습니다.", status: 409, correlationId });
     if (message === "SAMPLE_REORDER_FORBIDDEN") return createCommandErrorResponse({ code: "VALIDATION_ERROR", message: "리오더 작업지시서는 본생산으로만 관리할 수 있습니다.", status: 409, correlationId });
     if (message === "IDEMPOTENCY_CONFLICT") return createCommandErrorResponse({ code: "CONFLICT", message: "같은 요청 식별값이 다른 변경에 사용되었습니다.", status: 409, correlationId });
     return createCommandErrorResponse({ code: "INTERNAL_ERROR", message: "작업 구분을 변경하지 못했습니다.", status: 500, retryable: true, correlationId });

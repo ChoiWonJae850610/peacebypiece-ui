@@ -23,6 +23,7 @@ import {
   ImageCommandRepositoryError,
   setRepresentativeWorkOrderImageV2,
   completeWorkOrderImageUploadV2,
+  reconcileCompletedWorkOrderImageUploadV2,
 } from "@/lib/domain/work-orders/command/imageCommandRepository";
 import {
   getWorkOrderV2ImageMutationRuntimeGuard,
@@ -41,10 +42,12 @@ import {
   createWorkOrderImageDerivativesViaWorker,
   deleteWorkOrderImageFamilyViaWorker,
   isR2WorkerUploadConfigured,
+  readR2ObjectViaWorker,
   R2WorkerRequestError,
 } from "@/lib/storage/r2/r2WorkerUpload";
 import { ATTACHMENT_SCOPE } from "@/lib/constants/workorderIdentity";
 import { validateAttachmentFile } from "@/lib/workorder/persistence/workOrderAttachmentPolicy";
+import { inspectUploadedWorkOrderImage } from "@/lib/workorder/persistence/imageAssetIntegrity.mjs";
 
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const IDEMPOTENCY_KEY_PATTERN = /^[A-Za-z0-9._:-]{12,180}$/;
@@ -352,6 +355,24 @@ export async function handleCompleteWorkOrderImageUpload(request: Request, workO
     if (!validation.ok) {
       throw new WorkOrderCommandRequestError({ code: "VALIDATION_ERROR", status: 400, message: validation.message });
     }
+    const uploaded = await readR2ObjectViaWorker({ key: storageObjectKey });
+    const actual = inspectUploadedWorkOrderImage({
+      declaredContentType: mimeType,
+      actualContentType: uploaded.contentType,
+      body: uploaded.body,
+    });
+    const actualQuota = await checkCompanyUploadStorageQuota({
+      companyId: tenantScope.companyId,
+      incomingSizeBytes: actual.sizeBytes,
+    });
+    if (!actualQuota.ok || actualQuota.decision.status === "blocked") {
+      await deleteWorkOrderImageFamilyViaWorker({ storageObjectKey });
+      throw new WorkOrderCommandRequestError({
+        code: "FORBIDDEN",
+        status: actualQuota.ok ? 409 : 503,
+        message: actualQuota.ok ? actualQuota.decision.message : actualQuota.message,
+      });
+    }
     const scopedKeyHash = sha256([
       IMAGE_UPLOAD_COMMAND_CODE,
       tenantScope.companyId,
@@ -365,7 +386,8 @@ export async function handleCompleteWorkOrderImageUpload(request: Request, workO
       storageObjectKey,
       originalFilename,
       mimeType,
-      sizeBytes,
+      sizeBytes: actual.sizeBytes,
+      contentSha256: actual.contentSha256,
     }));
     let derivatives;
     try {
@@ -394,14 +416,52 @@ export async function handleCompleteWorkOrderImageUpload(request: Request, workO
         storageObjectKey,
         thumbnailObjectKey: derivatives.thumbnail,
         originalFilename,
-        mimeType,
-        sizeBytes,
+        mimeType: actual.contentType,
+        sizeBytes: actual.sizeBytes,
+        contentSha256: actual.contentSha256,
       });
       return successResponse(result, correlationId, result.idempotentReplay ? 200 : 201);
     } catch (error) {
       if (error instanceof ImageCommandRepositoryError) mapRepositoryError(error);
       throw error;
     }
+  } catch (error) {
+    return routeError(error, correlationId);
+  }
+}
+
+export async function handleReconcileWorkOrderImageUpload(request: Request, workOrderId: string) {
+  const correlationId = randomUUID() as CorrelationId;
+  try {
+    if (!UUID_PATTERN.test(workOrderId)) {
+      throw new WorkOrderCommandRequestError({ code: "NOT_FOUND", status: 404, message: "작업지시서를 찾을 수 없습니다." });
+    }
+    const { guard, tenantScope } = await requireImageCommandScope(correlationId);
+    const idempotencyKey = readIdempotencyKey(request);
+    const clientRequestId = new URL(request.url).searchParams.get("clientRequestId")?.trim() ?? "";
+    if (!CLIENT_REQUEST_ID_PATTERN.test(clientRequestId)) {
+      throw new WorkOrderCommandRequestError({ code: "VALIDATION_ERROR", status: 400, message: "clientRequestId를 확인해 주세요." });
+    }
+    const scopedKeyHash = sha256([
+      IMAGE_UPLOAD_COMMAND_CODE,
+      tenantScope.companyId,
+      tenantScope.companyMemberId,
+      idempotencyKey,
+    ].join("\0"));
+    const result = await reconcileCompletedWorkOrderImageUploadV2({
+      scope: tenantScope,
+      assignedCompanyMemberId: assignedMemberId(guard.scope),
+      workOrderId: workOrderId as WorkOrderId,
+      imageId: deterministicUuid(scopedKeyHash),
+      scopedIdempotencyKeyHash: scopedKeyHash,
+    });
+    if (!result) {
+      return createWaflApiSuccess({ status: "pending", clientRequestId }, {
+        status: 202,
+        headers: { "Cache-Control": "no-store", "X-WAFL-Correlation-Id": correlationId },
+      });
+    }
+    return successResponse(result, correlationId, 200);
   } catch (error) {
     return routeError(error, correlationId);
   }

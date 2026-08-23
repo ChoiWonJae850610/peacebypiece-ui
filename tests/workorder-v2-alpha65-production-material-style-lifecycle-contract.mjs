@@ -39,7 +39,7 @@ assert.match(compactCard, /borderLeftWidth: WAFL_THEME\.accentCard\.width/u);
 assert.match(compactCard, /WaflCompactCardAction/u);
 
 assert.deepEqual(resolveProductionOrderPolicy({ status: "ready", currentDraft: true, editable: true }).actions, ["request"]);
-assert.deepEqual(resolveProductionOrderPolicy({ status: "in_progress", currentDraft: true, editable: false }).actions, ["complete", "cancel"]);
+assert.deepEqual(resolveProductionOrderPolicy({ status: "in_progress", currentDraft: true, editable: false }).actions, ["cancel"]);
 assert.deepEqual(resolveProductionOrderPolicy({ status: "completed", currentDraft: true, editable: false }).actions, []);
 assert.deepEqual(resolveProductionOrderPolicy({ status: "ready", currentDraft: false, editable: false }).actions, []);
 assert.match(api, /order-\$\{kind\}/u);
@@ -66,7 +66,7 @@ assert.match(production, /keyboardType=\{memo \? "default" : "number-pad"\}/u);
 assert.ok(validation.includes("const MONEY = /^(?:0|[1-9]\\d{0,11})$/u;"));
 assert.match(validation, /memo.*length <= 100/u);
 assert.match(production, /PRODUCTION_MEMO_MAX_LENGTH = 100/u);
-assert.match(production, /\{draft\.length\} \/ \{PRODUCTION_MEMO_MAX_LENGTH\}/u);
+assert.match(production, /<WaflCharacterCounter current=\{draft\.length\} maximum=\{PRODUCTION_MEMO_MAX_LENGTH\}/u);
 
 assert.match(reel, /selectFirstRealOption\?: boolean/u);
 assert.match(reel, /if \(props\.options\.length === 0\) return null/u);

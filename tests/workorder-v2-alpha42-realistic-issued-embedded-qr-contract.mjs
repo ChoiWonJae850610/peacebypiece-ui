@@ -92,12 +92,10 @@ assert.match(localRenderInput, /writeLocalIssuedPdfRenderInput/);
 assert.match(localRenderInput, /getLocalIssuedPdfRenderInputPath\(runToken\)/);
 assert.match(localRenderInput, /PDF_RENDER_INPUT_NOT_FOUND/);
 assert.match(localRenderInput, /PDF_RENDER_INPUT_INVALID/);
-assert.match(renderRoute, /decodeEmbeddedQrRenderContext/);
-assert.match(renderRoute, /createQrSvg\(embeddedQrContext\.viewerUrl\)/);
-assert.match(generatedPreview, /embeddedQr/);
-assert.match(documentRenderer, /data-wafl-embedded-qr="true"/);
-assert.equal((documentRenderer.match(/data-wafl-embedded-qr="true"/g) ?? []).length, 1);
-assert.match(documentRenderer, /PageNumberFooter pageNumber=\{1\}/);
+assert.doesNotMatch(renderRoute, /decodeEmbeddedQrRenderContext|createQrSvg/);
+assert.doesNotMatch(generatedPreview, /embeddedQr/);
+assert.doesNotMatch(documentRenderer, /data-wafl-embedded-qr="true"|QR/);
+assert.match(documentRenderer, /DocumentFooter data=\{data\} pageNumber=\{1\}/);
 
 assert.equal(fixture.productName, "리넨 라운드 셔츠 원피스");
 assert.equal(fixture.totalQuantity, 144);

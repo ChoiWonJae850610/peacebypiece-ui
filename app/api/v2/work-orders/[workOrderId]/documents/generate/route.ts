@@ -19,9 +19,6 @@ export async function POST(request: Request, context: RouteContext) {
     const body = await request.json() as { revisionId?: unknown };
     const revisionId = typeof body.revisionId === "string" ? body.revisionId : "";
     const { workOrderId } = await context.params;
-    const forwarded = request.headers.get("x-forwarded-proto") && request.headers.get("x-forwarded-host")
-      ? `${request.headers.get("x-forwarded-proto")}://${request.headers.get("x-forwarded-host")}`
-      : new URL(request.url).origin;
     const result = await generateIssuedWorkOrderDocument({
       scope: guard.scope,
       companyMemberId: guard.session.companyMemberId,
@@ -29,7 +26,6 @@ export async function POST(request: Request, context: RouteContext) {
       workOrderId,
       revisionId,
       idempotencyKey: request.headers.get("Idempotency-Key")?.trim() ?? "",
-      viewerOrigin: forwarded,
     });
     return createWaflApiSuccess(result, { headers: { "Cache-Control": "no-store", "X-WAFL-Correlation-Id": correlationId } });
   } catch (error) {

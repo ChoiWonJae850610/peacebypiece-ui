@@ -27,6 +27,8 @@ type Props = {
   readonly columns: readonly WaflFrozenAxisColumn[];
   readonly cornerLabel: ReactNode;
   readonly fullView?: boolean;
+  readonly fullViewVerticalOwner?: "parent" | "table";
+  readonly expandSingleColumn?: boolean;
   readonly rows: readonly WaflFrozenAxisRow[];
   readonly testID: string;
 };
@@ -36,7 +38,7 @@ type Props = {
  * Main cards scroll only on x. Full view additionally synchronizes body y with
  * the frozen label column while keeping the corner and header outside that y axis.
  */
-export default function WaflFrozenAxisTable({ columns, cornerLabel, fullView = false, rows, testID }: Props) {
+export default function WaflFrozenAxisTable({ columns, cornerLabel, fullView = false, fullViewVerticalOwner = "table", expandSingleColumn = false, rows, testID }: Props) {
   const headerRef = useRef<ScrollView>(null);
   const leftRef = useRef<ScrollView>(null);
 
@@ -46,6 +48,9 @@ export default function WaflFrozenAxisTable({ columns, cornerLabel, fullView = f
   const syncVertical = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
     leftRef.current?.scrollTo({ animated: false, y: event.nativeEvent.contentOffset.y });
   };
+  const parentOwnsVerticalScroll = fullView && fullViewVerticalOwner === "parent";
+  const fillSingleColumn = fullView && expandSingleColumn && columns.length === 1;
+  const dataCellStyle = fillSingleColumn ? [styles.dataCell, styles.expandedSingleDataCell] : styles.dataCell;
 
   const frozenLabels = rows.map((row) => (
     <View key={row.key} style={[styles.labelCell, row.emphasized && styles.emphasizedCell]}>
@@ -55,7 +60,7 @@ export default function WaflFrozenAxisTable({ columns, cornerLabel, fullView = f
   const bodyRows = rows.map((row) => (
     <View key={row.key} style={styles.row}>
       {row.cells.map((cell, index) => (
-        <View key={`${row.key}:${columns[index]?.key ?? index}`} style={[styles.dataCell, row.emphasized && styles.emphasizedCell]}>
+        <View key={`${row.key}:${columns[index]?.key ?? index}`} style={[dataCellStyle, row.emphasized && styles.emphasizedCell]}>
           {cell}
         </View>
       ))}
@@ -65,7 +70,11 @@ export default function WaflFrozenAxisTable({ columns, cornerLabel, fullView = f
   return <View style={styles.table} testID={testID}>
     <View style={styles.row}>
       <View style={[styles.cornerCell, styles.headerCell]}>{typeof cornerLabel === "string" ? <Text style={styles.headerText}>{cornerLabel}</Text> : cornerLabel}</View>
-      <ScrollView
+      {fillSingleColumn ? <View style={[styles.scrollingPane, styles.row]}>
+        {columns.map((column) => (
+          <View key={column.key} style={[dataCellStyle, styles.headerCell]}>{typeof column.label === "string" ? <Text numberOfLines={1} style={styles.headerText}>{column.label}</Text> : column.label}</View>
+        ))}
+      </View> : <ScrollView
         horizontal
         ref={headerRef}
         scrollEnabled={false}
@@ -73,11 +82,16 @@ export default function WaflFrozenAxisTable({ columns, cornerLabel, fullView = f
         style={styles.scrollingPane}
       >
         <View style={styles.row}>{columns.map((column) => (
-          <View key={column.key} style={[styles.dataCell, styles.headerCell]}>{typeof column.label === "string" ? <Text numberOfLines={1} style={styles.headerText}>{column.label}</Text> : column.label}</View>
+          <View key={column.key} style={[dataCellStyle, styles.headerCell]}>{typeof column.label === "string" ? <Text numberOfLines={1} style={styles.headerText}>{column.label}</Text> : column.label}</View>
         ))}</View>
-      </ScrollView>
+      </ScrollView>}
     </View>
-    {fullView ? <View style={[styles.row, styles.fullBodyViewport]}>
+    {parentOwnsVerticalScroll ? <View style={styles.row}>
+      <View style={styles.frozenColumn}>{frozenLabels}</View>
+      {fillSingleColumn ? <View style={styles.scrollingPane}>{bodyRows}</View> : <ScrollView horizontal onScroll={syncHorizontal} scrollEventThrottle={16} showsHorizontalScrollIndicator style={styles.scrollingPane}>
+        <View>{bodyRows}</View>
+      </ScrollView>}
+    </View> : fullView ? <View style={[styles.row, styles.fullBodyViewport]}>
       <ScrollView ref={leftRef} scrollEnabled={false} showsVerticalScrollIndicator={false} style={styles.frozenColumn}>{frozenLabels}</ScrollView>
       <ScrollView horizontal onScroll={syncHorizontal} scrollEventThrottle={16} showsHorizontalScrollIndicator style={styles.scrollingPane}>
         <ScrollView nestedScrollEnabled onScroll={syncVertical} scrollEventThrottle={16} showsVerticalScrollIndicator>{bodyRows}</ScrollView>
@@ -100,6 +114,7 @@ const styles = StyleSheet.create({
   cornerCell: { alignItems: "center", flexShrink: 0, justifyContent: "center", minHeight: WAFL_THEME.layout.frozenTableRowHeight, width: WAFL_THEME.layout.frozenTableLabelWidth },
   labelCell: { alignItems: "center", borderBottomColor: WAFL_THEME.color.border, borderBottomWidth: WAFL_THEME.border.hairline, borderRightColor: WAFL_THEME.color.border, borderRightWidth: WAFL_THEME.border.hairline, flexDirection: "row", justifyContent: "flex-start", minHeight: WAFL_THEME.layout.frozenTableRowHeight, paddingHorizontal: WAFL_THEME.layout.controlGap, width: WAFL_THEME.layout.frozenTableLabelWidth },
   dataCell: { alignItems: "center", borderBottomColor: WAFL_THEME.color.border, borderBottomWidth: WAFL_THEME.border.hairline, borderRightColor: WAFL_THEME.color.border, borderRightWidth: WAFL_THEME.border.hairline, justifyContent: "center", minHeight: WAFL_THEME.layout.frozenTableRowHeight, paddingHorizontal: WAFL_THEME.layout.tightGap, width: WAFL_THEME.layout.frozenTableCellWidth },
+  expandedSingleDataCell: { flex: 1, width: undefined },
   headerCell: { backgroundColor: WAFL_THEME.color.paperMuted, borderBottomColor: WAFL_THEME.color.border, borderBottomWidth: WAFL_THEME.border.hairline, borderRightColor: WAFL_THEME.color.border, borderRightWidth: WAFL_THEME.border.hairline },
   headerText: { color: WAFL_THEME.color.readOnly, fontFamily: WAFL_FONTS.semibold, fontSize: WAFL_THEME.typography.meta.fontSize, lineHeight: WAFL_THEME.typography.meta.lineHeight, textAlign: "center" },
   emphasizedCell: { backgroundColor: WAFL_THEME.color.fabricBeige },

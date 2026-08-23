@@ -197,6 +197,7 @@ export type DocumentAccessTokenSummary = {
   readonly createdAt: string;
   readonly expiresAt: string | null;
   readonly revokedAt: string | null;
+  readonly lastAccessedAt: string | null;
   readonly accessCount: number;
   readonly status: "active" | "expired" | "revoked";
 };
@@ -436,6 +437,7 @@ export type WorkOrderMaterialLine = {
   readonly displayOrder: number;
   readonly locked: boolean;
   readonly deletable: boolean;
+  readonly removalMode: "hard_delete" | "history_preserving_remove" | "not_allowed";
   readonly lifecycle: "active" | "archived";
   readonly archivedAt: string | null;
 };
@@ -629,6 +631,52 @@ export type CreateWorkOrderDraftResult = {
     readonly reorderRound: 0;
   };
   readonly nextVersion: number;
+};
+
+export type CreateWorkOrderReorderInput = {
+  readonly clientRequestId: string;
+  readonly totalQuantity: number;
+  readonly dueDate: string | null;
+};
+
+export type CreateWorkOrderReorderResult = {
+  readonly result: {
+    readonly workOrderId: string;
+    readonly revisionId: string;
+    readonly revisionNumber: 0;
+    readonly status: "draft";
+    readonly revisionStatus: "draft";
+    readonly displayDocumentNumber: null;
+    readonly productName: string;
+    readonly productTypeCode: string | null;
+    readonly seasonCode: string | null;
+    readonly itemCode: string | null;
+    readonly dueDate: string | null;
+    readonly totalQuantity: number;
+    readonly memo: string | null;
+    readonly factoryDeliveryMemo: string | null;
+    readonly isSample: false;
+    readonly derivationKind: "reorder";
+    readonly sourceWorkOrderId: string;
+    readonly sourceRevisionId: string;
+    readonly seriesRootWorkOrderId: string;
+    readonly reorderRound: number;
+  };
+  readonly nextVersion: number;
+};
+
+export type WorkOrderSeriesHistory = {
+  readonly workOrderId: string;
+  readonly seriesRootWorkOrderId: string;
+  readonly items: readonly {
+    readonly workOrderId: string;
+    readonly productName: string;
+    readonly status: string;
+    readonly dueDate: string | null;
+    readonly totalQuantity: number;
+    readonly reorderRound: number;
+    readonly current: boolean;
+  }[];
 };
 
 export type SetWorkOrderSampleInput = {

@@ -1,5 +1,13 @@
 # Maker WorkOrder Tab IA v2
 
+## Alpha.67 identity PICK, WAFL starter spec, and public canvas viewer
+
+Only an editable draft exposes the compact `본생산 / 샘플` control. After ISSUE the existing identity is fixed and the server rejects identity mutation; Reorder remains 본생산. Overview season uses a two-reel year/term WAFL PICK and category detail uses the exact category-scoped WAFL item list, with a nested local-only direct-input route for both.
+
+The four `WAFL 기본 … 스펙` entries are editable starter references, not universal sizing standards. Their source seed owns canonical cm values and category core/addon POMs. Normal Maker `스펙 불러오기 > WAFL 추천` exposes only the one current category-matched WAFL basic template; persisted QA/legacy system templates remain compatible internal data but are not product recommendations. `사용자 저장 스펙` remains an independent company list. Applying one projects values only onto sizes already selected in the WorkOrder; it does not add sizes, invent values for custom sizes, or mutate the product seed. Existing visual POM mappings remain canonical; new stable POM keys without an authored anchor are intentionally grid-only.
+
+Missing Fabric, missing Accessory, and incomplete optional material details are canonical readiness warnings. They appear in `발행 전 확인` but do not prevent issue when all hard blockers—including Basic Process readiness—are satisfied. Public `/v` draws every PDF page through the self-hosted PDF.js canvas owner so Kakao iOS does not depend on a browser PDF plug-in.
+
 Document role: current normative information-architecture owner for the six visible Maker WorkOrder mobile tabs. Shared visual tokens and components are owned by `11a-mobile-design-system-v2.md`; business behavior remains with domain/API contracts.
 
 ## Common frame
@@ -54,6 +62,11 @@ Fabric and Accessory remain under one visible `원부자재` tab. A compact same
 
 IA simplification review status: `OWNER_PHYSICAL_REVIEW_REQUIRED`. This switch is presentation-only. Fabric and Accessory retain separate DB/API/service/entity ownership, independent authoritative refresh, and unchanged add/edit/lock/order/delete behavior. Historical `fabric` and `accessory` navigation intents normalize to `원부자재` and select the matching category.
 
+Draft removal follows one history-aware presentation contract for both Fabric and Accessory. A
+never-requested editing row uses the normal hard-delete command. An editing row that returned from
+request cancellation remains visually removable but routes through the existing archive owner so
+order/cancel evidence is preserved. Requested or completed rows expose no delete action.
+
 Material unit, required quantity, allowance, and partner selection reuse the same reel owner and semantic adaptive geometry. Labeled Material fields may reuse the canonical sheet field presentation only when their normalization and lifecycle remain equivalent; numeric domain validation, readiness, and order semantics remain in the Material owners.
 
 ## Production
@@ -66,7 +79,13 @@ Alpha.65 extends the current v2 process owner into bounded draft authoring witho
 
 Derived `예상 공임` is intentionally absent from Production authoring UI. Server-owned `amount`, revision `process_total`/`estimated_total`, Overview/Document consumers, and total-quantity synchronization remain unchanged. Clearing the factory remains an explicit draft-only row delete and additional rows retain explicit delete; issued/locked projections expose no editing affordance.
 
-The Basic trailing action mirrors the current Material order action family while using existing process status values: `ready` is 발주 전, `in_progress` is 발주요청, and `completed` is 발주완료. Request requires a selected real factory, positive WorkOrder total, and positive integer-won labor cost; it locks Basic editing. Cancel returns only an in-progress Basic row to ready, and completion is terminal. Additional Process receives no order lifecycle action. Every transition retains expectedVersion, idempotency receipt, domain event, tenant/assignment guard, and draft/revision lock.
+The Basic trailing action mirrors the current Material order action family while using existing process status values: `ready` is 발주 전, `in_progress` is 발주요청, and `completed` is 발주완료. Request requires a selected real factory, positive WorkOrder total, and positive integer-won labor cost; it locks Basic editing. An `in_progress` Basic row exposes status plus the canonical cancel action only; it never exposes a separate manual complete action. Successful WorkOrder issue is the sole normal Maker completion trigger and atomically advances that requested Basic row. Additional Process receives no order lifecycle action. Every transition retains expectedVersion, idempotency receipt, domain event, tenant/assignment guard, and draft/revision lock.
+
+The requested-state cancel action uses the shared compact action button as icon plus `발주취소`, with the same height and padding family as request and a warning outline. Its pending, disabled, confirmation, and command semantics are unchanged. After issue succeeds, the authoritative refreshed detail projection patches the existing list item through the same workflow-status owner before list navigation. The affected filtered-list query is invalidated once and reconciled in the background on return, so `진행 중`, status-filter membership, and server ordering do not require manual refresh or a second status resolver.
+
+The earlier icon-only cancel presentation is superseded for the normal requested Basic path: it uses
+icon plus `발주취소`. No manual Basic completion action is exposed, and this visual change does not
+alter the command or introduce an Additional Process lifecycle.
 
 Factory and additional-process editors share the exact `메모` multiline field grammar, 100-character hard limit, and `N / 100` counter and persist it only to their own `work_order_processes.memo`. Partner-only and unit-price-only edits preserve the current row memo; nullable clear writes the canonical null state; deleting the factory row removes its memo with the row. Quantity/cost synchronization never resets process memo. The removed Image/Attachment factory-delivery memo UI does not trigger migration, bulk deletion, or automatic transfer of historical `work_order_revisions.factory_delivery_memo` values.
 
@@ -74,7 +93,7 @@ Production quantity is never a user field. `work_order_processes.quantity` is an
 
 ## Document
 
-The Document tab is one workbench: production overview, quantity disclosure, factory memo, weak divider, selected attachments, document attachment action, and Quick Delivery action. The irreversible issue/generate action retains its primary hierarchy. Viewer, share, managed QR, and output behaviors remain unchanged.
+The Document tab is one workbench: production overview, quantity disclosure, factory memo, weak divider, selected attachments, document attachment action, and Quick Delivery action. The irreversible issue/generate action retains its primary hierarchy. Its confirmation describes the immutable issue result without exposing the internal R0 label. If issue succeeds and PDF generation fails, the issued WorkOrder stays successful, the user sees the partial-success state, and `PDF 다시 생성` retries generation only; it never reissues the WorkOrder. The current Basic Process memo is the editable factory-delivery memo source; the legacy revision memo is read fallback only when that process memo is absent. Additional Process memos remain row-local.
 
 Quick Delivery opens as a `WaflInputSheet` deep editor rather than inline expansion inside the workbench. Its staged local draft, WAFL partner picker, direct-input child sheet, native Juso child sheet, and read-only preview remain local-only; persistence, delivery PDF, and Event/Receipt remain outside this contract.
 
@@ -102,3 +121,106 @@ Sample, derivation lineage, workflow status, and document revision are independe
 Create retains the labeled form-sized segmented `작업 구분` control and fresh Sample default. Detail reflects persisted state through the same semantic owner rendered as a compact, unlabeled, equal-segment grouped control fixed at hero top-right; it never wraps beneath the title. The workflow status pill moves below the representative image. The duplicate detail Sample informational pill is absent, while applicable `N차 리오더` and `재작업` lineage pills remain in the text-side row. Reorder context continues to hide the invalid character control. The WorkOrder list stays flat and its existing workflow status rail and identity badges remain unchanged. A separate `필터` action opens the canonical shared sheet with one single-choice `작업 구분` group (`전체 / 본생산 / 샘플`) and one independent multi-select `작업 계보` group (`리오더 / 재작업`). The lineage group ORs internally and combines with status, search, and work character by AND. Zero to three active chips are independently removable near search without forming a second rail. This alpha.66 IA does not expose Reorder/Rework creation or source navigation; those flows remain deferred.
 
 Overview retains 기본 정보 followed by 비용 구성, then one compact pre-issue readiness row. `발행 전 확인 N건` opens a read-only WAFL Sheet whose rows are exactly the complete canonical readiness issue collection. Successful relevant mutations reconcile canonical detail whenever its readiness version trails the WorkOrder entity version, so the row count and Sheet membership always consume the same refreshed `readiness.issues`; no local issue counter exists. Stable issue codes may route only to existing tabs (`개요 / 이미지·첨부 / 사이즈·색상 / 원부자재 / 제작 / 문서`); message parsing and new deep-field routing are forbidden. Unknown issues remain visible and non-actionable. Zero issues render `발행 준비 완료`. The former partial `다음 확인` preview is not active IA.
+
+## Alpha.67 Nth Reorder IA
+
+An eligible issued 본생산 original/direct-Reorder Overview exposes one compact `리오더 만들기`
+action. The compact WAFL confirmation displays the current read-model estimate of the next round and
+offers `아니오 / 예` only. `아니오` is mutation zero; `예` is one idempotent logical command that
+starts the new draft with total quantity zero and due date null. Sample, draft, Rework, cancelled/invalid,
+and non-final source contexts expose no create action and are independently rejected by the
+server. The server remains authoritative for the globally allocated round if concurrency changes the
+previewed number. Success opens the returned WorkOrder ID's Overview directly rather than returning
+to the list; quantity and due date are authored there and issue readiness remains authoritative.
+
+`작업 이력` is one read-only WAFL Sheet containing the stable original followed by its direct
+Reorders in round order. It does not flatten Rework children into the Nth-Reorder sequence.
+Selecting a row opens that WorkOrder detail. Existing list identity badges and two-axis filters
+remain the series discovery grammar; alpha.67 adds no tree list and no Rework create flow.
+
+Core WorkOrder detail entry does not depend on optional series context. Core detail, images, and
+material-partner options hydrate the screen; a Sample does not request inapplicable Reorder
+history, and a history-only error leaves detail interactive with bounded feedback. Reorder create
+success is committed at the command response boundary using its returned WorkOrder ID. The
+created Overview opens by direct read even when the active list filter excludes it. A post-create
+read failure offers read/hydration retry for that exact committed ID only; the create command and
+round allocator are never invoked again by that recovery action.
+
+## PDF generation retry and mobile view routing
+
+The Document tab treats issue, PDF generation, and viewing as distinct states. Issue success is
+durable even if render/upload is still pending or fails. `PDF 다시 생성` performs generation and
+document-status reconciliation only; it never reissues or creates another revision. The mobile
+generation request uses the document render budget rather than the generic short API deadline.
+
+`보기` is an authenticated WAFL in-app action and must not launch Safari, create a public manual-share
+token, expose raw R2, or put a workspace secret in a query string. It downloads the existing
+  workspace-protected internal file route into bounded native cache, renders the actual bytes through
+  the single native PDF owner, and removes that cache when the viewer closes. The full-screen viewer
+  keeps vertical pages, a passive page count, zoom, bounded retry, and a sticky bottom WAFL `닫기`
+  footer action before returning
+to the same Document tab. `공유` alone creates and passes one public `/v` URL to the native share
+sheet; `저장` owns actual PDF download. A matching Expo 55 iOS Development Build and restored
+physical-QA runtime are required before the candidate can be handed to iPhone QA. Safari fallback
+is forbidden.
+
+The visible viewer exit is a minimum 44-point bottom WAFL `닫기` Pressable in a footer sibling
+outside the native PDF surface. It closes the viewer to the same WorkOrder Document tab; explicit
+previous/next page controls and the unreliable top return affordance are absent. Finished Spec `전체보기` expands every POM row under the sheet body's one
+vertical scroll owner, shows the total item count, and removes the remaining-scroll hint at the
+actual near-bottom boundary. One selected Size uses the available width without an empty half-table.
+
+The first WorkOrder issue requires one Basic Process and requires that process to have completed its
+order request. `BASIC_PROCESS_REQUIRED` and `BASIC_PROCESS_ORDER_REQUIRED` route to 제작 through the
+same canonical readiness array used by the issue command. Issue success atomically completes only the
+requested Basic Process and derives the user-facing `진행 중`/read-only phase from the existing issued
+lifecycle. PDF success is not part of this transition.
+
+The authenticated native viewer retains one downloaded PDF instance while vertical scroll owns page
+movement and the passive indicator follows renderer page state. Document Save reuses the same
+workspace-authenticated byte transport, validates MIME, signature, nonzero bounded size and copied
+SHA-256, then hands a temporary local PDF to the native file/save surface and cleans it after handoff;
+it never opens Safari. Public `/v` redeems the controlled token/session and mounts the actual PDF
+inline immediately, with Download as a secondary action. Managed share/QR information renders
+`생성 / 만료 / 마지막 열람 / 열람 횟수` as separate rows. Native share copy contains the controlled
+viewer URL exactly once and no R0, revision, or internal identifier. The current runtime viewer
+origin remains environment-controlled; a branded production viewer origin is
+`BRANDED_PUBLIC_VIEWER_DOMAIN_DEFERRED` until a separately verified deployment owner exists.
+
+Issued PDF process presentation separates immutable process roles. The cover summary always shows
+the human `기본 공정 업체` from the issued snapshot, using `미지정` only for compatible legacy
+missing data. The later process table is titled `추가 공정`, contains Additional rows only, and is
+omitted when there are none. Basic Process is never duplicated in that table. The user-visible
+`개정차수` metadata row is absent while internal revision identity and the existing document-number
+format remain unchanged.
+
+## Alpha.67 public viewer and share presentation
+
+The public viewer is a hydrated Next application, so the tailnet host exposes the exact `/_next`
+GET/HEAD assets referenced by `/v` while retaining the existing route allowlist for every other
+path. The viewer settles into success, a bounded unavailable-link state, or a bounded network
+state with retry; it must not remain indefinitely on its hydration sentence. Native share sends
+one structured message containing product, quantity, due date, and the controlled viewer URL
+exactly once. Managed-link rows show creation, expiry, access count, last access, and status without
+exposing tokens.
+
+## Alpha.67 final issued-document presentation
+
+The current issued WorkOrder PDF has no QR, workflow-status badge, or visible revision row. Its
+fixed A4 portrait cover uses a strong WAFL brand anchor, representative image, human product identity,
+canonical identity/lineage badges, a large product title, classification, document-number title metadata,
+seven compact key fact cards, Basic Process factory-delivery memo, and one
+five-part count summary (`원단 / 부자재 / 색상 / 사이즈 / 추가 공정`). A Reorder shows only
+`N차 리오더`, not a redundant `본생산` badge. Portrait detail pages omit zero-row Fabric,
+Accessory, and Additional Process sections; Basic Process appears only on the cover. Long tables
+use usable page capacity and wrapped-row weight, repeat headers on true continuations, and never
+split a logical row. Detail tables center headers, numeric values, and short categorical values,
+while long memo/instruction text stays left aligned. Included document images use bounded two-image
+portrait pages. PDF generation itself
+creates no embedded public-access token; explicit `공유` alone creates a new manual-share identity,
+while legacy embedded-token read/revoke compatibility remains non-destructive.
+
+The document number is part of the cover title/meta block and must not appear as a fact card. Cover
+facts are limited to `납기 / 총수량 / 대상 / 시즌 / 대분류 / 세부 품목 / 기본 공정 업체`.
+The owner-approved portrait mock is the visual SOT for cover density, 43/57 image-to-fact balance,
+warm ivory/brick/navy proportions, readable value hierarchy, bounded memo, and the five-cell summary.

@@ -95,7 +95,7 @@ assert.match(apiClient, /lifecycle: "active" \| "archived"/);
 assert.match(apiClient, /method: "POST"/);
 assert.match(apiClient, /deleteWorkOrderMaterial/);
 assert.match(app, /requestDeleteMaterial/);
-assert.doesNotMatch(app, /workOrderMutationController\.archiveMaterial/);
+assert.match(app, /workOrderMutationController\.archiveMaterial/);
 assert.doesNotMatch(app, /requestRestoreMaterial|loadMoreArchivedMaterials/);
 assert.match(app, /decideDraftExit/);
 assert.match(draftExitPolicy, /mutationInFlight[\s\S]*return "blocked-saving"/);

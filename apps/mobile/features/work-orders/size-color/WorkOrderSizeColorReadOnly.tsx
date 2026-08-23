@@ -1,6 +1,6 @@
 import { useCallback, useRef, useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
-import { AlertTriangle, ChevronRight, Download, Palette, RefreshCw, Ruler, Save } from "lucide-react-native";
+import { AlertTriangle, ChevronDown, ChevronRight, Download, Palette, RefreshCw, Ruler, Save } from "lucide-react-native";
 
 import ControlledInlineEditValue from "@/components/ControlledInlineEditValue";
 import { WAFL_TABLE_EDITABLE_CELL_SURFACE } from "@/components/waflEditableValueSurface";
@@ -9,7 +9,7 @@ import { WAFL_THEME } from "@/constants/theme";
 import type { MeasurementTemplateSummary, WorkOrderSizeColorMatrix, WorkOrderSizeSpec, WorkOrderSizeSpecCell } from "@/domain/mobileContract";
 import { formatMeasurementFromCm, normalizeCentimeterDraft, parseMeasurementToCm } from "@/domain/measurementPolicy";
 import WaflReelPickerSheet from "@/features/inputs/reel-picker/WaflReelPickerSheet";
-import WaflInputSheet from "@/features/inputs/WaflInputSheet";
+import WaflInputSheet, { type WaflSheetBodyScrollMetrics } from "@/features/inputs/WaflInputSheet";
 import WaflSectionCard from "@/features/layout/WaflSectionCard";
 import WaflSectionHeaderAction from "@/features/layout/WaflSectionHeaderAction";
 import WaflFrozenAxisTable, { type WaflFrozenAxisRow } from "@/features/layout/WaflFrozenAxisTable";
@@ -37,6 +37,7 @@ type Props = {
   readonly onEditSize?: () => void;
   readonly onEditSpecItems?: () => void;
   readonly structureBusy?: boolean;
+  readonly categoryCode?: string | null;
 };
 
 const CONTENT_INSET = 12;
@@ -218,6 +219,7 @@ function SpecTable(props: {
   readonly edit?: SizeColorStructureEditBoundary;
   readonly preview: boolean;
   readonly onEditSpecItems?: () => void;
+  readonly parentOwnsVerticalScroll?: boolean;
 }) {
   const measurements = sizeSpecCellMap(props.specifications.cells);
   const poms = props.preview
@@ -232,21 +234,25 @@ function SpecTable(props: {
     columns={props.specifications.sizes.map((size) => ({ key: size.id, label: size.displayLabel }))}
     cornerLabel={props.onEditSpecItems ? <SpecItemEntry onPress={props.onEditSpecItems} /> : "스펙 항목"}
     fullView={!props.preview}
+    fullViewVerticalOwner={props.parentOwnsVerticalScroll ? "parent" : "table"}
+    expandSingleColumn={!props.preview}
     rows={rows}
     testID={props.preview ? "size-spec-main-preview" : "size-spec-full-view"}
   />;
 }
 
-export default function WorkOrderSizeColorReadOnly({ identity, state, onRetry, edit, onEditColor, onEditSize, onEditSpecItems, structureBusy = false }: Props) {
+export default function WorkOrderSizeColorReadOnly({ identity, state, onRetry, edit, onEditColor, onEditSize, onEditSpecItems, structureBusy = false, categoryCode = null }: Props) {
   const specifications = state.bundle?.specifications;
   const sectionIdentity = specifications ? `${specifications.workOrderId}:${specifications.revisionId}` : identity;
-  const templateQueryIdentity = specifications ? `${sectionIdentity}:${specifications.categoryCode ?? ""}:${specifications.genderCode ?? ""}` : `unavailable:${state.status}`;
+  const effectiveCategoryCode = specifications?.categoryCode ?? categoryCode;
+  const templateQueryIdentity = specifications ? `${sectionIdentity}:${effectiveCategoryCode ?? ""}:${specifications.genderCode ?? ""}` : `unavailable:${state.status}`;
   const [templates, setTemplates] = useState<readonly MeasurementTemplateSummary[]>([]);
   const [templateError, setTemplateError] = useState<string | null>(null);
   const [templateLoading, setTemplateLoading] = useState(false);
   const [templatePickerOpen, setTemplatePickerOpen] = useState(false);
   const [templateSaveOpen, setTemplateSaveOpen] = useState(false);
   const [fullView, setFullView] = useState<"matrix" | "spec" | null>(null);
+  const [specCanScrollFurther, setSpecCanScrollFurther] = useState(false);
   const loadedTemplateIdentity = useRef<string | null>(null);
 
   const loadTemplates = useCallback(async (force = false) => {
@@ -255,7 +261,7 @@ export default function WorkOrderSizeColorReadOnly({ identity, state, onRetry, e
     if (!force && loadedTemplateIdentity.current === templateQueryIdentity) return true;
     setTemplateLoading(true);
     try {
-      const items = await getMeasurementTemplates(current.workOrderId, current.categoryCode, current.genderCode);
+      const items = await getMeasurementTemplates(current.workOrderId, effectiveCategoryCode, current.genderCode);
       setTemplates(items);
       loadedTemplateIdentity.current = templateQueryIdentity;
       setTemplateError(null);
@@ -266,7 +272,7 @@ export default function WorkOrderSizeColorReadOnly({ identity, state, onRetry, e
     } finally {
       setTemplateLoading(false);
     }
-  }, [edit?.canEdit, specifications, templateQueryIdentity]);
+  }, [edit?.canEdit, effectiveCategoryCode, specifications, templateQueryIdentity]);
 
   if (!state.bundle && ["not-loaded", "loading", "retrying", "refreshing"].includes(state.status)) {
     return <DelayedLoadingMessage identity={`${identity}:size-color`} loading scope="sizeColor" />;
@@ -329,8 +335,16 @@ export default function WorkOrderSizeColorReadOnly({ identity, state, onRetry, e
         {specNeedsFullView ? <Pressable accessibilityLabel="완성 스펙 전체보기" accessibilityRole="button" onPress={() => setFullView("spec")} style={({ pressed }) => [styles.viewAll, pressed && styles.pressed]}><Text style={styles.viewAllText}>전체보기</Text><ChevronRight color={WAFL_THEME.color.navyInk} size={WAFL_THEME.icon.small} /></Pressable> : null}
       </>}
     </WaflSectionCard>
-    <WaflInputSheet bodyScrollable={false} cancelAccessibilityLabel="전체보기 닫기" confirmAccessibilityLabel="전체보기 확인" contentStyle={styles.fullViewContent} onCancel={() => setFullView(null)} onConfirm={() => setFullView(null)} sizing="fullView" title={fullView === "matrix" ? "색상·사이즈 전체보기" : "완성 스펙 전체보기"} visible={fullView !== null}>
-      {fullView === "matrix" ? <MatrixTable edit={edit} matrix={matrix} preview={false} /> : fullView === "spec" ? <SpecTable edit={edit} onEditSpecItems={edit?.canEdit ? onEditSpecItems : undefined} preview={false} specifications={currentSpecifications} /> : null}
+    <WaflInputSheet bodyScrollable={fullView === "spec"} cancelAccessibilityLabel="전체보기 닫기" confirmAccessibilityLabel="전체보기 확인" contentStyle={styles.fullViewContent} onBodyScrollMetrics={(metrics: WaflSheetBodyScrollMetrics) => {
+      if (fullView === "spec") setSpecCanScrollFurther((current) => current === metrics.canScrollFurther ? current : metrics.canScrollFurther);
+    }} onCancel={() => setFullView(null)} onConfirm={() => setFullView(null)} sizing="fullView" title={fullView === "matrix" ? "색상·사이즈 전체보기" : "완성 스펙 전체보기"} visible={fullView !== null}>
+      {fullView === "matrix" ? <MatrixTable edit={edit} matrix={matrix} preview={false} /> : fullView === "spec" ? <>
+        <View style={styles.fullViewSummaryRow}>
+          <Text style={styles.fullViewSummaryText}>총 {currentSpecifications.pomColumns.length}개 항목</Text>
+          {specCanScrollFurther ? <View accessibilityLabel="아래 항목 더 있음" pointerEvents="none" style={styles.moreBelowHint}><Text style={styles.moreBelowText}>아래 항목 더 있음</Text><ChevronDown color={WAFL_THEME.color.readOnly} size={14} /></View> : null}
+        </View>
+        <SpecTable edit={edit} onEditSpecItems={edit?.canEdit ? onEditSpecItems : undefined} parentOwnsVerticalScroll preview={false} specifications={currentSpecifications} />
+      </> : null}
     </WaflInputSheet>
     {edit ? <MeasurementTemplatePickerSheet errorMessage={templateError} onApply={async (template) => { const saved = await edit.onApplyMeasurementTemplate(template.id); if (saved) setTemplatePickerOpen(false); return saved; }} onCancel={() => setTemplatePickerOpen(false)} pending={isSizeColorCommandPending(edit.pendingScope, "template") || templateLoading} templates={templates} visible={templatePickerOpen} /> : null}
     {edit ? <CompanyTemplateSaveSheet companyTemplates={templates.filter((item) => item.sourceKind === "company")} onCancel={() => setTemplateSaveOpen(false)} onDisable={async (template) => { await patchCompanyMeasurementTemplate(template.id, { isActive: false }); await loadTemplates(true); return true; }} onRename={async (template, name) => { await patchCompanyMeasurementTemplate(template.id, { name }); await loadTemplates(true); return true; }} onSaveNew={async (name) => { const saved = await edit.onSaveMeasurementTemplate(name); if (saved) { await loadTemplates(true); setTemplateSaveOpen(false); } return saved; }} onUpdateExisting={async (template) => { const saved = await edit.onUpdateMeasurementTemplate(template.id); if (saved) { await loadTemplates(true); setTemplateSaveOpen(false); } return saved; }} pending={isSizeColorCommandPending(edit.pendingScope, "template") || templateLoading} visible={templateSaveOpen} /> : null}
@@ -344,7 +358,7 @@ const styles = StyleSheet.create({
   templateSource: { color: WAFL_THEME.color.readOnly, flex: 1, fontFamily: WAFL_FONTS.medium, fontSize: 10 }, modifiedBadge: { backgroundColor: "#fff0e7", borderColor: "#e8b79f", borderRadius: WAFL_THEME.radius.pill, borderWidth: 1, color: WAFL_THEME.color.brickOrange, fontFamily: WAFL_FONTS.bold, fontSize: 9, overflow: "hidden", paddingHorizontal: 7, paddingVertical: 3 }, missingBadge: { backgroundColor: "#fff8eb", borderColor: "#e7c98e", borderRadius: WAFL_THEME.radius.pill, borderWidth: 1, color: "#745721", fontFamily: WAFL_FONTS.bold, fontSize: 9, overflow: "hidden", paddingHorizontal: 7, paddingVertical: 3 }, iconAction: { alignItems: "center", borderColor: WAFL_THEME.color.border, borderRadius: 8, borderWidth: 1, height: 34, justifyContent: "center", width: 34 },
   unitSegment: { backgroundColor: WAFL_THEME.color.paperMuted, borderColor: WAFL_THEME.color.border, borderRadius: 9, borderWidth: 1, flexDirection: "row", padding: 2 }, unitOption: { alignItems: "center", borderRadius: 7, justifyContent: "center", minHeight: 30, minWidth: 41, paddingHorizontal: 7 }, unitOptionSelected: { backgroundColor: WAFL_THEME.color.navyInk }, unitText: { color: "#5d5147", fontFamily: WAFL_FONTS.semibold, fontSize: 10 }, unitTextSelected: { color: "#fffdf8", fontFamily: WAFL_FONTS.bold },
   templateError: { color: WAFL_THEME.color.error, fontFamily: WAFL_FONTS.medium, fontSize: 12, width: "100%" }, missingWarning: { alignItems: "center", backgroundColor: "#fff8eb", borderRadius: 8, flexDirection: "row", gap: 6, paddingHorizontal: 9, paddingVertical: 7 }, missingWarningText: { color: "#745721", fontFamily: WAFL_FONTS.medium, fontSize: 11 }, missingCell: { backgroundColor: "#fffaf0" },
-  emptyNotice: { backgroundColor: "#faf7f1", borderRadius: 9, color: "#75665b", fontFamily: WAFL_FONTS.medium, fontSize: 12, lineHeight: 18, padding: 12 }, emptySpecState: { gap: WAFL_THEME.layout.tightGap }, emptySpecEntry: { alignSelf: "flex-start", marginHorizontal: CONTENT_INSET, minWidth: 112 }, fullViewContent: { minHeight: 0 }, cellText: { color: WAFL_THEME.color.deepNavy, flexShrink: 1, fontFamily: WAFL_FONTS.medium, fontSize: 11, lineHeight: 17, textAlign: "center" }, measurementPressable: { alignItems: "center", justifyContent: "center", minWidth: 0 }, swatch: { borderColor: "#c8bcae", borderRadius: 7, borderWidth: 1, flexShrink: 0, height: 14, marginRight: 4, width: 14 }, totalText: { color: WAFL_THEME.color.navyInk, flexShrink: 1, fontFamily: WAFL_FONTS.semibold, fontSize: 10, textAlign: "center" }, grandTotalText: { color: WAFL_THEME.color.deepNavy, flexShrink: 1, fontFamily: WAFL_FONTS.bold, fontSize: 10, textAlign: "center" }, viewAll: { alignItems: "center", alignSelf: "flex-start", flexDirection: "row", gap: WAFL_THEME.layout.tightGap, minHeight: WAFL_THEME.touch.minimum, paddingHorizontal: WAFL_THEME.layout.tightGap }, viewAllText: { color: WAFL_THEME.color.navyInk, fontFamily: WAFL_FONTS.bold, fontSize: WAFL_THEME.typography.actionLabel.fontSize, lineHeight: WAFL_THEME.typography.actionLabel.lineHeight },
+  emptyNotice: { backgroundColor: "#faf7f1", borderRadius: 9, color: "#75665b", fontFamily: WAFL_FONTS.medium, fontSize: 12, lineHeight: 18, padding: 12 }, emptySpecState: { gap: WAFL_THEME.layout.tightGap }, emptySpecEntry: { alignSelf: "flex-start", marginHorizontal: CONTENT_INSET, minWidth: 112 }, fullViewContent: { minHeight: 0 }, fullViewSummaryRow: { alignItems: "center", flexDirection: "row", justifyContent: "space-between", minHeight: 32 }, fullViewSummaryText: { color: WAFL_THEME.color.readOnly, fontFamily: WAFL_FONTS.semibold, fontSize: WAFL_THEME.typography.meta.fontSize }, moreBelowHint: { alignItems: "center", flexDirection: "row", gap: 3 }, moreBelowText: { color: WAFL_THEME.color.readOnly, fontFamily: WAFL_FONTS.medium, fontSize: WAFL_THEME.typography.meta.fontSize }, cellText: { color: WAFL_THEME.color.deepNavy, flexShrink: 1, fontFamily: WAFL_FONTS.medium, fontSize: 11, lineHeight: 17, textAlign: "center" }, measurementPressable: { alignItems: "center", justifyContent: "center", minWidth: 0 }, swatch: { borderColor: "#c8bcae", borderRadius: 7, borderWidth: 1, flexShrink: 0, height: 14, marginRight: 4, width: 14 }, totalText: { color: WAFL_THEME.color.navyInk, flexShrink: 1, fontFamily: WAFL_FONTS.semibold, fontSize: 10, textAlign: "center" }, grandTotalText: { color: WAFL_THEME.color.deepNavy, flexShrink: 1, fontFamily: WAFL_FONTS.bold, fontSize: 10, textAlign: "center" }, viewAll: { alignItems: "center", alignSelf: "flex-start", flexDirection: "row", gap: WAFL_THEME.layout.tightGap, minHeight: WAFL_THEME.touch.minimum, paddingHorizontal: WAFL_THEME.layout.tightGap }, viewAllText: { color: WAFL_THEME.color.navyInk, fontFamily: WAFL_FONTS.bold, fontSize: WAFL_THEME.typography.actionLabel.fontSize, lineHeight: WAFL_THEME.typography.actionLabel.lineHeight },
   specItemEntry: { alignItems: "center", flexDirection: "row", gap: 1, justifyContent: "center", minHeight: WAFL_THEME.touch.minimum, width: "100%" }, headerEntryText: { color: WAFL_THEME.color.navyInk, fontFamily: WAFL_FONTS.bold, fontSize: WAFL_THEME.typography.meta.fontSize },
   memo: { backgroundColor: "#fbf6ee", borderRadius: 10, gap: 5, padding: 12 }, memoLabel: { color: "#806e60", fontFamily: WAFL_FONTS.semibold, fontSize: 11 }, memoText: { color: "#443930", fontFamily: WAFL_FONTS.regular, fontSize: 13, lineHeight: 20 }, statePanel: { alignItems: "center", backgroundColor: "#faf7f1", borderRadius: 12, gap: 9, margin: CONTENT_INSET, padding: 24 }, stateTitle: { color: WAFL_THEME.color.deepNavy, fontFamily: WAFL_FONTS.bold, fontSize: 15, textAlign: "center" }, stateText: { color: "#75665b", fontFamily: WAFL_FONTS.medium, fontSize: 12, lineHeight: 18, textAlign: "center" }, retryButton: { alignItems: "center", backgroundColor: WAFL_THEME.color.brickOrange, borderRadius: 9, flexDirection: "row", gap: 6, marginTop: 4, minHeight: 42, paddingHorizontal: 14 }, retryText: { color: "#fffdf8", fontFamily: WAFL_FONTS.semibold, fontSize: 12 }, pressed: { opacity: 0.76 }, disabled: { opacity: 0.4 },
 });

@@ -5,15 +5,16 @@ import fs from "node:fs";
 const read = (path) => fs.readFileSync(path, "utf8");
 const entry = read("apps/mobile/features/inputs/WaflReusableCreateEntryAction.tsx");
 const form = read("apps/mobile/features/inputs/WaflReusableCreateForm.tsx");
+const primaryAction = read("apps/mobile/features/inputs/WaflPrimaryActionButton.tsx");
 const sizeColor = read("apps/mobile/features/work-orders/size-color/WorkOrderSizeColorStructureEditor.tsx");
 const spec = read("apps/mobile/features/work-orders/size-color/SpecItemSelectionSheet.tsx");
 const design = read("docs/project/app-v2/11a-mobile-design-system-v2.md");
 const makerIa = read("docs/project/app-v2/11b-maker-workorder-tab-ia-v2.md");
 
 // Parent catalogs share one exact icon/label/action owner and no local lookalike styles.
-assert.match(entry, /accessibilityLabel="\+ 직접 만들기"/u);
+assert.match(entry, /accessibilityLabel=\{`\+ \$\{label\}`\}/u);
 assert.match(entry, /<Plus[^>]+size=\{WAFL_THEME\.icon\.small\}/u);
-assert.match(entry, /<Text style=\{styles\.label\}>직접 만들기<\/Text>/u);
+assert.match(entry, /<Text style=\{styles\.label\}>\{label\}<\/Text>/u);
 assert.match(entry, /minHeight: WAFL_THEME\.touch\.minimum/u);
 assert.match(entry, /disabled && styles\.disabled/u);
 assert.match(entry, /pressed && !disabled && styles\.pressed/u);
@@ -25,9 +26,10 @@ assert.doesNotMatch(spec, /styles\.addButton|styles\.addText/u);
 // Child Size/Color/Spec creation shares one action slot, including pressed/disabled geometry.
 assert.equal((sizeColor.match(/<WaflReusableCreateForm/g) ?? []).length, 2);
 assert.equal((spec.match(/<WaflReusableCreateForm/g) ?? []).length, 1);
-assert.match(form, /style=\{\(\{ pressed \}\) => \[styles\.createButton, disabled && styles\.disabled, pressed && !disabled && styles\.pressed\]\}/u);
-assert.match(form, /minHeight: 46, width: "100%"/u);
-assert.match(form, /accessibilityState=\{\{ busy: props\.pending, disabled \}\}/u);
+assert.match(form, /<WaflPrimaryActionButton[^>]*label="추가"/u);
+assert.match(primaryAction, /style=\{\(\{ pressed \}\) => \[styles\.button, blocked && styles\.disabled, pressed && !blocked && styles\.pressed\]\}/u);
+assert.match(primaryAction, /minHeight: 48, width: "100%"/u);
+assert.match(primaryAction, /accessibilityState=\{\{ busy: pending, disabled: blocked \}\}/u);
 assert.equal((sizeColor.match(/reusableCreate sizing=\{WAFL_REUSABLE_CATALOG_CREATE_SIZING\}/g) ?? []).length, 2);
 assert.match(sizeColor, /props\.reusableCreate \? props\.children : <View style=\{styles\.sheetContent\}>\{props\.children\}<\/View>/u);
 assert.match(sizeColor, /<ColorGrid[\s\S]*<ReadOnlyColorValues/u);

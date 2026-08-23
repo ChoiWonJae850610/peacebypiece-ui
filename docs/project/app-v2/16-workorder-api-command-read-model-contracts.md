@@ -1,5 +1,20 @@
 # WAFL v2 WorkOrder API, Command, and Read Model Contracts
 
+## Alpha.67 identity lock, source-backed basic spec, and readiness severity
+
+`work_order.set_sample` is a draft-only command. Its update predicate requires both WorkOrder `draft` and current revision `draft`; issued/finalized/read-only records return `LOCKED`. The pre-existing Reorder/Sample invariant remains a separate validation guard.
+
+`WAFL_BASIC_SPEC_V1` is source-backed product/reference data with four deterministic system template identities. Normal Maker template listing classifies only the current category-matched source template as a WAFL recommendation and combines it with tenant/company templates; persisted QA/legacy system templates remain stored but are not returned as normal Maker recommendations. The policy neither persists nor mutates the product seed. Apply runs inside the existing measurement transaction, stores cm as SOT, rebuilds only currently selected WorkOrder size rows, imports matching values only, and leaves custom sizes value-empty. Company template save/update continues to create independent company-owned versions.
+
+The same `evaluateWorkOrderIssueReadiness` result controls mobile readiness and issue permission. Fabric/Accessory absence and incomplete optional material detail codes are warnings; they remain in the complete issue array but never enter hard blockers. Basic Process, identity/document, representative image, quantity, date, and other established hard prerequisites remain unchanged.
+
+Public viewer session/file/download authorization is unchanged. `/v` gives the session-authorized PDF bytes to a self-hosted PDF.js worker and canvas page renderer; internal workspace file routes remain session-protected and raw object storage URLs are never exposed.
+
+Issued Preview process roles are immutable render input. PDF cover presentation resolves the Basic
+Process human partner name from the issued snapshot. Detail process presentation filters the same
+snapshot to Additional roles only and omits an empty Additional section. Internal revision fields
+remain part of document identity even though the user-facing `개정차수` row is not rendered.
+
 Document role: normative owner for WorkOrder API DTO, state, error, pagination, tenant, permission, concurrency, and command/read-model semantics. It defines what the API means; `17-v2-api-contract-test-plan.md` defines how those semantics are verified. Version-specific results belong to numbered evidence, and execution/approval rules belong to `09-codex-working-rules.md`.
 
 ## Calendar date-only serialization
@@ -421,10 +436,201 @@ Alpha.24 collection cursor는 company/visibility/WorkOrder/tab kind에 서명으
 Alpha.25는 `CreateWorkOrderDraftCommand`를 실제 적용 schema에 맞춰 actor-scoped idempotency, nullable `productTypeCode`/season/item/due date, quantity, memo로 좁히고 `PatchWorkOrderBasicInfoCommand`를 current draft scalar update에만 연결한다. Valid mutation은 별도 owner approval 전 실행하지 않으며, create/R0/event/receipt와 patch/current-revision/event는 각각 한 tenant-role transaction을 사용한다.
 ## Alpha.66 identity/lineage and Sample contract
 
-`CreateWorkOrderDraftCommand` accepts explicit `isSample`; omitted server input defaults false while the normal mobile create session explicitly defaults true. Create always persists `derivationKind=original` and `reorderRound=0`. A narrow WorkOrder-level `set-sample` command uses permission, expectedVersion, hashed idempotency receipt, one Event, and one tenant transaction. It does not mutate the revision, generated documents, or workflow state and therefore remains available after issue under the same WorkOrder identity authority.
+`CreateWorkOrderDraftCommand` accepts explicit `isSample`; omitted server input defaults false while the normal mobile create session explicitly defaults true. Create always persists `derivationKind=original` and `reorderRound=0`. A narrow WorkOrder-level `set-sample` command uses permission, expectedVersion, hashed idempotency receipt, one Event, and one tenant transaction. It never mutates the revision or generated documents, and it is available only while both the WorkOrder and current revision remain draft; ISSUE fixes the persisted identity.
 
 `set-sample=true` is rejected when the current persisted row is a direct Reorder or has positive reorder context. Sample Rework remains valid only at round zero. This domain guard mirrors migration `020`; the client hides the character switch on forced-본생산 reorder-context detail rather than offering an invalid choice.
 
 List and detail DTOs expose explicit identity objects. `GET /api/v2/work-orders` accepts one work-character filter `character=all|production|sample` and an optional canonical comma-separated lineage set `lineage=reorder,rework`. `production` means Sample false regardless of lineage, and `sample` means Sample true. Within the lineage group, reorder means `reorder_round >= 1` and rework means `derivation_kind='rework'`; selected lineage values OR together. Search, workflow status, work character, and the lineage group AND together. Visibility scope and all filter dimensions are bound into the opaque cursor key after lineage ordering is normalized, so reversed set order has identical scope while any actual dimension change invalidates the cursor. Detail may return a bounded source summary joined by same-company source ID. Reorder/Rework creation commands and copy behavior are not active in alpha.66.
 
 Detail readiness exposes `issues` as the complete bounded canonical pre-issue collection produced by the same evaluator that owns `canIssue`, `hardBlockers`, and `warnings`. Mobile count and sheet membership consume only `issues`; no client-side issue condition is recomputed. Existing stable codes may map to current tabs, while unknown codes stay visible and non-actionable.
+
+## Alpha.67 Nth Reorder command and history contract
+
+`POST /api/v2/work-orders/{sourceWorkOrderId}/reorder` accepts only `clientRequestId`, a positive
+`totalQuantity`, an optional date-only `dueDate`, and the Idempotency-Key header. It rejects
+client-owned round/root/source-revision fields. Eligibility is evaluated again inside the tenant
+write transaction after locking the direct source: the current revision must be finalized and
+the WorkOrder must be issued, non-Sample, and original/direct-Reorder. The original root is then
+locked and the next direct round is allocated across the full series. Receipt replay returns the
+same created identity; the unique series-round index guards independent concurrent keys.
+
+The copy matrix retains product identity, selectable sizes/colors with zero quantities, Finished
+Spec values, material/process configuration reset to editable/ready state, the representative
+image, and final-revision `output_include` attachments. It never copies lifecycle history,
+documents, tokens, Events, Receipts, or ambiguous filename-classified attachments. `GET` on the
+same route returns the original plus direct Reorders only, ordered by round, with a current-row
+marker. The created draft is independently issuable through the existing issue command after its
+own readiness requirements are satisfied.
+
+## Alpha.67 detail-entry and post-create reconciliation
+
+`GET /api/v2/work-orders/{id}` plus its required image and material-partner projections own core
+detail hydration. Series History is contextual rather than existential: Sample may receive the
+route's canonical `NOT_FOUND`, and a history-only failure must not reject a valid core detail.
+
+A successful Reorder command response is the commit boundary. Its `result.workOrderId` is the
+authoritative created identity even when the current list query excludes the row or list refresh
+fails. Post-create recovery may repeat detail/images/partners/history reads for that exact ID but
+must not repeat `POST .../reorder`. This separation preserves server-owned Nth allocation and
+prevents a read failure from becoming an accidental next-round command.
+
+Image upload complete remains one correlated pipeline: prepared original upload, Worker source
+read, Images transform, derivative object writes, then image-row completion. The Worker deployment
+must retain the secret binding without rendering it, bind both `R2_BUCKET` and `IMAGES`, and pass a
+`ReadableStream` to the Images binding input. Any derivative failure occurs before DB completion
+and invokes exact family compensation.
+
+## Alpha.67 issue, PDF retry, and material-removal contract
+
+One pure document-item resolver is used by both `issueReadiness` and the issue repository. A
+nonblank ASCII detail item remains the issued item segment; otherwise the resolver uses the
+persisted canonical major-category code (`T/B/O/D/S/X`). Readiness cannot report success under a
+different document-number prerequisite from the issue transaction.
+
+Generated WorkOrder PDF mutation requires the canonical `DOCUMENT_R0` capability and current
+runtime approval; no version-labelled profile is authoritative. Issue and PDF generation are
+separate commit boundaries. A failed PDF attempt marks only that generated-document attempt
+failed. Retrying generates a new document attempt for the already issued WorkOrder and must not
+re-run issue or allocate another revision/document number.
+
+Material read models expose the server-derived removal mode. Active editing rows without order
+history are `hard_delete`; active editing rows with request/cancel/complete history are
+`history_preserving_remove`; requested, completed, archived, and otherwise locked rows are
+`not_allowed`. Mobile maps the middle mode to the existing archive command and the first mode to
+the draft hard-delete command. Fabric and Accessory share the policy without merging domain rows.
+
+## Alpha.67 PDF generation reconciliation and public viewer target
+
+`POST /api/v2/work-orders/{workOrderId}/documents/generate` owns one issued revision and remains a
+generation-only command. After the generation-scope lock, an active generated row—or a recent
+pending row still inside the bounded render window—is returned and linked to the new receipt
+instead of allocating a duplicate generation. A failed row does not block a later generation
+attempt. The mobile client waits under the document-specific 120-second budget and reconciles
+pending/timeout outcomes against `GET .../documents`; it never converts a read timeout into an
+issue retry.
+
+`GET /api/v2/work-orders/documents/{generatedDocumentId}/viewer-target` is an authenticated
+workspace read. It loads the generated row's existing, active `embedded_qr` token plus the linked
+generation receipt, deterministically re-derives the opaque token, verifies its stored hash, and
+returns only the controlled `/v#t=...` viewer URL. It creates no manual-share token. `/v` exchanges
+that fragment token for a public viewer cookie and uses public file/download routes. The internal
+`.../{generatedDocumentId}/file` route continues to require a workspace session. Raw storage keys
+and R2 URLs are never returned.
+
+## Alpha.67 mobile image asset integrity and PDF compatibility
+
+Image prepare metadata is advisory until the uploaded object is read. Mobile sends the fetched
+Blob byte length, and image completion reads the canonical R2 object, validates actual MIME and
+bounded length, computes SHA-256, rechecks upload quota with actual R2 object bytes, and persists
+those actual values before the image row becomes visible. The same idempotency receipt continues
+to prevent a duplicate image row.
+
+PDF inline-image integrity has two explicit modes. A row with a canonical SHA-256 remains strict:
+actual MIME, byte length, and hash must all match. A historical image row with a null hash may be
+read only when the object exists, has the declared supported image MIME, and has a nonzero bounded
+actual size; actual bytes and a computed hash are used for that generation without DB backfill.
+Strict corruption remains a hard failure. Generation failures persist a stable stage category,
+including asset fetch/object/integrity, render/orientation, R2, or finalize ownership.
+
+## Alpha.67 viewer/share and clean-base boundary
+
+`/v` is public shell HTML whose browser hydration depends on same-host `/_next` GET/HEAD assets.
+Public session/file/download remain token-cookie scoped; the internal generated-document file
+route remains workspace-session scoped. A viewer-target read creates neither a share token nor a
+document. Native share carries one controlled viewer URL occurrence and no raw storage identity.
+
+The authorized DEV/TEST clean-base operation is a manifest-bound administrative reset, not a new
+product command. It must create and reopen-verify a logical DB backup plus KEEP, DELETE, and exact
+R2 DELETE manifests before mutation. Only target-company authored WorkOrder graphs are deleted;
+shared system/reference/template/configuration rows, document-number sequences, unrelated company
+rows, ambiguous object metadata, and non-target R2 objects are KEEP. R2 deletion is limited to
+canonical target WorkOrder keys that pass read preflight and outside-reference exclusion. Schema,
+migration ledger, production, and owner fixtures are immutable.
+
+## Alpha.67 post-clean-base reconciliation, issue, and document truth
+
+Image upload completion uses one command/idempotency identity. The mobile complete request has a
+bounded derivative-aware deadline. A timeout or network ambiguity starts read-only receipt/image
+reconciliation for that same identity; it never sends a second completion command. A confirmed
+receipt immediately refreshes image projections, while an unresolved attempt remains explicitly
+ambiguous. This preserves exactly one image row and derivative family per user upload.
+
+Size/Color structural deletion removes owned allocation cells and, for Size, synchronizes Finished
+Spec columns in the same server transaction. The command returns the canonical total and the mobile
+projection recomputes cells and every total before publishing command success.
+
+Readiness and issue share Basic Process facts. No Basic Process produces `BASIC_PROCESS_REQUIRED`;
+a `ready` Basic Process produces `BASIC_PROCESS_ORDER_REQUIRED`; `in_progress` or `completed`
+satisfies this prerequisite. Additional Process is not an issue prerequisite. A successful issue
+transaction changes only an `in_progress` Basic Process to `completed`, records one process-complete
+event behind the issue receipt, finalizes the revision, and marks the WorkOrder issued. Replay emits
+neither a second completion nor a second event. PDF generation remains a later independent boundary.
+
+Factory-delivery memo presentation uses current Basic Process memo first and the legacy revision
+field only as compatibility fallback. Issue snapshots persist that resolved value; Additional Process
+memos never enter it. PDF classification resolves structured product/category codes to human labels
+and must not render an internal `wafl-*` tuple where those labels are available.
+
+Internal mobile View requires authenticated in-app PDF rendering. The current Expo 55 Development
+Build contains the one approved native PDF renderer and its authenticated cache transport; public
+`/v` remains share-only and internal-file workspace auth remains unchanged. Viewer completion still
+requires the matching installed iOS build and physical-QA runtime, while owner acceptance is never
+inferred from automated evidence.
+
+## Alpha.67 document UX, share, and save boundary
+
+The installed Expo 55 Development Build now owns one authenticated native PDF renderer. View and
+Save both read the workspace-protected internal file route; View retains one local PDF instance for
+scroll plus explicit previous/next page navigation, while Save verifies content type, `%PDF-`
+signature, bounded nonzero bytes, and copied SHA-256 before handing one temporary local file to the
+native save/share surface. Neither operation creates a document-access token or exposes R2.
+
+Public share remains token/session scoped. The native message contains its controlled viewer URL
+exactly once. `/v` displays the session-authorized PDF inline immediately and retains Download as a
+secondary route; expiry, revoke, access count, last access, internal-file workspace authentication,
+and generic unavailable states remain unchanged. Branded public viewer deployment is
+`BRANDED_PUBLIC_VIEWER_DOMAIN_DEFERRED` until an exact production origin owner is verified.
+
+## Alpha.67 issued PDF pagination and quantity presentation
+
+Finished Spec pagination is capacity-based. If the complete section fits on one page but not the
+current remainder, it begins on the next page intact. Only a section taller than one full content
+page may split; every true continuation repeats its table header and alone receives `(계속)`.
+Arbitrary fixed-row chunking is forbidden. Issued-document material/process quantities retain their
+canonical decimal string and remove only trailing fractional zeroes (`1.000 → 1`, `1.250 → 1.25`,
+`0.125 → 0.125`). Measurements, prices, identifiers, and dates do not use this formatter.
+
+## Alpha.67 final issued-PDF and public-access boundary
+
+An issue or PDF-generation command owns immutable revision render, PDF bytes, and R2 persistence;
+it does not create a public document-access token for an embedded QR. Manual Share remains the only
+current command that creates a new public viewer token. Existing `embedded_qr` rows remain readable
+and revocable for compatibility, and no migration or destructive token rewrite is implied.
+
+The issued preview read model supplies human identity, category, material, Size/Color, Finished
+Spec, process, and selected-asset truth to one renderer. Reorder cover identity is the single
+`N차 리오더` label. Empty optional sections are absent. Additional Process tables never contain
+the Basic Process. Weighted pagination accounts for wrapped content, starts a fitting section on a
+fresh page when necessary, and marks only true later chunks as `(계속)`. Selected attachment image
+bytes are bounded and rendered on dedicated four-up pages without exposing storage identities.
+
+## Alpha.67 monochrome issued-PDF and branded Viewer boundary
+
+Issued-PDF chrome uses only white and neutral grayscale. Representative and selected user image
+bytes keep their source color; neither renderer filters nor document CSS may recolor them. Cover
+fact order is fixed to factory/due, total quantity/per-piece labor, season/target,
+category/detail, and document number/total labor. Per-piece labor is the persisted Basic Process
+`unitPrice`; total labor is that same row's persisted `amount`. The renderer performs no quantity
+multiplication and never substitutes WorkOrder `estimatedTotal`.
+
+Finished Spec treats canonical cm as its only measurement truth. A cm section starts on a fresh
+page, the corresponding inch section starts on the next fresh page, and inch display uses the
+existing exact 1/8-inch conversion owner. Each unit independently follows deterministic true-
+continuation pagination. Fabric and Accessory headings use the shared spool and four-hole-button
+semantic icons respectively.
+
+The public Viewer origin is configurable but fail-closed. A branded host admits only `/v`, required
+same-host framework assets, and the exact public document session/file/download API set. Branded
+root, auth, Maker, workspace, and arbitrary API paths are 404. Internal generated-document file
+routes remain workspace-authenticated, R2 remains private, and access expiry/revoke/count/session
+semantics do not change.

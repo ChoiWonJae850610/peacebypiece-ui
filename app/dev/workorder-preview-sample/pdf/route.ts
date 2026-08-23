@@ -15,13 +15,21 @@ export async function GET(request: Request) {
   const host = request.headers.get("x-forwarded-host") ?? request.headers.get("host");
   if (!isLocalOnlyRouteHostAllowed(host)) return new NextResponse(null, { status: 404 });
 
-  const foundation = await createAlpha37SamplePdfFoundation();
-  const renderUrl = new URL("/dev/workorder-preview-sample", request.url).toString();
+  const pomRows = new URL(request.url).searchParams.get("pomRows");
+  const requestedProcessScenario = new URL(request.url).searchParams.get("processScenario");
+  const processScenario = requestedProcessScenario === "basic-only" || requestedProcessScenario === "basic-additional" ? requestedProcessScenario : null;
+  const requestedRedesignScenario = new URL(request.url).searchParams.get("redesignScenario");
+  const redesignScenario = requestedRedesignScenario === "rich" || requestedRedesignScenario === "sparse" ? requestedRedesignScenario : "normal";
+  const foundation = await createAlpha37SamplePdfFoundation({ pomRowCount: pomRows, processScenario, redesignScenario });
+  const renderUrl = new URL("/dev/workorder-preview-sample", request.url);
+  if (pomRows) renderUrl.searchParams.set("pomRows", pomRows);
+  if (processScenario) renderUrl.searchParams.set("processScenario", processScenario);
+  renderUrl.searchParams.set("redesignScenario", redesignScenario);
   const result = await new LocalChromiumIssuedWorkOrderPdfRenderer().render({
     snapshot: foundation.snapshot,
     canonicalSnapshotJson: foundation.canonicalSnapshotJson,
     snapshotSha256: foundation.snapshotSha256,
-    renderUrl,
+    renderUrl: renderUrl.toString(),
     outputFileName: `${foundation.snapshot.documentIdentity.displayDocumentNumber}.pdf`,
     options: {
       printBackground: true,

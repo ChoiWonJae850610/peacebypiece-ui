@@ -12,6 +12,7 @@ import WorkOrderDetailOverview, {
 import { useWorkOrderMaterialAuthoringController } from "@/features/materials/useWorkOrderMaterialAuthoringController";
 import WorkOrderListScreen from "@/features/work-orders/list/WorkOrderListScreen";
 import WorkOrderCreateSheet from "@/features/work-orders/create/WorkOrderCreateSheet";
+import { WorkOrderReorderCreateSheet, WorkOrderSeriesHistorySheet } from "@/features/work-orders/reorder/WorkOrderReorderSheets";
 import DelayedLoadingMessage from "@/features/work-orders/loading/DelayedLoadingMessage";
 import {
   customerGuidance,
@@ -41,7 +42,10 @@ import { useWorkOrderAssetAuthoringController } from "@/features/work-orders/ima
 import { encodeWorkOrderProductType } from "@/domain/workOrderCategoryPolicy";
 import { materialNoun } from "@/domain/materialSemanticCopy";
 import { reconcileCreatedWorkOrderListItem, resolveWorkOrderCreateAttempt, type WorkOrderCreateAttemptIdentity } from "@/domain/workOrderCreatePolicy";
-import { MobileApiError, type MaterialPartnerOption, type MaterialType, type MobileCurrentUser, type WorkOrderCharacterFilter, type WorkOrderDetailCore, type WorkOrderLineageFilter, type WorkOrderListItem, type WorkOrderListStatusFilter } from "@/domain/mobileContract";
+import { canCreateMobileWorkOrderReorder } from "@/domain/workOrderReorderPolicy";
+import { resolveExpectedNextReorderRound } from "@/domain/workOrderReorderConfirmationPolicy";
+import { reconcileWorkOrderListItemFromDetail, workOrderListWorkflowChanged } from "@/domain/workOrderListReconciliation";
+import { MobileApiError, type MaterialPartnerOption, type MaterialType, type MobileCurrentUser, type WorkOrderCharacterFilter, type WorkOrderDetailCore, type WorkOrderLineageFilter, type WorkOrderListItem, type WorkOrderListStatusFilter, type WorkOrderSeriesHistory } from "@/domain/mobileContract";
 
 type AppPhase =
   | "booting"
@@ -56,6 +60,34 @@ type AppPhase =
   | "detail-ready"
   | "recoverable-error"
   | "session-expired";
+
+type WorkOrderDetailHydration = {
+  readonly detail: WorkOrderDetailCore;
+  readonly images: Awaited<ReturnType<typeof workOrderQueryController.images>>;
+  readonly partners: Awaited<ReturnType<typeof workOrderQueryController.materialPartners>>;
+  readonly history: WorkOrderSeriesHistory | null;
+  readonly historyUnavailable: boolean;
+};
+
+async function loadWorkOrderDetailHydration(workOrderId: string): Promise<WorkOrderDetailHydration> {
+  const [detail, images, partners] = await Promise.all([
+    workOrderQueryController.detail(workOrderId),
+    workOrderQueryController.images(workOrderId),
+    workOrderQueryController.materialPartners(workOrderId),
+  ]);
+  if (detail.header.entityVersion !== images.entityVersion || detail.header.entityVersion !== partners.entityVersion) {
+    throw new MobileApiError({ code: "CONFLICT", message: "이미지와 작업지시서 버전이 달라 최신 내용을 다시 불러와야 합니다." });
+  }
+  if (detail.header.identity.isSample) {
+    return { detail, images, partners, history: null, historyUnavailable: false };
+  }
+  try {
+    const history = await workOrderQueryController.seriesHistory(workOrderId);
+    return { detail, images, partners, history, historyUnavailable: false };
+  } catch {
+    return { detail, images, partners, history: null, historyUnavailable: true };
+  }
+}
 
 function materialLabel(materialType: MaterialType) {
   return materialNoun(materialType);
@@ -86,6 +118,11 @@ export default function MobileWorkOrderExperience() {
   const [createIsSample, setCreateIsSample] = useState(true);
   const [createError, setCreateError] = useState<string | null>(null);
   const [createPending, setCreatePending] = useState(false);
+  const [reorderSheetVisible, setReorderSheetVisible] = useState(false);
+  const [reorderRequestError, setReorderRequestError] = useState<string | null>(null);
+  const [reorderPending, setReorderPending] = useState(false);
+  const [seriesHistory, setSeriesHistory] = useState<WorkOrderSeriesHistory | null>(null);
+  const [seriesHistoryVisible, setSeriesHistoryVisible] = useState(false);
   const [samplePending, setSamplePending] = useState(false);
   const { selected, setSelected, selectedWorkOrderId: selectedWorkOrderIdRef } = useWorkOrderNavigation();
   const [detail, setDetail] = useState<WorkOrderDetailCore | null>(null);
@@ -115,9 +152,13 @@ export default function MobileWorkOrderExperience() {
   const [, setConflictVersion] = useState<number | null>(null);
   const detailRequestInFlight = useRef(false);
   const listRequestInFlight = useRef(false);
+  const listReconcileRequired = useRef(false);
   const pendingListSearch = useRef<{ readonly query: string; readonly status: WorkOrderListStatusFilter; readonly character: WorkOrderCharacterFilter; readonly lineage: readonly WorkOrderLineageFilter[] } | null>(null);
   const overviewMutation = useRef(createExplicitMutationController()).current;
   const createMutation = useRef(createExplicitMutationController()).current;
+  const reorderMutation = useRef(createExplicitMutationController()).current;
+  const reorderAttemptIdentity = useRef<{ readonly sourceWorkOrderId: string; readonly clientRequestId: string; readonly idempotencyKey: string } | null>(null);
+  const committedReorderRead = useRef<{ readonly workOrderId: string; readonly reorderRound: number } | null>(null);
   const [inlineMutationQueue] = useState(createSerializedMutationQueue);
   const [canonicalDetailRefreshQueue] = useState(createSerializedMutationQueue);
   const clientRequestCounter = useRef(0);
@@ -133,6 +174,12 @@ export default function MobileWorkOrderExperience() {
   }, []);
   const reconcileCanonicalDetail = useCallback((refreshed: WorkOrderDetailCore) => {
     const workOrderId = refreshed.header.id;
+    const previousDetail = detailRef.current;
+    if (previousDetail?.header.id === workOrderId
+      && (previousDetail.header.status !== refreshed.header.status
+        || previousDetail.header.document.status !== refreshed.header.document.status)) {
+      listReconcileRequired.current = true;
+    }
     detailRef.current = refreshed;
     setDetail(refreshed);
     setBasicInfoDraft((currentDraft) => {
@@ -140,24 +187,14 @@ export default function MobileWorkOrderExperience() {
       const currentOwner = activeBasicSessionRef.current;
       return currentOwner ? { ...next, [currentOwner.field]: currentDraft[currentOwner.field] } : next;
     });
-    setItems((current) => current.map((item) => item.workOrderId === workOrderId ? {
-      ...item,
-      productName: refreshed.header.productName,
-      dueDate: refreshed.header.dueDate,
-      totalQuantity: refreshed.header.totalQuantity,
-      representativeThumbnail: refreshed.header.representativeImage,
-      identity: refreshed.header.identity,
-      updatedAt: refreshed.header.updatedAt,
-    } : item));
-    setSelected((current) => current?.workOrderId === workOrderId ? {
-      ...current,
-      productName: refreshed.header.productName,
-      dueDate: refreshed.header.dueDate,
-      totalQuantity: refreshed.header.totalQuantity,
-      representativeThumbnail: refreshed.header.representativeImage,
-      identity: refreshed.header.identity,
-      updatedAt: refreshed.header.updatedAt,
-    } : current);
+    setItems((current) => current.map((item) => {
+      if (item.workOrderId !== workOrderId) return item;
+      if (workOrderListWorkflowChanged(item, refreshed)) {
+        listReconcileRequired.current = true;
+      }
+      return reconcileWorkOrderListItemFromDetail(item, refreshed);
+    }));
+    setSelected((current) => current ? reconcileWorkOrderListItemFromDetail(current, refreshed) : current);
   }, [setSelected]);
   const refreshCanonicalDetailAfterMutation = useCallback((workOrderId: string) => canonicalDetailRefreshQueue.enqueue(async () => {
     const refreshed = await workOrderQueryController.detailAfterReadinessRelevantMutation(workOrderId);
@@ -434,23 +471,18 @@ export default function MobileWorkOrderExperience() {
     setErrorState(null);
     setPhase("detail-loading");
     try {
-      const [result, imagePage, partnerPage] = await Promise.all([
-        workOrderQueryController.detail(item.workOrderId),
-        workOrderQueryController.images(item.workOrderId),
-        workOrderQueryController.materialPartners(item.workOrderId),
-      ]);
-      if (result.header.entityVersion !== imagePage.entityVersion || result.header.entityVersion !== partnerPage.entityVersion) {
-        throw new MobileApiError({ code: "CONFLICT", message: "이미지와 작업지시서 버전이 달라 최신 내용을 다시 불러와야 합니다." });
-      }
-      setDetail(result);
-      hydrateAssets(imagePage.items, imagePage.attachments);
-      setMaterialPartnerOptions(partnerPage.items);
-      setBasicInfoDraft(basicInfoDraftFromDetail(result));
+      const hydrated = await loadWorkOrderDetailHydration(item.workOrderId);
+      setDetail(hydrated.detail);
+      hydrateAssets(hydrated.images.items, hydrated.images.attachments);
+      setMaterialPartnerOptions(hydrated.partners.items);
+      setSeriesHistory(hydrated.history);
+      setBasicInfoDraft(basicInfoDraftFromDetail(hydrated.detail));
       setBasicInfoErrors({});
       setEditing(false);
       setSaveState("read-only");
       setSaveMessage(null);
       setPhase("detail-ready");
+      if (hydrated.historyUnavailable) showToast("작업지시서는 열렸지만 작업 이력을 불러오지 못했습니다.", "warning");
     } catch (error) {
       setRequestError(error, "detail");
     } finally {
@@ -459,11 +491,18 @@ export default function MobileWorkOrderExperience() {
   }
 
   function clearDetailAndReturnToList() {
+    const shouldReconcileList = listReconcileRequired.current;
+    listReconcileRequired.current = false;
     selectedWorkOrderIdRef.current = null;
     setSelected(null);
     setDetail(null);
     resetAssets();
     setMaterialPartnerOptions([]);
+    setSeriesHistory(null);
+    setSeriesHistoryVisible(false);
+    setReorderSheetVisible(false);
+    committedReorderRead.current = null;
+    reorderAttemptIdentity.current = null;
     setErrorState(null);
     setEditing(false);
     setActiveBasicField(null);
@@ -472,6 +511,9 @@ export default function MobileWorkOrderExperience() {
     setSaveMessage(null);
     resetMaterialSession();
     setPhase("list-ready");
+    if (shouldReconcileList) {
+      void loadListFor(listQuery, listStatusFilter, listCharacterFilter, listLineageFilters, "search");
+    }
   }
 
   function discardActiveEditors() {
@@ -546,6 +588,87 @@ export default function MobileWorkOrderExperience() {
     };
   }
 
+  function listItemFromCommittedReorder(
+    result: Awaited<ReturnType<typeof workOrderMutationController.createReorder>>["result"],
+    source: WorkOrderListItem | null,
+  ): WorkOrderListItem {
+    return {
+      workOrderId: result.workOrderId,
+      displayDocumentNumber: null,
+      productName: result.productName,
+      status: "draft",
+      dueDate: result.dueDate,
+      totalQuantity: result.totalQuantity,
+      estimatedAmountSummary: source?.estimatedAmountSummary ?? { currency: "KRW", estimatedTotal: "0" },
+      representativeThumbnail: null,
+      incompleteMaterialSummary: { incompleteFabricCount: 0, incompleteAccessoryCount: 0 },
+      processCount: 0,
+      latestDocumentStatus: null,
+      updatedAt: source?.updatedAt ?? "1970-01-01T00:00:00.000Z",
+      identity: {
+        isSample: false,
+        derivationKind: "reorder",
+        reorderRound: result.reorderRound,
+        sourceWorkOrderId: result.sourceWorkOrderId,
+        sourceRevisionId: result.sourceRevisionId,
+        seriesRootWorkOrderId: result.seriesRootWorkOrderId,
+      },
+    };
+  }
+
+  async function refreshCurrentFilteredListAfterCreate() {
+    try {
+      const page = await workOrderQueryController.list({ query: listQuery, status: listStatusFilter, character: listCharacterFilter, lineage: listLineageFilters });
+      setItems(page.items);
+      setHasMore(page.hasMore);
+      setListNextCursor(page.nextCursor);
+    } catch {
+      showToast("리오더는 열렸지만 현재 목록을 새로고침하지 못했습니다.", "warning");
+    }
+  }
+
+  async function hydrateCommittedReorder() {
+    const committed = committedReorderRead.current;
+    if (!committed || detailRequestInFlight.current) return;
+    detailRequestInFlight.current = true;
+    setErrorState(null);
+    setPhase("detail-loading");
+    try {
+      const hydrated = await loadWorkOrderDetailHydration(committed.workOrderId);
+      if (hydrated.detail.header.id !== committed.workOrderId || hydrated.detail.header.identity.derivationKind !== "reorder" || hydrated.detail.header.identity.isSample) {
+        throw new MobileApiError({ code: "MALFORMED_RESPONSE", message: "생성된 리오더의 초기 상태를 확인하지 못했습니다." });
+      }
+      const item = listItemFromCreatedDraft(hydrated.detail);
+      selectedWorkOrderIdRef.current = committed.workOrderId;
+      setSelected(item);
+      setDetail(hydrated.detail);
+      hydrateAssets(hydrated.images.items, hydrated.images.attachments);
+      setMaterialPartnerOptions(hydrated.partners.items);
+      setSeriesHistory(hydrated.history);
+      setBasicInfoDraft(basicInfoDraftFromDetail(hydrated.detail));
+      setBasicInfoErrors({});
+      setEditing(false);
+      setSaveState("read-only");
+      setSaveMessage(null);
+      setPhase("detail-ready");
+      setErrorState(null);
+      committedReorderRead.current = null;
+      reorderAttemptIdentity.current = null;
+      if (hydrated.historyUnavailable) showToast("리오더는 열렸지만 작업 이력을 불러오지 못했습니다.", "warning");
+      void refreshCurrentFilteredListAfterCreate();
+    } catch (error) {
+      setErrorState({
+        message: "리오더는 생성되었습니다.",
+        guidance: customerGuidance(error, "post-create-detail"),
+        correlationId: error instanceof MobileApiError ? error.correlationId : null,
+        retryTarget: "post-create-detail",
+      });
+      setPhase("recoverable-error");
+    } finally {
+      detailRequestInFlight.current = false;
+    }
+  }
+
   async function createWorkOrderDraftFromMobile() {
     const productName = createProductName.trim();
     const validationError = validateWorkOrderProductName(productName);
@@ -604,6 +727,88 @@ export default function MobileWorkOrderExperience() {
       createMutation.complete();
       setCreatePending(false);
     }
+  }
+
+  function openReorderSheet() {
+    if (!detail || !canCreateMobileWorkOrderReorder(detail) || reorderMutation.inFlight) return;
+    reorderAttemptIdentity.current = null;
+    setReorderRequestError(null);
+    setReorderSheetVisible(true);
+  }
+
+  function cancelReorderSheet() {
+    if (reorderMutation.inFlight) return;
+    reorderAttemptIdentity.current = null;
+    setReorderSheetVisible(false);
+    setReorderRequestError(null);
+  }
+
+  async function createReorderFromMobile() {
+    const source = detail;
+    if (!source || !canCreateMobileWorkOrderReorder(source)) return;
+    if (reorderMutation.tryBegin() !== "started") return;
+    setReorderPending(true);
+    setReorderRequestError(null);
+    clientRequestCounter.current += 1;
+    const existing = reorderAttemptIdentity.current;
+    const identity = existing && existing.sourceWorkOrderId === source.header.id
+      ? existing
+      : {
+          sourceWorkOrderId: source.header.id,
+          clientRequestId: `alpha67-reorder-${Date.now()}-${clientRequestCounter.current}`,
+          idempotencyKey: `alpha67-reorder-${Date.now()}-${clientRequestCounter.current}`,
+        };
+    reorderAttemptIdentity.current = identity;
+    try {
+      const created = await workOrderMutationController.createReorder(source.header.id, {
+        clientRequestId: identity.clientRequestId,
+        totalQuantity: 0,
+        dueDate: null,
+      }, identity.idempotencyKey);
+      committedReorderRead.current = { workOrderId: created.result.workOrderId, reorderRound: created.result.reorderRound };
+      const committedItem = listItemFromCommittedReorder(created.result, selected);
+      selectedWorkOrderIdRef.current = created.result.workOrderId;
+      setSelected(committedItem);
+      setDetail(null);
+      setReorderSheetVisible(false);
+      showToast(`${created.result.reorderRound}차 리오더를 만들었습니다.`, "success");
+      await hydrateCommittedReorder();
+    } catch (error) {
+      if (committedReorderRead.current) {
+        setReorderSheetVisible(false);
+        setErrorState({
+          message: "리오더는 생성되었습니다.",
+          guidance: customerGuidance(error, "post-create-detail"),
+          correlationId: error instanceof MobileApiError ? error.correlationId : null,
+          retryTarget: "post-create-detail",
+        });
+        setPhase("recoverable-error");
+      } else {
+        setReorderRequestError(customerMessage(error));
+      }
+    } finally {
+      reorderMutation.complete();
+      setReorderPending(false);
+    }
+  }
+
+  async function openSeriesWorkOrder(workOrderId: string) {
+    if (workOrderId === selected?.workOrderId) {
+      setSeriesHistoryVisible(false);
+      return;
+    }
+    setSeriesHistoryVisible(false);
+    const hydrated = await loadWorkOrderDetailHydration(workOrderId);
+    const item = listItemFromCreatedDraft(hydrated.detail);
+    selectedWorkOrderIdRef.current = workOrderId;
+    setSelected(item);
+    setDetail(hydrated.detail);
+    hydrateAssets(hydrated.images.items, hydrated.images.attachments);
+    setMaterialPartnerOptions(hydrated.partners.items);
+    setSeriesHistory(hydrated.history);
+    setBasicInfoDraft(basicInfoDraftFromDetail(hydrated.detail));
+    setPhase("detail-ready");
+    if (hydrated.historyUnavailable) showToast("작업지시서는 열렸지만 작업 이력을 불러오지 못했습니다.", "warning");
   }
 
   function loadListSafely() {
@@ -917,41 +1122,23 @@ export default function MobileWorkOrderExperience() {
     }
   }
 
-  function reloadLatestBasicInfo() {
+  async function reloadLatestBasicInfo() {
     if (!selected || detailRequestInFlight.current) return;
-    const load = async () => {
-      detailRequestInFlight.current = true;
-      try {
-        const refreshed = await workOrderQueryController.detail(selected.workOrderId);
-        setDetail(refreshed);
-        setBasicInfoDraft(basicInfoDraftFromDetail(refreshed));
-        setBasicInfoErrors({});
-        setConflictVersion(null);
-        setEditing(false);
-        setSaveState("read-only");
-        setSaveMessage(null);
-        setItems((current) => current.map((item) => item.workOrderId === selected.workOrderId ? {
-          ...item,
-          productName: refreshed.header.productName,
-          dueDate: refreshed.header.dueDate,
-          totalQuantity: refreshed.header.totalQuantity,
-          updatedAt: refreshed.header.updatedAt,
-        } : item));
-        setSelected((current) => current ? {
-          ...current,
-          productName: refreshed.header.productName,
-          dueDate: refreshed.header.dueDate,
-          totalQuantity: refreshed.header.totalQuantity,
-          updatedAt: refreshed.header.updatedAt,
-        } : current);
-      } catch (error) {
-        setSaveState("save-error");
-        setSaveMessage(error instanceof MobileApiError ? error.message : "최신 내용을 불러오지 못했습니다.");
-      } finally {
-        detailRequestInFlight.current = false;
-      }
-    };
-    void load();
+    detailRequestInFlight.current = true;
+    try {
+      const refreshed = await workOrderQueryController.detail(selected.workOrderId);
+      reconcileCanonicalDetail(refreshed);
+      setBasicInfoErrors({});
+      setConflictVersion(null);
+      setEditing(false);
+      setSaveState("read-only");
+      setSaveMessage(null);
+    } catch (error) {
+      setSaveState("save-error");
+      setSaveMessage(error instanceof MobileApiError ? error.message : "최신 내용을 불러오지 못했습니다.");
+    } finally {
+      detailRequestInFlight.current = false;
+    }
   }
 
   async function setSelectedWorkOrderSample(isSample: boolean) {
@@ -980,6 +1167,7 @@ export default function MobileWorkOrderExperience() {
   function retry() {
     if (!errorState) return;
     if (errorState.retryTarget === "detail" && selected) void selectItem(selected);
+    else if (errorState.retryTarget === "post-create-detail") void hydrateCommittedReorder();
     else if (errorState.retryTarget === "disconnect") void disconnect();
     else if (errorState.retryTarget === "list" && user) void loadList();
     else {
@@ -1020,7 +1208,7 @@ export default function MobileWorkOrderExperience() {
       loading
       scope="detail"
     />
-  ) : phase === "recoverable-error" && errorState?.retryTarget === "detail" ? (
+  ) : phase === "recoverable-error" && (errorState?.retryTarget === "detail" || errorState?.retryTarget === "post-create-detail") ? (
     <ErrorPanel error={errorState} onRetry={retry} onReturnToList={returnToList} />
   ) : detail ? (
     <WorkOrderDetailOverview
@@ -1096,6 +1284,10 @@ export default function MobileWorkOrderExperience() {
           showToast("저장됐지만 발행 전 확인을 새로고침하지 못했습니다. 최신 내용을 다시 불러와 주세요.", "warning");
         });
       }}
+      canCreateReorder={canCreateMobileWorkOrderReorder(detail)}
+      seriesHistoryCount={seriesHistory?.items.length ?? 0}
+      onOpenReorder={openReorderSheet}
+      onOpenSeriesHistory={() => setSeriesHistoryVisible(true)}
       onSave={(override) => void saveBasicInfo(override)}
       onSaveDate={(value) => {
         changeBasicInfoDraft("dueDate", value);
@@ -1111,7 +1303,7 @@ export default function MobileWorkOrderExperience() {
     <View style={styles.placeholder}><Text style={styles.placeholderTitle}>작업지시서를 선택하세요.</Text><Text style={styles.placeholderBody}>왼쪽 목록에서 작업지시서를 선택하면 실제 상세 개요가 표시됩니다.</Text></View>
   );
 
-  const globalError = phase === "recoverable-error" && errorState?.retryTarget !== "detail";
+  const globalError = phase === "recoverable-error" && errorState?.retryTarget !== "detail" && errorState?.retryTarget !== "post-create-detail";
 
   return (
     <SafeAreaView style={styles.safe}>
@@ -1144,6 +1336,16 @@ export default function MobileWorkOrderExperience() {
         )}
       </View>
       <WorkOrderCreateSheet error={createError} isSample={createIsSample} onCancel={cancelCreateSheet} onChangeProductName={changeCreateProductName} onChangeSample={(value) => { createAttemptIdentity.current = null; setCreateIsSample(value); }} onConfirm={createWorkOrderDraftFromMobile} pending={createPending} productName={createProductName} visible={createSheetVisible} />
+      <WorkOrderReorderCreateSheet
+        expectedRound={resolveExpectedNextReorderRound(seriesHistory?.items.map((item) => item.reorderRound) ?? [detail?.header.identity.reorderRound ?? 0])}
+        onCancel={cancelReorderSheet}
+        onConfirm={createReorderFromMobile}
+        pending={reorderPending}
+        requestError={reorderRequestError}
+        sourceLabel={detail?.header.productName ?? ""}
+        visible={reorderSheetVisible}
+      />
+      <WorkOrderSeriesHistorySheet history={seriesHistory} onClose={() => setSeriesHistoryVisible(false)} onSelect={(workOrderId) => void openSeriesWorkOrder(workOrderId)} visible={seriesHistoryVisible} />
     </SafeAreaView>
   );
 }

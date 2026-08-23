@@ -41,13 +41,14 @@ export function createWorkOrderAttachmentStorageKey(input: {
   workOrderId: string;
   scope: AttachmentScope;
   originalName: string;
+  objectId?: string;
 }): string {
   const companyId = sanitizeSegment(input.companyId);
   const workOrderId = sanitizeSegment(input.workOrderId);
   const scope = normalizeAttachmentScopeForStorage(input.scope);
   const directory = getAttachmentStorageDirectory(scope);
   const extension = getFileExtension(input.originalName);
-  const id = randomUUID();
+  const id = sanitizeSegment(input.objectId ?? randomUUID());
 
   return `companies/${companyId}/workorders/${workOrderId}/${directory}/${id}${extension}`;
 }

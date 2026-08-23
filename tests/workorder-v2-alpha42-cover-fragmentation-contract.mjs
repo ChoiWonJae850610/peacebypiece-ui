@@ -5,25 +5,14 @@ const css = fs.readFileSync("components/workorder/preview/IssuedWorkOrderPreview
 const renderer = fs.readFileSync("lib/generated-documents/work-order-pdf/localChromiumRenderer.mts", "utf8");
 const readiness = fs.readFileSync("scripts/run-wafl-v2-alpha42-pending-pdf-render-readiness.mjs", "utf8");
 
-const measuredBefore = {
-  coverHeightPx: 821.344,
-  minHeightPx: 793.701,
-  basePaddingEachPx: 45.3543,
-};
-const printPaddingEachPx = 8 * 96 / 25.4;
-const intrinsicContentHeightPx = measuredBefore.coverHeightPx - (2 * measuredBefore.basePaddingEachPx);
-const naturalAfterPx = intrinsicContentHeightPx + (2 * printPaddingEachPx);
-const computedAfterPx = Math.max(measuredBefore.minHeightPx, naturalAfterPx);
-const overflowBeforePx = measuredBefore.coverHeightPx - measuredBefore.minHeightPx;
-const recoveredPx = 2 * (measuredBefore.basePaddingEachPx - printPaddingEachPx);
-
-assert.ok(overflowBeforePx > 27 && overflowBeforePx < 28);
-assert.ok(recoveredPx > overflowBeforePx);
-assert.ok((recoveredPx - overflowBeforePx) / (96 / 25.4) < 0.7);
-assert.equal(computedAfterPx, measuredBefore.minHeightPx);
-assert.match(css, /@media print \{[\s\S]*?\.coverPage \{ width: 297mm; min-height: 210mm; padding-block: 8mm; \}/);
+assert.match(css, /\.coverPage \{ page: cover; width: min\(100%, 210mm\); min-height: 297mm; padding: 10mm 12mm 15mm; overflow: hidden; \}/);
+assert.match(css, /\.coverMain \{ height: 146mm;/);
+assert.match(css, /\.deliveryMemo \{ min-height: 28mm;/);
+assert.match(css, /\.coverSummary \{ height: 27mm;/);
+assert.match(css, /@media print \{[\s\S]*?\.coverPage \{ width: 210mm; height: 297mm; min-height: 297mm; \}/);
 assert.match(css, /\.pageNumberFooter \{ position: absolute;/);
-assert.doesNotMatch(css, /@media print \{[\s\S]*?\.coverPage[^}]*overflow:\s*hidden/);
+assert.match(css, /\.coverImageFrame \{ min-height: 0;[\s\S]*?overflow: hidden; \}/);
+assert.match(css, /\.representativeImage \{ display: block; width: 100%; height: 100%; object-fit: contain;/);
 assert.doesNotMatch(css, /@media print \{[\s\S]*?\.coverPage[^}]*transform:/);
 assert.match(renderer, /coverFragmentationOverflowPx/);
 assert.match(renderer, /coverFragmentationViolationCount: coverFragmentationOverflowPx > 2 \? 1 : 0/);
@@ -34,8 +23,7 @@ assert.doesNotMatch(readiness, /skip.*blank|ignore.*blank/i);
 
 console.log(JSON.stringify({
   result: "workorder v2 alpha.42 cover fragmentation contract: PASS",
-  overflowBeforePx: Number(overflowBeforePx.toFixed(3)),
-  recoveredPx: Number(recoveredPx.toFixed(3)),
-  printPaddingBlockMm: 8,
-  computedAfterPx: Number(computedAfterPx.toFixed(3)),
+  coverOrientation: "portrait",
+  coverMainHeightMm: 146,
+  coverSummaryHeightMm: 27,
 }));

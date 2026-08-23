@@ -4,6 +4,10 @@ import { canonicalPomDisplayName } from "@/lib/catalog/systemCatalogPolicy";
 import { MEASUREMENT_SNAPSHOT_CONTENT_COMMAND_CODES, WORK_ORDER_COMMAND_CODES } from "@/lib/domain/work-orders/command/workOrderCommandCodes";
 import { formatMeasurementFromCm, isMeasurementSnapshotModified } from "@/lib/domain/work-orders/measurement/measurementPolicy";
 import { evaluateWorkOrderIssueReadiness } from "@/lib/domain/work-orders/issueReadiness";
+import { waflBasicSpecTemplateNameById } from "@/lib/domain/work-orders/measurement/waflBasicSpecV1";
+import { resolveMaterialRemovalMode } from "@/lib/domain/work-orders/materialRemovalPolicy";
+import { resolveFactoryDeliveryMemo } from "@/lib/domain/work-orders/factoryDeliveryMemoPolicy";
+import { WORK_ORDER_FACTORY_PROCESS_CODE } from "@/lib/domain/work-orders/productionProcessPolicy";
 
 import { performance } from "perf_hooks";
 
@@ -118,12 +122,26 @@ export const WORK_ORDER_V2_DETAIL_CORE_SQL = `
          (SELECT count(*)::integer FROM work_order_material_lines m
           WHERE m.company_id = $1 AND m.revision_id = t.current_revision_id AND m.material_type = 'accessory'
             AND m.archived_at IS NULL) AS accessory_count,
+         (SELECT count(*)::integer FROM work_order_material_lines m
+          WHERE m.company_id = $1 AND m.revision_id = t.current_revision_id AND m.archived_at IS NULL
+            AND (m.supplier_partner_id IS NULL OR NULLIF(trim(m.usage_area), '') IS NULL OR NULLIF(trim(m.memo), '') IS NULL)) AS material_optional_detail_incomplete_count,
          (SELECT count(*)::integer FROM work_order_colors c
           WHERE c.company_id = $1 AND c.revision_id = t.current_revision_id) AS color_count,
          (SELECT count(*)::integer FROM work_order_sizes s
           WHERE s.company_id = $1 AND s.revision_id = t.current_revision_id) AS size_count,
          (SELECT count(*)::integer FROM work_order_processes p
           WHERE p.company_id = $1 AND p.revision_id = t.current_revision_id) AS process_count,
+         (SELECT count(*)::integer FROM work_order_processes p
+          WHERE p.company_id = $1 AND p.revision_id = t.current_revision_id
+            AND p.process_type_code = '${WORK_ORDER_FACTORY_PROCESS_CODE}') AS basic_process_count,
+         (SELECT p.status FROM work_order_processes p
+          WHERE p.company_id = $1 AND p.revision_id = t.current_revision_id
+            AND p.process_type_code = '${WORK_ORDER_FACTORY_PROCESS_CODE}'
+          ORDER BY p.display_order, p.id LIMIT 1) AS basic_process_status,
+         (SELECT p.memo FROM work_order_processes p
+          WHERE p.company_id = $1 AND p.revision_id = t.current_revision_id
+            AND p.process_type_code = '${WORK_ORDER_FACTORY_PROCESS_CODE}'
+          ORDER BY p.display_order, p.id LIMIT 1) AS basic_process_memo,
          (SELECT count(*)::integer FROM work_order_revision_images ri
           WHERE ri.company_id = $1 AND ri.revision_id = t.current_revision_id) AS image_count,
          (SELECT count(*)::integer FROM work_order_revision_attachments ra
@@ -153,11 +171,8 @@ export const WORK_ORDER_V2_MATERIALS_SQL = `
          m.supplier_partner_id, NULL::text AS partner_name, m.required_quantity,
          m.allowance_quantity, m.inventory_usage_quantity, m.order_quantity,
          m.unit_code, m.unit_price, m.amount, m.memo, m.status, m.display_order,
-         m.archived_at,
-         (
-           m.status = 'editing' AND m.archived_at IS NULL
-           AND m.requested_at IS NULL AND m.cancelled_at IS NULL AND m.completed_at IS NULL
-           AND NOT EXISTS (
+         m.requested_at, m.cancelled_at, m.completed_at, m.archived_at,
+         EXISTS (
              SELECT 1 FROM domain_events e
              WHERE e.company_id = m.company_id AND e.entity_type = 'work_order'
                AND e.entity_id = t.id::text AND e.metadata->>'materialLineId' = m.id::text
@@ -166,8 +181,7 @@ export const WORK_ORDER_V2_MATERIALS_SQL = `
                  '${WORK_ORDER_COMMAND_CODES.material.orderCancel}',
                  '${WORK_ORDER_COMMAND_CODES.material.orderComplete}'
                ]::text[])
-           )
-         ) AS deletable,
+         ) AS has_order_history,
          count(m.id) OVER ()::integer AS total_count
   FROM target t
   LEFT JOIN work_order_material_lines m
@@ -414,7 +428,10 @@ export async function getWorkOrderDetailCoreV2(input: {
     representativeImageCount: row.image_id ? 1 : 0,
     fabricCount: fabric,
     accessoryCount: accessory,
+    materialOptionalDetailIncompleteCount: asCount(row.material_optional_detail_incomplete_count),
     includedAttachmentCount: asCount(row.included_attachment_count),
+    basicProcessCount: asCount(row.basic_process_count),
+    basicProcessStatus: row.basic_process_status === null ? null : asEnum(row.basic_process_status, PROCESS_STATUSES, "WORK_ORDER_DETAIL_INVALID_BASIC_PROCESS_STATUS"),
   });
   const revisionNo = asCount(row.revision_no) as RevisionNumber;
   const documentStatus = row.latest_document_status === null
@@ -429,7 +446,7 @@ export async function getWorkOrderDetailCoreV2(input: {
       seasonCode: row.season_code === null ? null : String(row.season_code),
       itemCode: row.item_code === null ? null : String(row.item_code),
       dueDate: serializePostgresDateOnly(row.due_date, "WORK_ORDER_DETAIL_INVALID_DUE_DATE"),
-      totalQuantity: asCount(row.matrix_total),
+      totalQuantity: asCount(row.work_order_total),
       status: asEnum(row.status, WORK_ORDER_STATUSES, "WORK_ORDER_DETAIL_INVALID_STATUS"),
       currentRevisionId: String(row.current_revision_id) as WorkOrderRevisionId,
       currentRevisionNumber: revisionNo,
@@ -481,7 +498,10 @@ export async function getWorkOrderDetailCoreV2(input: {
     revision: {
       status: asEnum(row.revision_status, WORK_ORDER_REVISION_STATUSES, "WORK_ORDER_DETAIL_INVALID_REVISION_STATUS"),
       finalizedAt: asIsoDateTime(row.finalized_at),
-      factoryDeliveryMemo: row.factory_delivery_memo === null ? null : String(row.factory_delivery_memo),
+      factoryDeliveryMemo: resolveFactoryDeliveryMemo({
+        basicProcessMemo: row.basic_process_memo === null ? null : String(row.basic_process_memo),
+        legacyFactoryDeliveryMemo: row.factory_delivery_memo === null ? null : String(row.factory_delivery_memo),
+      }),
     },
     amounts: {
       currency: "KRW" as CurrencyCode,
@@ -531,6 +551,14 @@ export async function getWorkOrderMaterialsV2(input: CommonCollectionInput & {
   const hasMore = result.rows.filter((row) => row.id !== null).length > input.limit;
   const items: WorkOrderMaterialLineReadModel[] = rows.map((row) => {
     const status = asEnum(row.status, MATERIAL_LINE_STATUSES, "WORK_ORDER_MATERIAL_INVALID_STATUS");
+    const removalMode = resolveMaterialRemovalMode({
+      status,
+      lifecycle: input.lifecycle,
+      requestedAt: row.requested_at === null ? null : String(row.requested_at),
+      cancelledAt: row.cancelled_at === null ? null : String(row.cancelled_at),
+      completedAt: row.completed_at === null ? null : String(row.completed_at),
+      hasOrderHistory: row.has_order_history === true,
+    });
     return {
       id: String(row.id) as MaterialLineId,
       materialId: row.material_id ? String(row.material_id) as MaterialId : null,
@@ -548,7 +576,8 @@ export async function getWorkOrderMaterialsV2(input: CommonCollectionInput & {
       status, displayOrder: asCount(row.display_order),
       editable: input.lifecycle === "active" && status === "editing",
       locked: input.lifecycle === "archived" || status !== "editing",
-      deletable: input.lifecycle === "active" && row.deletable === true,
+      deletable: removalMode !== "not_allowed",
+      removalMode,
       lifecycle: input.lifecycle,
       archivedAt: row.archived_at === null ? null : new Date(String(row.archived_at)).toISOString() as WorkOrderMaterialLineReadModel["archivedAt"],
     };
@@ -618,7 +647,7 @@ export async function getWorkOrderSizeSpecV2(input: Omit<CommonCollectionInput, 
       measurementUnit: meta.value_c === "inch" ? "inch" : "cm",
       templateId: meta.id_a ? String(meta.id_a) as SizeTemplateId : null,
       templateVersion: meta.id_b === null ? null : asCount(meta.id_b),
-      templateName: meta.id_c === null ? null : String(meta.id_c),
+      templateName: meta.id_c === null ? waflBasicSpecTemplateNameById(meta.id_a === null ? null : String(meta.id_a)) : String(meta.id_c),
       sourceTemplateModified: isMeasurementSnapshotModified({
         sourceTemplateId: meta.id_a === null ? null : String(meta.id_a),
         sourceTemplateVersion: meta.id_b === null ? null : asCount(meta.id_b),

@@ -17,7 +17,8 @@ import {
   WORK_ORDER_ISSUE_COMMAND_CODE,
   WorkOrderIssueRepositoryError,
 } from "@/lib/domain/work-orders/command/issueRepository";
-import { WAFL_V2_ALPHA27_MUTATION_APPROVAL, WAFL_V2_ALPHA64_DOCUMENT_R0_MUTATION_APPROVAL } from "@/lib/domain/work-orders/command/runtimeGuard";
+import { getWorkOrderV2DocumentR0MutationRuntimeGuard, WAFL_V2_ALPHA27_MUTATION_APPROVAL } from "@/lib/domain/work-orders/command/runtimeGuard";
+import { isMakerQaCapabilityEnabled, MAKER_QA_CAPABILITY } from "@/lib/external-qa/makerQaCapabilities.mjs";
 
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -76,11 +77,14 @@ export async function issueWorkOrderRevision(input: {
     correlationId: input.correlationId,
     permissionCode: "workorder.update",
   });
-  requireCommandMutationApproval(
-    process.env.WAFL_V2_COMMAND_MUTATION_APPROVED === WAFL_V2_ALPHA64_DOCUMENT_R0_MUTATION_APPROVAL
-      ? WAFL_V2_ALPHA64_DOCUMENT_R0_MUTATION_APPROVAL
-      : WAFL_V2_ALPHA27_MUTATION_APPROVAL,
-  );
+  if (isMakerQaCapabilityEnabled(process.env, MAKER_QA_CAPABILITY.DOCUMENT_R0)) {
+    const runtime = getWorkOrderV2DocumentR0MutationRuntimeGuard();
+    if (!runtime.ok) {
+      throw new WorkOrderCommandRequestError({ code: "FORBIDDEN", status: 403, message: "발행은 승인된 dev/test runtime에서만 실행할 수 있습니다." });
+    }
+  } else {
+    requireCommandMutationApproval(WAFL_V2_ALPHA27_MUTATION_APPROVAL);
+  }
   const command = { ...input.command, workOrderId: input.workOrderId as WorkOrderId };
   const scopedIdempotencyKeyHash = sha256([
     WORK_ORDER_ISSUE_COMMAND_CODE,

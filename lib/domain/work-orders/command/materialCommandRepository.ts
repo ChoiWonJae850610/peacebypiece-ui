@@ -30,6 +30,7 @@ import {
   MATERIAL_QUANTITY_FACTOR,
   parseMaterialQuantityScaled,
 } from "@/lib/domain/work-orders/materialQuantityPrecision.mjs";
+import { resolveMaterialRemovalMode } from "@/lib/domain/work-orders/materialRemovalPolicy";
 
 export const MATERIAL_CREATE_COMMAND_CODE = WORK_ORDER_COMMAND_CODES.material.create;
 export const MATERIAL_PATCH_COMMAND_CODE = WORK_ORDER_COMMAND_CODES.material.patch;
@@ -823,13 +824,6 @@ export async function deleteMaterialLineV2(input: {
       client, context, scope: input.scope, workOrderId: input.workOrderId,
       materialLineId: input.materialLineId, assignedCompanyMemberId: input.assignedCompanyMemberId,
     });
-    if (
-      target.material_status !== "editing"
-      || target.archived_at !== null
-      || target.requested_at !== null
-      || target.cancelled_at !== null
-      || target.completed_at !== null
-    ) throw new MaterialCommandRepositoryError("invalid_state_transition", Number(target.work_order_version));
     const orderHistory = await client.query<DbQueryResultRow & { readonly has_history: boolean }>(`
       SELECT EXISTS (
         SELECT 1
@@ -845,7 +839,15 @@ export async function deleteMaterialLineV2(input: {
       [MATERIAL_ORDER_REQUEST_COMMAND_CODE, MATERIAL_ORDER_CANCEL_COMMAND_CODE, MATERIAL_ORDER_COMPLETE_COMMAND_CODE],
     ]);
     context.statementCount += 1;
-    if (orderHistory.rows[0]?.has_history) {
+    const removalMode = resolveMaterialRemovalMode({
+      status: target.material_status,
+      lifecycle: target.archived_at === null ? "active" : "archived",
+      requestedAt: target.requested_at,
+      cancelledAt: target.cancelled_at,
+      completedAt: target.completed_at,
+      hasOrderHistory: orderHistory.rows[0]?.has_history === true,
+    });
+    if (removalMode !== "hard_delete") {
       throw new MaterialCommandRepositoryError("invalid_state_transition", Number(target.work_order_version));
     }
     const reserved = await reserveReceipt({

@@ -59,7 +59,7 @@ assert.match(component, /작업지시서/);
 assert.match(component, /PDF 보기/);
 assert.match(component, /다운로드/);
 assert.doesNotMatch(component, hasAlpha42Contract ? /mock|storage_object_key|signedUrl/i : /mock|QR|storage_object_key|signedUrl/i);
-assert.match(css, /@page\s+cover\s*\{\s*size:\s*A4 landscape/);
+assert.match(css, /@page\s+cover\s*\{\s*size:\s*A4 portrait/);
 assert.match(css, /@page\s+content\s*\{\s*size:\s*A4 portrait/);
 assert.match(css, /@media print/);
 assert.match(css, /@media\s*\(max-width:\s*760px\)/);

@@ -4,6 +4,25 @@ function integerQuantity(value: string) {
   return /^\d+$/.test(value) ? BigInt(value) : 0n;
 }
 
+export function reconcileSizeColorTotals(bundle: WorkOrderSizeColorBundle): WorkOrderSizeColorBundle {
+  const matrixTotal = bundle.matrix.quantityCells.reduce(
+    (total, cell) => total + integerQuantity(cell.quantity),
+    0n,
+  ).toString();
+  return {
+    ...bundle,
+    matrix: {
+      ...bundle.matrix,
+      matrixTotal,
+      expectedTotal: matrixTotal,
+      workOrderTotal: matrixTotal,
+      revisionTotal: matrixTotal,
+      projectionsMatch: true,
+      totalsMatch: true,
+    },
+  };
+}
+
 export function reconcileQuantityCell(
   bundle: WorkOrderSizeColorBundle,
   colorId: string,
@@ -16,20 +35,13 @@ export function reconcileQuantityCell(
   const quantityCells = quantity === 0
     ? remaining
     : [...remaining, { colorId, sizeRowId, quantity: String(quantity) }];
-  const matrixTotal = quantityCells.reduce((total, cell) => total + integerQuantity(cell.quantity), 0n).toString();
-  return {
+  return reconcileSizeColorTotals({
     ...bundle,
     matrix: {
       ...bundle.matrix,
       quantityCells,
-      matrixTotal,
-      expectedTotal: matrixTotal,
-      workOrderTotal: matrixTotal,
-      revisionTotal: matrixTotal,
-      projectionsMatch: true,
-      totalsMatch: true,
     },
-  };
+  });
 }
 
 export function promoteSizeColorBundleVersion(

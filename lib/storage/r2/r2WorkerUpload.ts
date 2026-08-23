@@ -45,6 +45,11 @@ export type R2WorkerFileUrlResult = {
   expiresInSeconds: number;
 };
 
+export type R2WorkerObject = {
+  readonly contentType: string;
+  readonly body: Buffer;
+};
+
 export type R2WorkerDeleteUrlResult = {
   url: string;
   method: "DELETE";
@@ -271,6 +276,19 @@ export function createR2WorkerFileUrl(input: CreateR2WorkerFileUrlInput): R2Work
   });
 
   return { url, method: "GET", expiresInSeconds };
+}
+
+export async function readR2ObjectViaWorker(input: CreateR2WorkerFileUrlInput): Promise<R2WorkerObject> {
+  const request = createR2WorkerFileUrl(input);
+  const response = await fetch(request.url, { method: request.method });
+  if (!response.ok) {
+    const workerError = await readWorkerError(response);
+    throw new R2WorkerRequestError(workerError);
+  }
+  return {
+    contentType: response.headers.get("content-type")?.split(";", 1)[0]?.trim().toLowerCase() ?? "",
+    body: Buffer.from(await response.arrayBuffer()),
+  };
 }
 
 export function createR2WorkerDeleteUrl(input: CreateR2WorkerDeleteUrlInput): R2WorkerDeleteUrlResult {

@@ -1,5 +1,59 @@
 # WAFL v2 API Contract Test Plan
 
+## 27. Alpha.67 identity/PICK/basic-spec/readiness/public-viewer gate
+
+- Issued/finalized/read-only identity is fixed in mobile and rejected by the server command; draft round-zero identity remains editable and Reorder remains 본생산.
+- Season and detail-item PICK contracts prove exact options, legacy read compatibility, nested WorkOrder-local direct input, and no catalog mutation.
+- The four exact WAFL starter-template names, every seed core/addon POM, all twelve source sizes, cm SOT, selected-size-only projection, no custom-size invention, and company-template separation are permanent checks. Unmapped new POMs are explicitly grid-only.
+- Readiness proves zero Fabric/Accessory and optional detail gaps are warnings that remain visible but do not block issue; Basic Process hard rules stay intact and mobile/server consume one result.
+- Browser QA launches Chromium and WebKit, redeems `/v`, waits for a nonzero `data-rendered=true` first-page canvas, keeps Download, and re-proves invalid/revoked/network bounds plus internal-file 401.
+- Native viewer keeps actual vertical PDF rendering/zoom and a passive page indicator, while a
+  bottom sibling WAFL `닫기` Pressable invokes the Document-context close callback. Top return and
+  explicit previous/next page controls are absent.
+- Permanent inventory advances from `170/170` to `171/171`; ledger remains `20/20`, migration `021` stays absent, production/owner-fixture mutation is `0/0`, and `PHYSICAL_RESULT_NOT_INFERRED` remains.
+
+## 29. Alpha.67 viewer close / PDF process / PICK cleanup gate
+
+- Season and Detail Item bounded option lists use non-virtualized `View`/`Pressable` rendering under
+  the `WaflInputSheet` vertical owner; same-orientation nested VirtualizedList count is zero.
+- Maker WAFL recommendation visibility returns only the current category WAFL basic system template
+  plus the independent company-template route; QA/legacy system recommendations are excluded without
+  deleting compatibility data.
+- Native viewer close is a real sticky bottom footer sibling with one shared WAFL primary action,
+  exact accessibility label, actual close callback, and no top return or previous/next controls.
+- Issued PDF evidence covers Basic-only and Basic-plus-Additional snapshots: cover Basic partner,
+  omitted empty Additional section, Additional-only detail rows, absent visible `개정차수`, and
+  preserved quantity formatting.
+- Permanent inventory advances from `172/172` to `173/173`; ledger remains `20/20`, migration `021`
+  stays absent, production/owner-fixture mutation is `0/0`, and `PHYSICAL_RESULT_NOT_INFERRED` remains.
+
+## 30. Alpha.67 picker/action/list/Reorder UX gate
+
+- Season and Detail Item reuse the canonical static `WaflOptionGrid` selected-cell grammar and place WorkOrder-local `+ 직접입력` outside the recommendation grid; nested VirtualizedList count remains zero.
+- Requested Basic Process renders the shared warning action as icon plus `발주취소` without exposing manual completion or changing the lifecycle command.
+- ISSUE refresh is awaited, patches the canonical list item status/document projection, and performs one invalidated-query reconcile on list return; `작성 중 -> 진행 중` filter membership changes without manual refresh.
+- Reorder confirmation contains only the server-round preview and `아니오 / 예`; cancel performs no command, confirm sends total quantity zero and due date null, and navigation/hydration use the returned WorkOrder ID and authoritative round.
+- Permanent inventory advances from `173/173` to `174/174`; ledger remains `20/20`, migration `021` stays absent, production/owner-fixture mutation is `0/0`, and only this package's new physical changes retain `PHYSICAL_RESULT_NOT_INFERRED`.
+
+## 31. Alpha.67 final PDF redesign and PICK reel-polish gate
+
+- Season is the canonical paired option-reel owner and Detail Item is the canonical single
+  option-reel owner; neither route imports the option grid or a nested VirtualizedList. Both prove
+  the exact direct/PICK mode-switch pair and staged X/V lifecycle.
+- Requested Basic Process keeps the warning action and `발주 취소` accessibility meaning while the
+  visible compact caption is exactly `취소`.
+- Issued PDF contracts prove the branded landscape cover, human fact cards, five-count summary,
+  deterministic original/Sample/Reorder badges, absent QR/status/revision display, omitted empty
+  sections, Basic-only cover ownership, Additional-only process table, weighted continuation,
+  repeated headers, four-up attachment paging, and existing quantity/Finished-Spec pagination.
+- Generation service/repository contain no embedded-QR token creation. Explicit manual Share and
+  `/v` remain, while legacy embedded-token repository reads remain compatible.
+- Isolated normal, rich, and sparse PDFs are generated, every page is rasterized and visually
+  inspected, and no page may hide clipping or a false continuation.
+- Permanent inventory advances from `174/174` to `175/175`; ledger remains `20/20`, migration `021`
+  stays absent, production/owner-fixture mutation is `0/0`, and only this package's new physical
+  changes retain `PHYSICAL_RESULT_NOT_INFERRED`.
+
 Document role: verification owner for the normative contracts in `16-workorder-api-command-read-model-contracts.md`. It defines test layers, gates, budgets, and required evidence; it does not redefine API semantics or authorize Runtime mutation. Version-specific execution authority belongs to the active Delta and `09-codex-working-rules.md`.
 
 ## Alpha.55 material order lifecycle additions
@@ -332,3 +386,145 @@ Alpha.26 adds a static material/order gate: shared fabric/accessory DTOs, bounde
 - Owner approval 후에만 Company A synthetic draft 1개 create/update, same-key replay/different-payload conflict, competing PATCH single winner, finalized/cross-tenant denial, history/read-model reflection, and performance/mutation ledger를 검증한다.
 - Cleanup/reset/rollback은 실행하지 않는다. Schema/index/migration, business data, R2/Worker/PDF, production mutation은 모두 false여야 한다.
 - Runtime success evidence is recorded in document 22. Approval 전에는 APP_VERSION alpha.25 확정, commit/push/Finish, `4. Newest` 변경을 하지 않는다.
+
+## 19. Alpha.67 Nth Reorder gate
+
+- Static: exact eligibility, bounded client payload, root/source locks, server round allocator,
+  hashed receipt replay, migration-019 uniqueness, no migration 021, copy/reset matrix, safe
+  attachment selection, direct Overview navigation, history, and retained list badges/filters.
+- Isolated DEV/TEST Runtime: create an issued 본생산 source fixture; reject Sample, draft,
+  Rework and cancelled sources; verify same-key replay and concurrent different-key round
+  uniqueness; verify copied configuration, zero quantity cells, reset lifecycle state,
+  independent assets, history order, list filters, direct detail read, and the new Reorder's own
+  first issue. Exact fixture/object cleanup or explicitly documented retained ownership is required.
+- Production and owner-fixture mutation are zero. Actual Rework creation and Additional Process
+  Order are not inferred from this gate. Physical-iPhone result remains `NOT_INFERRED`.
+
+## 20. Alpha.67 detail-entry, post-create and image-pipeline gate
+
+- A Sample core detail remains readable when contextual Series History returns `NOT_FOUND`;
+  required detail/images/partner versions still agree.
+- Reorder command success commits the returned WorkOrder ID before list reconciliation. A current
+  filter may exclude it, and a simulated first hydration failure followed by retry produces one
+  create command total and reads the same created identity.
+- One isolated synthetic PNG proves prepare 200, original upload 200, complete 201, transformed
+  WebP thumbnail 200, representative read, canonical delete, active-row residual zero, and exact
+  source/derivative object residual zero.
+- Worker deployment evidence proves `R2_BUCKET`, `IMAGES`, and preserved secret-binding names
+  without exposing binding values; the transform receives a `ReadableStream`.
+- The permanent inventory advances from `162/162` to `163/163`; migration remains `20/20`,
+  migration `021` is absent, production/owner-fixture mutation is `0/0`, and physical result is
+  not inferred.
+
+## 21. Alpha.67 issue/PDF/material/action remediation gate
+
+- A single imported resolver proves Korean detail item plus canonical category produces the same
+  nonblocking readiness result and issue document segment; an absent item still blocks.
+- Ordinary and direct-Reorder issue/PDF paths consume the canonical `DOCUMENT_R0` capability.
+  A simulated PDF failure preserves issued identity and retry invokes PDF generation only.
+- Fabric and Accessory prove never-requested hard delete, cancelled-history archive, and
+  requested/completed removal denial, including preserved lifecycle history.
+- Production `완료`/`취소` actions prove equal icon-only geometry, distinct accessibility labels,
+  and unchanged command routing.
+- The permanent inventory advances from `163/163` to `164/164`; ledger remains `20/20`, migration
+  `021` stays absent, production/owner-fixture mutation is `0/0`, and physical result is not
+  inferred.
+
+## 22. Alpha.67 PDF generation retry/public viewer gate
+
+- Mobile parity asserts the exact generate path, revision payload, workspace cookie, idempotency
+  header, 120-second document budget, generated/pending status reconciliation, and generated row
+  read after the command.
+- A second generation-only request for the same issued revision returns the same current generated
+  identity. WorkOrder status, revision count, issue events, and generated-document count prove
+  issue/finalize/R1/R2 replay zero.
+- Viewer target resolves the existing embedded-QR identity without creating a manual share. `/v`,
+  public session, public PDF file, and public download work without a workspace session; the
+  internal file route without that session remains `API_SESSION_REQUIRED`.
+- Static security contracts forbid a mobile `보기` action from opening `inlineUrl`, forbid a raw R2
+  target, and retain the existing token hash/session boundaries.
+- The permanent inventory advances from `164/164` to `165/165`; ledger remains `20/20`, migration
+  `021` stays absent, production/owner-fixture mutation is `0/0`, and physical result is not
+  inferred.
+
+## 23. Alpha.67 mobile image asset integrity/PDF gate
+
+- A mobile fixture where advisory picker size differs from fetched Blob size proves prepare uses
+  Blob bytes and complete persists actual R2 object bytes plus SHA-256.
+- Completion proves actual MIME/size bounds, actual-byte quota recheck, derivatives, representative
+  read, receipt replay without a duplicate row, and exact isolated object/row cleanup.
+- A hash-null legacy image with a stale declared size may generate by bounded object inspection and
+  an in-memory hash without DB backfill. A hash-present size/hash corruption remains a hard failure.
+- An owner-equivalent preserved render input proves the cover emits exactly one landscape page and
+  all following pages are portrait. Generation failure categories retain the first failing owner.
+- The permanent inventory advances from `165/165` to `166/166`; ledger remains `20/20`, migration
+  `021` stays absent, production/owner-fixture mutation is `0/0`, and physical result is not inferred.
+
+## 24. Alpha.67 viewer/share/reset clean-base gate
+
+- Browser-equivalent Playwright proof loads `/v`, at least one same-host `/_next` asset, public
+  session, and iframe PDF as 200 responses without a workspace session. Invalid and network paths
+  terminate in bounded safe states; the internal file route remains `API_SESSION_REQUIRED`.
+- Native share has one structured body and exactly one viewer URL occurrence. Link metadata and
+  managed-link access metadata remain visible without disclosing raw tokens.
+- Before authorized DEV/TEST reset, the backup and KEEP/DELETE/R2 manifests are reopened, parsed,
+  sized, and hashed. Execution requires those exact hashes, disables only named user immutability
+  triggers inside one transaction, restores them before commit, and never relaxes FK triggers.
+- Final proof requires target graph residual zero, every scheduled exact-owned R2 object 404,
+  unchanged reference/config/sequence and unrelated-company signatures, ledger `20/20`, migration
+  `021` absent, production/owner-fixture mutation `0/0`, and blank WorkOrder list with create entry
+  still available. The inventory advances from `166/166` to `167/167`.
+- Owner physical result is `PHYSICAL_RESULT_NOT_INFERRED`.
+
+## 25. Alpha.67 post-clean-base physical corrections gate
+
+- Image completion proves a 90-second bounded command attempt, ambiguity-only reconciliation with
+  the exact original command/idempotency identity, immediate projection refresh on receipt, and no
+  second completion/derivative invocation.
+- Size and Color removal prove cells and matrix/work-order/revision totals reconcile together; Size
+  also proves Finished Spec Size/value cleanup through the existing transaction owner.
+- Readiness proves missing/ready/requested/completed Basic Process states, exact stable issue codes,
+  제작 routing, Additional Process independence, and issue-command parity. Issue proves requested
+  Basic Process auto-completion and replay event/completion zero.
+- Fabric and Accessory prove shared 30/100 hard limits, counter grammar, and matching server rejection
+  without truncation. Detail, issue snapshot, preview, and PDF prove Basic Process memo-first factory
+  delivery truth with legacy fallback only. Rendered classification contains human Korean labels and
+  no internal tuple.
+- Mobile View must not open Safari. Current dependency/config audit records the missing embedded PDF
+  capability as a native Development Build blocker; internal workspace file auth and share-only `/v`
+  remain intact.
+- The permanent inventory advances from `167/167` to `168/168`; ledger remains `20/20`, migration
+  `021` stays absent, production/owner-fixture mutation is `0/0`, and physical result is not inferred.
+
+## 26. Alpha.67 document UX/share/save gate
+
+- A two-or-more-page native viewer proves disabled endpoint controls, renderer `setPage` ownership,
+  and one page state shared by scroll callbacks and explicit previous/next actions.
+- Requested Basic Process presentation exposes cancel only; manual complete is absent and issue-time
+  auto-completion remains the canonical domain transition.
+- Save proves workspace-authenticated internal acquisition, PDF MIME/signature/nonzero bounds,
+  source/copy SHA equality, native local-file handoff, and cleanup. Safari, public token creation,
+  raw R2, and secret-bearing query parameters are absent.
+- Share/QR metadata renders four independent rows. Native business copy has exactly one controlled
+  viewer URL and no revision/internal identifier.
+- Browser-equivalent Chromium proves hydrated `/v`, an immediately mounted inline PDF request before
+  any Download interaction, retained Download, bounded unavailable/network states, and continued
+  unauthenticated rejection of the internal workspace file route.
+- Permanent inventory advances from `169/169` to `170/170`; ledger remains `20/20`, migration `021`
+  stays absent, production/owner-fixture mutation is `0/0`, and `PHYSICAL_RESULT_NOT_INFERRED` remains.
+
+## 28. Alpha.67 PDF spec pagination/viewer touch/format gate
+
+- Native viewer proof invokes the real return policy and asserts exactly one close callback, one
+  minimum 44-point Pressable covering chevron plus label, the accessible name
+  `문서로 돌아가기`, and native stacking above the PDF renderer.
+- Pagination proves small and owner-like 16-row Finished Spec sections remain intact, preceding
+  content moves an otherwise fitting section to a fresh page, and only a truly oversized section
+  produces balanced continuation pages with repeated headers.
+- Full-view proof requires parent-owned vertical scrolling, actual item count/near-bottom affordance,
+  sticky footer ownership, and responsive single-Size width while preserving multi-Size horizontal
+  behavior.
+- Quantity proof covers integer-equivalent and meaningful fractional decimal strings without
+  floating-point conversion. Public `/v` and Download remain regression gates.
+- Permanent inventory advances from `171/171` to `172/172`; ledger remains `20/20`, migration `021`
+  stays absent, production/owner-fixture mutation is `0/0`, and physical result is not inferred.

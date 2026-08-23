@@ -49,6 +49,22 @@ export function canSetWorkOrderSample(
   return identity.derivationKind !== "reorder" && identity.reorderRound === 0;
 }
 
+export type ReorderEligibilityInput = {
+  readonly isSample: boolean;
+  readonly derivationKind: WorkOrderDerivationKind;
+  readonly reorderRound: number;
+  readonly status: string;
+  readonly revisionStatus: string;
+};
+
+export function canCreateWorkOrderReorder(input: ReorderEligibilityInput): boolean {
+  return input.isSample === false
+    && (input.derivationKind === "original" || input.derivationKind === "reorder")
+    && (input.derivationKind !== "reorder" || input.reorderRound >= 1)
+    && input.status === "issued"
+    && input.revisionStatus === "finalized";
+}
+
 export function workOrderIdentityBadgeLabels(identity: Pick<WorkOrderIdentityReadModel, "isSample" | "derivationKind" | "reorderRound">): readonly string[] {
   if (!isValidWorkOrderSampleLineage(identity)) return [];
   return [

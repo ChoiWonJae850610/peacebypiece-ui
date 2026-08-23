@@ -18,7 +18,7 @@ const env = {
 const readiness = read("lib/domain/work-orders/issueReadiness.ts");
 const issue = read("lib/domain/work-orders/command/issueRepository.ts");
 const detail = read("lib/domain/work-orders/read/detailRepository.ts");
-for (const code of ["PRODUCT_NAME_REQUIRED", "PRODUCT_TYPE_REQUIRED", "SEASON_REQUIRED", "ITEM_REQUIRED", "DUE_DATE_REQUIRED", "TOTAL_QUANTITY_REQUIRED", "QUANTITY_TOTAL_MISMATCH", "COMPANY_DOCUMENT_CODE_REQUIRED", "REPRESENTATIVE_IMAGE_REQUIRED", "MATERIAL_REQUIRED", "ACCESSORY_STATE_REQUIRED"]) assert.match(readiness, new RegExp(code));
+for (const code of ["PRODUCT_NAME_REQUIRED", "PRODUCT_TYPE_REQUIRED", "SEASON_REQUIRED", "ITEM_REQUIRED", "DUE_DATE_REQUIRED", "TOTAL_QUANTITY_REQUIRED", "QUANTITY_TOTAL_MISMATCH", "COMPANY_DOCUMENT_CODE_REQUIRED", "REPRESENTATIVE_IMAGE_REQUIRED", "MATERIAL_MISSING_WARNING", "ACCESSORY_MISSING_WARNING"]) assert.match(readiness, new RegExp(code));
 assert.match(issue, /evaluateWorkOrderIssueReadiness/);
 assert.match(detail, /evaluateWorkOrderIssueReadiness/);
 
@@ -34,7 +34,8 @@ assert.match(issue, /SET LOCAL ROLE wafl_v2_tenant_runtime/);
 assert.match(read("lib/domain/work-orders/read/previewRepository.ts"), /partnerName: text\(m\.supplier_name_snapshot\)/);
 
 const generation = read("lib/generated-documents/work-order-pdf/generationService.ts");
-for (const token of ["status='generated'", "status='failed'", "R2WorkerGeneratedDocumentObjectStore", "LocalChromiumIssuedWorkOrderPdfRenderer", "createEmbeddedQrAccessToken", "includedAttachmentImages", "PDF_R2_VALIDATION_FAILED"]) assert.match(generation, new RegExp(token.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")));
+for (const token of ["status='generated'", "status='failed'", "R2WorkerGeneratedDocumentObjectStore", "LocalChromiumIssuedWorkOrderPdfRenderer", "includedAttachmentImages", "PDF_R2_VALIDATION_FAILED"]) assert.match(generation, new RegExp(token.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")));
+assert.doesNotMatch(generation, /createEmbeddedQrAccessToken|embeddedQrPolicy|embeddedQrContext/u);
 assert.match(generation, /status='generated'.*CONFLICT/s);
 assert.doesNotMatch(generation, /deletePdf\(/);
 
@@ -44,7 +45,8 @@ assert.match(document, /includedAttachmentImages/);
 assert.doesNotMatch(document, /row\.(?:unitPrice|amount|inventoryUsageQuantity|status)/);
 
 const mobile = read("apps/mobile/features/work-orders/documents/WorkOrderDocumentWorkbench.tsx");
-for (const token of ["issueWorkOrderR0", "generateWorkOrderR0", "createDocumentShare", "revokeDocumentAccessToken", "setAttachmentOutputInclude", "보기", "저장", "공유", "PDF QR", "SHARE_DAYS"]) assert.match(mobile, new RegExp(token));
+for (const token of ["issueWorkOrderR0", "generateWorkOrderR0", "createDocumentShare", "revokeDocumentAccessToken", "setAttachmentOutputInclude", "보기", "저장", "공유", "SHARE_DAYS"]) assert.match(mobile, new RegExp(token));
+assert.doesNotMatch(mobile, />PDF QR<|title="PDF QR"/u);
 assert.match(read("apps/mobile/lib/api/documentsApi.ts"), /output-include/);
 assert.doesNotMatch(mobile, /ProductionCardMock/);
 assert.match(read("apps/mobile/lib/apiClient.ts"), /documentsApi/);

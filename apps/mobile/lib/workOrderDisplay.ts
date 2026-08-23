@@ -4,7 +4,7 @@ import { WAFL_UNSET_PLACEHOLDER } from "@/lib/displayPlaceholder";
 const WORK_ORDER_STATUS_LABELS: Readonly<Record<WorkOrderStatus, string>> = {
   draft: "작성 중",
   ready_to_issue: "발행 준비",
-  issued: "발행됨",
+  issued: "진행 중",
   revised: "정정 작성 중",
   completed: "완료",
   cancelled: "취소",

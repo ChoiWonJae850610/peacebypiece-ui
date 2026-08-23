@@ -31,7 +31,7 @@ for (const removedPrimitive of ["InfoRow", "countList", "countRow", "countLabel"
 for (const actualField of [
   "header.productName", "header.status", "header.totalQuantity", "header.dueDate", "header.readiness.issues",
   "detail.amounts.fabricTotal", "detail.amounts.accessoryTotal", "detail.amounts.processTotal",
-  "detail.amounts.unitPrice", "detail.amounts.estimatedTotal", "detail.tabCounts.images", "detail.tabCounts.attachments",
+  "detail.amounts.estimatedTotal", "formatEstimatedUnitCost", "detail.tabCounts.images", "detail.tabCounts.attachments",
   "detail.tabCounts.sizes", "detail.tabCounts.colors", "detail.tabCounts.fabric", "detail.tabCounts.accessory",
   "detail.tabCounts.documents",
 ]) assert.match(detail, new RegExp(actualField.replaceAll(".", "\\.")), `required actual overview source missing: ${actualField}`);

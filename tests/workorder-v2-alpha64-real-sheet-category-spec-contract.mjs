@@ -89,7 +89,7 @@ assert.match(editor, /recommendationAvailable=\{categoryCode !== null\}/u);
 assert.match(selector, /"WAFL 제공"/u);
 assert.match(selector, /"우리 회사"/u);
 assert.match(selector, /WaflReusableCreateEntryAction/u);
-assert.match(reusableCreateEntry, /\+ 직접 만들기/u);
+assert.match(reusableCreateEntry, /label = "직접 만들기"/u);
 assert.doesNotMatch(selector, /항목 추가|새 스펙 항목 추가/u);
 assert.match(selectionPolicy, /sourceKind: "system"/u);
 assert.match(selectionPolicy, /sourceKind: "company"/u);

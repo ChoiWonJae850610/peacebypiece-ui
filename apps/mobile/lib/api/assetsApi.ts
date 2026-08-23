@@ -280,6 +280,7 @@ export async function completeWorkOrderImageUpload(
     {
       method: "POST",
       idempotencyKey: input.idempotencyKey,
+      timeoutMs: 90_000,
       body: {
         expectedVersion: input.expectedVersion,
         clientRequestId: input.clientRequestId,
@@ -289,6 +290,34 @@ export async function completeWorkOrderImageUpload(
   );
   if (!body.ok || !body.data || body.data.workOrderId !== workOrderId || !Number.isSafeInteger(body.data.nextVersion)) {
     throw new MobileApiError({ code: "MALFORMED_RESPONSE", message: "이미지 업로드 완료 응답이 올바르지 않습니다." });
+  }
+  return body.data;
+}
+
+export async function reconcileWorkOrderImageUpload(
+  workOrderId: string,
+  input: { readonly clientRequestId: string; readonly idempotencyKey: string },
+): Promise<WorkOrderImageCommandResult | null> {
+  const query = new URLSearchParams({ clientRequestId: input.clientRequestId });
+  const body = await requestJson<{
+    readonly ok: boolean;
+    readonly data?: WorkOrderImageCommandResult | { readonly status: "pending"; readonly clientRequestId: string };
+  }>(`/api/v2/work-orders/${encodeURIComponent(workOrderId)}/images/upload/complete?${query.toString()}`, {
+    method: "GET",
+    idempotencyKey: input.idempotencyKey,
+    timeoutMs: 30_000,
+  });
+  if (!body.ok || !body.data) {
+    throw new MobileApiError({ code: "MALFORMED_RESPONSE", message: "이미지 등록 결과를 확인하지 못했습니다." });
+  }
+  if ("status" in body.data) {
+    if (body.data.status !== "pending" || body.data.clientRequestId !== input.clientRequestId) {
+      throw new MobileApiError({ code: "MALFORMED_RESPONSE", message: "이미지 등록 확인 응답이 올바르지 않습니다." });
+    }
+    return null;
+  }
+  if (body.data.workOrderId !== workOrderId || typeof body.data.imageId !== "string" || !Number.isSafeInteger(body.data.nextVersion)) {
+    throw new MobileApiError({ code: "MALFORMED_RESPONSE", message: "이미지 등록 확인 응답이 올바르지 않습니다." });
   }
   return body.data;
 }

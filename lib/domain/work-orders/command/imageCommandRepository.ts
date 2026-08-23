@@ -9,6 +9,7 @@ import type {
   WorkOrderId,
 } from "@/lib/domain/work-orders/contracts";
 import {
+  withWaflV2TenantReadOnlyTransaction,
   withWaflV2TenantWriteTransaction,
   type DbQueryResultRow,
   type DbTransactionClient,
@@ -48,6 +49,66 @@ type WorkOrderTargetRow = DbQueryResultRow & {
   readonly work_order_version: number | string;
   readonly representative_image_id: string | null;
 };
+
+export async function reconcileCompletedWorkOrderImageUploadV2(input: {
+  readonly scope: TenantMemberScope;
+  readonly assignedCompanyMemberId: CompanyMemberId | null;
+  readonly workOrderId: WorkOrderId;
+  readonly imageId: string;
+  readonly scopedIdempotencyKeyHash: string;
+}): Promise<ImageCommandRepositoryResult | null> {
+  const started = performance.now();
+  let statementCount = 0;
+  const result = await withWaflV2TenantReadOnlyTransaction(async (client) => {
+    await installTenantClaims(client, input.scope);
+    statementCount += 1;
+    const completed = await client.query<DbQueryResultRow & {
+      readonly work_order_id: string;
+      readonly result_entity_version: number | string;
+      readonly storage_object_key: string;
+      readonly is_current_representative: boolean;
+    }>(`
+      SELECT receipt.work_order_id, receipt.result_entity_version,
+             image.storage_object_key, image.is_current_representative
+      FROM work_order_command_receipts receipt
+      JOIN work_orders work_order
+        ON work_order.company_id = receipt.company_id AND work_order.id = receipt.work_order_id
+      JOIN work_order_images image
+        ON image.company_id = receipt.company_id AND image.work_order_id = receipt.work_order_id
+       AND image.id = $4::uuid AND image.deleted_at IS NULL
+      WHERE receipt.company_id = $1 AND receipt.command_code = $2
+        AND receipt.idempotency_key = $3
+        AND receipt.work_order_id = $5::uuid
+        AND receipt.result_revision_id IS NOT NULL
+        AND receipt.result_entity_version IS NOT NULL
+        AND ($6::text IS NULL OR work_order.assignee_member_id = $6)
+    `, [
+      input.scope.companyId,
+      IMAGE_UPLOAD_COMMAND_CODE,
+      input.scopedIdempotencyKeyHash,
+      input.imageId,
+      input.workOrderId,
+      input.assignedCompanyMemberId,
+    ]);
+    statementCount += 1;
+    return completed.rows[0] ?? null;
+  });
+  if (!result) return null;
+  return {
+    result: {
+      workOrderId: result.work_order_id as WorkOrderId,
+      imageId: input.imageId,
+      nextVersion: toInteger(result.result_entity_version) as EntityVersion,
+      isRepresentative: Boolean(result.is_current_representative),
+      deleted: false,
+    },
+    idempotentReplay: true,
+    storageObjectKey: result.storage_object_key,
+    statementCount,
+    transactionCount: 1,
+    dbMs: Number((performance.now() - started).toFixed(2)),
+  };
+}
 
 type ImageTargetRow = WorkOrderTargetRow & {
   readonly image_id: string;
@@ -339,6 +400,7 @@ export async function completeWorkOrderImageUploadV2(input: {
   readonly originalFilename: string;
   readonly mimeType: string;
   readonly sizeBytes: number;
+  readonly contentSha256: string;
 }) {
   const startedAt = performance.now();
   const context: RepositoryContext = { statementCount: 0 };
@@ -402,7 +464,7 @@ export async function completeWorkOrderImageUploadV2(input: {
           original_filename, mime_type, size_bytes, content_sha256, title,
           display_order, is_current_representative, created_by_member_id
         )
-        SELECT $2::uuid, $1, $3::uuid, $5, $10, $6, $7, $8, NULL, NULL,
+        SELECT $2::uuid, $1, $3::uuid, $5, $10, $6, $7, $8, $12, NULL,
                next_order.display_order, $11, $9
         FROM next_order
         RETURNING id, display_order
@@ -425,6 +487,7 @@ export async function completeWorkOrderImageUploadV2(input: {
       input.scope.companyMemberId,
       input.thumbnailObjectKey,
       autoRepresentative,
+      input.contentSha256,
     ]);
     context.statementCount += 1;
     const nextVersion = await advanceVersions({

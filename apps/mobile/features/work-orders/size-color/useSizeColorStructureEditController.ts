@@ -18,7 +18,7 @@ import {
   validateSizeLabel,
   type ColorStructureDraft,
 } from "./sizeColorStructureEditPolicy";
-import { reconcileQuantityCell } from "./sizeColorReconciliation";
+import { reconcileQuantityCell, reconcileSizeColorTotals } from "./sizeColorReconciliation";
 import { createDevMutationTiming } from "@/lib/devMutationTiming";
 import type { StructureSelectionCandidate } from "@/domain/sizeColorSelectionBatchPolicy";
 import { commitMeasurementProjectionTransition } from "./projectionVersionTransition";
@@ -378,7 +378,7 @@ export function useSizeColorStructureEditController(input: Input) {
       (bundle) => {
         const nextSizes = withSizeOrder(bundle.matrix.sizes.filter((row) => row.id !== sizeRowId));
         const synchronized = reconcileFinishedSpecSizes(bundle, nextSizes);
-        return { ...synchronized, matrix: { ...synchronized.matrix, quantityCells: bundle.matrix.quantityCells.filter((cell) => cell.sizeRowId !== sizeRowId) } };
+        return reconcileSizeColorTotals({ ...synchronized, matrix: { ...synchronized.matrix, quantityCells: bundle.matrix.quantityCells.filter((cell) => cell.sizeRowId !== sizeRowId) } });
       },
       undefined,
       undefined,
@@ -406,7 +406,7 @@ export function useSizeColorStructureEditController(input: Input) {
       ({ workOrderId, expectedVersion, clientRequestId, idempotencyKey }) => workOrderMutationController.deleteColor(
         workOrderId, colorId, { clientRequestId, expectedVersion }, idempotencyKey,
       ),
-      (bundle) => ({
+      (bundle) => reconcileSizeColorTotals({
         ...bundle,
         matrix: {
           ...bundle.matrix,
@@ -434,13 +434,13 @@ export function useSizeColorStructureEditController(input: Input) {
             ...created.map((item) => ({ id: item.id, code: item.displayName, displayLabel: item.displayName, displayOrder: bundle.matrix.sizes.length })),
           ]);
           const synchronized = reconcileFinishedSpecSizes(bundle, sizes);
-          return { ...synchronized, matrix: { ...synchronized.matrix, quantityCells } };
+          return reconcileSizeColorTotals({ ...synchronized, matrix: { ...synchronized.matrix, quantityCells } });
         }
         const colors = withColorOrder([
           ...bundle.matrix.colors.filter((row) => !deleted.has(row.id)),
           ...created.map((item) => ({ id: item.id, code: "", displayName: item.displayName, hexValue: item.hexValue, displayOrder: bundle.matrix.colors.length })),
         ]);
-        return { ...bundle, matrix: { ...bundle.matrix, colors, quantityCells } };
+        return reconcileSizeColorTotals({ ...bundle, matrix: { ...bundle.matrix, colors, quantityCells } });
       },
       undefined,
       undefined,

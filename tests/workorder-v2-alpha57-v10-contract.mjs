@@ -58,7 +58,7 @@ const overviewSummaryIndex = overview.indexOf("<WaflMetricGrid items={overviewMe
 assert.ok(tabsIndex >= 0 && overviewSummaryIndex > tabsIndex, "tabs must render above overview totals");
 assert.equal((overview.match(/<WaflMetricGrid items=\{overviewMetricItems\}/g) ?? []).length, 1);
 assert.match(overview, /label="총 수량"[\s\S]*label="납기"/);
-assert.match(overview, /activeSection === "overview"[\s\S]*1벌 원가[\s\S]*예상 총원가/);
+assert.match(overview, /activeSection === "overview"[\s\S]*예상 1벌 원가[\s\S]*예상 총원가/);
 assert.doesNotMatch(overview, /mediaCount|formatProductType|productTypeAlias/);
 assert.match(overview, /\{ id: "materials", label: "원부자재"/);
 assert.match(overview, /\{ id: "output", label: "문서"/);

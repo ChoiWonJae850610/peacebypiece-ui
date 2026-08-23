@@ -1,6 +1,7 @@
 import type {
   ClientRequestId,
   CreateWorkOrderDraftCommand,
+  CreateWorkOrderReorderCommand,
   EntityVersion,
   IdempotencyKey,
   IsoDate,
@@ -105,6 +106,31 @@ function parseOptionalQuantity(value: unknown, field: string, present: boolean):
     ]);
   }
   return Number(value);
+}
+
+function parseRequiredNonNegativeQuantity(value: unknown, field: string): number {
+  if (!Number.isSafeInteger(value) || Number(value) < 0 || Number(value) > 100_000_000) {
+    throw new WorkOrderCommandValidationError([
+      fieldError(field, "INVALID_QUANTITY", `${field}은 0 이상 100,000,000 이하의 정수여야 합니다.`),
+    ]);
+  }
+  return Number(value);
+}
+
+export function validateCreateWorkOrderReorder(input: {
+  readonly body: unknown;
+  readonly idempotencyKey: string | null;
+}): CreateWorkOrderReorderCommand {
+  if (!isJsonObject(input.body)) {
+    throw new WorkOrderCommandValidationError([fieldError("body", "INVALID_TYPE", "JSON object 요청이 필요합니다.")]);
+  }
+  assertAllowedKeys(input.body, new Set(["clientRequestId", "totalQuantity", "dueDate"]));
+  return {
+    clientRequestId: parseClientRequestId(input.body.clientRequestId),
+    idempotencyKey: parseIdempotencyKey(input.idempotencyKey),
+    totalQuantity: parseRequiredNonNegativeQuantity(input.body.totalQuantity, "totalQuantity"),
+    dueDate: parseOptionalDate(input.body.dueDate, "dueDate", hasOwn(input.body, "dueDate")) ?? null,
+  };
 }
 
 export function hasOwn(value: JsonObject, key: string): boolean {

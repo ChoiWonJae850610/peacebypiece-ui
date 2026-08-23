@@ -281,6 +281,7 @@ function Invoke-WaflQaDeveloperReadSmoke {
         OwnerFixtureSource = "unresolved"
         OwnerFixtureDetailHttp = 0
         OwnerFixtureDetailReady = $false
+        CleanBaseReady = $false
     }
     if ([string]$State.mobileTransport -ne "DeveloperAutoConnect" -or [string]::IsNullOrWhiteSpace([string]$State.publicOrigin)) {
         return [pscustomobject]$result
@@ -327,25 +328,56 @@ function Invoke-WaflQaDeveloperReadSmoke {
             $result.FailureStage = "work-order-list"
             return [pscustomobject]$result
         }
+        $items = @($list.Json.data.items)
 
-        $fixture = Resolve-WaflQaOwnerFixture
-        $result.OwnerFixtureSource = $fixture.Source
-        $fixtureId = ""
-        if ($fixture.Mode -eq "marker") {
-            $searchUri = $origin + "/api/v2/work-orders?limit=30&q=" + [Uri]::EscapeDataString([string]$fixture.Value)
-            $search = Invoke-WaflQaHttpRequest -Client $client -Method GET -Uri $searchUri
-            if ($search.StatusCode -ne 200 -or $null -eq $search.Json -or $search.Json.ok -ne $true -or $null -eq $search.Json.data) {
-                $result.FailureStage = "owner-fixture-search"
-                return [pscustomobject]$result
-            }
-            $matches = @($search.Json.data.items | Where-Object { [string]$_.productName -eq [string]$fixture.Value })
-            if ($matches.Count -ne 1 -or [string]::IsNullOrWhiteSpace([string]$matches[0].workOrderId)) {
-                $result.FailureStage = "owner-fixture-resolution"
-                return [pscustomobject]$result
-            }
-            $fixtureId = [string]$matches[0].workOrderId
+        $cleanBasePath = Join-Path (Get-WaflQaStateDirectory) "alpha67-cleanbase.json"
+        if (Test-Path -LiteralPath $cleanBasePath -PathType Leaf) {
+            try {
+                $cleanBase = Get-Content -LiteralPath $cleanBasePath -Raw -Encoding UTF8 | ConvertFrom-Json -ErrorAction Stop
+                $result.CleanBaseReady = [string]$cleanBase.result -eq "ALPHA67_CLEANBASE_VERIFY_PASS" `
+                    -and [string]$cleanBase.companyId -eq "wafl-fn-company-a" `
+                    -and [int]$cleanBase.targetResidual -eq 0 `
+                    -and [int]$cleanBase.ledger -eq 20 `
+                    -and $items.Count -eq 0
+                if ($result.CleanBaseReady) {
+                    $result.OwnerFixtureSource = "alpha67-cleanbase-empty"
+                    $result.OwnerFixtureDetailHttp = 204
+                    $result.OwnerFixtureDetailReady = $true
+                    $result.Passed = $true
+                    $result.FailureStage = "none"
+                    return [pscustomobject]$result
+                }
+            } catch {}
         }
-        else { $fixtureId = [string]$fixture.Value }
+
+        $fixtureId = ""
+        if ($items.Count -gt 0) {
+            $fixtureId = ([string]$items[0].workOrderId).Trim()
+            if ($fixtureId -notmatch '^[0-9a-fA-F-]{36}$') {
+                $result.FailureStage = "current-work-order-reference"
+                return [pscustomobject]$result
+            }
+            $result.OwnerFixtureSource = "current-company-list"
+        }
+        else {
+            $fixture = Resolve-WaflQaOwnerFixture
+            $result.OwnerFixtureSource = $fixture.Source
+            if ($fixture.Mode -eq "marker") {
+                $searchUri = $origin + "/api/v2/work-orders?limit=30&q=" + [Uri]::EscapeDataString([string]$fixture.Value)
+                $search = Invoke-WaflQaHttpRequest -Client $client -Method GET -Uri $searchUri
+                if ($search.StatusCode -ne 200 -or $null -eq $search.Json -or $search.Json.ok -ne $true -or $null -eq $search.Json.data) {
+                    $result.FailureStage = "owner-fixture-search"
+                    return [pscustomobject]$result
+                }
+                $matches = @($search.Json.data.items | Where-Object { [string]$_.productName -eq [string]$fixture.Value })
+                if ($matches.Count -ne 1 -or [string]::IsNullOrWhiteSpace([string]$matches[0].workOrderId)) {
+                    $result.FailureStage = "owner-fixture-resolution"
+                    return [pscustomobject]$result
+                }
+                $fixtureId = [string]$matches[0].workOrderId
+            }
+            else { $fixtureId = [string]$fixture.Value }
+        }
 
         $detail = Invoke-WaflQaHttpRequest -Client $client -Method GET -Uri ($origin + "/api/v2/work-orders/" + [Uri]::EscapeDataString($fixtureId))
         $result.OwnerFixtureDetailHttp = $detail.StatusCode
@@ -644,7 +676,6 @@ function Get-WaflQaPort3000ListenerPolicy {
     $waflOwnedCount = 0
     $verifiedUnrelatedCount = 0
     $unverifiedCount = 0
-
     foreach ($listener in @($Listeners)) {
         $listenerPid = [int]$listener.OwningProcess
         $metadata = @($ProcessMetadata | Where-Object { [int]$_.ProcessId -eq $listenerPid }) | Select-Object -First 1
@@ -728,6 +759,13 @@ function Get-WaflQaCloudflaredProcessPolicy {
     $forbiddenCount = 0
     $verifiedUnrelatedCount = 0
     $unverifiedCount = 0
+    $approvedPublicViewerCount = 0
+
+    $publicViewerUri = $null
+    try { $publicViewerUri = [Uri][string]$State.publicDocumentViewerOrigin } catch {}
+    $publicViewerHostname = if ($null -ne $publicViewerUri -and $publicViewerUri.IsAbsoluteUri -and $publicViewerUri.Scheme -eq 'https') {
+        [string]$publicViewerUri.Host
+    } else { '' }
 
     $runtimeMarkers = New-Object System.Collections.Generic.List[string]
     foreach ($candidate in @(
@@ -830,9 +868,25 @@ function Get-WaflQaCloudflaredProcessPolicy {
 
         $routeTouchesWafl = $false
         $unknownRoute = $false
+        $approvedPublicViewerRouteSeen = $false
         foreach ($route in $ingress) {
             $hostname = [string]$route.hostname
             $service = [string]$route.service
+
+            $routeOrigin = $null
+            try { $routeOrigin = [Uri]$service } catch {}
+            $routeOriginPort = if ($null -ne $routeOrigin -and $routeOrigin.IsAbsoluteUri) {
+                if ($routeOrigin.IsDefaultPort) { if ($routeOrigin.Scheme -eq 'https') { 443 } else { 80 } } else { [int]$routeOrigin.Port }
+            } else { 0 }
+            $routeOriginIsLoopback = $null -ne $routeOrigin -and $routeOrigin.IsAbsoluteUri -and $routeOrigin.IsLoopback
+            $isApprovedPublicViewerRoute = -not [string]::IsNullOrWhiteSpace($publicViewerHostname) `
+                -and $hostname.Equals($publicViewerHostname, [System.StringComparison]::OrdinalIgnoreCase) `
+                -and $routeOriginIsLoopback `
+                -and $routeOriginPort -eq [int]$State.nextPort
+            if ($isApprovedPublicViewerRoute) {
+                $approvedPublicViewerRouteSeen = $true
+                continue
+            }
             foreach ($marker in $runtimeMarkers) {
                 if ((-not [string]::IsNullOrWhiteSpace($hostname) -and $hostname.IndexOf($marker, [System.StringComparison]::OrdinalIgnoreCase) -ge 0) `
                     -or (-not [string]::IsNullOrWhiteSpace($service) -and $service.IndexOf($marker, [System.StringComparison]::OrdinalIgnoreCase) -ge 0)) {
@@ -843,8 +897,7 @@ function Get-WaflQaCloudflaredProcessPolicy {
             if ($routeTouchesWafl) { break }
             if ($service -match '(?i)^http_status:\d+$') { continue }
 
-            $originUri = $null
-            try { $originUri = [Uri]$service } catch {}
+            $originUri = $routeOrigin
             if ($null -eq $originUri -or -not $originUri.IsAbsoluteUri) {
                 $unknownRoute = $true
                 break
@@ -870,6 +923,12 @@ function Get-WaflQaCloudflaredProcessPolicy {
             continue
         }
 
+        if ($approvedPublicViewerRouteSeen) {
+            $approvedPublicViewerCount++
+            $details.Add([pscustomobject]@{ Pid = $processPid; Classification = 'approved-shared-public-viewer'; Reason = 'signed-foreign-service-and-exact-branded-viewer-ingress' })
+            continue
+        }
+
         $verifiedUnrelatedCount++
         $details.Add([pscustomobject]@{ Pid = $processPid; Classification = 'verified-unrelated'; Reason = 'signed-foreign-service-and-live-ingress-disjoint' })
     }
@@ -879,6 +938,7 @@ function Get-WaflQaCloudflaredProcessPolicy {
         WaflOwnedCount = $waflOwnedCount
         ForbiddenCount = $forbiddenCount
         VerifiedUnrelatedCount = $verifiedUnrelatedCount
+        ApprovedPublicViewerCount = $approvedPublicViewerCount
         UnverifiedCount = $unverifiedCount
         Details = [object[]]$details
     }

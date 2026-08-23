@@ -72,7 +72,7 @@ assert.doesNotMatch(processHeader, /적용 부위|적용 색상|적용 대상/);
 assert.match(renderer, /formatProcessInstruction\(process\)/);
 assert.match(css, /\.processTable col:nth-child\(6\)/);
 assert.match(css, /section\[aria-label="Notifications alt\+T"\][\s\S]*?#wafl-modal-portal-root[\s\S]*?next-route-announcer[\s\S]*?display: none !important/);
-assert.match(css, /@page cover \{ size: A4 landscape/);
+assert.match(css, /@page cover \{ size: A4 portrait/);
 assert.match(css, /@page content \{ size: A4 portrait/);
 assert.match(css, /thead \{ display: table-header-group/);
 assert.match(css, /tr \{ break-inside: avoid/);
@@ -85,7 +85,7 @@ assert.doesNotMatch(`${mobileProcess}\n${previewProcess}`, /INSERT|UPDATE|mutati
 
 for (const token of [
   "리넨 라운드 셔츠 원피스",
-  "여성 원피스 / 여름 1차 생산",
+  "26FW",
   "WAFN-26FW-O-LNDRS-260713-001-R0",
   "2026-08-15",
   "성수 어패럴",

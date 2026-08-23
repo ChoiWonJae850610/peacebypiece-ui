@@ -1,6 +1,8 @@
 import type {
   CreateWorkOrderDraftInput,
   CreateWorkOrderDraftResult,
+  CreateWorkOrderReorderInput,
+  CreateWorkOrderReorderResult,
   PatchWorkOrderBasicInfoInput,
   PatchWorkOrderBasicInfoResult,
   WorkOrderDetailCore,
@@ -11,6 +13,7 @@ import type {
   SetWorkOrderSampleInput,
   SetWorkOrderSampleResult,
   WorkOrderProcesses,
+  WorkOrderSeriesHistory,
 } from "@/domain/mobileContract";
 import { MobileApiError } from "@/domain/mobileContract";
 import { requestJson } from "../apiTransport";
@@ -71,6 +74,35 @@ export async function createWorkOrderDraft(
     || body.data.nextVersion < 1
   ) {
     throw new MobileApiError({ code: "MALFORMED_RESPONSE", message: "작업지시서 생성 응답이 올바르지 않습니다." });
+  }
+  return body.data;
+}
+
+export async function createWorkOrderReorder(
+  sourceWorkOrderId: string,
+  command: CreateWorkOrderReorderInput,
+  idempotencyKey: string,
+): Promise<CreateWorkOrderReorderResult> {
+  const body = await requestJson<{ readonly ok: boolean; readonly data?: CreateWorkOrderReorderResult }>(
+    `/api/v2/work-orders/${encodeURIComponent(sourceWorkOrderId)}/reorder`,
+    { method: "POST", body: command, idempotencyKey },
+  );
+  const result = body.data?.result;
+  if (!body.ok || !result || result.derivationKind !== "reorder" || result.isSample !== false
+    || result.sourceWorkOrderId !== sourceWorkOrderId || result.reorderRound < 1
+    || result.status !== "draft" || result.revisionStatus !== "draft"
+    || !Number.isSafeInteger(result.totalQuantity) || result.totalQuantity < 0) {
+    throw new MobileApiError({ code: "MALFORMED_RESPONSE", message: "리오더 생성 응답이 올바르지 않습니다." });
+  }
+  return body.data;
+}
+
+export async function getWorkOrderSeriesHistory(workOrderId: string): Promise<WorkOrderSeriesHistory> {
+  const body = await requestJson<{ readonly ok: boolean; readonly data?: WorkOrderSeriesHistory }>(
+    `/api/v2/work-orders/${encodeURIComponent(workOrderId)}/reorder`, { method: "GET" },
+  );
+  if (!body.ok || !body.data || !Array.isArray(body.data.items)) {
+    throw new MobileApiError({ code: "MALFORMED_RESPONSE", message: "작업 이력 응답이 올바르지 않습니다." });
   }
   return body.data;
 }

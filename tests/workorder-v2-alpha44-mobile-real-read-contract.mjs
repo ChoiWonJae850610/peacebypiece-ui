@@ -30,6 +30,7 @@ const expectedDependencies = {
   "expo-document-picker": "~55.0.15", "expo-image-picker": "~55.0.22",
   "expo-linking": "~55.0.16", "expo-router": "~55.0.17", "lucide-react-native": "^1.24.0", react: "19.2.0",
   "react-dom": "19.2.0", "react-native": "0.83.6", "react-native-safe-area-context": "~5.6.2",
+  "react-native-blob-util": "0.24.7", "react-native-pdf": "7.0.4",
   "react-native-screens": "~4.23.0", "react-native-svg": "15.15.3", "react-native-web": "0.21.0",
 };
 assert.deepEqual(mobilePackage.dependencies, expectedDependencies, "native/dependency baseline must not change");

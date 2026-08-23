@@ -4,11 +4,13 @@ import { isJsonObject } from "./apiResponseNormalizer";
 
 const LOCAL_HOSTS = new Set(["localhost", "127.0.0.1", "::1"]);
 const REQUEST_TIMEOUT_MS = 15_000;
+const MAX_REQUEST_TIMEOUT_MS = 120_000;
 
 export type MobileJsonRequestOptions = {
   readonly method: "GET" | "POST" | "PATCH" | "DELETE";
   readonly body?: unknown;
   readonly idempotencyKey?: string;
+  readonly timeoutMs?: number;
 };
 
 function mobileRequestMetricKind(path: string, method: string) {
@@ -85,7 +87,10 @@ export async function requestJson<T>(path: string, options: MobileJsonRequestOpt
     throw new MobileApiError({ code: "API_ORIGIN_INVALID", message: "요청 경로가 올바르지 않습니다." });
   }
   const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
+  const timeoutMs = Number.isSafeInteger(options.timeoutMs)
+    ? Math.min(MAX_REQUEST_TIMEOUT_MS, Math.max(REQUEST_TIMEOUT_MS, Number(options.timeoutMs)))
+    : REQUEST_TIMEOUT_MS;
+  const timeout = setTimeout(() => controller.abort(), timeoutMs);
   const requestStartedAt = Date.now();
   let response: Response;
   try {

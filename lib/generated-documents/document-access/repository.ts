@@ -68,6 +68,13 @@ type PublicRow = DbQueryResultRow & {
   readonly content_sha256: string;
 };
 
+export type EmbeddedViewerTargetIdentity = {
+  readonly companyId: string;
+  readonly generatedDocumentId: string;
+  readonly generationIdempotencyKey: string;
+  readonly tokenHash: string;
+};
+
 const iso = (value: Date | string | null) => value === null ? null : new Date(value).toISOString();
 const status = (row: TokenRow): DocumentAccessTokenStatus => {
   if (row.revoked_at !== null) return "revoked";
@@ -127,6 +134,45 @@ function deliveryAttachments(snapshot: unknown): readonly PublicDocumentDelivery
     if (result.length >= 100) break;
   }
   return result.sort((left, right) => left.displayOrder - right.displayOrder || left.filename.localeCompare(right.filename));
+}
+
+export async function readEmbeddedViewerTargetIdentity(input: {
+  readonly scope: TenantMemberScope;
+  readonly generatedDocumentId: string;
+}): Promise<EmbeddedViewerTargetIdentity | null> {
+  return withWaflV2TenantReadOnlyTransaction(async (client) => {
+    await installTenantClaims(client, input.scope);
+    const result = await client.query<DbQueryResultRow>(`
+      SELECT d.company_id, d.id AS generated_document_id,
+             receipt.idempotency_key AS generation_idempotency_key,
+             token.token_hash
+      FROM generated_documents d
+      JOIN work_order_command_receipts receipt
+        ON receipt.company_id = d.company_id
+       AND receipt.result_generated_document_id = d.id
+       AND receipt.command_code = 'work_order.document.generate'
+      JOIN document_access_tokens token
+        ON token.company_id = d.company_id
+       AND token.generated_document_id = d.id
+       AND token.token_purpose = 'embedded_qr'
+       AND token.revoked_at IS NULL
+       AND (token.expires_at IS NULL OR token.expires_at > now())
+      WHERE d.company_id = $1
+        AND d.id = $2::uuid
+        AND d.status = 'generated'
+        AND d.revoked_at IS NULL
+        AND d.deleted_at IS NULL
+      ORDER BY receipt.created_at ASC, token.created_at ASC
+      LIMIT 1
+    `, [input.scope.companyId, input.generatedDocumentId]);
+    const row = result.rows[0];
+    return row ? {
+      companyId: String(row.company_id),
+      generatedDocumentId: String(row.generated_document_id),
+      generationIdempotencyKey: String(row.generation_idempotency_key),
+      tokenHash: String(row.token_hash),
+    } : null;
+  });
 }
 
 async function loadGeneratedDocument(

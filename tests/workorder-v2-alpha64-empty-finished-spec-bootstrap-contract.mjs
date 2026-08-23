@@ -26,7 +26,7 @@ assert.doesNotMatch(editor, /categoryCode && chooser === "spec_item"|onEditSpecI
 assert.match(selector, /recommendationAvailable/u);
 assert.match(selector, /대분류를 선택하면 WAFL 추천 스펙 항목을 볼 수 있습니다/u);
 assert.match(selector, /WaflReusableCreateEntryAction/u);
-assert.match(reusableCreateEntry, /\+ 직접 만들기/u);
+assert.match(reusableCreateEntry, /label = "직접 만들기"/u);
 
 assert.match(optionRepository, /const categoryCode = input\.kind === "spec_item" \? decodeWorkOrderMajorCategoryCode/u);
 assert.doesNotMatch(optionRepository, /input\.kind === "spec_item" && !categoryCode/u, "nullable migration-018 scope must remain reusable");

@@ -4,12 +4,16 @@ import { assertLocalOnlyRouteHost } from "@/lib/internal/localOnlyRouteGuard";
 
 export const dynamic = "force-dynamic";
 
-export default async function WorkOrderPreviewSamplePage() {
+export default async function WorkOrderPreviewSamplePage({ searchParams }: { readonly searchParams: Promise<{ readonly pomRows?: string; readonly processScenario?: string; readonly redesignScenario?: string }> }) {
   await assertLocalOnlyRouteHost();
-  const foundation = await createAlpha37SamplePdfFoundation();
+  const params = await searchParams;
+  const processScenario = params.processScenario === "basic-only" || params.processScenario === "basic-additional" ? params.processScenario : null;
+  const redesignScenario = params.redesignScenario === "rich" || params.redesignScenario === "sparse" ? params.redesignScenario : "normal";
+  const foundation = await createAlpha37SamplePdfFoundation({ pomRowCount: params.pomRows, processScenario, redesignScenario });
   return (
     <SampleIssuedWorkOrderPreview
       data={foundation.snapshot.preview}
+      includedAttachmentImages={foundation.includedAttachmentImages}
       representativeImageSrc={foundation.representativeImage?.dataUrl}
       pdfFoundationMetadata={{
         snapshotSha256: foundation.snapshotSha256,

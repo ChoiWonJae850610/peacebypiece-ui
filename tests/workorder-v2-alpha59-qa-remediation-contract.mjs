@@ -82,7 +82,7 @@ assert.equal(isTailscaleServePathAllowed(`${materialPath}/archive`, "POST", appr
 assert.equal(isTailscaleServePathAllowed(`${materialPath}/restore`, "POST", approvalEnv), false);
 
 const overview = read("apps/mobile/features/work-orders/overview/WorkOrderDetailOverview.tsx");
-for (const copy of ["비용 구성", "원단", "부자재", "공정", "1벌 원가", "예상 총원가"]) {
+for (const copy of ["비용 구성", "원단", "부자재", "공정", "예상 1벌 원가", "예상 총원가"]) {
   assert.match(overview, new RegExp(copy));
 }
 for (const stale of ["원단 총액", "부자재 총액", "공정 총액", "한벌 단가", "총 예상"]) {

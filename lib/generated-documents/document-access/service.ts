@@ -21,6 +21,7 @@ import {
   listDocumentAccessTokens,
   insertEmbeddedQrAccessToken,
   readDocumentAccessSession,
+  readEmbeddedViewerTargetIdentity,
   redeemDocumentAccessTokenHash,
   revokeDocumentAccessToken,
   rotateDocumentAccessToken,
@@ -213,6 +214,32 @@ export async function getDocumentShares(input: {
   } catch (error) {
     mapRepositoryError(error);
   }
+}
+
+export async function getDocumentViewerTarget(input: {
+  readonly generatedDocumentId: string;
+  readonly origin: string;
+  readonly scope: WorkspaceApiCompanyScope;
+  readonly companyMemberId: string | null;
+  readonly correlationId: string;
+}) {
+  assertRuntime(false);
+  assertUuid(input.generatedDocumentId);
+  const tenantScope = toScope({ ...input, permissionCode: "workorder.read" });
+  const identity = await readEmbeddedViewerTargetIdentity({
+    scope: tenantScope,
+    generatedDocumentId: input.generatedDocumentId,
+  });
+  if (!identity) throw new DocumentAccessServiceError("NOT_FOUND", 404, "문서를 찾을 수 없습니다.");
+  const rawToken = deriveEmbeddedQrAccessToken({
+    companyId: identity.companyId,
+    generatedDocumentId: identity.generatedDocumentId,
+    idempotencyKey: identity.generationIdempotencyKey,
+  });
+  if (hashDocumentAccessToken(rawToken) !== identity.tokenHash) {
+    throw new DocumentAccessServiceError("CONFLICT", 409, "문서 보기 정보를 확인할 수 없습니다.");
+  }
+  return { viewerUrl: createDocumentViewerUrl(input.origin, rawToken) };
 }
 
 export async function revokeDocumentShare(input: {

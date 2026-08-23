@@ -45,7 +45,7 @@ assert.doesNotMatch(overview, /styles\.summaryGrid|summaryGridTablet|flexBasis: 
 const costGroupStart = overview.indexOf('<View style={styles.costRowGroup}>');
 const costGroupEnd = overview.indexOf("</View>", costGroupStart);
 const costGroup = overview.slice(costGroupStart, costGroupEnd);
-for (const label of ["원단", "부자재", "공정", "1벌 원가"]) assert.match(costGroup, new RegExp(`label="${label}"`));
+for (const label of ["원단", "부자재", "공정", "예상 1벌 원가"]) assert.match(costGroup, new RegExp(`label="${label}"`));
 assert.match(overview, /costRowGroup:[^\n]+paddingHorizontal: WAFL_THEME\.layout\.definitionRowInset/);
 assert.doesNotMatch(overview, /costComponents|costResult:/);
 

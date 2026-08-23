@@ -28,11 +28,11 @@ for (const token of [
   "문서 첨부",
   "작업지시서 생성",
   "작업지시서를 생성할까요?",
-  "현재 제작 정보가 작업지시서로 확정되며, 이 R0은 생성 후 수정할 수 없습니다.",
+  "현재 입력한 내용으로 작업지시서를 생성합니다. 생성 후에는 내용을 수정할 수 없으니 한 번 더 확인해 주세요.",
   "보기",
   "공유",
   "저장",
-  "공유·QR 관리",
+  "공유 링크 관리",
 ]) assert.match(workbench, new RegExp(token), `document workbench copy: ${token}`);
 
 for (const realField of [
@@ -76,6 +76,7 @@ assert.match(workbench, /label="공장" placeholder/);
 
 assert.doesNotMatch(workbench, /document-business-list|document-included-summary|includedInformation|styles\.infoChip/);
 assert.doesNotMatch(workbench, /제작 정보를 확정해 출력하고 안전하게 전달합니다|발행 전 확인|확정하고 문서 만들기|작업 내용을 확정할까요/);
+assert.doesNotMatch(workbench, /이 R0은|R0 표현/);
 assert.doesNotMatch(workbench, /<InfoRow label="(?:문서 번호|문서 버전|문서 상태|사이즈·색상|원단·부자재)"/);
 assert.doesNotMatch(workbench, /workOrderKind|orderType|reorderRound/);
 assert.doesNotMatch(workbench, /ProductionCardMock|mockProductionCard|배송요청/);
