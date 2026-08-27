@@ -22,8 +22,9 @@ for (const routePath of routePaths) {
   const route = read(routePath);
   assert.match(route, /export async function GET\(/, `${routePath} must expose GET`);
   if (routePath === "app/api/v2/work-orders/[workOrderId]/route.ts") {
-    assert.doesNotMatch(route, /export async function (POST|PUT|DELETE)/, `${routePath} may add only alpha.25 PATCH beside GET`);
+    assert.doesNotMatch(route, /export async function (POST|PUT)/, `${routePath} may add only bounded command methods beside GET`);
     assert.match(route, /handlePatchWorkOrderBasicInfoV2/, `${routePath} must use the bounded alpha.25 PATCH handler`);
+    assert.match(route, /handleDeleteDraftWorkOrder/, `${routePath} must use the bounded alpha.68 Draft DELETE handler`);
   } else if (routePath === "app/api/v2/work-orders/[workOrderId]/materials/route.ts" && alpha26ContractExists) {
     assert.doesNotMatch(route, /export async function (PATCH|PUT|DELETE)/, `${routePath} may add only alpha.26 POST beside GET`);
     assert.match(route, /handleAddMaterialLineV2/, `${routePath} must use the bounded alpha.26 POST handler`);

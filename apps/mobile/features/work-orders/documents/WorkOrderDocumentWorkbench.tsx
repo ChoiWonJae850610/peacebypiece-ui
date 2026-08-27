@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
-  Alert,
   Image,
   Pressable,
   Share,
@@ -33,7 +32,6 @@ import type {
   WorkOrderMaterialLine,
   WorkOrderSizeColorMatrix,
 } from "@/domain/mobileContract";
-import WaflChoiceButtons from "@/features/inputs/WaflChoiceButtons";
 import WaflInputSheet from "@/features/inputs/WaflInputSheet";
 import WaflActionTile from "@/features/inputs/WaflActionTile";
 import WaflActionTileGroup from "@/features/inputs/WaflActionTileGroup";
@@ -54,13 +52,9 @@ import QuickDeliveryFoundation from "./QuickDeliveryFoundation";
 import WaflAuthenticatedPdfViewer from "./WaflAuthenticatedPdfViewer";
 import { prepareAuthenticatedDocumentPdfForSave } from "./authenticatedPdfTransport";
 import { buildWorkOrderShareMessage } from "./documentShareMessage";
+import type { WaflActionConfirmationState } from "@/features/feedback/WaflActionConfirmationCard";
+import { requestWaflDecision, showWaflAlert } from "@/features/feedback/waflFeedbackStore";
 import { DOCUMENT_QUANTITY_INLINE_LIMIT, documentQuantityDisclosureRows } from "./quantityDisclosurePolicy";
-
-const SHARE_DAYS = [
-  { value: "1", label: "1일" },
-  { value: "7", label: "7일" },
-  { value: "30", label: "30일" },
-] as const;
 
 const SUPPORTED_OUTPUT_IMAGE = /^image\/(?:jpeg|png|webp)$/i;
 const requestId = (kind: string) => `alpha64-${kind}-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
@@ -128,12 +122,15 @@ function DocumentAccessMetadata({ token }: { readonly token: DocumentAccessToken
   return <View style={styles.accessMetadata}>{rows.map((row) => <View key={row.label} style={styles.accessMetadataRow}><Text style={styles.accessMetadataLabel}>{row.label}</Text><Text style={styles.accessMetadataValue}>{row.value}</Text></View>)}</View>;
 }
 
-export default function WorkOrderDocumentWorkbench({ detail, attachments, sizeColorMatrix, onOpenSizeColor, onRefresh }: {
+export default function WorkOrderDocumentWorkbench({ detail, attachments, sizeColorMatrix, onFlushDraft, onOpenSizeColor, onRefresh, onActionProcessing, onRequestActionConfirmation }: {
   readonly detail: WorkOrderDetailCore;
   readonly attachments: readonly WorkOrderAttachmentAsset[];
   readonly sizeColorMatrix: WorkOrderSizeColorMatrix | null;
+  readonly onFlushDraft: () => Promise<void>;
   readonly onOpenSizeColor: () => void;
   readonly onRefresh: () => Promise<void> | void;
+  readonly onActionProcessing: (message: string | null) => void;
+  readonly onRequestActionConfirmation: (confirmation: WaflActionConfirmationState | null) => void;
 }) {
   const attachmentProjectionKey = attachments.map((item) => `${item.id}:${item.includeInDocument ? 1 : 0}`).join(",");
   return (
@@ -141,23 +138,28 @@ export default function WorkOrderDocumentWorkbench({ detail, attachments, sizeCo
       attachments={attachments}
       detail={detail}
       key={`${detail.header.id}:${detail.header.entityVersion}:${attachmentProjectionKey}`}
+      onFlushDraft={onFlushDraft}
       onOpenSizeColor={onOpenSizeColor}
       onRefresh={onRefresh}
+      onActionProcessing={onActionProcessing}
+      onRequestActionConfirmation={onRequestActionConfirmation}
       sizeColorMatrix={sizeColorMatrix}
     />
   );
 }
 
-function WorkOrderDocumentWorkbenchBody({ detail, attachments, sizeColorMatrix, onOpenSizeColor, onRefresh }: {
+function WorkOrderDocumentWorkbenchBody({ detail, attachments, sizeColorMatrix, onFlushDraft, onOpenSizeColor, onRefresh, onActionProcessing, onRequestActionConfirmation }: {
   readonly detail: WorkOrderDetailCore;
   readonly attachments: readonly WorkOrderAttachmentAsset[];
   readonly sizeColorMatrix: WorkOrderSizeColorMatrix | null;
+  readonly onFlushDraft: () => Promise<void>;
   readonly onOpenSizeColor: () => void;
   readonly onRefresh: () => Promise<void> | void;
+  readonly onActionProcessing: (message: string | null) => void;
+  readonly onRequestActionConfirmation: (confirmation: WaflActionConfirmationState | null) => void;
 }) {
   const [documents, setDocuments] = useState<readonly GeneratedWorkOrderDocument[]>([]);
   const [tokens, setTokens] = useState<readonly DocumentAccessTokenSummary[]>([]);
-  const [selectedDays, setSelectedDays] = useState<"1" | "7" | "30">("7");
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [version, setVersion] = useState(detail.header.entityVersion);
@@ -283,7 +285,9 @@ function WorkOrderDocumentWorkbenchBody({ detail, attachments, sizeColorMatrix, 
   async function issueAndGenerate() {
     setBusy(true);
     setMessage(null);
+    onActionProcessing("레시피를 확정 중입니다.");
     try {
+      await onFlushDraft();
       const issuedResult = await issueWorkOrderR0({
         workOrderId: detail.header.id,
         revisionId: detail.header.currentRevisionId,
@@ -294,15 +298,16 @@ function WorkOrderDocumentWorkbenchBody({ detail, attachments, sizeColorMatrix, 
       setVersion(issuedResult.nextVersion);
       try {
         await generateAndReconcile("generate-r0");
-        setMessage("작업 내용을 확정하고 문서를 만들었습니다.");
+        setMessage("레시피가 확정되고 작업지시서가 생성되었습니다.");
       } catch {
-        setMessage("작업지시서는 생성되었습니다. PDF만 만들지 못했습니다.");
+        setMessage("레시피는 확정되었습니다. 작업지시서 PDF만 만들지 못했습니다.");
       }
       await load();
       await onRefresh();
     } catch {
-      setMessage("생성에 필요한 정보와 최신 내용을 확인해 주세요.");
+      setMessage("레시피 확정에 필요한 정보와 최신 내용을 확인해 주세요.");
     } finally {
+      onActionProcessing(null);
       setBusy(false);
     }
   }
@@ -326,8 +331,7 @@ function WorkOrderDocumentWorkbenchBody({ detail, attachments, sizeColorMatrix, 
     setBusy(true);
     setMessage(null);
     try {
-      const expiresInDays = Number(selectedDays) as 1 | 7 | 30;
-      const created = await createDocumentShare(generated.id, expiresInDays, requestId("manual-share"));
+      const created = await createDocumentShare(generated.id, 3, requestId("manual-share"));
       await Share.share({
         title: "작업지시서",
         message: buildWorkOrderShareMessage({
@@ -383,31 +387,32 @@ function WorkOrderDocumentWorkbenchBody({ detail, attachments, sizeColorMatrix, 
 
   function confirmIssue() {
     if (!detail.header.readiness.canIssue) {
-      Alert.alert(
-        "생성 전 확인",
-        detail.header.readiness.hardBlockers.map((item) => `• ${item.message}`).join("\n"),
-        [{ text: "확인" }],
-      );
+      showWaflAlert(`레시피를 확정할 수 없습니다. ${detail.header.readiness.hardBlockers.map((item) => item.message).join(" ")}`, "warning");
       return;
     }
-    Alert.alert(
-      "작업지시서를 생성할까요?",
-      "현재 입력한 내용으로 작업지시서를 생성합니다. 생성 후에는 내용을 수정할 수 없으니 한 번 더 확인해 주세요.",
-      [
-        { text: "취소", style: "cancel" },
-        { text: "생성", onPress: () => void issueAndGenerate() },
-      ],
-    );
+    onRequestActionConfirmation({
+      title: "레시피를 확정합니다",
+      helper: "최종 생성 후에는 주요 생산정보를 수정할 수 없습니다.",
+      cancelAccessibilityLabel: "레시피 확정 취소",
+      confirmAccessibilityLabel: "레시피 확정 실행",
+      safeOptionLabel: "취소",
+      actionOptionLabel: "확정",
+      onCancel: () => onRequestActionConfirmation(null),
+      onConfirm: () => { onRequestActionConfirmation(null); void issueAndGenerate(); },
+    });
   }
 
   function confirmRevoke(token: DocumentAccessTokenSummary) {
     const embedded = token.tokenPurpose === "embedded_qr";
-    Alert.alert(
-      embedded ? "인쇄된 QR을 해제할까요?" : "공유 링크를 해제할까요?",
-      embedded ? "해제하면 이 PDF에 인쇄된 QR은 다시 사용할 수 없습니다." : "해제된 링크는 다시 열 수 없습니다.",
-      [
-        { text: "취소", style: "cancel" },
-        { text: "해제", style: "destructive", onPress: () => void (async () => {
+    requestWaflDecision({
+      title: embedded ? "인쇄된 QR을 해제합니다" : "공유 링크를 해제합니다",
+      helper: embedded ? "해제하면 이 PDF에 인쇄된 QR은 다시 사용할 수 없습니다." : "해제된 링크는 다시 열 수 없습니다.",
+      cancelAccessibilityLabel: "문서 접근 유지",
+      confirmAccessibilityLabel: "문서 접근 해제",
+      safeOptionLabel: "유지",
+      actionOptionLabel: "해제",
+      destructive: true,
+      onConfirm: () => void (async () => {
           if (!generated) return;
           setBusy(true);
           try {
@@ -418,9 +423,8 @@ function WorkOrderDocumentWorkbenchBody({ detail, attachments, sizeColorMatrix, 
           } finally {
             setBusy(false);
           }
-        })() },
-      ],
-    );
+        })(),
+    });
   }
 
   return (
@@ -489,7 +493,10 @@ function WorkOrderDocumentWorkbenchBody({ detail, attachments, sizeColorMatrix, 
 
       <View style={styles.actionCluster} testID="document-action-cluster">
         {!issued ? (
-          <CompactAction disabled={busy} emphasis="primary" icon={FileText} label="작업지시서 생성" onPress={confirmIssue} />
+          <>
+            <CompactAction disabled={busy} icon={ExternalLink} label="PDF 미리보기" onPress={() => setDocumentViewerOpen(true)} />
+            <CompactAction disabled={busy} emphasis="primary" icon={FileText} label="레시피 확정" onPress={confirmIssue} />
+          </>
         ) : null}
         {failed && !generated ? (
           <CompactAction disabled={busy} emphasis="primary" icon={RefreshCw} label="PDF 다시 생성" onPress={() => void retryGeneration()} />
@@ -547,12 +554,22 @@ function WorkOrderDocumentWorkbenchBody({ detail, attachments, sizeColorMatrix, 
           visible={documentViewerOpen}
         />
       ) : null}
+      {!issued ? (
+        <WaflAuthenticatedPdfViewer
+          displayDocumentNumber="미리보기 · 작성 중"
+          inlineUrl={`/api/v2/work-orders/${encodeURIComponent(detail.header.id)}/documents/preview?revisionId=${encodeURIComponent(detail.header.currentRevisionId)}`}
+          onClose={() => setDocumentViewerOpen(false)}
+          preview={{ workOrderId: detail.header.id, revisionId: detail.header.currentRevisionId }}
+          visible={documentViewerOpen}
+        />
+      ) : null}
 
       <WaflInputSheet
         cancelAccessibilityLabel="퀵 전달 편집 취소"
         confirmAccessibilityLabel="퀵 전달 편집 확인"
         onCancel={() => setQuickDeliveryOpen(false)}
         onConfirm={() => setQuickDeliveryOpen(false)}
+        keyboardMode="directInput"
         sizing="expandable"
         title="퀵 전달"
         visible={quickDeliveryOpen}
@@ -622,8 +639,7 @@ function WorkOrderDocumentWorkbenchBody({ detail, attachments, sizeColorMatrix, 
         title="작업지시서 공유"
         visible={shareSheetOpen}
       >
-        <Text style={styles.sheetHelp}>공유 링크를 사용할 기간을 선택하세요. 기본은 7일입니다.</Text>
-        <WaflChoiceButtons accessibilityLabel="공유 기간" disabled={busy} onSelect={setSelectedDays} options={SHARE_DAYS} selectedValue={selectedDays} />
+        <Text style={styles.sheetHelp}>공유 링크는 생성 시점부터 72시간 동안 사용할 수 있습니다.</Text>
       </WaflInputSheet>
     </View>
   );

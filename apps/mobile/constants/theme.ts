@@ -81,6 +81,7 @@ export const WAFL_THEME = {
       bodyEndGap: 12,
       focusRevealGap: 12,
       focusRevealContext: 56,
+      textEntryFocusRevealClearance: 72,
       numericFocusRevealContext: 112,
       initialBodyViewportMinHeight: 120,
       entranceDurationMs: 260,

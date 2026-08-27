@@ -88,7 +88,7 @@ assert.match(imageApi, /timeoutMs:\s*90_000/u);
 assert.match(imageApi, /reconcileWorkOrderImageUpload/u);
 assert.match(imageController, /const uploadIdentity = input\.nextIdentity\("upload"\)/u);
 assert.match(imageController, /isAmbiguousUploadCompletion/u);
-assert.match(imageController, /reconcileImageUpload\(input\.selected\.workOrderId, uploadIdentity\)/u);
+assert.match(imageController, /reconcileImageUpload\(workOrderId, uploadIdentity\)/u);
 assert.equal((imageController.match(/completeImageUpload\(/gu) ?? []).length, 1, "ambiguity reconciliation must not rerun derivative completion");
 assert.match(imageRoute, /handleReconcileWorkOrderImageUpload/u);
 assert.match(imageRepository, /reconcileCompletedWorkOrderImageUploadV2/u);

@@ -93,3 +93,16 @@ export function workOrderMajorCategoryPickerOptions(currentCategory: string): re
     ? ["", "셋업", ...WORK_ORDER_NEW_CATEGORY_MAJORS]
     : ["", ...WORK_ORDER_NEW_CATEGORY_MAJORS];
 }
+
+/**
+ * WAFL starter-spec recommendations exist only for the four authored apparel
+ * categories. The input is already a decoded major-category code; decoding it
+ * again would erase valid T/B/O/D values.
+ */
+export function resolveWaflBasicSpecRecommendationCategory(
+  categoryCode: WorkOrderMajorCategoryCode | null,
+): Extract<WorkOrderMajorCategoryCode, "T" | "B" | "O" | "D"> | null {
+  return categoryCode === "T" || categoryCode === "B" || categoryCode === "O" || categoryCode === "D"
+    ? categoryCode
+    : null;
+}

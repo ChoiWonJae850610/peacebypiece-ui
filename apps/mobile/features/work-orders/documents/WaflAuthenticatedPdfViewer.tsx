@@ -29,12 +29,14 @@ export default function WaflAuthenticatedPdfViewer({
   displayDocumentNumber,
   documentId,
   inlineUrl,
+  preview,
   onClose,
   visible,
 }: {
   readonly displayDocumentNumber: string;
-  readonly documentId: string;
+  readonly documentId?: string;
   readonly inlineUrl: string;
+  readonly preview?: { readonly workOrderId: string; readonly revisionId: string };
   readonly onClose: () => void;
   readonly visible: boolean;
 }) {
@@ -53,7 +55,7 @@ export default function WaflAuthenticatedPdfViewer({
       setPage(1);
       setPageCount(0);
       try {
-        const file = await downloadAuthenticatedDocumentPdf({ documentId, inlineUrl });
+        const file = await downloadAuthenticatedDocumentPdf({ documentId, inlineUrl, preview });
         if (cancelled) {
           void file.dispose();
           return;
@@ -71,7 +73,7 @@ export default function WaflAuthenticatedPdfViewer({
       activeFileRef.current = null;
       if (file) void file.dispose();
     };
-  }, [attempt, documentId, inlineUrl, visible]);
+  }, [attempt, documentId, inlineUrl, preview?.revisionId, preview?.workOrderId, visible]);
 
   const source = useMemo(() => state.kind === "ready"
     ? { uri: `file://${state.file.path}` }

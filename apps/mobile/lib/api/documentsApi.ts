@@ -31,17 +31,17 @@ export async function issueWorkOrderR0(input: {
       },
     },
   );
-  if (!body.ok || !body.data?.result) throw new MobileApiError({ code: "MALFORMED_RESPONSE", message: "작업지시서 발행 응답이 올바르지 않습니다." });
+  if (!body.ok || !body.data?.result) throw new MobileApiError({ code: "MALFORMED_RESPONSE", message: "레시피 확정 응답이 올바르지 않습니다." });
   return body.data;
 }
 
-export async function generateWorkOrderR0(workOrderId: string, revisionId: string, clientRequestId: string) {
+export async function generateWorkOrderR0(workOrderId: string, revisionId: string, clientRequestId: string, refreshActive = false) {
   const body = await requestJson<{ ok: boolean; data?: { generatedDocumentId: string; status: string; displayDocumentNumber: string } }>(
     `/api/v2/work-orders/${encodeURIComponent(workOrderId)}/documents/generate`,
     {
       method: "POST",
       idempotencyKey: clientRequestId,
-      body: { revisionId },
+      body: { revisionId, refreshActive },
       timeoutMs: DOCUMENT_GENERATION_REQUEST_TIMEOUT_MS,
     },
   );
@@ -71,7 +71,7 @@ export async function listDocumentAccessTokens(documentId: string): Promise<read
   return body.data.items;
 }
 
-export async function createDocumentShare(documentId: string, expiresInDays: 1 | 7 | 30, clientRequestId: string) {
+export async function createDocumentShare(documentId: string, expiresInDays: 3, clientRequestId: string) {
   const body = await requestJson<{ ok: boolean; data?: { viewerUrl: string; expiresAt: string } }>(`/api/v2/work-orders/documents/${encodeURIComponent(documentId)}/access-tokens`, { method: "POST", idempotencyKey: clientRequestId, body: { expiresInDays } });
   if (!body.ok || !body.data?.viewerUrl) throw new MobileApiError({ code: "MALFORMED_RESPONSE", message: "공유 링크 응답이 올바르지 않습니다." });
   return body.data;

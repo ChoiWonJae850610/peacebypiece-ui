@@ -218,6 +218,14 @@ export function upsertWorkOrderColorSizeQuantity(
   );
 }
 
+export function batchWorkOrderColorSizeQuantities(
+  workOrderId: string,
+  command: import("@/domain/mobileContract").SizeColorQuantityBatchInput,
+  idempotencyKey: string,
+) {
+  return mutateSizeColorStructure(workOrderId, "quantities/batch", "PATCH", command, idempotencyKey);
+}
+
 export function batchWorkOrderStructureSelection(
   workOrderId: string,
   command: import("@/domain/mobileContract").SizeColorSelectionBatchInput,

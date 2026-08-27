@@ -12,6 +12,7 @@ import {
 
 const read = (file) => fs.readFileSync(file, "utf8");
 const sheet = read("apps/mobile/features/inputs/WaflInputSheet.tsx");
+const sheetActions = read("apps/mobile/features/inputs/WaflSheetActionButtons.tsx");
 const nested = read("apps/mobile/features/inputs/useWaflNestedSheetHandoff.ts");
 const structure = read("apps/mobile/features/work-orders/size-color/WorkOrderSizeColorStructureEditor.tsx");
 const spec = read("apps/mobile/features/work-orders/size-color/SpecItemSelectionSheet.tsx");
@@ -27,8 +28,10 @@ const quickPresentation = read("apps/mobile/features/work-orders/documents/quick
 const design = read("docs/project/app-v2/11a-mobile-design-system-v2.md");
 const ia = read("docs/project/app-v2/11b-maker-workorder-tab-ia-v2.md");
 
-assert.match(sheet, /const hasActions = Boolean\(onConfirm\)/u);
-assert.match(sheet, /\{hasActions \? <View[\s\S]*testID="wafl-sheet-actions"[\s\S]*<Check/u);
+assert.match(sheet, /const hasConfirmOwner = Boolean\(onConfirm\)/u);
+assert.match(sheet, /const hasActions = sheetPresentation\.renderFooterActions/u);
+assert.match(sheet, /\{hasActions && !cancelActionLabel && !confirmActionLabel \? <View[\s\S]*testID="wafl-sheet-actions"[\s\S]*<WaflSheetActionButtons/u);
+assert.match(sheetActions, /<X[\s\S]*<Check/u);
 assert.match(sheet, /scrollResponderScrollNativeHandleToKeyboard/u);
 assert.match(sheet, /effectiveFocusRevealContext/u);
 assert.match(sheet, /keyboardAutoExpand/u);
@@ -46,7 +49,8 @@ assert.match(structure, /setSelectedKeys[\s\S]*structureSelectionKey\(created\.d
 assert.match(structure, /return created\.item \?\? null/u);
 
 for (const copy of ["직접 스펙 만들기", "기본 스펙"]) assert.ok(spec.includes(copy));
-assert.ok(reusableCreate.includes("추가"));
+assert.match(reusableCreate, /useWaflSheetDirectInputConfirm\(props\.onCreate, disabled\)/u);
+assert.doesNotMatch(reusableCreate, /label="추가"/u);
 assert.match(spec, /onConfirm=\{nested\.route === "rename"[\s\S]*: undefined\}/u);
 assert.match(spec, /`catalog:\$\{created\.id\}`/u);
 assert.match(spec, /nested\.transition\("add"\)/u);
@@ -74,7 +78,7 @@ assert.match(quick, /label="상세주소 \(선택\)"/u);
 assert.match(quick, /place: ""/u);
 assert.match(quickPresentation, /primary: address \?\? unsetLabel/u);
 
-for (const required of ["one explicit `추가`", "adaptiveExpandable", "Focus reveal", "Numeric precision"]) assert.ok(design.includes(required), `Design System missing ${required}`);
+for (const required of ["no duplicate body `추가`", "adaptiveExpandable", "Focus reveal", "Numeric precision"]) assert.ok(design.includes(required), `Design System missing ${required}`);
 for (const required of ["Direct Size, Color, and Spec Item", "address-first"]) assert.ok(ia.includes(required), `Maker IA missing ${required}`);
 assert.equal(fs.existsSync("db/v2/migrations/019_input_sheet_ux.sql"), false);
 

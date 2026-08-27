@@ -9,11 +9,17 @@ const queryController = read("apps/mobile/features/work-orders/workOrderQueryCon
 const worker = read("cloudflare/r2-upload-worker.js");
 const deployment = read("scripts/deploy-wafl-r2-upload-worker.mjs");
 const imageRoute = read("lib/domain/work-orders/command/imageCommandRoute.ts");
+const hydrationPolicy = read("apps/mobile/domain/workOrderOpenHydrationPolicy.ts");
 
 assert.match(mobile, /async function loadWorkOrderDetailHydration/u);
-assert.match(mobile, /Promise\.all\(\[[\s\S]+detail\(workOrderId\)[\s\S]+images\(workOrderId\)[\s\S]+materialPartners\(workOrderId\)/u);
-assert.match(mobile, /detail\.header\.identity\.isSample[\s\S]+history: null/u);
-assert.match(mobile, /seriesHistory\(workOrderId\)[\s\S]+catch[\s\S]+historyUnavailable: true/u);
+assert.match(
+  mobile,
+  /detail\(workOrderId\)[\s\S]+children: loadWorkOrderChildHydration\(detail\)/u,
+  "detail identity must hydrate before child projections, without consulting the current list/filter",
+);
+assert.match(hydrationPolicy, /input\.sample \? Promise\.resolve\(null\) : input\.loadHistory/u);
+assert.match(hydrationPolicy, /Promise\.allSettled/u);
+assert.match(hydrationPolicy, /unavailable/u);
 assert.doesNotMatch(mobile, /Promise\.all\(\[[\s\S]{0,800}seriesHistory\(item\.workOrderId\)/u, "detail entry must not make optional history part of its required Promise.all");
 assert.match(queryController, /seriesHistory\(workOrderId/u);
 

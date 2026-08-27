@@ -16,6 +16,7 @@ import type {
   WorkOrderRevisionId,
 } from "@/lib/domain/work-orders/contracts";
 import { serializePostgresDateOnly } from "@/lib/domain/work-orders/dateOnly.mjs";
+import { isReorderDraftIdentity, REORDER_DRAFT_BASIC_EDIT_FIELDS, reorderDraftPatchAllowed } from "@/lib/domain/work-orders/command/reorderDraftEditPolicy";
 import {
   withWaflV2TenantWriteTransaction,
   type DbQueryResultRow,
@@ -94,15 +95,16 @@ function toInteger(value: number | string): number {
 }
 
 function mapCommandRow(row: WorkOrderCommandRow): WorkOrderDraftCommandResult {
-  if (row.work_order_status !== "draft" || row.revision_status !== "draft") {
-    throw new Error("WORK_ORDER_COMMAND_RESULT_NOT_DRAFT");
-  }
+  const status = row.work_order_status;
+  const revisionStatus = row.revision_status;
+  if (!["draft", "issued", "revised", "completed", "cancelled"].includes(status)
+    || !["draft", "finalized", "superseded"].includes(revisionStatus)) throw new Error("WORK_ORDER_COMMAND_RESULT_STATUS_INVALID");
   return {
     workOrderId: row.work_order_id as WorkOrderId,
     revisionId: row.revision_id as WorkOrderRevisionId,
     revisionNumber: toInteger(row.revision_no) as RevisionNumber,
-    status: "draft",
-    revisionStatus: "draft",
+    status: status as WorkOrderDraftCommandResult["status"],
+    revisionStatus: revisionStatus as WorkOrderDraftCommandResult["revisionStatus"],
     displayDocumentNumber: null,
     productName: row.product_name,
     productTypeCode: row.product_type_code,
@@ -348,25 +350,36 @@ export async function patchWorkOrderBasicInfoV2(input: {
     if (currentVersion !== input.command.expectedVersion) {
       throw new WorkOrderCommandRepositoryError("conflict", currentVersion);
     }
-    if (current.work_order_status !== "draft") {
-      throw new WorkOrderCommandRepositoryError("locked", currentVersion);
-    }
-    if (current.revision_status !== "draft") {
-      throw new WorkOrderCommandRepositoryError("revision_mismatch", currentVersion);
-    }
-
     const patch = input.command.patch;
-    const nextQuantity = hasOwn(patch, "totalQuantity") ? (patch.totalQuantity ?? 0) : toInteger(current.total_quantity);
+    const resetCategoryDependents = patch.resetCategoryDependents === true;
+    const categoryChanged = hasOwn(patch, "productTypeCode") && (patch.productTypeCode ?? null) !== current.product_type_code;
+    if (resetCategoryDependents && !categoryChanged) throw new WorkOrderCommandRepositoryError("locked", currentVersion);
+    const nextQuantity = resetCategoryDependents ? 0 : hasOwn(patch, "totalQuantity") ? (patch.totalQuantity ?? 0) : toInteger(current.total_quantity);
     const changedFields = [
       hasOwn(patch, "productName") && patch.productName !== current.product_name ? "productName" : null,
       hasOwn(patch, "productTypeCode") && (patch.productTypeCode ?? null) !== current.product_type_code ? "productTypeCode" : null,
       hasOwn(patch, "seasonCode") && (patch.seasonCode ?? null) !== current.season_code ? "seasonCode" : null,
-      hasOwn(patch, "itemCode") && (patch.itemCode ?? null) !== current.item_code ? "itemCode" : null,
+      (resetCategoryDependents ? current.item_code !== null : hasOwn(patch, "itemCode") && (patch.itemCode ?? null) !== current.item_code) ? "itemCode" : null,
       hasOwn(patch, "dueDate") && !datesEqual(current.due_date, patch.dueDate) ? "dueDate" : null,
-      hasOwn(patch, "totalQuantity") && nextQuantity !== toInteger(current.total_quantity) ? "totalQuantity" : null,
+      (resetCategoryDependents || hasOwn(patch, "totalQuantity")) && nextQuantity !== toInteger(current.total_quantity) ? "totalQuantity" : null,
+      resetCategoryDependents ? "categoryDependents" : null,
       hasOwn(patch, "memo") && (patch.memo ?? null) !== current.memo ? "memo" : null,
       hasOwn(patch, "factoryDeliveryMemo") && (patch.factoryDeliveryMemo ?? null) !== current.factory_delivery_memo ? "factoryDeliveryMemo" : null,
     ].filter((field): field is string => field !== null);
+
+    const draftMutable = current.work_order_status === "draft" && current.revision_status === "draft";
+    const confirmedMutable = ["issued", "revised", "completed"].includes(current.work_order_status)
+      && ["finalized", "superseded"].includes(current.revision_status)
+      && changedFields.length > 0
+      && changedFields.every((field) => field === "dueDate");
+    if (!draftMutable && !confirmedMutable) {
+      throw new WorkOrderCommandRepositoryError("locked", currentVersion);
+    }
+
+    if (isReorderDraftIdentity({ derivationKind: current.derivation_kind, reorderRound: current.reorder_round })
+      && !reorderDraftPatchAllowed(changedFields, REORDER_DRAFT_BASIC_EDIT_FIELDS)) {
+      throw new WorkOrderCommandRepositoryError("locked", currentVersion);
+    }
 
     if (changedFields.length === 0) {
       return {
@@ -388,7 +401,7 @@ export async function patchWorkOrderBasicInfoV2(input: {
           entity_version = entity_version + 1,
           updated_at = now()
       WHERE company_id = $1 AND id = $2::uuid AND entity_version = $3
-        AND current_revision_id = $4::uuid AND status = 'draft'
+        AND current_revision_id = $4::uuid AND status = $17
       RETURNING entity_version
     `, [
       input.scope.companyId,
@@ -398,15 +411,27 @@ export async function patchWorkOrderBasicInfoV2(input: {
       hasOwn(patch, "productName"), patch.productName ?? null,
       hasOwn(patch, "productTypeCode"), patch.productTypeCode ?? null,
       hasOwn(patch, "seasonCode"), patch.seasonCode ?? null,
-      hasOwn(patch, "itemCode"), patch.itemCode ?? null,
+      resetCategoryDependents || hasOwn(patch, "itemCode"), resetCategoryDependents ? null : patch.itemCode ?? null,
       hasOwn(patch, "dueDate"), patch.dueDate ?? null,
-      hasOwn(patch, "totalQuantity"), nextQuantity,
+      resetCategoryDependents || hasOwn(patch, "totalQuantity"), nextQuantity,
+      current.work_order_status,
     ]);
     statementCount += 1;
     if (!workOrderUpdate.rows[0]) {
       throw new WorkOrderCommandRepositoryError("conflict", currentVersion);
     }
     const nextVersion = toInteger(workOrderUpdate.rows[0].entity_version);
+
+    if (resetCategoryDependents) {
+      await client.query(`DELETE FROM work_order_size_spec_values WHERE company_id=$1 AND revision_id=$2::uuid`, [input.scope.companyId, current.revision_id]);
+      await client.query(`DELETE FROM work_order_size_spec_poms WHERE company_id=$1 AND revision_id=$2::uuid`, [input.scope.companyId, current.revision_id]);
+      await client.query(`DELETE FROM work_order_size_spec_sizes WHERE company_id=$1 AND revision_id=$2::uuid`, [input.scope.companyId, current.revision_id]);
+      await client.query(`DELETE FROM work_order_size_specs WHERE company_id=$1 AND revision_id=$2::uuid`, [input.scope.companyId, current.revision_id]);
+      await client.query(`DELETE FROM color_size_quantities WHERE company_id=$1 AND revision_id=$2::uuid`, [input.scope.companyId, current.revision_id]);
+      await client.query(`DELETE FROM work_order_colors WHERE company_id=$1 AND revision_id=$2::uuid`, [input.scope.companyId, current.revision_id]);
+      await client.query(`DELETE FROM work_order_sizes WHERE company_id=$1 AND revision_id=$2::uuid`, [input.scope.companyId, current.revision_id]);
+      statementCount += 7;
+    }
 
     if (changedFields.includes("totalQuantity")) {
       await client.query(`
@@ -434,9 +459,9 @@ export async function patchWorkOrderBasicInfoV2(input: {
           estimated_total = fabric_total + accessory_total + (SELECT COALESCE(sum(amount), 0)::numeric(14,2) FROM work_order_processes WHERE company_id = $1 AND revision_id = $2::uuid),
           entity_version = entity_version + 1,
           updated_at = now()
-      WHERE company_id = $1 AND id = $2::uuid AND revision_status = 'draft'
+      WHERE company_id = $1 AND id = $2::uuid AND revision_status = $21
       RETURNING $3::uuid AS work_order_id, id AS revision_id, revision_no,
-                'draft'::text AS work_order_status, revision_status,
+                (SELECT status FROM work_orders WHERE company_id=$1 AND id=$3::uuid) AS work_order_status, revision_status,
                 $20::integer AS entity_version, product_name_snapshot AS product_name,
                 product_type_code_snapshot AS product_type_code,
                 season_code_snapshot AS season_code, item_code_snapshot AS item_code,
@@ -451,12 +476,13 @@ export async function patchWorkOrderBasicInfoV2(input: {
       hasOwn(patch, "productName"), patch.productName ?? null,
       hasOwn(patch, "productTypeCode"), patch.productTypeCode ?? null,
       hasOwn(patch, "seasonCode"), patch.seasonCode ?? null,
-      hasOwn(patch, "itemCode"), patch.itemCode ?? null,
+      resetCategoryDependents || hasOwn(patch, "itemCode"), resetCategoryDependents ? null : patch.itemCode ?? null,
       hasOwn(patch, "dueDate"), patch.dueDate ?? null,
-      hasOwn(patch, "totalQuantity"), nextQuantity,
+      resetCategoryDependents || hasOwn(patch, "totalQuantity"), nextQuantity,
       hasOwn(patch, "memo"), patch.memo ?? null,
       hasOwn(patch, "factoryDeliveryMemo"), patch.factoryDeliveryMemo ?? null,
       nextVersion,
+      current.revision_status,
     ]);
     statementCount += 1;
     if (!revisionUpdate.rows[0]) {
@@ -474,12 +500,13 @@ export async function patchWorkOrderBasicInfoV2(input: {
       WORK_ORDER_PATCH_BASIC_COMMAND_CODE,
       input.scope.companyMemberId,
       input.scope.correlationId,
-      "draft WorkOrder 기본정보 수정",
+      confirmedMutable ? "확정 WorkOrder 납기 수정" : "draft WorkOrder 기본정보 수정",
       JSON.stringify({
         clientRequestId: input.command.clientRequestId,
         changedFields,
         versionTransition: { from: currentVersion, to: nextVersion },
         revisionNumber: toInteger(current.revision_no),
+        categoryDependentsReset: resetCategoryDependents,
       }),
     ]);
     statementCount += 1;

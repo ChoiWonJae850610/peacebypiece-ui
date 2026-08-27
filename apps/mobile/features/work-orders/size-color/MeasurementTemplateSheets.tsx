@@ -107,6 +107,9 @@ export function CompanyTemplateSaveSheet(props: {
     confirmAccessibilityLabel={mode === "new" ? "새 스펙 저장" : "기존 스펙 업데이트"}
     confirmDisabled={disabled}
     contentStyle={styles.sheetContent}
+    keyboardAutoExpand
+    keyboardFocusRevealContext={WAFL_THEME.sheet.textEntryFocusRevealClearance}
+    keyboardMode="directInput"
     onCancel={() => { setMode("new"); setName(""); setSelectedId(""); setRenameDraft(""); setManagementError(null); props.onCancel(); }}
     onConfirm={async () => {
       const saved = mode === "new"
@@ -158,7 +161,7 @@ export function CompanyTemplateSaveSheet(props: {
               .catch(() => { setManagementError("이름을 변경하지 못했습니다. 다시 시도해 주세요."); return false; })
               .finally(() => setManagementPending(false));
           }} style={[styles.smallButton, (managementPending || !renameDraft.trim() || renameDraft.trim() === selected.name) && styles.disabled]}><Text style={styles.smallButtonText}>이름 변경</Text></Pressable>
-          <Pressable disabled={managementPending} onPress={() => confirmWaflDestructiveAction({ title: "사용자 저장 스펙 비활성화", message: `“${selected.name}”을 사용자 저장 스펙 목록에서 숨깁니다. 기존 작업지시서 완성 스펙은 유지됩니다.`, confirmLabel: "비활성화", onConfirm: () => {
+          <Pressable disabled={managementPending} onPress={() => confirmWaflDestructiveAction({ title: "사용자 저장 스펙 비활성화", message: `“${selected.name}”을 사용자 저장 스펙 목록에서 숨깁니다. 기존 레시피 완성 스펙은 유지됩니다.`, confirmLabel: "비활성화", onConfirm: () => {
             setManagementError(null);
             setManagementPending(true);
             void props.onDisable(selected)

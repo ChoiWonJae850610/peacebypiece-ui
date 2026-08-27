@@ -20,7 +20,7 @@ const mock = read("apps/mobile/components/ProductionCardMock.tsx");
 
 assert.doesNotMatch(sheet, /PanResponder/u, "the failed late-capture PanResponder path must not remain");
 for (const marker of ["onStartShouldSetResponderCapture", "onResponderGrant", "onResponderMove", "onResponderRelease", "nativeEvent.pageY", "resolveWaflSheetDragOffset"]) assert.match(sheet, new RegExp(marker));
-assert.match(sheet, /onStartShouldSetResponderCapture=\{\(\) => draggable && openReady && !actionPending\}/u, "dedicated header must capture from touch-down on iOS after the atomic entrance completes");
+assert.match(sheet, /onStartShouldSetResponderCapture=\{\(\) => draggable && openReady && !actionPending && !dismissingRef\.current\}/u, "dedicated header must capture from touch-down after entrance but never interrupt close");
 assert.match(sheet, /testID=\{draggable \? "wafl-sheet-header-drag-zone" : "wafl-sheet-fixed-header"\}/u);
 assert.match(sheet, /\{draggable \? <View style=\{styles\.handle\} \/> : null\}/u);
 assert.match(theme, /dragZoneMinHeight:\s*44/u);

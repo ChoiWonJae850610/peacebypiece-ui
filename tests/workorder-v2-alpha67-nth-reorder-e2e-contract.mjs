@@ -24,7 +24,8 @@ assert.doesNotMatch(validation, /sourceRevisionId|seriesRootWorkOrderId|reorderR
 
 assert.match(repository, /FOR UPDATE OF w/u);
 assert.match(repository, /derivation_kind='original'[\s\S]+FOR UPDATE/u);
-assert.match(repository, /COALESCE\(max\(reorder_round\),0\)\+1/u);
+assert.match(repository, /COALESCE\(max\(used_round\),0\)\+1/u);
+assert.match(repository, /command_code='work_order\.reorder_deleted'/u);
 assert.match(repository, /work_order_command_receipts/u);
 assert.match(migration019, /work_orders_reorder_round_unique_idx[\s\S]+series_root_work_order_id, reorder_round/u);
 assert.equal(fs.existsSync("db/v2/migrations/021_v2_nth_reorder.sql"), false, "migration 021 must not be introduced");
@@ -52,7 +53,7 @@ assert.match(sheets, /title="작업 이력"/u);
 assert.match(mobile, /workOrderMutationController\.createReorder/u);
 assert.match(mobile, /workOrderQueryController\.seriesHistory/u);
 assert.match(mobile, /setPhase\("detail-ready"\)/u);
-assert.match(mobile, /hydrated\.detail\.header\.identity\.derivationKind !== "reorder"/u);
+assert.match(mobile, /reorderedDetail\.header\.identity\.derivationKind !== "reorder"/u);
 
 assert.match(capabilities, /REORDER_CREATE/u);
 assert.match(capabilities, /alpha67-current-maker/u);

@@ -14,9 +14,9 @@ const materials = fs.readFileSync("apps/mobile/features/materials/WorkOrderMater
 
 for (const source of [controlled, expanded, materials]) assert.doesNotMatch(source, /horizontalScroll|overflowX/);
 assert.doesNotMatch(materials, /material-core-row-expanded/, "same-position name/color/price editing must not expand the core row");
-assert.match(materials, /material-quantity-row-expanded/);
+assert.doesNotMatch(materials, /material-quantity-row-expanded/);
 assert.match(materials, /material-header-expanded-editor/);
-assert.match(materials, /activeQuantityField/);
+assert.doesNotMatch(materials, /activeQuantityField/);
 assert.doesNotMatch(materials, /activeSummaryField/, "same-position summary editing must not create a displaced summary row");
 assert.match(materials, /activeHeaderField/);
 assert.match(expanded, /width: "100%"/);

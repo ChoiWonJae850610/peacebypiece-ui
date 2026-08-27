@@ -26,11 +26,17 @@ assert.match(startScript, /readApiGuard = "ready"/);
 assert.match(startScript, /fingerprintVerified = \$true/);
 assert.match(startScript, /Resolve-WaflQaCanonicalNodeToolchain/);
 assert.match(startScript, /Ensure-WaflQaMetroFirewallRule/);
+assert.match(startScript, /"start", "--clear", "--lan", "--dev-client"/);
+assert.match(startScript, /expoReadyDeadline = \[DateTime\]::UtcNow\.AddSeconds\(180\)/);
+assert.match(statusScript, /ContainsKey\('tailscale-serve'\)/);
 assert.match(startScript, /DATABASE_URL = \$readApiTarget\.DatabaseUrl/);
 assert.match(startScript, /serverEnvironmentContractReady/);
 assert.match(startScript, /Invoke-WaflQaBundleTransfer/);
 assert.match(startScript, /Invoke-WaflQaDeveloperReadSmoke/);
 assert.match(startScript, /developer-auth-company-workorder-read-ready/);
+assert.match(startScript, /makerQaProfile -eq "alpha67-current-maker"/);
+assert.match(startScript, /mutationMode -eq "current-maker-alpha67"/);
+assert.doesNotMatch(startScript, /makerQaProfile -in @\("alpha64-current-maker", "alpha65-current-maker", "alpha67-current-maker"\)/);
 for (const name of [
   "WAFL_V2_READ_API_ENABLED",
   "WAFL_V2_READ_APPROVED",
@@ -44,6 +50,8 @@ assert.match(statusScript, /DB fingerprint verified:/);
 assert.match(statusScript, /Invoke-WaflQaDeveloperReadSmoke/);
 assert.match(statusScript, /Test-WaflQaMetroFirewallRule/);
 assert.match(statusScript, /ERR_STREAM_UNABLE_TO_PIPE/);
+assert.match(statusScript, /Unable to deserialize cloned data/);
+assert.match(statusScript, /makerQaProfile -eq "alpha67-current-maker"/);
 assert.match(statusScript, /Metro stream healthy:/);
 assert.match(statusScript, /WorkOrder list read:/);
 assert.match(statusScript, /WorkOrder read target:/);

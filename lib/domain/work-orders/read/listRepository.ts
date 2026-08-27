@@ -59,7 +59,7 @@ export const WORK_ORDER_V2_LIST_SQL = `
   ), page_rows AS MATERIALIZED (
     SELECT w.id, w.document_number_base, w.product_name, w.status, w.due_date::text AS due_date, w.total_quantity,
            w.current_revision_id, w.representative_image_id,
-           w.updated_at, w.is_sample, w.derivation_kind, w.source_work_order_id,
+           w.created_at, w.updated_at, w.is_sample, w.derivation_kind, w.source_work_order_id,
            w.source_revision_id, w.series_root_work_order_id, w.reorder_round,
            r.revision_no, r.estimated_total
     FROM page_ids p
@@ -100,7 +100,7 @@ export const WORK_ORDER_V2_LIST_SQL = `
   )
   SELECT p.id, p.document_number_base, p.product_name, p.status, p.due_date,
          p.total_quantity::integer AS total_quantity,
-         p.revision_no, p.estimated_total, p.updated_at, p.is_sample, p.derivation_kind,
+         p.revision_no, p.estimated_total, p.created_at, p.updated_at, p.is_sample, p.derivation_kind,
          p.source_work_order_id, p.source_revision_id, p.series_root_work_order_id, p.reorder_round,
          i.id AS image_id, i.title AS image_title,
          COALESCE(i.thumbnail_object_key, i.storage_object_key) AS image_key,
@@ -126,6 +126,7 @@ type WorkOrderListRow = DbQueryResultRow & {
   readonly total_quantity: number | string;
   readonly revision_no: number | string | null;
   readonly estimated_total: string | number | null;
+  readonly created_at: string | Date;
   readonly updated_at: string | Date;
   readonly image_id: string | null;
   readonly image_title: string | null;
@@ -207,6 +208,7 @@ function mapRow(row: WorkOrderListRow): WorkOrderListItem {
     },
     processCount: toCount(row.process_count),
     latestDocumentStatus: toDocumentStatus(row.latest_document_status),
+    createdAt: toIsoDateTime(row.created_at),
     updatedAt: toIsoDateTime(row.updated_at),
     identity: {
       isSample: row.is_sample,

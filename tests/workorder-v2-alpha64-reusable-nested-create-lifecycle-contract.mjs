@@ -8,7 +8,6 @@ const handoff = read("apps/mobile/features/inputs/useWaflNestedSheetHandoff.ts")
 const structure = read("apps/mobile/features/work-orders/size-color/WorkOrderSizeColorStructureEditor.tsx");
 const spec = read("apps/mobile/features/work-orders/size-color/SpecItemSelectionSheet.tsx");
 const reusable = read("apps/mobile/features/inputs/WaflReusableCreateForm.tsx");
-const primaryAction = read("apps/mobile/features/inputs/WaflPrimaryActionButton.tsx");
 
 assert.match(sheet, /onAfterOpen\?\.\(\)/u);
 assert.ok(sheet.indexOf("dismissingRef.current = false") < sheet.indexOf("onAfterClose?.()"), "outgoing sheet must clear lifecycle state before presenting child");
@@ -20,8 +19,9 @@ for (const source of [structure, spec]) {
 assert.doesNotMatch(spec, /accessibilityLabel="스펙 항목명" autoFocus/u);
 assert.match(spec, /onConfirm=\{nested\.route === "rename"[\s\S]*: undefined\}/u);
 assert.match(spec, /<WaflReusableCreateForm/u);
-assert.match(reusable, /<WaflPrimaryActionButton[^>]*label="추가"/u);
-assert.match(primaryAction, /accessibilityRole="button"/u);
+assert.match(reusable, /useWaflSheetDirectInputConfirm\(props\.onCreate, disabled\)/u);
+assert.doesNotMatch(reusable, /WaflPrimaryActionButton|label="추가"/u);
+assert.match(reusable, /props\.onBack/u);
 assert.match(structure, /title="직접 사이즈 만들기"/u);
 assert.match(structure, /title="직접 색상 만들기"/u);
 

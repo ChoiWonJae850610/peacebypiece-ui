@@ -24,7 +24,8 @@ assert.match(listRoute, /export async function POST\(/, "alpha.25 create POST mu
 assert.doesNotMatch(listRoute, /export async function (PUT|PATCH|DELETE)/, "collection route may expose only GET and POST");
 assert.match(detailRoute, /export async function GET\(/, "alpha.24 detail GET must remain mounted");
 assert.match(detailRoute, /export async function PATCH\(/, "alpha.25 basic PATCH must be mounted");
-assert.doesNotMatch(detailRoute, /export async function (POST|PUT|DELETE)/, "detail route may expose only GET and PATCH");
+assert.doesNotMatch(detailRoute, /export async function (POST|PUT)/, "detail route may expose only bounded item commands");
+assert.match(detailRoute, /handleDeleteDraftWorkOrder/, "alpha.68 Draft DELETE must use its bounded handler");
 
 for (const token of [
   "CreateWorkOrderDraftCommand",
@@ -98,8 +99,9 @@ assert.doesNotMatch(repository, /input\.command\.idempotencyKey/, "repository mu
 assert.match(repository, /FOR UPDATE OF w, r/, "patch must lock the current WorkOrder and revision");
 assert.match(repository, /currentVersion !== input\.command\.expectedVersion/, "patch must check expectedVersion");
 assert.match(repository, /entity_version = entity_version \+ 1/, "successful patch must advance the version");
-assert.match(repository, /current_revision_id = \$4::uuid AND status = 'draft'/, "patch must target only the current draft");
-assert.match(repository, /revision_status = 'draft'/, "patch must keep finalized revisions immutable");
+assert.match(repository, /current_revision_id = \$4::uuid AND status = \$17/, "patch must target the locked current WorkOrder status");
+assert.match(repository, /revision_status = \$21/, "patch must target the locked current revision status");
+assert.match(repository, /confirmedMutable[\s\S]*changedFields\.every\(\(field\) => field === "dueDate"\)/, "confirmed WorkOrders may change only due date");
 assert.match(service, /code: "CONFLICT"[\s\S]*status: 409/, "stale version must map to typed 409 conflict");
 assert.match(service, /code: "NOT_FOUND"[\s\S]*status: 404/, "cross-company IDs must remain generic NOT_FOUND");
 assert.match(service, /code: "REVISION_MISMATCH"[\s\S]*status: 409/, "non-current revision must be rejected");

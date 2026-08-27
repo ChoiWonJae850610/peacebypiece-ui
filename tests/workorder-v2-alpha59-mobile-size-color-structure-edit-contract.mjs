@@ -29,6 +29,7 @@ const exactRoutes = [
   [`/api/v2/work-orders/${uuid}/size-color/colors`, "POST"],
   [`/api/v2/work-orders/${uuid}/size-color/colors/${targetId}`, "PATCH"],
   [`/api/v2/work-orders/${uuid}/size-color/colors/reorder`, "POST"],
+  [`/api/v2/work-orders/${uuid}/size-color/quantities/batch`, "PATCH"],
 ];
 for (const [pathname, method] of exactRoutes) {
   assert.equal(isTailscaleServePathAllowed(pathname, method, mutationEnv), true, `${method} ${pathname}`);

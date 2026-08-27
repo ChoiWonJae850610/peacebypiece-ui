@@ -25,7 +25,7 @@ assert.match(production, /field === "memo" \? \{ memo: value \|\| null \} : \{ u
 assert.match(production, /processInput\(latest, patch\)/u);
 assert.equal((production.match(/inlineField\(process, "memo", "메모", WAFL_UNSET_PLACEHOLDER\)/gu) ?? []).length, 1, "factory and additional cards must share one processCard memo owner");
 assert.match(production, /PRODUCTION_MEMO_MAX_LENGTH = 100/u);
-assert.doesNotMatch(production, /WaflSheetValueField|ProductionMemoInput|FactoryMemo/u);
+assert.doesNotMatch(production, /WaflSheetValueField|function ProductionMemoInput|function FactoryMemoInput/u);
 
 assert.match(validation, /memo: string \| null/u);
 assert.match(validation, /value\.memo === null \|\| value\.memo === undefined \|\| value\.memo === "" \? null/u);

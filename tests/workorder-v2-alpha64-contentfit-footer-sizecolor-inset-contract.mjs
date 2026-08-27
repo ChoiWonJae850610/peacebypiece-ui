@@ -56,7 +56,7 @@ assert.match(templates, /CompanyTemplateSaveSheet[\s\S]*sizing="adaptiveExpandab
 assert.match(overview, /<WaflWorkOrderTabBody testID=\{`work-order-tab-body-\$\{activeSection\}`\}>/u);
 assert.equal((overview.match(/<WaflWorkOrderTabBody/g) ?? []).length, 1, "the common outer body frame is applied once");
 assert.match(tabBody, /body:\s*\{[\s\S]*paddingHorizontal:\s*WAFL_THEME\.layout\.cardPadding,[\s\S]*paddingTop:\s*WAFL_THEME\.layout\.tabBodyTopInset/u);
-assert.match(editor, /const editorSurfaceVisible = Boolean\(edit\.errorMessage \|\| catalogError \|\| \(edit\.canEdit && chooser\)\)/u);
+assert.match(editor, /const editorSurfaceVisible = Boolean\(edit\.errorMessage \|\| catalogError \|\| \(edit\.canEditStructure && chooser\)\)/u);
 assert.match(editor, /matrix && editorSurfaceVisible \? <View style=\{styles\.cards\}>/u);
 assert.ok(editor.indexOf("editorSurfaceVisible ?") < editor.indexOf("<WorkOrderSizeColorReadOnly"), "normal Size/Color must mount its first card directly after the conditional editor surface");
 assert.doesNotMatch(`${editor}\n${readOnly}`, /marginTop:\s*-|top:\s*-/u, "Size/Color must not use a negative-offset workaround");

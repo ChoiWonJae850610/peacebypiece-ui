@@ -5,7 +5,7 @@ import { ChevronLeft } from "lucide-react-native";
 import { WAFL_FONTS } from "@/constants/fonts";
 import { WAFL_THEME } from "@/constants/theme";
 import WaflSheetValueField from "./WaflSheetValueField";
-import WaflPrimaryActionButton from "./WaflPrimaryActionButton";
+import { useWaflSheetDirectInputConfirm } from "./WaflSheetTextInput";
 
 type Props = {
   readonly backLabel: string;
@@ -19,11 +19,12 @@ type Props = {
   readonly children?: ReactNode;
   readonly onBack: () => void;
   readonly onChange: (value: string) => void;
-  readonly onCreate: () => void;
+  readonly onCreate: () => Promise<unknown> | unknown;
 };
 
 export default function WaflReusableCreateForm(props: Props) {
   const disabled = props.pending || !props.value.trim();
+  useWaflSheetDirectInputConfirm(props.onCreate, disabled);
   return <View style={styles.root}>
     <Pressable accessibilityLabel={`${props.backLabel}으로 돌아가기`} onPress={props.onBack} style={styles.backButton}>
       <ChevronLeft color={WAFL_THEME.color.navyInk} size={18} />
@@ -39,7 +40,6 @@ export default function WaflReusableCreateForm(props: Props) {
       value={props.value}
     />
     {props.children}
-    <WaflPrimaryActionButton accessibilityLabel="추가" disabled={disabled} label="추가" onPress={props.onCreate} pending={props.pending} />
   </View>;
 }
 

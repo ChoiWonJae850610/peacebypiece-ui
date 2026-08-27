@@ -14,6 +14,8 @@ import { ChevronLeft, ChevronRight, ImageIcon, LockKeyhole } from "lucide-react-
 import { WAFL_FONTS } from "@/constants/fonts";
 import { WAFL_THEME } from "@/constants/theme";
 import type { BasicInfoDraft, BasicInfoFieldErrors } from "@/domain/workOrderValidation";
+import { REORDER_MATERIAL_EDITABLE_FIELDS } from "@/domain/workOrderPolicy";
+import type { WorkOrderDraftBatchCoordinator } from "@/application/draftBatchCoordinator";
 import ControlledInlineEditValue from "@/components/ControlledInlineEditValue";
 import InlineDatePicker from "@/components/InlineDatePicker";
 import WorkOrderMaterialsReadOnly, { type MaterialReadViewState } from "@/features/materials/WorkOrderMaterialsReadOnly";
@@ -42,6 +44,8 @@ import WaflReelPickerSheet from "@/features/inputs/reel-picker/WaflReelPickerShe
 import WaflInputSheet from "@/features/inputs/WaflInputSheet";
 import { WaflWorkActionRow } from "@/features/work-orders/reorder/WorkOrderReorderSheets";
 import type { MaterialDraftFields, MaterialDraftUpdate, MaterialPartnerOption, MaterialType, WorkOrderAttachmentAsset, WorkOrderDetailCore, WorkOrderImageAsset, WorkOrderMaterialLine } from "@/domain/mobileContract";
+import type { WaflActionConfirmationState } from "@/features/feedback/WaflActionConfirmationCard";
+import { materialPartnerOptionsFor } from "@/domain/partnerSelectionPolicy";
 import type { MaterialOrderAction, MaterialOrderPolicy } from "@/domain/materialOrderPolicy";
 import { formatEstimatedUnitCost, formatWon } from "@/lib/mobileDisplay";
 import { resolveMobileApiUrl } from "@/lib/apiTransport";
@@ -135,6 +139,7 @@ type Props = {
   readonly phone: boolean;
   readonly onBack: () => void;
   readonly canEdit: boolean;
+  readonly canEditConfirmedMutable: boolean;
   readonly activeBasicField: BasicInfoInlineField | null;
   readonly dirty: boolean;
   readonly draft: BasicInfoDraft;
@@ -145,6 +150,7 @@ type Props = {
   readonly onChangeDraft: (field: keyof BasicInfoDraft, value: string) => void;
   readonly onCancelEdit: () => void;
   readonly onSave: (override?: Partial<BasicInfoDraft>) => void;
+  readonly onApplyPicker: (override: Partial<BasicInfoDraft>) => void;
   readonly onSaveDate: (value: string) => void;
   readonly onReloadLatest: () => void;
   readonly onSetSample: (isSample: boolean) => void;
@@ -165,6 +171,9 @@ type Props = {
   readonly onBeginMaterialEdit: (line: WorkOrderMaterialLine, field: keyof MaterialDraftFields) => void;
   readonly onDeleteMaterial: (line: WorkOrderMaterialLine) => void;
   readonly onMaterialOrderAction: (line: WorkOrderMaterialLine, action: MaterialOrderAction) => void;
+  readonly onActionProcessing: (message: string | null, helper?: string | null) => void;
+  readonly onRequestActionConfirmation: (confirmation: WaflActionConfirmationState | null) => void;
+  readonly onActionSuccess: (message: string) => void;
   readonly materialOrderPolicy: (line: WorkOrderMaterialLine) => MaterialOrderPolicy;
   readonly onChangeMaterialDraft: (field: keyof MaterialDraftFields, value: string) => void;
   readonly onChangeMaterialInlineDraft: (field: keyof MaterialDraftFields, value: string, owner: MaterialInlineEditSession) => void;
@@ -191,11 +200,13 @@ type Props = {
   readonly onOpenAttachment: (attachment: WorkOrderAttachmentAsset) => void;
   readonly onSetRepresentativeImage: (image: WorkOrderImageAsset) => void;
   readonly onRefreshDocuments: () => Promise<void> | void;
+  readonly onRefreshConfirmedDocument: () => Promise<void> | void;
   readonly onRefreshReadinessAfterMutation: () => void;
   readonly canCreateReorder: boolean;
   readonly seriesHistoryCount: number;
   readonly onOpenReorder: () => void;
   readonly onOpenSeriesHistory: () => void;
+  readonly draftBatch: WorkOrderDraftBatchCoordinator;
 };
 
 export default function WorkOrderDetailOverview(props: Props) {
@@ -210,6 +221,8 @@ export default function WorkOrderDetailOverview(props: Props) {
   const compactPhoneHero = phone && width < 390;
   const savingBasic = props.saveState === "saving";
   const basicLocked = props.saveState === "locked";
+  const reorderDraft = header.identity.derivationKind === "reorder" && header.identity.reorderRound > 0;
+  const specificationEditable = props.canEdit && !basicLocked && !reorderDraft;
   const detailScrollRef = useRef<ScrollView>(null);
   const { onFieldFocus, onScroll } = useFocusedFieldVisibility(detailScrollRef);
   const representative = props.images.find((image) => image.isRepresentative) ?? null;
@@ -235,17 +248,16 @@ export default function WorkOrderDetailOverview(props: Props) {
     },
     {
       key: "dueDate",
-      fullWidth: props.activeBasicField === "dueDate",
       content: <WaflMetricField
-        editable={props.canEdit && !basicLocked}
+        editable={(props.canEdit || props.canEditConfirmedMutable) && !basicLocked}
         label="납기"
-        value={header.dueDate ?? "미정"}
+        value={(props.canEdit ? props.draft.dueDate : header.dueDate) || "미정"}
       ><InlineDatePicker
           active={props.activeBasicField === "dueDate"}
-          displayValue={header.dueDate ?? ""}
-          editable={props.canEdit && !basicLocked}
+          displayValue={(props.canEdit ? props.draft.dueDate : header.dueDate) ?? ""}
+          editable={(props.canEdit || props.canEditConfirmedMutable) && !basicLocked}
           errorMessage={props.fieldErrors.dueDate ?? null}
-          onActivate={() => props.onRequestSectionChange(() => props.onBeginEdit("dueDate"))}
+          onActivate={() => props.onBeginEdit("dueDate")}
           onCancel={props.onCancelEdit}
           onCommit={props.onSaveDate}
           saving={savingBasic}
@@ -254,9 +266,8 @@ export default function WorkOrderDetailOverview(props: Props) {
     },
     {
       key: "targetAudience",
-      fullWidth: props.activeBasicField === "targetAudience",
       content: <WaflMetricField
-        editable={props.canEdit && !basicLocked}
+        editable={specificationEditable}
         label="대상"
         placeholder={isUnsetDisplayValue(props.draft.targetAudience)}
         value={displayValueOrUnset(props.draft.targetAudience)}
@@ -265,9 +276,9 @@ export default function WorkOrderDetailOverview(props: Props) {
           active={props.activeBasicField === "targetAudience"}
           displayStyle={styles.miniValue}
           displayValue={props.draft.targetAudience}
-          editable={props.canEdit && !basicLocked}
+          editable={specificationEditable}
           errorMessage={props.fieldErrors.targetAudience ?? null}
-          onActivate={() => props.onRequestSectionChange(() => props.onBeginEdit("targetAudience"))}
+          onActivate={() => props.onBeginEdit("targetAudience")}
           onOpenPicker={() => setCategoryReelField("targetAudience")}
           placeholder={WAFL_UNSET_PLACEHOLDER}
           saving={savingBasic}
@@ -276,9 +287,8 @@ export default function WorkOrderDetailOverview(props: Props) {
     },
     {
       key: "categoryMajor",
-      fullWidth: props.activeBasicField === "categoryMajor",
       content: <WaflMetricField
-        editable={props.canEdit && !basicLocked}
+        editable={specificationEditable}
         label="대분류"
         placeholder={isUnsetDisplayValue(props.draft.categoryMajor)}
         value={displayValueOrUnset(props.draft.categoryMajor)}
@@ -287,9 +297,9 @@ export default function WorkOrderDetailOverview(props: Props) {
           active={props.activeBasicField === "categoryMajor"}
           displayStyle={styles.miniValue}
           displayValue={props.draft.categoryMajor}
-          editable={props.canEdit && !basicLocked}
+          editable={specificationEditable}
           errorMessage={props.fieldErrors.categoryMajor ?? null}
-          onActivate={() => props.onRequestSectionChange(() => props.onBeginEdit("categoryMajor"))}
+          onActivate={() => props.onBeginEdit("categoryMajor")}
           onOpenPicker={() => setCategoryReelField("categoryMajor")}
           placeholder={WAFL_UNSET_PLACEHOLDER}
           saving={savingBasic}
@@ -298,9 +308,8 @@ export default function WorkOrderDetailOverview(props: Props) {
     },
     {
       key: "categoryDetail",
-      fullWidth: props.activeBasicField === "categoryDetail",
       content: <WaflMetricField
-        editable={props.canEdit && !basicLocked}
+        editable={specificationEditable}
         label="세부 품목"
         placeholder={isUnsetDisplayValue(props.draft.categoryDetail)}
         value={displayValueOrUnset(props.draft.categoryDetail)}
@@ -309,9 +318,9 @@ export default function WorkOrderDetailOverview(props: Props) {
           active={props.activeBasicField === "categoryDetail"}
           displayStyle={styles.miniValue}
           displayValue={props.draft.categoryDetail}
-          editable={props.canEdit && !basicLocked}
+          editable={specificationEditable}
           errorMessage={props.fieldErrors.categoryDetail ?? null}
-          onActivate={() => props.onRequestSectionChange(() => props.onBeginEdit("categoryDetail"))}
+          onActivate={() => props.onBeginEdit("categoryDetail")}
           onOpenPicker={() => setCategoryReelField("categoryDetail")}
           placeholder={WAFL_UNSET_PLACEHOLDER}
           saving={savingBasic}
@@ -320,9 +329,8 @@ export default function WorkOrderDetailOverview(props: Props) {
     },
     {
       key: "seasonCode",
-      fullWidth: props.activeBasicField === "seasonCode",
       content: <WaflMetricField
-        editable={props.canEdit && !basicLocked}
+        editable={specificationEditable}
         label="시즌"
         placeholder={isUnsetDisplayValue(props.draft.seasonCode)}
         value={displayValueOrUnset(props.draft.seasonCode)}
@@ -331,9 +339,9 @@ export default function WorkOrderDetailOverview(props: Props) {
           active={props.activeBasicField === "seasonCode"}
           displayStyle={styles.miniValue}
           displayValue={props.draft.seasonCode}
-          editable={props.canEdit && !basicLocked}
+          editable={specificationEditable}
           errorMessage={props.fieldErrors.seasonCode ?? null}
-          onActivate={() => props.onRequestSectionChange(() => props.onBeginEdit("seasonCode"))}
+          onActivate={() => props.onBeginEdit("seasonCode")}
           onOpenPicker={() => setCategoryReelField("seasonCode")}
           placeholder={WAFL_UNSET_PLACEHOLDER}
           saving={savingBasic}
@@ -342,11 +350,15 @@ export default function WorkOrderDetailOverview(props: Props) {
     },
   ];
   const renderMaterialSection = (materialType: MaterialType) => {
+    const eligiblePartnerOptions = materialPartnerOptionsFor(props.materialPartnerOptions, materialType);
     return <WorkOrderMaterialsReadOnly
       activeEditor={props.materialEditor?.mode === "edit" && props.materialEditor.materialType === materialType ? props.materialEditor : null}
       activeField={props.materialEditor?.materialType === materialType ? props.activeMaterialField : null}
       activeInlineSession={props.materialEditor?.materialType === materialType ? props.activeMaterialInlineSession : null}
       canEdit={props.canEditMaterials}
+      canManageStructure={props.canEditMaterials && !reorderDraft}
+      canManageOrder={props.canEditMaterials}
+      editableFields={reorderDraft ? REORDER_MATERIAL_EDITABLE_FIELDS : undefined}
       embedded
       key={props.materialIdentityKeys[materialType]}
       lifecycleBusyId={props.materialLifecycleBusyId}
@@ -367,7 +379,7 @@ export default function WorkOrderDetailOverview(props: Props) {
       orderBusyAction={props.materialOrderBusyAction}
       orderBusyId={props.materialOrderBusyId}
       orderPolicy={props.materialOrderPolicy}
-      partnerOptions={props.materialPartnerOptions}
+      partnerOptions={eligiblePartnerOptions}
       saveNotice={props.materialSaveNotice}
       sectionCount={materialType === "fabric" ? detail.tabCounts.fabric : detail.tabCounts.accessory}
       state={props.materials[materialType]}
@@ -390,7 +402,7 @@ export default function WorkOrderDetailOverview(props: Props) {
         <View style={styles.navigationBar}>
           {phone ? (
             <Pressable
-              accessibilityLabel="작업지시서 목록으로 돌아가기"
+              accessibilityLabel="레시피 목록으로 돌아가기"
               accessibilityRole="button"
               onPress={onBack}
               style={({ pressed }) => [styles.backButton, pressed && styles.pressed]}
@@ -434,7 +446,7 @@ export default function WorkOrderDetailOverview(props: Props) {
                   {header.identity.reorderRound > 0 ? <Text style={styles.identityBadge}>{header.identity.reorderRound}차 리오더</Text> : null}
                   {header.identity.derivationKind === "rework" ? <Text style={styles.identityBadge}>재작업</Text> : null}
                 </View>
-                {header.identity.reorderRound === 0 && props.canEdit && !basicLocked
+                {header.identity.reorderRound === 0 && specificationEditable
                   ? <WorkOrderCharacterChoice disabled={props.samplePending} isSample={header.identity.isSample} onChange={props.onSetSample} presentation="compact" />
                   : <Text style={styles.identityFixed}>{header.identity.isSample ? "샘플" : "본생산"}</Text>}
               </View>
@@ -446,11 +458,11 @@ export default function WorkOrderDetailOverview(props: Props) {
                 dirty={props.dirty}
                 displayStyle={[styles.title, compactPhoneHero && styles.titleCompactPhone]}
                 displayValue={header.productName}
-                editable={props.canEdit && !basicLocked}
+                editable={specificationEditable}
                 errorMessage={props.fieldErrors.productName ?? null}
                 invalid={Boolean(props.fieldErrors.productName)}
                 maxLength={200}
-                onActivate={() => props.onRequestSectionChange(() => props.onBeginEdit("productName"))}
+                onActivate={() => props.onBeginEdit("productName")}
                 onCancel={props.onCancelEdit}
                 onChange={(value) => props.onChangeDraft("productName", value)}
                 onSave={(finalizedValue) => props.onSave({ productName: finalizedValue })}
@@ -514,8 +526,7 @@ export default function WorkOrderDetailOverview(props: Props) {
                     label="대상"
                     onApply={(value) => {
                       setCategoryReelField(null);
-                      props.onChangeDraft("targetAudience", value);
-                      props.onSave({ targetAudience: value });
+                      props.onApplyPicker({ targetAudience: value });
                     }}
                     onCancel={() => {
                       setCategoryReelField(null);
@@ -534,8 +545,7 @@ export default function WorkOrderDetailOverview(props: Props) {
                     label="대분류"
                     onApply={(value) => {
                       setCategoryReelField(null);
-                      props.onChangeDraft("categoryMajor", value);
-                      props.onSave({ categoryMajor: value });
+                      props.onApplyPicker({ categoryMajor: value });
                     }}
                     onCancel={() => {
                       setCategoryReelField(null);
@@ -551,8 +561,7 @@ export default function WorkOrderDetailOverview(props: Props) {
                   categoryCode={WORK_ORDER_MAJOR_CATEGORY_CODE_BY_LABEL[props.draft.categoryMajor as keyof typeof WORK_ORDER_MAJOR_CATEGORY_CODE_BY_LABEL] ?? null}
                   onApply={(value) => {
                     setCategoryReelField(null);
-                    props.onChangeDraft("categoryDetail", value);
-                    props.onSave({ categoryDetail: value });
+                    props.onApplyPicker({ categoryDetail: value });
                   }}
                   onCancel={() => { setCategoryReelField(null); props.onCancelEdit(); }}
                   value={props.draft.categoryDetail}
@@ -560,8 +569,7 @@ export default function WorkOrderDetailOverview(props: Props) {
                 {categoryReelField === "seasonCode" ? <WorkOrderSeasonPickerSheet
                   onApply={(value) => {
                     setCategoryReelField(null);
-                    props.onChangeDraft("seasonCode", value);
-                    props.onSave({ seasonCode: value });
+                    props.onApplyPicker({ seasonCode: value });
                   }}
                   onCancel={() => { setCategoryReelField(null); props.onCancelEdit(); }}
                   value={props.draft.seasonCode}
@@ -614,7 +622,7 @@ export default function WorkOrderDetailOverview(props: Props) {
             <WorkOrderImageGallery
               busy={props.imageBusy}
               busyImageId={props.imageBusyId}
-              canEdit={props.canEdit}
+              canEdit={specificationEditable}
               images={props.images}
               attachments={props.attachments}
               message={props.imageMessage}
@@ -629,22 +637,32 @@ export default function WorkOrderDetailOverview(props: Props) {
             <WorkOrderSizeColorStructureEditor
               edit={props.sizeColorEdit}
               identity={props.sizeColor.identity}
+              itemCode={detail.header.itemCode}
               onRetry={props.sizeColor.onRetry}
               productTypeCode={detail.header.productTypeCode}
               state={props.sizeColor.state}
             />
           ) : activeSection === "production" ? (
             <WorkOrderProductionAuthoring
+              confirmedMemoEditable={props.canEditConfirmedMutable}
+              draftBatch={props.draftBatch}
               key={detail.header.id}
+              onConfirmedMutableCommitted={props.onRefreshConfirmedDocument}
               onMutationCommitted={props.onRefreshReadinessAfterMutation}
+              onActionProcessing={props.onActionProcessing}
+              onActionSuccess={props.onActionSuccess}
+              reorderDraft={reorderDraft}
               workOrderId={detail.header.id}
             />
           ) : activeSection === "output" ? (
             <WorkOrderDocumentWorkbench
               attachments={props.attachments}
               detail={detail}
+              onFlushDraft={async () => { await props.draftBatch.flushAll("confirm"); }}
               onOpenSizeColor={props.sizeColor.onOpen}
               onRefresh={props.onRefreshDocuments}
+              onActionProcessing={props.onActionProcessing}
+              onRequestActionConfirmation={props.onRequestActionConfirmation}
               sizeColorMatrix={props.sizeColor.state.bundle?.matrix ?? null}
             />
           ) : (
@@ -654,7 +672,7 @@ export default function WorkOrderDetailOverview(props: Props) {
               <WaflSectionCard>
                 <WaflMaterialsCategorySwitch
                   accessoryCount={detail.tabCounts.accessory}
-                  canAdd={props.canEditMaterials}
+                  canAdd={props.canEditMaterials && !reorderDraft}
                   fabricCount={detail.tabCounts.fabric}
                   onAdd={() => props.onBeginMaterialCreate(activeMaterialCategory)}
                   onSelect={(materialType) => {
@@ -683,7 +701,7 @@ export default function WorkOrderDetailOverview(props: Props) {
                       onChange={props.onChangeMaterialDraft}
                       onReloadLatest={props.onReloadLatestMaterial}
                       onSave={props.onSaveMaterial}
-                      partnerOptions={props.materialPartnerOptions}
+                      partnerOptions={materialPartnerOptionsFor(props.materialPartnerOptions, activeMaterialCategory)}
                       showChrome={false}
                       state={props.materialEditor}
                   />

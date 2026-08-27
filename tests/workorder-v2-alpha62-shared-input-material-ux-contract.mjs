@@ -74,7 +74,8 @@ assert.ok(materialValidation.includes("거래처를 선택해 주세요."));
 assert.ok(materialValidation.includes("단가를 0보다 크게 입력해 주세요."));
 assert.ok(experience.includes('editor.mode === "create"'));
 assert.ok(experience.includes("validateMaterialCreateDraft"));
-assert.ok(experience.includes("발주 요청 후에는 정보를 수정할 수 없습니다. 수정이 필요하면 발주요청을 취소해주세요."));
+assert.doesNotMatch(experience, /발주 요청 후에는 정보를 수정할 수 없습니다\. 수정이 필요하면 발주요청을 취소해주세요\./u);
+assert.match(experience, /runWaflProcessingAction/u);
 
 assert.ok(reel.includes("FiniteOptionReelColumn"));
 assert.doesNotMatch(reel, /CircularOptionReelColumn|createCircularReelWindow|circularRecenterIndex/);

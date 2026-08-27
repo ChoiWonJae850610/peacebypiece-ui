@@ -54,6 +54,7 @@ type Props = {
   readonly edit: SizeColorStructureEditBoundary;
   readonly onRetry: () => void;
   readonly productTypeCode: string | null;
+  readonly itemCode: string | null;
 };
 
 function StructureSelectionSheet(props: { readonly title: string; readonly onClose: () => void; readonly onAfterClose?: () => void; readonly onAfterOpen?: () => void; readonly onApply?: () => void; readonly applyDisabled?: boolean; readonly busy?: boolean; readonly children: ReactNode; readonly reusableCreate?: boolean; readonly sizing?: WaflSheetSizing; readonly visible?: boolean }) {
@@ -62,6 +63,9 @@ function StructureSelectionSheet(props: { readonly title: string; readonly onClo
     confirmAccessibilityLabel={`${props.title} 변경 적용`}
     confirmDisabled={props.applyDisabled}
     contentStyle={props.reusableCreate ? undefined : styles.structureSheetContent}
+    keyboardAutoExpand={props.reusableCreate}
+    keyboardFocusRevealContext={props.reusableCreate ? WAFL_THEME.sheet.textEntryFocusRevealClearance : undefined}
+    keyboardMode={props.reusableCreate ? "directInput" : "default"}
     onCancel={props.onClose}
     onAfterClose={props.onAfterClose}
     onAfterOpen={props.onAfterOpen}
@@ -90,7 +94,7 @@ function SizeChooser(props: {
   const [selectedKeys, setSelectedKeys] = useState<readonly string[]>(() => createStagedStructureSelection(props.rows.map((row) => ({ id: row.id, displayName: row.displayLabel, hexValue: null }))));
   const selected = useMemo(() => new Set(selectedKeys), [selectedKeys]);
   if (nested.route === "create") return <StructureSelectionSheet onAfterClose={nested.finishClose} onAfterOpen={() => directInputRef.current?.focus()} onClose={props.onClose} reusableCreate sizing={WAFL_REUSABLE_CATALOG_CREATE_SIZING} title="직접 사이즈 만들기" visible={nested.visible}>
-    <WaflReusableCreateForm backLabel="기본 사이즈" fieldLabel="사이즈명" helpText="추가하면 회사에서 다음 작업지시서에도 다시 선택할 수 있습니다." inputRef={directInputRef} maxLength={40} onBack={() => nested.transition("select")} onChange={setDirect} onCreate={() => { void props.onCreate(direct).then((created) => { if (created) { setSelectedKeys((current) => [...new Set([...current, structureSelectionKey(created.displayName)])]); setDirect(""); nested.transition("select"); } }); }} pending={props.busy} placeholder="예: 프리사이즈" value={direct} />
+    <WaflReusableCreateForm backLabel="기본 사이즈" fieldLabel="사이즈명" helpText="추가하면 회사에서 다음 레시피에도 다시 선택할 수 있습니다." inputRef={directInputRef} maxLength={40} onBack={() => nested.transition("select")} onChange={setDirect} onCreate={() => props.onCreate(direct).then((created) => { if (created) { setSelectedKeys((current) => [...new Set([...current, structureSelectionKey(created.displayName)])]); setDirect(""); nested.transition("select"); } })} pending={props.busy} placeholder="예: 프리사이즈" value={direct} />
   </StructureSelectionSheet>;
   const system = [...SIZE_ALPHA_PRESETS, ...SIZE_NUMERIC_PRESETS];
   const candidates = [...system.map((displayName) => ({ displayName, hexValue: null })), ...props.companyOptions.map((option) => ({ displayName: option.displayName, hexValue: null }))];
@@ -149,7 +153,7 @@ function ColorChooser(props: {
   const [selectedKeys, setSelectedKeys] = useState<readonly string[]>(() => createStagedStructureSelection(props.rows.map((row) => ({ id: row.id, displayName: row.displayName, hexValue: row.hexValue }))));
   const selected = useMemo(() => new Set(selectedKeys), [selectedKeys]);
   if (nested.route === "custom") return <StructureSelectionSheet onAfterClose={nested.finishClose} onAfterOpen={() => nameInputRef.current?.focus()} onClose={props.onClose} reusableCreate sizing={WAFL_REUSABLE_CATALOG_CREATE_SIZING} title="직접 색상 만들기" visible={nested.visible}>
-    <WaflReusableCreateForm backLabel="기본 색상" fieldLabel="색상명" helpText="추가하면 회사에서 다음 작업지시서에도 다시 선택할 수 있습니다." inputRef={nameInputRef} maxLength={80} onBack={() => nested.transition("base")} onChange={setName} onCreate={() => { void props.onCreate({ displayName: name, hexValue: selectedHex }).then((created) => { if (created) { setSelectedKeys((current) => [...new Set([...current, structureSelectionKey(created.displayName)])]); setName(""); nested.transition("base"); } }); }} pending={props.busy} placeholder="색상 이름" value={name}>
+    <WaflReusableCreateForm backLabel="기본 색상" fieldLabel="색상명" helpText="추가하면 회사에서 다음 레시피에도 다시 선택할 수 있습니다." inputRef={nameInputRef} maxLength={80} onBack={() => nested.transition("base")} onChange={setName} onCreate={() => props.onCreate({ displayName: name, hexValue: selectedHex }).then((created) => { if (created) { setSelectedKeys((current) => [...new Set([...current, structureSelectionKey(created.displayName)])]); setName(""); nested.transition("base"); } })} pending={props.busy} placeholder="색상 이름" value={name}>
       <ColorGrid onChange={setSelectedHex} value={selectedHex} />
       <View style={styles.colorPreviewRow}><View style={[styles.customPreview, { backgroundColor: selectedHex }]} /><ReadOnlyColorValues hex={selectedHex} /></View>
     </WaflReusableCreateForm>
@@ -169,7 +173,7 @@ function ColorChooser(props: {
   </StructureSelectionSheet>;
 }
 
-export default function WorkOrderSizeColorStructureEditor({ identity, state, edit, onRetry, productTypeCode }: Props) {
+export default function WorkOrderSizeColorStructureEditor({ identity, state, edit, onRetry, productTypeCode, itemCode }: Props) {
   const matrix = state.bundle?.matrix;
   const categoryCode = decodeWorkOrderMajorCategoryCode(productTypeCode);
   const systemSpecItems = useMemo(() => listWaflSystemSpecItems(categoryCode), [categoryCode]);
@@ -220,7 +224,7 @@ export default function WorkOrderSizeColorStructureEditor({ identity, state, edi
     if (!matrix || catalogBusy) return;
     confirmWaflDestructiveAction({
       title: "회사 선택지 제거",
-      message: `“${option.displayName}”을(를) 앞으로의 선택 목록에서 제거합니다. 이미 사용한 작업지시서 이력은 유지됩니다.`,
+      message: `“${option.displayName}”을(를) 앞으로의 선택 목록에서 제거합니다. 이미 사용한 레시피 이력은 유지됩니다.`,
       onConfirm: () => {
         void (async () => {
           setCatalogBusy(true);
@@ -250,14 +254,14 @@ export default function WorkOrderSizeColorStructureEditor({ identity, state, edi
     return false;
   };
   const structureBusy = catalogBusy || isSizeColorCommandPending(edit.pendingScope, "structure");
-  const editorSurfaceVisible = Boolean(edit.errorMessage || catalogError || (edit.canEdit && chooser));
+  const editorSurfaceVisible = Boolean(edit.errorMessage || catalogError || (edit.canEditStructure && chooser));
   return <View>
     {matrix && editorSurfaceVisible ? <View style={styles.cards}>
       {edit.errorMessage ? <Text accessibilityRole="alert" style={styles.error}>{edit.errorMessage}</Text> : null}
       {catalogError ? <Text accessibilityRole="alert" style={styles.error}>{catalogError}</Text> : null}
-      {edit.canEdit && chooser === "size" ? <SizeChooser busy={structureBusy} companyOptions={companyOptions.filter((item) => item.kind === "size")} onApply={(diff) => applyBatch("size", diff)} onClose={() => { edit.onCancel(); setChooser(null); }} onCreate={(name) => createOption("size", name)} onRemove={removeOption} rows={matrix.sizes} /> : null}
-      {edit.canEdit && chooser === "color" ? <ColorChooser busy={structureBusy} companyOptions={companyOptions.filter((item) => item.kind === "color")} onApply={(diff) => applyBatch("color", diff)} onClose={() => { edit.onCancel(); setChooser(null); }} onCreate={(draft) => createOption("color", draft.displayName, draft.hexValue)} onRemove={removeOption} rows={matrix.colors} /> : null}
-      {edit.canEdit && chooser === "spec_item" ? <SpecItemSelectionSheet
+      {edit.canEditStructure && chooser === "size" ? <SizeChooser busy={structureBusy} companyOptions={companyOptions.filter((item) => item.kind === "size")} onApply={(diff) => applyBatch("size", diff)} onClose={() => { edit.onCancel(); setChooser(null); }} onCreate={(name) => createOption("size", name)} onRemove={removeOption} rows={matrix.sizes} /> : null}
+      {edit.canEditStructure && chooser === "color" ? <ColorChooser busy={structureBusy} companyOptions={companyOptions.filter((item) => item.kind === "color")} onApply={(diff) => applyBatch("color", diff)} onClose={() => { edit.onCancel(); setChooser(null); }} onCreate={(draft) => createOption("color", draft.displayName, draft.hexValue)} onRemove={removeOption} rows={matrix.colors} /> : null}
+      {edit.canEditStructure && chooser === "spec_item" ? <SpecItemSelectionSheet
         busy={structureBusy}
         categoryCode={categoryCode}
         currentPoms={state.bundle?.specifications.pomColumns ?? []}
@@ -275,6 +279,7 @@ export default function WorkOrderSizeColorStructureEditor({ identity, state, edi
       categoryCode={categoryCode}
       edit={edit}
       identity={identity}
+      itemCode={itemCode}
       onEditColor={() => { edit.onBegin(); setChooser("color"); void loadOptions(); }}
       onEditSize={() => { edit.onBegin(); setChooser("size"); void loadOptions(); }}
       onEditSpecItems={() => { edit.onBegin(); setChooser("spec_item"); void loadOptions(); }}

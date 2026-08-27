@@ -22,6 +22,7 @@ import {
   renameSizeStructure,
   reorderColorStructures,
   reorderSizeStructures,
+  upsertColorSizeQuantities,
   upsertColorSizeQuantity,
   type SizeColorStructureCommandServiceResult,
 } from "@/lib/domain/work-orders/command/sizeColorStructureCommandService";
@@ -39,6 +40,7 @@ import {
   validateRenameSizeStructure,
   validateReorderColorStructures,
   validateReorderSizeStructures,
+  validateUpsertColorSizeQuantities,
   validateUpsertColorSizeQuantity,
 } from "@/lib/domain/work-orders/command/sizeColorStructureValidation";
 import { WorkOrderCommandValidationError } from "@/lib/domain/work-orders/command/validation";
@@ -54,7 +56,8 @@ type CommandKind =
   | "color-delete"
   | "color-reorder"
   | "selection-batch"
-  | "quantity-upsert";
+  | "quantity-upsert"
+  | "quantity-batch";
 
 function successResponse(
   result: SizeColorStructureCommandServiceResult,
@@ -158,6 +161,11 @@ async function handle(input: {
         ...common,
         command: validateBatchStructureSelection({ body, idempotencyKey }),
       });
+    } else if (input.kind === "quantity-batch") {
+      result = await upsertColorSizeQuantities({
+        ...common,
+        command: validateUpsertColorSizeQuantities({ body, idempotencyKey }),
+      });
     } else {
       result = await upsertColorSizeQuantity({
         ...common,
@@ -249,6 +257,10 @@ export function handleUpsertColorSizeQuantityV2(
     secondaryTargetId: sizeRowId,
     kind: "quantity-upsert",
   });
+}
+
+export function handleUpsertColorSizeQuantitiesV2(request: Request, workOrderId: string) {
+  return handle({ request, workOrderId, kind: "quantity-batch" });
 }
 
 export function handleBatchStructureSelectionV2(request: Request, workOrderId: string) {

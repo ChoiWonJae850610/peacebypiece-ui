@@ -77,6 +77,17 @@ The canonical operational steps and teardown remain in `41-external-mobile-qa-ru
 
 Environment identity and native configuration are owned by `06-expo-environment-setup.md`.
 
+## Alpha.68 final device result
+
+Owner physical iPhone QA is explicitly accepted as PASS through the final close-animation ownership
+correction. A first backdrop touch and parent/nested close complete one uninterrupted exit after keyboard
+dismissal; New Recipe handoff removes the old sheet before detail opens; nested Size/Color/POM close leaves
+no trapped sheet or keyboard. The accepted boundary also covers footerless direct input, duplicate body
+`추가` removal, replace-sheet processing, internal-tap persistence, keypad-only minimal accessory,
+single-Y geometry, drag dismiss/snap-back, and submit-before-blur. This final Owner evidence advances the
+product checkpoint to `ALPHA68_COMPLETE` and finalization checkpoint to
+`ALPHA68_FINALIZATION_COMPLETE`; it does not retroactively rewrite earlier pre-finalization evidence.
+
 ## Historical results
 
 Do not copy version-by-version results into this plan. Use immutable evidence:

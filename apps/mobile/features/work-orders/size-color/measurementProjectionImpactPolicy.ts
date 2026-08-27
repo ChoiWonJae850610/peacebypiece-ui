@@ -38,16 +38,16 @@ const IMPACTS: Readonly<Record<MeasurementProjectionCommandKind, MeasurementProj
   },
   "save-company-template": {
     matrix: "unchanged",
-    specifications: "unchanged",
+    specifications: "targeted-refresh",
     workOrderSizeColorGets: 0,
-    workOrderSizeSpecGets: 0,
+    workOrderSizeSpecGets: 1,
     templateList: "refresh-separately",
   },
   "update-company-template": {
     matrix: "unchanged",
-    specifications: "unchanged",
+    specifications: "targeted-refresh",
     workOrderSizeColorGets: 0,
-    workOrderSizeSpecGets: 0,
+    workOrderSizeSpecGets: 1,
     templateList: "refresh-separately",
   },
   "set-pom-selection": {

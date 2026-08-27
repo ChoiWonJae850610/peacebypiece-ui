@@ -14,8 +14,8 @@
       [
         "expo-image-picker",
         {
-          "photosPermission": "WAFL 작업지시서에 사용할 사진을 선택하기 위해 사진 보관함 접근이 필요합니다.",
-          "cameraPermission": "WAFL 작업지시서 이미지를 촬영하기 위해 카메라 접근이 필요합니다.",
+          "photosPermission": "WAFL 레시피에 사용할 사진을 선택하기 위해 사진 보관함 접근이 필요합니다.",
+          "cameraPermission": "WAFL 레시피 이미지를 촬영하기 위해 카메라 접근이 필요합니다.",
           "microphonePermission": false
         }
       ],
@@ -38,7 +38,7 @@
       }
     },
     "extra": {
-      "appVersion": "2.0.0-alpha.67",
+      "appVersion": "2.0.0-alpha.68",
       "mockOnly": false,
       "dataMode": "dev-test-tailscale-auto-connect",
       "router": {},

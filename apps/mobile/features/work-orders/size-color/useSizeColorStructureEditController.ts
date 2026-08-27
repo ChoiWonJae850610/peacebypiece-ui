@@ -1,16 +1,12 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { createSerializedMutationQueue } from "@/application/mutationController";
-import { MobileApiError, type MeasurementCommandResult, type SizeColorStructureCommandResult, type WorkOrderSizeColorBundle } from "@/domain/mobileContract";
+import type { WorkOrderDraftBatchCoordinator } from "@/application/draftBatchCoordinator";
+import { MobileApiError, type MeasurementCommandResult, type MeasurementTemplateContent, type SizeColorStructureCommandResult, type WorkOrderSizeColorBundle } from "@/domain/mobileContract";
 import { createApplyMeasurementTemplateCommand } from "@/domain/measurementCommandTransport";
-import { formatMeasurementFromCm, normalizeMeasurementSizeSemanticKey, parseMeasurementToCm } from "@/domain/measurementPolicy";
+import { formatMeasurementFromCm, parseMeasurementToCm } from "@/domain/measurementPolicy";
 import { workOrderMutationController } from "@/features/work-orders/workOrderMutationController";
-import {
-  createImmutableAddSnapshot,
-  normalizedPresetKey,
-  sortColorRows,
-  sortSizeRows,
-} from "@/domain/sizeColorStructurePolicy";
+import { sortColorRows, sortSizeRows } from "@/domain/sizeColorStructurePolicy";
 import {
   isStructureMutationCommitAllowed,
   sameColorDraft,
@@ -24,11 +20,26 @@ import type { StructureSelectionCandidate } from "@/domain/sizeColorSelectionBat
 import { commitMeasurementProjectionTransition } from "./projectionVersionTransition";
 import type { MeasurementProjectionCommandKind } from "./measurementProjectionImpactPolicy";
 import type { PendingCommandScope } from "./sizeColorPendingPolicy";
+import {
+  acknowledgeQuantityDirtySnapshot,
+  snapshotQuantityDirtyDelta,
+  stageQuantityDirtyCell,
+  type QuantityDirtyDelta,
+} from "./quantityDirtyDeltaPolicy";
+import {
+  applyLocalSelectionBatchProjection,
+  createLocalSizeColorIdentity,
+  projectAppliedTemplateValuesForLocalSizes,
+  reconcileLocalFinishedSpecSizes as reconcileFinishedSpecSizes,
+  remapLocalQuantityIdentity,
+} from "./localSizeColorDraftPolicy";
+import { getMeasurementTemplateContent } from "@/lib/api/measurementApi";
 
 export type { PendingCommandScope } from "./sizeColorPendingPolicy";
 
 export type SizeColorStructureEditBoundary = {
   readonly canEdit: boolean;
+  readonly canEditStructure: boolean;
   readonly editing: boolean;
   readonly busy: boolean;
   readonly pendingScope: PendingCommandScope | null;
@@ -62,10 +73,19 @@ type LatestProjection = {
   readonly entityVersion: number;
 };
 
+type PendingStructureOperation =
+  | { readonly kind: "add-size"; readonly tempId: string; readonly displayLabel: string; readonly clientRequestId: string; readonly idempotencyKey: string }
+  | { readonly kind: "rename-size"; readonly sizeRowId: string; readonly displayLabel: string; readonly clientRequestId: string; readonly idempotencyKey: string }
+  | { readonly kind: "delete-size"; readonly sizeRowId: string; readonly clientRequestId: string; readonly idempotencyKey: string }
+  | { readonly kind: "add-color"; readonly tempId: string; readonly displayName: string; readonly hexValue: string | null; readonly clientRequestId: string; readonly idempotencyKey: string }
+  | { readonly kind: "patch-color"; readonly colorId: string; readonly displayName: string; readonly hexValue: string | null; readonly clientRequestId: string; readonly idempotencyKey: string }
+  | { readonly kind: "delete-color"; readonly colorId: string; readonly clientRequestId: string; readonly idempotencyKey: string };
+
 type Input = {
   readonly workOrderId: string | null;
   readonly entityVersion: number | null;
   readonly canEdit: boolean;
+  readonly canEditStructure: boolean;
   readonly bundle: WorkOrderSizeColorBundle | null;
   readonly onReconcile: (updater: (bundle: WorkOrderSizeColorBundle) => WorkOrderSizeColorBundle, nextVersion: number) => void;
   readonly onTotalQuantityReconcile: (totalQuantity: number, nextVersion: number) => void;
@@ -75,6 +95,7 @@ type Input = {
   readonly onConflict: () => Promise<void>;
   readonly onRefreshLatest: () => Promise<LatestProjection | undefined>;
   readonly onAuthenticationError: (error: MobileApiError) => void;
+  readonly draftBatch: WorkOrderDraftBatchCoordinator;
 };
 
 function withSizeOrder<T extends { readonly id: string; readonly displayLabel: string; readonly displayOrder: number }>(rows: readonly T[]) {
@@ -85,51 +106,53 @@ function withColorOrder<T extends { readonly id: string; readonly displayName: s
   return sortColorRows(rows).map((row, displayOrder) => ({ ...row, displayOrder }));
 }
 
-function reconcileFinishedSpecSizes(bundle: WorkOrderSizeColorBundle, matrixSizes = bundle.matrix.sizes): WorkOrderSizeColorBundle {
-  const existingByKey = new Map(bundle.specifications.sizes.map((size) => [
-    normalizeMeasurementSizeSemanticKey(size.code || size.displayLabel),
-    size,
-  ]));
-  const sizes = matrixSizes.map((matrixSize, displayOrder) => {
-    const key = normalizeMeasurementSizeSemanticKey(matrixSize.code || matrixSize.displayLabel);
-    const existing = existingByKey.get(key);
-    return {
-      id: matrixSize.id,
-      code: matrixSize.code || existing?.code || key,
-      displayLabel: matrixSize.displayLabel,
-      displayOrder,
-    };
-  });
-  const sizeIds = new Set(sizes.map((size) => size.id));
-  return {
-    ...bundle,
-    matrix: { ...bundle.matrix, sizes: matrixSizes },
-    specifications: {
-      ...bundle.specifications,
-      sizes,
-      cells: bundle.specifications.cells.filter((cell) => sizeIds.has(cell.sizeRowId)),
-      sourceTemplateModified: bundle.specifications.templateId !== null,
-    },
-  };
-}
-
 function isConflict(error: unknown) {
   return error instanceof MobileApiError && (error.code === "CONFLICT" || error.status === 409);
 }
 function isStructureResult(value: SizeColorStructureCommandResult | MeasurementCommandResult): value is SizeColorStructureCommandResult { return "targetKind" in value; }
+
+function remapBundleIdentity(bundle: WorkOrderSizeColorBundle, fromId: string, toId: string, target: "size" | "color") {
+  if (target === "size") return {
+    ...bundle,
+    matrix: {
+      ...bundle.matrix,
+      sizes: bundle.matrix.sizes.map((row) => row.id === fromId ? { ...row, id: toId } : row),
+      quantityCells: bundle.matrix.quantityCells.map((cell) => cell.sizeRowId === fromId ? { ...cell, sizeRowId: toId } : cell),
+    },
+    specifications: {
+      ...bundle.specifications,
+      sizes: bundle.specifications.sizes.map((row) => row.id === fromId ? { ...row, id: toId } : row),
+      cells: bundle.specifications.cells.map((cell) => cell.sizeRowId === fromId ? { ...cell, sizeRowId: toId } : cell),
+    },
+  };
+  return {
+    ...bundle,
+    matrix: {
+      ...bundle.matrix,
+      colors: bundle.matrix.colors.map((row) => row.id === fromId ? { ...row, id: toId } : row),
+      quantityCells: bundle.matrix.quantityCells.map((cell) => cell.colorId === fromId ? { ...cell, colorId: toId } : cell),
+    },
+  };
+}
 
 export function useSizeColorStructureEditController(input: Input) {
   const [editingWorkOrderId, setEditingWorkOrderId] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [pendingScope, setPendingScope] = useState<PendingCommandScope | null>(null);
   const [errorState, setErrorState] = useState<{ readonly workOrderId: string; readonly message: string } | null>(null);
-  const mutationQueue = useRef(createSerializedMutationQueue()).current;
+  const [mutationQueue] = useState(createSerializedMutationQueue);
   const sequence = useRef(0);
   const generation = useRef(0);
-  const batchBusy = useRef(false);
   const activeWorkOrderId = useRef(input.workOrderId);
   const authoritativeVersion = useRef(input.entityVersion);
   const current = useRef(input);
+  const pendingMeasurementCells = useRef(new Map<string, { readonly sizeRowId: string; readonly pomColumnId: string; readonly measurementUnit: "cm" | "inch"; readonly displayValue: string | null }>());
+  const pendingQuantityCells = useRef<QuantityDirtyDelta>(new Map());
+  const quantityGeneration = useRef(0);
+  const pendingStructureOperations = useRef(new Map<string, PendingStructureOperation>());
+  const structureAliases = useRef(new Map<string, string>());
+  const localStructureSequence = useRef(0);
+  const appliedTemplateContent = useRef<MeasurementTemplateContent | null>(null);
 
   useEffect(() => {
     current.current = input;
@@ -137,11 +160,44 @@ export function useSizeColorStructureEditController(input: Input) {
       generation.current += 1;
       activeWorkOrderId.current = input.workOrderId;
       authoritativeVersion.current = input.entityVersion;
+      pendingMeasurementCells.current.clear();
+      pendingQuantityCells.current.clear();
+      pendingStructureOperations.current.clear();
+      structureAliases.current.clear();
+      appliedTemplateContent.current = null;
     } else if (input.entityVersion !== null
       && (authoritativeVersion.current === null || input.entityVersion > authoritativeVersion.current)) {
       authoritativeVersion.current = input.entityVersion;
     }
   }, [input]);
+
+  const templateLoadWorkOrderId = input.workOrderId;
+  const templateLoadId = input.bundle?.specifications.templateId ?? null;
+  const templateLoadVersion = input.bundle?.specifications.templateVersion ?? null;
+  const templateLoadGender = input.bundle?.specifications.genderCode ?? null;
+  useEffect(() => {
+    if (!templateLoadWorkOrderId || !templateLoadId || templateLoadVersion === null) {
+      appliedTemplateContent.current = null;
+      return;
+    }
+    if (appliedTemplateContent.current?.templateId === templateLoadId
+      && appliedTemplateContent.current.templateVersion === templateLoadVersion) return;
+    let active = true;
+    void getMeasurementTemplateContent(templateLoadWorkOrderId, templateLoadId, templateLoadGender)
+      .then((content) => {
+        if (!active || activeWorkOrderId.current !== templateLoadWorkOrderId
+          || content.templateId !== templateLoadId || content.templateVersion !== templateLoadVersion) return;
+        appliedTemplateContent.current = content;
+        current.current.onReconcile(
+          (bundle) => projectAppliedTemplateValuesForLocalSizes(bundle, content),
+          current.current.entityVersion ?? current.current.bundle?.specifications.entityVersion ?? 0,
+        );
+      })
+      .catch(() => {
+        if (active && appliedTemplateContent.current?.templateId === templateLoadId) appliedTemplateContent.current = null;
+      });
+    return () => { active = false; };
+  }, [templateLoadGender, templateLoadId, templateLoadVersion, templateLoadWorkOrderId]);
 
   const identity = useCallback(() => {
     sequence.current += 1;
@@ -156,6 +212,149 @@ export function useSizeColorStructureEditController(input: Input) {
     setErrorState({ workOrderId, message: error instanceof MobileApiError ? error.message : fallback });
   }, []);
 
+  useEffect(() => input.draftBatch.register("sizes", async () => {
+    const snapshot = current.current;
+    if (!snapshot.canEdit || !snapshot.workOrderId || snapshot.entityVersion === null) return false;
+    if (pendingStructureOperations.current.size === 0 && pendingQuantityCells.current.size === 0) return true;
+    const requestWorkOrderId = snapshot.workOrderId;
+    const requestGeneration = generation.current;
+    return mutationQueue.enqueue(async () => {
+      const before = current.current;
+      if (!before.canEdit || before.workOrderId !== requestWorkOrderId || requestGeneration !== generation.current) return false;
+      setBusy(true);
+      setPendingScope("structure");
+      try {
+        const operations = [...pendingStructureOperations.current.entries()];
+        for (const [operationKey, operation] of operations) {
+          const expectedVersion = authoritativeVersion.current ?? before.entityVersion ?? 0;
+          let result: SizeColorStructureCommandResult;
+          if (operation.kind === "add-size") result = await workOrderMutationController.addSize(requestWorkOrderId, { clientRequestId: operation.clientRequestId, expectedVersion, displayLabel: operation.displayLabel }, operation.idempotencyKey);
+          else if (operation.kind === "rename-size") result = await workOrderMutationController.renameSize(requestWorkOrderId, structureAliases.current.get(operation.sizeRowId) ?? operation.sizeRowId, { clientRequestId: operation.clientRequestId, expectedVersion, displayLabel: operation.displayLabel }, operation.idempotencyKey);
+          else if (operation.kind === "delete-size") result = await workOrderMutationController.deleteSize(requestWorkOrderId, structureAliases.current.get(operation.sizeRowId) ?? operation.sizeRowId, { clientRequestId: operation.clientRequestId, expectedVersion }, operation.idempotencyKey);
+          else if (operation.kind === "add-color") result = await workOrderMutationController.addColor(requestWorkOrderId, { clientRequestId: operation.clientRequestId, expectedVersion, displayName: operation.displayName, hexValue: operation.hexValue }, operation.idempotencyKey);
+          else if (operation.kind === "patch-color") result = await workOrderMutationController.patchColor(requestWorkOrderId, structureAliases.current.get(operation.colorId) ?? operation.colorId, { clientRequestId: operation.clientRequestId, expectedVersion, patch: { displayName: operation.displayName, hexValue: operation.hexValue } }, operation.idempotencyKey);
+          else result = await workOrderMutationController.deleteColor(requestWorkOrderId, structureAliases.current.get(operation.colorId) ?? operation.colorId, { clientRequestId: operation.clientRequestId, expectedVersion }, operation.idempotencyKey);
+          if (requestGeneration !== generation.current || activeWorkOrderId.current !== requestWorkOrderId) return false;
+          authoritativeVersion.current = result.nextVersion;
+          const currentOperation = pendingStructureOperations.current.get(operationKey);
+          if (currentOperation === operation) pendingStructureOperations.current.delete(operationKey);
+          if ((operation.kind === "add-size" || operation.kind === "add-color") && result.targetId) {
+            const tempId = operation.tempId;
+            structureAliases.current.set(tempId, result.targetId);
+            if (currentOperation !== operation) {
+              const ids = identity();
+              if (!currentOperation) {
+                pendingStructureOperations.current.set(operationKey, operation.kind === "add-size"
+                  ? { kind: "delete-size", sizeRowId: tempId, ...ids }
+                  : { kind: "delete-color", colorId: tempId, ...ids });
+              } else if (currentOperation.kind === "add-size") {
+                pendingStructureOperations.current.set(operationKey, { kind: "rename-size", sizeRowId: tempId, displayLabel: currentOperation.displayLabel, ...ids });
+              } else if (currentOperation.kind === "add-color") {
+                pendingStructureOperations.current.set(operationKey, { kind: "patch-color", colorId: tempId, displayName: currentOperation.displayName, hexValue: currentOperation.hexValue, ...ids });
+              }
+            }
+            before.onReconcile((bundle) => remapBundleIdentity(bundle, tempId, result.targetId as string, operation.kind === "add-size" ? "size" : "color"), result.nextVersion);
+            const remappedQuantities = [...pendingQuantityCells.current.values()].filter(({ cell }) => cell.sizeRowId === tempId || cell.colorId === tempId);
+            for (const entry of remappedQuantities) {
+              const oldKey = `${entry.cell.colorId}:${entry.cell.sizeRowId}`;
+              pendingQuantityCells.current.delete(oldKey);
+              stageQuantityDirtyCell(pendingQuantityCells.current, remapLocalQuantityIdentity(entry.cell, tempId, result.targetId), entry.generation);
+            }
+            for (const [key, cell] of pendingMeasurementCells.current) {
+              if (cell.sizeRowId === tempId) {
+                pendingMeasurementCells.current.delete(key);
+                const next = { ...cell, sizeRowId: result.targetId };
+                pendingMeasurementCells.current.set(`${next.sizeRowId}:${next.pomColumnId}`, next);
+              }
+            }
+          }
+          before.onVersionReconcile(result.nextVersion);
+        }
+
+        const staged = snapshotQuantityDirtyDelta(pendingQuantityCells.current);
+        const cells = staged.map(({ cell }) => cell);
+        if (cells.length > 0) {
+          const ids = identity();
+          setPendingScope("quantity");
+          const result = await workOrderMutationController.batchQuantities(requestWorkOrderId, {
+            clientRequestId: ids.clientRequestId,
+            expectedVersion: authoritativeVersion.current ?? before.entityVersion ?? 0,
+            cells,
+          }, ids.idempotencyKey);
+          if (requestGeneration !== generation.current || activeWorkOrderId.current !== requestWorkOrderId) return false;
+          authoritativeVersion.current = result.nextVersion;
+          acknowledgeQuantityDirtySnapshot(pendingQuantityCells.current, staged);
+          const requested = new Map(cells.map((cell) => [`${cell.colorId}:${cell.sizeRowId}`, cell.quantity]));
+          before.onReconcile((bundle) => {
+            let next = bundle;
+            for (const cell of result.quantityCells ?? cells) {
+              const key = `${cell.colorId}:${cell.sizeRowId}`;
+              const local = next.matrix.quantityCells.find((candidate) => candidate.colorId === cell.colorId && candidate.sizeRowId === cell.sizeRowId);
+              if (Number(local?.quantity ?? 0) === requested.get(key)) next = reconcileQuantityCell(next, cell.colorId, cell.sizeRowId, cell.quantity);
+            }
+            return next;
+          }, result.nextVersion);
+          before.onTotalQuantityReconcile(result.totalQuantity ?? Number(before.bundle?.matrix.matrixTotal ?? 0), result.nextVersion);
+          before.onVersionReconcile(result.nextVersion);
+        }
+        if (operations.length > 0 && authoritativeVersion.current !== null) {
+          await before.onRefreshSizeSpec(authoritativeVersion.current);
+        }
+        return true;
+      } catch (error) {
+        if (error instanceof MobileApiError && (error.code === "AUTH_REQUIRED" || error.status === 401)) before.onAuthenticationError(error);
+        else if (isConflict(error)) await before.onConflict();
+        else reportError(requestWorkOrderId, error, "사이즈·색상 수량을 저장하지 못했습니다.");
+        return false;
+      } finally {
+        setBusy(false);
+        setPendingScope(null);
+      }
+    });
+  }), [identity, input.draftBatch, mutationQueue, reportError]);
+
+  useEffect(() => input.draftBatch.register("finished-spec", async () => {
+    const cells = [...pendingMeasurementCells.current.values()];
+    const snapshot = current.current;
+    if (cells.length === 0) return true;
+    if (!snapshot.canEdit || !snapshot.workOrderId || snapshot.entityVersion === null) return false;
+    const requestWorkOrderId = snapshot.workOrderId;
+    const requestGeneration = generation.current;
+    return mutationQueue.enqueue(async () => {
+      const before = current.current;
+      if (!before.canEdit || before.workOrderId !== requestWorkOrderId || requestGeneration !== generation.current) return false;
+      const ids = identity();
+      setBusy(true);
+      setPendingScope("measurement-cell");
+      try {
+        const result = await workOrderMutationController.mutateMeasurement(requestWorkOrderId, {
+          kind: "set-cells",
+          clientRequestId: ids.clientRequestId,
+          expectedVersion: authoritativeVersion.current ?? before.entityVersion ?? 0,
+          cells,
+        }, ids.idempotencyKey);
+        if (requestGeneration !== generation.current || activeWorkOrderId.current !== requestWorkOrderId) return false;
+        authoritativeVersion.current = result.nextVersion;
+        for (const cell of cells) {
+          const key = `${cell.sizeRowId}:${cell.pomColumnId}`;
+          const pending = pendingMeasurementCells.current.get(key);
+          if (pending && JSON.stringify(pending) === JSON.stringify(cell)) pendingMeasurementCells.current.delete(key);
+        }
+        before.onPromoteProjectionVersion(result.nextVersion);
+        before.onVersionReconcile(result.nextVersion);
+        return true;
+      } catch (error) {
+        if (error instanceof MobileApiError && (error.code === "AUTH_REQUIRED" || error.status === 401)) before.onAuthenticationError(error);
+        else if (isConflict(error)) await before.onConflict();
+        else reportError(requestWorkOrderId, error, "완성 스펙을 저장하지 못했습니다.");
+        return false;
+      } finally {
+        setBusy(false);
+        setPendingScope(null);
+      }
+    });
+  }), [identity, input.draftBatch, mutationQueue, reportError]);
+
   const run = useCallback(async (
     changed: boolean,
     request: (context: { readonly workOrderId: string; readonly expectedVersion: number; readonly clientRequestId: string; readonly idempotencyKey: string }) => Promise<SizeColorStructureCommandResult | MeasurementCommandResult>,
@@ -166,6 +365,14 @@ export function useSizeColorStructureEditController(input: Input) {
     scope: PendingCommandScope = "structure",
     failureRollbackBundle?: WorkOrderSizeColorBundle,
   ) => {
+    if (scope !== "quantity" && input.draftBatch.isDirty("sizes")) {
+      const flushed = await input.draftBatch.flushSection("sizes", "explicit");
+      if (!flushed.committed) return false;
+    }
+    if (scope !== "measurement-cell" && input.draftBatch.isDirty("finished-spec")) {
+      const flushed = await input.draftBatch.flushSection("finished-spec", "explicit");
+      if (!flushed.committed) return false;
+    }
     const initial = current.current;
     if (!changed || !initial.canEdit || !initial.workOrderId || initial.entityVersion === null) return false;
     const requestGeneration = generation.current;
@@ -236,256 +443,240 @@ export function useSizeColorStructureEditController(input: Input) {
         timing.markBusyRelease();
       }
     });
-  }, [identity, mutationQueue, reportError]);
+  }, [identity, input.draftBatch, mutationQueue, reportError]);
 
-  const addSizesSequentially = useCallback(async (displayLabels: readonly string[]) => {
-    const snapshot = current.current;
-    if (batchBusy.current || busy || !snapshot.canEdit || !snapshot.workOrderId) return { added: 0, failed: displayLabels[0] ?? null };
-    const immutableSelection = Object.freeze(displayLabels.map((label) => label.normalize("NFKC").trim()).filter(Boolean));
-    batchBusy.current = true;
-    setBusy(true);
-    setErrorState(null);
-    let added = 0;
-    let failed: string | null = null;
-    try {
-      let latest = await snapshot.onRefreshLatest();
-      if (!latest) return { added: 0, failed: immutableSelection[0] ?? null };
-      let expectedVersion = latest.entityVersion;
-      let sizes = [...latest.bundle.matrix.sizes];
-      const queue = createImmutableAddSnapshot(immutableSelection, sizes.map((row) => row.displayLabel)).pending;
-      for (const displayLabel of queue) {
-        const validated = validateSizeLabel(displayLabel, sizes);
-        if (validated.error) { failed = displayLabel; setErrorState({ workOrderId: snapshot.workOrderId, message: validated.error }); break; }
-        const ids = identity();
-        let result: SizeColorStructureCommandResult | null = null;
-        try {
-          result = await workOrderMutationController.addSize(snapshot.workOrderId, { clientRequestId: ids.clientRequestId, expectedVersion, displayLabel: validated.value }, ids.idempotencyKey);
-        } catch (error) {
-          if (!isConflict(error)) { reportError(snapshot.workOrderId, error, `${displayLabel} 추가에 실패했습니다.`); failed = displayLabel; break; }
-          latest = await snapshot.onRefreshLatest();
-          if (!latest) { failed = displayLabel; break; }
-          expectedVersion = latest.entityVersion;
-          sizes = [...latest.bundle.matrix.sizes];
-          const reconciled = sizes.find((row) => normalizedPresetKey(row.displayLabel) === normalizedPresetKey(validated.value));
-          if (reconciled) result = { workOrderId: snapshot.workOrderId as SizeColorStructureCommandResult["workOrderId"], revisionId: latest.bundle.matrix.revisionId, targetKind: "size", targetId: reconciled.id, nextVersion: expectedVersion };
-          else {
-            try {
-              result = await workOrderMutationController.addSize(snapshot.workOrderId, { clientRequestId: ids.clientRequestId, expectedVersion, displayLabel: validated.value }, ids.idempotencyKey);
-            } catch (retryError) { reportError(snapshot.workOrderId, retryError, `${displayLabel} 추가에 실패했습니다.`); failed = displayLabel; break; }
-          }
-        }
-        if (!result?.targetId) { failed = displayLabel; break; }
-        expectedVersion = result.nextVersion;
-        const existing = sizes.find((row) => row.id === result?.targetId);
-        if (!existing) sizes = withSizeOrder([...sizes, { id: result.targetId, code: "", displayLabel: validated.value, displayOrder: sizes.length }]);
-        else sizes = withSizeOrder(sizes);
-        snapshot.onReconcile((bundle) => reconcileFinishedSpecSizes(bundle, sizes), expectedVersion);
-        added += 1;
-      }
-      await snapshot.onRefreshLatest();
-      if (failed) setErrorState({ workOrderId: snapshot.workOrderId, message: `${failed} 추가에 실패했습니다. 앞서 추가된 항목은 유지됩니다.` });
-      return { added, failed };
-    } finally {
-      batchBusy.current = false;
-      setBusy(false);
-    }
-  }, [busy, identity, reportError]);
+  const stageSizesDraft = useCallback(() => {
+    current.current.draftBatch.stage("sizes", {
+      structureCount: pendingStructureOperations.current.size,
+      quantities: snapshotQuantityDirtyDelta(pendingQuantityCells.current),
+    });
+  }, []);
 
-  const addColorsSequentially = useCallback(async (drafts: readonly ColorStructureDraft[]) => {
+  const stageSelectionBatch = useCallback((
+    targetKind: "size" | "color",
+    additions: readonly StructureSelectionCandidate[],
+    deletionIds: readonly string[],
+  ) => {
     const snapshot = current.current;
-    if (batchBusy.current || busy || !snapshot.canEdit || !snapshot.workOrderId) return { added: 0, failed: drafts[0]?.displayName ?? null };
-    const immutableSelection = Object.freeze(drafts.map((draft) => Object.freeze({ displayName: draft.displayName.normalize("NFKC").trim(), hexValue: draft.hexValue.trim().toUpperCase() })));
-    batchBusy.current = true;
-    setBusy(true);
-    setErrorState(null);
-    let added = 0;
-    let failed: string | null = null;
-    try {
-      let latest = await snapshot.onRefreshLatest();
-      if (!latest) return { added: 0, failed: immutableSelection[0]?.displayName ?? null };
-      let expectedVersion = latest.entityVersion;
-      let colors = [...latest.bundle.matrix.colors];
-      const pendingNames = new Set(createImmutableAddSnapshot(immutableSelection.map((draft) => draft.displayName), colors.map((row) => row.displayName)).pending.map(normalizedPresetKey));
-      const queue = immutableSelection.filter((draft) => pendingNames.has(normalizedPresetKey(draft.displayName)));
-      for (const draft of queue) {
-        const validated = validateColorDraft(draft, colors);
-        if (validated.error) { failed = draft.displayName; setErrorState({ workOrderId: snapshot.workOrderId, message: validated.error }); break; }
-        const ids = identity();
-        let result: SizeColorStructureCommandResult | null = null;
-        try {
-          result = await workOrderMutationController.addColor(snapshot.workOrderId, { clientRequestId: ids.clientRequestId, expectedVersion, displayName: validated.displayName, hexValue: validated.hexValue }, ids.idempotencyKey);
-        } catch (error) {
-          if (!isConflict(error)) { reportError(snapshot.workOrderId, error, `${draft.displayName} 추가에 실패했습니다.`); failed = draft.displayName; break; }
-          latest = await snapshot.onRefreshLatest();
-          if (!latest) { failed = draft.displayName; break; }
-          expectedVersion = latest.entityVersion;
-          colors = [...latest.bundle.matrix.colors];
-          const reconciled = colors.find((row) => normalizedPresetKey(row.displayName) === normalizedPresetKey(validated.displayName));
-          if (reconciled) result = { workOrderId: snapshot.workOrderId as SizeColorStructureCommandResult["workOrderId"], revisionId: latest.bundle.matrix.revisionId, targetKind: "color", targetId: reconciled.id, nextVersion: expectedVersion };
-          else {
-            try {
-              result = await workOrderMutationController.addColor(snapshot.workOrderId, { clientRequestId: ids.clientRequestId, expectedVersion, displayName: validated.displayName, hexValue: validated.hexValue }, ids.idempotencyKey);
-            } catch (retryError) { reportError(snapshot.workOrderId, retryError, `${draft.displayName} 추가에 실패했습니다.`); failed = draft.displayName; break; }
-          }
+    if (!snapshot.canEditStructure || !snapshot.bundle) return false;
+    const deletionSet = new Set(deletionIds);
+    if (targetKind === "size") {
+      const planned: { readonly tempId: string; readonly displayLabel: string }[] = [];
+      let nextSizes = snapshot.bundle.matrix.sizes.filter((row) => !deletionSet.has(row.id));
+      for (const addition of additions) {
+        const validated = validateSizeLabel(addition.displayName, nextSizes);
+        if (validated.error) {
+          setErrorState({ workOrderId: snapshot.workOrderId ?? "", message: validated.error });
+          return false;
         }
-        if (!result?.targetId) { failed = draft.displayName; break; }
-        expectedVersion = result.nextVersion;
-        const existing = colors.find((row) => row.id === result?.targetId);
-        if (!existing) colors = withColorOrder([...colors, { id: result.targetId, code: "", displayName: validated.displayName, hexValue: validated.hexValue, displayOrder: colors.length }]);
-        else colors = withColorOrder(colors);
-        snapshot.onReconcile((bundle) => ({ ...bundle, matrix: { ...bundle.matrix, colors } }), expectedVersion);
-        added += 1;
+        localStructureSequence.current += 1;
+        const tempId = createLocalSizeColorIdentity("size", localStructureSequence.current);
+        planned.push({ tempId, displayLabel: validated.value });
+        nextSizes = [...nextSizes, { id: tempId, code: validated.value, displayLabel: validated.value, displayOrder: nextSizes.length }];
       }
-      await snapshot.onRefreshLatest();
-      if (failed) setErrorState({ workOrderId: snapshot.workOrderId, message: `${failed} 추가에 실패했습니다. 앞서 추가된 항목은 유지됩니다.` });
-      return { added, failed };
-    } finally {
-      batchBusy.current = false;
-      setBusy(false);
+      for (const row of snapshot.bundle.matrix.sizes.filter((candidate) => deletionSet.has(candidate.id))) {
+        const pending = pendingStructureOperations.current.get(row.id);
+        if (pending?.kind === "add-size") pendingStructureOperations.current.delete(row.id);
+        else pendingStructureOperations.current.set(row.id, { kind: "delete-size", sizeRowId: row.id, ...identity() });
+      }
+      for (const addition of planned) pendingStructureOperations.current.set(addition.tempId, {
+        kind: "add-size", tempId: addition.tempId, displayLabel: addition.displayLabel, ...identity(),
+      });
+      for (const [key, entry] of pendingQuantityCells.current) {
+        if (deletionSet.has(entry.cell.sizeRowId)) pendingQuantityCells.current.delete(key);
+      }
+      for (const [key, cell] of pendingMeasurementCells.current) {
+        if (deletionSet.has(cell.sizeRowId)) pendingMeasurementCells.current.delete(key);
+      }
+      const nextBundle = applyLocalSelectionBatchProjection({
+        bundle: snapshot.bundle,
+        targetKind,
+        additions: planned.map((addition) => ({ ...addition, displayName: addition.displayLabel, hexValue: null })),
+        deletionIds,
+        template: appliedTemplateContent.current,
+      });
+      snapshot.onReconcile(() => nextBundle, snapshot.entityVersion ?? snapshot.bundle.matrix.entityVersion);
+    } else {
+      const planned: { readonly tempId: string; readonly displayName: string; readonly hexValue: string | null }[] = [];
+      let nextColors = snapshot.bundle.matrix.colors.filter((row) => !deletionSet.has(row.id));
+      for (const addition of additions) {
+        const validated = validateColorDraft({
+          displayName: addition.displayName,
+          hexValue: addition.hexValue ?? "#D8D2CA",
+        }, nextColors);
+        if (validated.error) {
+          setErrorState({ workOrderId: snapshot.workOrderId ?? "", message: validated.error });
+          return false;
+        }
+        localStructureSequence.current += 1;
+        const tempId = createLocalSizeColorIdentity("color", localStructureSequence.current);
+        planned.push({ tempId, displayName: validated.displayName, hexValue: validated.hexValue });
+        nextColors = [...nextColors, { id: tempId, displayName: validated.displayName, hexValue: validated.hexValue, displayOrder: nextColors.length }];
+      }
+      for (const row of snapshot.bundle.matrix.colors.filter((candidate) => deletionSet.has(candidate.id))) {
+        const pending = pendingStructureOperations.current.get(row.id);
+        if (pending?.kind === "add-color") pendingStructureOperations.current.delete(row.id);
+        else pendingStructureOperations.current.set(row.id, { kind: "delete-color", colorId: row.id, ...identity() });
+      }
+      for (const addition of planned) pendingStructureOperations.current.set(addition.tempId, {
+        kind: "add-color", tempId: addition.tempId, displayName: addition.displayName, hexValue: addition.hexValue, ...identity(),
+      });
+      for (const [key, entry] of pendingQuantityCells.current) {
+        if (deletionSet.has(entry.cell.colorId)) pendingQuantityCells.current.delete(key);
+      }
+      const nextBundle = applyLocalSelectionBatchProjection({
+        bundle: snapshot.bundle,
+        targetKind,
+        additions: planned,
+        deletionIds,
+        template: appliedTemplateContent.current,
+      });
+      snapshot.onReconcile(() => nextBundle, snapshot.entityVersion ?? snapshot.bundle.matrix.entityVersion);
     }
-  }, [busy, identity, reportError]);
+    stageSizesDraft();
+    return true;
+  }, [identity, stageSizesDraft]);
+
+  const stageAddSize = useCallback((displayLabel: string) => {
+    return stageSelectionBatch("size", [{ displayName: displayLabel, hexValue: null }], []);
+  }, [stageSelectionBatch]);
+
+  const stageAddColor = useCallback((draft: ColorStructureDraft) => {
+    return stageSelectionBatch("color", [{ displayName: draft.displayName, hexValue: draft.hexValue }], []);
+  }, [stageSelectionBatch]);
 
   const boundary = useMemo<SizeColorStructureEditBoundary>(() => ({
     canEdit: input.canEdit,
-    editing: input.canEdit && editingWorkOrderId === input.workOrderId,
+    canEditStructure: input.canEditStructure,
+    editing: input.canEditStructure && editingWorkOrderId === input.workOrderId,
     busy,
     pendingScope,
     errorMessage: errorState?.workOrderId === input.workOrderId ? errorState.message : null,
-    onBegin: () => { if (input.canEdit) { setErrorState(null); setEditingWorkOrderId(input.workOrderId); } },
+    onBegin: () => { if (input.canEditStructure) { setErrorState(null); setEditingWorkOrderId(input.workOrderId); } },
     onCancel: () => { if (!busy) { setEditingWorkOrderId(null); setErrorState(null); } },
     onAddSize: async (displayLabel) => {
-      const sizes = input.bundle?.matrix.sizes ?? [];
-      const validated = validateSizeLabel(displayLabel, sizes);
-      if (validated.error) { setErrorState({ workOrderId: input.workOrderId ?? "", message: validated.error }); return false; }
-      return run(true, ({ workOrderId, expectedVersion, clientRequestId, idempotencyKey }) => workOrderMutationController.addSize(
-        workOrderId, { clientRequestId, expectedVersion, displayLabel: validated.value }, idempotencyKey,
-      ), (bundle, result) => result.targetId ? reconcileFinishedSpecSizes(bundle, withSizeOrder([...bundle.matrix.sizes, { id: result.targetId, code: validated.value, displayLabel: validated.value, displayOrder: bundle.matrix.sizes.length }])) : bundle, undefined, undefined, "size-add");
+      return stageAddSize(displayLabel);
     },
-    onAddSizes: addSizesSequentially,
+    onAddSizes: async (displayLabels) => {
+      const staged = stageSelectionBatch("size", displayLabels.map((displayName) => ({ displayName, hexValue: null })), []);
+      return { added: staged ? displayLabels.length : 0, failed: staged ? null : displayLabels[0] ?? null };
+    },
     onRenameSize: async (sizeRowId, displayLabel) => {
       const sizes = input.bundle?.matrix.sizes ?? [];
       const currentRow = sizes.find((row) => row.id === sizeRowId);
       if (!currentRow) return false;
       const validated = validateSizeLabel(displayLabel, sizes, sizeRowId);
       if (validated.error) { setErrorState({ workOrderId: input.workOrderId ?? "", message: validated.error }); return false; }
-      return run(validated.value !== currentRow.displayLabel, ({ workOrderId, expectedVersion, clientRequestId, idempotencyKey }) => workOrderMutationController.renameSize(workOrderId, sizeRowId, { clientRequestId, expectedVersion, displayLabel: validated.value }, idempotencyKey), (bundle) => reconcileFinishedSpecSizes(bundle, withSizeOrder(bundle.matrix.sizes.map((row) => row.id === sizeRowId ? { ...row, displayLabel: validated.value } : row))), undefined, undefined, "size-rename");
+      if (validated.value === currentRow.displayLabel) return true;
+      const pending = pendingStructureOperations.current.get(sizeRowId);
+      const ids = identity();
+      pendingStructureOperations.current.set(sizeRowId, pending?.kind === "add-size"
+        ? { ...pending, displayLabel: validated.value }
+        : { kind: "rename-size", sizeRowId, displayLabel: validated.value, ...ids });
+      input.onReconcile((bundle) => reconcileFinishedSpecSizes(bundle, withSizeOrder(bundle.matrix.sizes.map((row) => row.id === sizeRowId ? { ...row, code: validated.value, displayLabel: validated.value } : row)), appliedTemplateContent.current), input.entityVersion ?? input.bundle?.matrix.entityVersion ?? 0);
+      stageSizesDraft();
+      return true;
     },
-    onDeleteSize: (sizeRowId) => run(
-      true,
-      ({ workOrderId, expectedVersion, clientRequestId, idempotencyKey }) => workOrderMutationController.deleteSize(
-        workOrderId, sizeRowId, { clientRequestId, expectedVersion }, idempotencyKey,
-      ),
-      (bundle) => {
+    onDeleteSize: async (sizeRowId) => {
+      const pending = pendingStructureOperations.current.get(sizeRowId);
+      if (pending?.kind === "add-size") pendingStructureOperations.current.delete(sizeRowId);
+      else {
+        const ids = identity();
+        pendingStructureOperations.current.set(sizeRowId, { kind: "delete-size", sizeRowId, ...ids });
+      }
+      input.onReconcile((bundle) => {
         const nextSizes = withSizeOrder(bundle.matrix.sizes.filter((row) => row.id !== sizeRowId));
-        const synchronized = reconcileFinishedSpecSizes(bundle, nextSizes);
+        const synchronized = reconcileFinishedSpecSizes(bundle, nextSizes, appliedTemplateContent.current);
         return reconcileSizeColorTotals({ ...synchronized, matrix: { ...synchronized.matrix, quantityCells: bundle.matrix.quantityCells.filter((cell) => cell.sizeRowId !== sizeRowId) } });
-      },
-      undefined,
-      undefined,
-      "size-delete",
-    ),
+      }, input.entityVersion ?? input.bundle?.matrix.entityVersion ?? 0);
+      for (const [key, entry] of pendingQuantityCells.current) if (entry.cell.sizeRowId === sizeRowId) pendingQuantityCells.current.delete(key);
+      stageSizesDraft();
+      return true;
+    },
     onAddColor: async (draft) => {
       const colors = input.bundle?.matrix.colors ?? [];
       const validated = validateColorDraft(draft, colors);
       if (validated.error) { setErrorState({ workOrderId: input.workOrderId ?? "", message: validated.error }); return false; }
-      return run(true, ({ workOrderId, expectedVersion, clientRequestId, idempotencyKey }) => workOrderMutationController.addColor(
-        workOrderId, { clientRequestId, expectedVersion, displayName: validated.displayName, hexValue: validated.hexValue }, idempotencyKey,
-      ), (bundle, result) => result.targetId ? ({ ...bundle, matrix: { ...bundle.matrix, colors: withColorOrder([...bundle.matrix.colors, { id: result.targetId, code: "", displayName: validated.displayName, hexValue: validated.hexValue, displayOrder: bundle.matrix.colors.length }]) } }) : bundle, undefined, undefined, "color-add");
+      return stageAddColor(draft);
     },
-    onAddColors: addColorsSequentially,
+    onAddColors: async (drafts) => {
+      const staged = stageSelectionBatch("color", drafts.map((draft) => ({ displayName: draft.displayName, hexValue: draft.hexValue })), []);
+      return { added: staged ? drafts.length : 0, failed: staged ? null : drafts[0]?.displayName ?? null };
+    },
     onPatchColor: async (colorId, draft) => {
       const colors = input.bundle?.matrix.colors ?? [];
       const currentRow = colors.find((row) => row.id === colorId);
       if (!currentRow) return false;
       const validated = validateColorDraft(draft, colors, colorId);
       if (validated.error) { setErrorState({ workOrderId: input.workOrderId ?? "", message: validated.error }); return false; }
-      return run(!sameColorDraft(currentRow, draft), ({ workOrderId, expectedVersion, clientRequestId, idempotencyKey }) => workOrderMutationController.patchColor(workOrderId, colorId, { clientRequestId, expectedVersion, patch: { displayName: validated.displayName, hexValue: validated.hexValue } }, idempotencyKey), (bundle) => ({ ...bundle, matrix: { ...bundle.matrix, colors: withColorOrder(bundle.matrix.colors.map((row) => row.id === colorId ? { ...row, displayName: validated.displayName, hexValue: validated.hexValue } : row)) } }));
+      if (sameColorDraft(currentRow, draft)) return true;
+      const pending = pendingStructureOperations.current.get(colorId);
+      const ids = identity();
+      pendingStructureOperations.current.set(colorId, pending?.kind === "add-color"
+        ? { ...pending, displayName: validated.displayName, hexValue: validated.hexValue }
+        : { kind: "patch-color", colorId, displayName: validated.displayName, hexValue: validated.hexValue, ...ids });
+      input.onReconcile((bundle) => ({ ...bundle, matrix: { ...bundle.matrix, colors: withColorOrder(bundle.matrix.colors.map((row) => row.id === colorId ? { ...row, displayName: validated.displayName, hexValue: validated.hexValue } : row)) } }), input.entityVersion ?? input.bundle?.matrix.entityVersion ?? 0);
+      stageSizesDraft();
+      return true;
     },
-    onDeleteColor: (colorId) => run(
-      true,
-      ({ workOrderId, expectedVersion, clientRequestId, idempotencyKey }) => workOrderMutationController.deleteColor(
-        workOrderId, colorId, { clientRequestId, expectedVersion }, idempotencyKey,
-      ),
-      (bundle) => reconcileSizeColorTotals({
+    onDeleteColor: async (colorId) => {
+      const pending = pendingStructureOperations.current.get(colorId);
+      if (pending?.kind === "add-color") pendingStructureOperations.current.delete(colorId);
+      else {
+        const ids = identity();
+        pendingStructureOperations.current.set(colorId, { kind: "delete-color", colorId, ...ids });
+      }
+      input.onReconcile((bundle) => reconcileSizeColorTotals({
         ...bundle,
         matrix: {
           ...bundle.matrix,
           colors: withColorOrder(bundle.matrix.colors.filter((row) => row.id !== colorId)),
           quantityCells: bundle.matrix.quantityCells.filter((cell) => cell.colorId !== colorId),
         },
-      }),
-    ),
-    onApplySelectionBatch: (targetKind, additions, deletionIds) => run(
-      additions.length > 0 || deletionIds.length > 0,
-      ({ workOrderId, expectedVersion, clientRequestId, idempotencyKey }) => workOrderMutationController.batchStructureSelection(
-        workOrderId,
-        { clientRequestId, expectedVersion, targetKind, additions, deletionIds },
-        idempotencyKey,
-      ),
-      (bundle, result) => {
-        const deleted = new Set(result.deletedTargetIds ?? deletionIds);
-        const created = result.createdItems ?? [];
-        const quantityCells = bundle.matrix.quantityCells.filter((cell) => (
-          targetKind === "size" ? !deleted.has(cell.sizeRowId) : !deleted.has(cell.colorId)
-        ));
-        if (targetKind === "size") {
-          const sizes = withSizeOrder([
-            ...bundle.matrix.sizes.filter((row) => !deleted.has(row.id)),
-            ...created.map((item) => ({ id: item.id, code: item.displayName, displayLabel: item.displayName, displayOrder: bundle.matrix.sizes.length })),
-          ]);
-          const synchronized = reconcileFinishedSpecSizes(bundle, sizes);
-          return reconcileSizeColorTotals({ ...synchronized, matrix: { ...synchronized.matrix, quantityCells } });
-        }
-        const colors = withColorOrder([
-          ...bundle.matrix.colors.filter((row) => !deleted.has(row.id)),
-          ...created.map((item) => ({ id: item.id, code: "", displayName: item.displayName, hexValue: item.hexValue, displayOrder: bundle.matrix.colors.length })),
-        ]);
-        return reconcileSizeColorTotals({ ...bundle, matrix: { ...bundle.matrix, colors, quantityCells } });
-      },
-      undefined,
-      undefined,
-      `selection-batch-${targetKind}`,
-    ),
+      }), input.entityVersion ?? input.bundle?.matrix.entityVersion ?? 0);
+      for (const [key, entry] of pendingQuantityCells.current) if (entry.cell.colorId === colorId) pendingQuantityCells.current.delete(key);
+      stageSizesDraft();
+      return true;
+    },
+    onApplySelectionBatch: async (targetKind, additions, deletionIds) => {
+      return stageSelectionBatch(targetKind, additions, deletionIds);
+    },
     onSetQuantity: async (colorId, sizeRowId, quantity) => {
-      const currentCell = input.bundle?.matrix.quantityCells.find((cell) => cell.colorId === colorId && cell.sizeRowId === sizeRowId);
+      const snapshot = current.current;
+      const currentCell = snapshot.bundle?.matrix.quantityCells.find((cell) => cell.colorId === colorId && cell.sizeRowId === sizeRowId);
       const currentQuantity = Number(currentCell?.quantity ?? 0);
-      if (!Number.isSafeInteger(quantity) || quantity < 0 || quantity > 100_000_000) { setErrorState({ workOrderId: input.workOrderId ?? "", message: "수량은 0 이상의 정수로 입력해 주세요." }); return false; }
-      return run(
-        quantity !== currentQuantity || input.bundle?.matrix.projectionsMatch === false,
-        ({ workOrderId, expectedVersion, clientRequestId, idempotencyKey }) => workOrderMutationController.upsertQuantity(
-          workOrderId,
-          colorId,
-          sizeRowId,
-          { clientRequestId, expectedVersion, quantity },
-          idempotencyKey,
-        ),
-        (bundle, result) => reconcileQuantityCell(
-          bundle,
-          colorId,
-          sizeRowId,
-          result.quantity ?? quantity,
-        ),
-        (bundle) => reconcileQuantityCell(bundle, colorId, sizeRowId, quantity),
-        undefined,
-        "quantity-upsert",
-        "quantity",
-      );
+      if (!Number.isSafeInteger(quantity) || quantity < 0 || quantity > 100_000_000) { setErrorState({ workOrderId: snapshot.workOrderId ?? "", message: "수량은 0 이상의 정수로 입력해 주세요." }); return false; }
+      if (quantity === currentQuantity && snapshot.bundle?.matrix.projectionsMatch !== false) return true;
+      if (!snapshot.canEdit || !snapshot.bundle) return false;
+      const optimistic = reconcileQuantityCell(snapshot.bundle, colorId, sizeRowId, quantity);
+      const localVersion = snapshot.entityVersion ?? optimistic.matrix.entityVersion;
+      snapshot.onReconcile(() => optimistic, localVersion);
+      snapshot.onTotalQuantityReconcile(Number(optimistic.matrix.matrixTotal), localVersion);
+      quantityGeneration.current += 1;
+      stageQuantityDirtyCell(pendingQuantityCells.current, { colorId, sizeRowId, quantity }, quantityGeneration.current);
+      stageSizesDraft();
+      return true;
     },
     onSetMeasurementCell: async (sizeRowId, pomColumnId, measurementUnit, displayValue) => {
       const parsed = displayValue === null ? null : parseMeasurementToCm(displayValue, measurementUnit);
-      return run(true, ({ workOrderId, expectedVersion, clientRequestId, idempotencyKey }) => workOrderMutationController.mutateMeasurement(workOrderId, {
-        kind: "set-cell", clientRequestId, expectedVersion, sizeRowId, pomColumnId, measurementUnit, displayValue,
-      }, idempotencyKey), undefined, (bundle) => ({
-        ...bundle,
+      if (displayValue !== null && !parsed) return false;
+      if (!input.canEdit || !input.bundle) return false;
+      const optimistic = {
+        ...input.bundle,
         specifications: {
-          ...bundle.specifications,
+          ...input.bundle.specifications,
           cells: [
-            ...bundle.specifications.cells.filter((cell) => cell.sizeRowId !== sizeRowId || cell.pomColumnId !== pomColumnId),
+            ...input.bundle.specifications.cells.filter((cell) => cell.sizeRowId !== sizeRowId || cell.pomColumnId !== pomColumnId),
             { sizeRowId, pomColumnId, displayValue: parsed ? formatMeasurementFromCm(parsed.centimeters, measurementUnit) : null, decimalValue: parsed ? String(parsed.centimeters) : null },
           ],
-          sourceTemplateModified: bundle.specifications.templateId !== null,
+          sourceTemplateModified: input.bundle.specifications.templateId !== null,
         },
-      }), "set-cell", "measurement-cell", "measurement-cell");
+      };
+      input.onReconcile(() => optimistic, input.entityVersion ?? optimistic.specifications.entityVersion);
+      const cell = { sizeRowId, pomColumnId, measurementUnit, displayValue } as const;
+      pendingMeasurementCells.current.set(`${sizeRowId}:${pomColumnId}`, cell);
+      input.draftBatch.stage("finished-spec", [...pendingMeasurementCells.current.values()]);
+      return true;
     },
     onSetMeasurementUnit: async (measurementUnit) => {
       const snapshot = current.current;
@@ -497,11 +688,24 @@ export function useSizeColorStructureEditController(input: Input) {
       }, idempotencyKey), undefined, undefined, "set-unit", "measurement-unit", "measurement-unit", previousBundle);
       return saved;
     },
-    onApplyMeasurementTemplate: async (templateId) => run(true, ({ workOrderId, expectedVersion, clientRequestId, idempotencyKey }) => workOrderMutationController.mutateMeasurement(workOrderId, createApplyMeasurementTemplateCommand({ templateId, expectedVersion, clientRequestId }), idempotencyKey), undefined, undefined, "apply-template", "template-apply", "template"),
+    onApplyMeasurementTemplate: async (templateId) => {
+      const snapshot = current.current;
+      if (!snapshot.workOrderId) return false;
+      let content: MeasurementTemplateContent;
+      try {
+        content = await getMeasurementTemplateContent(snapshot.workOrderId, templateId, snapshot.bundle?.specifications.genderCode ?? null);
+      } catch (error) {
+        reportError(snapshot.workOrderId, error, "스펙 내용을 불러오지 못했습니다.");
+        return false;
+      }
+      const saved = await run(true, ({ workOrderId, expectedVersion, clientRequestId, idempotencyKey }) => workOrderMutationController.mutateMeasurement(workOrderId, createApplyMeasurementTemplateCommand({ templateId, expectedVersion, clientRequestId }), idempotencyKey), undefined, undefined, "apply-template", "template-apply", "template");
+      if (saved) appliedTemplateContent.current = content;
+      return saved;
+    },
     onSaveMeasurementTemplate: async (templateName) => run(true, ({ workOrderId, expectedVersion, clientRequestId, idempotencyKey }) => workOrderMutationController.mutateMeasurement(workOrderId, { kind: "save-company-template", templateName, expectedVersion, clientRequestId }, idempotencyKey), undefined, undefined, "save-company-template", "company-template-save", "template"),
     onUpdateMeasurementTemplate: async (templateId) => run(true, ({ workOrderId, expectedVersion, clientRequestId, idempotencyKey }) => workOrderMutationController.mutateMeasurement(workOrderId, { kind: "update-company-template", templateId, expectedVersion, clientRequestId }, idempotencyKey), undefined, undefined, "update-company-template", "company-template-update", "template"),
     onSetPomSelection: async (selectedItems) => run(true, ({ workOrderId, expectedVersion, clientRequestId, idempotencyKey }) => workOrderMutationController.mutateMeasurement(workOrderId, { kind: "set-pom-selection", selectedItems, expectedVersion, clientRequestId }, idempotencyKey), undefined, undefined, "set-pom-selection", "pom-selection-batch", "template"),
-  }), [addColorsSequentially, addSizesSequentially, busy, editingWorkOrderId, errorState, input.bundle, input.canEdit, input.workOrderId, pendingScope, run]);
+  }), [busy, editingWorkOrderId, errorState, identity, input.bundle, input.canEdit, input.canEditStructure, input.entityVersion, input.onReconcile, input.workOrderId, pendingScope, reportError, run, stageAddColor, stageAddSize, stageSelectionBatch, stageSizesDraft]);
 
   return { boundary };
 }

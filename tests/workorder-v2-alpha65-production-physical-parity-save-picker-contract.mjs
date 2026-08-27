@@ -44,7 +44,7 @@ assert.equal((production.match(/<WaflReelPickerSheet/g) ?? []).length, 1);
 assert.match(production, /const activePickerConfig = pickerHandoff\.route === "factory"/u);
 for (const route of ["factoryPartnerId", "processCode", "partnerId"]) assert.ok(production.includes(route));
 assert.match(reel, /sizing="reelAdaptive"/u);
-assert.match(sheet, /onStartShouldSetResponderCapture=\{\(\) => draggable && openReady && !actionPending\}/u);
+assert.match(sheet, /onStartShouldSetResponderCapture=\{\(\) => draggable && openReady && !actionPending && !dismissingRef\.current\}/u);
 assert.match(sheet, /resolveWaflSheetRelease/u);
 assert.match(reel, /resolveWaflReelOpeningValue/u);
 assert.match(production, /requireSpecifiedValue: true, selectFirstRealOption: true/u);

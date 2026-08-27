@@ -73,6 +73,8 @@ This mode is valid only for its owner-approved internal automation budget. It re
 
 For alpha.64 and later current Maker physical QA, the selected feature switch launches `RuntimeQaMode current-maker` and records the canonical current Maker profile rather than a document-only island. Capability composition and its security invariant are owned only by `09b`; this runbook owns the operational selection and status evidence.
 
+The active alpha.67/alpha.68 authoring line requires the cumulative `alpha67-current-maker` profile. An older alpha.64 or alpha.65 subset may remain a bounded historical test profile, but it is not strict physical-QA READY for the current Maker because it omits Reorder and/or Production authoring commands.
+
 ## Readiness
 
 Before user QA, verify the exact checks named by the Delta. The standard read-only set is:

@@ -45,7 +45,8 @@ assert.match(document, /includedAttachmentImages/);
 assert.doesNotMatch(document, /row\.(?:unitPrice|amount|inventoryUsageQuantity|status)/);
 
 const mobile = read("apps/mobile/features/work-orders/documents/WorkOrderDocumentWorkbench.tsx");
-for (const token of ["issueWorkOrderR0", "generateWorkOrderR0", "createDocumentShare", "revokeDocumentAccessToken", "setAttachmentOutputInclude", "보기", "저장", "공유", "SHARE_DAYS"]) assert.match(mobile, new RegExp(token));
+for (const token of ["issueWorkOrderR0", "generateWorkOrderR0", "createDocumentShare", "revokeDocumentAccessToken", "setAttachmentOutputInclude", "보기", "저장", "공유"]) assert.match(mobile, new RegExp(token));
+assert.match(mobile, /createDocumentShare\(generated\.id, 3,/);
 assert.doesNotMatch(mobile, />PDF QR<|title="PDF QR"/u);
 assert.match(read("apps/mobile/lib/api/documentsApi.ts"), /output-include/);
 assert.doesNotMatch(mobile, /ProductionCardMock/);

@@ -1,7 +1,7 @@
 export const DELAYED_LOADING_THRESHOLD_MS = 400;
 
 export const WORK_ORDER_LOADING_MESSAGES = {
-  detail: "작업지시서를 불러오는 중입니다.",
+  detail: "레시피를 불러오는 중입니다.",
   media: "이미지와 첨부파일을 불러오는 중입니다.",
   sizeColor: "사이즈·색상 정보를 불러오는 중입니다.",
   fabric: "원단 정보를 불러오는 중입니다.",

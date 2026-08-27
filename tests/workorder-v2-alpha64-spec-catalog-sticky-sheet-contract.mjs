@@ -76,7 +76,7 @@ assert.deepEqual(selectedSpecItems(candidates, toggled).map((item) => item.displ
 
 for (const token of ["mediumDetentRatio: 0.68", "expandedDetentRatio: 0.94", "dismissDistance", "dragHandleHeight", "dragZoneMinHeight: 44"]) assert.ok(theme.includes(token), `missing sheet token: ${token}`);
 for (const token of ["onStartShouldSetResponderCapture", "onResponderMove", "resolveWaflSheetRelease", "Animated.spring", "ScrollView", "onRequestClose={cancel}", 'testID="wafl-sheet-bottom-inset"']) assert.ok(inputSheet.includes(token), `missing sheet behavior: ${token}`);
-assert.ok(inputSheet.includes("onStartShouldSetResponderCapture={() => draggable && openReady && !actionPending}"), "header must capture the responder at touch-down after entrance");
+assert.ok(inputSheet.includes("onStartShouldSetResponderCapture={() => draggable && openReady && !actionPending && !dismissingRef.current}"), "header must capture at touch-down only while the sheet is open and not closing");
 assert.ok(!inputSheet.includes("PanResponder.create"), "late-acquisition PanResponder path must not return");
 assert.ok(inputSheet.includes('testID="wafl-sheet-actions"'));
 assert.match(inputSheet, /Swipe|swipe|cancel\(\)/u);

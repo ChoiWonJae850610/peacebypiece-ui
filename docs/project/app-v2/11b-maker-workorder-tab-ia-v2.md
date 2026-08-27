@@ -1,5 +1,41 @@
 # Maker WorkOrder Tab IA v2
 
+## Alpha.68 authoring boundary
+
+- Each Draft tab owns one dirty batch. Tab navigation, detail exit, app background, bounded idle and
+  `작업지시서 확정` flush through the same coordinator before navigation or confirmation continues.
+- Draft permits PDF Preview only. Confirmed permits Preview, Download/Print and fixed 72-hour Share.
+- Confirmation locks production-defining identity, allocation, specification, material/process
+  composition and prices. Only 납기 and 제작 > 기본 공정 메모 remain editable; the latter is the
+  canonical 공장 전달 메모. These edits preserve history and refresh the same active shared document.
+- Copy creates an independent original Draft. Reorder stays in its lineage and exposes only due date,
+  production quantities, allowed price fields and Basic Process memo; locked fields are rejected by
+  both UI routing and server mutation owners.
+- Copy navigation trusts the command result ID, opens after core-detail hydration, and hydrates child
+  projections independently; filtered-list or child-projection absence never replays Copy. Size/Color
+  batches contain only latest dirty destination color/size IDs and acknowledge only unchanged generations.
+- Normal list entry, Work History sibling entry, Copy, and Reorder share that same core-first boundary.
+  Assets, partner options, and history reconcile independently with one bounded retry; a child error keeps
+  the core WorkOrder usable and names the unavailable area instead of presenting a whole-detail failure.
+  Materials expose quantity/price allowlist fields without add/delete/vendor/config affordances;
+  Finished Spec hides load/save/apply mutation while keeping read-only scrolling and local cm/inch.
+- Reorder-local material/process operational order actions remain tappable while identity, vendor and
+  composition controls stay locked. Draft list Delete requires explicit confirmation, removes only the
+  exact Draft graph/assets, and rejects issued rows. Reorder creation treats the action tap as intent,
+  reuses the shared creation blocker, invokes the command once, and opens by returned ID after core read.
+- Deleting a Reorder Draft still hard-deletes its WorkOrder payload and exact-owned assets, but one
+  minimal durable lineage tombstone retains root identity, used round, deleted state, and deletion time.
+  Work History renders that round as non-navigable `삭제됨`, and next-round allocation includes live
+  and deleted rounds so a used sequence is never recycled.
+- Material partner PICK filters by canonical active capability identity: Fabric, Accessory, factory,
+  and process-specific outsourcing selectors never use partner-name heuristics, while multi-type
+  partners appear in every applicable selector. Reorder identity fields remain locked.
+- The four WAFL starter-spec recommendations are selected only by exact T/B/O/D major category.
+  Changing category on a populated Draft requires the shared safety confirmation and one authoritative
+  atomic operation that clears detail item, Size/Color definitions and allocations, canonical total,
+  starter-template binding, and Finished Spec. Materials, Accessories, and Processes remain. An empty
+  Draft changes directly; failure cannot publish mixed old/new category state.
+
 ## Alpha.67 identity PICK, WAFL starter spec, and public canvas viewer
 
 Only an editable draft exposes the compact `본생산 / 샘플` control. After ISSUE the existing identity is fixed and the server rejects identity mutation; Reorder remains 본생산. Overview season uses a two-reel year/term WAFL PICK and category detail uses the exact category-scoped WAFL item list, with a nested local-only direct-input route for both.
@@ -34,7 +70,7 @@ Size and Color share one default-expanded `색상·사이즈` matrix card. Compa
 
 IA simplification review status: `OWNER_PHYSICAL_REVIEW_REQUIRED`. Finished Spec is also default-expanded and reuses the same frozen-axis table with a fixed POM label column and horizontally scrollable Size columns. The corner entry `스펙 항목 〉` opens the same-company reusable catalog with staged X/V selection; retained rows keep values, removed rows remove only the current editable snapshot rows/values, and newly selected items use the canonical empty-value semantics. Five or fewer POM rows have no `전체보기`; six or more show the first five plus `전체보기`. Full view freezes the corner, Size header, and left labels while synchronizing body axes. WorkOrder Size source-of-truth, template, cm/inch, cell mutation, and projection behavior remain unchanged.
 
-Direct Size, Color, and Spec Item catalog creation uses a shared nested handoff. All three parent choosers expose the same `+ 직접 만들기` entry owner. The child has a back route to the parent catalog and one shared full-width `추가` commit slot; successful creation auto-stages the new reusable option, while the parent V remains the only WorkOrder batch apply. Saved Spec load and save/update prepare their async list projection before presentation, then use the shared current-generation `adaptiveExpandable` measurement so entrance is one continuous slide-up rather than a visible fallback followed by height correction; an already user-expanded sheet is never collapsed.
+Direct Size, Color, and Spec Item catalog creation uses a shared nested handoff. All three parent choosers expose the same `+ 직접 만들기` entry owner. The child has a back route to the parent catalog and uses the registered direct-input confirm through native Done or the minimal keypad action without a duplicate body `추가` or footer action; successful creation auto-stages the new reusable option, while the parent V remains the only WorkOrder batch apply. Saved Spec load and save/update prepare their async list projection before presentation, then use the shared current-generation `adaptiveExpandable` measurement so entrance is one continuous slide-up rather than a visible fallback followed by height correction; an already user-expanded sheet is never collapsed.
 
 The three reusable-create children also share the draggable, free-settle, TextInput focus/reveal policy. Size and Spec begin compactly; Color may begin taller for its palette. Their handle, keyboard, mounted nested transition, explicit `추가`, parent return, and newly created option auto-selection remain one family rather than fixed Size/Spec exceptions.
 
@@ -103,7 +139,7 @@ Quick nested presentation uses the same canonical handoff coordinator for open, 
 
 Quick endpoint entry is state-aware through one pure policy shared by origin and destination. A current direct endpoint opens its direct editor immediately with the exact local postal/basic/detail/contact staging; registered and unspecified endpoints open the WAFL picker, and `WAFL PICK으로 변경` is the explicit direct-to-picker route. X preserves the prior endpoint staging and V updates only the active endpoint. The request-preview child uses the same canonical nested handoff and current-generation adaptive measurement: each open starts with a safe usable target, reconciles only matching body measurement, and returns to the same immediately interactive parent. Whole-Quick persistence remains deferred.
 
-Direct Size, Color, and Spec Item catalog creation follows the same close/reset/present/focus lifecycle. Each child uses one explicit `추가`, returns to its parent, and locally selects the new reusable company option; only the parent V may mutate the WorkOrder selection. Saved Spec load/save keeps its compact adaptive initial height, but once open it uses the same free-settle release physics as Size, Color, Quick, and Attachment.
+Direct Size, Color, and Spec Item catalog creation follows the same close/reset/present/focus lifecycle. Each child uses the registered direct-input confirm through native Done or the minimal keypad action, renders no duplicate `추가` CTA, returns to its parent, and locally selects the new reusable company option; only the parent V may mutate the WorkOrder selection. Saved Spec load/save keeps its compact adaptive initial height, but once open it uses the same free-settle release physics as Size, Color, Quick, and Attachment.
 
 The alpha.65 reusable-create form family also shares one visible field/action shell: `< 기본 사이즈/색상/스펙`, the `WaflSheetValueField` name surface, and the full-width `추가` action. Color keeps its palette as domain-specific content inside that shell. The live sheet inventory classifies Address Search with the draggable family and delays search focus until presentation readiness, while search results keep body-scroll ownership. Opening Overview, Material, or Production selection sheets must leave the source field's width, height, padding, radius footprint, and surrounding layout unchanged; active state is paint-only.
 
@@ -224,3 +260,86 @@ The document number is part of the cover title/meta block and must not appear as
 facts are limited to `납기 / 총수량 / 대상 / 시즌 / 대분류 / 세부 품목 / 기본 공정 업체`.
 The owner-approved portrait mock is the visual SOT for cover density, 43/57 image-to-fact balance,
 warm ivory/brick/navy proportions, readable value hierarchy, bounded memo, and the five-cell summary.
+
+## Alpha.68 basic-spec and feedback reconciliation
+
+The Size/Color tab requests WAFL recommendations with the current WorkOrder identity; server read ownership resolves the current revision category and item code before listing or applying the system template. An empty legacy spec category cannot suppress a valid T/B/O/D recommendation, and a stale client category cannot cross-route recommendations. Company templates retain their existing visibility rules.
+
+Maker binary safety decisions—including final issue, Draft deletion, category reset, material/process removal, factory clear, saved-spec deactivation, and document-access revoke—share the Decision owner defined in `11a`. One-way validation and result notices share its buttonless Alert owner. Failed-draft-exit recovery, persistent error panels, and native attachment viewing remain intentionally separate surfaces.
+
+## Alpha.68 Draft boundary persistence
+
+Overview, Size/Color, Finished Spec, Materials, and Production authoring stage local dirty truth and
+flush it when leaving a tab or WorkOrder, leaving detail, entering inactive/background best-effort, or
+before a lifecycle/finalization command. There is no idle network-autosave boundary. Commands first
+flush the relevant section and execute exactly once only after success. New Material and Production
+rows use temporary client identities; a boundary flush creates/reconciles their canonical IDs before an
+order command. Deleting a never-persisted local row performs no server mutation. Images and attachments
+remain immediate because they cross the authenticated object-store pipeline.
+
+Field-to-field movement inside Overview is not a persistence boundary. Production Basic/Additional
+switching is a section boundary: the current local process editor stages its final value, Production
+flushes, and only a successful flush changes the subsection. Draft Size/Color structure selection is
+also local-first. Temporary Size and Color identities render the matrix immediately; the next true
+boundary creates canonical structure rows, remaps quantity deltas to returned IDs, and persists the
+matrix as one user-visible logical flush. Deleting an unsaved temporary structure row performs no
+server mutation.
+
+An applied WAFL or company measurement template remains attached when the WorkOrder has no sizes.
+Adding a later supported size fills only missing template cells. Automatic Size reconciliation and
+template backfill never set `수정됨`; direct measurement/POM content edits do, and once true the flag
+cannot be cleared by later Size reconciliation.
+
+Category confirmation is not an Overview persistence boundary. Confirmation stores the new category
+and dependent-reset intent locally; another Overview field preserves that draft and performs no write.
+The next real boundary sends the reset overview command with `resetCategoryDependents=true`. When the
+user has already selected a new category-owned detail, one serialized item-only command follows with the
+authoritative reset result version; failure preserves that local detail as retryable dirty truth. Multi-Size and
+multi-Color selection is one local reducer pass, so the matrix and Finished Spec cannot observe
+different staged structures. Applied-template content may be cached through the compatible-template
+read owner solely to project missing values for a newly staged supported Size; custom Sizes receive no
+invented values and the authoritative boundary reread must agree.
+
+Saving a new company Finished Spec template or updating an existing one is also a baseline operation for
+the current WorkOrder. The same transaction stores the reusable template content and points the current
+spec snapshot at the new template ID/version. Its command event becomes source-baseline truth, so the
+current source name is authoritative and `수정됨` is false until a later direct measurement/POM edit.
+
+## Alpha.68 Recipe create and Production subsection feedback
+
+- New Recipe creation owns `새 레시피를 생성 중입니다.` plus `잠시만 기다려 주세요.` inside its
+  native input sheet until the exactly-once create completes or fails. Copy/Reorder retain the global
+  creation blocker and are not duplicated behind the create Modal.
+- Dirty Basic/Additional Production switching flushes before switching and shows the shared save title
+  plus helper. Clean switching remains immediate and silent; failure keeps the current subsection and
+  local dirty values.
+
+## Alpha.68 Maker terminology boundary
+
+Editable Maker objects are `레시피`: create, list/detail, copy/reorder, delete confirmation/result,
+permissions, loading, images, materials, Size/Color, Finished Spec, and pre-issue confirmation use that
+term. The artifact produced by confirmation remains a `작업지시서`; issued PDF, print, native/public
+Viewer, share copy, and issued-document history retain document terminology. API/domain/schema symbol
+names remain WorkOrder and are not a user-facing wording owner.
+
+## Alpha.68 shared text-entry reveal inventory
+
+New Recipe product name, direct Size, direct Color, direct POM/measurement, Overview direct season/item,
+saved-spec naming, and Quick Delivery direct text use one text-entry focused-field clearance owner.
+Their intrinsic content heights may differ; visual parity is the field-to-keyboard breathing room, not
+an absolute sheet top. Numeric keypad, reel, Decision, and non-text presentation remain separate.
+
+The shared owner resolves that breathing room in visual-window coordinates. Recipe, Size, Color,
+POM/measurement, Overview direct text, saved-spec naming, and Quick Delivery do not own offsets or
+transform corrections. Their native field block and viewport are normalized against the current
+animated sheet top, then use the same intrinsic-scroll-first and bounded-rise policy.
+
+Mounted field-block, viewport, and sheet refs are the current primary measurement transport for all
+seven routes. Invalid or stale frames receive one bounded ref retry and one compatibility fallback;
+feature screens do not add their own measurement owner, clearance, or coordinate correction.
+
+These routes now share the `directInput` keyboard system: Recipe, direct Size/Color, POM create/rename,
+Overview season/item, company-template name/rename, and Quick Delivery text/phone fields. The sheet's
+expanded detent is the primary keyboard-ON visibility guarantee, while mounted-ref measurement only
+fine-scrolls long forms. The accessory Done action ends keyboard input and never performs the footer V,
+create, save, apply, or business command.

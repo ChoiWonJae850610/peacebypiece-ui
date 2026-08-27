@@ -21,6 +21,7 @@ import type {
   WorkOrderRevisionId,
 } from "@/lib/domain/work-orders/contracts/primitives";
 import type { WorkOrderDerivationKind } from "@/lib/domain/work-orders/contracts/lineage";
+import type { WorkOrderRevisionStatus, WorkOrderStatus } from "@/lib/domain/work-orders/contracts/enums";
 
 export const COLOR_SIZE_CELL_BATCH_MAX = 250;
 export const REORDER_ITEM_BATCH_MAX = 100;
@@ -57,6 +58,13 @@ export type CreateWorkOrderReorderCommand = CommandRequest & {
   readonly dueDate?: IsoDate | null;
 };
 
+export type CreateWorkOrderCopyCommand = CommandRequest & { readonly idempotencyKey: IdempotencyKey };
+
+export type CreateWorkOrderCopyResult = WorkOrderDraftCommandResult & {
+  readonly derivationKind: "original";
+  readonly reorderRound: 0;
+};
+
 export type CreateWorkOrderReorderResult = WorkOrderDraftCommandResult & {
   readonly derivationKind: "reorder";
   readonly isSample: false;
@@ -76,6 +84,7 @@ export type PatchWorkOrderBasicInfoCommand = VersionedWorkOrderCommand & {
     readonly totalQuantity?: number | null;
     readonly memo?: string | null;
     readonly factoryDeliveryMemo?: string | null;
+    readonly resetCategoryDependents?: true;
   };
 };
 
@@ -83,9 +92,9 @@ export type WorkOrderDraftCommandResult = {
   readonly workOrderId: WorkOrderId;
   readonly revisionId: WorkOrderRevisionId;
   readonly revisionNumber: RevisionNumber;
-  readonly status: "draft";
-  readonly revisionStatus: "draft";
-  readonly displayDocumentNumber: null;
+  readonly status: WorkOrderStatus;
+  readonly revisionStatus: WorkOrderRevisionStatus;
+  readonly displayDocumentNumber: string | null;
   readonly productName: string;
   readonly productTypeCode: string | null;
   readonly seasonCode: string | null;
@@ -280,6 +289,7 @@ export type SizeColorStructureCommandResult = {
   readonly colorId?: ColorId;
   readonly sizeRowId?: SizeRowId;
   readonly quantity?: number;
+  readonly quantityCells?: readonly { readonly colorId: ColorId; readonly sizeRowId: SizeRowId; readonly quantity: number }[];
   readonly totalQuantity?: number;
   readonly deletedQuantityCellCount?: number;
   readonly removedQuantity?: number;

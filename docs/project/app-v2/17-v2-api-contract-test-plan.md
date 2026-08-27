@@ -528,3 +528,183 @@ Alpha.26 adds a static material/order gate: shared fabric/accessory DTOs, bounde
   floating-point conversion. Public `/v` and Download remain regression gates.
 - Permanent inventory advances from `171/171` to `172/172`; ledger remains `20/20`, migration `021`
   stays absent, production/owner-fixture mutation is `0/0`, and physical result is not inferred.
+
+## 42. Alpha.68 category/Size/spec/keyboard correction gate
+
+- Category confirmation stages local category plus reset intent and issues no request until a true
+  boundary; the boundary owns one overview command with the reset flag.
+- XS/S/M and multi-Color selection execute one local projection pass. Matrix, quantity axes and
+  Finished Spec share that exact staged structure before temporary IDs reconcile at flush.
+- Compatible template content supports missing-only local late-Size values for both WAFL and company
+  templates; boundary backfill/reread matches, custom Size invention is zero, and manual values remain.
+- Size synchronization/backfill is absent from measurement-content modification codes. Direct cell or
+  POM content edits remain modification truth and later automatic reconcile cannot clear it.
+- Only new-Recipe product name opts into `blurAndSubmit`; direct-create processing copy is Recipe-
+  specific while Copy/Reorder copy and Production subsection boundary behavior remain unchanged.
+- Permanent inventory advances from `192/192` to `193/193`; ledger remains `20/20`, new migration is
+  zero, production/owner/ambiguous mutation is `0/0/0`, and physical result is not inferred.
+
+## 43. Alpha.68 category/detail/template rebase/keyboard feedback gate
+
+- Category confirmation clears local detail immediately and performs no request. A true boundary proves
+  reset-first serialization, optional item-only second command, authoritative version chaining, and retryable
+  local item truth when the second command fails.
+- New and updated company templates copy exact current sizes/POMs/values, atomically rebase the current
+  WorkOrder source ID/version, reread the new name with `sourceTemplateModified=false`, and become modified
+  only after a later direct content edit.
+- The create keyboard gate proves three entrance/dismiss cycles with zero sheet-owned focus reacquisition.
+  Production switching proves dirty blocker start/end, clean blocker zero, and failure switch zero.
+- Permanent inventory advances from `193/193` to `194/194`; ledger remains `20/20`, new migration is zero,
+  production/owner/ambiguous mutation is `0/0/0`, and physical result is not inferred.
+
+## 44. Alpha.68 create-sheet keyboard restore and blocker parity gate
+
+- Three keyboard sessions restore the exact pre-keyboard offset on native hide without requiring a
+  system-reveal expansion flag. A user drag during the session suppresses automatic restore, and native
+  hide clears create focus ownership so entrance focus cannot reacquire.
+- Dirty Production Basic/Additional switching proves the shared title/helper start and clear sequence;
+  clean switching emits no blocker and failed flush performs no switch.
+- Direct create proves one shared blocker inside the native Modal with exact Recipe title/helper and no
+  duplicate global create blocker. Copy/Reorder global creation behavior remains unchanged.
+- Permanent inventory advances from `194/194` to `195/195`; ledger remains `20/20`, new migration is zero,
+  production/owner/ambiguous mutation is `0/0/0`, and physical result is not inferred.
+
+## 45. Alpha.68 Maker terminology and keyboard geometry stabilization gate
+
+- Executable policy tests prove adaptive height stays `intrinsic content + static end gap` across
+  keyboard-visible and delayed-hidden measurements; keyboard inset remains scroll/reveal-only, three
+  sessions restore exactly, and deliberate user drag remains authoritative.
+- Maker user-facing source inventory is exact and allowlisted: authoring uses `레시피`; only issued/final
+  PDF, print, Viewer, sharing, and historical document-preview owners retain `작업지시서`. Delete and
+  permission/accessibility wording are explicitly covered.
+- Permanent inventory advances from `195/195` to `196/196`; ledger remains `20/20`, new migration is zero,
+  production/owner/ambiguous mutation is `0/0/0`, and physical result is not inferred.
+
+## 46. Alpha.68 text-entry keyboard reveal tuning gate
+
+- Executable geometry proves a touching focused block receives exactly the shared `72` clearance,
+  an already-clear block receives zero lift, intrinsic scroll reduces only the sheet-rise remainder,
+  and small/large offsets remain bounded.
+- Inventory covers new Recipe, direct Size/Color/POM, Overview direct text, saved-spec naming, and Quick
+  Delivery direct text. Numeric `112`, generic `56`, reel, Decision, and non-text paths remain unchanged.
+- The prior intrinsic-height owner, exact keyboard-hide restore, three-cycle zero drift, and deliberate
+  user-drag preservation remain executable regressions.
+- Permanent inventory advances from `196/196` to `197/197`; ledger remains `20/20`, new migration is zero,
+  production/owner/ambiguous mutation is `0/0/0`, and physical result is not inferred.
+
+## 47. Alpha.68 text-entry reveal coordinate gate
+
+- Executable diagnostics distinguish raw native measurement from visual-window geometry and prove the
+  former can falsely report zero rise when an animated sheet transform is omitted.
+- Sheet-anchor normalization supplies the missing translation exactly once, applies zero correction
+  when measurement already includes the transform, preserves the transform-zero case, and covers
+  short, partial-scroll, and long-scroll forms.
+- A bounded two-frame post-lift remeasurement converges stale geometry; three keyboard cycles restore
+  the exact resting offset and a deliberate user drag remains authoritative. The seven shared text
+  owners are inventoried and numeric/reel/Decision/non-text paths remain isolated.
+- Permanent inventory advances from `197/197` to `198/198`; ledger remains `20/20`, new migration is zero,
+  production/owner/ambiguous mutation is `0/0/0`, and physical result is not inferred.
+
+## 48. Alpha.68 mounted-ref physical reveal gate
+
+- Actual mounted refs are primary for focused field block, body viewport, and sheet window measurement;
+  the numeric-handle API is retained only as one bounded fallback.
+- Executable policy cases reject zero, non-finite, non-positive, out-of-window, stale focus, and stale
+  sheet/session frames. One next-frame ref retry and one fallback terminate without a measurement loop.
+- Short, long, and partial-scroll reveal cases retain the `72` clearance and prove that a positive rise
+  calls the sheet animation and changes the translated offset. Seven text-entry routes share the owner;
+  keyboard-OFF restore, three-cycle zero drift, user drag, reel, Decision, and non-text isolation remain.
+- Permanent inventory advances from `198/198` to `199/199`; ledger remains `20/20`, new migration is zero,
+  production/owner/ambiguous mutation is `0/0/0`, and physical result is not inferred.
+
+## 49. Alpha.68 direct-input keyboard system gate
+
+- Direct text-entry keyboard show deterministically selects the existing expanded detent before any
+  mounted-field measurement; focused reveal remains a secondary within-sheet scroll operation.
+- One built-in iOS `InputAccessoryView` owns a session-unique native ID and previous/next/Done actions.
+  The mounted editable registry excludes read-only fields, normalizes single-line next/done return keys,
+  preserves multiline newline behavior, and supplies Done to phone-pad. Current confirm semantics are
+  owned by the following locked-session and single-geometry gates.
+- Recipe, Size, Color, POM create/rename, Overview direct text, company-template naming, and Quick Delivery
+  text/phone fields share the owner. Keyboard-off restore, three-cycle zero drift, user drag, Android,
+  reels, Decision, and non-text paths remain unchanged.
+- Permanent inventory advances from `199/199` to `200/200`; ledger remains `20/20`, new migration is zero,
+  production/owner/ambiguous mutation is `0/0/0`, and physical result is not inferred.
+
+## 50. Alpha.68 direct-input locked-session confirm/detent gate
+
+- Executable session policy proves unexpected hide restores only active editing with a mounted target and
+  never reopens confirming, cancelling, closing, unmounted, background, or already-restored sessions.
+- Accessory Done, final native Done, and footer/reusable-form confirm converge on the existing commit guard;
+  intermediate Return remains Next, validation keeps focus/input, and duplicate command count is zero.
+- Shared content-aware detent cases cover compact Size/POM, Recipe, palette Color, bounded-scroll Quick
+  Delivery, and the insufficient small-device clamp without any screen-local offset. Close/cancel restore,
+  three-cycle drift, mounted-ref secondary reveal, phone-pad, multiline, and Android boundaries remain.
+- Permanent inventory advances from `200/200` to `201/201`; ledger remains `20/20`, new migration is zero,
+  production/owner/ambiguous mutation is `0/0/0`, and physical result is not inferred.
+
+## 51. Alpha.68 direct-input single-geometry/drag/submit gate
+
+- Executable reveal policy proves directInput required rise is always zero while body scroll remains;
+  non-directInput preserves the existing sheet-rise result and the 201 detent values remain unchanged.
+- Every direct-input single-line return uses submit-before-blur. The invalid/disabled branch precedes any
+  blur or keyboard dismiss; accepted native/accessory/footer confirmation still converges exactly once.
+- Keyboard-visible drag resolves only to the existing cancel/dismiss owner or snap-back to the stored
+  keyboard detent. Gesture-active hide suppresses refocus; ordinary sheet release stays unchanged.
+- Recipe, Size, Color, POM/rename, Overview, company template, and Quick Delivery share the owner;
+  Previous/Next, phone-pad, multiline, close/cancel restore, and prior alpha.68 gates remain.
+- Permanent inventory advances from `201/201` to `202/202`; ledger remains `20/20`, new migration is zero,
+  production/owner/ambiguous mutation is `0/0/0`, and physical result is not inferred.
+
+## 52. Alpha.68 direct-input tap-persist/minimal-accessory gate
+
+- The two shared scroll owners resolve direct-input taps to `always` persistence with dismiss mode `none`;
+  default/non-direct input preserves `handled` and its inherited dismiss behavior. Helper, blank-space,
+  semantic-control, and focus-transfer taps therefore do not create a keyboard hide/reopen cycle.
+- Normal native-return fields attach no accessory native ID and render no accessory. A pure keyboard
+  capability policy admits only iOS keypads without Return/Done to the session-unique native ID.
+- The minimal accessory renders one action only: `다음` uses the mounted editable registry when a later
+  target exists, otherwise `완료` reuses the same canonical confirm guard. `이전` is absent; Android
+  renders none. Native next/done, submit-before-blur, detent/reveal, validation, drag, and backdrop paths
+  remain owned by their prior gates.
+- Permanent inventory advances from `202/202` to `203/203`; ledger remains `20/20`, new migration is zero,
+  production/owner/ambiguous mutation is `0/0/0`, and physical result is not inferred.
+
+## 53. Alpha.68 direct-input canonical-close/footerless/blocker gate
+
+- An executable close policy distinguishes user cancel from programmatic close, admits programmatic closure
+  while an accepted action is pending, and rejects a duplicate `onPressIn`/`onPress` transaction. Both paths
+  use the shared preparation; only user cancel invokes the business callback.
+- Direct-input presentation keeps the confirm owner while returning footer render/measurement zero;
+  non-direct input keeps its footer. Reusable direct create keeps the registered confirm and back route while
+  rendering no duplicate `추가` CTA.
+- New Recipe alone opts into replace-sheet processing. While its message is active the sheet is visually and
+  interactively absent, accessibility descendants and minimal accessory are hidden, and mounted parent values
+  remain available for failure recovery. Default overlay presentation is unchanged.
+- Permanent inventory advances from `203/203` to `204/204`; ledger remains `20/20`, new migration is zero,
+  production/owner/ambiguous mutation is `0/0/0`, and physical result is not inferred.
+
+## 54. Alpha.68 close-animation ownership race gate
+
+- Executable close-race cases claim dismissal/session ownership before keyboard side effects and prove that
+  user backdrop and programmatic closes each run one exit animation and zero restore/settle animations.
+- Keyboard hide is suppressed during confirming, cancelling, closing, hidden, or actively dismissing state;
+  active editing retains the prior bounded unexpected-hide policy. Ordinary settle animation cannot replace
+  the exclusive exit owner.
+- One close-operation identity makes teardown, user-cancel callback and after-close callback idempotent while
+  preserving programmatic callback semantics. Footerless, replace-sheet, tap persistence, minimal accessory,
+  single-Y, drag, and submit-before-blur contracts remain.
+- Permanent inventory advances from `204/204` to `205/205`; ledger remains `20/20`, new migration is zero,
+  production/owner/ambiguous mutation is `0/0/0`, and physical result is not inferred.
+
+## 55. Alpha.68 finalization gate
+
+- Canonical root/mobile/package/lock/Expo diagnostic versions resolve to `2.0.0-alpha.68` through the
+  shared current-version contract; Expo public/native identity remains unchanged.
+- Current Baseline, roadmap, and device owner agree on product checkpoint `ALPHA68_COMPLETE`, finalization
+  checkpoint `ALPHA68_FINALIZATION_COMPLETE`, and the explicit Owner physical iPhone result `PASS` without
+  rewriting earlier pre-finalization evidence.
+- The post-alpha.68 deferred backlog remains explicit and alpha.69 implementation is zero. Dependency,
+  native, EAS, schema and migration additions remain zero; migration ledger is `20/20` and
+  production/Owner/ambiguous mutation remains `0/0/0`.
+- Permanent inventory advances from `205/205` to `206/206`; final verification requires FAIL/SKIP `0/0`.

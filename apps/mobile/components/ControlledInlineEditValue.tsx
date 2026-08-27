@@ -34,6 +34,7 @@ import {
   normalizeNumericDraft,
   prepareNumericDraftOnFocus,
 } from "@/lib/mobileDisplay";
+import { isInlineEditInputEditable } from "@/lib/inlineEditSavingPolicy";
 
 type Props = {
   readonly accessibilityLabel: string;
@@ -48,6 +49,7 @@ type Props = {
   readonly onSave: (finalizedValue: string) => void;
   readonly onCancel: () => void;
   readonly saving?: boolean;
+  readonly allowEditingWhileSaving?: boolean;
   readonly dirty?: boolean;
   readonly invalid?: boolean;
   readonly errorMessage?: string | null;
@@ -78,6 +80,7 @@ export default function ControlledInlineEditValue({
   onSave,
   onCancel,
   saving = false,
+  allowEditingWhileSaving = false,
   dirty = false,
   invalid = false,
   errorMessage = null,
@@ -251,7 +254,7 @@ export default function ControlledInlineEditValue({
       <TextInput
         ref={inputRef}
         accessibilityLabel={`${accessibilityLabel} 입력`}
-        editable={!saving}
+        editable={isInlineEditInputEditable({ saving, allowEditingWhileSaving })}
         keyboardType={keyboardType}
         maxLength={maxLength}
         multiline={multiline}

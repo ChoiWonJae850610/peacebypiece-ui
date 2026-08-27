@@ -16,10 +16,14 @@ type Props = {
   readonly maxLength?: number;
   readonly autoCorrect?: boolean;
   readonly returnKeyType?: TextInputProps["returnKeyType"];
+  readonly submitBehavior?: TextInputProps["submitBehavior"];
+  readonly inputAccessoryViewID?: string;
   readonly errorMessage?: string | null;
   readonly helpText?: string | null;
   readonly inputRef?: Ref<TextInput>;
   readonly onFocus?: () => void;
+  readonly onBlur?: () => void;
+  readonly onSubmitEditing?: () => void;
   readonly onChange?: (value: string) => void;
 };
 
@@ -34,10 +38,14 @@ export default function WaflSheetValueField({
   maxLength,
   autoCorrect,
   returnKeyType,
+  submitBehavior,
+  inputAccessoryViewID,
   errorMessage = null,
   helpText = null,
   inputRef,
   onFocus,
+  onBlur,
+  onSubmitEditing,
   onChange,
 }: Props) {
   return <WaflSheetFocusBlock style={styles.field}>
@@ -48,14 +56,18 @@ export default function WaflSheetValueField({
       autoFocus={autoFocus}
       autoCorrect={autoCorrect}
       keyboardType={keyboardType}
+      inputAccessoryViewID={inputAccessoryViewID}
       maxLength={maxLength}
       multiline={multiline}
       onChangeText={onChange}
+      onBlur={onBlur}
       onFocus={onFocus}
+      onSubmitEditing={onSubmitEditing}
       placeholder={placeholder}
       placeholderTextColor={WAFL_THEME.color.disabled}
       ref={inputRef}
       returnKeyType={returnKeyType}
+      submitBehavior={submitBehavior}
       style={[styles.surface, styles.editable, multiline && styles.multiline, errorMessage && styles.invalid]}
       value={value}
     /> : <View accessibilityLabel={`${label}, 읽기 전용`} style={[styles.surface, styles.readOnly]}>

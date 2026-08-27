@@ -26,7 +26,7 @@ assert.match(ui,/useWaflNestedSheetHandoff/u);
 assert.doesNotMatch(ui,/예상 공임/u);
 assert.match(ui,/expanded \? <WaflCompactEntityExpanded>\{inlineField\(process, "memo", "메모", WAFL_UNSET_PLACEHOLDER\)\}/u);
 assert.match(ui,/commitMode="blur-submit"/u);
-assert.doesNotMatch(ui,/수량 입력|로스 비용|dueDate|applicationArea|applicationColorTarget/u);
+assert.doesNotMatch(ui,/예상 공임|수량 입력|로스 비용|납기|적용부위|적용색상/u);
 
 assert.match(policy,/WORK_ORDER_FACTORY_PROCESS_CODE = "production_factory"/u);
 assert.match(repository,/factory_exists/u);

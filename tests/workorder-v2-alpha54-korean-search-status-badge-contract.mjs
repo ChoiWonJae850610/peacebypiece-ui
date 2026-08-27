@@ -84,7 +84,7 @@ assert.match(list, /matchesWorkOrderStatusFilter\(item\.status, statusFilter\)/)
 assert.match(list, /WORK_ORDER_STATUS_FILTER_OPTIONS\.map/);
 assert.match(list, /getWorkOrderWorkflowPresentation\(item\.status\)/);
 assert.match(list, /검색 결과가 없습니다\./);
-assert.match(list, /현재 회사에서 조회할 수 있는 작업지시서가 없습니다\./);
+assert.match(list, /현재 회사에서 조회할 수 있는 레시피가 없습니다\./);
 assert.doesNotMatch(list, />발행됨</);
 
 console.log("workorder v2 alpha.54 Korean initial search and workflow badge contract: PASS");

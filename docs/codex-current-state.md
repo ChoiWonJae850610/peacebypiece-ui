@@ -1,13 +1,209 @@
 # WAFL Current Baseline
 
-Alpha.67 is finalized at the owner-approved Reorder/PDF/branded-share boundary. Nth Reorder creation remains server-assigned, transactional, idempotent and series-safe; product/spec truth is copied while Size/Color quantities and lifecycle execution state reset. Issued documents retain the accepted monochrome print grammar, private R2 transport, authenticated in-app viewer, single branded public Viewer URL, and generation-only PDF retry. Overview now derives `예상 1벌 원가` from the canonical estimated total divided by canonical WorkOrder total quantity through an exact decimal-string KRW rounding owner; zero or unset quantity renders `미산정`. Canonical Verify is `180/180`, migration ledger remains `20/20`, and APP_VERSION is `2.0.0-alpha.67`.
+Alpha.68 is the finalized Maker authoring result. It adds local-instant Draft editing with bounded section flushes, atomic Size/Color persistence, independent Copy, server-enforced Reorder locks and lifecycle, direct blocking creation, authenticated ephemeral PDF Preview, fixed 72-hour branded sharing, native image/PDF attachment viewing, and the unified Recipe/direct-input interaction system. The alpha.67 Nth Reorder/PDF/private-R2/branded-viewer boundary remains intact. Owner physical iPhone QA is explicitly accepted as PASS. APP_VERSION is `2.0.0-alpha.68`, the migration ledger remains `20/20`, and alpha.69 implementation has not started.
 
 Document type: **Current Baseline**
 
 Canonical owner: `docs/codex-current-state.md`
 
-Result version: `2.0.0-alpha.67`
-Status: `ALPHA67_FINALIZATION_COMPLETE`
+Result version: `2.0.0-alpha.68`
+Status: `ALPHA68_FINALIZATION_COMPLETE`
+Product checkpoint: `ALPHA68_COMPLETE`
+Owner physical result: `PASS`
+
+## Final alpha.68 result
+
+Alpha.68 finalizes Draft delete/Reorder history, Copy and Reorder creation, common core-first hydration,
+picker/tab/delete recovery, category/detail/template rebase, local-first Recipe authoring, Size/Color and
+Finished Spec coordination, canonical Maker `레시피` terminology versus issued `작업지시서`, and shared
+Production/Create processing feedback. Direct-input authoring now has content-aware keyboard detents,
+submit-before-blur, internal-tap persistence, keypad-only minimal accessory policy, footerless reusable
+create forms, replace-sheet Recipe creation, canonical keyboard-plus-sheet close, and close-animation
+ownership that cannot be interrupted by keyboard restore. Owner physical iPhone QA accepted the complete
+alpha.68 boundary. Dependency/native/EAS/schema delta is zero, new migration is zero, and production,
+Owner, and ambiguous data mutation remain zero.
+
+The checkpoint paragraphs below preserve the implementation boundaries that composed alpha.68. Their
+pre-finalization `Owner physical result is not inferred` wording is historical and does not override the
+explicit final Owner physical PASS above.
+
+### Accepted alpha.68 implementation boundary
+
+Direct-input close now claims exclusive dismissal/session ownership before blur or `Keyboard.dismiss`.
+Keyboard-hide processing suppresses restore, detent, reveal, and refocus geometry while confirmation or
+close owns the session; ordinary settle animation also cannot replace an active exit animation. One
+tokenized idempotent finalizer owns rendered teardown, user-cancel callback cardinality, and after-close
+handoff. The accepted footerless/replace-sheet presentation, internal-tap persistence, minimal keypad
+accessory, single-Y detent, drag, and submit-before-blur behavior remain unchanged. Owner physical result
+is not inferred.
+
+Direct-input backdrop cancellation and parent/nested `visible=false` transitions now share one close
+lifecycle: keyboard restore is suppressed, the mounted input is blurred, the keyboard is dismissed,
+the sheet closes, and only a user cancel invokes the business cancel callback. The backdrop claims that
+lifecycle on first touch with an idempotent press fallback. Direct-input retains its confirm owner but
+renders and measures no footer actions; reusable Size/Color/POM create forms likewise remove their
+duplicate body `추가` button and use native Done or the existing minimal keypad action. New Recipe alone
+opts into replace-sheet processing presentation: its mounted values survive a failure, but the sheet
+surface, interaction, accessibility tree, and accessory are hidden while the creation blocker owns the
+foreground. Owner physical result is not inferred.
+
+Direct-input body taps now preserve the active keyboard session. Both shared scroll owners use
+`always` tap persistence and no dismiss-on-scroll only in `directInput`, while non-direct sheets retain
+their prior `handled` behavior. Normal native-return text inputs no longer attach or render the common
+keyboard accessory. Only a focused iOS keypad without a native Return/Done key receives one minimal
+semantic action—`다음` when a later editable target exists, otherwise `완료`—through the existing focus
+registry and canonical confirm guard. The 202 detent, scroll-only reveal, submit-before-blur, validation,
+drag dismiss/snap-back, backdrop cancel, and keyboard restore owners are unchanged. Owner physical result
+is not inferred.
+
+Direct text-entry sheets use one `directInput` keyboard mode with explicit editing, confirming,
+cancelling, and closing session states. Keyboard show selects one content-aware intermediate detent from
+stable sheet/content/keyboard geometry. That detent is the only direct-input sheet-Y owner: mounted-ref
+focused reveal may scroll the body but cannot raise the sheet a second time. Last/single native submit
+uses submit-before-blur, so invalid input keeps keyboard, focus, and geometry; only the accepted canonical
+confirm enters confirming and dismisses the keyboard. While the keyboard is visible, a header drag may
+only dismiss the whole sheet through the existing cancel owner or snap back to the current keyboard
+detent. Gesture-active hide never starts the unexpected-hide refocus loop. Accessory/native/footer
+confirmation still shares one commit guard, phone-pad and multiline semantics remain, and Owner physical
+result is not inferred.
+
+The current bounded correction moves shared keyboard-ON reveal measurement from numeric native handles
+to actual mounted host refs for the focused semantic block, body viewport, and sheet. Zero, non-finite,
+non-positive, out-of-window, stale-focus, and stale-sheet measurements are rejected; one ref remeasure
+and one numeric-handle fallback are bounded. The accepted `72`-point clearance, visual-window anchor,
+intrinsic-scroll-first calculation, keyboard-OFF restoration, deliberate user-drag ownership, reels,
+Decisions, numeric keypad, X/V, and all non-text paths are unchanged. Owner physical result is not inferred.
+
+The current correction gives keyboard text-entry WAFL INPUT sheets one shared `72`-point focused-field
+clearance. It applies to new Recipe, direct Size, direct Color, direct POM/measurement, Overview direct
+text, saved-spec naming, and Quick Delivery direct text owners. Reveal capacity now excludes transient
+keyboard padding: short forms lift only by the missing clearance, while genuine intrinsic overflow may
+scroll first. Numeric keypad `112`, generic `56`, reel, Decision, and non-text policies are unchanged.
+Keyboard hide still restores the exact pre-keyboard resting offset for three repeated cycles unless the
+user deliberately dragged. Owner physical result is not inferred.
+
+The current correction makes Maker authoring language consistently say `레시피` across create,
+list/detail, copy/reorder, deletion, permissions, loading, image/material/spec editing, and the
+confirmation boundary. Issued/final PDF, print, Viewer, sharing, and historical issued-document
+surfaces retain `작업지시서`. The shared sheet now measures adaptive body height from the intrinsic
+content plus the static semantic end gap only; transient keyboard inset remains scroll/reveal space
+and cannot contaminate medium detent geometry. Delayed content-size callbacks therefore cannot keep
+the create sheet above its pre-keyboard resting position after native hide. Owner physical result is
+not inferred.
+
+The current correction makes native keyboard hide restore the exact pre-keyboard WAFL Sheet resting
+offset whenever the user did not drag the sheet during that keyboard session; the restore no longer
+depends on whether field reveal happened to raise the sheet. The create field clears its one-shot focus
+policy on both submit and blur/native hide, preventing automatic reacquisition across repeated cycles.
+Production dirty Basic/Additional transitions now send both the shared save-blocker title and helper,
+while clean transitions remain silent. Direct Recipe creation renders the existing shared processing
+blocker inside the native input Modal, so it is visible above the sheet without duplicating the global
+Copy/Reorder blocker. Owner physical result is not inferred.
+
+The current correction clears the local detail item immediately when a category reset is confirmed.
+At the next true boundary, the reset remains the canonical first command; when the user has already
+chosen a new category-owned detail, one serialized item-only command uses the first result version.
+Failure of the second command keeps the local item retry intent. Saving or updating a company Finished
+Spec template now rebases the current WorkOrder source ID/version in the same transaction and the read
+model treats that command event as the new unmodified baseline. Direct create uses a one-shot entrance-
+focus gate so Done cannot be followed by a sheet-owned refocus. A dirty Production Basic/Additional
+switch reuses the central save blocker, while clean switches do not. The owner physical result is not
+inferred.
+
+The latest correction removes the last immediate Overview category-reset flush. A confirmed
+category change and its dependent-reset intent remain local through other Overview fields and are
+sent once only at a true boundary. Size/Color multi-select now computes one atomic local structure,
+so XS/S/M and multiple colors share the same matrix/spec projection before persistence. The applied
+WAFL/company template content is read through the existing compatible-template route and cached for
+missing-only local late-size projection; server backfill remains authoritative at flush. Automatic
+size synchronization does not mark template content modified. The create product-name field alone
+uses native `blurAndSubmit`, and only direct create says `새 레시피를 생성 중입니다.`. Owner
+physical result is not inferred.
+
+The latest bounded correction preserves Draft local-first authoring while removing false boundaries inside a tab. Overview field-to-field movement and picker V remain local, including immediate local due-date projection; only top-level navigation and business-command boundaries flush. Production Basic/Additional switching is a section boundary and proceeds only after its dirty flush succeeds. Size/Color structure and quantity now share one local logical owner: temporary Size/Color identities form the matrix immediately, then a boundary creates authoritative structure IDs, remaps dirty quantities, and persists the destination matrix. Applied WAFL and company templates retain their source identity even with zero current sizes; later supported sizes backfill only empty measurement cells without overwriting user edits or marking the snapshot modified. Successful local or fast boundary saves are silent. Maker list/create/copy/confirmation authoring language uses `레시피`, while issued PDF, print, Viewer, and sharing keep `작업지시서`. Owner physical result is not inferred.
+
+The preceding bounded correction makes the current WorkOrder category authoritative for WAFL basic-spec recommendations and item-code add-ons, so T/B/O/D recommendations no longer depend on an empty or stale persisted spec category. Reorder Draft deletion preserves its durable non-navigable lineage tombstone while casting the deleted WorkOrder identity to the existing text event owner. Maker decisions use one WAFL INPUT two-row reel with a safe default and one V; ordinary WAFL editors retain X/V. Transient success, warning, and error notices use one buttonless centered WAFL Alert with a 1.2-second default, while command loading remains explicit and completion-owned.
+
+Draft inputs update local presentation immediately and enter one section-owned dirty generation.
+Tab change, detail exit, app background and explicit confirmation all flush through
+the same serialized coordinator; a stale response cannot mark a newer generation saved. Size/Color
+quantity cells submit one validated matrix batch rather than one PATCH per cell. Copy creates an
+independent original Draft with independent image/attachment identities and no lineage, issue,
+document, token or event history. Reorder retains the alpha.67 server-owned Nth lineage but permits
+only due date, quantities, prices and the Basic Process memo while rejecting specification/config
+mutation at the server boundary.
+
+`작업지시서 확정` flushes all dirty sections before canonical readiness and issue. Drafts may use
+the final renderer through an authenticated ephemeral byte response without document revision,
+public token or long-lived object creation. Download/print/share remain confirmed-only, and standard
+sharing has one 72-hour policy. Confirmed due-date and Basic Process memo edits are the only mutable
+post-confirm fields; they retain the existing document identity and update its private PDF bytes so
+active branded links remain current. User attachments stay image/PDF only and open through native
+authenticated viewers. The three-file Expo `--clear` / stale-Metro detection change was verified as
+`PREEXISTING_A68_RUNTIME_HARDENING_DELTA` and is absorbed into this candidate.
+
+Draft list Delete now uses one exact semantic runtime capability and exact Maker route, deletes only
+the confirmed Draft graph and its exact-owned R2 objects, and reconciles the list immediately; cancel
+performs no mutation and issued rows remain locked. Reorder-owned material request/cancel/complete
+actions preserve structural locks but remain physically executable. Every list row shows authoritative
+`work_orders.created_at` as KST `YY/MM/DD HH:mm:ss` without a prefix label and without changing updated-time sorting.
+List-started Reorder stays on the list shell under the shared creation blocker until the exactly-once
+server command returns and the authoritative created core detail opens; optional children hydrate later.
+Material and Production request/cancel, final WorkOrder generation, and Draft deletion share one
+confirmation-when-needed, processing-blocker, and success-banner grammar. Material direct numeric input
+normalizes fresh and re-saved values to at most three meaningful decimals without changing numeric truth.
+
+The source-audit remediation gives list swipe a deterministic intent/settle owner: touch-down and
+dominant vertical motion keep both action panels visually absent, while deliberate horizontal motion
+tracks within resisted canonical leading/trailing widths and one list-owned open-row identity. Copy
+runs exactly once, opens the authoritative created ID after core-detail hydration, and treats images,
+partners and series history as independently retryable child projections. Size/Color owns a latest-
+value-wins dirty-cell map and sends only current destination cells; successful acknowledgement clears
+only unchanged generations. Runtime evidence also corrected the external QA ingress allowlist for the
+Copy and atomic quantity-batch routes, which had been the actual pre-handler 404 owner. Image complete
+uses bounded derivative retry and compensates terminal object-integrity failure without duplicate rows
+or orphan objects. Reorder presentation keeps its server allowlist and read-only affordances, failed
+batch navigation retains retry/discard, and the native image viewer keeps its light neutral surface.
+
+The focused post-audit correction preserves the accepted swipe intent and one-open-row policy while
+making the trailing Delete action fill the complete canonical snap geometry. Size/Color quantity
+inputs explicitly remain editable and focused during background batch persistence, without changing
+the default saving lock used by other inline fields. The exact authenticated Draft Preview route is
+now admitted by both external-QA ingress owners. Reorder keeps material/process identity and structure
+locked while its own Fabric/Accessory and Basic Process request/cancel/complete lifecycles operate
+independently from the source. Copy blocks interaction only through exactly-once creation and core
+detail hydration, stores one normalized `(복사본)` prefix in both WorkOrder and revision truth, and
+then hydrates optional children asynchronously. Attachment PDFs reuse the sticky native bottom Close
+grammar. Owner physical result for these focused changes is not inferred.
+
+The current focused checkpoint gives final generation and Draft deletion one shared WAFL safety-card
+family with staged X/Check controls and a spinner-free decision state. Saving blocks interaction only
+for the real flush duration, remembers the first valid tab/field/navigation intent, and replays that
+intent once after success. Deleted Reorder Draft payload/assets remain hard-deleted while a minimal
+durable domain-event tombstone preserves the used round in Work History and next-round allocation.
+Partner selectors consume canonical multi-type capability identities, the Finished Spec selector
+receives the exact T/B/O/D category, and category changes atomically clear detail item, Size/Color,
+allocation, canonical total, starter-template binding, and Finished Spec while preserving Materials
+and Production. Legacy explanatory order yes/no popups are absent; lifecycle guards and processing
+feedback remain. No migration was required. Owner physical result is not inferred.
+
+WorkOrder entry now has one core-first hydration owner across list selection, Work History navigation,
+Copy, and Reorder. The authoritative detail read makes the WorkOrder usable immediately; images/assets,
+material-partner options, and series history settle independently with one bounded retry and entity-version
+reconcile. A child failure remains visible and retryable without converting a valid core WorkOrder into an
+open failure. Runtime traced the physical warning to the series-history query using nonexistent
+`domain_events.created_at`; the durable event time is `occurred_at`. The read route now returns a bounded
+correlated error instead of an uncorrelated framework 500. Owner physical result is not inferred.
+
+Basic-information picker apply now owns one explicit dirty generation and one serialized flush. Major-
+category confirmation exists before any destructive generation is staged, so cancel performs no HTTP/DB
+mutation and confirm produces one atomic category/reset command. The overview save owner builds its patch
+against the latest authoritative detail ref instead of an effect-captured historical projection. A successful
+canonical reload clears the active field/session and the overview batch generation, removing the prior
+save-error tab dead-end without silently discarding dirty input. Draft deletion keeps the exact server hard-
+delete/R2 owner and records the authoritative deleted ID in the mobile list boundary so an older list or
+detail response cannot resurrect or reopen it. Runtime API evidence returned PATCH/DELETE 200, stale-version
+PATCH 409 CONFLICT, post-delete core 404, and zero list/fixture residual. Owner physical result is not inferred.
 
 This file is a compact present-state snapshot. It is not a version history, Permanent Rules owner, runtime process ledger, or evidence archive. Historical implementation details belong to numbered immutable evidence under `docs/project/app-v2/`.
 
@@ -110,8 +306,8 @@ The WorkOrder list stays flat. Existing workflow status chips remain the only pe
 | Entry commit | `feat: WAFL v2 alpha.65 Maker 입력 UX와 완성치수 도식 완성` |
 | Entry ahead/behind | `0/0` |
 | Entry working tree | clean |
-| APP_VERSION | `2.0.0-alpha.67` |
-| Mobile package version | `2.0.0-alpha.67` |
+| APP_VERSION | `2.0.0-alpha.68` |
+| Mobile package version | `2.0.0-alpha.68` |
 | Root package version | `0.5.637` |
 | Expo public version | `2.0.0` |
 | iOS Development Build | build number `1`, reusable while native inputs remain unchanged |
@@ -122,9 +318,9 @@ The source cannot contain the hash of the commit that contains itself. Final alp
 
 ## Latest delivery boundary
 
-- Target Source ZIP: `peacebypiece-ui-2.0.0-alpha.67.zip`.
-- Target repo-state: `repo-state-2.0.0-alpha.67-<actual timestamp>.txt`.
-- The accepted release handoff is the matching alpha.67 ZIP/repo-state pair generated from the final synchronized pushed HEAD.
+- Target Source ZIP: `peacebypiece-ui-2.0.0-alpha.68.zip`.
+- Target repo-state: `repo-state-2.0.0-alpha.68-<actual timestamp>.txt` when the canonical Finish tool emits one.
+- The accepted release handoff is generated from the final synchronized pushed alpha.68 HEAD.
 
 ## Current product and transport baseline
 
@@ -529,8 +725,9 @@ owner fixture was read-only audited at draft/draft version 140/140, one snapshot
 generated documents, and zero public tokens. Owner physical iPhone final QA is
 `NOT_EXECUTED`.
 
-The display version is `2.0.0-alpha.67`; alpha.67 is finalized at
-`ALPHA67_FINALIZATION_COMPLETE`. Mobile API calls use typed domain owners above the single
+The display version is `2.0.0-alpha.68`; alpha.68 is finalized at
+`ALPHA68_FINALIZATION_COMPLETE` with product checkpoint `ALPHA68_COMPLETE` and Owner physical
+iPhone result `PASS`. Mobile API calls use typed domain owners above the single
 low-level transport, and the top-level Maker experience composes separate material, asset,
 size/spec, production, document, Reorder, and session-local delivery foundations while preserving
 the accepted alpha.64-alpha.66 behavior. The exact owner fixture remains read-only preserved;

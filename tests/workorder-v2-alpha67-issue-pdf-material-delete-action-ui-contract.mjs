@@ -71,11 +71,13 @@ assert.match(issueService, /getWorkOrderV2DocumentR0MutationRuntimeGuard/);
 assert.match(generation, /getWorkOrderV2DocumentR0MutationRuntimeGuard/);
 assert.doesNotMatch(generation, /ALPHA64_DOCUMENT_R0|alpha\.64 문서 runtime/);
 
-assert.match(workbench, /작업지시서는 생성되었습니다\. PDF만 만들지 못했습니다\./);
+assert.match(workbench, /레시피는 확정되었습니다\. 작업지시서 PDF만 만들지 못했습니다\./);
 assert.match(workbench, /label="PDF 다시 생성"/);
 assert.match(workbench, /retryGeneration[\s\S]*generateAndReconcile\("retry-generation"\)/);
 assert.doesNotMatch(workbench.match(/async function retryGeneration[\s\S]*?\n  }/)?.[0] ?? "", /issueWorkOrderR0/);
-assert.match(workbench, /현재 입력한 내용으로 작업지시서를 생성합니다\./);
+assert.match(workbench, /title: "레시피를 확정합니다"/);
+assert.match(workbench, /helper: "최종 생성 후에는 주요 생산정보를 수정할 수 없습니다\."/);
+assert.match(workbench, /confirmAccessibilityLabel: "레시피 확정 실행"/);
 assert.doesNotMatch(workbench, /이 R0은/);
 
 assert.match(readRepository, /resolveMaterialRemovalMode/);

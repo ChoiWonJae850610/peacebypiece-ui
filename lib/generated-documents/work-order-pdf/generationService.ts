@@ -63,7 +63,7 @@ function scope(input: { companyId: string; companyMemberId: string | null; corre
   };
 }
 
-async function loadAssetManifest(tenantScope: TenantMemberScope, revisionId: string) {
+export async function loadWorkOrderPdfAssetManifest(tenantScope: TenantMemberScope, revisionId: string) {
   return withWaflV2TenantReadOnlyTransaction(async (client) => {
     await installTenantClaims(client, tenantScope);
     const result = await client.query<DbQueryResultRow>(`
@@ -100,7 +100,7 @@ async function loadAssetManifest(tenantScope: TenantMemberScope, revisionId: str
   });
 }
 
-async function readAsset(asset: WorkOrderIssuedPdfAssetDescriptor): Promise<string> {
+export async function readWorkOrderPdfAsset(asset: WorkOrderIssuedPdfAssetDescriptor): Promise<string> {
   if (!asset.storageObjectKeySnapshot) throw new Error("PDF_ASSET_STORAGE_KEY_MISSING");
   const request = createR2WorkerFileUrl({ key: asset.storageObjectKeySnapshot });
   const response = await fetch(request.url, { method: request.method });
@@ -150,6 +150,7 @@ export async function generateIssuedWorkOrderDocument(input: {
   readonly workOrderId: string;
   readonly revisionId: string;
   readonly idempotencyKey: string;
+  readonly refreshActive?: boolean;
 }) {
   const runtime = getWorkOrderV2DocumentR0MutationRuntimeGuard();
   if (!runtime.ok) throw new GeneratedDocumentGenerationError("FORBIDDEN", 403, "승인된 문서 생성 runtime에서만 실행할 수 있습니다.");
@@ -163,7 +164,7 @@ export async function generateIssuedWorkOrderDocument(input: {
     assignedCompanyMemberId: input.scope.visibility?.mode === "assigned" ? input.scope.visibility.companyMemberId : null,
   });
   if (!previewResult.data) throw new GeneratedDocumentGenerationError("DOCUMENT_NOT_READY", 409, "발행 완료된 Revision만 생성할 수 있습니다.");
-  const assets = await loadAssetManifest(tenantScope, input.revisionId);
+  const assets = await loadWorkOrderPdfAssetManifest(tenantScope, input.revisionId);
   const now = new Date().toISOString();
   const snapshot = createWorkOrderIssuedPdfSnapshot({
     companyId: input.scope.companyId,
@@ -175,7 +176,7 @@ export async function generateIssuedWorkOrderDocument(input: {
     snapshotCreatedAt: now,
   });
   const scopedKey = hash([GENERATED_DOCUMENT_COMMAND_CODE, tenantScope.companyId, tenantScope.companyMemberId, input.workOrderId, input.revisionId, input.idempotencyKey].join("\0"));
-  const requestHash = hash(JSON.stringify({ workOrderId: input.workOrderId, revisionId: input.revisionId }));
+  const requestHash = hash(JSON.stringify({ workOrderId: input.workOrderId, revisionId: input.revisionId, refreshActive: input.refreshActive === true }));
 
   const prepared = await withWaflV2TenantWriteTransaction(async (client) => {
     await installTenantClaims(client, tenantScope);
@@ -217,6 +218,24 @@ export async function generateIssuedWorkOrderDocument(input: {
     `, [tenantScope.companyId, input.revisionId]);
     const current = activeGeneration.rows[0];
     if (current) {
+      if (input.refreshActive === true && current.status === "generated") {
+        const refreshed = await client.query<GeneratedRow>(`
+          UPDATE generated_documents
+          SET status='pending', failure_code=NULL, renderer_version=$4, dto_schema_version=$5,
+              snapshot=$6::jsonb, updated_at=now()
+          WHERE company_id=$1 AND id=$2::uuid AND work_order_revision_id=$3::uuid
+            AND status='generated' AND revoked_at IS NULL AND deleted_at IS NULL
+          RETURNING *
+        `, [tenantScope.companyId, current.id, input.revisionId, snapshot.rendererVersion, snapshot.dtoSchemaVersion, JSON.stringify(snapshot)]);
+        const row = refreshed.rows[0];
+        if (!row) throw new GeneratedDocumentGenerationError("CONFLICT", 409, "최신 문서 갱신을 시작하지 못했습니다.");
+        await client.query(`
+          UPDATE work_order_command_receipts
+          SET work_order_id=$4::uuid,result_revision_id=$5::uuid,result_generated_document_id=$6::uuid,result_entity_version=$7
+          WHERE company_id=$1 AND command_code=$2 AND idempotency_key=$3
+        `, [tenantScope.companyId, GENERATED_DOCUMENT_COMMAND_CODE, scopedKey, input.workOrderId, input.revisionId, row.id, Number(target.rows[0].entity_version)]);
+        return { row, replay: false };
+      }
       await client.query(`
         UPDATE work_order_command_receipts
         SET work_order_id=$4::uuid,result_revision_id=$5::uuid,result_generated_document_id=$6::uuid,result_entity_version=$7
@@ -250,10 +269,10 @@ export async function generateIssuedWorkOrderDocument(input: {
   const representative = assets.find((asset) => asset.assetType === "image" && asset.isRepresentative);
   if (!representative) throw new GeneratedDocumentGenerationError("DOCUMENT_NOT_READY", 409, "대표 이미지가 필요합니다.");
   try {
-    const representativeImageDataUrl = await readAsset(representative);
+    const representativeImageDataUrl = await readWorkOrderPdfAsset(representative);
     const includedAttachmentImages = await Promise.all(assets
       .filter((asset) => asset.assetType === "attachment" && asset.includeInDocument && SUPPORTED_INLINE_IMAGE.has(asset.mimeType))
-      .map(async (asset) => ({ filename: asset.filename, dataUrl: await readAsset(asset) })));
+      .map(async (asset) => ({ filename: asset.filename, dataUrl: await readWorkOrderPdfAsset(asset) })));
     const canonicalSnapshotJson = serializeWorkOrderIssuedPdfSnapshot(snapshot);
     const snapshotSha256 = hashWorkOrderIssuedPdfSnapshot(snapshot);
     const objectKey = createWorkOrderPdfStorageKey({ companyId: tenantScope.companyId, workOrderId: input.workOrderId, pdfId: prepared.row.id });

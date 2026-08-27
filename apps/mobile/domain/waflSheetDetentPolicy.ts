@@ -161,13 +161,16 @@ export function resolveWaflSheetFieldReveal(input: {
 }) {
   const fieldHeight = Math.max(0, input.fieldBottom - input.fieldTop);
   const visibleTop = input.viewportTop + input.semanticGap;
-  const visibleBottom = Math.max(visibleTop, Math.min(input.viewportBottom, input.keyboardTop) - input.semanticGap);
+  const occlusionBottom = Math.min(input.viewportBottom, input.keyboardTop);
+  const currentGap = occlusionBottom - input.fieldBottom;
+  const requiredLift = Math.max(0, input.semanticGap - currentGap);
+  const visibleBottom = Math.max(visibleTop, occlusionBottom - input.semanticGap);
   const visibleHeight = Math.max(0, visibleBottom - visibleTop);
   let scrollDelta = 0;
   if (fieldHeight > visibleHeight) {
     scrollDelta = input.fieldTop - visibleTop;
   } else if (input.fieldBottom > visibleBottom) {
-    scrollDelta = input.fieldBottom - visibleBottom;
+    scrollDelta = requiredLift;
   } else if (input.fieldTop < visibleTop) {
     scrollDelta = input.fieldTop - visibleTop;
   }
@@ -178,6 +181,105 @@ export function resolveWaflSheetFieldReveal(input: {
     scrollDelta > 0 ? scrollDelta - availableForwardScroll : 0,
   );
   return { requiredRise, scrollDelta, visibleBottom, visibleTop } as const;
+}
+
+export type WaflSheetWindowMeasurement = {
+  readonly x: number;
+  readonly y: number;
+  readonly width: number;
+  readonly height: number;
+};
+
+export function isValidWaflSheetWindowMeasurement(input: {
+  readonly measurement: WaflSheetWindowMeasurement | null;
+  readonly target: "field" | "viewport" | "sheet";
+  readonly windowHeight: number;
+  readonly windowWidth: number;
+}) {
+  const { measurement } = input;
+  if (measurement === null) return false;
+  const values = [measurement.x, measurement.y, measurement.width, measurement.height];
+  if (!values.every(Number.isFinite) || measurement.width <= 0 || measurement.height <= 0) return false;
+  if (input.windowHeight <= 0 || input.windowWidth <= 0) return false;
+  if (measurement.width > input.windowWidth * 2 || measurement.height > input.windowHeight * 2) return false;
+
+  const right = measurement.x + measurement.width;
+  const bottom = measurement.y + measurement.height;
+  if (right < -1 || measurement.x > input.windowWidth + 1) return false;
+  if (input.target === "field") {
+    return bottom >= -input.windowHeight && measurement.y <= input.windowHeight * 2;
+  }
+  return bottom >= -1 && measurement.y <= input.windowHeight + 1;
+}
+
+export function resolveWaflSheetVisualRevealPlan(input: {
+  readonly measuredFieldTop: number;
+  readonly fieldHeight: number;
+  readonly measuredViewportTop: number;
+  readonly viewportHeight: number;
+  readonly measuredSheetTop: number;
+  readonly expectedVisualSheetTop: number;
+  readonly keyboardInset: number;
+  readonly keyboardTop: number;
+  readonly semanticGap: number;
+  readonly intrinsicBodyContentHeight: number;
+  readonly bodyOffset: number;
+  readonly availableForwardScroll?: number;
+  readonly translatedOffset: number;
+  readonly settledOffset: number;
+}) {
+  // Native-driven transforms do not have one measurement contract across
+  // Paper/Fabric and animation frames. Anchor every child measurement to the
+  // sheet's known visual top. When the platform measurement already includes
+  // the transform this correction is zero; otherwise it is exactly the
+  // missing native translation, so the transform is never applied twice.
+  const sheetCoordinateCorrection = input.expectedVisualSheetTop - input.measuredSheetTop;
+  const visualFieldTop = input.measuredFieldTop + sheetCoordinateCorrection;
+  const visualFieldBottom = visualFieldTop + Math.max(0, input.fieldHeight);
+  const visualViewportTop = input.measuredViewportTop + sheetCoordinateCorrection;
+  const visualViewportBottom = visualViewportTop + Math.max(0, input.viewportHeight);
+  const availableForwardScroll = Math.max(
+    0,
+    input.availableForwardScroll
+      ?? (input.intrinsicBodyContentHeight - input.viewportHeight - input.bodyOffset),
+  );
+  const reveal = resolveWaflSheetFieldReveal({
+    availableForwardScroll,
+    fieldBottom: visualFieldBottom,
+    fieldTop: visualFieldTop,
+    keyboardTop: input.keyboardTop,
+    semanticGap: input.semanticGap,
+    viewportBottom: visualViewportBottom,
+    viewportTop: visualViewportTop,
+  });
+  const occlusionBottom = Math.min(visualViewportBottom, input.keyboardTop);
+
+  return {
+    availableForwardScroll,
+    bodyOffset: input.bodyOffset,
+    coordinateSpace: "visual-window" as const,
+    currentGap: occlusionBottom - visualFieldBottom,
+    expectedVisualSheetTop: input.expectedVisualSheetTop,
+    intrinsicBodyContentHeight: input.intrinsicBodyContentHeight,
+    keyboardInset: input.keyboardInset,
+    keyboardTop: input.keyboardTop,
+    measuredFieldTop: input.measuredFieldTop,
+    measuredSheetTop: input.measuredSheetTop,
+    measuredViewportTop: input.measuredViewportTop,
+    requiredRise: reveal.requiredRise,
+    scrollDelta: reveal.scrollDelta,
+    semanticGap: input.semanticGap,
+    settledOffset: input.settledOffset,
+    sheetCoordinateCorrection,
+    targetOffset: Math.max(0, input.translatedOffset - reveal.requiredRise),
+    translatedOffset: input.translatedOffset,
+    viewportHeight: input.viewportHeight,
+    visualFieldBottom,
+    visualFieldTop,
+    visualKeyboardTop: input.keyboardTop,
+    visualViewportBottom,
+    visualViewportTop,
+  } as const;
 }
 
 export function resolveWaflSheetDragStartOffset(value: number, expandedHeight: number) {

@@ -10,7 +10,9 @@ import {
 } from "@/lib/db/client";
 import { installTenantClaims } from "@/lib/domain/work-orders/command/commandRepository";
 import { planColorSizeQuantityProjection } from "@/lib/domain/work-orders/command/quantityProjectionPolicy";
+import { encodeDestinationQuantityCells } from "@/lib/domain/work-orders/command/sizeColorQuantityBatchPolicy";
 import { WORK_ORDER_COMMAND_CODES } from "@/lib/domain/work-orders/command/workOrderCommandCodes";
+import { findWaflBasicSpecTemplateById } from "@/lib/domain/work-orders/measurement/waflBasicSpecV1";
 import {
   sortColorRows,
   sortSizeRows,
@@ -68,6 +70,8 @@ type TargetRow = DbQueryResultRow & {
   readonly revision_version: number | string;
   readonly work_order_total: number | string;
   readonly revision_total: number | string;
+  readonly derivation_kind: string;
+  readonly reorder_round: number | string;
 };
 
 type SizeRow = DbQueryResultRow & {
@@ -130,6 +134,7 @@ function targetResult(input: {
   readonly colorId?: ColorId;
   readonly sizeRowId?: SizeRowId;
   readonly quantity?: number;
+  readonly quantityCells?: readonly { readonly colorId: ColorId; readonly sizeRowId: SizeRowId; readonly quantity: number }[];
   readonly totalQuantity?: number;
   readonly deletedQuantityCellCount?: number;
   readonly removedQuantity?: number;
@@ -145,6 +150,7 @@ function targetResult(input: {
     ...(input.colorId ? { colorId: input.colorId } : {}),
     ...(input.sizeRowId ? { sizeRowId: input.sizeRowId } : {}),
     ...(input.quantity !== undefined ? { quantity: input.quantity } : {}),
+    ...(input.quantityCells !== undefined ? { quantityCells: input.quantityCells } : {}),
     ...(input.totalQuantity !== undefined ? { totalQuantity: input.totalQuantity } : {}),
     ...(input.deletedQuantityCellCount !== undefined ? { deletedQuantityCellCount: input.deletedQuantityCellCount } : {}),
     ...(input.removedQuantity !== undefined ? { removedQuantity: input.removedQuantity } : {}),
@@ -166,7 +172,8 @@ async function lockTarget(input: {
            w.status AS work_order_status, r.revision_status,
            w.entity_version AS work_order_version, r.entity_version AS revision_version,
            w.total_quantity AS work_order_total,
-           r.total_quantity_snapshot AS revision_total
+           r.total_quantity_snapshot AS revision_total,
+           w.derivation_kind,w.reorder_round
     FROM work_orders w
     JOIN work_order_revisions r
       ON r.company_id = w.company_id AND r.id = w.current_revision_id
@@ -180,12 +187,15 @@ async function lockTarget(input: {
   return target;
 }
 
-function assertCurrentDraft(target: TargetRow, expectedVersion: EntityVersion) {
+function assertCurrentDraft(target: TargetRow, expectedVersion: EntityVersion, allowReorderQuantity = false) {
   const currentVersion = integer(target.work_order_version);
   if (currentVersion !== expectedVersion) throw new SizeColorStructureRepositoryError("conflict", currentVersion);
   if (target.work_order_status !== "draft") throw new SizeColorStructureRepositoryError("locked", currentVersion);
   if (target.revision_status !== "draft") {
     throw new SizeColorStructureRepositoryError("revision_mismatch", currentVersion);
+  }
+  if (target.derivation_kind === "reorder" && Number(target.reorder_round) > 0 && !allowReorderQuantity) {
+    throw new SizeColorStructureRepositoryError("locked", currentVersion);
   }
 }
 
@@ -447,6 +457,69 @@ async function synchronizeFinishedSpecSizes(input: {
         display_order=EXCLUDED.display_order,
         updated_at=now()
   `, [input.scope.companyId, input.revisionId]);
+  input.context.statementCount += 1;
+
+  const source = await input.client.query<DbQueryResultRow & {
+    readonly size_spec_id: string;
+    readonly source_template_id: string | null;
+    readonly item_code: string | null;
+  }>(`
+    SELECT spec.id AS size_spec_id, spec.source_template_id, revision.item_code_snapshot AS item_code
+    FROM work_order_size_specs spec
+    JOIN work_order_revisions revision
+      ON revision.company_id=spec.company_id AND revision.id=spec.revision_id
+    WHERE spec.company_id=$1 AND spec.revision_id=$2::uuid
+    FOR UPDATE OF spec
+  `, [input.scope.companyId, input.revisionId]);
+  input.context.statementCount += 1;
+  const sourceRow = source.rows[0];
+  if (!sourceRow?.source_template_id) return;
+
+  const basicTemplate = findWaflBasicSpecTemplateById(sourceRow.source_template_id, sourceRow.item_code);
+  if (basicTemplate) {
+    const values = Object.entries(basicTemplate.valuesCm).flatMap(([sizeCode, measurements]) => (
+      Object.entries(measurements).flatMap(([name, decimalValue]) => {
+        const pom = basicTemplate.poms.find((candidate) => candidate.name === name);
+        return pom ? [{ size_code: sizeCode, pom_code: pom.code, decimal_value: decimalValue }] : [];
+      })
+    ));
+    await input.client.query(`
+      INSERT INTO work_order_size_spec_values (
+        company_id, revision_id, size_spec_id, size_row_id, pom_column_id, decimal_value, display_fraction
+      )
+      SELECT $1, $2::uuid, $3::uuid, spec_size.id, pom.id, value.decimal_value, NULL
+      FROM jsonb_to_recordset($4::jsonb) AS value(size_code text, pom_code text, decimal_value numeric)
+      JOIN work_order_size_spec_sizes spec_size
+        ON spec_size.company_id=$1 AND spec_size.size_spec_id=$3::uuid
+       AND upper(regexp_replace(trim(spec_size.size_code),'\\s+','','g'))
+         = upper(regexp_replace(trim(value.size_code),'\\s+','','g'))
+      JOIN work_order_size_spec_poms pom
+        ON pom.company_id=$1 AND pom.size_spec_id=$3::uuid AND pom.pom_code=value.pom_code
+      ON CONFLICT (size_spec_id, size_row_id, pom_column_id) DO NOTHING
+    `, [input.scope.companyId, input.revisionId, sourceRow.size_spec_id, JSON.stringify(values)]);
+    input.context.statementCount += 1;
+    return;
+  }
+
+  await input.client.query(`
+    INSERT INTO work_order_size_spec_values (
+      company_id, revision_id, size_spec_id, size_row_id, pom_column_id, decimal_value, display_fraction
+    )
+    SELECT $1, $2::uuid, $3::uuid, spec_size.id, pom.id, template_value.decimal_value, template_value.display_fraction
+    FROM size_spec_template_values template_value
+    JOIN size_spec_template_sizes template_size
+      ON template_size.template_id=$4::uuid AND template_size.id=template_value.size_row_id
+    JOIN size_spec_template_poms template_pom
+      ON template_pom.template_id=$4::uuid AND template_pom.id=template_value.pom_column_id
+    JOIN work_order_size_spec_sizes spec_size
+      ON spec_size.company_id=$1 AND spec_size.size_spec_id=$3::uuid
+     AND upper(regexp_replace(trim(spec_size.size_code),'\\s+','','g'))
+       = upper(regexp_replace(trim(template_size.size_code),'\\s+','','g'))
+    JOIN work_order_size_spec_poms pom
+      ON pom.company_id=$1 AND pom.size_spec_id=$3::uuid AND pom.pom_code=template_pom.pom_code
+    WHERE template_value.template_id=$4::uuid
+    ON CONFLICT (size_spec_id, size_row_id, pom_column_id) DO NOTHING
+  `, [input.scope.companyId, input.revisionId, sourceRow.size_spec_id, sourceRow.source_template_id]);
   input.context.statementCount += 1;
 }
 
@@ -1311,7 +1384,7 @@ export async function upsertColorSizeQuantityV2(input: CommonInput & {
         changedFields: [] as readonly string[],
       };
     }
-    assertCurrentDraft(target, input.expectedVersion);
+    assertCurrentDraft(target, input.expectedVersion, true);
     const membership = await client.query(`
       SELECT s.id AS size_id, c.id AS color_id
       FROM work_order_sizes s
@@ -1394,6 +1467,85 @@ export async function upsertColorSizeQuantityV2(input: CommonInput & {
         colorId: input.colorId, sizeRowId: input.sizeRowId, quantity: input.quantity,
         totalQuantity: canonicalTotalQuantity, nextVersion,
       }),
+      nextVersion: nextVersion as EntityVersion,
+      idempotentReplay: false,
+      changedFields,
+    };
+  });
+  return wrapped({ ...data, context, startedAt });
+}
+
+export async function upsertColorSizeQuantitiesV2(input: CommonInput & {
+  readonly cells: readonly { readonly colorId: ColorId; readonly sizeRowId: SizeRowId; readonly quantity: number }[];
+}) {
+  const startedAt = performance.now();
+  const context: Context = { statementCount: 0 };
+  const data = await withWaflV2TenantWriteTransaction(async (client) => {
+    await installTenantClaims(client, input.scope);
+    context.statementCount += 1;
+    const target = await lockTarget({ client, context, ...input });
+    const existingReceipt = await readReceipt({ client, context, ...input, commandCode: COLOR_SIZE_QUANTITY_UPSERT_COMMAND_CODE });
+    if (existingReceipt) {
+      const nextVersion = integer(existingReceipt.result_entity_version as number | string);
+      return {
+        result: targetResult({ target, targetKind: "quantity", targetId: null, quantityCells: input.cells, totalQuantity: integer(target.work_order_total), nextVersion }),
+        nextVersion: nextVersion as EntityVersion,
+        idempotentReplay: true,
+        changedFields: [] as readonly string[],
+      };
+    }
+    assertCurrentDraft(target, input.expectedVersion, true);
+    // PostgreSQL jsonb_to_recordset resolves object keys literally. Mobile batch
+    // commands use camelCase, while the SQL record shape is intentionally
+    // snake_case. Encode the destination identity explicitly so a Reorder never
+    // falls through membership validation with NULL source-shaped keys.
+    const encoded = encodeDestinationQuantityCells(input.cells);
+    const membership = await client.query<DbQueryResultRow & { readonly matched: number | string; readonly changed: boolean }>(`
+      WITH requested AS (
+        SELECT color_id::uuid AS color_id, size_row_id::uuid AS size_id, quantity::integer AS quantity
+        FROM jsonb_to_recordset($3::jsonb) AS cell(color_id text,size_row_id text,quantity integer)
+      )
+      SELECT count(*)::integer AS matched,
+             COALESCE(bool_or(COALESCE(q.quantity,0)::integer IS DISTINCT FROM requested.quantity),false) AS changed
+      FROM requested
+      JOIN work_order_colors c ON c.company_id=$1 AND c.revision_id=$2::uuid AND c.id=requested.color_id
+      JOIN work_order_sizes s ON s.company_id=$1 AND s.revision_id=$2::uuid AND s.id=requested.size_id
+      LEFT JOIN color_size_quantities q ON q.company_id=$1 AND q.revision_id=$2::uuid AND q.color_id=requested.color_id AND q.size_id=requested.size_id
+    `, [input.scope.companyId, target.revision_id, encoded]);
+    context.statementCount += 1;
+    if (integer(membership.rows[0]?.matched ?? 0) !== input.cells.length) throw new SizeColorStructureRepositoryError("not_found");
+    const currentTotal = await readCanonicalQuantityTotal(client, context, input.scope, target.revision_id);
+    const projectionChanged = currentTotal !== integer(target.work_order_total) || currentTotal !== integer(target.revision_total);
+    if (!membership.rows[0]?.changed && !projectionChanged) {
+      const result = targetResult({ target, targetKind: "quantity", targetId: null, quantityCells: input.cells, totalQuantity: currentTotal });
+      return { result, nextVersion: result.nextVersion, idempotentReplay: false, changedFields: [] as readonly string[] };
+    }
+    await reserveReceipt({ client, context, ...input, commandCode: COLOR_SIZE_QUANTITY_UPSERT_COMMAND_CODE });
+    if (membership.rows[0]?.changed) {
+      await client.query(`
+        INSERT INTO color_size_quantities(company_id,revision_id,color_id,size_id,quantity,updated_at)
+        SELECT $1,$2::uuid,cell.color_id::uuid,cell.size_row_id::uuid,cell.quantity::integer,now()
+        FROM jsonb_to_recordset($3::jsonb) AS cell(color_id text,size_row_id text,quantity integer)
+        ON CONFLICT(revision_id,color_id,size_id) DO UPDATE
+        SET quantity=EXCLUDED.quantity,updated_at=now()
+        WHERE color_size_quantities.company_id=$1 AND color_size_quantities.quantity IS DISTINCT FROM EXCLUDED.quantity
+      `, [input.scope.companyId, target.revision_id, encoded]);
+      context.statementCount += 1;
+    }
+    const canonicalTotalQuantity = membership.rows[0]?.changed
+      ? await readCanonicalQuantityTotal(client, context, input.scope, target.revision_id)
+      : currentTotal;
+    const changedFields = membership.rows[0]?.changed
+      ? ["quantityCells.batch", "totalQuantity", "totalQuantitySnapshot"] as const
+      : ["totalQuantityProjection"] as const;
+    const nextVersion = await finishChanged({
+      client, context, ...input, target,
+      commandCode: COLOR_SIZE_QUANTITY_UPSERT_COMMAND_CODE,
+      targetKind: "quantity", targetId: null, changedFields, canonicalTotalQuantity,
+      summary: membership.rows[0]?.changed ? "색상×사이즈 수량 일괄 저장" : "색상×사이즈 총수량 projection 정합성 복구",
+    });
+    return {
+      result: targetResult({ target, targetKind: "quantity", targetId: null, quantityCells: input.cells, totalQuantity: canonicalTotalQuantity, nextVersion }),
       nextVersion: nextVersion as EntityVersion,
       idempotentReplay: false,
       changedFields,

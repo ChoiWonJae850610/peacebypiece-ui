@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { WAFL_THEME } from "@/constants/theme";
 import type { WorkOrderMajorCategoryCode } from "@/domain/workOrderCategoryPolicy";
 import {
   composeWorkOrderSeason,
@@ -32,6 +33,9 @@ export function WorkOrderSeasonPickerSheet({ value, onApply, onCancel }: CommonP
     cancelAccessibilityLabel="시즌 변경 취소"
     confirmAccessibilityLabel="시즌 직접 입력 적용"
     confirmDisabled={!directValue.trim()}
+    keyboardAutoExpand
+    keyboardFocusRevealContext={WAFL_THEME.sheet.textEntryFocusRevealClearance}
+    keyboardMode="directInput"
     onAfterClose={finishClose}
     onCancel={onCancel}
     onConfirm={() => onApply(directValue.trim())}
@@ -76,6 +80,9 @@ export function WorkOrderDetailItemPickerSheet({ categoryCode, value, onApply, o
     cancelAccessibilityLabel="세부 품목 변경 취소"
     confirmAccessibilityLabel="세부 품목 직접 입력 적용"
     confirmDisabled={!directValue.trim()}
+    keyboardAutoExpand
+    keyboardFocusRevealContext={WAFL_THEME.sheet.textEntryFocusRevealClearance}
+    keyboardMode="directInput"
     onAfterClose={nested.finishClose}
     onCancel={onCancel}
     onConfirm={() => onApply(directValue.trim())}

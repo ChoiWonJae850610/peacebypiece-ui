@@ -59,11 +59,14 @@ const upperContext = resolveWaflSheetFieldReveal({
 assert.equal(upperContext.scrollDelta, -48);
 
 assert.match(focus, /export function WaflSheetFocusBlock/u);
-assert.match(focus, /revealTarget: resolveFocusBlockTarget\?\.\(\) \?\? target/u);
-assert.match(sheet, /UIManager\.measure\(target\.revealTarget/u);
-assert.match(sheet, /resolveWaflSheetFieldReveal/u);
-assert.match(sheet, /bodyOffsetRef\.current \+ reveal\.scrollDelta/u);
-assert.match(sheet, /targetOffset = Math\.max\(0, translatedRef\.current - reveal\.requiredRise\)/u);
+assert.match(focus, /const mountedReveal = resolveFocusBlockRef\?\.\(\) \?\? mountedInput/u);
+assert.match(focus, /revealRef: mountedReveal/u);
+assert.match(sheet, /measureMountedTarget\(target\.revealRef\)/u);
+assert.match(sheet, /measureHandleTarget\(target\.revealTarget\)/u);
+assert.match(sheet, /resolveWaflSheetVisualRevealPlan/u);
+assert.match(sheet, /resolveWaflDirectInputRevealMotion/u);
+assert.match(sheet, /bodyOffsetRef\.current \+ motion\.scrollDelta/u);
+assert.match(sheet, /animateTo\(motion\.targetOffset/u);
 assert.match(material, /<WaflSheetFocusBlock style=\{\[styles\.field/u);
 assert.match(valueField, /<WaflSheetFocusBlock style=\{styles\.field\}/u);
 assert.doesNotMatch(material, /KeyboardAvoidingView|keyboardVerticalOffset|scrollTo\(/u);

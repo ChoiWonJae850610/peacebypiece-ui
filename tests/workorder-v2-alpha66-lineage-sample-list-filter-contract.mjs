@@ -61,7 +61,7 @@ assert.deepEqual(workOrderIdentityBadgeLabels({ isSample: false, derivationKind:
 assert.deepEqual(normalizeWorkOrderLineageFilters(["rework", "reorder"]), ["reorder", "rework"]);
 assert.equal(matchesWorkOrderIdentityFilters({ isSample: true, derivationKind: "rework", reorderRound: 2 }, "sample", ["reorder"]), false);
 assert.equal(matchesWorkOrderIdentityFilters({ isSample: false, derivationKind: "rework", reorderRound: 0 }, "production", ["rework"]), true);
-assert.match(listScreen, /작업지시서 구분 필터/u);
+assert.match(listScreen, /레시피 구분 필터/u);
 assert.match(listScreen, /activeFilterChips/u);
 assert.match(listScreen, /item\.identity\.isSample[\s\S]+item\.identity\.reorderRound[\s\S]+item\.identity\.derivationKind === "rework"/u);
 assert.equal(fs.existsSync("app/api/v2/work-orders/reorder/route.ts"), false);

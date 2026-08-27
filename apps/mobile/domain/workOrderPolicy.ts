@@ -4,6 +4,7 @@ import { resolveMaterialOrderPolicy, type MaterialOrderAction } from "./material
 const UPDATE_PERMISSION = "workorder.update";
 const ORDER_REQUEST_PERMISSION = "material.order.request";
 const ORDER_COMPLETE_PERMISSION = "material.order.place";
+export const REORDER_MATERIAL_EDITABLE_FIELDS = ["requiredQuantity", "allowanceQuantity", "inventoryUsageQuantity", "unitPrice"] as const satisfies readonly (keyof MaterialDraftFields)[];
 
 export function hasWorkOrderUpdatePermission(user: MobileCurrentUser | null): boolean {
   return Boolean(user?.permissionCodes?.includes(UPDATE_PERMISSION));
@@ -17,6 +18,18 @@ export function canEditWorkOrder(
     detail
     && detail.header.status === "draft"
     && detail.revision.status === "draft"
+    && hasWorkOrderUpdatePermission(user),
+  );
+}
+
+export function canEditConfirmedWorkOrderMutableFields(
+  detail: WorkOrderDetailCore | null,
+  user: MobileCurrentUser | null,
+): detail is WorkOrderDetailCore {
+  return Boolean(
+    detail
+    && ["issued", "revised", "completed"].includes(detail.header.status)
+    && ["finalized", "superseded"].includes(detail.revision.status)
     && hasWorkOrderUpdatePermission(user),
   );
 }

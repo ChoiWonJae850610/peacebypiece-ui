@@ -51,7 +51,7 @@ assert.match(sizeRead, /testID="size-color-expanded-matrix-card"/);
 assert.match(sizeRead, /testID="finished-spec-expanded-card"/);
 assert.match(sizeRead, /<WaflFrozenAxisTable/);
 assert.match(sizeRead, /<MatrixTable edit=\{edit\} matrix=\{matrix\} preview \/>/);
-assert.match(sizeRead, /<SpecTable edit=\{edit\} onEditSpecItems=\{edit\?\.canEdit \? onEditSpecItems : undefined\} preview specifications=\{currentSpecifications\} \/>/);
+assert.match(sizeRead, /<SpecTable edit=\{edit\?\.canEditStructure \? edit : undefined\} onEditSpecItems=\{edit\?\.canEditStructure \? onEditSpecItems : undefined\} preview specifications=\{currentSpecifications\} \/>/);
 assert.doesNotMatch(sizeRead, /<ScrollView horizontal[^>]*contentContainerStyle=\{styles\.fullViewTable\}/);
 assert.match(sizeRead, /label="사이즈"[\s\S]*label="색상"/);
 

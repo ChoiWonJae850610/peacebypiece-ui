@@ -44,7 +44,7 @@ assert.match(migrationRunner, /BEGIN READ ONLY/);
 assert.match(migrationRunner, /read-only-mode-approval-forbidden/);
 assert.match(migrationRunner, /target-fingerprint-mismatch/);
 
-assert.match(constants, /DOCUMENT_ACCESS_DEFAULT_EXPIRY_DAYS = 7/);
+assert.match(constants, /DOCUMENT_ACCESS_DEFAULT_EXPIRY_DAYS = 3/);
 assert.match(constants, /DOCUMENT_ACCESS_MAX_EXPIRY_DAYS = 30/);
 assert.doesNotMatch(constants, /DOCUMENT_EMBEDDED_QR_EXPIRY_DAYS = 365/);
 assert.match(constants, /DOCUMENT_MANUAL_SHARE_PURPOSE = "manual_share"/);

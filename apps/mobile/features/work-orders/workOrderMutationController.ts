@@ -10,7 +10,7 @@ import {
   issueWorkOrderAttachmentPreview,
   reconcileWorkOrderImageUpload,
 } from "../../lib/api/assetsApi";
-import { createWorkOrderDraft, createWorkOrderReorder, patchWorkOrderBasicInfo, setWorkOrderSample } from "../../lib/api/workOrdersApi";
+import { createWorkOrderCopy, createWorkOrderDraft, createWorkOrderReorder, deleteDraftWorkOrder, patchWorkOrderBasicInfo, setWorkOrderSample } from "../../lib/api/workOrdersApi";
 import {
   archiveWorkOrderMaterial,
   createWorkOrderMaterial,
@@ -23,6 +23,7 @@ import {
   addWorkOrderColor,
   addWorkOrderSize,
   batchWorkOrderStructureSelection,
+  batchWorkOrderColorSizeQuantities,
   createWorkOrderStructureOption,
   deleteWorkOrderColor,
   deleteWorkOrderSize,
@@ -53,6 +54,8 @@ export const workOrderMutationController = {
   createReorder(sourceWorkOrderId: string, command: CreateWorkOrderReorderInput, idempotencyKey: string) {
     return createWorkOrderReorder(sourceWorkOrderId, command, idempotencyKey);
   },
+  createCopy(sourceWorkOrderId:string,command:import("../../domain/mobileContract").CreateWorkOrderCopyInput,idempotencyKey:string){return createWorkOrderCopy(sourceWorkOrderId,command,idempotencyKey);},
+  deleteDraft: deleteDraftWorkOrder,
   updateOverview(workOrderId: string, command: PatchWorkOrderBasicInfoInput) {
     return patchWorkOrderBasicInfo(workOrderId, command);
   },
@@ -66,6 +69,7 @@ export const workOrderMutationController = {
   deleteColor: deleteWorkOrderColor,
   reorderColors: reorderWorkOrderColors,
   upsertQuantity: upsertWorkOrderColorSizeQuantity,
+  batchQuantities: batchWorkOrderColorSizeQuantities,
   mutateMeasurement: mutateWorkOrderMeasurement,
   createStructureOption: createWorkOrderStructureOption,
   removeStructureOption: removeWorkOrderStructureOption,

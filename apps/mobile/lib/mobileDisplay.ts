@@ -2,6 +2,26 @@ const DECIMAL_PATTERN = /^(-?)(\d+)(?:\.(\d+))?$/;
 
 const NUMERIC_DRAFT_PATTERN = /^(\d*)(?:\.(\d*))?$/;
 const CALENDAR_DATE_PATTERN = /^(\d{4})-(\d{2})-(\d{2})$/;
+const COMPACT_KST_DATE_TIME_FORMATTER = new Intl.DateTimeFormat("en-CA", {
+  timeZone: "Asia/Seoul",
+  year: "2-digit",
+  month: "2-digit",
+  day: "2-digit",
+  hour: "2-digit",
+  minute: "2-digit",
+  second: "2-digit",
+  hour12: false,
+});
+
+export function formatCompactKstCreatedAt(value: string | null | undefined): string | null {
+  if (!value) return null;
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return null;
+  const parts = Object.fromEntries(
+    COMPACT_KST_DATE_TIME_FORMATTER.formatToParts(date).map((part) => [part.type, part.value]),
+  );
+  return `${parts.year}/${parts.month}/${parts.day} ${parts.hour === "24" ? "00" : parts.hour}:${parts.minute}:${parts.second}`;
+}
 
 export function formatKoreanCalendarDate(value: string, fallback = "미정"): string {
   const matched = CALENDAR_DATE_PATTERN.exec(value);

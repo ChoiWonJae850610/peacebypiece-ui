@@ -142,7 +142,7 @@ export default function WorkOrderMaterialEditor({ state, dirty, onChange, onCanc
         <Pressable accessibilityLabel={`${materialLabel} 편집 취소`} accessibilityRole="button" disabled={saving} onPress={onCancel} style={({ pressed }) => [styles.backButton, pressed && styles.pressed]}><X color="#3f352d" size={20} /></Pressable>
         <View style={styles.headerText}>
           <Text style={styles.title}>{state.mode === "create" ? `${materialLabel} 추가` : `${materialLabel} 수정`}</Text>
-          <Text style={styles.caption}>draft 작업지시서에 명시적으로 저장합니다.</Text>
+          <Text style={styles.caption}>초안 레시피에 명시적으로 저장합니다.</Text>
         </View>
         <Text style={styles.unsavedBadge}>{dirty ? "저장 전" : "변경 없음"}</Text>
       </View> : null}

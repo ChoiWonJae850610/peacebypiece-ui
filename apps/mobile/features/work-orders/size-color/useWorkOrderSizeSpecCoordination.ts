@@ -1,4 +1,5 @@
 import { useCallback, type MutableRefObject } from "react";
+import type { WorkOrderDraftBatchCoordinator } from "@/application/draftBatchCoordinator";
 
 import { MobileApiError, type MobileCurrentUser, type WorkOrderDetailCore } from "@/domain/mobileContract";
 import { canEditWorkOrder } from "@/domain/workOrderPolicy";
@@ -15,6 +16,7 @@ type Input = {
   readonly onTotalQuantityProjection: (totalQuantity: number, nextVersion: number) => void;
   readonly onVersionProjection: (nextVersion: number) => void;
   readonly onAuthenticationError: (error: MobileApiError) => void;
+  readonly draftBatch: WorkOrderDraftBatchCoordinator;
 };
 
 export function useWorkOrderSizeSpecCoordination(input: Input) {
@@ -59,6 +61,7 @@ export function useWorkOrderSizeSpecCoordination(input: Input) {
     workOrderId: input.detail?.header.id ?? null,
     entityVersion: input.detail?.header.entityVersion ?? null,
     canEdit: canEditWorkOrder(input.detail, input.user),
+    canEditStructure: canEditWorkOrder(input.detail, input.user) && input.detail?.header.identity.derivationKind !== "reorder",
     bundle: read.boundary.state.bundle,
     onReconcile: read.reconcileMutation,
     onTotalQuantityReconcile: input.onTotalQuantityProjection,
@@ -68,6 +71,7 @@ export function useWorkOrderSizeSpecCoordination(input: Input) {
     onConflict: async () => { await refresh(); },
     onRefreshLatest: refresh,
     onAuthenticationError: input.onAuthenticationError,
+    draftBatch: input.draftBatch,
   });
 
   return {

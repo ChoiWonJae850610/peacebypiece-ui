@@ -1,0 +1,10 @@
+import "server-only";
+import { randomUUID } from "crypto";
+import { createWaflApiSuccess } from "@/lib/api/waflApiServer";
+import { requireWorkspaceApiGuard } from "@/lib/auth/apiRouteGuards";
+import { createCommandErrorResponse, mapCommandGuardFailureStatus, readBoundedCommandJson } from "@/lib/domain/work-orders/command/commandRoute";
+import { WorkOrderCommandRequestError } from "@/lib/domain/work-orders/command/commandService";
+import { createWorkOrderCopy } from "@/lib/domain/work-orders/command/copyService";
+import type { CorrelationId } from "@/lib/domain/work-orders/contracts";
+
+export async function handleCreateWorkOrderCopy(request:Request,sourceWorkOrderId:string){const correlationId=randomUUID() as CorrelationId;const guard=await requireWorkspaceApiGuard({permissionCode:"workorder.create"});if(!guard.ok)return createCommandErrorResponse({...mapCommandGuardFailureStatus(guard.response.status),correlationId});try{const body=await readBoundedCommandJson(request);if(!body||typeof body!=="object"||Array.isArray(body))throw new WorkOrderCommandRequestError({code:"VALIDATION_ERROR",status:400,message:"복사 요청을 확인해 주세요."});const value=body as Record<string,unknown>;const result=await createWorkOrderCopy({sourceWorkOrderId,clientRequestId:typeof value.clientRequestId==="string"?value.clientRequestId:"",idempotencyKey:request.headers.get("Idempotency-Key")??"",scope:guard.scope,companyMemberId:guard.session.companyMemberId,correlationId});return createWaflApiSuccess(result.data,{status:result.idempotentReplay?200:201,headers:{"Cache-Control":"no-store","X-WAFL-Correlation-Id":correlationId,"X-WAFL-Idempotent-Replay":result.idempotentReplay?"1":"0"}});}catch(error){if(error instanceof WorkOrderCommandRequestError)return createCommandErrorResponse({code:error.code,message:error.message,status:error.status,retryable:error.retryable,correlationId});console.error("[WORK_ORDER_COPY_CREATE_FAILED]",{correlationId,errorName:error instanceof Error?error.name:"UnknownError"});return createCommandErrorResponse({code:"INTERNAL_ERROR",message:"작업지시서를 복사하지 못했습니다.",status:500,retryable:true,correlationId});}}

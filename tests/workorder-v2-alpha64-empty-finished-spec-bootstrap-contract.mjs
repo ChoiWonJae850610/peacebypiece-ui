@@ -18,10 +18,10 @@ const ia = read("docs/project/app-v2/11b-maker-workorder-tab-ia-v2.md");
 
 assert.match(readOnly, /function SpecItemEntry/u, "empty and non-empty branches must reuse one entry owner");
 assert.equal((readOnly.match(/<SpecItemEntry /gu) ?? []).length, 2, "table corner and empty state must share the same chooser entry");
-assert.match(readOnly, /pomColumns\.length === 0 \|\| currentSpecifications\.sizes\.length === 0[\s\S]*edit\?\.canEdit && onEditSpecItems/u);
+assert.match(readOnly, /pomColumns\.length === 0 \|\| currentSpecifications\.sizes\.length === 0[\s\S]*edit\?\.canEditStructure && onEditSpecItems/u);
 assert.match(readOnly, /등록된 완성 스펙 정보가 없습니다\./u);
 assert.match(editor, /onEditSpecItems=\{\(\) => \{ edit\.onBegin\(\); setChooser\("spec_item"\)/u);
-assert.match(editor, /edit\.canEdit && chooser === "spec_item"/u);
+assert.match(editor, /edit\.canEditStructure && chooser === "spec_item"/u);
 assert.doesNotMatch(editor, /categoryCode && chooser === "spec_item"|onEditSpecItems=\{categoryCode \?/u);
 assert.match(selector, /recommendationAvailable/u);
 assert.match(selector, /대분류를 선택하면 WAFL 추천 스펙 항목을 볼 수 있습니다/u);

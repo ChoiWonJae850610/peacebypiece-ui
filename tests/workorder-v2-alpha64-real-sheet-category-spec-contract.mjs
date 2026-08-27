@@ -34,7 +34,7 @@ assert.match(theme, /entranceDurationMs:\s*2[2-9]0/u);
 assert.match(theme, /exitDurationMs:\s*2\d\d/u);
 assert.match(sheet, /testID=\{draggable \? "wafl-sheet-header-drag-zone" : "wafl-sheet-fixed-header"\}/u);
 assert.doesNotMatch(sheet, /PanResponder|panResponder\.panHandlers/u);
-assert.doesNotMatch(sheet, /pointerEvents=/u);
+assert.match(sheet, /pointerEvents=\{replacesSheetDuringProcessing \? "none" : "auto"\}/u);
 for (const token of [
   "onStartShouldSetResponderCapture",
   "onMoveShouldSetResponderCapture",
@@ -84,7 +84,7 @@ for (const forbidden of ["front_rise", "back_rise", "thigh_width", "inseam"]) as
 for (const forbidden of ["shoulder_width", "armhole_depth", "sleeve_length", "neck_width"]) assert.equal(bottomCodes.has(forbidden), false, `bottoms polluted by ${forbidden}`);
 
 assert.match(editor, /onEditSpecItems=\{\(\) => \{ edit\.onBegin\(\); setChooser\("spec_item"\)/u);
-assert.match(editor, /edit\.canEdit && chooser === "spec_item"/u);
+assert.match(editor, /edit\.canEditStructure && chooser === "spec_item"/u);
 assert.match(editor, /recommendationAvailable=\{categoryCode !== null\}/u);
 assert.match(selector, /"WAFL 제공"/u);
 assert.match(selector, /"우리 회사"/u);

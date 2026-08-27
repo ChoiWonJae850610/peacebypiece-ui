@@ -120,7 +120,7 @@ export default function WorkOrderImageGallery(props: Props) {
     <View style={styles.container} testID="work-order-image-gallery">
       <WaflActionTileGroup testID="work-order-image-compact-actions">
         <WaflActionTile
-          accessibilityLabel="사진 보관함에서 작업지시서 이미지 선택"
+          accessibilityLabel="사진 보관함에서 레시피 이미지 선택"
           disabled={!props.canEdit || props.busy}
           icon={Images}
           label="사진"
@@ -128,7 +128,7 @@ export default function WorkOrderImageGallery(props: Props) {
           testID="work-order-image-library"
         />
         <WaflActionTile
-          accessibilityLabel="카메라로 작업지시서 이미지 촬영"
+          accessibilityLabel="카메라로 레시피 이미지 촬영"
           disabled={!props.canEdit || props.busy}
           icon={Camera}
           label="카메라"
@@ -161,7 +161,7 @@ export default function WorkOrderImageGallery(props: Props) {
           <View {...swipeResponder.panHandlers} style={styles.preview} testID="work-order-image-swipe-surface">
             <Pressable accessibilityLabel="이미지 전체화면으로 보기" onPress={() => setFullscreen(true)} style={styles.previewPressable}>
               <ImageWithFallback
-                accessibilityLabel={selected.optionalTitle ?? "작업지시서 이미지"}
+                accessibilityLabel={selected.optionalTitle ?? "레시피 이미지"}
                 candidates={[selected.previewUrl, selected.originalUrl, selected.viewUrl]}
                 key={`preview-${selected.id}`}
                 resizeMode="cover"
@@ -246,19 +246,15 @@ export default function WorkOrderImageGallery(props: Props) {
       </View>
 
       <Modal animationType="fade" onRequestClose={() => setFullscreen(false)} presentationStyle="fullScreen" visible={fullscreen}>
-        <View style={styles.fullscreen}>
+        <View {...swipeResponder.panHandlers} style={styles.fullscreen}>
           <Pressable accessibilityLabel="전체화면 닫기" onPress={() => setFullscreen(false)} style={styles.fullscreenClose}>
             <X color="#fff" size={26} />
           </Pressable>
-          {selected ? (
-            <ImageWithFallback
-              accessibilityLabel="작업지시서 이미지 전체화면"
-              candidates={[selected.fullscreenUrl, selected.originalUrl, selected.previewUrl, selected.viewUrl]}
-              key={`fullscreen-${selected.id}`}
-              resizeMode="contain"
-              style={styles.fullscreenImage}
-            />
-          ) : null}
+          {selected ? <ScrollView contentContainerStyle={styles.fullscreenZoomContent} maximumZoomScale={4} minimumZoomScale={1} showsHorizontalScrollIndicator={false} showsVerticalScrollIndicator={false} style={styles.fullscreenZoom}>
+            <ImageWithFallback accessibilityLabel="레시피 이미지 전체화면" candidates={[selected.fullscreenUrl, selected.originalUrl, selected.previewUrl, selected.viewUrl]} key={`fullscreen-${selected.id}`} resizeMode="contain" style={styles.fullscreenImage}/>
+          </ScrollView> : null}
+          <Pressable accessibilityLabel="이전 전체화면 이미지" disabled={props.images.length<2} onPress={()=>move(-1)} style={[styles.fullscreenArrow,styles.fullscreenArrowLeft]}><ChevronLeft color="#fff" size={25}/></Pressable>
+          <Pressable accessibilityLabel="다음 전체화면 이미지" disabled={props.images.length<2} onPress={()=>move(1)} style={[styles.fullscreenArrow,styles.fullscreenArrowRight]}><ChevronRight color="#fff" size={25}/></Pressable>
           <Text style={styles.fullscreenIndex}>{selectedIndex + 1} / {props.images.length}</Text>
         </View>
       </Modal>
@@ -309,7 +305,12 @@ const styles = StyleSheet.create({
   attachmentName: { color: "#4b433c", fontFamily: WAFL_FONTS.semibold, fontSize: 10 },
   attachmentOpen: { color: "#8a7d70", fontFamily: WAFL_FONTS.regular, fontSize: 8, marginTop: 2 },
   fullscreen: { alignItems: "center", backgroundColor: "#080b10", flex: 1, justifyContent: "center" },
-  fullscreenImage: { height: "100%", width: "100%" },
+  fullscreenZoom:{flex:1,width:"100%"},
+  fullscreenZoomContent:{alignItems:"center",flexGrow:1,justifyContent:"center"},
+  fullscreenImage: { height: "100%", minHeight: 600, width: "100%" },
+  fullscreenArrow:{alignItems:"center",backgroundColor:"rgba(0,0,0,0.5)",borderRadius:999,height:44,justifyContent:"center",position:"absolute",top:"50%",width:44,zIndex:2},
+  fullscreenArrowLeft:{left:10},
+  fullscreenArrowRight:{right:10},
   fullscreenClose: { backgroundColor: "rgba(0,0,0,0.55)", borderRadius: 999, padding: 9, position: "absolute", right: 18, top: 52, zIndex: 2 },
   fullscreenIndex: { bottom: 32, color: "#fff", fontFamily: WAFL_FONTS.bold, fontSize: 12, position: "absolute" },
 });

@@ -34,7 +34,8 @@ assert.match(production, /field: "partnerId"[\s\S]*requireSpecifiedValue: true, 
 assert.match(production, /field: "processCode"[\s\S]*requireSpecifiedValue: selectedProcess === null, selectFirstRealOption: false/u);
 assert.match(production, /allowUnset: true[\s\S]*field: "factoryPartnerId"[\s\S]*selectFirstRealOption: false/u);
 assert.match(reel, /openValue = resolveWaflReelOpeningValue/u);
-assert.match(reel, /value: openValue/u);
+assert.match(reel, /stagedOpeningValue = optionOnly \|\| kind === "unit" \|\| eighthInch[\s\S]*normalizeReelValue\(openValue\) \?\? openValue/u);
+assert.match(reel, /value: stagedOpeningValue/u);
 assert.match(reel, /confirmDisabled=\{applyDisabled \|\| pending\}/u);
 
 // One shared compact single-line footprint; focus changes semantic paint only.

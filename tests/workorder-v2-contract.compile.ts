@@ -38,6 +38,7 @@ const sampleListItem = {
   },
   processCount: 3,
   latestDocumentStatus: null,
+  createdAt: "2026-07-10T12:00:00+09:00" as WorkOrderListItem["createdAt"],
   identity: {
     isSample: false,
     derivationKind: "original",

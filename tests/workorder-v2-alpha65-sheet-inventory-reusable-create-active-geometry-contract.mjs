@@ -27,7 +27,7 @@ assert.ok(draggable.every((entry) => entry.root === "WaflInputSheet" || entry.ro
 assert.equal(WAFL_LIVE_SHEET_INVENTORY.filter((entry) => entry.classification === "B_FIXED").length, 1);
 assert.equal(WAFL_LIVE_SHEET_INVENTORY.filter((entry) => entry.classification === "C_INTERACTION_EXCEPTION").length, 2);
 assert.equal(WAFL_HISTORICAL_SHEET_REFERENCES.length, 2);
-assert.match(inputSheet, /onStartShouldSetResponderCapture=\{\(\) => draggable && openReady && !actionPending\}/u);
+assert.match(inputSheet, /onStartShouldSetResponderCapture=\{\(\) => draggable && openReady && !actionPending && !dismissingRef\.current\}/u);
 assert.match(inputSheet, /resolveWaflSheetRelease/u);
 
 // Address search waits for the canonical presentation-ready generation before focusing.
@@ -38,7 +38,8 @@ assert.doesNotMatch(address, /PanResponder|onResponderMove/u);
 
 // Size, Color and Spec use one field/action shell; palette remains Color-owned.
 assert.match(reusable, /WaflSheetValueField/u);
-assert.match(reusable, /WaflPrimaryActionButton/u);
+assert.match(reusable, /useWaflSheetDirectInputConfirm\(props\.onCreate, disabled\)/u);
+assert.doesNotMatch(reusable, /WaflPrimaryActionButton/u);
 assert.match(primaryAction, /width: "100%"/u);
 assert.equal((sizeColor.match(/<WaflReusableCreateForm/g) ?? []).length, 2);
 assert.equal((spec.match(/<WaflReusableCreateForm/g) ?? []).length, 1);

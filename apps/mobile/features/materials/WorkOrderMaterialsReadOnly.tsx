@@ -55,6 +55,9 @@ type Props = {
   readonly materialType: MaterialType;
   readonly state: MaterialReadViewState;
   readonly canEdit: boolean;
+  readonly canManageStructure?: boolean;
+  readonly canManageOrder?: boolean;
+  readonly editableFields?: readonly (keyof MaterialDraftFields)[];
   readonly lifecycleBusyId: string | null;
   readonly orderBusyId: string | null;
   readonly orderBusyAction: MaterialOrderAction | null;
@@ -89,6 +92,7 @@ type MaterialInlineFieldProps = {
   readonly activeField: keyof MaterialDraftFields | null;
   readonly activeInlineSession: MaterialInlineEditSession | null;
   readonly canEdit: boolean;
+  readonly editableFields?: readonly (keyof MaterialDraftFields)[];
   readonly displayValue: string;
   readonly placeholder: string;
   readonly onEdit: (field: keyof MaterialDraftFields) => void;
@@ -114,7 +118,7 @@ type ReelTarget = {
 };
 
 function MaterialInlineField({
-  field, label, line, editor, activeField, activeInlineSession, canEdit, displayValue, placeholder,
+  field, label, line, editor, activeField, activeInlineSession, canEdit, editableFields, displayValue, placeholder,
   onEdit, onChange, onCancel, onSave, keyboardType = "default", maxLength,
   multiline = false, numberOfLines = 2, displayStyle, containerStyle, testID, onFieldFocus, characterMaximum,
 }: MaterialInlineFieldProps) {
@@ -123,7 +127,7 @@ function MaterialInlineField({
     && activeInlineSession?.itemId === line.id
     && activeInlineSession.field === field;
   const owner = active ? activeInlineSession : null;
-  const editable = canEdit;
+  const editable = canEdit && (!editableFields || editableFields.includes(field));
   const lineDraft = materialDraftFromLine(line);
   const currentValue = active ? editor?.draft[field] ?? "" : lineDraft[field];
   const nullableText = field === "colorOption" || field === "usageArea" || field === "memo";
@@ -167,6 +171,7 @@ function MaterialReelInlineField({
   editor,
   activeField,
   canEdit,
+  editableFields,
   onEdit,
   onOpen,
   containerStyle,
@@ -180,6 +185,7 @@ function MaterialReelInlineField({
   readonly editor: MaterialEditorViewState | null;
   readonly activeField: keyof MaterialDraftFields | null;
   readonly canEdit: boolean;
+  readonly editableFields?: readonly (keyof MaterialDraftFields)[];
   readonly onEdit: (field: keyof MaterialDraftFields) => void;
   readonly onOpen: (target: ReelTarget) => void;
   readonly containerStyle?: StyleProp<ViewStyle>;
@@ -188,7 +194,7 @@ function MaterialReelInlineField({
   readonly testID?: string;
 }) {
   const active = editor?.materialLineId === line.id && activeField === field;
-  const editable = canEdit;
+  const editable = canEdit && (!editableFields || editableFields.includes(field));
   const draft = editor?.materialLineId === line.id ? editor.draft : null;
   const unitCode = draft?.unitCode ?? line.unitCode;
   const value = field === "unitCode" ? unitCode : draft?.[field] ?? line[field];
@@ -285,10 +291,13 @@ function MaterialOrderActionButton({
   />;
 }
 
-function MaterialCard({ line, expanded, canEdit, lifecycleBusy, orderBusyAction, orderPolicy, editor, activeField, activeInlineSession, onEdit, onChangeEdit, onCancelEdit, onSaveEdit, onDelete, onOrderAction, onToggle, onFieldFocus, onOpenReel, onOpenPartner, partnerOptions }: {
+function MaterialCard({ line, expanded, canEdit, canManageStructure = canEdit, canManageOrder = canEdit, editableFields, lifecycleBusy, orderBusyAction, orderPolicy, editor, activeField, activeInlineSession, onEdit, onChangeEdit, onCancelEdit, onSaveEdit, onDelete, onOrderAction, onToggle, onFieldFocus, onOpenReel, onOpenPartner, partnerOptions }: {
   readonly line: WorkOrderMaterialLine;
   readonly expanded: boolean;
   readonly canEdit: boolean;
+  readonly canManageStructure?: boolean;
+  readonly canManageOrder?: boolean;
+  readonly editableFields?: readonly (keyof MaterialDraftFields)[];
   readonly lifecycleBusy: boolean;
   readonly orderBusyAction: MaterialOrderAction | null;
   readonly orderPolicy: MaterialOrderPolicy;
@@ -318,11 +327,11 @@ function MaterialCard({ line, expanded, canEdit, lifecycleBusy, orderBusyAction,
   const [memoExpandedKey, setMemoExpandedKey] = useState<string | null>(null);
   const [memoMeasurement, setMemoMeasurement] = useState({ key: "", lineCount: 0 });
   const fieldEditable = canEdit && orderPolicy.canEdit;
-  const inlineProps = { line, editor, activeField, activeInlineSession, canEdit: fieldEditable, onEdit, onChange: onChangeEdit, onCancel: onCancelEdit, onSave: onSaveEdit, onFieldFocus };
-  const reelProps = { line, editor, activeField, canEdit: fieldEditable, onEdit, onOpen: onOpenReel };
+  const inlineProps = { line, editor, activeField, activeInlineSession, canEdit: fieldEditable, editableFields, onEdit, onChange: onChangeEdit, onCancel: onCancelEdit, onSave: onSaveEdit, onFieldFocus };
+  const reelProps = { line, editor, activeField, canEdit: fieldEditable, editableFields, onEdit, onOpen: onOpenReel };
+  const partnerEditable = fieldEditable && (!editableFields || editableFields.includes("partnerId"));
   const cardActiveField = editor ? activeField : null;
   const activeHeaderField = cardActiveField === "unitCode" ? cardActiveField : null;
-  const activeQuantityField = cardActiveField === "requiredQuantity" || cardActiveField === "allowanceQuantity" ? cardActiveField : null;
   const memoIsActive = editor?.materialLineId === line.id && cardActiveField === "memo";
   const memoExpanded = expanded && memoExpandedKey === memoStateKey;
   const memoLineCount = memoMeasurement.key === memoStateKey ? memoMeasurement.lineCount : 0;
@@ -399,7 +408,7 @@ function MaterialCard({ line, expanded, canEdit, lifecycleBusy, orderBusyAction,
 
         <View testID="material-core-row" style={styles.coreRow}>
           <View style={styles.compactField}>
-            <WaflCompactSelectionField accessibilityLabel={MOBILE_MATERIAL_FIELD_LABELS.partner} editable={fieldEditable} label={MOBILE_MATERIAL_FIELD_LABELS.partner} onPress={onOpenPartner} value={line.partnerName?.trim() || partnerOptions.find((item) => item.id === line.partnerId)?.name || "미선택"} />
+            <WaflCompactSelectionField accessibilityLabel={MOBILE_MATERIAL_FIELD_LABELS.partner} editable={partnerEditable} label={MOBILE_MATERIAL_FIELD_LABELS.partner} onPress={onOpenPartner} value={line.partnerName?.trim() || partnerOptions.find((item) => item.id === line.partnerId)?.name || "미선택"} />
             {editor?.materialLineId === line.id && activeField === "partnerId" && editor.fieldErrors.partnerId ? <Text style={styles.fieldError}>{editor.fieldErrors.partnerId}</Text> : null}
           </View>
           <View style={styles.compactField}>
@@ -414,20 +423,11 @@ function MaterialCard({ line, expanded, canEdit, lifecycleBusy, orderBusyAction,
 
       {expanded ? (
         <View style={styles.expandedPanel}>
-          {activeQuantityField ? (
-            <View style={styles.coreRowExpanded} testID="material-quantity-row-expanded">
-              <ExpandedInlineField label={activeQuantityField === "requiredQuantity" ? "필요수량" : "로스·여유"} testID="material-quantity-expanded-editor">
-                {activeQuantityField === "requiredQuantity" ? <MaterialReelInlineField {...reelProps} displayStyle={styles.compactValue} field="requiredQuantity" label="필요수량" testID="material-inline-required-quantity" /> : null}
-                {activeQuantityField === "allowanceQuantity" ? <MaterialReelInlineField {...reelProps} displayStyle={styles.compactValue} field="allowanceQuantity" label="로스·여유" testID="material-inline-allowance-quantity" /> : null}
-              </ExpandedInlineField>
-            </View>
-          ) : (
           <View style={styles.coreRow}>
             <View style={styles.compactField}><Text style={styles.compactLabel}>필요수량</Text><MaterialReelInlineField {...reelProps} containerStyle={styles.compactInline} displayStyle={styles.compactValue} field="requiredQuantity" label="필요수량" testID="material-inline-required-quantity" /></View>
             <View style={styles.compactField}><Text style={styles.compactLabel}>단가</Text><MaterialInlineField {...inlineProps} containerStyle={styles.compactInline} displayStyle={styles.compactValue} displayValue={formatWon(calculationDraft.unitPrice)} field="unitPrice" keyboardType="number-pad" label="단가" maxLength={16} placeholder="0원" testID="material-inline-unit-price" /></View>
             <View style={styles.compactField}><Text style={styles.compactLabel}>로스·여유</Text><MaterialReelInlineField {...reelProps} containerStyle={styles.compactInline} displayStyle={styles.compactValue} field="allowanceQuantity" label="로스·여유" testID="material-inline-allowance-quantity" /></View>
           </View>
-          )}
           <View style={styles.readOnlyRows}>
             <View style={styles.readOnlyLine}><Text style={styles.readOnlyLabel}>사용부위</Text><MaterialInlineField {...inlineProps} characterMaximum={MATERIAL_USAGE_AREA_MAX_LENGTH} containerStyle={styles.readOnlyInline} displayStyle={styles.readOnlyValue} displayValue={usageArea} field="usageArea" label="사용부위" maxLength={MATERIAL_USAGE_AREA_MAX_LENGTH} multiline placeholder="미입력" testID="material-inline-usage-area" /></View>
             <View style={styles.readOnlyLine}>
@@ -485,8 +485,8 @@ function MaterialCard({ line, expanded, canEdit, lifecycleBusy, orderBusyAction,
         </View>
       ) : null}
 
-      <WaflCompactActionRow actions={actions.length || orderPolicy.canEdit ? <>
-            {actions.map((action) => (
+      <WaflCompactActionRow actions={(canManageOrder && actions.length) || (canManageStructure && orderPolicy.canEdit) ? <>
+            {canManageOrder ? actions.map((action) => (
               <MaterialOrderActionButton
                 action={action}
                 busy={orderBusyAction === action.kind}
@@ -494,8 +494,8 @@ function MaterialCard({ line, expanded, canEdit, lifecycleBusy, orderBusyAction,
                 key={action.kind}
                 onPress={() => onOrderAction(action.kind)}
               />
-            ))}
-            {orderPolicy.canEdit && line.deletable ? (
+            )) : null}
+            {canManageStructure && orderPolicy.canEdit && line.deletable ? (
               <WaflCompactCardAction
                 Icon={Trash2}
                 accessibilityLabel={`${line.name} ${materialLabel} 삭제`}
@@ -545,7 +545,7 @@ function MaterialListShell({ materialType, count, canEdit, embedded = false, onA
 }
 
 export default function WorkOrderMaterialsReadOnly({
-  materialType, state, canEdit, lifecycleBusyId, orderBusyId, orderBusyAction,
+  materialType, state, canEdit, canManageStructure = canEdit, canManageOrder = canEdit, editableFields, lifecycleBusyId, orderBusyId, orderBusyAction,
   activeEditor, activeField, activeInlineSession, onAdd, onEdit, onChangeInlineEdit, onCancelEdit, onCancelInlineEdit, onSaveEdit, onSaveInlineEdit,
   onDelete, onOrderAction, orderPolicy, onRetry, onLoadMore, onFieldFocus, partnerOptions, sectionCount, embedded = false,
 }: Props) {
@@ -555,10 +555,11 @@ export default function WorkOrderMaterialsReadOnly({
   const waiting = state.status === "loading" || state.status === "retrying";
   const materialLabel = materialType === "accessory" ? "부자재" : "원단";
   const materialSubject = materialType === "accessory" ? "부자재가" : "원단이";
+  const structureEditable = canManageStructure;
   const totalCount = Math.max(sectionCount ?? state.items.length, state.items.length);
 
   if (waiting && state.items.length === 0) {
-    return <MaterialListShell canEdit={canEdit} count={totalCount} embedded={embedded} materialType={materialType} onAdd={onAdd}>
+    return <MaterialListShell canEdit={structureEditable} count={totalCount} embedded={embedded} materialType={materialType} onAdd={onAdd}>
       <DelayedLoadingMessage
         identity={`materials:${materialType}`}
         loading
@@ -568,13 +569,13 @@ export default function WorkOrderMaterialsReadOnly({
   }
 
   if (state.status === "empty") {
-    return <MaterialListShell canEdit={canEdit} count={totalCount} embedded={embedded} materialType={materialType} onAdd={onAdd}>
-      <View style={styles.centerState}><Text style={styles.stateTitle}>등록된 {materialSubject} 없습니다</Text><Text style={styles.stateCaption}>이 작업지시서에 연결된 {materialLabel} 내역이 없습니다.</Text></View>
+    return <MaterialListShell canEdit={structureEditable} count={totalCount} embedded={embedded} materialType={materialType} onAdd={onAdd}>
+      <View style={styles.centerState}><Text style={styles.stateTitle}>등록된 {materialSubject} 없습니다</Text><Text style={styles.stateCaption}>이 레시피에 연결된 {materialLabel} 내역이 없습니다.</Text></View>
     </MaterialListShell>;
   }
 
   if (state.status === "error" && state.items.length === 0) {
-    return <MaterialListShell canEdit={canEdit} count={totalCount} embedded={embedded} materialType={materialType} onAdd={onAdd}>
+    return <MaterialListShell canEdit={structureEditable} count={totalCount} embedded={embedded} materialType={materialType} onAdd={onAdd}>
       <View style={styles.errorState}>
         <Text accessibilityRole="alert" style={styles.errorTitle}>{state.errorMessage ?? `${materialLabel} 정보를 불러오지 못했습니다`}</Text>
         <Text style={styles.stateCaption}>자동으로 다시 요청하지 않습니다.</Text>
@@ -587,7 +588,7 @@ export default function WorkOrderMaterialsReadOnly({
   }
 
   return (
-    <MaterialListShell canEdit={canEdit} count={totalCount} embedded={embedded} materialType={materialType} onAdd={onAdd}>
+    <MaterialListShell canEdit={structureEditable} count={totalCount} embedded={embedded} materialType={materialType} onAdd={onAdd}>
       {reelTarget ? (
         <WaflReelPickerSheet
           field={reelTarget.field}
@@ -630,6 +631,9 @@ export default function WorkOrderMaterialsReadOnly({
           activeField={activeField}
           activeInlineSession={activeInlineSession}
           canEdit={canEdit}
+          canManageStructure={structureEditable}
+          canManageOrder={canManageOrder}
+          editableFields={editableFields}
           editor={activeEditor?.materialLineId === line.id ? activeEditor : null}
           key={line.id}
           expanded={expandedIds.has(line.id)}
@@ -715,7 +719,6 @@ const styles = StyleSheet.create({
   statusBadgeUnknown: { backgroundColor: "#eee9e2", color: "#675f58" },
   expandedPanel: { borderTopColor: "#eee3d5", borderTopWidth: 1, paddingHorizontal: 10, paddingTop: 7 },
   coreRow: { alignItems: "flex-start", flexDirection: "row", gap: 5, marginTop: 7, width: "100%" },
-  coreRowExpanded: { alignItems: "stretch", marginTop: 7, minWidth: 0, width: "100%" },
   compactField: { flex: 1, minWidth: 0 },
   compactInline: { flex: 1, minWidth: 0 },
   compactLabel: { color: "#8b7e72", fontFamily: WAFL_FONTS.medium, fontSize: WAFL_THEME.typography.compactCardLabel.fontSize, lineHeight: WAFL_THEME.typography.compactCardLabel.lineHeight },

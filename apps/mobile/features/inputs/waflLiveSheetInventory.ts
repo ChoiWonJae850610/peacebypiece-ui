@@ -21,7 +21,7 @@ export const WAFL_LIVE_SHEET_INVENTORY: readonly WaflLiveSheetInventoryEntry[] =
   { surface: "원부자재 단위/필요수량/로스·여유 PICK", owner: "features/materials/WorkOrderMaterialsReadOnly.tsx", root: "WaflReelPickerSheet", sizing: "reelAdaptive", classification: "A_DRAGGABLE_FREE_SETTLE", nested: false, keyboardText: true, actions: "X/V", physicalPolicy: DRAG },
   { surface: "원부자재 거래처 PICK", owner: "features/materials/MaterialPartnerPickerSheet.tsx", root: "WaflReelPickerSheet", sizing: "reelAdaptive", classification: "A_DRAGGABLE_FREE_SETTLE", nested: false, keyboardText: false, actions: "X/V", physicalPolicy: DRAG },
   { surface: "제작 공장/공정/거래처 PICK", owner: "features/work-orders/production/WorkOrderProductionAuthoring.tsx", root: "WaflReelPickerSheet", sizing: "reelAdaptive", classification: "A_DRAGGABLE_FREE_SETTLE", nested: true, keyboardText: false, actions: "X/V", physicalPolicy: DRAG },
-  { surface: "새 작업지시서", owner: "features/work-orders/create/WorkOrderCreateSheet.tsx", root: "WaflInputSheet", sizing: "adaptiveExpandable", classification: "A_DRAGGABLE_FREE_SETTLE", nested: false, keyboardText: true, actions: "X/V", physicalPolicy: DRAG },
+  { surface: "새 레시피", owner: "features/work-orders/create/WorkOrderCreateSheet.tsx", root: "WaflInputSheet", sizing: "adaptiveExpandable", classification: "A_DRAGGABLE_FREE_SETTLE", nested: false, keyboardText: true, actions: "X/V", physicalPolicy: DRAG },
   { surface: "원단/부자재 추가", owner: "features/work-orders/overview/WorkOrderDetailOverview.tsx", root: "WaflInputSheet", sizing: "expandable", classification: "A_DRAGGABLE_FREE_SETTLE", nested: false, keyboardText: true, actions: "X/V", physicalPolicy: DRAG },
   { surface: "사이즈 선택", owner: "features/work-orders/size-color/WorkOrderSizeColorStructureEditor.tsx", root: "WaflInputSheet", sizing: "expandable", classification: "A_DRAGGABLE_FREE_SETTLE", nested: true, keyboardText: false, actions: "X/V", physicalPolicy: DRAG },
   { surface: "직접 사이즈 만들기", owner: "features/work-orders/size-color/WorkOrderSizeColorStructureEditor.tsx", root: "WaflInputSheet", sizing: "adaptiveExpandable", classification: "A_DRAGGABLE_FREE_SETTLE", nested: true, keyboardText: true, actions: "explicit-create", physicalPolicy: DRAG },
@@ -47,4 +47,14 @@ export const WAFL_LIVE_SHEET_INVENTORY: readonly WaflLiveSheetInventoryEntry[] =
 export const WAFL_HISTORICAL_SHEET_REFERENCES = [
   "components/InlineEditableFields.tsx",
   "features/production-card/ProductionCardMock.tsx",
+] as const;
+
+export const WAFL_DIRECT_INPUT_SHEET_INVENTORY = [
+  { surface: "새 레시피 제품명", owner: "features/work-orders/create/WorkOrderCreateSheet.tsx", fields: 1 },
+  { surface: "직접 사이즈/색상", owner: "features/work-orders/size-color/WorkOrderSizeColorStructureEditor.tsx", fields: 1 },
+  { surface: "직접 스펙 생성/이름 변경", owner: "features/work-orders/size-color/SpecItemSelectionSheet.tsx", fields: 1 },
+  { surface: "시즌/세부 품목 직접입력", owner: "features/work-orders/overview/WorkOrderOverviewPickerSheets.tsx", fields: 1 },
+  { surface: "사용자 저장 스펙 이름/이름 변경", owner: "features/work-orders/size-color/MeasurementTemplateSheets.tsx", fields: 1 },
+  { surface: "퀵 전달 기사 정보", owner: "features/work-orders/documents/WorkOrderDocumentWorkbench.tsx", fields: 3 },
+  { surface: "퀵 전달 상세주소/연락처", owner: "features/work-orders/documents/QuickDeliveryFoundation.tsx", fields: 2 },
 ] as const;

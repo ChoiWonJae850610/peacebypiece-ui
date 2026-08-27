@@ -23,10 +23,9 @@ assert.match(app, /function returnToList\(\)[\s\S]*leaveWithDraftPolicy\("list",
 assert.match(app, /function selectItemSafely[\s\S]*leaveWithDraftPolicy\("work-order", \(\) => void selectItem\(item\)\)/);
 assert.match(app, /function disconnectSafely\(\)[\s\S]*leaveWithDraftPolicy\("session-loss", \(\) => void disconnect\(\)\)/);
 assert.match(app, /onRequestSectionChange=\{\(onProceed\) => leaveWithDraftPolicy\("feature", onProceed\)\}/);
-for (const intent of ["list", "work-order", "feature", "session-loss"]) {
-  assert.equal(decideDraftExit({ intent, mutationInFlight: false }), "discard");
+for (const intent of ["list", "work-order", "feature", "session-loss", "background"]) {
+  assert.equal(decideDraftExit({ intent, mutationInFlight: false }), "flush");
 }
-assert.equal(decideDraftExit({ intent: "background", mutationInFlight: false }), "preserve");
 assert.match(app, /basicInfoDraft\.productName !== detail\.header\.productName/);
 assert.match(app, /overviewMutation\.inFlight/);
 assert.match(app, /저장 중입니다\./);
@@ -78,7 +77,7 @@ assert.deepEqual(await mutation.execute(true, async () => {
 releaseFirst();
 assert.deepEqual(await firstCheck, { kind: "success", value: "saved" });
 assert.equal(patchCount, 1, "one explicit Check may issue at most one PATCH");
-assert.equal(decideDraftExit({ intent: "list", mutationInFlight: false }), "discard");
-assert.equal(patchCount, 1, "silent navigation discard must not issue a PATCH");
+assert.equal(decideDraftExit({ intent: "list", mutationInFlight: false }), "flush");
+assert.equal(patchCount, 1, "draft-exit policy decision itself must not issue a PATCH");
 
 console.log("workorder v2 alpha.46 unsaved/conflict contract: PASS");

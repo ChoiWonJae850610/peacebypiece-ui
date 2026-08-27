@@ -14,7 +14,7 @@ export async function getWorkOrderImages(workOrderId: string): Promise<WorkOrder
     { method: "GET" },
   );
   if (!body.ok || !isJsonObject(body.data) || !Array.isArray(body.data.items)) {
-    throw new MobileApiError({ code: "MALFORMED_RESPONSE", message: "작업지시서 이미지 응답이 올바르지 않습니다." });
+    throw new MobileApiError({ code: "MALFORMED_RESPONSE", message: "레시피 이미지 응답이 올바르지 않습니다." });
   }
   const images = body.data.items.filter(isJsonObject).filter((item) => item.assetType === "image");
   const attachments = body.data.items.filter(isJsonObject).filter((item) => item.assetType === "attachment");
@@ -48,7 +48,7 @@ export async function getWorkOrderImages(workOrderId: string): Promise<WorkOrder
     || typeof body.data.revisionId !== "string"
     || !Number.isSafeInteger(body.data.entityVersion)
   ) {
-    throw new MobileApiError({ code: "MALFORMED_RESPONSE", message: "작업지시서 이미지 응답이 올바르지 않습니다." });
+    throw new MobileApiError({ code: "MALFORMED_RESPONSE", message: "레시피 이미지 응답이 올바르지 않습니다." });
   }
   return {
     workOrderId,

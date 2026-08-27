@@ -13,7 +13,7 @@ assert.deepEqual(resolveWaflSheetFocusExpansion({ currentOffset: 180, focusedBot
 assert.deepEqual(resolveWaflSheetFocusExpansion({ currentOffset: 180, focusedBottom: 420, keyboardTop: 520, revealContext: 56 }), { requiredRise: 0, targetOffset: 180 });
 
 const sheet = fs.readFileSync("apps/mobile/features/inputs/WaflInputSheet.tsx", "utf8");
-for (const owner of ["preKeyboardSettledOffsetRef", "keyboardSystemExpandedRef", "userDraggedDuringKeyboardRef", "UIManager.measure", "resolveWaflSheetFieldReveal", "translatedRef.current - reveal.requiredRise"]) assert.ok(sheet.includes(owner), `keyboard owner missing ${owner}`);
+for (const owner of ["preKeyboardSettledOffsetRef", "resolveWaflSheetKeyboardRestoreOffset", "userDraggedDuringKeyboardRef", "UIManager.measureInWindow", "resolveWaflSheetVisualRevealPlan", "reveal.targetOffset"]) assert.ok(sheet.includes(owner), `keyboard owner missing ${owner}`);
 assert.match(sheet, /paddingBottom: WAFL_THEME\.sheet\.bodyEndGap \+ keyboardInset/u);
 assert.match(sheet, /style=\{\{ height: keyboardLayout\.bottomInset \}\}/u);
 assert.doesNotMatch(sheet, /Math\.max\(safeBottom, keyboardInset\)/u);

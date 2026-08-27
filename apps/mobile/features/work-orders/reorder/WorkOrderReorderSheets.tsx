@@ -43,7 +43,7 @@ export function WorkOrderReorderCreateSheet(props: {
   >
     <View style={styles.form}>
       <Text style={styles.sourceBasis}>기준 작업 · {props.sourceLabel}</Text>
-      <Text style={styles.confirmation}>{props.expectedRound}차 리오더 작업지시서를 작성하시겠습니까?</Text>
+      <Text style={styles.confirmation}>{props.expectedRound}차 리오더 레시피를 만드시겠습니까?</Text>
       {props.requestError ? <Text accessibilityRole="alert" style={styles.error}>{props.requestError}</Text> : null}
     </View>
   </WaflInputSheet>;
@@ -57,13 +57,18 @@ export function WorkOrderSeriesHistorySheet(props: {
 }) {
   return <WaflInputSheet onCancel={props.onClose} sizing="adaptiveExpandable" title="작업 이력" visible={props.visible}>
     <View style={styles.historyList} testID="work-order-series-history">
-      {props.history?.items.map((item) => <Pressable accessibilityLabel={`${item.reorderRound === 0 ? "본생산" : `${item.reorderRound}차 리오더`}${item.current ? ", 현재" : ""}`} accessibilityRole="button" disabled={item.current} key={item.workOrderId} onPress={() => props.onSelect(item.workOrderId)} style={({ pressed }) => [styles.historyRow, item.current && styles.currentRow, pressed && styles.pressed]}>
+      {props.history?.items.map((item) => {
+        const deleted = item.status === "deleted" || item.workOrderId === null;
+        const content = <>
         <View style={styles.historyText}>
           <Text style={styles.historyTitle}>{item.reorderRound === 0 ? "본생산" : `${item.reorderRound}차 리오더`}</Text>
-          <Text numberOfLines={1} style={styles.historyMeta}>{item.productName} · {item.totalQuantity.toLocaleString("ko-KR")}벌</Text>
+          <Text numberOfLines={1} style={styles.historyMeta}>{deleted ? "삭제됨" : `${item.productName} · ${item.totalQuantity.toLocaleString("ko-KR")}벌`}</Text>
         </View>
-        {item.current ? <Text style={styles.current}>현재</Text> : <ChevronRight color={WAFL_THEME.color.readOnly} size={WAFL_THEME.icon.small} />}
-      </Pressable>)}
+        {deleted ? <Text style={styles.deleted}>삭제됨</Text> : item.current ? <Text style={styles.current}>현재</Text> : <ChevronRight color={WAFL_THEME.color.readOnly} size={WAFL_THEME.icon.small} />}
+        </>;
+        if (deleted) return <View accessibilityLabel={`${item.reorderRound}차 리오더, 삭제됨`} key={`deleted-${item.reorderRound}`} style={[styles.historyRow, styles.deletedRow]}>{content}</View>;
+        return <Pressable accessibilityLabel={`${item.reorderRound === 0 ? "본생산" : `${item.reorderRound}차 리오더`}${item.current ? ", 현재" : ""}`} accessibilityRole="button" disabled={item.current} key={item.workOrderId} onPress={() => props.onSelect(item.workOrderId as string)} style={({ pressed }) => [styles.historyRow, item.current && styles.currentRow, pressed && styles.pressed]}>{content}</Pressable>;
+      })}
     </View>
   </WaflInputSheet>;
 }
@@ -84,4 +89,6 @@ const styles = StyleSheet.create({
   historyTitle: { color: WAFL_THEME.color.deepNavy, fontFamily: WAFL_FONTS.semibold, fontSize: WAFL_THEME.typography.bodyText.fontSize },
   historyMeta: { color: WAFL_THEME.color.readOnly, fontFamily: WAFL_FONTS.medium, fontSize: WAFL_THEME.typography.meta.fontSize, marginTop: 2 },
   current: { color: WAFL_THEME.color.brickOrange, fontFamily: WAFL_FONTS.semibold, fontSize: WAFL_THEME.typography.meta.fontSize },
+  deleted: { color: WAFL_THEME.color.readOnly, fontFamily: WAFL_FONTS.semibold, fontSize: WAFL_THEME.typography.meta.fontSize },
+  deletedRow: { opacity: 0.72 },
 });

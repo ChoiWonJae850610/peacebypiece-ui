@@ -149,9 +149,9 @@ for (const badge of ["statusBadgeEditing", "statusBadgeRequested", "statusBadgeC
 assert.match(materials, /materialIdentity[\s\S]{0,1800}headerBadgeCluster[\s\S]{0,500}unitChip[\s\S]{0,500}statusBadge/);
 assert.match(materials, /testID="material-core-row"[\s\S]{0,1600}MOBILE_MATERIAL_FIELD_LABELS\.partner[\s\S]{0,1600}line\.partnerId[\s\S]{0,1600}>색상·옵션</);
 assert.match(materials, /MaterialPartnerPickerSheet/);
-assert.equal((materials.match(/label="필요수량"/g) ?? []).length, 2, "compact and expanded 필요수량 source slots must both exist");
-assert.match(materials, /activeQuantityField \? \([\s\S]*material-quantity-row-expanded[\s\S]*\) : \([\s\S]*styles\.coreRow/, "compact and expanded quantity slots must be mutually exclusive");
-assert.match(materials, /expandedPanel[\s\S]{0,1800}label="필요수량"[\s\S]{0,1800}label="단가"[\s\S]{0,1800}label="로스·여유"/);
+assert.equal((materials.match(/label="필요수량"/g) ?? []).length, 1, "필요수량 must keep one geometry-neutral compact slot");
+assert.doesNotMatch(materials, /material-quantity-row-expanded|activeQuantityField/, "quantity editing must not expand the material card");
+assert.match(materials, /testID="material-core-row"[\s\S]{0,2600}label="필요수량"[\s\S]{0,2600}label="단가"[\s\S]{0,2600}label="로스·여유"/);
 const usageAreaFieldIndex = materials.search(
   /field\s*=\s*["']usageArea["']\s+label\s*=\s*["']사용부위["']/,
 );
@@ -227,9 +227,8 @@ for (const errorBoundary of ["status === 401", "status === 403", "status === 404
 assert.doesNotMatch(app + materials, /setInterval|setTimeout\([^)]*getWorkOrderMaterials|polling/i);
 assert.doesNotMatch(app + materials, /mockProductionCard|mockMaterial|productionCards/);
 assert.doesNotMatch(materials, /console\.(?:log|debug|info|warn|error)/);
-assert.equal((app.match(/console\.(?:log|debug|info|warn|error)/g) ?? []).length, 2, "only bounded save metrics may log in external QA");
-assert.equal((app.match(/console\.info/g) ?? []).length, 2);
-assert.match(app, /WAFL_MATERIAL_SAVE_METRIC/);
+assert.equal((app.match(/console\.(?:log|debug|info|warn|error)/g) ?? []).length, 1, "only the bounded overview save metric may log in external QA");
+assert.equal((app.match(/console\.info/g) ?? []).length, 1);
 assert.match(app, /WAFL_OVERVIEW_SAVE_METRIC/);
 
 const materialUiSlice = [materials, detail].join("\n");

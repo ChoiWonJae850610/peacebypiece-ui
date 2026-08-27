@@ -143,7 +143,7 @@ function mapRepositoryError(error: unknown): never {
 function expiry(days: number | undefined): { readonly days: number; readonly expiresAt: string } {
   const normalized = days ?? DOCUMENT_ACCESS_DEFAULT_EXPIRY_DAYS;
   if (!(DOCUMENT_MANUAL_SHARE_EXPIRY_DAY_CHOICES as readonly number[]).includes(normalized)) {
-    throw new DocumentAccessServiceError("VALIDATION_ERROR", 400, "공유 기간은 1일, 7일, 30일 중에서 선택해 주세요.");
+    throw new DocumentAccessServiceError("VALIDATION_ERROR", 400, "WAFL 공유 링크는 72시간 동안 사용할 수 있습니다.");
   }
   return { days: normalized, expiresAt: new Date(Date.now() + normalized * 86_400_000).toISOString() };
 }

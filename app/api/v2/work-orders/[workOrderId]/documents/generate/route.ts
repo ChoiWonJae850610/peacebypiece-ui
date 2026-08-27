@@ -16,7 +16,7 @@ export async function POST(request: Request, context: RouteContext) {
   const guard = await requireWorkspaceApiGuard({ permissionCode: "workorder.update" });
   if (!guard.ok) return guard.response;
   try {
-    const body = await request.json() as { revisionId?: unknown };
+    const body = await request.json() as { revisionId?: unknown; refreshActive?: unknown };
     const revisionId = typeof body.revisionId === "string" ? body.revisionId : "";
     const { workOrderId } = await context.params;
     const result = await generateIssuedWorkOrderDocument({
@@ -26,6 +26,7 @@ export async function POST(request: Request, context: RouteContext) {
       workOrderId,
       revisionId,
       idempotencyKey: request.headers.get("Idempotency-Key")?.trim() ?? "",
+      refreshActive: body.refreshActive === true,
     });
     return createWaflApiSuccess(result, { headers: { "Cache-Control": "no-store", "X-WAFL-Correlation-Id": correlationId } });
   } catch (error) {

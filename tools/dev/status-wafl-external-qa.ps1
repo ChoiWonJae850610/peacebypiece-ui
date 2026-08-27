@@ -1,4 +1,4 @@
-$ErrorActionPreference = "Stop"
+﻿$ErrorActionPreference = "Stop"
 . (Join-Path $PSScriptRoot "wafl-external-qa-common.ps1")
 
 $state = Read-WaflQaState
@@ -18,9 +18,9 @@ $metroRecord = @($state.processes | Where-Object role -eq 'expo') | Select-Objec
 $serveRecord = @($state.processes | Where-Object role -eq 'tailscale-serve') | Select-Object -First 1
 $nextPid = if ($nextRecord) { [int]$nextRecord.pid } else { 0 }
 $metroPid = if ($metroRecord) { [int]$metroRecord.pid } else { 0 }
-$checks.NextProcess = $roleAlive.next -eq $true
-$checks.MetroProcess = $roleAlive.expo -eq $true
-$checks.ServeProcess = $roleAlive.'tailscale-serve' -eq $true
+$checks.NextProcess = $roleAlive.ContainsKey('next') -and $roleAlive.next -eq $true
+$checks.MetroProcess = $roleAlive.ContainsKey('expo') -and $roleAlive.expo -eq $true
+$checks.ServeProcess = $roleAlive.ContainsKey('tailscale-serve') -and $roleAlive.'tailscale-serve' -eq $true
 $nextListener = @(Get-NetTCPConnection -State Listen -LocalPort ([int]$state.nextPort) -ErrorAction SilentlyContinue)
 $metroListener = @(Get-NetTCPConnection -State Listen -LocalPort ([int]$state.expoPort) -ErrorAction SilentlyContinue)
 $port3000Listener = @(Get-NetTCPConnection -State Listen -LocalPort 3000 -ErrorAction SilentlyContinue)
@@ -44,7 +44,7 @@ if ($metroPid -gt 0) {
 }
 $expoStderrPath = Join-Path (Get-WaflQaStateDirectory) "expo.stderr.log"
 $metroStaleStreamErrors = if (Test-Path -LiteralPath $expoStderrPath -PathType Leaf) {
-    @(Select-String -LiteralPath $expoStderrPath -Pattern "ERR_STREAM_UNABLE_TO_PIPE" -SimpleMatch -ErrorAction SilentlyContinue).Count
+    @(Select-String -LiteralPath $expoStderrPath -Pattern @("ERR_STREAM_UNABLE_TO_PIPE", "Unable to deserialize cloned data") -SimpleMatch -ErrorAction SilentlyContinue).Count
 } else { 0 }
 $checks.MetroStreamHealthy = $metroStaleStreamErrors -eq 0
 
@@ -148,8 +148,8 @@ $checks.EnvironmentContract = ($state.PSObject.Properties.Name -contains 'databa
     -and ($state.PSObject.Properties.Name -contains 'capabilityProfileReady') `
     -and [bool]$state.capabilityProfileReady `
     -and [string]$state.runtimeQaMode -eq "current-maker" `
-    -and [string]$state.makerQaProfile -in @("alpha64-current-maker", "alpha65-current-maker", "alpha67-current-maker") `
-    -and [string]$state.mutationMode -in @("current-maker-alpha64", "current-maker-alpha65", "current-maker-alpha67")
+    -and [string]$state.makerQaProfile -eq "alpha67-current-maker" `
+    -and [string]$state.mutationMode -eq "current-maker-alpha67"
 
 $readSmoke = Invoke-WaflQaDeveloperReadSmoke -State $state
 $checks.DeveloperAutoConnect = $readSmoke.AutoConnectHttp -eq 200

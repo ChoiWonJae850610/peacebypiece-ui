@@ -57,7 +57,7 @@ const reorderSheet = read("apps/mobile/features/work-orders/reorder/WorkOrderReo
 const reorderValidation = read("lib/domain/work-orders/command/validation.ts");
 const reorderApi = read("apps/mobile/lib/api/workOrdersApi.ts");
 const reorderRepository = read("lib/domain/work-orders/command/reorderCommandRepository.ts");
-assert.match(reorderSheet, /\{props\.expectedRound\}차 리오더 작업지시서를 작성하시겠습니까\?/u);
+assert.match(reorderSheet, /\{props\.expectedRound\}차 리오더 레시피를 만드시겠습니까\?/u);
 assert.match(reorderSheet, /cancelActionLabel="아니오"/u);
 assert.match(reorderSheet, /confirmActionLabel="예"/u);
 assert.doesNotMatch(reorderSheet, /WaflSheetValueField|총수량|납기 \(선택\)/u);
@@ -67,7 +67,8 @@ assert.match(experience, /totalQuantity: 0,[\s\S]{0,80}dueDate: null/u);
 assert.doesNotMatch(experience, /reorderTotalQuantity|reorderDueDate|changeReorderTotal|changeReorderDueDate/u);
 assert.match(reorderValidation, /parseRequiredNonNegativeQuantity/u);
 assert.match(reorderApi, /result\.totalQuantity < 0/u);
-assert.match(reorderRepository, /COALESCE\(max\(reorder_round\),0\)\+1/u);
+assert.match(reorderRepository, /COALESCE\(max\(used_round\),0\)\+1/u);
+assert.match(reorderRepository, /work_order\.reorder_deleted/u);
 assert.match(reorderRepository, /input\.command\.dueDate \?\? null[\s\S]{0,100}input\.command\.totalQuantity/u);
 
 console.log(JSON.stringify({

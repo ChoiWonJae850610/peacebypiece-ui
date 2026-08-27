@@ -63,15 +63,7 @@ export type WorkOrderCommandCode =
   | (typeof WORK_ORDER_COMMAND_CODES.productionProcess)[keyof typeof WORK_ORDER_COMMAND_CODES.productionProcess];
 
 export const MEASUREMENT_SNAPSHOT_CONTENT_COMMAND_CODES = [
-  WORK_ORDER_COMMAND_CODES.sizeStructure.create,
-  WORK_ORDER_COMMAND_CODES.sizeStructure.rename,
-  WORK_ORDER_COMMAND_CODES.sizeStructure.reorder,
-  WORK_ORDER_COMMAND_CODES.sizeStructure.delete,
   WORK_ORDER_COMMAND_CODES.measurement.patchCell,
-  WORK_ORDER_COMMAND_CODES.measurement.sizeCreate,
-  WORK_ORDER_COMMAND_CODES.measurement.sizePatch,
-  WORK_ORDER_COMMAND_CODES.measurement.sizeDelete,
-  WORK_ORDER_COMMAND_CODES.measurement.sizeReorder,
   WORK_ORDER_COMMAND_CODES.measurement.pomCreate,
   WORK_ORDER_COMMAND_CODES.measurement.pomPatch,
   WORK_ORDER_COMMAND_CODES.measurement.pomDelete,

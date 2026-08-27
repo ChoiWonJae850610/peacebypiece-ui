@@ -34,6 +34,7 @@ export async function getIssuedWorkOrderPreviewV2(input: {
   readonly workOrderId: WorkOrderId;
   readonly revisionId: WorkOrderRevisionId;
   readonly assignedCompanyMemberId: string | null;
+  readonly mode?: "issued" | "draft_preview";
 }): Promise<PreviewRepositoryResult> {
   const transactionStarted = performance.now();
   return withWaflV2TenantReadOnlyTransaction(async (client) => {
@@ -44,10 +45,14 @@ export async function getIssuedWorkOrderPreviewV2(input: {
     const header = await client.query<DbQueryResultRow>(`SELECT w.id, w.status, w.document_number_base, w.is_sample, w.derivation_kind, w.reorder_round, r.id revision_id, r.revision_no, r.revision_status, r.product_name_snapshot, r.product_type_code_snapshot, r.season_code_snapshot, r.item_code_snapshot, r.due_date_snapshot::text AS due_date_snapshot, r.total_quantity_snapshot, r.unit_price, r.fabric_total, r.accessory_total, r.process_total, r.estimated_total, r.memo, r.factory_delivery_memo, r.finalized_at FROM work_orders w JOIN work_order_revisions r ON ${TARGET}`, params);
     const h = header.rows[0];
     if (!h) return { data: null, queryCount: WORK_ORDER_V2_PREVIEW_QUERY_COUNT, queryMs: Number((performance.now() - started).toFixed(2)), transactionMs: Number((performance.now() - transactionStarted).toFixed(2)) };
-    if (!new Set(["issued", "revised", "completed"]).has(String(h.status)) || !new Set(["finalized", "superseded"]).has(String(h.revision_status))) {
+    const draftPreview = input.mode === "draft_preview";
+    const validStatus = draftPreview
+      ? String(h.status) === "draft" && String(h.revision_status) === "draft"
+      : new Set(["issued", "revised", "completed"]).has(String(h.status)) && new Set(["finalized", "superseded"]).has(String(h.revision_status));
+    if (!validStatus) {
       return { data: null, reason: "not_issued", queryCount: WORK_ORDER_V2_PREVIEW_QUERY_COUNT, queryMs: Number((performance.now() - started).toFixed(2)), transactionMs: Number((performance.now() - transactionStarted).toFixed(2)) };
     }
-    if (!h.document_number_base) throw new Error("PREVIEW_DOCUMENT_NUMBER_REQUIRED");
+    if (!draftPreview && !h.document_number_base) throw new Error("PREVIEW_DOCUMENT_NUMBER_REQUIRED");
     const materials = await client.query<DbQueryResultRow>(`SELECT m.id,m.material_type,m.material_id,m.name,m.color_option,m.usage_area,m.supplier_partner_id,m.supplier_name_snapshot,m.required_quantity,m.allowance_quantity,m.inventory_usage_quantity,m.order_quantity,m.unit_code,m.unit_price,m.amount,m.memo,m.status,m.display_order FROM work_order_material_lines m WHERE m.company_id=$1 AND m.revision_id=$2::uuid AND m.archived_at IS NULL ORDER BY m.material_type,m.display_order,m.id`, revisionParams);
     const colors = await client.query<DbQueryResultRow>(`SELECT id,display_name,hex_value,display_order FROM work_order_colors WHERE company_id=$1 AND revision_id=$2::uuid ORDER BY display_order,id`, revisionParams);
     const sizes = await client.query<DbQueryResultRow>(`SELECT id,size_code,display_label,display_order FROM work_order_sizes WHERE company_id=$1 AND revision_id=$2::uuid ORDER BY display_order,id`, revisionParams);
@@ -64,7 +69,7 @@ export async function getIssuedWorkOrderPreviewV2(input: {
     const projectionsMatch = matrixTotal === revisionTotal;
     const basicProcessMemo = text(processes.rows.find((row) => classifyWorkOrderProductionRole(String(row.process_type_code)) === "factory")?.memo);
     const data: WorkOrderIssuedPreviewReadModel = {
-      document: { title: "작업지시서", displayDocumentNumber: `${h.document_number_base}-R${h.revision_no}` as DisplayDocumentNumber, revisionNumber: count(h.revision_no) as RevisionNumber, issuedAt: dateTime(h.finalized_at) },
+      document: { title: "작업지시서", displayDocumentNumber: (draftPreview ? `PREVIEW-${String(h.id).slice(0, 8).toUpperCase()}` : `${h.document_number_base}-R${h.revision_no}`) as DisplayDocumentNumber, revisionNumber: count(h.revision_no) as RevisionNumber, issuedAt: draftPreview ? new Date().toISOString() as IsoDateTime : dateTime(h.finalized_at) },
       header: { workOrderId: String(h.id) as WorkOrderId, revisionId: String(h.revision_id) as WorkOrderRevisionId, productName: String(h.product_name_snapshot), productTypeCode: text(h.product_type_code_snapshot), seasonCode: text(h.season_code_snapshot), itemCode: text(h.item_code_snapshot), dueDate: date(h.due_date_snapshot), totalQuantity: matrixTotal, memo: text(h.memo), factoryDeliveryMemo: resolveFactoryDeliveryMemo({ basicProcessMemo, legacyFactoryDeliveryMemo: text(h.factory_delivery_memo) }), identity: { isSample: Boolean(h.is_sample), derivationKind: String(h.derivation_kind) as "original" | "reorder" | "rework", reorderRound: count(h.reorder_round) } },
       amounts: { currency: "KRW" as CurrencyCode, unitPrice: decimal(h.unit_price), fabricTotal: decimal(h.fabric_total), accessoryTotal: decimal(h.accessory_total), processTotal: decimal(h.process_total), estimatedTotal: decimal(h.estimated_total) },
       materials: { fabrics: materialRows.filter((m) => m.materialType === "fabric"), accessories: materialRows.filter((m) => m.materialType === "accessory") },
@@ -72,7 +77,7 @@ export async function getIssuedWorkOrderPreviewV2(input: {
       sizeSpecifications: { workOrderId: String(h.id) as WorkOrderId, revisionId: String(h.revision_id) as WorkOrderRevisionId, genderCode: text(specMeta?.b), categoryCode: text(specMeta?.c), measurementUnit: (text(specMeta?.d) ?? "cm") as "cm"|"inch", templateId: text(specMeta?.e) as never, templateVersion: specMeta?.f == null ? null : count(specMeta.f), templateName: text(specMeta?.g) ?? waflBasicSpecTemplateNameById(text(specMeta?.e)), sourceTemplateModified: false, sizes: sizeSpecSizes, pomColumns: poms, cells: specs.rows.filter((r)=>r.kind === "cell").map((r)=>({ sizeRowId:String(r.a) as never,pomColumnId:String(r.b) as never,decimalValue:text(r.c) as DecimalString|null,displayValue:r.c==null?null:formatMeasurementFromCm(Number(r.c),(text(specMeta?.d)??"cm") as "cm"|"inch") })), entityVersion: 1 as EntityVersion },
       processes: processes.rows.map((r)=>({ id:String(r.id) as ProcessId,processTypeCode:String(r.process_type_code),processName:String(r.process_name_snapshot),partnerId:text(r.partner_id) as never,partnerName:text(r.partner_name_snapshot),quantity:decimal(r.quantity),dueDate:date(r.due_date),unitCode:String(r.unit_code),currency:"KRW" as CurrencyCode,unitPrice:decimal(r.unit_price),amount:decimal(r.amount),memo:text(r.memo),applicationArea:text(r.application_area),applicationColorTarget:text(r.application_color_target),status:String(r.status) as ProcessStatus,displayOrder:count(r.display_order),editable:false,locked:true,role:classifyWorkOrderProductionRole(String(r.process_type_code)) })),
       assets: assets.rows.map((r)=>({ assetType:String(r.asset_type) as "image"|"attachment",filename:String(r.filename),mimeType:String(r.mime_type),displayOrder:count(r.display_order),isRepresentative:Boolean(r.is_representative),includeInDocument:Boolean(r.include_in_document) })),
-      issue: { workOrderStatus: String(h.status) as "issued"|"revised"|"completed", revisionStatus: String(h.revision_status) as "finalized"|"superseded" },
+      issue: { workOrderStatus: (draftPreview ? "issued" : String(h.status)) as "issued"|"revised"|"completed", revisionStatus: (draftPreview ? "finalized" : String(h.revision_status)) as "finalized"|"superseded" },
       layoutMetadata: { schemaVersion: 1, sectionOrder: SECTION_ORDER, businessTimezone: "Asia/Seoul" },
     };
     return { data, queryCount: WORK_ORDER_V2_PREVIEW_QUERY_COUNT, queryMs: Number((performance.now()-started).toFixed(2)), transactionMs: Number((performance.now()-transactionStarted).toFixed(2)) };

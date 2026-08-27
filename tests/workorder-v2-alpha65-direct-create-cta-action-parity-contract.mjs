@@ -26,7 +26,8 @@ assert.doesNotMatch(spec, /styles\.addButton|styles\.addText/u);
 // Child Size/Color/Spec creation shares one action slot, including pressed/disabled geometry.
 assert.equal((sizeColor.match(/<WaflReusableCreateForm/g) ?? []).length, 2);
 assert.equal((spec.match(/<WaflReusableCreateForm/g) ?? []).length, 1);
-assert.match(form, /<WaflPrimaryActionButton[^>]*label="추가"/u);
+assert.match(form, /useWaflSheetDirectInputConfirm\(props\.onCreate, disabled\)/u);
+assert.doesNotMatch(form, /WaflPrimaryActionButton|label="추가"/u);
 assert.match(primaryAction, /style=\{\(\{ pressed \}\) => \[styles\.button, blocked && styles\.disabled, pressed && !blocked && styles\.pressed\]\}/u);
 assert.match(primaryAction, /minHeight: 48, width: "100%"/u);
 assert.match(primaryAction, /accessibilityState=\{\{ busy: pending, disabled: blocked \}\}/u);
@@ -34,7 +35,7 @@ assert.equal((sizeColor.match(/reusableCreate sizing=\{WAFL_REUSABLE_CATALOG_CRE
 assert.match(sizeColor, /props\.reusableCreate \? props\.children : <View style=\{styles\.sheetContent\}>\{props\.children\}<\/View>/u);
 assert.match(sizeColor, /<ColorGrid[\s\S]*<ReadOnlyColorValues/u);
 
-for (const marker of ["`+ 직접 만들기`", "WaflReusableCreateEntryAction", "shared full-width `추가`"]) {
+for (const marker of ["`+ 직접 만들기`", "WaflReusableCreateEntryAction", "registered direct-input confirm"]) {
   assert.ok(`${design}\n${makerIa}`.includes(marker), `canonical docs missing ${marker}`);
 }
 

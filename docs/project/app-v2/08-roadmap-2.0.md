@@ -1,10 +1,18 @@
 # WAFL v2 App-first Roadmap and Version Delta
 
-Alpha.67 is finalized at `ALPHA67_FINALIZATION_COMPLETE`. The accepted product checkpoint is `ALPHA67_REORDER_PDF_BRANDED_SHARE_COMPLETE`: server-owned Nth Reorder creation/copy/reset, Work History and list/filter reconciliation, issued-document generation/retry, private R2, authenticated native viewing, branded public Viewer sharing, and the accepted monochrome print document are one completed boundary. Overview `예상 1벌 원가` uses canonical estimated total and canonical WorkOrder total quantity with exact KRW rounding and an unset-safe `미산정` state. Evidence is recorded through `89-alpha67-finalization-evidence.md`.
+Alpha.68 is finalized at `ALPHA68_FINALIZATION_COMPLETE`; its accepted product checkpoint is
+`ALPHA68_COMPLETE`. Draft local-first authoring and bounded section flush, list Delete/Copy/Reorder,
+independent Copy, locked Reorder production variables and lifecycle, core-first hydration, ephemeral
+final-renderer Preview, fixed 72-hour Share, native attachments, category/detail/template rebase, and
+the unified Maker Recipe/direct-input system are one completed boundary. Content-aware keyboard detent,
+submit-before-blur, internal-tap persistence, keypad-only minimal accessory, footerless reusable create,
+replace-sheet processing, canonical keyboard-plus-sheet close, and close-animation ownership are physically
+accepted on iPhone. APP_VERSION is `2.0.0-alpha.68`; migration remains `20/20`, new migration and
+production/Owner/ambiguous mutation are zero, and alpha.69 implementation has not started.
 
 Document role: canonical owner for the current result, next candidate, and Version Delta boundary. It is not the historical implementation ledger; completed details live in numbered immutable evidence.
 
-## Current result — 2.0.0-alpha.67
+## Previous result — 2.0.0-alpha.67
 
 Status: `ALPHA67_FINALIZATION_COMPLETE`.
 
@@ -21,6 +29,38 @@ per-piece cost from existing canonical totals without altering component costs o
 APP_VERSION is `2.0.0-alpha.67`. DEV/TEST migration ledger is `20/20`; new migration,
 production mutation and owner-fixture mutation are zero. Final Git and artifact identity are owned
 by the matching post-push repo-state.
+
+## Current result — 2.0.0-alpha.68
+
+Status: `ALPHA68_FINALIZATION_COMPLETE`.
+
+Accepted product checkpoint: `ALPHA68_COMPLETE`.
+
+Owner physical result: `PASS`.
+
+Draft fields now remain local after editing and flush only at tab/WorkOrder navigation, detail exit,
+app inactive/background best-effort, or immediately before a business command. The 1.2-second idle
+timer is not a persistence boundary. New Material and Production rows use temporary client identities;
+boundary flush creates or updates them atomically enough for the existing section contract, reconciles
+server identities, and only then runs lifecycle commands exactly once. Images and attachments retain
+their immediate object-store semantics.
+
+The current WorkOrder category and item code now own WAFL basic-spec recommendation and apply compatibility; empty or stale spec metadata cannot hide or cross-route T/B/O/D defaults. Reorder Draft deletion retains exact hard delete and a durable non-navigable deleted-round event, using the event table's canonical text identity. Binary Maker decisions use a two-row `WAFL INPUT` reel with safe default and one V, while ordinary editor sheets keep X/V. Transient result notices use one centered buttonless alert with a 1.2-second default; loading remains explicitly command-owned.
+
+The candidate replaces Draft keystroke/cell persistence with local-first dirty generations and
+bounded serialized section flushes, including one atomic Size/Color quantity batch. List rows expose
+confirmed swipe actions without full-swipe mutation. Copy is an idempotent server command producing
+an independent original Draft; Reorder keeps the existing server-assigned series round and accepts
+only production-variable edits. Confirmation flushes all Draft state before the canonical readiness
+and issue owners. Draft PDF Preview is authenticated and ephemeral; confirmed Download/Print/Share
+retain private transport, with one 72-hour branded Viewer policy. Confirmed due date and Basic Process
+memo are the sole post-confirm mutable values and refresh the existing generated-document identity.
+The Owner explicitly accepted the accumulated alpha.68 physical iPhone boundary after the final
+close-animation ownership correction. APP_VERSION is `2.0.0-alpha.68`. Dependency, native, EAS,
+schema, and migration additions are zero; production, Owner, and ambiguous data mutations are zero.
+The deferred post-alpha.68 backlog remains category/detail-specific recommended size presets, PDF
+first-page image balance/readability, `.waflspec`, drawing/sketch, organization/account/permission,
+production partner/contact management, universal credit billing, and service/pilot readiness.
 
 ## Previous result — 2.0.0-alpha.66
 

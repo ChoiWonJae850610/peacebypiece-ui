@@ -44,7 +44,7 @@ assert.match(viewer, /file:\/\/\$\{state\.file\.path\}/u);
 assert.doesNotMatch(viewer, /Linking|WebView|viewer-target|createDocumentShare|access-token/u);
 
 assert.match(transport, /downloadAuthenticatedDocumentPdf/u);
-assert.match(transport, /\/api\/v2\/work-orders\/documents\/\$\{encodeURIComponent\(input\.documentId\)\}\/file\?disposition=inline/u);
+assert.match(transport, /\/api\/v2\/work-orders\/documents\/\$\{encodeURIComponent\(input\.documentId \?\? ""\)\}\/file\?disposition=inline/u);
 assert.match(transport, /Accept: "application\/pdf"/u);
 assert.match(transport, /"Cache-Control": "no-store"/u);
 assert.match(transport, /contentType\.includes\("application\/pdf"\)/u);

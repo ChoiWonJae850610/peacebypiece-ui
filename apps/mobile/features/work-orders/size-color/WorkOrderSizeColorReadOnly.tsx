@@ -8,6 +8,7 @@ import { WAFL_FONTS } from "@/constants/fonts";
 import { WAFL_THEME } from "@/constants/theme";
 import type { MeasurementTemplateSummary, WorkOrderSizeColorMatrix, WorkOrderSizeSpec, WorkOrderSizeSpecCell } from "@/domain/mobileContract";
 import { formatMeasurementFromCm, normalizeCentimeterDraft, parseMeasurementToCm } from "@/domain/measurementPolicy";
+import { resolveWaflBasicSpecRecommendationCategory, type WorkOrderMajorCategoryCode } from "@/domain/workOrderCategoryPolicy";
 import WaflReelPickerSheet from "@/features/inputs/reel-picker/WaflReelPickerSheet";
 import WaflInputSheet, { type WaflSheetBodyScrollMetrics } from "@/features/inputs/WaflInputSheet";
 import WaflSectionCard from "@/features/layout/WaflSectionCard";
@@ -37,7 +38,8 @@ type Props = {
   readonly onEditSize?: () => void;
   readonly onEditSpecItems?: () => void;
   readonly structureBusy?: boolean;
-  readonly categoryCode?: string | null;
+  readonly categoryCode?: WorkOrderMajorCategoryCode | null;
+  readonly itemCode?: string | null;
 };
 
 const CONTENT_INSET = 12;
@@ -67,11 +69,12 @@ function QuantityCellEditor(props: {
   return <ControlledInlineEditValue
     accessibilityLabel={`${props.colorName} ${props.sizeLabel} 수량`}
     active={active}
+    allowEditingWhileSaving
     commitMode="blur-submit"
     dirty={draft !== props.value}
     displayStyle={styles.cellText}
     displayValue={formatDecimal(props.value)}
-    editable={!isSizeColorCommandPending(props.edit.pendingScope, "quantity")}
+    editable
     keyboardType="number-pad"
     maxLength={9}
     onActivate={() => { setDraft(props.value); setActive(true); props.onEditingChange(true); }}
@@ -241,11 +244,11 @@ function SpecTable(props: {
   />;
 }
 
-export default function WorkOrderSizeColorReadOnly({ identity, state, onRetry, edit, onEditColor, onEditSize, onEditSpecItems, structureBusy = false, categoryCode = null }: Props) {
+export default function WorkOrderSizeColorReadOnly({ identity, state, onRetry, edit, onEditColor, onEditSize, onEditSpecItems, structureBusy = false, categoryCode = null, itemCode = null }: Props) {
   const specifications = state.bundle?.specifications;
   const sectionIdentity = specifications ? `${specifications.workOrderId}:${specifications.revisionId}` : identity;
-  const effectiveCategoryCode = specifications?.categoryCode ?? categoryCode;
-  const templateQueryIdentity = specifications ? `${sectionIdentity}:${effectiveCategoryCode ?? ""}:${specifications.genderCode ?? ""}` : `unavailable:${state.status}`;
+  const effectiveCategoryCode = resolveWaflBasicSpecRecommendationCategory(categoryCode);
+  const templateQueryIdentity = specifications ? `${sectionIdentity}:${effectiveCategoryCode ?? ""}:${itemCode ?? ""}:${specifications.genderCode ?? ""}` : `unavailable:${state.status}`;
   const [templates, setTemplates] = useState<readonly MeasurementTemplateSummary[]>([]);
   const [templateError, setTemplateError] = useState<string | null>(null);
   const [templateLoading, setTemplateLoading] = useState(false);
@@ -253,6 +256,7 @@ export default function WorkOrderSizeColorReadOnly({ identity, state, onRetry, e
   const [templateSaveOpen, setTemplateSaveOpen] = useState(false);
   const [fullView, setFullView] = useState<"matrix" | "spec" | null>(null);
   const [specCanScrollFurther, setSpecCanScrollFurther] = useState(false);
+  const [readOnlyMeasurementUnit, setReadOnlyMeasurementUnit] = useState<{ readonly identity: string; readonly unit: MeasurementDisplayUnit } | null>(null);
   const loadedTemplateIdentity = useRef<string | null>(null);
 
   const loadTemplates = useCallback(async (force = false) => {
@@ -287,13 +291,24 @@ export default function WorkOrderSizeColorReadOnly({ identity, state, onRetry, e
   }
 
   const { matrix } = state.bundle;
-  const currentSpecifications = state.bundle.specifications;
+  const persistedSpecifications = state.bundle.specifications;
+  const displayMeasurementUnit = readOnlyMeasurementUnit?.identity === sectionIdentity ? readOnlyMeasurementUnit.unit : persistedSpecifications.measurementUnit;
+  const currentSpecifications: WorkOrderSizeSpec = displayMeasurementUnit === persistedSpecifications.measurementUnit
+    ? persistedSpecifications
+    : {
+      ...persistedSpecifications,
+      measurementUnit: displayMeasurementUnit,
+      cells: persistedSpecifications.cells.map((cell) => ({
+        ...cell,
+        displayValue: cell.decimalValue === null ? null : formatMeasurementFromCm(Number(cell.decimalValue), displayMeasurementUnit),
+      })),
+    };
   const measurements = sizeSpecCellMap(currentSpecifications.cells);
   const structuredMatrixEmpty = matrix.sizes.length === 0 && matrix.colors.length === 0 && matrix.quantityCells.length === 0;
   const missingMeasurementCount = currentSpecifications.pomColumns.reduce((count, pom) => count + currentSpecifications.sizes.filter((size) => !measurements.get(`${pom.id}:${size.id}`)?.decimalValue).length, 0);
   const matrixNeedsFullView = needsMatrixFullView(matrix.sizes.length, matrix.colors.length);
   const specNeedsFullView = needsSpecFullView(currentSpecifications.sizes.length, currentSpecifications.pomColumns.length);
-  const structureActions = edit?.canEdit && onEditSize && onEditColor ? <View style={styles.structureActions}>
+  const structureActions = edit?.canEditStructure && onEditSize && onEditColor ? <View style={styles.structureActions}>
     <WaflSectionHeaderAction accessibilityLabel="사이즈 선택" disabled={structureBusy} icon={<Ruler color={WAFL_THEME.color.navyInk} size={WAFL_THEME.icon.small} />} label="사이즈" onPress={onEditSize} testID="work-order-size-selection-action" />
     <WaflSectionHeaderAction accessibilityLabel="색상 선택" disabled={structureBusy} icon={<Palette color={WAFL_THEME.color.navyInk} size={WAFL_THEME.icon.small} />} label="색상" onPress={onEditColor} testID="work-order-color-selection-action" />
   </View> : null;
@@ -318,20 +333,20 @@ export default function WorkOrderSizeColorReadOnly({ identity, state, onRetry, e
           {currentSpecifications.sourceTemplateModified ? <Text accessibilityLabel="원본 스펙에서 수정됨" style={styles.modifiedBadge}>수정됨</Text> : null}
           {missingMeasurementCount > 0 ? <Text accessibilityLabel={`미입력 스펙값 ${missingMeasurementCount}개`} style={styles.missingBadge}>미입력 {missingMeasurementCount}</Text> : null}
         </View>
-        {edit?.canEdit ? <Pressable accessibilityLabel="스펙 불러오기" accessibilityRole="button" disabled={isSizeColorCommandPending(edit.pendingScope, "template") || templateLoading} onPress={() => { void loadTemplates().then((loaded) => { if (loaded) setTemplatePickerOpen(true); }); }} style={({ pressed }) => [styles.iconAction, pressed && styles.pressed, (isSizeColorCommandPending(edit.pendingScope, "template") || templateLoading) && styles.disabled]}><Download color={WAFL_THEME.color.navyInk} size={17} /></Pressable> : null}
-        {edit?.canEdit ? <Pressable accessibilityLabel="스펙 저장" accessibilityRole="button" disabled={isSizeColorCommandPending(edit.pendingScope, "template") || templateLoading} onPress={() => { void loadTemplates().then((loaded) => { if (loaded) setTemplateSaveOpen(true); }); }} style={({ pressed }) => [styles.iconAction, pressed && styles.pressed, (isSizeColorCommandPending(edit.pendingScope, "template") || templateLoading) && styles.disabled]}><Save color={WAFL_THEME.color.navyInk} size={17} /></Pressable> : null}
+        {edit?.canEditStructure ? <Pressable accessibilityLabel="스펙 불러오기" accessibilityRole="button" disabled={isSizeColorCommandPending(edit.pendingScope, "template") || templateLoading} onPress={() => { void loadTemplates().then((loaded) => { if (loaded) setTemplatePickerOpen(true); }); }} style={({ pressed }) => [styles.iconAction, pressed && styles.pressed, (isSizeColorCommandPending(edit.pendingScope, "template") || templateLoading) && styles.disabled]}><Download color={WAFL_THEME.color.navyInk} size={17} /></Pressable> : null}
+        {edit?.canEditStructure ? <Pressable accessibilityLabel="스펙 저장" accessibilityRole="button" disabled={isSizeColorCommandPending(edit.pendingScope, "template") || templateLoading} onPress={() => { void loadTemplates().then((loaded) => { if (loaded) setTemplateSaveOpen(true); }); }} style={({ pressed }) => [styles.iconAction, pressed && styles.pressed, (isSizeColorCommandPending(edit.pendingScope, "template") || templateLoading) && styles.disabled]}><Save color={WAFL_THEME.color.navyInk} size={17} /></Pressable> : null}
       </View>
-      <View style={styles.specUnitRow}><View accessibilityLabel="완성 스펙 표시 단위" style={styles.unitSegment}>{(["cm", "inch"] as const).map((unit) => { const selected = currentSpecifications.measurementUnit === unit; const unitPending = isSizeColorCommandPending(edit?.pendingScope ?? null, "measurement-unit"); return <Pressable accessibilityHint="단위를 변경하면 화면에 즉시 반영되고 작업지시서에 저장됩니다." accessibilityLabel={`완성 스펙 ${unit} 표시`} accessibilityRole="button" accessibilityState={{ selected, busy: unitPending }} disabled={unitPending} key={unit} onPress={() => { if (edit?.canEdit && unit !== currentSpecifications.measurementUnit) void edit.onSetMeasurementUnit(unit); }} style={({ pressed }) => [styles.unitOption, selected && styles.unitOptionSelected, pressed && styles.pressed]}><Text style={[styles.unitText, selected && styles.unitTextSelected]}>{unit}</Text></Pressable>; })}</View></View>
+      <View style={styles.specUnitRow}><View accessibilityLabel="완성 스펙 표시 단위" style={styles.unitSegment}>{(["cm", "inch"] as const).map((unit) => { const selected = currentSpecifications.measurementUnit === unit; const unitPending = isSizeColorCommandPending(edit?.pendingScope ?? null, "measurement-unit"); return <Pressable accessibilityHint={edit?.canEditStructure ? "단위를 변경하면 레시피에 저장됩니다." : "읽기 화면의 표시 단위만 변경합니다."} accessibilityLabel={`완성 스펙 ${unit} 표시`} accessibilityRole="button" accessibilityState={{ selected, busy: unitPending }} disabled={unitPending} key={unit} onPress={() => { if (unit === currentSpecifications.measurementUnit) return; if (edit?.canEditStructure) void edit.onSetMeasurementUnit(unit); else setReadOnlyMeasurementUnit({ identity: sectionIdentity, unit }); }} style={({ pressed }) => [styles.unitOption, selected && styles.unitOptionSelected, pressed && styles.pressed]}><Text style={[styles.unitText, selected && styles.unitTextSelected]}>{unit}</Text></Pressable>; })}</View></View>
       </View>
 
       {templateError ? <Text style={styles.templateError}>{templateError}</Text> : null}
 
       {currentSpecifications.pomColumns.length === 0 || currentSpecifications.sizes.length === 0 ? <View style={styles.emptySpecState}>
         <EmptyNotice>등록된 완성 스펙 정보가 없습니다.</EmptyNotice>
-        {edit?.canEdit && onEditSpecItems ? <View style={styles.emptySpecEntry}><SpecItemEntry onPress={onEditSpecItems} /></View> : null}
+        {edit?.canEditStructure && onEditSpecItems ? <View style={styles.emptySpecEntry}><SpecItemEntry onPress={onEditSpecItems} /></View> : null}
       </View> : <>
         {missingMeasurementCount > 0 ? <View style={styles.missingWarning}><AlertTriangle color={WAFL_THEME.color.brickOrange} size={15} /><Text style={styles.missingWarningText}>미입력 스펙값은 -로 표시됩니다.</Text></View> : null}
-        <SpecTable edit={edit} onEditSpecItems={edit?.canEdit ? onEditSpecItems : undefined} preview specifications={currentSpecifications} />
+        <SpecTable edit={edit?.canEditStructure ? edit : undefined} onEditSpecItems={edit?.canEditStructure ? onEditSpecItems : undefined} preview specifications={currentSpecifications} />
         {specNeedsFullView ? <Pressable accessibilityLabel="완성 스펙 전체보기" accessibilityRole="button" onPress={() => setFullView("spec")} style={({ pressed }) => [styles.viewAll, pressed && styles.pressed]}><Text style={styles.viewAllText}>전체보기</Text><ChevronRight color={WAFL_THEME.color.navyInk} size={WAFL_THEME.icon.small} /></Pressable> : null}
       </>}
     </WaflSectionCard>
@@ -343,11 +358,11 @@ export default function WorkOrderSizeColorReadOnly({ identity, state, onRetry, e
           <Text style={styles.fullViewSummaryText}>총 {currentSpecifications.pomColumns.length}개 항목</Text>
           {specCanScrollFurther ? <View accessibilityLabel="아래 항목 더 있음" pointerEvents="none" style={styles.moreBelowHint}><Text style={styles.moreBelowText}>아래 항목 더 있음</Text><ChevronDown color={WAFL_THEME.color.readOnly} size={14} /></View> : null}
         </View>
-        <SpecTable edit={edit} onEditSpecItems={edit?.canEdit ? onEditSpecItems : undefined} parentOwnsVerticalScroll preview={false} specifications={currentSpecifications} />
+        <SpecTable edit={edit?.canEditStructure ? edit : undefined} onEditSpecItems={edit?.canEditStructure ? onEditSpecItems : undefined} parentOwnsVerticalScroll preview={false} specifications={currentSpecifications} />
       </> : null}
     </WaflInputSheet>
-    {edit ? <MeasurementTemplatePickerSheet errorMessage={templateError} onApply={async (template) => { const saved = await edit.onApplyMeasurementTemplate(template.id); if (saved) setTemplatePickerOpen(false); return saved; }} onCancel={() => setTemplatePickerOpen(false)} pending={isSizeColorCommandPending(edit.pendingScope, "template") || templateLoading} templates={templates} visible={templatePickerOpen} /> : null}
-    {edit ? <CompanyTemplateSaveSheet companyTemplates={templates.filter((item) => item.sourceKind === "company")} onCancel={() => setTemplateSaveOpen(false)} onDisable={async (template) => { await patchCompanyMeasurementTemplate(template.id, { isActive: false }); await loadTemplates(true); return true; }} onRename={async (template, name) => { await patchCompanyMeasurementTemplate(template.id, { name }); await loadTemplates(true); return true; }} onSaveNew={async (name) => { const saved = await edit.onSaveMeasurementTemplate(name); if (saved) { await loadTemplates(true); setTemplateSaveOpen(false); } return saved; }} onUpdateExisting={async (template) => { const saved = await edit.onUpdateMeasurementTemplate(template.id); if (saved) { await loadTemplates(true); setTemplateSaveOpen(false); } return saved; }} pending={isSizeColorCommandPending(edit.pendingScope, "template") || templateLoading} visible={templateSaveOpen} /> : null}
+    {edit ? <MeasurementTemplatePickerSheet errorMessage={templateError} onApply={async (template) => { const saved = await edit.onApplyMeasurementTemplate(template.id); if (saved) setTemplatePickerOpen(false); return saved; }} onCancel={() => setTemplatePickerOpen(false)} pending={isSizeColorCommandPending(edit.pendingScope, "template") || templateLoading} templates={templates} visible={edit.canEditStructure && templatePickerOpen} /> : null}
+    {edit ? <CompanyTemplateSaveSheet companyTemplates={templates.filter((item) => item.sourceKind === "company")} onCancel={() => setTemplateSaveOpen(false)} onDisable={async (template) => { await patchCompanyMeasurementTemplate(template.id, { isActive: false }); await loadTemplates(true); return true; }} onRename={async (template, name) => { await patchCompanyMeasurementTemplate(template.id, { name }); await loadTemplates(true); return true; }} onSaveNew={async (name) => { const saved = await edit.onSaveMeasurementTemplate(name); if (saved) { await loadTemplates(true); setTemplateSaveOpen(false); } return saved; }} onUpdateExisting={async (template) => { const saved = await edit.onUpdateMeasurementTemplate(template.id); if (saved) { await loadTemplates(true); setTemplateSaveOpen(false); } return saved; }} pending={isSizeColorCommandPending(edit.pendingScope, "template") || templateLoading} visible={edit.canEditStructure && templateSaveOpen} /> : null}
   </View>;
 }
 

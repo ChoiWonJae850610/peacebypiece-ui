@@ -18,7 +18,7 @@ const production = read("apps/mobile/features/work-orders/production/WorkOrderPr
 const design = read("docs/project/app-v2/11a-mobile-design-system-v2.md");
 const makerIa = read("docs/project/app-v2/11b-maker-workorder-tab-ia-v2.md");
 
-assert.match(sheet, /onStartShouldSetResponderCapture=\{\(\) => draggable && openReady && !actionPending\}/u);
+assert.match(sheet, /onStartShouldSetResponderCapture=\{\(\) => draggable && openReady && !actionPending && !dismissingRef\.current\}/u);
 assert.match(sheet, /onResponderGrant=\{draggable && openReady \? startDrag : undefined\}/u);
 assert.match(sheet, /const stableOffset = resolveWaflSheetDragStartOffset\(translatedRef\.current, expandedHeight\)[\s\S]*dragStartRef\.current = stableOffset[\s\S]*translateY\.setValue\(stableOffset\)[\s\S]*layoutOffset\.setValue\(stableOffset\)[\s\S]*dragReadyRef\.current = true/u);
 assert.doesNotMatch(sheet, /translateY\.stopAnimation\(\(value\)/u);

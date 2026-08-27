@@ -9,10 +9,10 @@ assert.deepEqual(materialReelDraftPatch({ field: "requiredQuantity", value: "12.
 assert.deepEqual(materialReelDraftPatch({ field: "allowanceQuantity", value: "0.5", unitCode: "m", currentUnitCode: "yd" }), { allowanceQuantity: "0.5" });
 assert.deepEqual(materialReelDraftPatch({ field: "unitCode", value: "12", unitCode: "kg", currentUnitCode: "yd" }), { unitCode: "kg" });
 
-assert.equal(decideDraftExit({ intent: "background", mutationInFlight: false }), "preserve");
-assert.equal(decideDraftExit({ intent: "list", mutationInFlight: false }), "discard");
-assert.equal(decideDraftExit({ intent: "feature", mutationInFlight: false }), "discard");
-assert.equal(decideDraftExit({ intent: "session-loss", mutationInFlight: false }), "discard");
+assert.equal(decideDraftExit({ intent: "background", mutationInFlight: false }), "flush");
+assert.equal(decideDraftExit({ intent: "list", mutationInFlight: false }), "flush");
+assert.equal(decideDraftExit({ intent: "feature", mutationInFlight: false }), "flush");
+assert.equal(decideDraftExit({ intent: "session-loss", mutationInFlight: false }), "flush");
 assert.equal(decideDraftExit({ intent: "list", mutationInFlight: true }), "blocked-saving");
 
 const sheet = fs.readFileSync("apps/mobile/features/inputs/reel-picker/WaflReelPickerSheet.tsx", "utf8");

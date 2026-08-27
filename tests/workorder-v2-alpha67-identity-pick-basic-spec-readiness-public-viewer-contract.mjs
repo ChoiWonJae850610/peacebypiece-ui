@@ -60,7 +60,7 @@ assert.match(sampleRoute, /status = 'draft'/u);
 assert.match(sampleRoute, /r\.revision_status = 'draft'/u);
 assert.match(sampleRoute, /IDENTITY_LOCKED/u);
 const overview = read("apps/mobile/features/work-orders/overview/WorkOrderDetailOverview.tsx");
-assert.match(overview, /header\.identity\.reorderRound === 0 && props\.canEdit && !basicLocked/u);
+assert.match(overview, /header\.identity\.reorderRound === 0 && specificationEditable/u);
 assert.match(overview, /identityFixed/u);
 assert.match(overview, /WorkOrderSeasonPickerSheet/u);
 assert.match(overview, /WorkOrderDetailItemPickerSheet/u);

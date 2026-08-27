@@ -24,8 +24,8 @@ assert.match(sheets, /template\.sizeCount.+template\.pomCount.+template\.valueCo
 assert.match(route, /getWorkOrderV2SizeColorHardDeleteMutationRuntimeGuard/);
 assert.match(guard, /getWorkOrderV2SizeColorHardDeleteMutationRuntimeGuard/);
 assert.match(guard, /WAFL_V2_ALPHA60_DRAFT_CHILD_HARD_DELETE_MUTATION_APPROVAL[\s\S]+WAFL_V2_ALPHA62_MEASUREMENT_MUTATION_APPROVAL/);
-assert.match(controller, /deleteSize\([\s\S]+workOrderId, sizeRowId/);
-assert.match(controller, /deleteColor\([\s\S]+workOrderId, colorId/);
+assert.match(controller, /workOrderMutationController\.deleteSize\(requestWorkOrderId/);
+assert.match(controller, /workOrderMutationController\.deleteColor\(requestWorkOrderId/);
 assert.match(controller, /quantityCells\.filter\(\(cell\) => cell\.sizeRowId !== sizeRowId\)/);
 assert.match(controller, /quantityCells\.filter\(\(cell\) => cell\.colorId !== colorId\)/);
 

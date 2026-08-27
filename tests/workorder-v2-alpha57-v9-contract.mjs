@@ -27,12 +27,12 @@ const overview = read("apps/mobile/features/work-orders/overview/WorkOrderDetail
 const gallery = read("apps/mobile/features/work-orders/images/WorkOrderImageGallery.tsx");
 const materials = read("apps/mobile/features/materials/WorkOrderMaterialsReadOnly.tsx");
 const materialEditor = read("apps/mobile/features/materials/WorkOrderMaterialEditor.tsx");
-const toastHost = read("apps/mobile/components/WaflToastHost.tsx");
+const alertHost = read("apps/mobile/features/feedback/WaflAlertHost.tsx");
 
-assert.equal((experience.match(/<WaflToastHost\b/g) ?? []).length, 1);
-assert.match(toastHost, /durationMs = 3200/);
-assert.match(toastHost, /success:[\s\S]*warning:[\s\S]*error:/);
-assert.match(toastHost, /position: "absolute"/);
+assert.equal((experience.match(/<WaflFeedbackHost\b/g) ?? []).length, 1);
+assert.match(alertHost, /durationMs \?\? 1200/);
+assert.match(alertHost, /success:[\s\S]*warning:[\s\S]*error:/);
+assert.match(alertHost, /position: "absolute"/);
 assert.doesNotMatch(overview, /savedBanner|lockedBannerText/);
 assert.doesNotMatch(gallery, /props\.message\s*\?/);
 assert.doesNotMatch(materials, /saveNotice\s*\?/);

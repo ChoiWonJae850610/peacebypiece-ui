@@ -144,7 +144,10 @@ async function verifyProjectionCommand(command) {
   const promoted = cache[sizeColorRequestKey("work-order", 11)]?.bundle;
   assert.ok(promoted, `${command} must create the next-version cache before the downstream effect`);
   assert.equal(requests.sizeColorGet, 0);
-  assert.equal(requests.sizeSpecGet, command === "apply-template" ? 1 : 0);
+  assert.equal(
+    requests.sizeSpecGet,
+    ["apply-template", "save-company-template", "update-company-template"].includes(command) ? 1 : 0,
+  );
   assert.equal(requests.wholeTabReload, 0);
   if (command === "set-cell") assert.equal(promoted.specifications.cells[0]?.decimalValue, "52");
   if (command === "set-unit") assert.equal(promoted.specifications.measurementUnit, "inch");

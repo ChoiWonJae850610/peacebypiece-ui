@@ -3,6 +3,8 @@ import type {
   CreateWorkOrderDraftResult,
   CreateWorkOrderReorderInput,
   CreateWorkOrderReorderResult,
+  CreateWorkOrderCopyInput,
+  CreateWorkOrderCopyResult,
   PatchWorkOrderBasicInfoInput,
   PatchWorkOrderBasicInfoResult,
   WorkOrderDetailCore,
@@ -73,7 +75,7 @@ export async function createWorkOrderDraft(
     || !Number.isSafeInteger(body.data.nextVersion)
     || body.data.nextVersion < 1
   ) {
-    throw new MobileApiError({ code: "MALFORMED_RESPONSE", message: "작업지시서 생성 응답이 올바르지 않습니다." });
+    throw new MobileApiError({ code: "MALFORMED_RESPONSE", message: "레시피 생성 응답이 올바르지 않습니다." });
   }
   return body.data;
 }
@@ -96,6 +98,13 @@ export async function createWorkOrderReorder(
   }
   return body.data;
 }
+
+export async function createWorkOrderCopy(sourceWorkOrderId:string,command:CreateWorkOrderCopyInput,idempotencyKey:string):Promise<CreateWorkOrderCopyResult>{
+  const body=await requestJson<{readonly ok:boolean;readonly data?:CreateWorkOrderCopyResult}>(`/api/v2/work-orders/${encodeURIComponent(sourceWorkOrderId)}/copy`,{method:"POST",body:command,idempotencyKey});const result=body.data?.result;
+  if(!body.ok||!result||result.status!=="draft"||result.revisionStatus!=="draft"||result.derivationKind!=="original"||result.reorderRound!==0||!isNonEmptyString(result.workOrderId)||!isNonEmptyString(result.revisionId))throw new MobileApiError({code:"MALFORMED_RESPONSE",message:"레시피 복사 응답이 올바르지 않습니다."});return body.data!;
+}
+
+export async function deleteDraftWorkOrder(workOrderId:string){const body=await requestJson<{readonly ok:boolean;readonly data?:{readonly deleted:boolean;readonly workOrderId:string}}>(`/api/v2/work-orders/${encodeURIComponent(workOrderId)}`,{method:"DELETE"});if(!body.ok||!body.data?.deleted||body.data.workOrderId!==workOrderId)throw new MobileApiError({code:"MALFORMED_RESPONSE",message:"초안 삭제 응답이 올바르지 않습니다."});return body.data;}
 
 export async function getWorkOrderSeriesHistory(workOrderId: string): Promise<WorkOrderSeriesHistory> {
   const body = await requestJson<{ readonly ok: boolean; readonly data?: WorkOrderSeriesHistory }>(

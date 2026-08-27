@@ -258,3 +258,40 @@ export function validateUpsertColorSizeQuantity(input: {
     quantity: Number(input.body.quantity),
   };
 }
+
+export function validateUpsertColorSizeQuantities(input: {
+  readonly body: unknown;
+  readonly idempotencyKey: string | null;
+}) {
+  if (!isJsonObject(input.body)) {
+    throw new WorkOrderCommandValidationError([fieldError("body", "INVALID_TYPE", "JSON object가 필요합니다.")]);
+  }
+  assertAllowedKeys(input.body, new Set(["clientRequestId", "expectedVersion", "cells"]));
+  if (!Array.isArray(input.body.cells) || input.body.cells.length < 1 || input.body.cells.length > 250) {
+    throw new WorkOrderCommandValidationError([
+      fieldError("cells", "INVALID_LENGTH", "수량 셀은 1개 이상 250개 이하로 저장해야 합니다."),
+    ]);
+  }
+  const keys = new Set<string>();
+  const cells = input.body.cells.map((raw, index) => {
+    if (!isJsonObject(raw)) {
+      throw new WorkOrderCommandValidationError([fieldError(`cells.${index}`, "INVALID_TYPE", "수량 셀 형식을 확인해 주세요.")]);
+    }
+    assertAllowedKeys(raw, new Set(["colorId", "sizeRowId", "quantity"]));
+    const colorId = typeof raw.colorId === "string" ? raw.colorId : "";
+    const sizeRowId = typeof raw.sizeRowId === "string" ? raw.sizeRowId : "";
+    const quantity = Number(raw.quantity);
+    if (!UUID_PATTERN.test(colorId) || !UUID_PATTERN.test(sizeRowId) || !Number.isSafeInteger(quantity) || quantity < 0 || quantity > 100_000_000) {
+      throw new WorkOrderCommandValidationError([
+        fieldError(`cells.${index}`, "INVALID_QUANTITY", "유효한 색상·사이즈와 정수 수량이 필요합니다."),
+      ]);
+    }
+    const key = `${colorId}:${sizeRowId}`;
+    if (keys.has(key)) {
+      throw new WorkOrderCommandValidationError([fieldError(`cells.${index}`, "DUPLICATE_ID", "같은 수량 셀이 중복되었습니다.")]);
+    }
+    keys.add(key);
+    return { colorId, sizeRowId, quantity };
+  });
+  return { ...parseCommon({ body: input.body, idempotencyKey: input.idempotencyKey }), cells };
+}

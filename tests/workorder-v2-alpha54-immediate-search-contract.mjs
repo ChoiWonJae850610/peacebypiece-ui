@@ -30,7 +30,7 @@ for (const input of [
 const list = fs.readFileSync("apps/mobile/features/work-orders/list/WorkOrderListScreen.tsx", "utf8");
 assert.match(list, /setTimeout\(\(\) => onSearchRef\.current/);
 assert.match(list, /keyboardShouldPersistTaps="handled"/);
-assert.match(list, /onScrollBeginDrag=\{Keyboard\.dismiss\}/);
+assert.match(list, /onScrollBeginDrag=\{\(\)=>\{Keyboard\.dismiss\(\);setOpenRow\(null\);\}\}/);
 assert.match(list, /accessibilityLabel="검색어 지우기"/);
 assert.match(list, /multiline=\{false\}/);
 assert.match(list, /numberOfLines=\{1\}/);

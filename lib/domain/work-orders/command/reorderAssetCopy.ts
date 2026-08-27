@@ -17,6 +17,8 @@ type AssetRow = DbQueryResultRow & {
   readonly thumbnail_object_key: string | null;
   readonly original_filename: string;
   readonly mime_type: string;
+  readonly output_include: boolean;
+  readonly is_representative: boolean;
 };
 
 function deterministicUuid(seed: string): string {
@@ -47,6 +49,7 @@ export async function prepareReorderAssetCopy(input: {
   readonly sourceWorkOrderId: WorkOrderId;
   readonly targetWorkOrderId: WorkOrderId;
   readonly idempotencySeed: string;
+  readonly includeAllAttachments?: boolean;
 }): Promise<{ readonly plan: ReorderAssetCopyPlan; readonly copiedKeys: readonly string[] }> {
   const rows = await withWaflV2TenantReadOnlyTransaction(async (client) => {
     await installTenantClaims(client, input.scope);
@@ -57,23 +60,24 @@ export async function prepareReorderAssetCopy(input: {
         WHERE company_id=$1 AND id=$2::uuid AND deleted_at IS NULL
       )
       SELECT 'image'::text AS asset_type,i.id,i.storage_object_key,i.thumbnail_object_key,
-             i.original_filename,i.mime_type
+             i.original_filename,i.mime_type,true AS output_include,ri.is_representative
       FROM source s
       JOIN work_order_revision_images ri ON ri.company_id=$1 AND ri.revision_id=s.current_revision_id
-        AND ri.image_id=s.representative_image_id AND ri.is_representative=true
+        AND ($3::boolean OR (ri.image_id=s.representative_image_id AND ri.is_representative=true))
       JOIN work_order_images i ON i.company_id=$1 AND i.id=ri.image_id AND i.deleted_at IS NULL
       UNION ALL
-      SELECT 'attachment'::text,a.id,a.storage_object_key,NULL::text,a.original_filename,a.mime_type
+      SELECT 'attachment'::text,a.id,a.storage_object_key,NULL::text,a.original_filename,a.mime_type,ra.output_include,false
       FROM source s
-      JOIN work_order_revision_attachments ra ON ra.company_id=$1 AND ra.revision_id=s.current_revision_id AND ra.output_include=true
+      JOIN work_order_revision_attachments ra ON ra.company_id=$1 AND ra.revision_id=s.current_revision_id AND ($3::boolean OR ra.output_include=true)
       JOIN work_order_attachments a ON a.company_id=$1 AND a.id=ra.attachment_id AND a.deleted_at IS NULL
       ORDER BY asset_type,id
-    `, [input.scope.companyId, input.sourceWorkOrderId]);
+    `, [input.scope.companyId, input.sourceWorkOrderId, input.includeAllAttachments === true]);
     return result.rows;
   });
 
   const copiedKeys: string[] = [];
   let image: ReorderAssetCopyPlan["image"] = null;
+  const images: ReorderAssetCopyPlan["images"][number][] = [];
   const attachments: ReorderAssetCopyPlan["attachments"][number][] = [];
   try {
     for (const row of rows) {
@@ -99,17 +103,20 @@ export async function prepareReorderAssetCopy(input: {
           }
           targetThumbnailKey = targetDerivatives.thumbnail;
         }
-        image = {
+        const copiedImage = {
           sourceImageId: row.id,
           targetImageId: targetId,
           storageObjectKey: targetKey,
           thumbnailObjectKey: targetThumbnailKey,
+          isRepresentative: row.is_representative,
         };
+        images.push(copiedImage);
+        if (row.is_representative) image = copiedImage;
       } else {
-        attachments.push({ sourceAttachmentId: row.id, targetAttachmentId: targetId, storageObjectKey: targetKey });
+        attachments.push({ sourceAttachmentId: row.id, targetAttachmentId: targetId, storageObjectKey: targetKey, outputInclude: row.output_include });
       }
     }
-    return { plan: { image, attachments }, copiedKeys };
+    return { plan: { image, images, attachments }, copiedKeys };
   } catch (error) {
     for (const key of copiedKeys.reverse()) await deleteR2ObjectViaWorker({ key }).catch(() => undefined);
     throw error;

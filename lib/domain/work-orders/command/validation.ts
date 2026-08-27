@@ -223,6 +223,7 @@ export function validatePatchWorkOrderBasicInfo(
       "totalQuantity",
       "memo",
       "factoryDeliveryMemo",
+      "resetCategoryDependents",
     ]);
   if (options.matrixTotalOwned) allowedPatchKeys.delete("totalQuantity");
   assertAllowedKeys(body.patch, allowedPatchKeys, "patch.");
@@ -264,7 +265,14 @@ export function validatePatchWorkOrderBasicInfo(
           ),
         }
       : {}),
+    ...(body.patch.resetCategoryDependents === true ? { resetCategoryDependents: true as const } : {}),
   };
+
+  if (hasOwn(body.patch, "resetCategoryDependents") && body.patch.resetCategoryDependents !== true) {
+    throw new WorkOrderCommandValidationError([
+      fieldError("patch.resetCategoryDependents", "INVALID_VALUE", "대분류 초기화 동의 값이 올바르지 않습니다."),
+    ]);
+  }
 
   return {
     clientRequestId: parseClientRequestId(body.clientRequestId),

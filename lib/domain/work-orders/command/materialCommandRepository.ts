@@ -31,6 +31,7 @@ import {
   parseMaterialQuantityScaled,
 } from "@/lib/domain/work-orders/materialQuantityPrecision.mjs";
 import { resolveMaterialRemovalMode } from "@/lib/domain/work-orders/materialRemovalPolicy";
+import { isReorderDraftIdentity, REORDER_DRAFT_MATERIAL_EDIT_FIELDS, reorderDraftPatchAllowed } from "@/lib/domain/work-orders/command/reorderDraftEditPolicy";
 
 export const MATERIAL_CREATE_COMMAND_CODE = WORK_ORDER_COMMAND_CODES.material.create;
 export const MATERIAL_PATCH_COMMAND_CODE = WORK_ORDER_COMMAND_CODES.material.patch;
@@ -80,6 +81,8 @@ type WorkOrderTargetRow = DbQueryResultRow & {
   readonly work_order_status: string;
   readonly revision_status: string;
   readonly work_order_version: number | string;
+  readonly derivation_kind: string;
+  readonly reorder_round: number | string;
 };
 
 type MaterialTargetRow = WorkOrderTargetRow & {
@@ -336,7 +339,7 @@ async function lockWorkOrderTarget(input: {
   const target = await input.client.query<WorkOrderTargetRow>(`
     SELECT w.id AS work_order_id, r.id AS revision_id, r.revision_no,
            w.status AS work_order_status, r.revision_status,
-           w.entity_version AS work_order_version
+           w.entity_version AS work_order_version,w.derivation_kind,w.reorder_round
     FROM work_orders w
     JOIN work_order_revisions r
       ON r.company_id = w.company_id AND r.id = w.current_revision_id
@@ -361,7 +364,7 @@ async function lockMaterialTarget(input: {
   const target = await input.client.query<MaterialTargetRow>(`
     SELECT w.id AS work_order_id, r.id AS revision_id, r.revision_no,
            w.status AS work_order_status, r.revision_status,
-           w.entity_version AS work_order_version,
+           w.entity_version AS work_order_version,w.derivation_kind,w.reorder_round,
            m.id AS material_line_id, m.material_type, m.status AS material_status,
            m.entity_version AS line_version, m.material_id, m.name, m.color_option, m.usage_area,
            m.supplier_partner_id, m.required_quantity, m.allowance_quantity,
@@ -383,11 +386,12 @@ async function lockMaterialTarget(input: {
   return row;
 }
 
-function assertCurrentDraft(target: WorkOrderTargetRow, expectedVersion: EntityVersion) {
+function assertCurrentDraft(target: WorkOrderTargetRow, expectedVersion: EntityVersion, allowReorderValues = false) {
   const currentVersion = toInteger(target.work_order_version);
   if (currentVersion !== expectedVersion) throw new MaterialCommandRepositoryError("conflict", currentVersion);
   if (target.work_order_status !== "draft") throw new MaterialCommandRepositoryError("locked", currentVersion);
   if (target.revision_status !== "draft") throw new MaterialCommandRepositoryError("revision_mismatch", currentVersion);
+  if (isReorderDraftIdentity({ derivationKind: target.derivation_kind, reorderRound: target.reorder_round }) && !allowReorderValues) throw new MaterialCommandRepositoryError("locked", currentVersion);
 }
 
 async function advanceParentVersions(input: {
@@ -652,7 +656,7 @@ export async function patchMaterialLineV2(input: {
         client, context, scope: input.scope, workOrderId: input.workOrderId,
         materialLineId: input.materialLineId, assignedCompanyMemberId: input.assignedCompanyMemberId,
       });
-      assertCurrentDraft(target, input.expectedVersion);
+      assertCurrentDraft(target, input.expectedVersion, true);
       if (target.material_status !== "editing" || target.archived_at !== null) {
         throw new MaterialCommandRepositoryError("locked", Number(target.work_order_version));
       }
@@ -677,6 +681,11 @@ export async function patchMaterialLineV2(input: {
         hasOwn(patch, "unitPrice") && !sameDecimal(target.unit_price, patch.unitPrice) ? "unitPrice" : null,
         hasOwn(patch, "memo") && (patch.memo ?? null) !== target.memo ? "memo" : null,
       ].filter((field): field is string => field !== null);
+
+      if (isReorderDraftIdentity({ derivationKind: target.derivation_kind, reorderRound: target.reorder_round })
+        && !reorderDraftPatchAllowed(requestedChangedFields, REORDER_DRAFT_MATERIAL_EDIT_FIELDS)) {
+        throw new MaterialCommandRepositoryError("locked", Number(target.work_order_version));
+      }
 
       if (requestedChangedFields.length === 0) {
         return { row: target, changedFields: requestedChangedFields };
@@ -950,7 +959,9 @@ export async function transitionMaterialOrderV2(input: {
       client, context, scope: input.scope, workOrderId: input.workOrderId,
       materialLineId: input.materialLineId, assignedCompanyMemberId: input.assignedCompanyMemberId,
     });
-    assertCurrentDraft(target, input.expectedVersion);
+    // A Reorder keeps material structure immutable, but owns a fresh operational
+    // order lifecycle. This allowance is intentionally scoped to this transition.
+    assertCurrentDraft(target, input.expectedVersion, true);
     if (target.archived_at !== null || target.material_status !== config.from) {
       throw new MaterialCommandRepositoryError("invalid_state_transition", Number(target.work_order_version));
     }

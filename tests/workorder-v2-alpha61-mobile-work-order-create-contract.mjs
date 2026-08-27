@@ -54,9 +54,9 @@ assert.match(api, /body: \{ clientRequestId: command\.clientRequestId, productNa
 assert.match(api, /idempotencyKey,/);
 assert.doesNotMatch(api, /body: \{[^}]*companyId/);
 assert.match(mutation, /createDraft\(command: CreateWorkOrderDraftInput, idempotencyKey: string\)/);
-assert.match(list, /accessibilityLabel="새 작업지시서 만들기"/);
+assert.match(list, /accessibilityLabel="새 레시피 만들기"/);
 assert.match(sheet, /WaflInputSheet/);
-assert.match(sheet, /새 작업지시서 만들기 취소/);
+assert.match(sheet, /새 레시피 만들기 취소/);
 assert.match(experience, /createMutation\.tryBegin\(\) !== "started"/);
 assert.match(experience, /resolveWorkOrderCreateAttempt/);
 assert.match(experience, /reconcileCreatedWorkOrderListItem/);

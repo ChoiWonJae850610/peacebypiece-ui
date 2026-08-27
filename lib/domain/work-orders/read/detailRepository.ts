@@ -62,6 +62,11 @@ import { classifyWorkOrderProductionRole } from "@/lib/domain/work-orders/produc
 
 export const WORK_ORDER_V2_DETAIL_REPOSITORY_STATEMENT_COUNT = 2;
 const MEASUREMENT_CONTENT_COMMAND_CODES_SQL = MEASUREMENT_SNAPSHOT_CONTENT_COMMAND_CODES.map((code) => `'${code}'`).join(",");
+const MEASUREMENT_SOURCE_BASELINE_COMMAND_CODES_SQL = [
+  WORK_ORDER_COMMAND_CODES.measurement.applyTemplate,
+  WORK_ORDER_COMMAND_CODES.measurement.saveCompanyTemplate,
+  WORK_ORDER_COMMAND_CODES.measurement.updateCompanyTemplate,
+].map((code) => `'${code}'`).join(",");
 
 const TARGET_SQL = `
   SELECT w.id, w.current_revision_id, w.entity_version, w.total_quantity AS work_order_total,
@@ -84,7 +89,7 @@ export const WORK_ORDER_V2_DETAIL_CORE_SQL = `
            r.total_quantity_snapshot AS revision_total,
            settings.document_code AS company_document_code,
            w.document_number_base,
-           w.current_revision_id, w.representative_image_id, w.entity_version, w.updated_at,
+           w.current_revision_id, w.representative_image_id, w.entity_version, w.created_at, w.updated_at,
            w.is_sample, w.derivation_kind, w.source_work_order_id, w.source_revision_id,
            w.series_root_work_order_id, w.reorder_round,
            r.revision_no, r.entity_version AS revision_version, r.revision_status, r.finalized_at, r.factory_delivery_memo, r.unit_price,
@@ -107,7 +112,7 @@ export const WORK_ORDER_V2_DETAIL_CORE_SQL = `
   SELECT t.id, t.product_name, t.product_type_code, t.season_code, t.item_code,
          t.status, t.due_date, t.work_order_total, t.matrix_total, t.revision_total,
          t.company_document_code, t.document_number_base,
-         t.current_revision_id, t.entity_version, t.updated_at, t.revision_no, t.revision_version,
+         t.current_revision_id, t.entity_version, t.created_at, t.updated_at, t.revision_no, t.revision_version,
          t.revision_status, t.finalized_at, t.factory_delivery_memo, t.unit_price, t.fabric_total,
          t.accessory_total, t.process_total, t.estimated_total,
          t.is_sample, t.derivation_kind, t.source_work_order_id, t.source_revision_id,
@@ -228,7 +233,7 @@ export const WORK_ORDER_V2_SIZE_SPEC_SQL = `
            (SELECT max((e.metadata->'versionTransition'->>'to')::integer)
             FROM domain_events e
             WHERE e.company_id=$1 AND e.entity_type='work_order' AND e.entity_id=t.id::text
-              AND e.command_code='${WORK_ORDER_COMMAND_CODES.measurement.applyTemplate}') AS source_apply_entity_version,
+              AND e.command_code IN (${MEASUREMENT_SOURCE_BASELINE_COMMAND_CODES_SQL})) AS source_apply_entity_version,
            (SELECT max((e.metadata->'versionTransition'->>'to')::integer)
             FROM domain_events e
             WHERE e.company_id=$1 AND e.entity_type='work_order' AND e.entity_id=t.id::text
@@ -478,6 +483,7 @@ export async function getWorkOrderDetailCoreV2(input: {
         generatedAt: asIsoDateTime(row.latest_document_generated_at),
       },
       entityVersion,
+      createdAt: asIsoDateTime(row.created_at) as IsoDateTime,
       updatedAt: asIsoDateTime(row.updated_at) as IsoDateTime,
       identity: {
         isSample: Boolean(row.is_sample),

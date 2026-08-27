@@ -26,9 +26,9 @@ for (const owner of orderedOwners) {
 for (const token of [
   "첨부 자료",
   "문서 첨부",
-  "작업지시서 생성",
-  "작업지시서를 생성할까요?",
-  "현재 입력한 내용으로 작업지시서를 생성합니다. 생성 후에는 내용을 수정할 수 없으니 한 번 더 확인해 주세요.",
+  "레시피 확정",
+  "레시피를 확정합니다",
+  "최종 생성 후에는 주요 생산정보를 수정할 수 없습니다.",
   "보기",
   "공유",
   "저장",
@@ -59,7 +59,6 @@ for (const sharedOwner of [
   'from "@/constants/fonts"',
   'from "@/constants/theme"',
   'from "@/features/inputs/WaflInputSheet"',
-  'from "@/features/inputs/WaflChoiceButtons"',
   'from "@/features/inputs/WaflActionTile"',
   'from "@/lib/displayPlaceholder"',
 ]) assert.match(workbench, new RegExp(sharedOwner.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")), `shared WAFL owner: ${sharedOwner}`);
@@ -69,7 +68,8 @@ assert.match(workbench, /borderRadius: WAFL_THEME\.radius\.card/);
 assert.match(workbench, /borderWidth: WAFL_THEME\.border\.hairline/);
 assert.match(workbench, /fontSize: WAFL_THEME\.typography\.title/);
 assert.match(workbench, /minHeight: 44/);
-assert.match(workbench, /selectedDays[^\n]*"7"/);
+assert.match(workbench, /createDocumentShare\(generated\.id, 3,/);
+assert.doesNotMatch(workbench, /selectedDays|1일|7일|30일/);
 assert.match(workbench, /SUPPORTED_OUTPUT_IMAGE/);
 assert.match(workbench, /WAFL_UNSET_PLACEHOLDER/);
 assert.match(workbench, /label="공장" placeholder/);

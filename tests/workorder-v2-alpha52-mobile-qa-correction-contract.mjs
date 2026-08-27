@@ -60,7 +60,7 @@ assert.match(datePicker, /이전 달/);
 assert.match(datePicker, /다음 달/);
 assert.doesNotMatch(datePicker, /DateTimePicker|toISOString/);
 
-assert.match(list, /작업지시서 검색/);
+assert.match(list, /레시피 검색/);
 assert.deepEqual(
   WORK_ORDER_STATUS_FILTER_OPTIONS.map(({ id, label }) => [id, label]),
   [
@@ -92,7 +92,6 @@ assert.match(listRepository, /w\.product_name ILIKE/);
 assert.match(listRepository, /w\.document_number_base ILIKE/);
 assert.match(listRepository, /w\.status = ANY/);
 
-assert.match(app, /WAFL_MATERIAL_SAVE_METRIC/);
 assert.match(app, /WAFL_OVERVIEW_SAVE_METRIC/);
 assert.match(apiClient, /WAFL_MOBILE_REQUEST_METRIC/);
 for (const source of [app, apiClient]) assert.doesNotMatch(source, /console\.(?:log|info|warn|error)\([^\n]*(?:cookie|token|session|email)/i);

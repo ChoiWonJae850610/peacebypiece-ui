@@ -75,7 +75,7 @@ assert.match(structureEditor, /confirmWaflDestructiveAction/);
 assert.match(structureEditor, /summarizeStagedDeletionQuantity[\s\S]+createStagedDeletionMessage/);
 assert.doesNotMatch(structureEditor, /연결된 수량 셀|quantityCellCount/);
 assert.match(structureController, /deleteSize[\s\S]+deleteColor/);
-assert.match(structureController, /batchStructureSelection/);
+assert.match(structureController, /pendingStructureOperations[\s\S]+kind: "delete-size"[\s\S]+kind: "delete-color"/);
 assert.match(config, /verb === "DELETE"[\s\S]+MAKER_QA_CAPABILITY\.(?:SIZE_COLOR_HARD_DELETE|MATERIAL_HARD_DELETE)/);
 
 console.log("WAFL v2 alpha.60 draft child hard delete contract: PASS");

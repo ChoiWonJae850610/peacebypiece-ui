@@ -1,5 +1,41 @@
 # WAFL Mobile Design System v2
 
+## Alpha.68 Draft persistence and native asset boundary
+
+- Draft controls are local-instant. Saving state belongs to one section-level dirty/batch owner;
+  keystrokes and Size/Color cells never present network latency as an input affordance.
+- A successful local edit or fast boundary flush has no user-facing success notice. Only a real
+  interaction-blocking flush shows `변경사항을 저장 중입니다.` for its actual duration; validation,
+  conflict, and failure remain visible. A failed flush preserves the latest local value, and a stale
+  response cannot clear a newer dirty generation.
+- List swipe actions use fixed semantic slots: trailing Delete and leading Copy/Reorder. Full swipe
+  never mutates, disabled Reorder retains its slot, and vertical scrolling closes an open row.
+  A touch or dominant vertical move never reveals actions; deliberate horizontal intent activates
+  one finger-tracking row, resisted action-width bounds, and a spring to exactly one open side.
+  Search/filter/refresh, another row gesture, another row tap, or list scroll clears the owner.
+- WorkOrder titles use one quiet secondary line for authoritative KST creation time:
+  `YY/MM/DD HH:mm:ss` with no prefix label. It never uses updated time, client-now, or insertion time and never changes sort.
+- Copy and Reorder share one modal interaction blocker from tap through authoritative core-detail open;
+  optional child hydration does not prolong it. Reorder adds no second confirmation sheet.
+- Every WorkOrder entry path shares core-first hydration. A successful authoritative detail read opens the
+  WorkOrder; assets, partner options, and series history use one independently settled, bounded-retry
+  child owner. Child failure is reported by exact area but never replaces the usable core screen.
+- High-value asynchronous actions share one ordered grammar: a semantic confirmation only when required,
+  then the canonical full-interaction processing blocker, then the existing top result banner only after
+  confirmed success. Confirmation never contains a spinner, and failure never emits success copy.
+- Final WorkOrder generation and Draft deletion use one WAFL safety-card surface with the same dim,
+  radius, spacing, typography, and image-tab X/Check action owner as the processing blocker family.
+  The decision state has no spinner; Check changes the same card into its action-specific processing
+  state. Ordinary order request/cancel/complete actions do not add explanatory yes/no popups.
+- A flush-time interaction displays `변경사항을 저장 중입니다.` only for the real save duration.
+  The first valid tab, field, list, back, or navigation intent wins; later input is ignored until save
+  success replays that exact intent once. Failure drops the intent and preserves dirty values.
+- PDF Preview and attachment viewing stay inside WAFL. Image and PDF are the only user attachment
+  display classes; authenticated bytes, safe-area close, zoom/navigation and bounded retry belong to
+  the shared native viewer family. Image viewing uses a white/light-neutral canvas so dark assets
+  remain legible without altering source color.
+- Standard WAFL Share has no duration picker in this version: the one canonical duration is 72 hours.
+
 ## Alpha.67 identity PICK and PDF renderer grammar
 
 Issued/finalized/read-only WorkOrders render the persisted `본생산 / 샘플` identity as fixed text or a badge, never as an interactive segmented control. Draft identity alone is editable; Reorder remains forced to 본생산. Overview `시즌` and `세부 품목` use canonical draggable `reelAdaptive` WAFL PICK surfaces. Season uses the paired option-reel owner with year on the left and `SS / FW / 상시` on the right; Detail Item uses the single option-reel owner. Both retain centered-selection physics, staged X/V, and the exact shared `직접 입력으로 변경 / WAFL PICK으로 변경` mode switch. Their bounded data never nests a same-orientation `FlatList`/`VirtualizedList`, and WorkOrder-local direct values never mutate a global catalog. Legacy persisted strings remain readable.
@@ -55,7 +91,7 @@ A2Z remains the font-family owner. Semantic roles are product title `20/26` (com
 - `WaflInputSheet` is the canonical staged-sheet owner for presentation, root geometry, slide and detents, open/close/reopen lifecycle, gesture base, body viewport and vertical scroll extent, keyboard inset, safe area, X/V footer, and nested parent/child handoff. Feature consumers supply content, sizing class, staged state, X/V callbacks, and feature-specific horizontal/reel/grid interaction. A staged consumer must not add its own root `Modal`, root `KeyboardAvoidingView`, vertical body `ScrollView`, detent transform, gesture responder, animation, or footer offset unless the Result records a distinct intentional exception. On the mounted iOS header path the stable visual offset, page-Y base, and ready flag are established synchronously at responder grant; the first MOVE must never wait for a native `stopAnimation` callback or be discarded.
 - True-bottom is permanent: the shared body-end semantic gap makes the last real item scroll fully through the keyboard-occluded viewport. Keyboard appearance never applies an outer root shift, rewrites the gesture base, or lifts the sibling X/V footer. The shared owner measures the focused field, label/help context, and semantic gap; it first scrolls, and only when needed expands the free-settled sheet by the minimum required rise. It remembers the pre-keyboard settled height and restores it when the keyboard closes, except when the user manually drags while the keyboard is open, in which case that new height becomes authoritative.
 - Every open generation cancels stale animation, aligns visual translation and logical detent, clears drag/velocity/closing refs, and derives the next gesture base from the stopped animation's actual value. In the repeated `OPEN -> DRAG -> SNAP -> CLOSE -> REOPEN -> TOUCH_DOWN -> MOVE -> SNAP` contract, `TOUCH_DOWN` alone changes position by exactly zero; this includes Quick preview/parent return and Attachment reopen paths.
-- Reusable-catalog direct creation is a child route, not a second staged commit surface. It uses one explicit `추가` action, has no dead V, returns through the shared close/unmount/reopen handoff, and stages the newly created option in its parent. The parent V alone owns the later WorkOrder selection batch.
+- Reusable-catalog direct creation is a child route, not a second staged commit surface. It uses the registered direct-input confirm through native Done or the minimal keypad action, has no duplicate body `추가` or dead footer V, returns through the shared close/unmount/reopen handoff, and stages the newly created option in its parent. The parent V alone owns the later WorkOrder selection batch.
 - Size, Color, and Spec Item reusable-create children share the semantic `adaptiveExpandable` create policy: compact content-measured initial height, visible handle, free-settle drag, and the canonical sheet focus/keyboard path. Initial pixel height may differ with content (for example, the Color palette), but a text-entry creator must not fall back to fixed `contentFit`. Fixed `contentFit` remains for truly fixed/simple surfaces without draggable text-entry behavior.
 - Every live WAFL TextInput form sheet, including WorkOrder creation, uses the semantic `adaptiveExpandable` text-entry policy: a compact content-appropriate initial height, visible handle, common free-settle drag, and the canonical sheet focus/reveal lifecycle. `contentFit` is reserved for truly fixed/simple non-form surfaces. Automatic focus is requested only from the current open generation's presentation-ready `onAfterOpen` boundary; raw mount-time `autoFocus` must not race body measurement or entrance animation.
 - `adaptiveExpandable` is the canonical Saved Spec and variable catalog sizing policy: short measured content opens compact with a real handle, longer content grows only to the bounded medium maximum and then scrolls, and expanded remains available. Measurement is scoped to the current title/sizing/action generation. A late async measurement may grow a medium sheet, but it never collapses a sheet after the user has interacted or expanded it.
@@ -72,7 +108,7 @@ A2Z remains the font-family owner. Semantic roles are product title `20/26` (com
 - Production authoring is a sibling of the live Materials compact-card family: shared surface, border, radius, padding, field rhythm, action hit area, and left-accent geometry without sharing material business logic. The factory accent denotes the fixed factory role; additional-process accents are a deterministic function of canonical process type code and never encode request/completion status. Selection values route to the canonical WAFL PICK; scalar money and nullable memo values use `ControlledInlineEditValue` in place. Derived cost remains server-owned but is not repeated as an authoring field. A normal Production edit path must not wrap these few fields in a multi-field form sheet. Cached cards remain visible during background refresh; only an uncached unresolved first load uses the shared WorkOrder-tab loader (`제작 정보를 불러오는 중입니다.`), and a real read failure renders product-safe retry UI.
 - The six live WorkOrder tabs share one asynchronous loading grammar. A tab with usable parent/cached content renders it without a loader or re-entry flash; an uncached unresolved asynchronous source uses `DelayedLoadingMessage` with the tab-specific sentence inside the normal `WaflWorkOrderTabBody`; a synchronous/parent-loaded tab never invents loading state; and a genuine failure uses product-safe retry without raw transport copy. This rule does not authorize feature-local skeleton systems.
 - The alpha.65 live sheet inventory is a permanent routing owner, not an informal list. Every active bottom-origin surface is classified as canonical draggable/free-settle, intentionally fixed, or an interaction-specific exception; a new surface must enter that inventory and may not acquire a feature-local responder. Address Search is a draggable text/search surface: it waits for the current `WaflInputSheet` presentation-ready boundary before focusing, while header drag and result-body scrolling remain independent. Automation records `PHYSICAL_GESTURE_NOT_INFERRED`; owner iPhone remains the physical gate.
-- Size, Color, and Spec Item direct creation are one reusable-create family. Their parent choosers use the exact shared `WaflReusableCreateEntryAction` (`+ 직접 만들기`) with one icon, label, typography, spacing, hit target, position, and pressed/disabled grammar. `WaflReusableCreateForm` owns the child `< 기본 …` row, `WaflSheetValueField` name surface, and one full-width explicit `추가` slot; the three child routes use the same sheet-body inset and action geometry while Color alone owns the palette and read-only colour metadata. A child creator has no V action, and empty/invalid state disables the same create action without changing its geometry.
+- Size, Color, and Spec Item direct creation are one reusable-create family. Their parent choosers use the exact shared `WaflReusableCreateEntryAction` (`+ 직접 만들기`) with one icon, label, typography, spacing, hit target, position, and pressed/disabled grammar. `WaflReusableCreateForm` owns the child `< 기본 …` row and `WaflSheetValueField` name surface; the three child routes use the same sheet-body inset while Color alone owns the palette and read-only colour metadata. A child creator has no footer or body create CTA; empty/invalid state disables the registered native/minimal-accessory confirm without changing the input geometry.
 - A source field keeps identical participating geometry while its child PICK/INPUT is open. Inactive and active-sheet-open states have the same width, minimum height, padding, radius footprint, and surrounding gaps; only tint, existing hairline colour, icon, or text emphasis may change. This applies to Overview reel/date fields, Materials reel/partner fields, and Production selection fields as one extension of the focus-neutral single-line rule.
 - Production and Materials share `WaflSectionCategorySwitch`, `WaflCompactEntityCard`, `WaflCompactField`, compact summary/action-row, and delete-action presentation owners. Production uses one outer section with `기본 공정 / 추가 공정`; the trailing action is contextual, so Basic exposes only its order lifecycle action family and Additional exposes only add. Production's collapsed summary is one Material-style line containing authoritative `수량 · 금액`; unit cost remains in the field body and is not repeated in the summary. Selection labels, values, underline affordance, wrapping, chevron spacing, expand/collapse, divider, and delete slots remain semantic shared owners rather than Production-local lookalikes. Accent remains type identity and never lifecycle state.
 - Production basic-process order lifecycle mirrors the current Material action semantics while retaining process-domain storage: `ready → in_progress → completed`, with `in_progress → ready` cancel. Request requires a real factory, positive WorkOrder total, and positive integer-won unit labor cost. Request locks Basic fields, cancel restores draft editing, completion is terminal, and Additional Process receives no order lifecycle in this bounded delta.
@@ -153,6 +189,12 @@ Status: `OWNER_PHYSICAL_REVIEW_REQUIRED`.
 - All long Maker editors using `WaflInputSheet` inherit the same draggable detent, scroll-body, fixed-footer, safe-area, keyboard, and cancel semantics rather than implementing local sheet chrome.
 - Reusable Size, Color, and Spec Item chooser creation uses the shared parent action `+ 직접 만들기`. Domain record creation such as fabric/accessory add keeps its domain action label.
 
+## Alpha.68 WAFL Decision and Alert feedback owners
+
+- A binary product decision uses the normal `WAFL INPUT` chrome, one two-row option reel, a safe opening option, and one footer V. It has no footer X: backdrop, system back, drag dismissal, and safe+V all resolve as zero mutation; the action option plus V invokes the existing callback exactly once.
+- Decision labels describe real actions (`취소/확정`, `유지/삭제`, `유지/해제`, `유지/미지정`) and never use generic `예/아니오`. This does not change ordinary editor sheets, whose staged X/V contract remains canonical.
+- A transient success, warning, or error is one centered, buttonless `WAFL Alert` card with a default lifetime of about 1.2 seconds. Persistent validation remains inline. Loading is not a timed alert: it keeps the existing centered spinner card until the owning command explicitly completes.
+
 ## Alpha.65 visual spec selector variant
 
 Status: `OWNER_PHYSICAL_REVIEW_REQUIRED`.
@@ -184,6 +226,123 @@ Readiness is version-reconciled, not locally counted. A successful readiness-rel
 Fabric and Accessory share the Basic Process memo character-count presentation owner. `사용부위` is a hard 30-character field and `메모` is a hard 100-character field in both create-sheet and same-position inline editing. The counter is `N / maximum`, is derived from the staged value, and never substitutes silent client or server truncation.
 
 After Size or Color removal, the visible frozen-axis projection must publish one reconciled matrix: cells, row/column/grand totals, WorkOrder total, revision total, and Finished Spec Size columns advance together. A stale footer total is not an acceptable intermediate UI state after command success.
+
+## Alpha.68 boundary-save sheet geometry
+
+Draft input is locally immediate and network persistence is boundary-owned; a completed keystroke or
+picker V must not trigger an idle-timer save. Overview pickers and Material quantity pickers keep the
+compact card's original field geometry while their canonical WAFL INPUT sheet is active. They do not
+replace the card row with a full-width editing surface. WorkOrder creation uses the existing keyboard-
+adaptive sheet owner: focus raises it, keyboard dismissal restores the pre-keyboard resting geometry,
+and repeated focus cycles cannot accumulate position drift. Create, Copy, and Reorder share one centered
+creation-processing blocker; it blocks duplicate commands until the authoritative created core opens.
+
+Single-line sheet inputs may opt into native `blurAndSubmit` without changing the default field owner.
+The current opt-in is limited to the new Recipe product-name field: keyboard Done/V blurs and dismisses,
+the keyboard-adaptive sheet restores its prior resting geometry, and repeated refocus cycles do not drift.
+The create sheet owns one entrance-focus token per visible session. Once consumed—or explicitly dismissed
+by Done—that token cannot focus the native input again; only a later user press or a new sheet session may
+reopen the keyboard. A dirty Production subsection transition uses the shared central save blocker until
+its real flush resolves; a clean transition renders no blocker.
+
 ## Alpha.66 WorkOrder identity badges and list filter
 
 Create and detail share one WorkOrder-character semantic owner with `본생산 / 샘플`, but presentation follows context. Create uses the labeled form-sized `작업 구분` variant and fresh `샘플` default. Detail uses a compact two-segment grouped-button variant anchored at the hero text area's top-right: its visible height follows the badge family, its equal-width segments and smaller grouped radius distinguish action from pill badges, and the canonical minimum touch area is preserved invisibly. The pair never drops below the title or returns to full width. Workflow status remains the single strong badge and is positioned directly below the representative image in detail. WorkOrder identity is secondary: the duplicate detail Sample pill is absent because the interactive control already communicates character; applicable `N차 리오더` and `재작업` pills remain, while list-card identity badges remain unchanged. A passive source-title/lineage sentence is not header copy; source data stays in the read model until a future actionable relation is approved. Identity filtering uses a separate shared WAFL INPUT action/sheet with a single-choice `전체 / 본생산 / 샘플` group and an independent multi-select `리오더 / 재작업` group. Zero to three removable active chips may sit near search, but they never become a second persistent rail. The filter surface reuses the canonical staged X/V, sheet, choice, touch-target, and accessibility owners.
+## Alpha.68 create-sheet keyboard and Modal blocker parity
+
+- A keyboard-enabled `WaflInputSheet` snapshots its settled offset at the keyboard-session entrance.
+  Native hide restores that offset unless the user dragged during the session; field-reveal expansion is
+  not a restore prerequisite.
+- A sheet-hosted native `Modal` that needs a processing blocker renders the existing
+  `WaflActionProcessingBlocker` inside that Modal. A second screen-local blocker is forbidden.
+- Processing feedback that needs helper copy sends title and helper through the shared feedback owner;
+  clean transitions render no blocker.
+
+## Alpha.68 intrinsic keyboard geometry stabilization
+
+- Adaptive body height is intrinsic child content plus the static semantic end gap. Keyboard inset is
+  transient scroll/reveal space and must never be written back into the adaptive medium-height owner.
+- A delayed scroll `contentSize` callback after native hide cannot alter the pre-keyboard detent.
+  Three repeated sessions return to the same resting geometry unless a deliberate sheet drag made a
+  new offset authoritative.
+
+## Alpha.68 text-entry keyboard reveal clearance
+
+- Text-entry WAFL INPUT sheets use the theme-owned `textEntryFocusRevealClearance` (`72`) for the
+  focused semantic field block. Generic focus context remains `56`; numeric keypad context remains
+  `112`. Reel, Decision, and non-text sheets do not inherit the text-entry token.
+- Reveal is `max(0, desired clearance - current field-to-keyboard gap)`. Genuine intrinsic overflow
+  may scroll first; transient keyboard padding is not forward-scroll capacity. A short form therefore
+  lifts only by its missing clearance instead of remaining visually pinned to the keyboard.
+- Keyboard reveal never changes intrinsic/adaptive resting height. Native hide restores the exact
+  pre-keyboard settled offset unless a deliberate user drag made the current geometry authoritative.
+
+## Alpha.68 text-entry visual-coordinate normalization
+
+- Focused field, body viewport, keyboard top, and the sheet anchor are compared only after conversion
+  to the same visual-window coordinate space. The sheet's known animated top is the anchor: if native
+  measurement omitted the transform, the missing translation is added once; if measurement already
+  includes it, correction is zero. Feature call sites must not compensate with local offsets.
+- Real intrinsic overflow scrolls first and only the remaining shortfall lifts the free-settled sheet.
+  A bounded two-frame post-lift remeasurement may converge stale animation-frame geometry; it may not
+  increase the `72` semantic clearance or alter keyboard-hide restoration and user-drag ownership.
+
+## Alpha.68 mounted-ref reveal measurement
+
+- The focused semantic block, live body viewport, and animated sheet are measured from their actual
+  mounted host refs. A numeric native handle is a bounded compatibility fallback, never the primary owner.
+- Zero, non-finite, non-positive, clearly out-of-window, stale-focus, and stale-sheet frames are invalid.
+  One next-frame ref remeasure is allowed before one fallback attempt; invalid frames never silently
+  become a zero-rise decision.
+- The shared `72` clearance, visual-window anchor correction, scroll/rise policy, keyboard-hide restore,
+  user-drag authority, and non-text sheet behavior remain unchanged.
+
+## Alpha.68 direct-input keyboard mode
+
+- Direct text-entry `WaflInputSheet` consumers opt into one semantic `directInput` mode with explicit
+  editing, confirming, cancelling, and closing session ownership. Keyboard show selects one shared
+  content-aware intermediate detent from stable window, keyboard, header, intrinsic-body, safe-area,
+  and resting geometry; only insufficient small-device geometry clamps to `offset 0`.
+- Normal direct-input fields use native Next/Done and attach no accessory native ID. Only a focused iOS
+  keyboard capability without native Return/Done receives the per-session accessory ID and one minimal
+  action: `다음` through mounted editable refs when a later field exists, otherwise `완료` through the
+  canonical confirmation guard. There is no common Previous/Next/Done bar. Read-only fields are absent
+  from the registry and Android renders no accessory.
+- Direct-input ScrollViews persist every internal tap and do not dismiss on scroll, so helper, blank-space,
+  control, and input-transfer taps retain the keyboard/focus session. Non-direct sheets preserve the prior
+  handled-tap behavior; backdrop and drag dismissal remain separate canonical owners.
+- Single-line native return resolves to next for intermediate fields and done for the last/single field.
+  Every direct-input single-line field uses submit-before-blur. Invalid final submit therefore preserves
+  keyboard, focus, and geometry; only an accepted canonical confirm blurs and dismisses. Multiline newline
+  semantics remain.
+- The content-aware keyboard detent is the sole direct-input sheet-Y owner. Mounted-ref reveal is limited
+  to body scrolling and cannot invoke a secondary sheet rise. Repeated focus or validation within one
+  keyboard session does not rerun the detent animation.
+- Keyboard-visible header drag has only two releases: existing cancel/dismiss with mutation zero, or
+  snap-back to the current keyboard detent. Gesture-active keyboard hide suppresses auto-refocus;
+  confirming, cancelling, closing, unmount, and background also never reopen it. A true unexpected hide
+  during editing retains one bounded refocus.
+
+## Alpha.68 direct-input canonical close and footerless presentation
+
+- Backdrop cancellation and parent/nested `visible=false` use one mechanical close owner. Direct-input
+  close suppresses restore, blurs the mounted field, dismisses the keyboard, invalidates the active open
+  generation, and closes the sheet. Only the user-cancel reason invokes `onCancel`; programmatic close
+  proceeds to `onAfterClose` without a duplicate business callback.
+- A direct-input backdrop claims cancellation on first touch and keeps its press fallback idempotent.
+  Large-drag cancellation uses the same owner; small-drag snap-back and internal-tap persistence are unchanged.
+- Direct-input keeps its registered confirm owner but has no bottom action footer, footer height, or footer
+  readiness dependency. Reusable direct Size/Color/POM forms also have no duplicate body `추가`; native Done
+  or the minimal keypad action calls the same canonical confirm.
+- Processing presentation is opt-in. New Recipe uses `replaceSheet`: the mounted form state remains available
+  for failure recovery while its surface, interaction, accessibility descendants, and minimal accessory are
+  hidden behind the central blocker. Non-opt-in processing presentation remains unchanged.
+
+## Alpha.68 close-animation ownership
+
+- Close claims dismissal and cancelling/closing session ownership before input blur or keyboard dismissal.
+  A keyboard-hide event owned by confirmation or close cannot restore a prior detent, reveal a field, or
+  refocus the keyboard.
+- While dismissal owns the sheet, ordinary settle animations are rejected so the exit animation cannot be
+  stopped by restore/reveal work. One close-operation identity and idempotent finalizer own teardown,
+  callback cardinality, and the after-close handoff; timers are not an alternate completion owner.

@@ -52,7 +52,15 @@ export async function handleGetWorkOrderSeriesHistory(_request: Request, workOrd
   if (!guard.ok) return createCommandErrorResponse({ ...mapCommandGuardFailureStatus(guard.response.status), correlationId });
   if (!/^[0-9a-f-]{36}$/i.test(workOrderId)) return NextResponse.json({ ok: false, error: { code: "NOT_FOUND", message: "작업 이력을 찾을 수 없습니다.", retryable: false, correlationId } }, { status: 404 });
   const scope = createCommandTenantScope({ scope: guard.scope, companyMemberId: guard.session.companyMemberId, correlationId, permissionCode: "workorder.read" });
-  const data = await readWorkOrderSeriesHistory({ scope, workOrderId: workOrderId as never, assignedCompanyMemberId: assignedMemberFromScope(guard.scope) });
-  if (!data) return NextResponse.json({ ok: false, error: { code: "NOT_FOUND", message: "작업 이력을 찾을 수 없습니다.", retryable: false, correlationId } }, { status: 404 });
-  return createWaflApiSuccess(data, { headers: { "Cache-Control": "no-store", "X-WAFL-Correlation-Id": correlationId } });
+  try {
+    const data = await readWorkOrderSeriesHistory({ scope, workOrderId: workOrderId as never, assignedCompanyMemberId: assignedMemberFromScope(guard.scope) });
+    if (!data) return NextResponse.json({ ok: false, error: { code: "NOT_FOUND", message: "작업 이력을 찾을 수 없습니다.", retryable: false, correlationId } }, { status: 404, headers: { "X-WAFL-Correlation-Id": correlationId } });
+    return createWaflApiSuccess(data, { headers: { "Cache-Control": "no-store", "X-WAFL-Correlation-Id": correlationId } });
+  } catch (error) {
+    console.error("[WORK_ORDER_SERIES_HISTORY_READ_FAILED]", {
+      correlationId,
+      errorName: error instanceof Error ? error.name : "UnknownError",
+    });
+    return createCommandErrorResponse({ code: "INTERNAL_ERROR", message: "작업 이력을 불러오지 못했습니다.", status: 500, retryable: true, correlationId });
+  }
 }

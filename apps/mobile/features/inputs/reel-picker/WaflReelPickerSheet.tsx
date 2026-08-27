@@ -326,16 +326,19 @@ export default function WaflReelPickerSheet({ visible, field, label, value, unit
     stageFirstRealOption: selectFirstRealOption,
   });
   const openExternalSession = useCallback(() => {
-    setWindowAnchor(openValue);
+    const stagedOpeningValue = optionOnly || kind === "unit" || eighthInch
+      ? openValue
+      : normalizeReelValue(openValue) ?? openValue;
+    setWindowAnchor(stagedOpeningValue);
     dispatch({
       type: "open",
       field,
       label,
-      value: openValue,
+      value: stagedOpeningValue,
       unit: unitCode.trim() || materialUnitOptions("")[0] || "개",
       step: integerOnly || eighthInch ? "1" : defaultReelStep(unitCode),
     });
-  }, [eighthInch, field, integerOnly, label, openValue, unitCode]);
+  }, [eighthInch, field, integerOnly, kind, label, openValue, optionOnly, unitCode]);
   const closeExternalSession = useCallback(() => dispatch({ type: "cancel" }), []);
   const { markCurrentSessionClosed } = useExternalReelVisibilityLifecycle({
     visible,

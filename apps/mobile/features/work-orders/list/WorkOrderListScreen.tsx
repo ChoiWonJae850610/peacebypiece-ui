@@ -1,6 +1,6 @@
-import { useEffect, useRef, useState } from "react";
-import { ActivityIndicator, Image, Keyboard, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
-import { Plus, RefreshCw, Search, SlidersHorizontal, X } from "lucide-react-native";
+import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import { ActivityIndicator, Animated, Image, Keyboard, PanResponder, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
+import { Copy, Plus, RefreshCw, Repeat2, Search, SlidersHorizontal, Trash2, X } from "lucide-react-native";
 
 import { WAFL_FONTS } from "@/constants/fonts";
 import { WAFL_THEME } from "@/constants/theme";
@@ -8,6 +8,7 @@ import type { WorkOrderCharacterFilter, WorkOrderLineageFilter, WorkOrderListIte
 import WaflInputSheet from "@/features/inputs/WaflInputSheet";
 import WaflChoiceButtons from "@/features/inputs/WaflChoiceButtons";
 import { resolveMobileApiUrl } from "@/lib/apiTransport";
+import { formatCompactKstCreatedAt } from "@/lib/mobileDisplay";
 import {
   WORK_ORDER_SEARCH_DEBOUNCE_MS,
   WORK_ORDER_SEARCH_LAYOUT,
@@ -22,9 +23,18 @@ import {
   getWorkOrderWorkflowPresentation,
   matchesWorkOrderStatusFilter,
   WORK_ORDER_STATUS_FILTER_OPTIONS,
-  WORK_ORDER_STATUS_LABEL,
   type WorkOrderWorkflowBadgeVariant,
 } from "./workOrderListStatusPolicy";
+import {
+  resistedWorkOrderSwipeOffset,
+  resolveWorkOrderSwipeIntent,
+  settleWorkOrderSwipe,
+  WORK_ORDER_SWIPE_ACTION_WIDTH,
+  WORK_ORDER_SWIPE_LEADING_WIDTH,
+  WORK_ORDER_SWIPE_TRAILING_WIDTH,
+  workOrderSwipeSnapOffset,
+  type WorkOrderSwipeSide,
+} from "./workOrderSwipePolicy";
 
 type Props = {
   readonly items: readonly WorkOrderListItem[];
@@ -44,16 +54,57 @@ type Props = {
   readonly onStatusFilter: (status: WorkOrderListStatusFilter) => void;
   readonly onIdentityFilters: (character: WorkOrderCharacterFilter, lineage: readonly WorkOrderLineageFilter[]) => void;
   readonly onSelect: (item: WorkOrderListItem) => void;
+  readonly onCopy: (item: WorkOrderListItem) => void;
+  readonly onReorder: (item: WorkOrderListItem) => void;
+  readonly onDelete: (item: WorkOrderListItem) => void;
 };
+
+function SwipeWorkOrderRow({ item, selected, openSide, onGestureStart, onOpen, onClose, onSelect, onCopy, onReorder, onDelete, children }:{readonly item:WorkOrderListItem;readonly selected:boolean;readonly openSide:"copy"|"delete"|null;readonly onGestureStart:()=>void;readonly onOpen:(side:"copy"|"delete")=>void;readonly onClose:()=>void;readonly onSelect:()=>void;readonly onCopy:()=>void;readonly onReorder:()=>void;readonly onDelete:()=>void;readonly children:ReactNode}){
+  const [translate]=useState(()=>new Animated.Value(0));
+  const [activeSide,setActiveSide]=useState<WorkOrderSwipeSide|null>(null);
+  const start=useRef(0);
+  const dragging=useRef(false);
+  const reorderEnabled=!item.identity.isSample&&item.identity.derivationKind!=="rework"&&item.status!=="draft";
+  useEffect(()=>{
+    if (dragging.current) return;
+    Animated.spring(translate,{toValue:workOrderSwipeSnapOffset(openSide),useNativeDriver:true,friction:10,tension:105}).start();
+  },[openSide,translate]);
+  // The whole card owns horizontal intent after a deliberate, dominant drag.
+  // eslint-disable-next-line react-hooks/refs
+  const pan=useMemo(()=>PanResponder.create({
+    onMoveShouldSetPanResponder:(_,g)=>resolveWorkOrderSwipeIntent(g.dx,g.dy)==="copy"||resolveWorkOrderSwipeIntent(g.dx,g.dy)==="delete",
+    onPanResponderGrant:()=>{
+      dragging.current=true;
+      onGestureStart();
+      translate.stopAnimation((value)=>{start.current=value;});
+    },
+    onPanResponderMove:(_,g)=>{
+      const intent=resolveWorkOrderSwipeIntent(g.dx,g.dy);
+      if(intent==="copy"||intent==="delete")setActiveSide(intent);
+      translate.setValue(resistedWorkOrderSwipeOffset(start.current+g.dx));
+    },
+    onPanResponderRelease:(_,g)=>{
+      dragging.current=false;
+      setActiveSide(null);
+      const side=settleWorkOrderSwipe({start:start.current,dx:g.dx});
+      if(side)onOpen(side);else onClose();
+    },
+    onPanResponderTerminate:()=>{dragging.current=false;setActiveSide(null);onClose();},
+    onPanResponderTerminationRequest:()=>false,
+  }),[onClose,onGestureStart,onOpen,translate]);
+  const visibleSide=activeSide??openSide;
+  return <View style={styles.swipeShell}><View pointerEvents={openSide==="copy"?"auto":"none"} style={[styles.swipeActionsLeft,visibleSide!=="copy"&&styles.swipeActionsHidden]}><Pressable accessibilityLabel="레시피 복사" accessibilityRole="button" onPress={()=>{onClose();onCopy();}} style={styles.swipeAction}><Copy color="#fff" size={18}/><Text style={styles.swipeActionText}>복사</Text></Pressable><Pressable accessibilityLabel="리오더 만들기" accessibilityRole="button" accessibilityState={{disabled:!reorderEnabled}} disabled={!reorderEnabled} onPress={()=>{onClose();onReorder();}} style={[styles.swipeAction,styles.reorderAction,!reorderEnabled&&styles.swipeDisabled]}><Repeat2 color="#fff" size={18}/><Text style={styles.swipeActionText}>리오더</Text></Pressable></View><View pointerEvents={openSide==="delete"?"auto":"none"} style={[styles.swipeActionsRight,visibleSide!=="delete"&&styles.swipeActionsHidden]}><Pressable accessibilityLabel="레시피 삭제" accessibilityRole="button" onPress={()=>{onClose();onDelete();}} style={[styles.swipeAction,styles.deleteAction]}><Trash2 color="#fff" size={18}/><Text style={styles.swipeActionText}>삭제</Text></Pressable></View><Animated.View {...pan.panHandlers} style={[styles.swipeCardLayer,{transform:[{translateX:translate}]}]}><Pressable accessibilityLabel={`${item.productName} 레시피 열기`} accessibilityRole="button" onPress={()=>{if(openSide)onClose();else onSelect();}} style={({pressed})=>[styles.card,selected&&styles.cardSelected,pressed&&styles.cardPressed]}>{children}</Pressable></Animated.View></View>;
+}
 
 export default function WorkOrderListScreen({
   items, hasMore, selectedId, loading = false, loadingMore = false, searching = false, query, statusFilter, characterFilter, lineageFilters,
-  onCreate, onRefresh, onLoadMore, onSearch, onStatusFilter, onIdentityFilters, onSelect,
+  onCreate, onRefresh, onLoadMore, onSearch, onStatusFilter, onIdentityFilters, onSelect, onCopy, onReorder, onDelete,
 }: Props) {
   const [searchDraft, setSearchDraft] = useState(query);
   const [filterVisible, setFilterVisible] = useState(false);
   const [stagedCharacterFilter, setStagedCharacterFilter] = useState<WorkOrderCharacterFilter>(characterFilter);
   const [stagedLineageFilters, setStagedLineageFilters] = useState<readonly WorkOrderLineageFilter[]>(lineageFilters);
+  const [openRow,setOpenRow]=useState<{readonly id:string;readonly side:"copy"|"delete"}|null>(null);
   const onSearchRef = useRef(onSearch);
   useEffect(() => {
     onSearchRef.current = onSearch;
@@ -74,14 +125,14 @@ export default function WorkOrderListScreen({
     <View style={styles.container}>
       <View style={styles.headingRow}>
         <View style={styles.headingText}>
-          <Text style={styles.title}>작업지시서</Text>
-          <Text style={styles.count}>현재 표시 작업지시서 {visibleItems.length}개{hasMore ? " · 다음 페이지 있음" : ""}</Text>
+          <Text style={styles.title}>레시피</Text>
+          <Text style={styles.count}>현재 표시 레시피 {visibleItems.length}개{hasMore ? " · 다음 페이지 있음" : ""}</Text>
         </View>
         <View style={styles.headingActions}>
-          <Pressable accessibilityLabel="새 작업지시서 만들기" accessibilityRole="button" disabled={loading || searching} onPress={onCreate} style={({ pressed }) => [styles.createButton, (loading || searching) && styles.disabled, pressed && styles.pressed]}>
+          <Pressable accessibilityLabel="새 레시피 만들기" accessibilityRole="button" disabled={loading || searching} onPress={onCreate} style={({ pressed }) => [styles.createButton, (loading || searching) && styles.disabled, pressed && styles.pressed]}>
             <Plus color="#fff" size={18} /><Text style={styles.createText}>새로 만들기</Text>
           </Pressable>
-          <Pressable accessibilityLabel="작업지시서 목록 새로고침" accessibilityRole="button" disabled={loading} onPress={onRefresh} style={({ pressed }) => [styles.iconButton, pressed && styles.pressed]}>
+          <Pressable accessibilityLabel="레시피 목록 새로고침" accessibilityRole="button" disabled={loading} onPress={()=>{setOpenRow(null);onRefresh();}} style={({ pressed }) => [styles.iconButton, pressed && styles.pressed]}>
             {loading ? <ActivityIndicator color="#5b4c3d" /> : <RefreshCw color="#5b4c3d" size={20} />}
           </Pressable>
         </View>
@@ -91,12 +142,12 @@ export default function WorkOrderListScreen({
         <View style={styles.searchField}>
           <Search color="#75695d" size={17} />
           <TextInput
-            accessibilityLabel="작업지시서 검색"
+            accessibilityLabel="레시피 검색"
             autoCapitalize="none"
             multiline={false}
             numberOfLines={1}
-            onChangeText={setSearchDraft}
-            placeholder="제품명·작업지시서 번호·품목·시즌 검색"
+            onChangeText={(value)=>{setOpenRow(null);setSearchDraft(value);}}
+            placeholder="제품명·레시피 번호·품목·시즌 검색"
             returnKeyType="done"
             style={styles.searchInput}
             textAlignVertical="center"
@@ -110,7 +161,7 @@ export default function WorkOrderListScreen({
             ) : null}
           </View>
         </View>
-        <Pressable accessibilityLabel="작업지시서 구분 필터" accessibilityRole="button" onPress={() => { setStagedCharacterFilter(characterFilter); setStagedLineageFilters(lineageFilters); setFilterVisible(true); }} style={styles.filterAction}>
+        <Pressable accessibilityLabel="레시피 구분 필터" accessibilityRole="button" onPress={() => { setStagedCharacterFilter(characterFilter); setStagedLineageFilters(lineageFilters); setFilterVisible(true); }} style={styles.filterAction}>
           <SlidersHorizontal color={WAFL_THEME.color.navyInk} size={18} />
           <Text style={styles.filterActionText}>필터</Text>
         </Pressable>
@@ -132,6 +183,7 @@ export default function WorkOrderListScreen({
             key={filter.id}
             onPress={() => {
               Keyboard.dismiss();
+              setOpenRow(null);
               onStatusFilter(filter.id);
             }}
             style={[styles.filter, statusFilter === filter.id && styles.filterSelected]}
@@ -143,29 +195,24 @@ export default function WorkOrderListScreen({
 
       {visibleItems.length === 0 && !loading ? (
         <View style={styles.empty}>
-          <Text style={styles.emptyTitle}>{hasSearchQuery ? "검색 결과가 없습니다." : "작업지시서 목록이 비어 있습니다."}</Text>
+          <Text style={styles.emptyTitle}>{hasSearchQuery ? "검색 결과가 없습니다." : "레시피 목록이 비어 있습니다."}</Text>
           <Text style={styles.emptyBody}>
-            {hasSearchQuery ? "다른 검색어를 입력하거나 검색어를 지워 주세요." : "현재 회사에서 조회할 수 있는 작업지시서가 없습니다."}
+            {hasSearchQuery ? "다른 검색어를 입력하거나 검색어를 지워 주세요." : "현재 회사에서 조회할 수 있는 레시피가 없습니다."}
           </Text>
         </View>
       ) : (
-        <ScrollView contentContainerStyle={styles.list} keyboardShouldPersistTaps="handled" onScrollBeginDrag={Keyboard.dismiss} showsVerticalScrollIndicator={false}>
+        <ScrollView contentContainerStyle={styles.list} keyboardShouldPersistTaps="handled" onScrollBeginDrag={()=>{Keyboard.dismiss();setOpenRow(null);}} showsVerticalScrollIndicator={false}>
           {visibleItems.map((item) => {
             const selected = selectedId === item.workOrderId;
             const workflowStatus = getWorkOrderWorkflowPresentation(item.status);
             const representativeLabel = item.representativeThumbnail ? "이미지 있음" : "이미지 없음";
             const identityLabels = [item.identity.isSample ? "샘플" : null, item.identity.reorderRound > 0 ? `${item.identity.reorderRound}차 리오더` : null, item.identity.derivationKind === "rework" ? "재작업" : null].filter((label): label is string => label !== null);
             const representativeUrl = resolveMobileApiUrl(item.representativeThumbnail?.thumbnailUrl ?? null);
+            const createdAtLabel = formatCompactKstCreatedAt(item.createdAt);
             return (
-              <Pressable
-                accessibilityLabel={`${item.productName}${identityLabels.length ? `, ${identityLabels.join(", ")}` : ""}, ${WORK_ORDER_STATUS_LABEL[item.status]}, 수량 ${item.totalQuantity}`}
-                accessibilityRole="button"
+              <SwipeWorkOrderRow
                 key={item.workOrderId}
-                onPress={() => {
-                  Keyboard.dismiss();
-                  onSelect(item);
-                }}
-                style={({ pressed }) => [styles.card, selected && styles.cardSelected, pressed && styles.pressed]}
+                item={item} selected={selected} openSide={openRow?.id===item.workOrderId?openRow.side:null} onGestureStart={()=>setOpenRow((current)=>current?.id===item.workOrderId?current:null)} onOpen={(side)=>setOpenRow({id:item.workOrderId,side})} onClose={()=>setOpenRow(null)} onSelect={()=>{Keyboard.dismiss();setOpenRow(null);onSelect(item);}} onCopy={()=>onCopy(item)} onReorder={()=>onReorder(item)} onDelete={()=>onDelete(item)}
               >
                 <View style={styles.cardTop}>
                   <View accessibilityLabel={representativeLabel} style={styles.imagePlaceholder}>
@@ -181,6 +228,7 @@ export default function WorkOrderListScreen({
                   </View>
                   <View style={styles.cardMain}>
                     <Text numberOfLines={2} style={styles.productName}>{item.productName}</Text>
+                    {createdAtLabel ? <Text style={styles.createdAt}>{createdAtLabel}</Text> : null}
                     {identityLabels.length ? <View style={styles.identityBadges}>{identityLabels.map((label) => <Text key={label} style={styles.identityBadge}>{label}</Text>)}</View> : null}
                   </View>
                   <Text style={[styles.status, STATUS_BADGE_STYLES[workflowStatus.variant]]}>{workflowStatus.label}</Text>
@@ -189,18 +237,18 @@ export default function WorkOrderListScreen({
                   <Text style={styles.metricStrong}>수량 {item.totalQuantity.toLocaleString("ko-KR")}벌</Text>
                   <Text style={styles.metricStrong}>납기 {item.dueDate ?? "미정"}</Text>
                 </View>
-              </Pressable>
+              </SwipeWorkOrderRow>
             );
           })}
           {hasMore ? (
-            <Pressable accessibilityLabel="작업지시서 더 보기" accessibilityRole="button" disabled={loadingMore} onPress={onLoadMore} style={styles.moreButton}>
+            <Pressable accessibilityLabel="레시피 더 보기" accessibilityRole="button" disabled={loadingMore} onPress={onLoadMore} style={styles.moreButton}>
               {loadingMore ? <ActivityIndicator color="#5b4c3d" size="small" /> : null}
               <Text style={styles.moreText}>{loadingMore ? "불러오는 중" : "더 보기"}</Text>
             </Pressable>
           ) : null}
         </ScrollView>
       )}
-      <WaflInputSheet cancelAccessibilityLabel="작업지시서 구분 필터 취소" confirmAccessibilityLabel="작업지시서 구분 필터 적용" onCancel={() => setFilterVisible(false)} onConfirm={() => { setFilterVisible(false); onIdentityFilters(stagedCharacterFilter, stagedLineageFilters); }} sizing="adaptiveExpandable" title="필터" visible={filterVisible}>
+      <WaflInputSheet cancelAccessibilityLabel="레시피 구분 필터 취소" confirmAccessibilityLabel="레시피 구분 필터 적용" onCancel={() => setFilterVisible(false)} onConfirm={() => { setFilterVisible(false); setOpenRow(null); onIdentityFilters(stagedCharacterFilter, stagedLineageFilters); }} sizing="adaptiveExpandable" title="필터" visible={filterVisible}>
         <View style={styles.filterSheetBody}>
           <View style={styles.filterGroup}>
             <Text style={styles.filterGroupLabel}>작업 구분</Text>
@@ -248,7 +296,9 @@ const styles = StyleSheet.create({
   pressed: { opacity: 0.72 },
   disabled: { opacity: 0.45 },
   list: { gap: 10, paddingBottom: 30 },
+  swipeShell:{borderRadius:15,overflow:"hidden",position:"relative",width:"100%"},swipeCardLayer:{width:"100%"},swipeActionsHidden:{opacity:0},swipeActionsLeft:{bottom:0,flexDirection:"row",left:0,position:"absolute",top:0,width:WORK_ORDER_SWIPE_LEADING_WIDTH},swipeActionsRight:{alignItems:"stretch",bottom:0,position:"absolute",right:0,top:0,width:WORK_ORDER_SWIPE_TRAILING_WIDTH},swipeAction:{alignItems:"center",alignSelf:"stretch",backgroundColor:WAFL_THEME.color.navyInk,flex:1,gap:3,justifyContent:"center",width:WORK_ORDER_SWIPE_ACTION_WIDTH},reorderAction:{backgroundColor:WAFL_THEME.color.brickOrange},deleteAction:{backgroundColor:WAFL_THEME.color.error,height:"100%",width:WORK_ORDER_SWIPE_TRAILING_WIDTH},swipeActionText:{color:"#fff",fontFamily:WAFL_FONTS.bold,fontSize:11},swipeDisabled:{backgroundColor:WAFL_THEME.color.disabled,opacity:1},
   card: { backgroundColor: "#fffdf8", borderColor: "#dfd5c8", borderRadius: 15, borderWidth: 1, gap: 9, padding: 14 },
+  cardPressed: { backgroundColor: "#faf5ec" },
   cardSelected: { borderColor: "#9b4a27", borderWidth: 2, padding: 13 },
   cardTop: { alignItems: "flex-start", flexDirection: "row", gap: 10 },
   imagePlaceholder: { alignItems: "center", backgroundColor: "#eee7dc", borderRadius: 10, height: 48, justifyContent: "center", width: 48 },
@@ -256,6 +306,7 @@ const styles = StyleSheet.create({
   imageMark: { color: "#75695d", fontFamily: WAFL_FONTS.medium, fontSize: 9, textAlign: "center" },
   cardMain: { flex: 1, minWidth: 0 },
   productName: { color: "#17263d", fontFamily: WAFL_FONTS.bold, fontSize: 16, lineHeight: 21 },
+  createdAt: { color: "#8a7d70", fontFamily: WAFL_FONTS.regular, fontSize: 11, lineHeight: 16, marginTop: 2 },
   identityBadges: { flexDirection: "row", flexWrap: "wrap", gap: 5, marginTop: 5 },
   identityBadge: { backgroundColor: WAFL_THEME.color.paperMuted, borderRadius: 999, color: "#67584c", fontFamily: WAFL_FONTS.semibold, fontSize: 10, overflow: "hidden", paddingHorizontal: 7, paddingVertical: 3 },
   status: { backgroundColor: "#f2e2d3", borderRadius: 999, color: "#874423", fontFamily: WAFL_FONTS.bold, fontSize: 11, overflow: "hidden", paddingHorizontal: 8, paddingVertical: 5 },

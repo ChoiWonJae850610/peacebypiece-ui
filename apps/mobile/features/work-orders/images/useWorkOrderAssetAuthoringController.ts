@@ -1,5 +1,4 @@
-import { useCallback, useRef, useState } from "react";
-import { Linking } from "react-native";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 import { createExplicitMutationController } from "@/application/mutationController";
 import type {
@@ -48,7 +47,10 @@ export function useWorkOrderAssetAuthoringController(input: Input) {
   const [attachments, setAttachments] = useState<readonly WorkOrderAttachmentAsset[]>([]);
   const [busy, setBusy] = useState(false);
   const [busyId, setBusyId] = useState<string | null>(null);
+  const [attachmentPreview, setAttachmentPreview] = useState<{ readonly attachment: WorkOrderAttachmentAsset; readonly url: string } | null>(null);
   const mutation = useRef(createExplicitMutationController()).current;
+  const latestInput = useRef(input);
+  useEffect(() => { latestInput.current = input; }, [input]);
 
   function setMessage(message: string | null) {
     if (message) input.onMessage(message);
@@ -63,6 +65,7 @@ export function useWorkOrderAssetAuthoringController(input: Input) {
     hydrate([], []);
     setBusy(false);
     setBusyId(null);
+    setAttachmentPreview(null);
   }, [hydrate]);
 
   async function refreshProjection(workOrderId: string, expectedVersion: number) {
@@ -78,7 +81,9 @@ export function useWorkOrderAssetAuthoringController(input: Input) {
   }
 
   async function acquireImage(source: WorkOrderImageAcquisitionSource) {
-    if (!input.detail || !input.selected || !canEditWorkOrder(input.detail, input.user)) return;
+    const started = latestInput.current;
+    if (!started.detail || !started.selected || !canEditWorkOrder(started.detail, started.user)) return;
+    const workOrderId = started.selected.workOrderId;
     if (mutation.tryBegin() !== "started") return;
     setBusy(true);
     setBusyId(null);
@@ -86,31 +91,34 @@ export function useWorkOrderAssetAuthoringController(input: Input) {
       const acquired = await acquireWorkOrderImage(source);
       if (acquired.status === "cancelled") return;
       if (acquired.status === "denied") return setMessage(acquired.message);
-      if (images.length >= 20) return setMessage("작업지시서 이미지는 최대 20장까지 등록할 수 있습니다.");
+      if (latestInput.current.selected?.workOrderId !== workOrderId || latestInput.current.detail?.header.id !== workOrderId) return;
+      if (images.length >= 20) return setMessage("레시피 이미지는 최대 20장까지 등록할 수 있습니다.");
       const localResponse = await fetch(acquired.asset.uri);
       if (!localResponse.ok) throw new Error("LOCAL_IMAGE_READ_FAILED");
       const blob = await localResponse.blob();
       const file = normalizeAcquiredImageFile(acquired.asset, blob);
       if (!new Set(["image/jpeg", "image/png", "image/webp"]).has(file.type)) return setMessage("JPG, PNG, WEBP 이미지만 등록할 수 있습니다.");
       if (file.size <= 0 || file.size > 10 * 1024 * 1024) return setMessage("이미지는 1장당 10MB 이하만 등록할 수 있습니다.");
-      const uploadTarget = await workOrderMutationController.prepareImageUpload(input.selected.workOrderId, file);
+      const uploadTarget = await workOrderMutationController.prepareImageUpload(workOrderId, file);
       await workOrderMutationController.putImageBlob(uploadTarget, blob);
       const uploadIdentity = input.nextIdentity("upload");
       const completeInput = {
-        expectedVersion: input.detail.header.entityVersion,
+        expectedVersion: latestInput.current.detail?.header.id === workOrderId
+          ? latestInput.current.detail.header.entityVersion
+          : started.detail.header.entityVersion,
         ...uploadIdentity,
         uploadTarget,
       };
       let result: WorkOrderImageCommandResult | null;
       try {
-        result = await workOrderMutationController.completeImageUpload(input.selected.workOrderId, completeInput);
+        result = await workOrderMutationController.completeImageUpload(workOrderId, completeInput);
       } catch (error) {
         if (!isAmbiguousUploadCompletion(error)) throw error;
         result = null;
         for (let attempt = 0; attempt < 9 && !result; attempt += 1) {
           await wait(attempt === 0 ? 1_200 : 4_000);
           try {
-            result = await workOrderMutationController.reconcileImageUpload(input.selected.workOrderId, uploadIdentity);
+            result = await workOrderMutationController.reconcileImageUpload(workOrderId, uploadIdentity);
           } catch (reconcileError) {
             if (!isAmbiguousUploadCompletion(reconcileError)) throw reconcileError;
           }
@@ -119,7 +127,8 @@ export function useWorkOrderAssetAuthoringController(input: Input) {
           throw new MobileApiError({ code: "TIMEOUT", message: "이미지 등록 결과를 아직 확인하지 못했습니다. 잠시 후 이미지 목록을 다시 확인해 주세요." });
         }
       }
-      await refreshProjection(input.selected.workOrderId, result.nextVersion);
+      if (latestInput.current.selected?.workOrderId !== workOrderId) return;
+      await refreshProjection(workOrderId, result.nextVersion);
       setMessage(result.isRepresentative ? "첫 이미지를 등록하고 대표이미지로 지정했습니다." : "이미지를 등록했습니다. 기존 대표이미지는 유지됩니다.");
     } catch (error) {
       setMessage(error instanceof MobileApiError ? error.message : "이미지를 등록하지 못했습니다. 네트워크 상태를 확인한 뒤 다시 시도해 주세요.");
@@ -198,7 +207,7 @@ export function useWorkOrderAssetAuthoringController(input: Input) {
       const preview = await workOrderMutationController.issueAttachmentPreview(input.selected.workOrderId, attachment.id);
       const url = resolveMobileApiUrl(preview.previewUrl);
       if (!url) throw new Error("ATTACHMENT_PREVIEW_URL_INVALID");
-      await Linking.openURL(url);
+      setAttachmentPreview({ attachment, url });
     } catch (error) {
       setMessage(error instanceof MobileApiError ? error.message : "첨부파일을 열 수 없습니다.");
     }
@@ -260,6 +269,7 @@ export function useWorkOrderAssetAuthoringController(input: Input) {
     attachments,
     busy,
     busyId,
+    attachmentPreview,
     isMutationInFlight: () => mutation.inFlight,
     hydrate,
     reset,
@@ -267,6 +277,7 @@ export function useWorkOrderAssetAuthoringController(input: Input) {
     acquireAttachment,
     requestDeleteAttachment,
     openAttachment,
+    closeAttachmentPreview: () => setAttachmentPreview(null),
     setRepresentativeImage,
     requestDeleteImage,
   } as const;

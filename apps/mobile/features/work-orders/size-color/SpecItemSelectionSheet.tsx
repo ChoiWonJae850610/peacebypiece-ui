@@ -77,6 +77,9 @@ export default function SpecItemSelectionSheet(props: Props) {
     cancelAccessibilityLabel={`${childTitle} 취소`}
     confirmAccessibilityLabel={`${childTitle} 저장`}
     confirmDisabled={childDisabled}
+    keyboardAutoExpand
+    keyboardFocusRevealContext={WAFL_THEME.sheet.textEntryFocusRevealClearance}
+    keyboardMode="directInput"
     onCancel={closeChild}
     onAfterClose={nested.finishClose}
     onAfterOpen={() => editorInputRef.current?.focus()}
@@ -92,12 +95,12 @@ export default function SpecItemSelectionSheet(props: Props) {
     {nested.route === "add" ? <WaflReusableCreateForm
       backLabel="기본 스펙"
       fieldLabel="스펙 항목명"
-      helpText="저장하면 같은 회사의 다음 작업지시서에서도 선택할 수 있습니다."
+      helpText="저장하면 같은 회사의 다음 레시피에서도 선택할 수 있습니다."
       inputRef={editorInputRef}
       maxLength={80}
       onBack={closeChild}
       onChange={setDraft}
-      onCreate={() => { void props.onCreate(draft).then((created) => { if (!created) return; setSelectedKeys((current) => [...new Set([...current, `catalog:${created.id}`])]); closeChild(); }); }}
+      onCreate={() => props.onCreate(draft).then((created) => { if (!created) return; setSelectedKeys((current) => [...new Set([...current, `catalog:${created.id}`])]); closeChild(); })}
       pending={props.busy}
       placeholder="예: 총장"
       value={draft}
@@ -119,7 +122,7 @@ export default function SpecItemSelectionSheet(props: Props) {
     visible={nested.visible}
   >
     <View style={styles.content}>
-      <Text style={styles.help}>항목을 고른 뒤 V를 누르면 현재 작업지시서 스펙을 한 번에 변경합니다.</Text>
+      <Text style={styles.help}>항목을 고른 뒤 V를 누르면 현재 레시피 스펙을 한 번에 변경합니다.</Text>
       {!props.recommendationAvailable ? <Text style={styles.recommendationHint}>대분류를 선택하면 WAFL 추천 스펙 항목을 볼 수 있습니다. 직접 만든 우리 회사 항목은 대분류 없이도 사용할 수 있습니다.</Text> : null}
       <WaflSpecMeasurementDiagram categoryCode={props.categoryCode} previewSpecKey={previewSpecKey} />
       {(["system", "company", "current"] as const).map((sourceKind) => {

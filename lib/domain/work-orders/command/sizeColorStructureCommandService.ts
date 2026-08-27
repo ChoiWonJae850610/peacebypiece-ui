@@ -24,6 +24,7 @@ import {
   reorderColorStructuresV2,
   reorderSizeStructuresV2,
   upsertColorSizeQuantityV2,
+  upsertColorSizeQuantitiesV2,
   SIZE_STRUCTURE_CREATE_COMMAND_CODE,
   SIZE_STRUCTURE_DELETE_COMMAND_CODE,
   SIZE_STRUCTURE_RENAME_COMMAND_CODE,
@@ -290,6 +291,30 @@ export function upsertColorSizeQuantity(input: CommonInput & {
     colorId: input.colorId as ColorId,
     sizeRowId: input.sizeRowId as SizeRowId,
     quantity: input.command.quantity,
+  }));
+}
+
+export function upsertColorSizeQuantities(input: CommonInput & {
+  readonly command: CommonInput["command"] & {
+    readonly cells: readonly { readonly colorId: string; readonly sizeRowId: string; readonly quantity: number }[];
+  };
+}) {
+  input.command.cells.forEach((cell) => {
+    assertUuid(cell.colorId);
+    assertUuid(cell.sizeRowId);
+  });
+  const common = prepare(input, COLOR_SIZE_QUANTITY_UPSERT_COMMAND_CODE, {
+    workOrderId: input.workOrderId,
+    expectedVersion: input.command.expectedVersion,
+    cells: input.command.cells,
+  });
+  return mapped(() => upsertColorSizeQuantitiesV2({
+    ...common,
+    cells: input.command.cells as readonly {
+      readonly colorId: ColorId;
+      readonly sizeRowId: SizeRowId;
+      readonly quantity: number;
+    }[],
   }));
 }
 

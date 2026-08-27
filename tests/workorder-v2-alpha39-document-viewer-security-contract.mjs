@@ -40,7 +40,7 @@ assert.match(migration, /token\.access_count \+ 1/);
 assert.match(migration, /redeemed\.access_count = 1/);
 assert.match(migration, /'pdf\.share_viewed'/);
 
-assert.match(constants, /DOCUMENT_ACCESS_DEFAULT_EXPIRY_DAYS = 7/);
+assert.match(constants, /DOCUMENT_ACCESS_DEFAULT_EXPIRY_DAYS = 3/);
 assert.match(constants, /DOCUMENT_VIEWER_SESSION_MAX_AGE_SECONDS = 15 \* 60/);
 assert.match(constants, /\^\[A-Za-z0-9_-\]\{43\}\$/);
 assert.match(token, /createHmac\("sha256"/);

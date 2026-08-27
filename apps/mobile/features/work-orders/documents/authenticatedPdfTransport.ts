@@ -38,10 +38,13 @@ function safePdfFilename(displayDocumentNumber: string): string {
 }
 
 export async function downloadAuthenticatedDocumentPdf(input: {
-  readonly documentId: string;
+  readonly documentId?: string;
   readonly inlineUrl: string;
+  readonly preview?: { readonly workOrderId: string; readonly revisionId: string };
 }): Promise<AuthenticatedDocumentPdfFile> {
-  const expectedPath = `/api/v2/work-orders/documents/${encodeURIComponent(input.documentId)}/file?disposition=inline`;
+  const expectedPath = input.preview
+    ? `/api/v2/work-orders/${encodeURIComponent(input.preview.workOrderId)}/documents/preview?revisionId=${encodeURIComponent(input.preview.revisionId)}`
+    : `/api/v2/work-orders/documents/${encodeURIComponent(input.documentId ?? "")}/file?disposition=inline`;
   if (input.inlineUrl !== expectedPath) {
     throw new MobileApiError({ code: "MALFORMED_RESPONSE", message: "문서 경로가 올바르지 않습니다." });
   }

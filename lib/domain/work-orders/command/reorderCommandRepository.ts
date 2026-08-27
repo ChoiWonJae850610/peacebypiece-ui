@@ -22,16 +22,19 @@ export type ReorderCopiedImagePlan = {
   readonly targetImageId: string;
   readonly storageObjectKey: string;
   readonly thumbnailObjectKey: string | null;
+  readonly isRepresentative: boolean;
 };
 
 export type ReorderCopiedAttachmentPlan = {
   readonly sourceAttachmentId: string;
   readonly targetAttachmentId: string;
   readonly storageObjectKey: string;
+  readonly outputInclude: boolean;
 };
 
 export type ReorderAssetCopyPlan = {
   readonly image: ReorderCopiedImagePlan | null;
+  readonly images: readonly ReorderCopiedImagePlan[];
   readonly attachments: readonly ReorderCopiedAttachmentPlan[];
 };
 
@@ -229,9 +232,15 @@ export async function createWorkOrderReorderV2(input: {
     if (!rootLock.rows[0]) throw new ReorderCommandRepositoryError("ineligible");
 
     const roundResult = await client.query<DbQueryResultRow & { readonly next_round: number | string }>(`
-      SELECT COALESCE(max(reorder_round),0)+1 AS next_round
-      FROM work_orders
-      WHERE company_id=$1 AND series_root_work_order_id=$2::uuid AND derivation_kind='reorder'
+      SELECT COALESCE(max(used_round),0)+1 AS next_round
+      FROM (
+        SELECT reorder_round AS used_round FROM work_orders
+        WHERE company_id=$1 AND series_root_work_order_id=$2::uuid AND derivation_kind='reorder'
+        UNION ALL
+        SELECT (metadata->>'reorderRound')::integer AS used_round FROM domain_events
+        WHERE company_id=$1 AND command_code='work_order.reorder_deleted'
+          AND metadata->>'seriesRootWorkOrderId'=$2::text
+      ) used_rounds
     `, [input.scope.companyId, rootId]);
     statementCount += 1;
     const reorderRound = integer(roundResult.rows[0]?.next_round ?? 1);
@@ -377,18 +386,18 @@ export async function createWorkOrderReorderV2(input: {
           id,company_id,work_order_id,attachment_kind,storage_object_key,original_filename,mime_type,
           size_bytes,content_sha256,output_include_default,created_by_member_id
         )
-        SELECT $4::uuid,$1,$2::uuid,attachment_kind,$5,original_filename,mime_type,size_bytes,content_sha256,true,$6
+        SELECT $4::uuid,$1,$2::uuid,attachment_kind,$5,original_filename,mime_type,size_bytes,content_sha256,$8,$6
         FROM work_order_attachments WHERE company_id=$1 AND work_order_id=$3::uuid AND id=$7::uuid AND deleted_at IS NULL
       `, [input.scope.companyId, input.targetWorkOrderId, source.work_order_id, attachment.targetAttachmentId,
-        attachment.storageObjectKey, input.scope.companyMemberId, attachment.sourceAttachmentId]);
+        attachment.storageObjectKey, input.scope.companyMemberId, attachment.sourceAttachmentId, attachment.outputInclude]);
       statementCount += 1;
       await client.query(`
         INSERT INTO work_order_revision_attachments(company_id,revision_id,attachment_id,display_order,output_include,filename_snapshot,mime_type_snapshot,storage_object_key_snapshot)
-        SELECT $1,$2::uuid,$3::uuid,display_order,true,filename_snapshot,mime_type_snapshot,$4
+        SELECT $1,$2::uuid,$3::uuid,display_order,$7,filename_snapshot,mime_type_snapshot,$4
         FROM work_order_revision_attachments
-        WHERE company_id=$1 AND revision_id=$5::uuid AND attachment_id=$6::uuid AND output_include=true
+        WHERE company_id=$1 AND revision_id=$5::uuid AND attachment_id=$6::uuid
       `, [input.scope.companyId, input.targetRevisionId, attachment.targetAttachmentId, attachment.storageObjectKey,
-        source.revision_id, attachment.sourceAttachmentId]);
+        source.revision_id, attachment.sourceAttachmentId, attachment.outputInclude]);
       statementCount += 1;
     }
 

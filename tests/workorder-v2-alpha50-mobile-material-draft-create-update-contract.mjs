@@ -126,10 +126,11 @@ assert.match(apiClient, /export async function patchWorkOrderMaterial/);
 assert.match(apiClient, /method: "PATCH"/);
 assert.match(apiClient, /export async function deleteWorkOrderMaterial[\s\S]*method: "DELETE"/);
 assert.match(apiClient, /export async function transitionWorkOrderMaterialOrder[\s\S]*\/order-\$\{kind\}[\s\S]*method: "POST"/);
-const saveMaterialSlice = app.slice(app.indexOf("async function saveMaterial"), app.indexOf("function reloadLatestMaterial"));
-assert.match(saveMaterialSlice, /editor\.mode === "create"[\s\S]*workOrderMutationController\.createMaterial/);
-assert.match(saveMaterialSlice, /:\s*await workOrderMutationController\.updateMaterial/);
-assert.doesNotMatch(saveMaterialSlice, /useEffect|setInterval|setTimeout/);
+const materialBatchSlice = app.slice(app.indexOf("pendingMaterialCreates"), app.indexOf("function reloadLatestMaterial"));
+assert.match(materialBatchSlice, /pendingMaterialCreates[\s\S]*workOrderMutationController\.createMaterial/);
+assert.match(materialBatchSlice, /pendingMaterialPatches[\s\S]*workOrderMutationController\.updateMaterial/);
+assert.match(materialBatchSlice, /draftBatch\.register\("materials"/);
+assert.doesNotMatch(materialBatchSlice, /setInterval|setTimeout/);
 
 for (const state of ["editing", "saving", "validation-error", "conflict", "locked", "save-error", "refresh-error"]) {
   assert.match(editor + app, new RegExp(`"${state}"`), `material editor state missing: ${state}`);
@@ -140,10 +141,10 @@ assert.match(editor, /\$\{materialLabel\} 수정/);
 assert.match(editor, /accessibilityLabel=\{`\$\{materialLabel\} [^`]+`\}/);
 assert.match(editor, /저장 전/);
 assert.match(editor, /계속 편집|최신 내용 불러오기/);
-assert.match(app, /decideDraftExit/);
-assert.match(draftExitPolicy, /intent === "background"[\s\S]*return "preserve"/);
+assert.match(app, /createFirstPendingIntentController/);
+assert.match(app, /draftBatch\.flushAll\(reason\)/);
 assert.match(draftExitPolicy, /mutationInFlight[\s\S]*return "blocked-saving"/);
-assert.match(draftExitPolicy, /return "discard"/);
+assert.match(draftExitPolicy, /return "flush"/);
 assert.doesNotMatch(app, /저장하지 않은 변경사항이 있습니다|변경사항 버리기/);
 assert.match(app, /materialMutation\.inFlight/);
 assert.match(app, /editor\.committedNextVersion !== null/);
@@ -206,9 +207,9 @@ assert.match(detail, /WorkOrderMaterialEditor/);
 assert.equal(mobilePackage.dependencies["@react-native-async-storage/async-storage"], undefined);
 assert.doesNotMatch(editor + app + apiClient, /mockProductionCard|mockMaterial|productionCards/);
 assert.doesNotMatch(editor, /console\.(?:log|debug|info|warn|error)/);
-assert.equal(((app + apiClient).match(/console\.(?:log|debug|info|warn|error)/g) ?? []).length, 3, "only bounded external-QA metrics may log");
-assert.equal(((app + apiClient).match(/console\.info/g) ?? []).length, 3);
-for (const metric of ["WAFL_MATERIAL_SAVE_METRIC", "WAFL_OVERVIEW_SAVE_METRIC", "WAFL_MOBILE_REQUEST_METRIC"]) assert.match(app + apiClient, new RegExp(metric));
+assert.equal(((app + apiClient).match(/console\.(?:log|debug|info|warn|error)/g) ?? []).length, 2, "only bounded external-QA metrics may log");
+assert.equal(((app + apiClient).match(/console\.info/g) ?? []).length, 2);
+for (const metric of ["WAFL_OVERVIEW_SAVE_METRIC", "WAFL_MOBILE_REQUEST_METRIC"]) assert.match(app + apiClient, new RegExp(metric));
 
 for (const token of [
   "material POST create | 1",

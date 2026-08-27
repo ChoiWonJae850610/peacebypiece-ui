@@ -32,10 +32,10 @@ assert.match(production, /presentPicker\(\{ kind: "process", processId: null \}\
 assert.match(production, /setPickerTarget\(\{ kind: "partner", processId, processCode \}\)/u);
 assert.match(production, /partnerOptionsFor\(processCode\)/u);
 assert.match(production, /processInput\(latest, patch\)/u);
-assert.match(production, /if \(value === original\) \{ setInlineSession\(null\); return; \}/u);
+assert.match(production, /if \(value === original\) \{ setInlineSession\(null\); return true; \}/u);
 assert.doesNotMatch(production, /WaflInputSheet|WaflSheetValueField/u);
 assert.match(production, /useWaflNestedSheetHandoff/u);
-for (const forbidden of ["예상 공임", "수량 입력", "로스 비용", "dueDate", "applicationArea", "applicationColorTarget"]) assert.doesNotMatch(production, new RegExp(forbidden, "u"));
+for (const forbidden of ["예상 공임", "수량 입력", "로스 비용", 'label="납기"', 'label="적용부위"', 'label="적용색상"']) assert.doesNotMatch(production, new RegExp(forbidden, "u"));
 assert.doesNotMatch(overview, /WorkOrderProductionAuthoring[^\n]+onMutationComplete/u);
 
 assert.match(repository, /process_total=t\.total,estimated_total=r\.fabric_total\+r\.accessory_total\+t\.total/u);

@@ -117,11 +117,11 @@ assert.match(app, /styles\.split/);
 assert.match(app, /detailRequestInFlight\.current/);
 assert.match(app, /if \(detailRequestInFlight\.current\) return/);
 assert.match(app, /onReturnToList=\{returnToList\}/);
-assert.match(app, /accessibilityLabel="작업지시서 목록으로 돌아가기"/);
-assert.match(app, /accessibilityLabel="작업지시서 목록으로"/);
+assert.match(app, /accessibilityLabel="레시피 목록으로 돌아가기"/);
+assert.match(app, /accessibilityLabel="레시피 목록으로"/);
 assert.doesNotMatch(app, /returnToList[\s\S]{0,500}getWorkOrderList\(/, "returning to list must not refetch automatically");
-assert.match(list, /현재 표시 작업지시서/);
-assert.match(list, /accessibilityLabel="작업지시서 검색"/);
+assert.match(list, /현재 표시 레시피/);
+assert.match(list, /accessibilityLabel="레시피 검색"/);
 
 assert.match(proxy, /isExternalQaPathAllowed/);
 assert.match(externalQa, /\[0-9a-f\]\{8\}-\[0-9a-f\]\{4\}-\[0-9a-f\]\{4\}-\[0-9a-f\]\{4\}-\[0-9a-f\]\{12\}/);

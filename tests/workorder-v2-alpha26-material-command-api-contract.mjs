@@ -113,7 +113,7 @@ const transitionOrder = [
   "withWaflV2TenantWriteTransaction",
   "reserveReceipt",
   "lockMaterialTarget",
-  "assertCurrentDraft(target, input.expectedVersion)",
+  "assertCurrentDraft(target, input.expectedVersion, true)",
   "target.material_status !== config.from",
   "UPDATE work_order_material_lines",
   "appendMaterialEvent",

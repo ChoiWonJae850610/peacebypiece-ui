@@ -64,6 +64,7 @@ export type WorkOrderListItem = {
   readonly incompleteMaterialSummary: WorkOrderListMaterialSummary;
   readonly processCount: number;
   readonly latestDocumentStatus: GeneratedDocumentStatus | null;
+  readonly createdAt: IsoDateTime;
   readonly updatedAt: IsoDateTime;
   readonly identity: WorkOrderIdentityReadModel;
 };
@@ -94,6 +95,7 @@ export type WorkOrderDetailHeader = {
   readonly readiness: ReadinessReadModel;
   readonly document: WorkOrderDocumentSummary;
   readonly entityVersion: EntityVersion;
+  readonly createdAt: IsoDateTime;
   readonly updatedAt: IsoDateTime;
   readonly identity: WorkOrderIdentityReadModel;
   readonly sourceSummary: {
@@ -134,13 +136,14 @@ export type WorkOrderDetailCoreReadModel = {
 };
 
 export type WorkOrderSeriesHistoryItem = {
-  readonly workOrderId: WorkOrderId;
+  readonly workOrderId: WorkOrderId | null;
   readonly productName: string;
-  readonly status: WorkOrderStatus;
+  readonly status: WorkOrderStatus | "deleted";
   readonly dueDate: IsoDate | null;
   readonly totalQuantity: number;
   readonly reorderRound: number;
   readonly current: boolean;
+  readonly deletedAt: string | null;
 };
 
 export type WorkOrderSeriesHistoryReadModel = {

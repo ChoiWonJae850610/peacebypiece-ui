@@ -52,7 +52,8 @@ for (const token of ["createStagedStructureSelection", "toggleStagedStructureSel
 }
 assert.ok(editor.includes("onApplySelectionBatch"));
 assert.doesNotMatch(editor, /연결된 수량 셀|quantityCellCount/);
-assert.ok(controller.includes("batchStructureSelection"));
+assert.ok(controller.includes("pendingStructureOperations"));
+assert.match(controller, /draftBatch\.stage\("sizes"/);
 assert.ok(apiClient.includes('"selection-batch"'));
 assert.ok(route.includes('kind: "selection-batch"'));
 for (const token of ["withWaflV2TenantWriteTransaction", "batchStructureSelectionV2", "STRUCTURE_SELECTION_BATCH_COMMAND_CODE", "ANY($3::uuid[])", "synchronizeFinishedSpecSizes", "canonicalTotalQuantity"]) {

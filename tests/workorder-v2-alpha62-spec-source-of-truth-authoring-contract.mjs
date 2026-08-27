@@ -33,7 +33,8 @@ assert.doesNotMatch(sheets, /현재 완성 스펙의 항목과 일치하는 값�
 assert.doesNotMatch(sheets, /회사 치수표|기준 치수/);
 assert.doesNotMatch(editor, /\d+개 추가|영구 삭제/);
 assert.equal((editor.match(/<WaflReusableCreateForm/g) ?? []).length, 2, "direct size/color creation must use the shared create action");
-assert.match(reusableCreate, /<WaflPrimaryActionButton[^>]*label="추가"/u);
+assert.match(reusableCreate, /useWaflSheetDirectInputConfirm\(props\.onCreate, disabled\)/u);
+assert.doesNotMatch(reusableCreate, /WaflPrimaryActionButton|label="추가"/u);
 assert.match(primaryAction, /<Text style=\{styles\.label\}>\{label\}<\/Text>/u);
 for (const token of ["markVisibleComplete", "measurement-unit", "mutationQueue.enqueue", "authoritativeVersion"]) assert.ok(controller.includes(token));
 for (const token of ["visible-complete", "visibleCompleteMs"]) assert.ok(timing.includes(token));

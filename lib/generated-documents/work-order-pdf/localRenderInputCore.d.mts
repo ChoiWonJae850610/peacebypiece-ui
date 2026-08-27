@@ -18,3 +18,4 @@ export function writeLocalIssuedPdfRenderInput(
   input: LocalIssuedPdfRenderInput,
 ): Promise<string>;
 export function readLocalIssuedPdfRenderInput(runToken: string): Promise<LocalIssuedPdfRenderInput>;
+export function removeLocalIssuedPdfRenderInput(runToken: string): Promise<void>;

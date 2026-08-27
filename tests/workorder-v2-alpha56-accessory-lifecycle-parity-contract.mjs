@@ -90,7 +90,8 @@ assert.match(experience, /function beginMaterialCreate\(materialType: MaterialTy
 assert.match(experience, /materialType,\s*base,/);
 assert.match(experience, /materialType: line\.materialType/);
 assert.match(experience, /materialType: editor\.materialType/);
-assert.match(experience, /saved\.result\.materialType !== editor\.materialType/);
+assert.match(experience, /workOrderQueryController\.materials\(entry\.workOrderId, entry\.materialType\)/);
+assert.match(experience, /materialCacheKey\(entry\.workOrderId, entry\.materialType\)/);
 assert.match(experience, /result\.result\.materialType !== line\.materialType/);
 assert.match(experience, /materialCacheKey\(detail\.header\.id, "fabric"\)/);
 assert.match(experience, /materialCacheKey\(detail\.header\.id, "accessory"\)/);

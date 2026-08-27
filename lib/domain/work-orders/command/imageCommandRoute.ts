@@ -48,6 +48,7 @@ import {
 import { ATTACHMENT_SCOPE } from "@/lib/constants/workorderIdentity";
 import { validateAttachmentFile } from "@/lib/workorder/persistence/workOrderAttachmentPolicy";
 import { inspectUploadedWorkOrderImage } from "@/lib/workorder/persistence/imageAssetIntegrity.mjs";
+import { createImageDerivativesWithBoundedRetry } from "@/lib/domain/work-orders/command/imageDerivativeRetryPolicy";
 
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const IDEMPOTENCY_KEY_PATTERN = /^[A-Za-z0-9._:-]{12,180}$/;
@@ -355,12 +356,23 @@ export async function handleCompleteWorkOrderImageUpload(request: Request, workO
     if (!validation.ok) {
       throw new WorkOrderCommandRequestError({ code: "VALIDATION_ERROR", status: 400, message: validation.message });
     }
-    const uploaded = await readR2ObjectViaWorker({ key: storageObjectKey });
-    const actual = inspectUploadedWorkOrderImage({
-      declaredContentType: mimeType,
-      actualContentType: uploaded.contentType,
-      body: uploaded.body,
-    });
+    let actual: ReturnType<typeof inspectUploadedWorkOrderImage>;
+    try {
+      const uploaded = await readR2ObjectViaWorker({ key: storageObjectKey });
+      actual = inspectUploadedWorkOrderImage({
+        declaredContentType: mimeType,
+        actualContentType: uploaded.contentType,
+        body: uploaded.body,
+      });
+    } catch (error) {
+      await deleteWorkOrderImageFamilyViaWorker({ storageObjectKey }).catch((cleanupError: unknown) => {
+        console.error("[WORK_ORDER_IMAGE_INTEGRITY_COMPENSATION_FAILED]", {
+          correlationId,
+          errorName: cleanupError instanceof Error ? cleanupError.name : "UnknownError",
+        });
+      });
+      throw error;
+    }
     const actualQuota = await checkCompanyUploadStorageQuota({
       companyId: tenantScope.companyId,
       incomingSizeBytes: actual.sizeBytes,
@@ -391,8 +403,9 @@ export async function handleCompleteWorkOrderImageUpload(request: Request, workO
     }));
     let derivatives;
     try {
-      derivatives = await createWorkOrderImageDerivativesViaWorker({
-        key: storageObjectKey,
+      derivatives = await createImageDerivativesWithBoundedRetry({
+        create: () => createWorkOrderImageDerivativesViaWorker({ key: storageObjectKey }),
+        isRetryable: (error) => error instanceof R2WorkerRequestError && error.retryable,
       });
     } catch (error) {
       await deleteWorkOrderImageFamilyViaWorker({ storageObjectKey }).catch((cleanupError: unknown) => {

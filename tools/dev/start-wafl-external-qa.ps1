@@ -496,17 +496,11 @@ try {
     }
     $state.databaseEnvironmentInjected = -not [string]::IsNullOrWhiteSpace([string]$serverEnvironment.DATABASE_URL) `
         -and [string]$serverEnvironment.DATABASE_URL -eq [string]$readApiTarget.DatabaseUrl
-    $currentMakerMutationGuardReady = $serverEnvironment.ContainsKey("WAFL_EXTERNAL_QA_ALPHA64_DOCUMENT_R0_MUTATION_ENABLED") `
-        -and [string]$serverEnvironment["WAFL_EXTERNAL_QA_ALPHA64_DOCUMENT_R0_MUTATION_ENABLED"] -eq "true"
-    $currentMakerMutationGuardReady = $currentMakerMutationGuardReady `
-        -or ($serverEnvironment.ContainsKey("WAFL_EXTERNAL_QA_ALPHA65_PRODUCTION_AUTHORING_MUTATION_ENABLED") `
-            -and [string]$serverEnvironment["WAFL_EXTERNAL_QA_ALPHA65_PRODUCTION_AUTHORING_MUTATION_ENABLED"] -eq "true")
-    $currentMakerMutationGuardReady = $currentMakerMutationGuardReady `
-        -or ($serverEnvironment.ContainsKey("WAFL_EXTERNAL_QA_ALPHA67_NTH_REORDER_MUTATION_ENABLED") `
-            -and [string]$serverEnvironment["WAFL_EXTERNAL_QA_ALPHA67_NTH_REORDER_MUTATION_ENABLED"] -eq "true")
+    $currentMakerMutationGuardReady = $serverEnvironment.ContainsKey("WAFL_EXTERNAL_QA_ALPHA67_NTH_REORDER_MUTATION_ENABLED") `
+        -and [string]$serverEnvironment["WAFL_EXTERNAL_QA_ALPHA67_NTH_REORDER_MUTATION_ENABLED"] -eq "true"
     $state.capabilityProfileReady = if ($RuntimeQaMode -eq "current-maker") {
-        [string]$state.makerQaProfile -in @("alpha64-current-maker", "alpha65-current-maker", "alpha67-current-maker") `
-            -and [string]$state.mutationMode -in @("current-maker-alpha64", "current-maker-alpha65", "current-maker-alpha67") `
+        [string]$state.makerQaProfile -eq "alpha67-current-maker" `
+            -and [string]$state.mutationMode -eq "current-maker-alpha67" `
             -and [string]$serverEnvironment.WAFL_V2_COMMAND_API_ENABLED -eq "1" `
             -and $currentMakerMutationGuardReady
     } else { $true }
@@ -609,12 +603,16 @@ try {
 
     $expoStdout = Join-Path $stateDir "expo.stdout.log"
     $expoStderr = Join-Path $stateDir "expo.stderr.log"
-    $expo = Start-WaflQaOwnedProcess -Role "expo" -FilePath $node -ArgumentList @($expoCli, "start", "--lan", "--dev-client", "--port", [string]$ExpoPort) -WorkingDirectory (Join-Path $root "apps\mobile") -OwnerMarker $ownerMarker -Environment $mobileEnvironment -StdoutPath $expoStdout -StderrPath $expoStderr
+    $expo = Start-WaflQaOwnedProcess -Role "expo" -FilePath $node -ArgumentList @($expoCli, "start", "--clear", "--lan", "--dev-client", "--port", [string]$ExpoPort) -WorkingDirectory (Join-Path $root "apps\mobile") -OwnerMarker $ownerMarker -Environment $mobileEnvironment -StdoutPath $expoStdout -StderrPath $expoStderr
     $state.processes += $expo
     $state.lastSuccessfulStage = "expo-lan-started"
     Write-WaflQaJson -Path (Get-WaflQaStatePath) -Value $state
 
-    $expoReadyDeadline = [DateTime]::UtcNow.AddSeconds(45)
+    # `--clear` intentionally rebuilds Metro's cache. On the canonical Windows
+    # workstation the first clean rebuild can legitimately exceed the generic
+    # service deadline, so keep the wait bounded but large enough for that
+    # owned startup rather than misclassifying a live rebuild as a failure.
+    $expoReadyDeadline = [DateTime]::UtcNow.AddSeconds(180)
     $expoLocalReady = $false
     while ([DateTime]::UtcNow -lt $expoReadyDeadline -and -not $expoLocalReady) {
         if (-not (Get-Process -Id $expo.pid -ErrorAction SilentlyContinue)) { throw "EXPO_LAN_PROCESS_EXITED" }
