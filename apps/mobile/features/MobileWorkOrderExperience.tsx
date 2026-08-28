@@ -21,6 +21,7 @@ import {
 } from "@/application/errorPresentation";
 import { createExplicitMutationController, createSerializedMutationQueue } from "@/application/mutationController";
 import { runWaflProcessingAction } from "@/application/waflActionExecution";
+import { beginWaflPresentationFirstOperation, waitForWaflPresentationBoundary } from "@/application/waflPresentationBoundary";
 import { type DraftExitIntent } from "@/application/draftExitPolicy";
 import { createFirstPendingIntentController } from "@/application/firstPendingIntent";
 import { planInlineEditTransition } from "@/application/inlineEditTransition";
@@ -169,7 +170,7 @@ export default function MobileWorkOrderExperience() {
     seasonCode: "",
   });
   const basicInfoDraftRef = useRef(basicInfoDraft);
-  const categoryResetIntentRef = useRef<{ readonly workOrderId: string; readonly categoryMajor: string; readonly resetApplied: boolean } | null>(null);
+  const categoryResetIntentRef = useRef<{ readonly workOrderId: string; readonly targetAudience: string; readonly categoryMajor: string; readonly resetApplied: boolean } | null>(null);
   const [basicInfoErrors, setBasicInfoErrors] = useState<BasicInfoFieldErrors>({});
   const [saveState, setSaveState] = useState<BasicInfoSaveState>("read-only");
   const [saveMessage, setSaveMessageState] = useState<string | null>(null);
@@ -613,8 +614,7 @@ export default function MobileWorkOrderExperience() {
       const captured = pendingIntentController.capture({ key: intent, isValid: () => true, run: onProceed });
       if (!captured || pendingIntentFlush.current) return;
       pendingIntentFlush.current = true;
-      setPendingIntentSaving(true);
-      void draftBatch.flushAll(reason).then((committed) => {
+      void beginWaflPresentationFirstOperation({ enterPending: () => setPendingIntentSaving(true) }).then(() => draftBatch.flushAll(reason)).then((committed) => {
         pendingIntentFlush.current = false;
         setPendingIntentSaving(false);
         if (!committed) {
@@ -702,6 +702,7 @@ export default function MobileWorkOrderExperience() {
     try {
       await runWorkOrderListReorderFlow({
         onProcessing: setReorderPending,
+        present: waitForWaflPresentationBoundary,
         loadSourceCore: async () => detail?.header.id === item.workOrderId
           ? detail
           : workOrderQueryController.detail(item.workOrderId),
@@ -722,7 +723,7 @@ export default function MobileWorkOrderExperience() {
 
   async function createCopyFromList(item: WorkOrderListItem) {
     if (copyMutation.tryBegin() !== "started") return;
-    setCopyPending(true);
+    await beginWaflPresentationFirstOperation({ enterPending: () => setCopyPending(true) });
     clientRequestCounter.current += 1;
     const suffix = `${Date.now()}-${clientRequestCounter.current}`;
     try {
@@ -893,7 +894,7 @@ export default function MobileWorkOrderExperience() {
       return;
     }
     if (createMutation.tryBegin() !== "started") return;
-    setCreatePending(true);
+    await beginWaflPresentationFirstOperation({ enterPending: () => setCreatePending(true) });
     setCreateError(null);
     clientRequestCounter.current += 1;
     const identity = resolveWorkOrderCreateAttempt(
@@ -949,7 +950,7 @@ export default function MobileWorkOrderExperience() {
     const source = sourceOverride ?? detail;
     if (!source || !canCreateMobileWorkOrderReorder(source)) return;
     if (reorderMutation.tryBegin() !== "started") return;
-    setReorderPending(true);
+    await beginWaflPresentationFirstOperation({ enterPending: () => setReorderPending(true) });
     try {
       await executeReorderCreation(source);
     } catch (error) {
@@ -1153,14 +1154,22 @@ export default function MobileWorkOrderExperience() {
     ownerField = activeBasicSessionRef.current?.field ?? null,
     ownerToken = activeBasicSessionRef.current?.token ?? null,
     commitImmediately = false,
-    categoryResetConfirmed = false,
+    dependentResetConfirmed = false,
   ) {
     const categoryOverride = override?.categoryMajor;
+    const targetOverride = override?.targetAudience;
     const currentCategory = detail ? basicInfoDraftFromDetail(detail).categoryMajor : "";
-    const confirmedCategoryReset = detail && categoryOverride !== undefined
+    const currentTarget = detail ? basicInfoDraftFromDetail(detail).targetAudience : "";
+    const dependentField = targetOverride !== undefined && targetOverride !== currentTarget
+      ? "targetAudience"
+      : categoryOverride !== undefined && categoryOverride !== currentCategory
+        ? "categoryMajor"
+        : null;
+    const confirmedCategoryReset = detail && dependentField !== null
       && categoryResetIntentRef.current?.workOrderId === detail.header.id
-      && categoryResetIntentRef.current.categoryMajor === categoryOverride;
-    if (!commitImmediately && categoryOverride !== undefined && categoryOverride !== currentCategory && !categoryResetConfirmed && !confirmedCategoryReset && detail) {
+      && categoryResetIntentRef.current.targetAudience === (targetOverride ?? basicInfoDraftRef.current.targetAudience)
+      && categoryResetIntentRef.current.categoryMajor === (categoryOverride ?? basicInfoDraftRef.current.categoryMajor);
+    if (!commitImmediately && dependentField !== null && !dependentResetConfirmed && !confirmedCategoryReset && detail) {
       const matrix = sizeColor.state.bundle?.matrix;
       const spec = sizeColor.state.bundle?.specifications;
       const hasDependents = hasCategoryDependentWorkOrderData({
@@ -1175,16 +1184,16 @@ export default function MobileWorkOrderExperience() {
       });
       if (hasDependents) {
         setActionConfirmation({
-          title: "대분류를 변경합니다",
-          helper: "상세품목·사이즈·색상·수량·완성 스펙이 초기화됩니다.",
-          cancelAccessibilityLabel: "대분류 변경 취소",
-          confirmAccessibilityLabel: "대분류 변경 실행",
-          safeOptionLabel: "유지",
+          title: dependentField === "targetAudience" ? "성별을 변경할까요?" : "대분류를 변경할까요?",
+          helper: "적용 중인 사이즈와 스펙 정보가 초기화됩니다.",
+          cancelAccessibilityLabel: `${dependentField === "targetAudience" ? "성별" : "대분류"} 변경 취소`,
+          confirmAccessibilityLabel: `${dependentField === "targetAudience" ? "성별" : "대분류"} 변경 실행`,
+          safeOptionLabel: "취소",
           actionOptionLabel: "변경",
           onCancel: () => {
             setActionConfirmation(null);
             categoryResetIntentRef.current = null;
-            const next = { ...basicInfoDraftRef.current, categoryMajor: currentCategory };
+            const next = { ...basicInfoDraftRef.current, targetAudience: currentTarget, categoryMajor: currentCategory };
             basicInfoDraftRef.current = next;
             setBasicInfoDraft(next);
             activeBasicFieldRef.current = null;
@@ -1199,7 +1208,7 @@ export default function MobileWorkOrderExperience() {
             const next = { ...basicInfoDraftRef.current, ...override, categoryDetail: "" };
             basicInfoDraftRef.current = next;
             setBasicInfoDraft(next);
-            categoryResetIntentRef.current = { workOrderId: detail.header.id, categoryMajor: next.categoryMajor, resetApplied: false };
+            categoryResetIntentRef.current = { workOrderId: detail.header.id, targetAudience: next.targetAudience, categoryMajor: next.categoryMajor, resetApplied: false };
             activeBasicFieldRef.current = null;
             activeBasicSessionRef.current = null;
             setEditing(false);
@@ -1209,6 +1218,16 @@ export default function MobileWorkOrderExperience() {
         });
         return "confirmation" as const;
       }
+    }
+    if (!commitImmediately && dependentResetConfirmed && dependentField !== null && detail && override) {
+      override = { ...override, categoryDetail: "" };
+      const next = { ...basicInfoDraftRef.current, ...override };
+      categoryResetIntentRef.current = {
+        workOrderId: detail.header.id,
+        targetAudience: next.targetAudience,
+        categoryMajor: next.categoryMajor,
+        resetApplied: false,
+      };
     }
     let staged = false;
     if (!commitImmediately && override) {
@@ -1275,6 +1294,7 @@ export default function MobileWorkOrderExperience() {
     const buildPatch = (baseline: WorkOrderDetailCore): BasicInfoPatch => {
       const patch: BasicInfoPatch = {};
       const categoryResetIntent = categoryResetIntentRef.current?.workOrderId === baseline.header.id
+        && categoryResetIntentRef.current.targetAudience === effectiveDraft.targetAudience
         && categoryResetIntentRef.current.categoryMajor === effectiveDraft.categoryMajor
         ? categoryResetIntentRef.current
         : null;
@@ -1284,7 +1304,9 @@ export default function MobileWorkOrderExperience() {
       if (ownsPatchField("dueDate") && dueDate !== baseline.header.dueDate) patch.dueDate = dueDate;
       const productTypeCode = encodeWorkOrderProductType(effectiveDraft);
       if ((ownsPatchField("targetAudience") || ownsPatchField("categoryMajor")) && productTypeCode !== baseline.header.productTypeCode) patch.productTypeCode = productTypeCode;
-      if (ownsPatchField("categoryMajor") && productTypeCode !== baseline.header.productTypeCode && !categoryResetIntent?.resetApplied) patch.resetCategoryDependents = true;
+      if (productTypeCode !== baseline.header.productTypeCode
+        && !categoryResetIntent?.resetApplied
+        && (ownsPatchField("categoryMajor") || (ownsPatchField("targetAudience") && categoryResetIntent !== null))) patch.resetCategoryDependents = true;
       const categoryDetail = effectiveDraft.categoryDetail.trim() || null;
       if (!patch.resetCategoryDependents && ownsPatchField("categoryDetail") && categoryDetail !== baseline.header.itemCode) patch.itemCode = categoryDetail;
       const seasonCode = effectiveDraft.seasonCode.trim() || null;
@@ -1337,6 +1359,7 @@ export default function MobileWorkOrderExperience() {
         resetSizeColorSession();
         categoryResetIntentRef.current = {
           workOrderId: selected.workOrderId,
+          targetAudience: effectiveDraft.targetAudience,
           categoryMajor: effectiveDraft.categoryMajor,
           resetApplied: true,
         };
@@ -1417,6 +1440,7 @@ export default function MobileWorkOrderExperience() {
       });
       if (latestDetail.header.status !== "draft") await refreshConfirmedDocumentAfterMutableChange(refreshed);
       if (categoryResetIntentRef.current?.workOrderId === selected.workOrderId
+        && categoryResetIntentRef.current.targetAudience === effectiveDraft.targetAudience
         && categoryResetIntentRef.current.categoryMajor === effectiveDraft.categoryMajor) {
         categoryResetIntentRef.current = null;
       }
@@ -1468,8 +1492,8 @@ export default function MobileWorkOrderExperience() {
     }
   }
 
-  async function applyBasicInfoPicker(override: Partial<BasicInfoDraft>) {
-    await saveBasicInfo(override);
+  async function applyBasicInfoPicker(override: Partial<BasicInfoDraft>, dependentResetConfirmed = false) {
+    await saveBasicInfo(override, null, null, false, dependentResetConfirmed);
   }
 
   useEffect(() => draftBatch.register("overview", async () => {
@@ -1681,7 +1705,7 @@ export default function MobileWorkOrderExperience() {
       onOpenReorder={() => { void createReorderFromMobile(detail); }}
       onOpenSeriesHistory={() => setSeriesHistoryVisible(true)}
       onSave={(override) => void saveBasicInfo(override)}
-      onApplyPicker={(override) => void applyBasicInfoPicker(override)}
+      onApplyPicker={(override, dependentResetConfirmed) => void applyBasicInfoPicker(override, dependentResetConfirmed)}
       onSaveDate={(value) => {
         changeBasicInfoDraft("dueDate", value);
         void saveBasicInfo(

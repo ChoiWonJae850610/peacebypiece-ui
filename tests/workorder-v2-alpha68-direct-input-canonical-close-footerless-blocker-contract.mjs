@@ -90,6 +90,7 @@ assert.match(sheet, /const hasActions = sheetPresentation\.renderFooterActions/u
 assert.match(sheet, /const effectiveFooterHeight = hasActions \? footerHeight : 0/u);
 assert.match(sheet, /accessibilityElementsHidden=\{replacesSheetDuringProcessing\}/u);
 assert.match(sheet, /pointerEvents=\{replacesSheetDuringProcessing \? "none" : "auto"\}/u);
+assert.match(sheet, /decision \? <WaflDecisionChoiceBody/u, "active-sheet decisions remain usable inside the existing sheet rather than hiding it behind an overlay");
 assert.match(sheet, /processingReplacedSheet: \{ opacity: 0 \}/u);
 assert.match(sheet, /!replacesSheetDuringProcessing && directInputMinimalAccessoryAction !== null/u);
 assert.match(sheet, /const wasReplacingSheet = replaceSheetActiveRef\.current/u);

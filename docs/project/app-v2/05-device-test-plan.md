@@ -88,6 +88,18 @@ single-Y geometry, drag dismiss/snap-back, and submit-before-blur. This final Ow
 product checkpoint to `ALPHA68_COMPLETE` and finalization checkpoint to
 `ALPHA68_FINALIZATION_COMPLETE`; it does not retroactively rewrite earlier pre-finalization evidence.
 
+## Alpha.69 focused recommendation and replacement QA
+
+Checkpoint `ALPHA69_WAFL_INPUT_INTERACTION_ARCHITECTURE_IPHONE_REQA_REQUIRED` requires physical iPhone review of
+changed seed/Decision/blocker surfaces only. Verify exact editable starter values across seven target-major templates,
+male-bottom 28–36/FREE primary guidance with 24/26 disclosed, target/major reset Decision cancellation and change,
+zero-loss one-V replacement, same-sheet WAFL INPUT reel decisions for real loss and target/major reset, and a recommended-spec load blocker that appears before loading begins. Automated evidence does
+not infer this physical result.
+
+## Alpha.69 final device result
+
+Owner physical iPhone QA is explicitly accepted as PASS after the destructive-scroll and global-blocker lifecycle correction. The accepted boundary covers target × major Size guidance, seven exact Basic Fit Seed V0.1 starter templates, item-aware POM guidance, zero-loss replacement, same-sheet destructive decisions without nested same-axis scrolling, and terminal processing-blocker lifecycle. This advances the product checkpoint to `ALPHA69_COMPLETE` and finalization checkpoint to `ALPHA69_FINALIZATION_COMPLETE`; it does not rewrite earlier pre-finalization evidence.
+
 ## Historical results
 
 Do not copy version-by-version results into this plan. Use immutable evidence:

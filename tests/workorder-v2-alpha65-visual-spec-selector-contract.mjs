@@ -21,7 +21,7 @@ assert.deepEqual(WORK_ORDER_CATEGORY_MAJORS, ["상의", "하의", "아우터", "
 assert.deepEqual(WORK_ORDER_NEW_CATEGORY_MAJORS, ["상의", "하의", "아우터", "원피스", "기타"], "new authoring retires setup");
 assert.deepEqual(workOrderMajorCategoryPickerOptions(""), ["", "상의", "하의", "아우터", "원피스", "기타"]);
 assert.ok(workOrderMajorCategoryPickerOptions("셋업").includes("셋업"), "existing setup remains representable until changed");
-assert.match(overview, /workOrderMajorCategoryPickerOptions\(props\.draft\.categoryMajor\)/u);
+assert.match(overview, /workOrderMajorCategoryPickerOptions\(props\.draft\.categoryMajor,\s*props\.draft\.targetAudience\s+as\s+WorkOrderTargetAudience\)/u);
 
 let mappedCount = 0;
 for (const categoryCode of ["T", "B", "O", "D"]) {
@@ -52,7 +52,9 @@ for (const token of ["react-native-svg", "pointerEvents=\"none\"", "Circle", "Li
 assert.doesNotMatch(diagram, /Pressable|onPress|Image\s/u, "diagram is feedback-only, never a hit target or screenshot asset");
 assert.match(selector, /<WaflSpecMeasurementDiagram/u);
 assert.equal((selector.match(/columns=\{4\}/g) ?? []).length, 1, "all source sections share one four-column grid render path");
-assert.match(selector, /\(\["system", "company", "current"\] as const\)\.map/u);
+assert.match(selector, /\{ key: "recommended", title: "WAFL 추천 스펙"/u);
+assert.match(selector, /\{ key: "additional", title: "WAFL 추가 스펙"/u);
+assert.match(selector, /sections\.map/u);
 assert.match(selector, /WaflReusableCreateEntryAction/u);
 assert.match(selector, /onApply\(selectedItems\)/u);
 assert.match(selector, /nextSpecItemPreviewKey/u);

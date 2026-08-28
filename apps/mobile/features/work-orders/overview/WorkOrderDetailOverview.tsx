@@ -45,6 +45,8 @@ import WaflInputSheet from "@/features/inputs/WaflInputSheet";
 import { WaflWorkActionRow } from "@/features/work-orders/reorder/WorkOrderReorderSheets";
 import type { MaterialDraftFields, MaterialDraftUpdate, MaterialPartnerOption, MaterialType, WorkOrderAttachmentAsset, WorkOrderDetailCore, WorkOrderImageAsset, WorkOrderMaterialLine } from "@/domain/mobileContract";
 import type { WaflActionConfirmationState } from "@/features/feedback/WaflActionConfirmationCard";
+import type { WaflDecisionChoiceState } from "@/features/feedback/WaflDecisionChoiceBody";
+import { hasCategoryDependentWorkOrderData, resolveCategoryDependentResetDecision } from "@/domain/categoryResetPolicy";
 import { materialPartnerOptionsFor } from "@/domain/partnerSelectionPolicy";
 import type { MaterialOrderAction, MaterialOrderPolicy } from "@/domain/materialOrderPolicy";
 import { formatEstimatedUnitCost, formatWon } from "@/lib/mobileDisplay";
@@ -57,6 +59,7 @@ import {
   WORK_ORDER_TARGET_AUDIENCES,
   WORK_ORDER_MAJOR_CATEGORY_CODE_BY_LABEL,
   workOrderMajorCategoryPickerOptions,
+  type WorkOrderTargetAudience,
 } from "@/domain/workOrderCategoryPolicy";
 import { WorkOrderDetailItemPickerSheet, WorkOrderSeasonPickerSheet } from "./WorkOrderOverviewPickerSheets";
 import {
@@ -150,7 +153,7 @@ type Props = {
   readonly onChangeDraft: (field: keyof BasicInfoDraft, value: string) => void;
   readonly onCancelEdit: () => void;
   readonly onSave: (override?: Partial<BasicInfoDraft>) => void;
-  readonly onApplyPicker: (override: Partial<BasicInfoDraft>) => void;
+  readonly onApplyPicker: (override: Partial<BasicInfoDraft>, dependentResetConfirmed?: boolean) => void;
   readonly onSaveDate: (value: string) => void;
   readonly onReloadLatest: () => void;
   readonly onSetSample: (isSample: boolean) => void;
@@ -214,6 +217,32 @@ export default function WorkOrderDetailOverview(props: Props) {
   const [activeSection, setActiveSection] = useState<WorkOrderVisibleSection>("overview");
   const [activeMaterialCategory, setActiveMaterialCategory] = useState<MaterialType>("fabric");
   const [categoryReelField, setCategoryReelField] = useState<"targetAudience" | "categoryMajor" | "categoryDetail" | "seasonCode" | null>(null);
+  const [categoryDecision, setCategoryDecision] = useState<{
+    readonly field: "targetAudience" | "categoryMajor";
+    readonly override: Partial<BasicInfoDraft>;
+  } | null>(null);
+  const sizeColorBundle = props.sizeColor.state.bundle;
+  const hasCategoryDependents = hasCategoryDependentWorkOrderData({
+    itemCode: props.detail.header.itemCode,
+    totalQuantity: props.detail.header.totalQuantity,
+    sizeCount: props.detail.tabCounts.sizes,
+    colorCount: props.detail.tabCounts.colors,
+    allocationCount: sizeColorBundle?.matrix.quantityCells.length ?? 0,
+    specPomCount: sizeColorBundle?.specifications.pomColumns.length ?? 0,
+    specCellCount: sizeColorBundle?.specifications.cells.length ?? 0,
+    sourceTemplateId: sizeColorBundle?.specifications.templateId ?? null,
+  });
+  const categoryDecisionCopy = categoryDecision ? resolveCategoryDependentResetDecision({ changed: true, hasDependents: true, kind: categoryDecision.field }) : null;
+  const categoryDecisionOverlay: WaflDecisionChoiceState | null = categoryDecision && categoryDecisionCopy ? {
+    ...categoryDecisionCopy,
+    onCancel: () => setCategoryDecision(null),
+    onConfirm: () => {
+      const override = categoryDecision.override;
+      setCategoryDecision(null);
+      setCategoryReelField(null);
+      props.onApplyPicker(override, true);
+    },
+  } : null;
   const [readinessSheetVisible, setReadinessSheetVisible] = useState(false);
   const pendingReadinessIntentRef = useRef<WorkOrderSectionIntent | null>(null);
   const { width } = useWindowDimensions();
@@ -521,12 +550,20 @@ export default function WorkOrderDetailOverview(props: Props) {
                 <WaflMetricGrid items={overviewMetricItems} testID="overview-basic-metric-grid" />
                 {categoryReelField === "targetAudience" ? (
                   <WaflReelPickerSheet
+                    decision={categoryDecision?.field === "targetAudience" ? categoryDecisionOverlay : null}
                     field="targetAudience"
                     kind="option"
                     label="대상"
                     onApply={(value) => {
+                      const override = value === "남성" && props.draft.categoryMajor === "원피스"
+                        ? { targetAudience: value, categoryMajor: "", categoryDetail: "" }
+                        : { targetAudience: value };
+                      if (value !== props.draft.targetAudience && hasCategoryDependents) {
+                        setCategoryDecision({ field: "targetAudience", override });
+                        return false;
+                      }
                       setCategoryReelField(null);
-                      props.onApplyPicker({ targetAudience: value });
+                      props.onApplyPicker(override);
                     }}
                     onCancel={() => {
                       setCategoryReelField(null);
@@ -540,18 +577,24 @@ export default function WorkOrderDetailOverview(props: Props) {
                 ) : null}
                 {categoryReelField === "categoryMajor" ? (
                   <WaflReelPickerSheet
+                    decision={categoryDecision?.field === "categoryMajor" ? categoryDecisionOverlay : null}
                     field="categoryMajor"
                     kind="option"
                     label="대분류"
                     onApply={(value) => {
+                      const override = { categoryMajor: value };
+                      if (value !== props.draft.categoryMajor && hasCategoryDependents) {
+                        setCategoryDecision({ field: "categoryMajor", override });
+                        return false;
+                      }
                       setCategoryReelField(null);
-                      props.onApplyPicker({ categoryMajor: value });
+                      props.onApplyPicker(override);
                     }}
                     onCancel={() => {
                       setCategoryReelField(null);
                       props.onCancelEdit();
                     }}
-                    options={workOrderMajorCategoryPickerOptions(props.draft.categoryMajor)}
+                    options={workOrderMajorCategoryPickerOptions(props.draft.categoryMajor, props.draft.targetAudience as WorkOrderTargetAudience)}
                     unitCode=""
                     value={props.draft.categoryMajor}
                     visible

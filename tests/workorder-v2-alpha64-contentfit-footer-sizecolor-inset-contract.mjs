@@ -39,14 +39,14 @@ const overflow = resolveWaflContentFitHeight({
 });
 assert.deepEqual(overflow, { bodyViewportHeight: 458, height: 608, overflow: true });
 
-assert.match(sheet, /sizing === "contentFit" && !contentFit\.overflow/u);
+assert.match(sheet, /sizing === "contentFit" && \(decision \|\| \(!contentFit\.overflow/u);
 assert.match(sheet, /style=\{\[styles\.contentFitBody, contentStyle\]\}/u);
 assert.match(sheet, /style=\{\[styles\.contentFitBody, \{ height: Math\.max\(0, expandedBodyViewportHeight\) \}\]\}/u);
 assert.match(sheet, /style=\{\[styles\.bodyViewport, \{ height: animatedBodyViewportHeight \}\]\}/u);
 assert.match(sheet, /contentFitBody:\s*\{\s*flexGrow:\s*0,\s*flexShrink:\s*0/u);
 assert.match(sheet, /onLayout=\{\(event\) => measureFooter\(event\.nativeEvent\.layout\.height\)\}/u);
 assert.match(sheet, /testID="wafl-sheet-actions"/u);
-assert.ok(sheet.indexOf("sizing === \"contentFit\" && !contentFit.overflow") < sheet.indexOf('testID="wafl-sheet-actions"'), "contentFit body must precede the measured footer");
+assert.ok(sheet.indexOf("sizing === \"contentFit\" && (decision || (!contentFit.overflow") < sheet.indexOf('testID="wafl-sheet-actions"'), "contentFit body must precede the measured footer");
 assert.match(sheet, /content:\s*\{\s*flex:\s*1/u, "expandable/fullView body remains flexible");
 assert.match(sheet, /scrollBodyContent:\s*\{\s*flexGrow:\s*1/u, "expandable/fullView scroll fill remains unchanged");
 for (const gestureMarker of ["onStartShouldSetResponderCapture", "onResponderMove", "resolveWaflSheetDragOffset", "animateDown"]) assert.match(sheet, new RegExp(gestureMarker));

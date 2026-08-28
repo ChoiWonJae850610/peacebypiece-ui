@@ -49,7 +49,7 @@ for (const kind of ["save-company-template", "update-company-template"]) {
 }
 
 const experience = read("apps/mobile/features/MobileWorkOrderExperience.tsx");
-const categoryConfirm = experience.slice(experience.indexOf('title: "대분류를 변경합니다"'), experience.indexOf('return "confirmation" as const'));
+const categoryConfirm = experience.slice(experience.indexOf("if (!commitImmediately && dependentField"), experience.indexOf('return "confirmation" as const'));
 assert.match(categoryConfirm, /categoryDetail: ""/u, "category confirmation immediately clears the local detail projection");
 assert.doesNotMatch(categoryConfirm, /updateOverview|flushSection/u, "category confirmation remains local-only");
 assert.match(experience, /if \(patch\.resetCategoryDependents\)[\s\S]{0,2600}expectedVersion: saved\.nextVersion,[\s\S]{0,220}patch: \{ itemCode: desiredItemCode \}/u, "boundary serializes reset then detail patch");

@@ -1,6 +1,8 @@
 import seedJson from "./waflBasicSpecV1Seed.json" with { type: "json" };
+import basicFitSeedJson from "./waflBasicFitSeedV01.json" with { type: "json" };
 
 import type { WorkOrderMajorCategoryCode } from "../catalog/workOrderCategoryPolicy.ts";
+import { listWaflSystemSpecItems } from "../catalog/systemSpecItemCatalog.mjs";
 
 type SeedTemplate = {
   readonly name: string;
@@ -15,34 +17,51 @@ type Seed = {
   readonly providedPomAddons: Readonly<Record<string, { readonly poms: readonly string[]; readonly defaultsCm: Readonly<Record<string, number | string>> }>>;
 };
 
+type BasicFitSeedTemplate = {
+  readonly poms: readonly string[];
+  readonly valuesCm: Readonly<Record<string, readonly number[]>>;
+};
+
+type BasicFitSeed = {
+  readonly version: string;
+  readonly templates: Readonly<Record<string, BasicFitSeedTemplate>>;
+};
+
 const SEED = seedJson as Seed;
+const BASIC_FIT_SEED = basicFitSeedJson as BasicFitSeed;
 
 const CATEGORY_LABELS: Readonly<Record<"T" | "B" | "O" | "D", keyof Seed["templates"]>> = {
   T: "상의", B: "하의", O: "아우터", D: "원피스",
 };
 
-const TEMPLATE_IDS: Readonly<Record<"T" | "B" | "O" | "D", string>> = {
+const LEGACY_TEMPLATE_IDS: Readonly<Record<"T" | "B" | "O" | "D", string>> = {
   T: "a6700001-0000-5000-8000-000000000001",
   B: "a6700001-0000-5000-8000-000000000002",
   O: "a6700001-0000-5000-8000-000000000003",
   D: "a6700001-0000-5000-8000-000000000004",
 };
 
-const POM_CODES: Readonly<Record<string, string>> = {
-  "총장": "body_length", "앞길이": "front_length", "뒷길이": "back_length", "어깨너비": "shoulder_width",
-  "가슴단면": "chest_width", "허리단면": "waist_width", "힙단면": "hip_width", "밑단단면": "hem_width",
-  "암홀": "armhole_depth", "소매길이": "sleeve_length", "화장": "sleeve_reach", "소매통": "upper_arm_width",
-  "소매단": "cuff_width", "목너비": "neck_width", "앞목깊이": "front_neck_depth", "뒷목깊이": "back_neck_depth",
-  "등너비": "across_back", "앞밑위": "front_rise", "뒷밑위": "back_rise", "허벅지단면": "thigh_width",
-  "무릎단면": "knee_width", "인심": "inseam", "아웃심": "outseam", "허리선높이": "waistline_height",
-  "카라높이": "collar_height", "카라너비": "collar_width", "앞여밈폭": "front_placket_width", "후드높이": "hood_height",
-  "후드폭": "hood_width", "지퍼길이": "zipper_length",
-};
+const TARGET_TEMPLATE_IDS = {
+  여성: {
+    T: "a6900001-0000-5000-8000-000000000001",
+    B: "a6900001-0000-5000-8000-000000000002",
+    O: "a6900001-0000-5000-8000-000000000003",
+    D: "a6900001-0000-5000-8000-000000000004",
+  },
+  남성: {
+    T: "a6900001-0000-5000-8000-000000000011",
+    B: "a6900001-0000-5000-8000-000000000012",
+    O: "a6900001-0000-5000-8000-000000000013",
+  },
+} as const;
+
+export type WaflBasicSpecTargetAudience = "여성" | "남성";
 
 export type WaflBasicSpecPom = { readonly code: string; readonly name: string; readonly displayOrder: number };
 export type WaflBasicSpecTemplate = {
   readonly id: string;
   readonly categoryCode: "T" | "B" | "O" | "D";
+  readonly targetAudience: WaflBasicSpecTargetAudience | null;
   readonly name: string;
   readonly templateVersion: 1;
   readonly sizes: readonly string[];
@@ -54,44 +73,84 @@ function isBasicCategory(code: WorkOrderMajorCategoryCode | null): code is "T" |
   return code === "T" || code === "B" || code === "O" || code === "D";
 }
 
-function addonNames(itemCode: string | null): readonly string[] {
-  const item = itemCode?.trim() ?? "";
-  if (["셔츠", "블라우스", "폴로"].includes(item)) return SEED.providedPomAddons["셔츠/블라우스/폴로"].poms;
-  if (item === "후드") return SEED.providedPomAddons["후드"].poms;
-  if (["재킷", "코트"].includes(item)) return SEED.providedPomAddons["재킷/코트"].poms;
-  if (["점퍼", "패딩"].includes(item)) return SEED.providedPomAddons["점퍼/패딩"].poms;
-  return [];
+function targetTemplateId(targetAudience: WaflBasicSpecTargetAudience, categoryCode: "T" | "B" | "O" | "D") {
+  return TARGET_TEMPLATE_IDS[targetAudience][categoryCode as keyof (typeof TARGET_TEMPLATE_IDS)[typeof targetAudience]] ?? null;
 }
 
-export function getWaflBasicSpecTemplate(categoryCode: WorkOrderMajorCategoryCode | null, itemCode: string | null = null): WaflBasicSpecTemplate | null {
+function basicFitTemplateKey(
+  targetAudience: WaflBasicSpecTargetAudience,
+  categoryCode: "T" | "B" | "O" | "D",
+) {
+  const target = targetAudience === "여성" ? "women" : "men";
+  const category = categoryCode === "T" ? "tops"
+    : categoryCode === "B" ? "bottoms"
+      : categoryCode === "O" ? "outerwear"
+        : "dresses";
+  return `${target}_${category}`;
+}
+
+function createTemplate(
+  categoryCode: "T" | "B" | "O" | "D",
+  targetAudience: WaflBasicSpecTargetAudience | null,
+): WaflBasicSpecTemplate | null {
+  const id = targetAudience ? targetTemplateId(targetAudience, categoryCode) : LEGACY_TEMPLATE_IDS[categoryCode];
+  if (!id) return null;
   if (!isBasicCategory(categoryCode)) return null;
   const base = SEED.templates[CATEGORY_LABELS[categoryCode]];
-  const names = [...base.poms, ...addonNames(itemCode)].filter((name, index, all) => all.indexOf(name) === index);
-  const valuesCm = Object.fromEntries(SEED.sizeLabels.map((size) => {
-    const baseValues = base.valuesCm[size] ?? {};
-    const values: Record<string, number> = { ...baseValues };
-    for (const name of addonNames(itemCode)) {
-      if (name === "지퍼길이") values[name] = Math.max(0, (baseValues["총장"] ?? 0) - 5);
-      else {
-        const group = ["셔츠", "블라우스", "폴로"].includes(itemCode ?? "") ? "셔츠/블라우스/폴로"
-          : ["재킷", "코트"].includes(itemCode ?? "") ? "재킷/코트" : "후드";
-        const candidate = SEED.providedPomAddons[group]?.defaultsCm[name];
-        if (typeof candidate === "number") values[name] = candidate;
-      }
-    }
-    return [size, values];
-  }));
+  const systemItems = listWaflSystemSpecItems(categoryCode);
+  const systemByName = new Map(systemItems.map((item) => [item.displayName, item]));
+  const systemByCode = new Map(systemItems.map((item) => [item.code, item]));
+  const targetSeed = targetAudience ? BASIC_FIT_SEED.templates[basicFitTemplateKey(targetAudience, categoryCode)] : null;
+  const baseItems = targetSeed
+    ? targetSeed.poms.flatMap((code) => {
+      const item = systemByCode.get(code);
+      return item ? [item] : [];
+    })
+    : base.poms.flatMap((name) => {
+      const item = systemByName.get(name);
+      return item ? [item] : [];
+    });
+  const sizes = targetSeed ? Object.keys(targetSeed.valuesCm) : SEED.sizeLabels;
+  const valuesCm = targetSeed
+    ? Object.fromEntries(Object.entries(targetSeed.valuesCm).map(([size, row]) => [size, Object.fromEntries(
+      targetSeed.poms.flatMap((code, index) => {
+        const item = systemByCode.get(code);
+        const value = row[index];
+        return item && Number.isFinite(value) ? [[item.displayName, value]] : [];
+      }),
+    )]))
+    : Object.fromEntries(sizes.flatMap((size) => {
+      const baseValues = base.valuesCm[size] ?? {};
+      if (Object.keys(baseValues).length === 0) return [];
+      return [[size, Object.fromEntries(Object.entries(baseValues).filter(([name]) => base.poms.includes(name)))]];
+    }));
   return {
-    id: TEMPLATE_IDS[categoryCode], categoryCode, name: base.name, templateVersion: 1,
-    sizes: SEED.sizeLabels,
-    poms: names.map((name, displayOrder) => ({ code: POM_CODES[name], name, displayOrder })),
+    id, categoryCode, targetAudience,
+    name: targetAudience ? `WAFL 추천 ${targetAudience} ${CATEGORY_LABELS[categoryCode]} 스펙` : base.name,
+    templateVersion: 1,
+    sizes,
+    poms: baseItems.map((item, displayOrder) => ({ code: item.code, name: item.displayName, displayOrder })),
     valuesCm,
   };
 }
 
-export function findWaflBasicSpecTemplateById(templateId: string, itemCode: string | null = null): WaflBasicSpecTemplate | null {
-  const category = (Object.entries(TEMPLATE_IDS).find(([, id]) => id === templateId)?.[0] ?? null) as WorkOrderMajorCategoryCode | null;
-  return getWaflBasicSpecTemplate(category, itemCode);
+export function getWaflBasicSpecTemplate(
+  categoryCode: WorkOrderMajorCategoryCode | null,
+  itemCode: string | null = null,
+  targetAudience: WaflBasicSpecTargetAudience | null = null,
+): WaflBasicSpecTemplate | null {
+  void itemCode; // Legacy call compatibility; numeric starter identity no longer depends on detail item.
+  return isBasicCategory(categoryCode) ? createTemplate(categoryCode, targetAudience) : null;
+}
+
+export function findWaflBasicSpecTemplateById(templateId: string): WaflBasicSpecTemplate | null {
+  const legacyCategory = (Object.entries(LEGACY_TEMPLATE_IDS).find(([, id]) => id === templateId)?.[0] ?? null) as WorkOrderMajorCategoryCode | null;
+  if (isBasicCategory(legacyCategory)) return createTemplate(legacyCategory, null);
+  for (const targetAudience of ["여성", "남성"] as const) {
+    const categoryCode = (Object.entries(TARGET_TEMPLATE_IDS[targetAudience]).find(([, id]) => id === templateId)?.[0] ?? null) as WorkOrderMajorCategoryCode | null;
+    if (isBasicCategory(categoryCode)) return createTemplate(categoryCode, targetAudience);
+  }
+  return null;
 }
 
 export function waflBasicSpecTemplateNameById(templateId: string | null): string | null {
@@ -104,4 +163,6 @@ export function projectWaflBasicSpecValues(template: WaflBasicSpecTemplate, sele
 }
 
 export const WAFL_BASIC_SPEC_V1_VERSION = SEED.version;
-export const WAFL_BASIC_SPEC_V1_TEMPLATE_IDS = TEMPLATE_IDS;
+export const WAFL_BASIC_FIT_SEED_V01_VERSION = BASIC_FIT_SEED.version;
+export const WAFL_BASIC_SPEC_V1_TEMPLATE_IDS = LEGACY_TEMPLATE_IDS;
+export const WAFL_BASIC_SPEC_V1_TARGET_TEMPLATE_IDS = TARGET_TEMPLATE_IDS;

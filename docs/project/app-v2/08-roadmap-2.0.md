@@ -1,16 +1,29 @@
 # WAFL v2 App-first Roadmap and Version Delta
 
-Alpha.68 is finalized at `ALPHA68_FINALIZATION_COMPLETE`; its accepted product checkpoint is
+Alpha.69 is finalized at `ALPHA69_FINALIZATION_COMPLETE`; its accepted product checkpoint is `ALPHA69_COMPLETE`.
+One shared policy guides target × major Size choices, seven exact Basic Fit Seed V0.1 starter templates, and separate
+detail-aware POM guidance without automatic mutation or runtime grading. Target/major reset and real-loss replacement
+use the canonical question/helper/reel/V destructive-choice state by replacing the active Sheet body; its reel has one vertical scroll owner and zero-loss replacement applies directly. Recommended-spec loading enters pending, reaches a presentation boundary before work, and publishes successful content before refresh so no duplicate hydration remains after release. Shared visible blockers use the same presentation-first lifecycle. Owner physical iPhone QA is explicitly accepted as PASS. Alpha.68 remains finalized at `ALPHA68_FINALIZATION_COMPLETE`; its accepted product checkpoint is
 `ALPHA68_COMPLETE`. Draft local-first authoring and bounded section flush, list Delete/Copy/Reorder,
 independent Copy, locked Reorder production variables and lifecycle, core-first hydration, ephemeral
 final-renderer Preview, fixed 72-hour Share, native attachments, category/detail/template rebase, and
 the unified Maker Recipe/direct-input system are one completed boundary. Content-aware keyboard detent,
 submit-before-blur, internal-tap persistence, keypad-only minimal accessory, footerless reusable create,
 replace-sheet processing, canonical keyboard-plus-sheet close, and close-animation ownership are physically
-accepted on iPhone. APP_VERSION is `2.0.0-alpha.68`; migration remains `20/20`, new migration and
-production/Owner/ambiguous mutation are zero, and alpha.69 implementation has not started.
+accepted on iPhone. APP_VERSION is `2.0.0-alpha.69`; migration remains `20/20`, new migration and
+production/Owner/ambiguous mutation are zero.
 
 Document role: canonical owner for the current result, next candidate, and Version Delta boundary. It is not the historical implementation ledger; completed details live in numbered immutable evidence.
+
+## Current result — 2.0.0-alpha.69
+
+Status: `ALPHA69_FINALIZATION_COMPLETE`.
+
+Accepted product checkpoint: `ALPHA69_COMPLETE`.
+
+Owner physical result: `PASS`.
+
+Alpha.69 finalizes target-audience × major-category Size guidance, seven exact editable WAFL Basic Fit Seed V0.1 starter templates, separate item-aware POM guidance, male Dress authoring restriction, and loss-aware Size/Color replacement. Active destructive choices use one same-sheet WAFL INPUT question/helper/reel/V owner without a nested Modal or same-axis parent scroll. Visible processing actions cross a real presentation boundary before work, and recommended-template content is published before terminal refresh releases the blocker. APP_VERSION is `2.0.0-alpha.69`; dependency/native/EAS/schema/migration additions and production/Owner/ambiguous mutations are zero.
 
 ## Previous result — 2.0.0-alpha.67
 
@@ -30,7 +43,7 @@ APP_VERSION is `2.0.0-alpha.67`. DEV/TEST migration ledger is `20/20`; new migra
 production mutation and owner-fixture mutation are zero. Final Git and artifact identity are owned
 by the matching post-push repo-state.
 
-## Current result — 2.0.0-alpha.68
+## Previous result — 2.0.0-alpha.68
 
 Status: `ALPHA68_FINALIZATION_COMPLETE`.
 
@@ -58,9 +71,29 @@ memo are the sole post-confirm mutable values and refresh the existing generated
 The Owner explicitly accepted the accumulated alpha.68 physical iPhone boundary after the final
 close-animation ownership correction. APP_VERSION is `2.0.0-alpha.68`. Dependency, native, EAS,
 schema, and migration additions are zero; production, Owner, and ambiguous data mutations are zero.
-The deferred post-alpha.68 backlog remains category/detail-specific recommended size presets, PDF
-first-page image balance/readability, `.waflspec`, drawing/sketch, organization/account/permission,
+The remaining post-alpha.68 backlog includes PDF first-page image balance/readability, `.waflspec`,
+drawing/sketch, organization/account/permission,
 production partner/contact management, universal credit billing, and service/pilot readiness.
+
+## Alpha.69 implementation boundary (finalized)
+
+Status: `ALPHA69_FINALIZATION_COMPLETE`.
+
+The first alpha.69 delta adds guidance-only category/detail recommendations. Denim recommends waist labels
+24–36, leggings XS–XL, and the remaining authored apparel details use their declared alpha-size sets. The
+Size chooser retains all other WAFL, company, direct, and unmatched current choices. The POM chooser uses the
+same shared policy order for its recommended section and keeps the rest of the category catalog separate.
+Changing detail recomputes presentation only. Detail-aware WAFL templates use that same POM policy and only
+existing seed values; 24–36 values are deliberately blank/editable. Schema, migration, dependency, native,
+EAS, and production/Owner data deltas are zero. Physical iPhone acceptance remains required.
+
+The current focused delta applies the Owner-authored V0.1 values to all seven target-major starter identities and
+narrows male-bottom primary guidance to 28/30/32/34/36/FREE while retaining 24/26 in the disclosed system universe.
+Only current WorkOrder Size rows receive matching values, and all projected cells remain editable. Target/major
+dependent reset and real-loss Size/Color replacement replace the active WAFL INPUT body with the shared
+question/helper/two-row reel/V destructive-choice state without a second React Native Modal; cancellation mutates
+nothing and confirmation reuses the existing exactly-once owner. A WAFL recommended-spec apply alone presents the
+shared `스펙 정보를 불러오는 중입니다.` processing blocker before content fetch and mutation begin.
 
 ## Previous result — 2.0.0-alpha.66
 

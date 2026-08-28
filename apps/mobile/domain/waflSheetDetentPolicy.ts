@@ -294,6 +294,13 @@ export function resolveWaflSheetOpeningOffset(expandedHeight: number) {
   return Math.max(0, expandedHeight);
 }
 
+export function resolveWaflSheetBodyScrollEnabled(input: {
+  readonly bodyScrollable: boolean;
+  readonly decisionVisible: boolean;
+}) {
+  return input.bodyScrollable && !input.decisionVisible;
+}
+
 export function resolveWaflSheetDragOffset(input: {
   readonly dragStartOffset: number;
   readonly dy: number;

@@ -99,3 +99,20 @@ export function selectedSpecItems(candidates: readonly StagedSpecItem[], selecte
   const selected = new Set(selectedKeys);
   return candidates.filter((item) => selected.has(item.key));
 }
+
+export function partitionSpecItemCandidatesByRecommendation(
+  candidates: readonly StagedSpecItem[],
+  recommendedSystemKeys: readonly string[],
+) {
+  const bySystemKey = new Map(candidates.flatMap((item) => item.systemSpecItemKey ? [[item.systemSpecItemKey, item] as const] : []));
+  const recommendedKeys = new Set(recommendedSystemKeys);
+  return Object.freeze({
+    recommended: Object.freeze(recommendedSystemKeys.flatMap((key) => {
+      const candidate = bySystemKey.get(key);
+      return candidate ? [candidate] : [];
+    })),
+    additional: Object.freeze(candidates.filter((item) => item.sourceKind === "system" && item.systemSpecItemKey && !recommendedKeys.has(item.systemSpecItemKey))),
+    company: Object.freeze(candidates.filter((item) => item.sourceKind === "company")),
+    current: Object.freeze(candidates.filter((item) => item.sourceKind === "current")),
+  });
+}

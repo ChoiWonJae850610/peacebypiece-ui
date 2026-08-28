@@ -1,17 +1,29 @@
 # WAFL Current Baseline
 
-Alpha.68 is the finalized Maker authoring result. It adds local-instant Draft editing with bounded section flushes, atomic Size/Color persistence, independent Copy, server-enforced Reorder locks and lifecycle, direct blocking creation, authenticated ephemeral PDF Preview, fixed 72-hour branded sharing, native image/PDF attachment viewing, and the unified Recipe/direct-input interaction system. The alpha.67 Nth Reorder/PDF/private-R2/branded-viewer boundary remains intact. Owner physical iPhone QA is explicitly accepted as PASS. APP_VERSION is `2.0.0-alpha.68`, the migration ledger remains `20/20`, and alpha.69 implementation has not started.
+Alpha.69 is finalized at `ALPHA69_FINALIZATION_COMPLETE` with product checkpoint `ALPHA69_COMPLETE`. Seven target-audience × major-category WAFL starter specs retain the exact editable Basic Fit Seed V0.1 without runtime interpolation. Active destructive choices keep the shared WAFL INPUT question/helper/reel/V grammar while disabling the parent same-axis ScrollView, so their FlatList reel has one vertical scroll owner. Recommended-spec apply publishes the successfully fetched template content before authoritative refresh, preventing a second hydration GET after blocker release. Shared visible action processing, dirty Production subsection changes, Recipe create/copy/reorder, pending-intent save, and document confirmation cross the real presentation boundary before work begins. Zero-loss replacement remains immediate. Owner physical iPhone QA is explicitly accepted as PASS. APP_VERSION is `2.0.0-alpha.69`; migration stays `20/20`, new migration and production/Owner/ambiguous mutation are zero.
 
 Document type: **Current Baseline**
 
 Canonical owner: `docs/codex-current-state.md`
 
-Result version: `2.0.0-alpha.68`
-Status: `ALPHA68_FINALIZATION_COMPLETE`
-Product checkpoint: `ALPHA68_COMPLETE`
+Result version: `2.0.0-alpha.69`
+Status: `ALPHA69_FINALIZATION_COMPLETE`
+Product checkpoint: `ALPHA69_COMPLETE`
 Owner physical result: `PASS`
 
+## Final alpha.69 result
+
+The system Size universe includes waist labels 24–36 without persistence or migration. Size selection shows
+target × major recommendations first, keeps company/current/direct choices, and discloses the remaining system
+universe only on request. Finished Spec selection keeps detail-ordered POM guidance independently. Numeric WAFL
+starter templates use target × major names and major base POMs only; current WorkOrder sizes remain authoritative,
+and exact V0.1 values project only onto matching current Size rows. Male new authoring excludes Dress while legacy
+values remain readable. Replacement loss is computed from positive quantity and non-empty measurement values only;
+its real-loss Decision replaces the active Sheet body with the canonical WAFL INPUT question/helper/reel/V state without nesting another Modal or same-axis parent ScrollView. Recommended-spec loading presents its blocker before content fetch, publishes the successful content before refresh, and releases only after terminal projection/reconcile. Visible global processing owners use the shared presentation-first boundary without decorative delay.
+
 ## Final alpha.68 result
+
+Owner physical result: `PASS`
 
 Alpha.68 finalizes Draft delete/Reorder history, Copy and Reorder creation, common core-first hydration,
 picker/tab/delete recovery, category/detail/template rebase, local-first Recipe authoring, Size/Color and
@@ -306,8 +318,8 @@ The WorkOrder list stays flat. Existing workflow status chips remain the only pe
 | Entry commit | `feat: WAFL v2 alpha.65 Maker 입력 UX와 완성치수 도식 완성` |
 | Entry ahead/behind | `0/0` |
 | Entry working tree | clean |
-| APP_VERSION | `2.0.0-alpha.68` |
-| Mobile package version | `2.0.0-alpha.68` |
+| APP_VERSION | `2.0.0-alpha.69` |
+| Mobile package version | `2.0.0-alpha.69` |
 | Root package version | `0.5.637` |
 | Expo public version | `2.0.0` |
 | iOS Development Build | build number `1`, reusable while native inputs remain unchanged |
@@ -318,9 +330,9 @@ The source cannot contain the hash of the commit that contains itself. Final alp
 
 ## Latest delivery boundary
 
-- Target Source ZIP: `peacebypiece-ui-2.0.0-alpha.68.zip`.
-- Target repo-state: `repo-state-2.0.0-alpha.68-<actual timestamp>.txt` when the canonical Finish tool emits one.
-- The accepted release handoff is generated from the final synchronized pushed alpha.68 HEAD.
+- Target Source ZIP: `peacebypiece-ui-2.0.0-alpha.69.zip`.
+- Target repo-state: `repo-state-2.0.0-alpha.69-<actual timestamp>.txt` when the canonical Finish tool emits one.
+- The accepted release handoff is generated from the final synchronized pushed alpha.69 HEAD.
 
 ## Current product and transport baseline
 

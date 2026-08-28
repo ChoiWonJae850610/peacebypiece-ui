@@ -16,6 +16,7 @@ assert.equal(decideDraftExit({ intent: "session-loss", mutationInFlight: false }
 assert.equal(decideDraftExit({ intent: "list", mutationInFlight: true }), "blocked-saving");
 
 const sheet = fs.readFileSync("apps/mobile/features/inputs/reel-picker/WaflReelPickerSheet.tsx", "utf8");
+const optionReel = fs.readFileSync("apps/mobile/features/inputs/reel-picker/WaflOptionReel.tsx", "utf8");
 const sizingPolicy = fs.readFileSync("apps/mobile/features/inputs/reel-picker/waflReelSheetSizingPolicy.ts", "utf8");
 const inputShell = fs.readFileSync("apps/mobile/features/inputs/WaflInputSheet.tsx", "utf8");
 const materials = fs.readFileSync("apps/mobile/features/materials/WorkOrderMaterialsReadOnly.tsx", "utf8");
@@ -26,7 +27,7 @@ const inlineReel = fs.readFileSync("apps/mobile/features/inputs/reel-picker/Reel
 const fieldPolicy = fs.readFileSync("apps/mobile/features/materials/materialFieldPolicy.ts", "utf8");
 const historicalEvidence = fs.readFileSync("docs/project/app-v2/53-mobile-reel-picker-input-ux-evidence.md", "utf8");
 
-for (const token of ["snapToInterval={ITEM_HEIGHT}", "숫자 직접 입력", "numberReel", "intervalReel", "unitOnlyReel", "<WaflInputSheet"]) assert.ok(sheet.includes(token), `reel sheet missing ${token}`);
+for (const token of ["snapToInterval={ITEM_HEIGHT}", "숫자 직접 입력", "numberReel", "intervalReel", "unitOnlyReel", "<WaflInputSheet"]) assert.ok(`${sheet}\n${optionReel}`.includes(token), `reel owner missing ${token}`);
 assert.match(sizingPolicy, /WAFL_REEL_VISIBLE_ROWS = 5/u);
 for (const token of ["cancelAccessibilityLabel", "confirmAccessibilityLabel", "createWaflInputCommitGuard"]) assert.ok(inputShell.includes(token), `shared input shell missing ${token}`);
 assert.doesNotMatch(sheet, /stepButton|cancelText|applyText|적용 후 원단의 Check/);

@@ -23,8 +23,8 @@ assert.match(readOnly, /등록된 완성 스펙 정보가 없습니다\./u);
 assert.match(editor, /onEditSpecItems=\{\(\) => \{ edit\.onBegin\(\); setChooser\("spec_item"\)/u);
 assert.match(editor, /edit\.canEditStructure && chooser === "spec_item"/u);
 assert.doesNotMatch(editor, /categoryCode && chooser === "spec_item"|onEditSpecItems=\{categoryCode \?/u);
-assert.match(selector, /recommendationAvailable/u);
-assert.match(selector, /대분류를 선택하면 WAFL 추천 스펙 항목을 볼 수 있습니다/u);
+assert.match(selector, /recommendedSystemItems\.length === 0/u);
+assert.match(selector, /대분류와 세부품목을 선택하면 WAFL 추천 스펙 항목을 볼 수 있습니다/u);
 assert.match(selector, /WaflReusableCreateEntryAction/u);
 assert.match(reusableCreateEntry, /label = "직접 만들기"/u);
 

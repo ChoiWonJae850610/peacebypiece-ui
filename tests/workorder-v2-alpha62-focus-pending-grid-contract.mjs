@@ -65,9 +65,9 @@ assert.doesNotMatch(sizeRead, /disabled=\{edit\?\.busy\}/);
 const grid = read("apps/mobile/features/inputs/WaflOptionGrid.tsx");
 const structureEditor = read("apps/mobile/features/work-orders/size-color/WorkOrderSizeColorStructureEditor.tsx");
 for (const token of ["WaflOptionGridItem", 'columns: 3 | 4', 'accessibilityRole="checkbox"', "removable"]) assert.ok(grid.includes(token));
-assert.equal((structureEditor.match(/<WaflOptionGrid/g) ?? []).length, 4);
+assert.equal((structureEditor.match(/<WaflOptionGrid/g) ?? []).length, 6);
 assert.equal((structureEditor.match(/variant="summary"/g) ?? []).length, 0);
-for (const label of ["WAFL 기본 사이즈", "등록 사이즈", "WAFL 기본 색상", "등록 색상"]) assert.ok(structureEditor.includes(label));
+for (const label of ["WAFL 추천 사이즈", "다른 WAFL 사이즈 보기", "등록 사이즈", "WAFL 기본 색상", "등록 색상", "resolveStagedReplacementDecision"]) assert.ok(structureEditor.includes(label));
 assert.ok(structureEditor.includes('columns={4}'));
 assert.ok(structureEditor.includes('columns={3}'));
 

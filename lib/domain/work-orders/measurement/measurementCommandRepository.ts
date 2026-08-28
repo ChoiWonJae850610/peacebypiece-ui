@@ -8,7 +8,7 @@ import { installTenantClaims } from "@/lib/domain/work-orders/command/commandRep
 import { WORK_ORDER_COMMAND_CODES, type WorkOrderCommandCode } from "@/lib/domain/work-orders/command/workOrderCommandCodes";
 import { parseMeasurementToCm } from "@/lib/domain/work-orders/measurement/measurementPolicy";
 import type { CompanyMemberId, EntityVersion, TenantMemberScope, WorkOrderId } from "@/lib/domain/work-orders/contracts";
-import { decodeWorkOrderMajorCategoryCode } from "@/lib/domain/work-orders/catalog/workOrderCategoryPolicy";
+import { decodeWorkOrderCategory, decodeWorkOrderMajorCategoryCode } from "@/lib/domain/work-orders/catalog/workOrderCategoryPolicy";
 import { findWaflSystemSpecItem } from "@/lib/domain/work-orders/catalog/systemSpecItemCatalog";
 import { findWaflBasicSpecTemplateById } from "@/lib/domain/work-orders/measurement/waflBasicSpecV1";
 
@@ -62,7 +62,14 @@ async function apply(client: DbTransactionClient, context: Context, input: Measu
  let existing=await spec(client,context,input,row.revision_id); const kind=input.kind;
  if (kind === "apply-template") {
   const templateId = uuid(input.payload.templateId);
-  const basicTemplate = findWaflBasicSpecTemplateById(templateId, row.item_code);
+   const candidateBasicTemplate = findWaflBasicSpecTemplateById(templateId);
+   const category = decodeWorkOrderCategory({ productTypeCode: row.product_type_code, itemCode: row.item_code, seasonCode: null });
+   const basicGenderCode = category.targetAudience === "여성" ? "W" : category.targetAudience === "남성" ? "M" : null;
+   const basicTemplate = candidateBasicTemplate
+     && candidateBasicTemplate.categoryCode === decodeWorkOrderMajorCategoryCode(row.product_type_code)
+     && (candidateBasicTemplate.targetAudience === null || candidateBasicTemplate.targetAudience === category.targetAudience)
+     ? candidateBasicTemplate
+     : null;
   const persistedTemplate = basicTemplate ? null : (await q<DbQueryResultRow & { id: string; template_version: number | string }>(
     client,
     context,
@@ -77,9 +84,9 @@ async function apply(client: DbTransactionClient, context: Context, input: Measu
     await q(client, context, `DELETE FROM work_order_size_spec_sizes WHERE company_id=$1 AND size_spec_id=$2::uuid`, [input.scope.companyId, snapshotId]);
     await q(client, context, `DELETE FROM work_order_size_spec_poms WHERE company_id=$1 AND size_spec_id=$2::uuid`, [input.scope.companyId, snapshotId]);
   } else {
-    await q(client, context, `INSERT INTO work_order_size_specs(id,company_id,revision_id,category_code,measurement_unit,source_template_id,source_template_version) VALUES($1::uuid,$2,$3::uuid,$4,'cm',$5,$6)`, [snapshotId, input.scope.companyId, row.revision_id, basicTemplate?.categoryCode ?? null, templateId, templateVersion]);
-  }
-  await q(client, context, `UPDATE work_order_size_specs SET category_code=COALESCE($3,category_code),measurement_unit='cm',source_template_id=$4,source_template_version=$5,updated_at=now() WHERE company_id=$1 AND id=$2::uuid`, [input.scope.companyId, snapshotId, basicTemplate?.categoryCode ?? null, templateId, templateVersion]);
+    await q(client, context, `INSERT INTO work_order_size_specs(id,company_id,revision_id,gender_code,category_code,measurement_unit,source_template_id,source_template_version) VALUES($1::uuid,$2,$3::uuid,$4,$5,'cm',$6,$7)`, [snapshotId, input.scope.companyId, row.revision_id, basicTemplate ? basicGenderCode : null, basicTemplate?.categoryCode ?? null, templateId, templateVersion]);
+   }
+   await q(client, context, `UPDATE work_order_size_specs SET gender_code=COALESCE($3,gender_code),category_code=COALESCE($4,category_code),measurement_unit='cm',source_template_id=$5,source_template_version=$6,updated_at=now() WHERE company_id=$1 AND id=$2::uuid`, [input.scope.companyId, snapshotId, basicTemplate ? basicGenderCode : null, basicTemplate?.categoryCode ?? null, templateId, templateVersion]);
   await q(client, context, `INSERT INTO work_order_size_spec_sizes(id,company_id,revision_id,size_spec_id,size_code,display_label,display_order) SELECT s.id,$1,$2::uuid,$3::uuid,s.size_code,s.display_label,s.display_order FROM work_order_sizes s WHERE s.company_id=$1 AND s.revision_id=$2::uuid ORDER BY s.display_order,s.id`, [input.scope.companyId, row.revision_id, snapshotId]);
   if (basicTemplate) {
     const pomRows = basicTemplate.poms.map((pom) => ({ code: pom.code, name: pom.name, display_order: pom.displayOrder }));

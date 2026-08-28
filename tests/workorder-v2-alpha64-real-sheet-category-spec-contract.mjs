@@ -35,6 +35,7 @@ assert.match(theme, /exitDurationMs:\s*2\d\d/u);
 assert.match(sheet, /testID=\{draggable \? "wafl-sheet-header-drag-zone" : "wafl-sheet-fixed-header"\}/u);
 assert.doesNotMatch(sheet, /PanResponder|panResponder\.panHandlers/u);
 assert.match(sheet, /pointerEvents=\{replacesSheetDuringProcessing \? "none" : "auto"\}/u);
+assert.match(sheet, /decision \? <WaflDecisionChoiceBody/u);
 for (const token of [
   "onStartShouldSetResponderCapture",
   "onMoveShouldSetResponderCapture",
@@ -53,7 +54,7 @@ for (const token of [
   'animationType="none"',
 ]) assert.ok(sheet.includes(token), `mounted sheet path missing ${token}`);
 assert.ok(sheet.indexOf("animateDown(() =>") < sheet.indexOf("setRendered(false)"), "close must animate down before unmount");
-assert.ok(sheet.indexOf("onStartShouldSetResponderCapture") < sheet.indexOf("bodyScrollable ?"), "header responder must not depend on bodyScrollable");
+assert.ok(sheet.indexOf("onStartShouldSetResponderCapture") < sheet.indexOf("effectiveBodyScrollable ?"), "header responder must not depend on the effective body scroll owner");
 assert.match(sheet, /\{draggable \? <View style=\{styles\.handle\} \/> : null\}/u, "fixed sheets must not expose a fake handle");
 
 const expandedHeight = 700;
@@ -85,8 +86,9 @@ for (const forbidden of ["shoulder_width", "armhole_depth", "sleeve_length", "ne
 
 assert.match(editor, /onEditSpecItems=\{\(\) => \{ edit\.onBegin\(\); setChooser\("spec_item"\)/u);
 assert.match(editor, /edit\.canEditStructure && chooser === "spec_item"/u);
-assert.match(editor, /recommendationAvailable=\{categoryCode !== null\}/u);
-assert.match(selector, /"WAFL 제공"/u);
+assert.match(editor, /itemCode=\{itemCode\}/u);
+assert.match(selector, /"WAFL 추천 스펙"/u);
+assert.match(selector, /"WAFL 추가 스펙"/u);
 assert.match(selector, /"우리 회사"/u);
 assert.match(selector, /WaflReusableCreateEntryAction/u);
 assert.match(reusableCreateEntry, /label = "직접 만들기"/u);

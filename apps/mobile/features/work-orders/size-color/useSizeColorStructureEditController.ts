@@ -1,4 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { beginWaflPresentationFirstOperation } from "@/application/waflPresentationBoundary";
+import { runWaflTemplateApplyContentFirst } from "@/application/waflTemplateApplyLifecycle";
 
 import { createSerializedMutationQueue } from "@/application/mutationController";
 import type { WorkOrderDraftBatchCoordinator } from "@/application/draftBatchCoordinator";
@@ -153,6 +155,7 @@ export function useSizeColorStructureEditController(input: Input) {
   const structureAliases = useRef(new Map<string, string>());
   const localStructureSequence = useRef(0);
   const appliedTemplateContent = useRef<MeasurementTemplateContent | null>(null);
+  const templateApplyActive = useRef(false);
 
   useEffect(() => {
     current.current = input;
@@ -364,17 +367,41 @@ export function useSizeColorStructureEditController(input: Input) {
     metricName = "size-color-structure",
     scope: PendingCommandScope = "structure",
     failureRollbackBundle?: WorkOrderSizeColorBundle,
+    presentationBeforeRequest = false,
+    failureMessage = "변경을 저장하지 못했습니다.",
   ) => {
+    const initial = current.current;
+    if (!changed || !initial.canEdit || !initial.workOrderId || initial.entityVersion === null) return false;
+    let presentationPendingOwned = false;
+    const clearPresentationPending = () => {
+      if (!presentationPendingOwned) return;
+      presentationPendingOwned = false;
+      setBusy(false);
+      setPendingScope(null);
+    };
+    if (presentationBeforeRequest) {
+      await beginWaflPresentationFirstOperation({
+        enterPending: () => {
+          presentationPendingOwned = true;
+          setBusy(true);
+          setPendingScope(scope);
+        },
+      });
+    }
     if (scope !== "quantity" && input.draftBatch.isDirty("sizes")) {
       const flushed = await input.draftBatch.flushSection("sizes", "explicit");
-      if (!flushed.committed) return false;
+      if (!flushed.committed) {
+        clearPresentationPending();
+        return false;
+      }
     }
     if (scope !== "measurement-cell" && input.draftBatch.isDirty("finished-spec")) {
       const flushed = await input.draftBatch.flushSection("finished-spec", "explicit");
-      if (!flushed.committed) return false;
+      if (!flushed.committed) {
+        clearPresentationPending();
+        return false;
+      }
     }
-    const initial = current.current;
-    if (!changed || !initial.canEdit || !initial.workOrderId || initial.entityVersion === null) return false;
     const requestGeneration = generation.current;
     const requestWorkOrderId = initial.workOrderId;
     const timing = createDevMutationTiming(metricName);
@@ -383,7 +410,10 @@ export function useSizeColorStructureEditController(input: Input) {
     return mutationQueue.enqueue(async () => {
       const snapshot = current.current;
       if (!snapshot.canEdit || snapshot.workOrderId !== requestWorkOrderId || snapshot.entityVersion === null
-        || requestGeneration !== generation.current) return false;
+        || requestGeneration !== generation.current) {
+        clearPresentationPending();
+        return false;
+      }
       const ids = identity();
       let optimisticApplied = false;
       let conflictRefreshed = false;
@@ -393,8 +423,10 @@ export function useSizeColorStructureEditController(input: Input) {
         snapshot.onTotalQuantityReconcile(Number(optimisticBundle.matrix.matrixTotal), snapshot.entityVersion);
         optimisticApplied = true;
       }
-      setBusy(true);
-      setPendingScope(scope);
+      if (!presentationBeforeRequest) {
+        setBusy(true);
+        setPendingScope(scope);
+      }
       try {
         const expectedVersion = authoritativeVersion.current ?? snapshot.entityVersion;
         const commandResult = await request({ workOrderId: requestWorkOrderId, expectedVersion, ...ids });
@@ -426,7 +458,7 @@ export function useSizeColorStructureEditController(input: Input) {
           await snapshot.onConflict();
           conflictRefreshed = true;
           setErrorState({ workOrderId: requestWorkOrderId, message: "다른 변경이 먼저 저장되어 최신 값을 다시 불러왔습니다." });
-        } else reportError(requestWorkOrderId, error, "변경을 저장하지 못했습니다.");
+        } else reportError(requestWorkOrderId, error, failureMessage);
         if (failureRollbackBundle && !conflictRefreshed) {
           snapshot.onReconcile(() => failureRollbackBundle, snapshot.entityVersion);
           snapshot.onTotalQuantityReconcile(Number(failureRollbackBundle.matrix.matrixTotal), snapshot.entityVersion);
@@ -438,6 +470,7 @@ export function useSizeColorStructureEditController(input: Input) {
         timing.complete({ followUpRequests: conflictRefreshed ? 3 : 0, outcome: "failure" });
         return false;
       } finally {
+        presentationPendingOwned = false;
         setBusy(false);
         setPendingScope(null);
         timing.markBusyRelease();
@@ -690,17 +723,31 @@ export function useSizeColorStructureEditController(input: Input) {
     },
     onApplyMeasurementTemplate: async (templateId) => {
       const snapshot = current.current;
-      if (!snapshot.workOrderId) return false;
-      let content: MeasurementTemplateContent;
+      if (!snapshot.workOrderId || templateApplyActive.current) return false;
+      templateApplyActive.current = true;
+      let content: MeasurementTemplateContent | null = null;
+      const applyGeneration = generation.current;
+      const applyWorkOrderId = snapshot.workOrderId;
       try {
-        content = await getMeasurementTemplateContent(snapshot.workOrderId, templateId, snapshot.bundle?.specifications.genderCode ?? null);
-      } catch (error) {
-        reportError(snapshot.workOrderId, error, "스펙 내용을 불러오지 못했습니다.");
-        return false;
+        const saved = await run(true, async ({ workOrderId, expectedVersion, clientRequestId, idempotencyKey }) => {
+          const outcome = await runWaflTemplateApplyContentFirst({
+            fetchContent: () => getMeasurementTemplateContent(workOrderId, templateId, snapshot.bundle?.specifications.genderCode ?? null),
+            applyTemplate: () => workOrderMutationController.mutateMeasurement(workOrderId, createApplyMeasurementTemplateCommand({ templateId, expectedVersion, clientRequestId }), idempotencyKey),
+            isCurrent: (fetchedContent) => activeWorkOrderId.current === applyWorkOrderId
+              && generation.current === applyGeneration
+              && fetchedContent.templateId === templateId,
+            publishAppliedContent: (fetchedContent) => {
+              content = fetchedContent;
+              appliedTemplateContent.current = fetchedContent;
+            },
+          });
+          return outcome.result;
+        }, undefined, undefined, "apply-template", "template-apply", "template", undefined, true, "스펙 내용을 불러오지 못했습니다.");
+        if (!saved && appliedTemplateContent.current === content) appliedTemplateContent.current = null;
+        return saved;
+      } finally {
+        templateApplyActive.current = false;
       }
-      const saved = await run(true, ({ workOrderId, expectedVersion, clientRequestId, idempotencyKey }) => workOrderMutationController.mutateMeasurement(workOrderId, createApplyMeasurementTemplateCommand({ templateId, expectedVersion, clientRequestId }), idempotencyKey), undefined, undefined, "apply-template", "template-apply", "template");
-      if (saved) appliedTemplateContent.current = content;
-      return saved;
     },
     onSaveMeasurementTemplate: async (templateName) => run(true, ({ workOrderId, expectedVersion, clientRequestId, idempotencyKey }) => workOrderMutationController.mutateMeasurement(workOrderId, { kind: "save-company-template", templateName, expectedVersion, clientRequestId }, idempotencyKey), undefined, undefined, "save-company-template", "company-template-save", "template"),
     onUpdateMeasurementTemplate: async (templateId) => run(true, ({ workOrderId, expectedVersion, clientRequestId, idempotencyKey }) => workOrderMutationController.mutateMeasurement(workOrderId, { kind: "update-company-template", templateId, expectedVersion, clientRequestId }, idempotencyKey), undefined, undefined, "update-company-template", "company-template-update", "template"),

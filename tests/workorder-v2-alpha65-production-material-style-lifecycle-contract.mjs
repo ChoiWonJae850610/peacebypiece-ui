@@ -12,6 +12,7 @@ const compactCard = read("apps/mobile/features/layout/WaflCompactEntityCard.tsx"
 const categorySwitch = read("apps/mobile/features/layout/WaflSectionCategorySwitch.tsx");
 const materialSwitch = read("apps/mobile/features/materials/WaflMaterialsCategorySwitch.tsx");
 const reel = read("apps/mobile/features/inputs/reel-picker/WaflReelPickerSheet.tsx");
+const optionReel = read("apps/mobile/features/inputs/reel-picker/WaflOptionReel.tsx");
 const api = read("apps/mobile/lib/api/productionApi.ts");
 const route = read("lib/domain/work-orders/command/processCommandRoute.ts");
 const service = read("lib/domain/work-orders/command/processCommandService.ts");
@@ -69,9 +70,9 @@ assert.match(production, /PRODUCTION_MEMO_MAX_LENGTH = 100/u);
 assert.match(production, /<WaflCharacterCounter current=\{draft\.length\} maximum=\{PRODUCTION_MEMO_MAX_LENGTH\}/u);
 
 assert.match(reel, /selectFirstRealOption\?: boolean/u);
-assert.match(reel, /if \(props\.options\.length === 0\) return null/u);
-assert.match(reel, /if \(options\.length === 0\)/u);
-assert.match(reel, /initialScrollIndex=\{options\.length \? selectedIndex : undefined\}/u);
+assert.match(optionReel, /if \(props\.options\.length === 0\) return null/u);
+assert.match(optionReel, /if \(options\.length === 0\)/u);
+assert.match(optionReel, /initialScrollIndex=\{options\.length \? selectedIndex : undefined\}/u);
 assert.match(reel, /emptyMessage/u);
 assert.match(production, /이 공정을 취급하는 등록 거래처가 없습니다\./u);
 assert.match(production, /requireSpecifiedValue: true, selectFirstRealOption: true/u);

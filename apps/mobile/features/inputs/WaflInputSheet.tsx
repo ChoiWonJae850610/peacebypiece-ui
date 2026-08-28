@@ -46,7 +46,9 @@ import {
   resolveWaflSheetBodyMeasurements,
   resolveWaflSheetKeyboardRestoreOffset,
 } from "@/domain/waflSheetKeyboardRestorePolicy";
+import { resolveWaflDecisionOpeningValue, type WaflDecisionOption } from "@/domain/waflDecisionPolicy";
 import WaflActionProcessingBlocker from "@/features/feedback/WaflActionProcessingBlocker";
+import WaflDecisionChoiceBody, { type WaflDecisionChoiceState } from "@/features/feedback/WaflDecisionChoiceBody";
 import WaflDirectInputKeyboardAccessory from "@/features/inputs/WaflDirectInputKeyboardAccessory";
 import WaflSheetActionButtons from "@/features/inputs/WaflSheetActionButtons";
 import { createWaflInputCommitGuard } from "./waflInputCommitGuard";
@@ -67,6 +69,7 @@ import {
   resolveWaflSheetKeyboardLayout,
   resolveWaflSheetMeasurementIdentity,
   resolveWaflSheetOpeningOffset,
+  resolveWaflSheetBodyScrollEnabled,
   resolveWaflSheetRelease,
   resolveWaflSheetVisualRevealPlan,
   isValidWaflSheetWindowMeasurement,
@@ -107,6 +110,7 @@ type Props = {
   readonly processingHelper?: string | null;
   readonly processingTestID?: string;
   readonly processingPresentation?: "overlay" | "replaceSheet";
+  readonly decision?: WaflDecisionChoiceState | null;
   readonly confirmDisabled?: boolean;
   readonly contentStyle?: StyleProp<ViewStyle>;
   readonly cancelAccessibilityLabel?: string;
@@ -146,6 +150,7 @@ export default function WaflInputSheet({
   processingHelper = null,
   processingTestID,
   processingPresentation = "overlay",
+  decision = null,
   confirmDisabled = false,
   contentStyle,
   cancelAccessibilityLabel = "변경 취소",
@@ -211,6 +216,7 @@ export default function WaflInputSheet({
   const directInputRestoringKeyboardRef = useRef(false);
   const directInputGestureActiveRef = useRef(false);
   const directInputKeyboardDetentRef = useRef<number | null>(null);
+  const decisionVisibleRef = useRef(false);
   const replaceSheetActiveRef = useRef(false);
   const visibleRef = useRef(visible);
   const pendingRef = useRef(pending);
@@ -260,9 +266,16 @@ export default function WaflInputSheet({
   const [directInputFocusedKey, setDirectInputFocusedKey] = useState<string | null>(null);
   const [directInputFormConfirmAvailable, setDirectInputFormConfirmAvailable] = useState(false);
   const [directInputFormConfirmDisabled, setDirectInputFormConfirmDisabled] = useState(false);
+  const [decisionSelected, setDecisionSelected] = useState<WaflDecisionOption>(resolveWaflDecisionOpeningValue);
   const actionPending = pending || submitting;
   const replacesSheetDuringProcessing = sheetPresentation.replaceSheetDuringProcessing;
   const effectiveFocusRevealContext = keyboardFocusRevealContext;
+  const effectiveTitle = decision ? "WAFL INPUT" : title;
+  const renderedChildren = decision ? <WaflDecisionChoiceBody decision={decision} onSelect={setDecisionSelected} selected={decisionSelected} /> : children;
+  const effectiveBodyScrollable = resolveWaflSheetBodyScrollEnabled({
+    bodyScrollable,
+    decisionVisible: decision !== null,
+  });
   const bodyContentHeight = bodyMeasurement.identity === measurementIdentity ? bodyMeasurement.height : 0;
   const currentGenerationBodyMeasured = bodyMeasurement.identity === measurementIdentity && bodyMeasurement.measured;
   const adaptiveBodyHeight = sizing === "reelAdaptive"
@@ -987,8 +1000,33 @@ export default function WaflInputSheet({
   }, [actionPending, animateDown, keyboardMode, onAfterClose, onCancel, prepareSheetClose, setDirectInputFocusedKey, setEntranceMeasurementReady, setOpenReady, setRendered]);
 
   const cancel = useCallback(() => {
+    if (decision && !actionPending) {
+      setDecisionSelected(resolveWaflDecisionOpeningValue());
+      decision.onCancel();
+      return;
+    }
     beginSheetClose("userCancel");
-  }, [beginSheetClose]);
+  }, [actionPending, beginSheetClose, decision, setDecisionSelected]);
+
+  useEffect(() => {
+    if (decision) {
+      decisionVisibleRef.current = true;
+      if (keyboardMode !== "directInput") return;
+      directInputSessionStateRef.current = "cancelling";
+      directInputRestoringKeyboardRef.current = false;
+      directInputRestoreAttemptedRef.current = true;
+      directInputFieldsRef.current.find((item) => item.registrationKey === directInputLastFocusedKeyRef.current)?.inputRef.blur();
+      Keyboard.dismiss();
+      return;
+    }
+    if (!decisionVisibleRef.current) return;
+    decisionVisibleRef.current = false;
+    if (keyboardMode !== "directInput" || !visibleRef.current || dismissingRef.current) return;
+    directInputSessionStateRef.current = "editing";
+    directInputRestoreAttemptedRef.current = false;
+    const targetKey = directInputLastFocusedKeyRef.current;
+    if (targetKey !== null) requestAnimationFrame(() => focusDirectInputTarget(targetKey));
+  }, [decision, focusDirectInputTarget, keyboardMode]);
 
   useEffect(() => {
     if (visible) {
@@ -1199,8 +1237,10 @@ export default function WaflInputSheet({
 
   async function confirm() {
     const registeredOwner = directInputFormConfirmRef.current;
-    const canonicalConfirm = registeredOwner ?? onConfirm;
-    const disabled = actionPending || confirmDisabled || directInputFormConfirmDisabled;
+    const canonicalConfirm = decision
+      ? (decisionSelected === "action" ? decision.onConfirm : decision.onCancel)
+      : registeredOwner ?? onConfirm;
+    const disabled = actionPending || (!decision && (confirmDisabled || directInputFormConfirmDisabled));
     if (disabled || !canonicalConfirm) {
       if (keyboardMode === "directInput") {
         directInputSessionStateRef.current = "editing";
@@ -1212,6 +1252,7 @@ export default function WaflInputSheet({
       }
       return;
     }
+    if (decision) setDecisionSelected(resolveWaflDecisionOpeningValue());
     if (keyboardMode === "directInput") {
       directInputSessionStateRef.current = "confirming";
       directInputRestoringKeyboardRef.current = false;
@@ -1256,6 +1297,7 @@ export default function WaflInputSheet({
     };
     focusedTargetRef.current = activeTarget;
     if (keyboardMode === "directInput") {
+      directInputSessionStateRef.current = "editing";
       directInputLastFocusedKeyRef.current = target.registrationKey;
       directInputRestoreAttemptedRef.current = false;
       setDirectInputFocusedKey(target.registrationKey);
@@ -1300,12 +1342,12 @@ export default function WaflInputSheet({
             {draggable ? <View style={styles.handle} /> : null}
             <View style={styles.headerText}>
               <Text style={styles.eyebrow}>WAFL INPUT</Text>
-              <Text style={styles.title}>{title}</Text>
+              <Text style={styles.title}>{effectiveTitle}</Text>
             </View>
           </View>
           <WaflSheetFocusProvider directInput={directInputController} onFocusTarget={handleBodyFocus}>
-          {sizing === "contentFit" && !contentFit.overflow && keyboardInset === 0 ? (
-            <View onLayout={(event) => measureBody(event.nativeEvent.layout.height)} style={[styles.contentFitBody, contentStyle]}>{children}</View>
+          {sizing === "contentFit" && (decision || (!contentFit.overflow && keyboardInset === 0)) ? (
+            <View onLayout={(event) => measureBody(event.nativeEvent.layout.height)} style={[styles.contentFitBody, contentStyle]}>{renderedChildren}</View>
           ) : sizing === "contentFit" ? <ScrollView
               contentContainerStyle={[styles.contentFitScrollBody, { paddingBottom: keyboardInset }]}
               keyboardDismissMode={directInputTapPersistence.keyboardDismissMode ?? undefined}
@@ -1315,13 +1357,13 @@ export default function WaflInputSheet({
               ref={bodyScrollRef}
               scrollEnabled={!dragging && (contentFit.overflow || keyboardInset > 0)}
               style={[styles.contentFitBody, { height: Math.max(0, expandedBodyViewportHeight) }]}
-            ><View style={contentStyle}>{children}</View></ScrollView> : <Animated.View
+            ><View style={contentStyle}>{renderedChildren}</View></ScrollView> : <Animated.View
               collapsable={false}
               ref={bodyViewportRef}
               style={[styles.bodyViewport, { height: animatedBodyViewportHeight }]}
               testID="wafl-sheet-body-viewport"
             >
-              {bodyScrollable ? <ScrollView
+              {effectiveBodyScrollable ? <ScrollView
                 contentContainerStyle={[styles.scrollBodyContent, { paddingBottom: WAFL_THEME.sheet.bodyEndGap + keyboardInset }]}
                 keyboardDismissMode={directInputTapPersistence.keyboardDismissMode ?? undefined}
                 keyboardShouldPersistTaps={directInputTapPersistence.keyboardShouldPersistTaps}
@@ -1349,10 +1391,10 @@ export default function WaflInputSheet({
                   measureBody(measurement.adaptiveBodyHeight);
                 }}
                 style={[styles.intrinsicScrollableContent, contentStyle]}
-              >{children}</View></ScrollView> : <View
+              >{renderedChildren}</View></ScrollView> : <View
                 onLayout={(event) => measureBody(event.nativeEvent.layout.height)}
                 style={[sizing === "reelAdaptive" ? styles.intrinsicBody : styles.content, contentStyle]}
-              >{children}</View>}
+              >{renderedChildren}</View>}
             </Animated.View>}
           </WaflSheetFocusProvider>
           {hasActions && !cancelActionLabel && !confirmActionLabel ? <View
@@ -1364,8 +1406,8 @@ export default function WaflInputSheet({
               cancelAccessibilityLabel={cancelAccessibilityLabel}
               confirmAccessibilityLabel={confirmAccessibilityLabel}
               cancelDisabled={actionPending}
-              confirmDisabled={actionPending || confirmDisabled}
-              showCancel={showCancelAction}
+              confirmDisabled={actionPending || (!decision && confirmDisabled)}
+              showCancel={decision ? false : showCancelAction}
               onCancel={cancel}
               onConfirm={() => void confirm()}
             />
@@ -1375,7 +1417,7 @@ export default function WaflInputSheet({
             testID="wafl-sheet-actions"
           >
             <Pressable
-              accessibilityLabel={cancelAccessibilityLabel}
+              accessibilityLabel={decision ? decision.safeLabel : cancelAccessibilityLabel}
               accessibilityRole="button"
               accessibilityState={{ disabled: actionPending }}
               disabled={actionPending}
@@ -1385,12 +1427,12 @@ export default function WaflInputSheet({
               <Text style={styles.cancelActionLabel}>{cancelActionLabel}</Text>
             </Pressable>
             <Pressable
-              accessibilityLabel={confirmAccessibilityLabel}
+              accessibilityLabel={decision ? `${decision.actionLabel} 선택 적용` : confirmAccessibilityLabel}
               accessibilityRole="button"
-              accessibilityState={{ busy: actionPending, disabled: actionPending || confirmDisabled }}
-              disabled={actionPending || confirmDisabled}
+              accessibilityState={{ busy: actionPending, disabled: actionPending || (!decision && confirmDisabled) }}
+              disabled={actionPending || (!decision && confirmDisabled)}
               onPress={() => void confirm()}
-              style={[styles.applyButton, (actionPending || confirmDisabled) && styles.disabled]}
+              style={[styles.applyButton, (actionPending || (!decision && confirmDisabled)) && styles.disabled]}
             >
               <Text style={styles.confirmActionLabel}>{confirmActionLabel}</Text>
             </Pressable>

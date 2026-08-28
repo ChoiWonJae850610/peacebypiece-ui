@@ -113,7 +113,7 @@ assert.deepEqual(overviewPayload, { categoryMajor: "하의", categoryDetail: "�
 
 const experience = read("apps/mobile/features/MobileWorkOrderExperience.tsx");
 const createSheet = read("apps/mobile/features/work-orders/create/WorkOrderCreateSheet.tsx");
-const categoryConfirm = experience.slice(experience.indexOf("title: \"대분류를 변경합니다\""), experience.indexOf("return \"confirmation\" as const"));
+const categoryConfirm = experience.slice(experience.indexOf("if (!commitImmediately && dependentField"), experience.indexOf("return \"confirmation\" as const"));
 assert.match(categoryConfirm, /categoryResetIntentRef\.current/u);
 assert.doesNotMatch(categoryConfirm, /flushSection\("overview"/u);
 assert.match(experience, /if \(!draftBatch\.isDirty\("overview"\)\)[\s\S]{0,220}basicInfoDraftFromDetail/u);

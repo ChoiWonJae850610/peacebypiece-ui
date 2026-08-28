@@ -32,6 +32,7 @@ assert.equal(action.apply("action"), false);
 assert.equal(mutations, 1, "action option plus V must execute exactly once");
 
 const decision = read("apps/mobile/features/feedback/WaflDecisionSheet.tsx");
+const decisionChoiceBody = read("apps/mobile/features/feedback/WaflDecisionChoiceBody.tsx");
 const inputSheet = read("apps/mobile/features/inputs/WaflInputSheet.tsx");
 const alertHost = read("apps/mobile/features/feedback/WaflAlertHost.tsx");
 const experience = read("apps/mobile/features/MobileWorkOrderExperience.tsx");
@@ -40,11 +41,12 @@ const sizeColor = read("apps/mobile/features/work-orders/size-color/WorkOrderSiz
 const templateRepository = read("lib/domain/work-orders/measurement/templateRepository.ts");
 
 assert.match(decision, /title="WAFL INPUT"/u);
-assert.match(decision, /WaflOptionReel/u);
+assert.match(decision, /WaflDecisionChoiceBody/u);
+assert.match(decisionChoiceBody, /WaflOptionReel/u);
 assert.match(decision, /showCancelAction=\{false\}/u);
 assert.doesNotMatch(decision, /WaflSheetActionButtons/u);
 assert.match(inputSheet, /showCancelAction = true/u, "ordinary WAFL INPUT must retain dual X\/V by default");
-assert.match(inputSheet, /showCancel=\{showCancelAction\}/u);
+assert.match(inputSheet, /showCancel=\{decision \? false : showCancelAction\}/u);
 assert.match(alertHost, /durationMs \?\? 1200/u);
 assert.match(alertHost, /pointerEvents="none"/u);
 assert.doesNotMatch(alertHost, /Pressable|Button/u);
@@ -55,7 +57,7 @@ assert.match(sizeColor, /resolveWaflBasicSpecRecommendationCategory\(categoryCod
 assert.doesNotMatch(sizeColor, /decodeWorkOrderProductType\(category\)/u);
 assert.match(templateRepository, /FROM work_orders w/u);
 assert.match(templateRepository, /decodeWorkOrderMajorCategoryCode\(target\?\.product_type_code \?\? null\)/u);
-assert.match(templateRepository, /getWaflBasicSpecTemplate\(categoryCode as WorkOrderMajorCategoryCode \| null, itemCode\)/u);
+assert.match(templateRepository, /getWaflBasicSpecTemplate\([\s\S]*categoryCode as WorkOrderMajorCategoryCode \| null,[\s\S]*itemCode,[\s\S]*targetAudience/u);
 assert.match(deleteRoute, /SELECT \$1,'work_order',\$2::text/u);
 assert.match(deleteRoute, /entity_id=\$2::text/u);
 

@@ -1,5 +1,16 @@
 # Maker WorkOrder Tab IA v2
 
+## Alpha.69 target-major recommendation and replacement boundary
+
+- Existing target audience plus major category drive Size guidance and numeric WAFL starter identity. Detail item
+  drives supplemental POM guidance only; changing it never mutates current Size, allocation, POM, or catalogs.
+- Applying a target-major WAFL starter preserves current WorkOrder Size rows and projects only exact Basic Fit Seed
+  V0.1 values. Male-bottom primary guidance is 28/30/32/34/36/FREE; disclosed 24/26 rows retain their authored values.
+- Company and direct Size/POM authoring, manual staged selection/removal, and current legacy rows remain usable.
+- Male new authoring omits Dress while persisted legacy male+dress remains readable. Actual staged replacement
+  loss is confirmed by the same-sheet WAFL INPUT question/helper/reel/V Decision; zero/blank-only replacement executes
+  immediately and closes it. Target/major dependent reset uses the same concise Decision family.
+
 ## Alpha.68 authoring boundary
 
 - Each Draft tab owns one dirty batch. Tab navigation, detail exit, app background, bounded idle and
@@ -343,3 +354,6 @@ Overview season/item, company-template name/rename, and Quick Delivery text/phon
 expanded detent is the primary keyboard-ON visibility guarantee, while mounted-ref measurement only
 fine-scrolls long forms. The accessory Done action ends keyboard input and never performs the footer V,
 create, save, apply, or business command.
+## Alpha.69 template terminal-reconcile lifecycle
+
+Recommended WAFL template apply publishes the exact successfully fetched, current WorkOrder/template content before the mutation result exposes the new template identity to refresh. Initial/re-entry hydration remains available, while one accepted apply performs one content GET and one mutation with no same-template hydration tail after blocker release. Required projection and authoritative refresh finish before release; optional Copy/Reorder child projections remain non-blocking after core detail is usable.

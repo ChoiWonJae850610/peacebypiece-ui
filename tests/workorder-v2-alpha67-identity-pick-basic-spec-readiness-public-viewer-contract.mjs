@@ -40,8 +40,8 @@ for (const template of templates) {
   assert.deepEqual(Object.keys(projectWaflBasicSpecValues(template, ["S", "M"])), ["S", "M"]);
   assert.deepEqual(Object.keys(projectWaflBasicSpecValues(template, ["CUSTOM-01"])), []);
 }
-assert.ok(getWaflBasicSpecTemplate("T", "셔츠").poms.some((pom) => pom.name === "카라너비"));
-assert.ok(getWaflBasicSpecTemplate("O", "패딩").poms.some((pom) => pom.name === "지퍼길이"));
+assert.equal(getWaflBasicSpecTemplate("T", "셔츠").poms.some((pom) => pom.name === "카라너비"), false);
+assert.equal(getWaflBasicSpecTemplate("O", "패딩").poms.some((pom) => pom.name === "지퍼길이"), false);
 assert.equal(formatMeasurementFromCm(50, "inch"), "19 5/8");
 
 const readyFacts = {

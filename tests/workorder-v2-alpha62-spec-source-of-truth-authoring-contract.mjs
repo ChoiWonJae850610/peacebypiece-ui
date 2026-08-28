@@ -19,6 +19,7 @@ const guard = read("lib/domain/work-orders/command/runtimeGuard.ts");
 const proxy = read("lib/external-qa/configCore.mjs");
 const makerQaCapabilities = read("lib/external-qa/makerQaCapabilities.mjs");
 const reel = read("apps/mobile/features/inputs/reel-picker/WaflReelPickerSheet.tsx");
+const optionReel = read("apps/mobile/features/inputs/reel-picker/WaflOptionReel.tsx");
 
 for (const token of ["normalizeMeasurementSizeSemanticKey", "projectMeasurementSizesFromWorkOrder"]) assert.ok(policy.includes(token));
 for (const token of ["JOIN work_order_sizes x", "work_size.id::text", "JOIN work_order_size_spec_sizes spec_size", "regexp_replace(trim(work_size.size_code)"]) assert.ok(detail.includes(token), `read model SOT missing ${token}`);
@@ -39,8 +40,8 @@ assert.match(primaryAction, /<Text style=\{styles\.label\}>\{label\}<\/Text>/u);
 for (const token of ["markVisibleComplete", "measurement-unit", "mutationQueue.enqueue", "authoritativeVersion"]) assert.ok(controller.includes(token));
 for (const token of ["visible-complete", "visibleCompleteMs"]) assert.ok(timing.includes(token));
 assert.match(controller, /scope === "measurement-unit"[\s\S]{0,80}markVisibleComplete\(\)/);
-assert.match(reel, /reelColumn: \{ backgroundColor: "transparent"/);
-assert.match(reel, /optionSwatch: \{[^}]*borderRadius: 11/);
+assert.match(optionReel, /reelColumn: \{ backgroundColor: "transparent"/);
+assert.match(optionReel, /optionSwatch: \{[^}]*borderRadius: 11/);
 assert.match(route, /getWorkOrderV2MaterialHardDeleteMutationRuntimeGuard/);
 assert.match(guard, /getWorkOrderV2MaterialHardDeleteMutationRuntimeGuard[\s\S]{0,500}MAKER_QA_CAPABILITY\.MATERIAL_HARD_DELETE/);
 assert.match(makerQaCapabilities, /P\.ALPHA62, A\.ALPHA62[\s\S]{0,500}C\.MEASUREMENT[\s\S]{0,300}C\.MATERIAL_HARD_DELETE/);

@@ -12,6 +12,7 @@ import { resolveWaflReelOpeningValue } from "../apps/mobile/features/inputs/reel
 const read = (path) => fs.readFileSync(path, "utf8");
 const sheet = read("apps/mobile/features/inputs/WaflInputSheet.tsx");
 const reel = read("apps/mobile/features/inputs/reel-picker/WaflReelPickerSheet.tsx");
+const optionReel = read("apps/mobile/features/inputs/reel-picker/WaflOptionReel.tsx");
 const overview = read("apps/mobile/features/work-orders/overview/WorkOrderDetailOverview.tsx");
 const materials = read("apps/mobile/features/materials/WorkOrderMaterialsReadOnly.tsx");
 const production = read("apps/mobile/features/work-orders/production/WorkOrderProductionAuthoring.tsx");
@@ -51,7 +52,7 @@ assert.equal((production.match(/<WaflReelPickerSheet/g) ?? []).length, 1);
 assert.match(production, /requireSpecifiedValue: true, selectFirstRealOption: true/u);
 assert.match(production, /selectFirstRealOption: false, value: selectedProcess\?\.processTypeCode/u);
 assert.match(production, /allowUnset: selectedProcess === null/u);
-assert.match(reel, /if \(options\.length === 0\)[\s\S]*return undefined/u);
+assert.match(optionReel, /if \(options\.length === 0\)[\s\S]*return undefined/u);
 assert.match(reel, /confirmDisabled=\{applyDisabled \|\| pending\}/u);
 
 for (const marker of [

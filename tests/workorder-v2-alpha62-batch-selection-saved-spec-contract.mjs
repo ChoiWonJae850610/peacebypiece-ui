@@ -47,9 +47,10 @@ const repository = read("lib/domain/work-orders/command/sizeColorStructureComman
 const sheets = read("apps/mobile/features/work-orders/size-color/MeasurementTemplateSheets.tsx");
 const controlled = read("apps/mobile/components/ControlledInlineEditValue.tsx");
 
-for (const token of ["createStagedStructureSelection", "toggleStagedStructureSelection", "diffStagedStructureSelection", "createStagedDeletionMessage"]) {
+for (const token of ["createStagedStructureSelection", "toggleStagedStructureSelection", "diffStagedStructureSelection", "resolveStagedReplacementImpact", "resolveStagedReplacementDecision"]) {
   assert.ok(editor.includes(token), `local selection staging missing ${token}`);
 }
+assert.doesNotMatch(editor, /createStagedDeletionMessage/, "staged replacement no longer uses a second global deletion confirmation");
 assert.ok(editor.includes("onApplySelectionBatch"));
 assert.doesNotMatch(editor, /연결된 수량 셀|quantityCellCount/);
 assert.ok(controller.includes("pendingStructureOperations"));

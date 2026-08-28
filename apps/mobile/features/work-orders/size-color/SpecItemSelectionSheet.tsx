@@ -6,11 +6,13 @@ import { WAFL_THEME } from "@/constants/theme";
 import type { CompanyWorkOrderStructureOption, WorkOrderPomColumn } from "@/domain/mobileContract";
 import type { WaflSystemSpecItem } from "@/domain/systemSpecItemCatalog";
 import type { WorkOrderMajorCategoryCode } from "@/domain/workOrderCategoryPolicy";
+import { listWaflRecommendedSpecItems } from "@/domain/workOrderSizeSpecRecommendationPolicy.mjs";
 import {
   createSpecItemCandidates,
   initialSpecItemSelection,
   normalizeSpecItemName,
   nextSpecItemPreviewKey,
+  partitionSpecItemCandidatesByRecommendation,
   reconcileSpecItemPreviewKey,
   selectedSpecItems,
   toggleSpecItemSelection,
@@ -23,14 +25,16 @@ import WaflReusableCreateForm from "@/features/inputs/WaflReusableCreateForm";
 import WaflReusableCreateEntryAction from "@/features/inputs/WaflReusableCreateEntryAction";
 import WaflOptionGrid, { type WaflOptionGridItem } from "@/features/inputs/WaflOptionGrid";
 import WaflSpecMeasurementDiagram from "./WaflSpecMeasurementDiagram";
+import type { WaflDecisionChoiceState } from "@/features/feedback/WaflDecisionChoiceBody";
 
 type Props = {
   readonly busy: boolean;
+  readonly decision?: WaflDecisionChoiceState | null;
   readonly categoryCode: WorkOrderMajorCategoryCode | null;
   readonly currentPoms: readonly WorkOrderPomColumn[];
+  readonly itemCode: string | null;
   readonly options: readonly CompanyWorkOrderStructureOption[];
   readonly systemItems: readonly WaflSystemSpecItem[];
-  readonly recommendationAvailable: boolean;
   readonly onApply: (items: ReturnType<typeof selectedSpecItems>) => Promise<boolean>;
   readonly onClose: () => void;
   readonly onCreate: (name: string) => Promise<CompanyWorkOrderStructureOption | null>;
@@ -48,6 +52,14 @@ export default function SpecItemSelectionSheet(props: Props) {
   const [renameTarget, setRenameTarget] = useState<CompanyWorkOrderStructureOption | null>(null);
   const selected = useMemo(() => new Set(selectedKeys), [selectedKeys]);
   const selectedItems = useMemo(() => selectedSpecItems(candidates, selectedKeys), [candidates, selectedKeys]);
+  const recommendedSystemItems = useMemo(() => listWaflRecommendedSpecItems(props.categoryCode, props.itemCode, props.systemItems), [props.categoryCode, props.itemCode, props.systemItems]);
+  const sectionItems = useMemo(() => partitionSpecItemCandidatesByRecommendation(candidates, recommendedSystemItems.map((item) => item.key)), [candidates, recommendedSystemItems]);
+  const sections = [
+    { key: "recommended", title: "WAFL 추천 스펙", items: sectionItems.recommended },
+    { key: "additional", title: "WAFL 추가 스펙", items: sectionItems.additional },
+    { key: "company", title: "우리 회사", items: sectionItems.company },
+    { key: "current", title: "현재 사용 중", items: sectionItems.current },
+  ] as const;
   const initialKeys = useMemo(() => initialSpecItemSelection(candidates), [candidates]);
   const unchanged = initialKeys.length === selectedKeys.length && initialKeys.every((key) => selected.has(key));
 
@@ -113,6 +125,7 @@ export default function SpecItemSelectionSheet(props: Props) {
     cancelAccessibilityLabel="스펙 항목 선택 취소"
     confirmAccessibilityLabel="스펙 항목 선택 적용"
     confirmDisabled={unchanged}
+    decision={props.decision}
     onCancel={props.onClose}
     onAfterClose={nested.finishClose}
     onConfirm={async () => { if (await props.onApply(selectedItems)) props.onClose(); }}
@@ -123,10 +136,9 @@ export default function SpecItemSelectionSheet(props: Props) {
   >
     <View style={styles.content}>
       <Text style={styles.help}>항목을 고른 뒤 V를 누르면 현재 레시피 스펙을 한 번에 변경합니다.</Text>
-      {!props.recommendationAvailable ? <Text style={styles.recommendationHint}>대분류를 선택하면 WAFL 추천 스펙 항목을 볼 수 있습니다. 직접 만든 우리 회사 항목은 대분류 없이도 사용할 수 있습니다.</Text> : null}
+      {recommendedSystemItems.length === 0 ? <Text style={styles.recommendationHint}>대분류와 세부품목을 선택하면 WAFL 추천 스펙 항목을 볼 수 있습니다. 직접 만든 우리 회사 항목은 추천 없이도 사용할 수 있습니다.</Text> : null}
       <WaflSpecMeasurementDiagram categoryCode={props.categoryCode} previewSpecKey={previewSpecKey} />
-      {(["system", "company", "current"] as const).map((sourceKind) => {
-        const section = candidates.filter((item) => item.sourceKind === sourceKind);
+      {sections.map(({ key, title, items: section }) => {
         if (section.length === 0) return null;
         const gridItems: readonly WaflOptionGridItem[] = section.map((item) => ({
           editable: item.catalogOptionId !== null,
@@ -135,10 +147,10 @@ export default function SpecItemSelectionSheet(props: Props) {
           removable: item.catalogOptionId !== null,
           selected: selected.has(item.key),
         }));
-        return <View key={sourceKind} style={styles.section}>
-          <Text style={styles.sectionTitle}>{sourceKind === "system" ? "WAFL 제공" : sourceKind === "company" ? "우리 회사" : "현재 사용 중"}</Text>
+        return <View key={key} style={styles.section}>
+          <Text style={styles.sectionTitle}>{title}</Text>
           <WaflOptionGrid
-            accessibilityLabel={`${sourceKind === "system" ? "WAFL 제공" : sourceKind === "company" ? "우리 회사" : "현재 사용 중"} 스펙 항목 선택`}
+            accessibilityLabel={`${title} 항목 선택`}
             columns={4}
             disabled={props.busy}
             items={gridItems}

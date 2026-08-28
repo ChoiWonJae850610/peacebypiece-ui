@@ -475,7 +475,7 @@ async function synchronizeFinishedSpecSizes(input: {
   const sourceRow = source.rows[0];
   if (!sourceRow?.source_template_id) return;
 
-  const basicTemplate = findWaflBasicSpecTemplateById(sourceRow.source_template_id, sourceRow.item_code);
+  const basicTemplate = findWaflBasicSpecTemplateById(sourceRow.source_template_id);
   if (basicTemplate) {
     const values = Object.entries(basicTemplate.valuesCm).flatMap(([sizeCode, measurements]) => (
       Object.entries(measurements).flatMap(([name, decimalValue]) => {

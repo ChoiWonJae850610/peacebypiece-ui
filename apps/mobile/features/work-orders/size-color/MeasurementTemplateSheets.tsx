@@ -8,7 +8,7 @@ import type { MeasurementTemplateSummary } from "@/domain/mobileContract";
 import WaflInputSheet from "@/features/inputs/WaflInputSheet";
 import WaflSheetValueField from "@/features/inputs/WaflSheetValueField";
 import WaflChoiceButtons from "@/features/inputs/WaflChoiceButtons";
-import { confirmWaflDestructiveAction } from "@/features/feedback/confirmWaflDestructiveAction";
+import type { WaflDecisionChoiceState } from "@/features/feedback/WaflDecisionChoiceBody";
 
 type TemplateMutation = (template: MeasurementTemplateSummary) => Promise<boolean>;
 
@@ -61,6 +61,9 @@ export function MeasurementTemplatePickerSheet(props: {
     onCancel={() => { setSource("system"); setSelectedId(""); props.onCancel(); }}
     onConfirm={async () => { if (selected && await props.onApply(selected)) { setSource("system"); setSelectedId(""); } }}
     pending={props.pending}
+    processingHelper={props.pending && selected?.sourceKind === "system" ? "잠시만 기다려 주세요." : null}
+    processingMessage={props.pending && selected?.sourceKind === "system" ? "스펙 정보를 불러오는 중입니다." : null}
+    processingTestID="wafl-recommended-spec-load-blocker"
     sizing="adaptiveExpandable"
     title="스펙 불러오기"
     visible={props.visible}
@@ -94,6 +97,7 @@ export function CompanyTemplateSaveSheet(props: {
   const [renameDraft, setRenameDraft] = useState("");
   const [managementPending, setManagementPending] = useState(false);
   const [managementError, setManagementError] = useState<string | null>(null);
+  const [disableDecisionTarget, setDisableDecisionTarget] = useState<MeasurementTemplateSummary | null>(null);
   const effectiveSelectedId = selectedId || (mode === "update" ? props.companyTemplates[0]?.id ?? "" : "");
   const selected = props.companyTemplates.find((item) => item.id === effectiveSelectedId) ?? null;
   const modeOptions = [
@@ -101,16 +105,33 @@ export function CompanyTemplateSaveSheet(props: {
     { value: "update", label: "기존 스펙 업데이트" },
   ] as const;
   const disabled = mode === "new" ? !name.trim() : !selected;
+  const disableDecision: WaflDecisionChoiceState | null = disableDecisionTarget ? {
+    actionLabel: "비활성화",
+    destructive: true,
+    helper: `“${disableDecisionTarget.name}”을 사용자 저장 스펙 목록에서 숨깁니다. 기존 레시피 완성 스펙은 유지됩니다.`,
+    onCancel: () => setDisableDecisionTarget(null),
+    onConfirm: () => {
+      const target = disableDecisionTarget;
+      setManagementError(null);
+      setManagementPending(true);
+      void props.onDisable(target)
+        .catch(() => { setManagementError("스펙을 비활성화하지 못했습니다. 다시 시도해 주세요."); return false; })
+        .finally(() => { setDisableDecisionTarget(null); setManagementPending(false); });
+    },
+    safeLabel: "유지",
+    title: "사용자 저장 스펙을 비활성화할까요?",
+  } : null;
 
   return <WaflInputSheet
     cancelAccessibilityLabel="스펙 저장 취소"
     confirmAccessibilityLabel={mode === "new" ? "새 스펙 저장" : "기존 스펙 업데이트"}
     confirmDisabled={disabled}
     contentStyle={styles.sheetContent}
+    decision={disableDecision}
     keyboardAutoExpand
     keyboardFocusRevealContext={WAFL_THEME.sheet.textEntryFocusRevealClearance}
     keyboardMode="directInput"
-    onCancel={() => { setMode("new"); setName(""); setSelectedId(""); setRenameDraft(""); setManagementError(null); props.onCancel(); }}
+    onCancel={() => { setDisableDecisionTarget(null); setMode("new"); setName(""); setSelectedId(""); setRenameDraft(""); setManagementError(null); props.onCancel(); }}
     onConfirm={async () => {
       const saved = mode === "new"
         ? await props.onSaveNew(name.trim())
@@ -161,13 +182,7 @@ export function CompanyTemplateSaveSheet(props: {
               .catch(() => { setManagementError("이름을 변경하지 못했습니다. 다시 시도해 주세요."); return false; })
               .finally(() => setManagementPending(false));
           }} style={[styles.smallButton, (managementPending || !renameDraft.trim() || renameDraft.trim() === selected.name) && styles.disabled]}><Text style={styles.smallButtonText}>이름 변경</Text></Pressable>
-          <Pressable disabled={managementPending} onPress={() => confirmWaflDestructiveAction({ title: "사용자 저장 스펙 비활성화", message: `“${selected.name}”을 사용자 저장 스펙 목록에서 숨깁니다. 기존 레시피 완성 스펙은 유지됩니다.`, confirmLabel: "비활성화", onConfirm: () => {
-            setManagementError(null);
-            setManagementPending(true);
-            void props.onDisable(selected)
-              .catch(() => { setManagementError("스펙을 비활성화하지 못했습니다. 다시 시도해 주세요."); return false; })
-              .finally(() => setManagementPending(false));
-          } })} style={[styles.smallButton, styles.dangerButton, managementPending && styles.disabled]}><Text style={styles.dangerText}>비활성화</Text></Pressable>
+          <Pressable disabled={managementPending} onPress={() => setDisableDecisionTarget(selected)} style={[styles.smallButton, styles.dangerButton, managementPending && styles.disabled]}><Text style={styles.dangerText}>비활성화</Text></Pressable>
         </View>
         {managementError ? <Text style={styles.error}>{managementError}</Text> : null}
       </View> : null}

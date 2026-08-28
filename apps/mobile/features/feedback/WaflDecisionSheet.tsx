@@ -1,12 +1,9 @@
 import { useMemo, useState } from "react";
-import { StyleSheet, Text, View } from "react-native";
 
-import { WAFL_FONTS } from "@/constants/fonts";
-import { WAFL_THEME } from "@/constants/theme";
 import { createWaflDecisionGuard, resolveWaflDecisionOpeningValue, type WaflDecisionOption } from "@/domain/waflDecisionPolicy";
 import WaflInputSheet from "@/features/inputs/WaflInputSheet";
-import { WaflOptionReel } from "@/features/inputs/reel-picker/WaflReelPickerSheet";
 import type { WaflActionConfirmationState } from "./WaflActionConfirmationCard";
+import WaflDecisionChoiceBody from "./WaflDecisionChoiceBody";
 
 export default function WaflDecisionSheet(props: {
   readonly decision: WaflActionConfirmationState | null;
@@ -34,24 +31,19 @@ function WaflDecisionSession(props: { readonly decision: WaflActionConfirmationS
     title="WAFL INPUT"
     visible
   >
-    <View style={styles.body} testID={props.testID ?? "wafl-decision-sheet"}>
-      <Text style={styles.label}>{decision.title}</Text>
-      {decision.helper ? <Text style={styles.helper}>{decision.helper}</Text> : null}
-      <WaflOptionReel
-        accessibilityLabel={`${decision.title} 선택 릴`}
-        onSelect={(value) => setSelected(value === "action" ? "action" : "safe")}
-        options={[
-          { key: "decision-safe", label: safeLabel, value: "safe" },
-          { key: "decision-action", label: actionLabel, value: "action" },
-        ]}
-        selectedValue={selected}
-      />
-    </View>
+    <WaflDecisionChoiceBody
+      decision={{
+        actionLabel,
+        destructive: decision.destructive,
+        helper: decision.helper ?? "",
+        onCancel: decision.onCancel,
+        onConfirm: decision.onConfirm,
+        safeLabel,
+        title: decision.title,
+      }}
+      onSelect={setSelected}
+      selected={selected}
+      testID={props.testID ?? "wafl-decision-sheet"}
+    />
   </WaflInputSheet>;
 }
-
-const styles = StyleSheet.create({
-  body: { gap: WAFL_THEME.spacing.sm, paddingTop: WAFL_THEME.spacing.sm },
-  label: { color: WAFL_THEME.color.deepNavy, fontFamily: WAFL_FONTS.bold, fontSize: 15, lineHeight: 22, textAlign: "center" },
-  helper: { color: WAFL_THEME.color.readOnly, fontFamily: WAFL_FONTS.medium, fontSize: WAFL_THEME.typography.meta.fontSize, lineHeight: WAFL_THEME.typography.meta.lineHeight, textAlign: "center" },
-});

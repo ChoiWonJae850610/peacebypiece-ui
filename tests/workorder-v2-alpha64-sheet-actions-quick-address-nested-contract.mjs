@@ -11,6 +11,7 @@ const read = (file) => fs.readFileSync(file, "utf8");
 const sheet = read("apps/mobile/features/inputs/WaflInputSheet.tsx");
 const theme = read("apps/mobile/constants/theme.ts");
 const reel = read("apps/mobile/features/inputs/reel-picker/WaflReelPickerSheet.tsx");
+const actionButtons = read("apps/mobile/features/inputs/WaflSheetActionButtons.tsx");
 const partner = read("apps/mobile/features/materials/MaterialPartnerPickerSheet.tsx");
 const quick = read("apps/mobile/features/work-orders/documents/QuickDeliveryFoundation.tsx");
 const address = read("apps/mobile/features/work-orders/documents/QuickDeliveryAddressSearchSheet.tsx");
@@ -47,9 +48,10 @@ for (const marker of [
   'testID="wafl-sheet-body-viewport"',
   'testID="wafl-sheet-actions"',
 ]) assert.ok(`${sheet}\n${theme}`.includes(marker), `missing first-detent action marker: ${marker}`);
-assert.match(sheet, /accessibilityState=\{\{ busy: actionPending, disabled: actionPending \|\| confirmDisabled \}\}/u);
-assert.match(sheet, /style=\{\[styles\.applyButton, \(actionPending \|\| confirmDisabled\) && styles\.disabled\]\}/u);
-assert.ok(sheet.indexOf('testID="wafl-sheet-actions"') < sheet.lastIndexOf("accessibilityState={{ busy: actionPending"), "action footer must render independently from the enabled rule");
+assert.match(sheet, /confirmDisabled=\{actionPending \|\| \(!decision && confirmDisabled\)\}/u);
+assert.match(actionButtons, /accessibilityState=\{\{ disabled: confirmDisabled \}\}/u);
+assert.match(actionButtons, /style=\{\[styles\.applyButton,[^\n]*confirmDisabled && styles\.disabled\]\}/u);
+assert.ok(sheet.indexOf('testID="wafl-sheet-actions"') < sheet.lastIndexOf("<WaflSheetActionButtons"), "action footer must render independently from the enabled rule");
 assert.doesNotMatch(sheet, /KeyboardAvoidingView/u);
 assert.match(sheet, /Keyboard\.addListener\("keyboardWillChangeFrame"/u);
 assert.match(sheet, /testID="wafl-sheet-bottom-inset"/u);

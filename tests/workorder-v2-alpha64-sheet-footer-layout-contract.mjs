@@ -9,6 +9,7 @@ import {
 
 const read = (file) => fs.readFileSync(file, "utf8");
 const sheet = read("apps/mobile/features/inputs/WaflInputSheet.tsx");
+const actionButtons = read("apps/mobile/features/inputs/WaflSheetActionButtons.tsx");
 const templates = read("apps/mobile/features/work-orders/size-color/MeasurementTemplateSheets.tsx");
 const structure = read("apps/mobile/features/work-orders/size-color/WorkOrderSizeColorStructureEditor.tsx");
 const overview = read("apps/mobile/features/work-orders/overview/WorkOrderDetailOverview.tsx");
@@ -61,8 +62,9 @@ assert.match(sheet, /bodyViewport:\s*\{[^}]*overflow:\s*"hidden"/u);
 assert.match(sheet, /scrollBodyContent:\s*\{[^}]*paddingBottom:\s*WAFL_THEME\.sheet\.bodyEndGap/u);
 assert.doesNotMatch(sheet, /footerCompensation|Animated\.multiply\(translateY,\s*-1\)|paddingBottom:\s*footerHeight/u);
 assert.doesNotMatch(sheet, /actions:\s*\{[^}]*position:\s*"absolute"/u);
-assert.match(sheet, /accessibilityState=\{\{ busy: actionPending, disabled: actionPending \|\| confirmDisabled \}\}/u);
-assert.match(sheet, /style=\{\[styles\.applyButton, \(actionPending \|\| confirmDisabled\) && styles\.disabled\]\}/u);
+assert.match(sheet, /confirmDisabled=\{actionPending \|\| \(!decision && confirmDisabled\)\}/u);
+assert.match(actionButtons, /accessibilityState=\{\{ disabled: confirmDisabled \}\}/u);
+assert.match(actionButtons, /style=\{\[styles\.applyButton,[^\n]*confirmDisabled && styles\.disabled\]\}/u);
 
 assert.match(templates, /CompanyTemplateSaveSheet[\s\S]*sizing="adaptiveExpandable"[\s\S]*title="스펙 저장"/u);
 assert.match(templates, /MeasurementTemplatePickerSheet[\s\S]*sizing="adaptiveExpandable"[\s\S]*title="스펙 불러오기"/u);

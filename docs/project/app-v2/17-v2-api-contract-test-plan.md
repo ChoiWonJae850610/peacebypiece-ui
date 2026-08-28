@@ -708,3 +708,52 @@ Alpha.26 adds a static material/order gate: shared fabric/accessory DTOs, bounde
   native, EAS, schema and migration additions remain zero; migration ledger is `20/20` and
   production/Owner/ambiguous mutation remains `0/0/0`.
 - Permanent inventory advances from `205/205` to `206/206`; final verification requires FAIL/SKIP `0/0`.
+
+## 56. Alpha.69 target-major recommendation and staged-replacement gate
+
+- Size guidance is exact for women/men target × major, U/K/X remains uninvented, 44/XS stay distinct, and
+  current/company/direct plus disclosed system choices remain reachable without auto-selection.
+- Numeric WAFL starters have seven target-major identities, major-base POMs, existing seed values only, blank
+  male-bottom 24–36 cells, and readable legacy alpha.67 template IDs. Item-aware POM guidance remains separate.
+- Male new authoring omits Dress while legacy male+dress remains representable and target change uses the existing
+  explicit dependent-reset convention.
+- Pure replacement impact counts positive quantity and non-empty measurement values only. Zero-loss replacement
+  executes directly; real loss uses one same-Sheet keep/delete decision and never presents a second global Modal.
+- Permanent inventory advances from `207/207` to `208/208`; migration remains `20/20`, new migration `0`, and
+  production/Owner/ambiguous mutation remains `0/0/0`.
+
+## 57. Alpha.69 exact seed, Decision overlay, and load-blocker gate
+
+- All seven target-major starter templates match the Owner-authored Basic Fit Seed V0.1 exactly, reuse canonical POM
+  codes, interpolate nothing, and project values only onto currently selected matching Size rows.
+- Male-bottom primary guidance is exactly 28/30/32/34/36/FREE; 24/26 remain disclosed and keep their authored seed.
+- Target/major reset and real-loss Size/Color replacement use one non-Modal Decision state inside the active Sheet.
+  This historical 209 gate accepted a centered card; gate 58 supersedes its active-sheet presentation with the
+  canonical question/helper/reel/V body. Cancel mutates zero, confirm uses one existing command owner, and zero-loss
+  replacement presents no Decision.
+- Applying the selected WAFL recommended template uses the shared processing blocker exactly once; chooser open and
+  company-template application do not falsely present it.
+- Permanent inventory advances from `208/208` to `209/209`; migration remains `20/20`, new migration `0`, and
+  production/Owner/ambiguous mutation remains `0/0/0`.
+
+## 58. Alpha.69 WAFL INPUT interaction architecture gate
+
+- Recommended-spec apply enters pending before content fetch, crosses a real presentation frame boundary, fetches once, mutates once, rejects duplicate V, and clears pending on success or failure without an artificial delay.
+- Active-sheet destructive choices reuse one shared question/helper/reel/V body inside the existing `WaflInputSheet`; centered two-button overlays and second React Native Modals are absent. Safe selection mutates zero, action selection runs once, and cancel restores the chooser and staged selection.
+- Destructive callsites are classified: Size/Color loss, company option removal, template disable, and target/major reset are active-sheet owners; standalone Material/Image flows retain the global Decision owner.
+- Numeric reel direct entry and the full-view Size/Spec cell editor remain intentional existing keyboard paths unless executable evidence shows a defect. Direct-input Next/Done, minimal numeric/phone accessory, close animation, and nested editor return remain regressions.
+- Permanent inventory advances from `209/209` to `210/210`; migration remains `20/20`, new migration `0`, and production/Owner/ambiguous mutation remains `0/0/0`.
+
+## 59. Alpha.69 destructive scroll and global blocker lifecycle gate
+
+- Active-sheet destructive Decisions resolve parent body scrolling to false in every sizing branch, retaining one WAFL INPUT question/helper/reel/V presentation with no same-axis ScrollView ancestor, centered card, or second Modal.
+- Recommended-template apply fetches once, mutates once, and publishes the successful current content before authoritative refresh can trigger hydration; failed or stale operations publish nothing and pending clears on every terminal path.
+- Shared Material/Production/root processing actions, dirty Production subsection switching, create/copy/reorder, pending-intent save, and document confirmation enter a real two-frame presentation boundary before blocking work. Required refresh/reconcile completes before release; optional post-core child hydration remains intentionally background.
+- Permanent inventory advances from `210/210` to `211/211`; migration remains `20/20`, new migration `0`, and production/Owner/ambiguous mutation remains `0/0/0`.
+
+## 60. Alpha.69 finalization gate
+
+- Canonical root/mobile/package/lock/Expo diagnostic versions resolve to `2.0.0-alpha.69` through the shared current-version contract; Expo public/native identity remains unchanged.
+- Current Baseline, roadmap, and device owner agree on product checkpoint `ALPHA69_COMPLETE`, finalization checkpoint `ALPHA69_FINALIZATION_COMPLETE`, and the explicit Owner physical iPhone result `PASS` without rewriting earlier pre-finalization evidence.
+- Alpha.70 PDF work remains deferred. Dependency, native, EAS, schema and migration additions remain zero; migration ledger is `20/20` and production/Owner/ambiguous mutation remains `0/0/0`.
+- Permanent inventory advances from `211/211` to `212/212`; final verification requires FAIL/SKIP `0/0`.

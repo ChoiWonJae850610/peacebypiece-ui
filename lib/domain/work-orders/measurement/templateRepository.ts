@@ -3,10 +3,10 @@ import "server-only";
 import { withWaflV2TenantReadOnlyTransaction, type DbQueryResultRow } from "@/lib/db/client";
 import { installTenantClaims } from "@/lib/domain/work-orders/command/commandRepository";
 import type { TenantMemberScope } from "@/lib/domain/work-orders/contracts";
-import { getWaflBasicSpecTemplate } from "@/lib/domain/work-orders/measurement/waflBasicSpecV1";
+import { findWaflBasicSpecTemplateById, getWaflBasicSpecTemplate } from "@/lib/domain/work-orders/measurement/waflBasicSpecV1";
 import { filterMakerVisibleMeasurementTemplates } from "@/lib/domain/work-orders/measurement/measurementTemplateVisibilityPolicy";
 import type { WorkOrderMajorCategoryCode } from "@/lib/domain/work-orders/catalog/workOrderCategoryPolicy";
-import { decodeWorkOrderMajorCategoryCode } from "@/lib/domain/work-orders/catalog/workOrderCategoryPolicy";
+import { decodeWorkOrderCategory, decodeWorkOrderMajorCategoryCode } from "@/lib/domain/work-orders/catalog/workOrderCategoryPolicy";
 
 export type MeasurementTemplateSummary = {
   readonly id: string;
@@ -44,6 +44,7 @@ export async function listCompatibleMeasurementTemplates(input: {
     `, [input.scope.companyId, input.workOrderId])).rows[0];
     const categoryCode = decodeWorkOrderMajorCategoryCode(target?.product_type_code ?? null);
     const itemCode = target?.item_code ?? null;
+    const targetAudience = decodeWorkOrderCategory({ productTypeCode: target?.product_type_code ?? null, itemCode, seasonCode: null }).targetAudience;
     const result = await client.query<DbQueryResultRow & {
       id: string; source_kind: "system" | "company"; name: string; template_version: number | string;
       category_code: string | null; gender_code: string | null; size_set_code: string | null;
@@ -65,12 +66,14 @@ export async function listCompatibleMeasurementTemplates(input: {
       categoryCode: row.category_code, genderCode: row.gender_code, sizeSetCode: row.size_set_code,
       sizeCount:Number(row.size_count),pomCount:Number(row.pom_count),valueCount:Number(row.value_count),
     }));
-    const basic = getWaflBasicSpecTemplate(categoryCode as WorkOrderMajorCategoryCode | null, itemCode);
+    const basic = targetAudience === "여성" || targetAudience === "남성"
+      ? getWaflBasicSpecTemplate(categoryCode as WorkOrderMajorCategoryCode | null, itemCode, targetAudience)
+      : null;
     const currentBasicSummary = basic ? {
       id: basic.id, sourceKind: "system" as const, name: basic.name, templateVersion: basic.templateVersion,
-      categoryCode: basic.categoryCode, genderCode: null, sizeSetCode: "WAFL_BASIC_SPEC_V1",
-      sizeCount: basic.sizes.length, pomCount: basic.poms.length,
-      valueCount: basic.sizes.length * basic.poms.length,
+       categoryCode: basic.categoryCode, genderCode: basic.targetAudience === "여성" ? "W" : basic.targetAudience === "남성" ? "M" : null, sizeSetCode: "WAFL_BASIC_SPEC_V1",
+       sizeCount: basic.sizes.length, pomCount: basic.poms.length,
+       valueCount: Object.values(basic.valuesCm).reduce((count, values) => count + Object.keys(values).length, 0),
     } : null;
     return filterMakerVisibleMeasurementTemplates(
       [
@@ -99,15 +102,21 @@ export async function readCompatibleMeasurementTemplateContent(input: {
     `, [input.scope.companyId, input.workOrderId])).rows[0];
     if (!target) return null;
     const categoryCode = decodeWorkOrderMajorCategoryCode(target.product_type_code);
-    const basic = getWaflBasicSpecTemplate(categoryCode as WorkOrderMajorCategoryCode | null, target.item_code);
-    if (basic?.id === input.templateId) {
+    const targetAudience = decodeWorkOrderCategory({ productTypeCode: target.product_type_code, itemCode: target.item_code, seasonCode: null }).targetAudience;
+    const basic = findWaflBasicSpecTemplateById(input.templateId);
+    const compatibleBasic = basic
+      && basic.categoryCode === categoryCode
+      && (basic.targetAudience === null || basic.targetAudience === targetAudience)
+      ? basic
+      : null;
+    if (compatibleBasic) {
       return {
-        templateId: basic.id,
-        templateVersion: basic.templateVersion,
-        sizes: basic.sizes.map((code) => ({ code, displayLabel: code })),
-        poms: basic.poms.map((pom) => ({ code: pom.code, displayName: pom.name })),
-        values: Object.entries(basic.valuesCm).flatMap(([sizeCode, values]) => Object.entries(values).flatMap(([name, decimalValue]) => {
-          const pom = basic.poms.find((candidate) => candidate.name === name);
+        templateId: compatibleBasic.id,
+        templateVersion: compatibleBasic.templateVersion,
+        sizes: compatibleBasic.sizes.map((code) => ({ code, displayLabel: code })),
+        poms: compatibleBasic.poms.map((pom) => ({ code: pom.code, displayName: pom.name })),
+        values: Object.entries(compatibleBasic.valuesCm).flatMap(([sizeCode, values]) => Object.entries(values).flatMap(([name, decimalValue]) => {
+          const pom = compatibleBasic.poms.find((candidate) => candidate.name === name);
           return pom ? [{ sizeCode, pomCode: pom.code, decimalValue: String(decimalValue) }] : [];
         })),
       };

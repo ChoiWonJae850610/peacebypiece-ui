@@ -1,7 +1,27 @@
 import type { WorkOrderColorRow, WorkOrderSizeRow } from "./mobileContract";
+import {
+  listWaflAllSystemSizeLabels,
+  resolveWaflSizeRecommendationSections,
+  WAFL_ALPHA_SYSTEM_SIZE_LABELS,
+  WAFL_KOREAN_SYSTEM_SIZE_LABELS,
+} from "./workOrderSizeSpecRecommendationPolicy.mjs";
 
-export const SIZE_ALPHA_PRESETS = ["XS", "S", "M", "L", "XL", "2XL", "FREE"] as const;
-export const SIZE_NUMERIC_PRESETS = ["44", "55", "66", "77", "88"] as const;
+export const SIZE_ALPHA_PRESETS = WAFL_ALPHA_SYSTEM_SIZE_LABELS;
+export const SIZE_NUMERIC_PRESETS = WAFL_KOREAN_SYSTEM_SIZE_LABELS;
+
+export function resolveSizeChooserCatalogSections(input: {
+  readonly targetAudience: Parameters<typeof resolveWaflSizeRecommendationSections>[0];
+  readonly categoryCode: Parameters<typeof resolveWaflSizeRecommendationSections>[1];
+  readonly currentLabels: readonly string[];
+  readonly companyLabels: readonly string[];
+}) {
+  const system = resolveWaflSizeRecommendationSections(input.targetAudience, input.categoryCode);
+  const known = new Set([...listWaflAllSystemSizeLabels(), ...input.companyLabels].map(normalizedPresetKey));
+  return Object.freeze({
+    ...system,
+    current: Object.freeze(input.currentLabels.filter((label) => !known.has(normalizedPresetKey(label)))),
+  });
+}
 
 export const COLOR_PALETTE_PRESETS = [
   { name: "블랙", hex: "#111111" },

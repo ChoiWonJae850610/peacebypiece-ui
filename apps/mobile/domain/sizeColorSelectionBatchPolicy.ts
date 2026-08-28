@@ -66,6 +66,59 @@ export function summarizeStagedDeletionQuantity(input: {
   }, 0);
 }
 
+export type StagedReplacementImpact = {
+  readonly removedQuantity: number;
+  readonly removedMeasurementValueCount: number;
+  readonly hasLoss: boolean;
+};
+
+export function resolveStagedReplacementImpact(input: {
+  readonly targetKind: "size" | "color";
+  readonly deletionIds: readonly string[];
+  readonly quantityCells: readonly { readonly sizeRowId: string; readonly colorId: string; readonly quantity: string }[];
+  readonly measurementCells: readonly { readonly sizeRowId: string; readonly decimalValue: string | null }[];
+}): StagedReplacementImpact {
+  const removedQuantity = summarizeStagedDeletionQuantity(input);
+  const deleted = new Set(input.deletionIds);
+  const removedMeasurementValueCount = input.targetKind === "size"
+    ? input.measurementCells.filter((cell) => deleted.has(cell.sizeRowId) && cell.decimalValue !== null && cell.decimalValue.trim() !== "").length
+    : 0;
+  return Object.freeze({
+    removedQuantity,
+    removedMeasurementValueCount,
+    hasLoss: removedQuantity > 0 || removedMeasurementValueCount > 0,
+  });
+}
+
+export function resolveStagedReplacementDecision(input: {
+  readonly targetKind: "size" | "color";
+  readonly impact: StagedReplacementImpact;
+}) {
+  if (!input.impact.hasLoss) return null;
+  return Object.freeze({
+    title: input.targetKind === "size" ? "사이즈를 변경할까요?" : "색상을 변경할까요?",
+    helper: input.targetKind === "size"
+      ? "적용 중인 스펙 정보가 함께 삭제됩니다."
+      : "입력된 수량 정보가 함께 삭제됩니다.",
+    safeLabel: "취소",
+    actionLabel: "변경",
+  });
+}
+
+export function createStagedReplacementLossMessage(input: {
+  readonly targetKind: "size" | "color";
+  readonly deletedDisplayNames: readonly string[];
+  readonly impact: StagedReplacementImpact;
+}) {
+  const label = input.targetKind === "size" ? "사이즈" : "색상";
+  const names = input.deletedDisplayNames.map((name) => `'${name}'`).join(", ");
+  const losses = [
+    input.impact.removedQuantity > 0 ? `입력된 수량 ${input.impact.removedQuantity.toLocaleString("ko-KR")}개` : null,
+    input.impact.removedMeasurementValueCount > 0 ? `치수 ${input.impact.removedMeasurementValueCount.toLocaleString("ko-KR")}개` : null,
+  ].filter((value): value is string => value !== null);
+  return `${label} ${names}을 제거하면 ${losses.join("와 ")}가 함께 삭제됩니다.`;
+}
+
 export function createStagedDeletionMessage(input: {
   readonly targetKind: "size" | "color";
   readonly deletedDisplayNames: readonly string[];

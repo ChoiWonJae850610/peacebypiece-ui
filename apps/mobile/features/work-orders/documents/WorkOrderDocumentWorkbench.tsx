@@ -21,6 +21,7 @@ import {
   Truck,
 } from "lucide-react-native";
 
+import { beginWaflPresentationFirstOperation } from "@/application/waflPresentationBoundary";
 import { WAFL_FONTS } from "@/constants/fonts";
 import { WAFL_THEME } from "@/constants/theme";
 import type {
@@ -283,9 +284,13 @@ function WorkOrderDocumentWorkbenchBody({ detail, attachments, sizeColorMatrix, 
   }
 
   async function issueAndGenerate() {
-    setBusy(true);
-    setMessage(null);
-    onActionProcessing("레시피를 확정 중입니다.");
+    await beginWaflPresentationFirstOperation({
+      enterPending: () => {
+        setBusy(true);
+        setMessage(null);
+        onActionProcessing("레시피를 확정 중입니다.");
+      },
+    });
     try {
       await onFlushDraft();
       const issuedResult = await issueWorkOrderR0({

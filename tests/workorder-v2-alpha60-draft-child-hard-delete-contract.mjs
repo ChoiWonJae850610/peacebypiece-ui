@@ -71,8 +71,9 @@ assert.match(read("lib/domain/work-orders/command/runtimeGuard.ts"), /getWorkOrd
 assert.match(mobile, /workOrderMutationController\.deleteMaterial/);
 assert.match(mobile, /workOrderMutationController\.archiveMaterial/);
 assert.doesNotMatch(mobile, /materials\(workOrderId, materialType, null, "archived"\)/);
-assert.match(structureEditor, /confirmWaflDestructiveAction/);
-assert.match(structureEditor, /summarizeStagedDeletionQuantity[\s\S]+createStagedDeletionMessage/);
+assert.match(structureEditor, /replacementDecisionState: WaflDecisionChoiceState/);
+assert.doesNotMatch(structureEditor, /confirmWaflDestructiveAction/);
+assert.match(structureEditor, /resolveStagedReplacementImpact[\s\S]+resolveStagedReplacementDecision/);
 assert.doesNotMatch(structureEditor, /연결된 수량 셀|quantityCellCount/);
 assert.match(structureController, /deleteSize[\s\S]+deleteColor/);
 assert.match(structureController, /pendingStructureOperations[\s\S]+kind: "delete-size"[\s\S]+kind: "delete-color"/);

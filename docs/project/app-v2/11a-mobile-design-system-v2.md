@@ -1,5 +1,20 @@
 # WAFL Mobile Design System v2
 
+## Alpha.69 recommendation presentation
+
+- Recommendation is a primary guidance section, never an implicit selection or mutation.
+- Size selection derives its first section from target audience × major category, followed by registered and
+  unmatched-current choices. `다른 WAFL 사이즈 보기` discloses the remaining system universe on demand;
+  direct creation remains available and 44/XS remain separate identities.
+- POM selection orders `WAFL 추천 스펙`, `WAFL 추가 스펙`, `우리 회사`, and `현재 사용 중` without
+  duplicates. Existing WaflOptionGrid selected-state and staged X/V semantics remain the visual owner.
+- A Size/Color replacement with no positive quantity or non-empty measurement loss applies on the first V.
+  Real loss replaces the active Sheet body with the shared WAFL INPUT question/helper/two-row reel/V choice state
+  using concise `취소` / `변경` actions; technical counts, centered two-button cards, and a second global Modal are forbidden.
+- Target/major dependent reset uses that same-sheet choice state. While visible it replaces the chooser interaction,
+  retains accessible decision focus, and keeps the underlying staged state for safe restoration; cancellation restores
+  the chooser and confirmation reuses its canonical exactly-once operation.
+
 ## Alpha.68 Draft persistence and native asset boundary
 
 - Draft controls are local-instant. Saving state belongs to one section-level dirty/batch owner;
@@ -195,6 +210,12 @@ Status: `OWNER_PHYSICAL_REVIEW_REQUIRED`.
 - Decision labels describe real actions (`취소/확정`, `유지/삭제`, `유지/해제`, `유지/미지정`) and never use generic `예/아니오`. This does not change ordinary editor sheets, whose staged X/V contract remains canonical.
 - A transient success, warning, or error is one centered, buttonless `WAFL Alert` card with a default lifetime of about 1.2 seconds. Persistent validation remains inline. Loading is not a timed alert: it keeps the existing centered spinner card until the owning command explicitly completes.
 
+## Alpha.69 active-sheet decision and processing lifecycle
+
+- Standalone binary decisions continue to use `WaflDecisionSheet`. A destructive decision requested while `WaflInputSheet` is already active must reuse `WaflDecisionChoiceBody` inside that same Modal: the body changes to question/helper/reel/V and cancellation restores the prior chooser and staged selection.
+- The active-sheet decision never mounts `WaflDecisionOverlay`, never presents another React Native Modal, and defaults to the safe option. Safe+V mutates zero; action+V invokes the existing command owner once.
+- A command whose blocker must precede expensive preparation enters pending synchronously, commits the presentation across the shared frame boundary, then begins fetch/mutation. Artificial delay is forbidden; success, failure, stale identity, and unmount paths all clear the owning pending state.
+
 ## Alpha.65 visual spec selector variant
 
 Status: `OWNER_PHYSICAL_REVIEW_REQUIRED`.
@@ -346,3 +367,6 @@ Create and detail share one WorkOrder-character semantic owner with `본생산 /
 - While dismissal owns the sheet, ordinary settle animations are rejected so the exit animation cannot be
   stopped by restore/reveal work. One close-operation identity and idempotent finalizer own teardown,
   callback cardinality, and the after-close handoff; timers are not an alternate completion owner.
+## Alpha.69 destructive-choice scroll and processing lifecycle
+
+An active `WaflInputSheet` Decision keeps the canonical WAFL INPUT question/helper/two-row reel/V body but makes the parent body non-scrollable, including content-fit overflow states. The reel `FlatList` is therefore the sole vertical scroll owner. Visible processing blockers acquire state and cross the shared two-frame presentation boundary before work starts; fixed-duration display delays are forbidden.

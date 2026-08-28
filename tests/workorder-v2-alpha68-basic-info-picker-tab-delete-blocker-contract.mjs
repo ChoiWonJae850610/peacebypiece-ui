@@ -11,14 +11,14 @@ const overview = read("apps/mobile/features/work-orders/overview/WorkOrderDetail
 const deleteRoute = read("lib/domain/work-orders/command/draftDeleteRoute.ts");
 const deleteRuntime = read("scripts/run-wafl-v2-alpha68-draft-delete-runtime.mjs");
 
-assert.match(overview, /onApplyPicker: \(override: Partial<BasicInfoDraft>\) => void/u);
+assert.match(overview, /onApplyPicker: \(override: Partial<BasicInfoDraft>, dependentResetConfirmed\?: boolean\) => void/u);
 assert.doesNotMatch(overview, /onApply=\{\(value\) => \{[\s\S]{0,180}onChangeDraft\("categoryMajor"[\s\S]{0,180}onSave/u);
 assert.doesNotMatch(overview, /onApply=\{\(value\) => \{[\s\S]{0,180}onChangeDraft\("categoryDetail"[\s\S]{0,180}onSave/u);
-assert.match(experience, /async function applyBasicInfoPicker[\s\S]{0,180}await saveBasicInfo\(override\)/u);
+assert.match(experience, /async function applyBasicInfoPicker[\s\S]{0,220}await saveBasicInfo\(override, null, null, false, dependentResetConfirmed\)/u);
 assert.doesNotMatch(experience, /applyBasicInfoPicker[\s\S]{0,180}flushSection\("overview"/u);
-assert.match(experience, /categoryResetIntentRef\.current = \{ workOrderId: detail\.header\.id, categoryMajor: next\.categoryMajor, resetApplied: false \};[\s\S]{0,520}draftBatch\.stage\("overview"\)/u);
+assert.match(experience, /categoryResetIntentRef\.current = \{ workOrderId: detail\.header\.id, targetAudience: next\.targetAudience, categoryMajor: next\.categoryMajor, resetApplied: false \};[\s\S]{0,300}draftBatch\.stage\("overview"\)/u);
 assert.doesNotMatch(experience, /onConfirm: \(\) => \{[\s\S]{0,760}draftBatch\.flushSection\("overview", "explicit"\)/u);
-assert.match(experience, /productTypeCode !== baseline\.header\.productTypeCode && !categoryResetIntent\?\.resetApplied\) patch\.resetCategoryDependents = true/u);
+assert.match(experience, /!categoryResetIntent\?\.resetApplied[\s\S]{0,160}patch\.resetCategoryDependents = true/u);
 assert.match(experience, /const currentDetail = detailRef\.current/u);
 assert.match(experience, /const patch = buildPatch\(latestDetail\)/u);
 assert.match(experience, /draftBatch\.discardSection\("overview"\)/u);

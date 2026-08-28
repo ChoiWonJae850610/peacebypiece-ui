@@ -88,10 +88,17 @@ export function workOrderProductClassificationSummary(input: {
 }
 
 /** New authoring omits retired setup while an existing persisted setup remains representable until explicitly changed. */
-export function workOrderMajorCategoryPickerOptions(currentCategory: string): readonly WorkOrderCategoryMajor[] {
-  return currentCategory === "셋업"
-    ? ["", "셋업", ...WORK_ORDER_NEW_CATEGORY_MAJORS]
-    : ["", ...WORK_ORDER_NEW_CATEGORY_MAJORS];
+export function workOrderMajorCategoryPickerOptions(
+  currentCategory: string,
+  targetAudience: WorkOrderTargetAudience = "",
+): readonly WorkOrderCategoryMajor[] {
+  const authored = targetAudience === "남성"
+    ? WORK_ORDER_NEW_CATEGORY_MAJORS.filter((category) => category !== "원피스")
+    : WORK_ORDER_NEW_CATEGORY_MAJORS;
+  const legacyCurrent = currentCategory === "셋업" || (targetAudience === "남성" && currentCategory === "원피스")
+    ? [currentCategory as WorkOrderCategoryMajor]
+    : [];
+  return ["", ...legacyCurrent, ...authored];
 }
 
 /**
