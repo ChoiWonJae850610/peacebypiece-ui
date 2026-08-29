@@ -25,7 +25,8 @@ for (const owner of orderedOwners) {
 
 for (const token of [
   "첨부 자료",
-  "문서 첨부",
+  "PDF 첨부",
+  "전달 선택",
   "레시피 확정",
   "레시피를 확정합니다",
   "최종 생성 후에는 주요 생산정보를 수정할 수 없습니다.",
@@ -49,11 +50,16 @@ for (const apiOwner of [
   "getWorkOrderDocuments",
   "issueWorkOrderR0",
   "generateWorkOrderR0",
-  "setAttachmentOutputInclude",
   "createDocumentShare",
   "listDocumentAccessTokens",
   "revokeDocumentAccessToken",
 ]) assert.match(workbench, new RegExp(`\\b${apiOwner}\\b`), `real document API retained: ${apiOwner}`);
+assert.match(workbench, /\bonApplyAttachmentSelection\b/, "authoritative attachment selection callback retained");
+assert.match(
+  read("apps/mobile/features/work-orders/images/useWorkOrderAssetAuthoringController.ts"),
+  /\bsetAttachmentOutputInclude\b/,
+  "versioned attachment output-include API retained by the canonical asset controller",
+);
 
 for (const sharedOwner of [
   'from "@/constants/fonts"',

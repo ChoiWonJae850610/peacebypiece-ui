@@ -19,9 +19,11 @@ import {
   deleteWorkOrderImageV2,
   IMAGE_DELETE_COMMAND_CODE,
   IMAGE_REPRESENTATIVE_COMMAND_CODE,
+  IMAGE_OUTPUT_INCLUDE_COMMAND_CODE,
   IMAGE_UPLOAD_COMMAND_CODE,
   ImageCommandRepositoryError,
   setRepresentativeWorkOrderImageV2,
+  setWorkOrderImageOutputIncludeV2,
   completeWorkOrderImageUploadV2,
   reconcileCompletedWorkOrderImageUploadV2,
 } from "@/lib/domain/work-orders/command/imageCommandRepository";
@@ -544,4 +546,51 @@ export function handleSetRepresentativeWorkOrderImage(request: Request, workOrde
 
 export function handleDeleteWorkOrderImage(request: Request, workOrderId: string, imageId: string) {
   return handleExistingImageMutation(request, workOrderId, imageId, "delete");
+}
+
+export async function handleSetWorkOrderImageOutputInclude(request: Request, workOrderId: string, imageId: string) {
+  const correlationId = randomUUID() as CorrelationId;
+  try {
+    if (!UUID_PATTERN.test(workOrderId) || !UUID_PATTERN.test(imageId)) {
+      throw new WorkOrderCommandRequestError({ code: "NOT_FOUND", status: 404, message: "작업지시서 이미지를 찾을 수 없습니다." });
+    }
+    const { guard, tenantScope } = await requireImageCommandScope(correlationId);
+    const idempotencyKey = readIdempotencyKey(request);
+    const body = await readBoundedCommandJson(request);
+    const versioned = readVersionedBody(body);
+    if (!isObject(body) || typeof body.includeInDocument !== "boolean") {
+      throw new WorkOrderCommandRequestError({ code: "VALIDATION_ERROR", status: 400, message: "출력 포함 여부를 확인해 주세요." });
+    }
+    const scopedKeyHash = sha256([
+      IMAGE_OUTPUT_INCLUDE_COMMAND_CODE,
+      tenantScope.companyId,
+      tenantScope.companyMemberId,
+      idempotencyKey,
+    ].join("\0"));
+    const requestHash = sha256(JSON.stringify({
+      workOrderId,
+      imageId,
+      expectedVersion: versioned.expectedVersion,
+      includeInDocument: body.includeInDocument,
+    }));
+    try {
+      const result = await setWorkOrderImageOutputIncludeV2({
+        scope: tenantScope,
+        assignedCompanyMemberId: assignedMemberId(guard.scope),
+        workOrderId: workOrderId as WorkOrderId,
+        imageId,
+        expectedVersion: versioned.expectedVersion,
+        clientRequestId: versioned.clientRequestId,
+        includeInDocument: body.includeInDocument,
+        scopedIdempotencyKeyHash: scopedKeyHash,
+        requestHash,
+      });
+      return successResponse(result, correlationId);
+    } catch (error) {
+      if (error instanceof ImageCommandRepositoryError) mapRepositoryError(error);
+      throw error;
+    }
+  } catch (error) {
+    return routeError(error, correlationId);
+  }
 }

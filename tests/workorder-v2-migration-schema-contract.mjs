@@ -27,6 +27,7 @@ const expectedFiles = [
   "018_v2_company_spec_item_category_scope.sql",
   "019_v2_work_order_lineage_sample.sql",
   "020_v2_sample_reorder_invariant.sql",
+  "021_v2_work_order_image_output_include.sql",
 ];
 
 const actualFiles = fs
@@ -56,7 +57,9 @@ const destructiveAuditSql = executableSql.replace(
 );
 
 for (const { file, source } of sources) {
-  if (file === "020_v2_sample_reorder_invariant.sql" || file === "019_v2_work_order_lineage_sample.sql") {
+  if (file === "021_v2_work_order_image_output_include.sql") {
+    assert.ok(source.includes("WAFL v2 alpha.70 additive migration"), `${file} missing alpha.70 execution prohibition`);
+  } else if (file === "020_v2_sample_reorder_invariant.sql" || file === "019_v2_work_order_lineage_sample.sql") {
     assert.ok(source.includes("WAFL v2 alpha.66 additive"), `${file} missing alpha.66 execution prohibition`);
   } else if (file === "018_v2_company_spec_item_category_scope.sql") {
     assert.ok(source.includes("WAFL v2 alpha.64 additive dev/test migration"), `${file} missing alpha.64 execution prohibition`);
@@ -366,6 +369,10 @@ const alpha68ApiPaths = [
   "app/api/v2/work-orders/[workOrderId]/size-color/quantities/batch/route.ts",
   "app/api/v2/work-orders/[workOrderId]/size-spec/templates/route.ts",
 ];
+const alpha70ApiPaths = [
+  ...alpha68ApiPaths,
+  "app/api/v2/work-orders/[workOrderId]/images/[imageId]/output-include/route.ts",
+];
 const alpha62ApiPaths = [
   "app/api/system/standards/size-spec-templates/route.ts",
   "app/api/v2/size-spec-templates/[templateId]/route.ts",
@@ -408,7 +415,8 @@ const alpha28ContractExists = fs.existsSync(path.join(root, "tests/workorder-v2-
 const alpha67ContractExists = fs.existsSync(path.join(root, "tests/workorder-v2-alpha67-nth-reorder-e2e-contract.mjs"));
 const alpha68ContractExists = fs.existsSync(path.join(root, "tests/workorder-v2-alpha68-draft-batch-copy-reorder-confirm-preview-attachment-contract.mjs"));
 if (alpha68ContractExists && apiChanges.length > 0) {
-  assert.deepEqual(apiChanges.filter((change) => !alpha68ApiPaths.some((allowedPath) => change.endsWith(allowedPath))), [], "alpha.68 may change only inherited routes and its bounded batch/copy/preview/delete/basic-spec routes");
+  const allowedApiPaths = fs.existsSync(path.join(root, "tests/workorder-v2-alpha70-image-document-policy-heic-contract.mjs")) ? alpha70ApiPaths : alpha68ApiPaths;
+  assert.deepEqual(apiChanges.filter((change) => !allowedApiPaths.some((allowedPath) => change.endsWith(allowedPath))), [], "alpha.70 may change only inherited routes and its bounded image output-include route");
 } else if (alpha67ContractExists && apiChanges.length > 0) {
   assert.deepEqual(apiChanges.filter((change) => !alpha67ApiPaths.some((allowedPath) => change.endsWith(allowedPath))), [], "alpha.67 may change only inherited routes and the exact WorkOrder Reorder route");
 } else if (alpha66ContractExists && apiChanges.length > 0) {

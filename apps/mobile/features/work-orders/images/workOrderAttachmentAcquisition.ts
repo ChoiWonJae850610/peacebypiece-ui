@@ -5,12 +5,7 @@ import {
   normalizeAttachmentFilenameForTransport,
 } from "@/domain/attachmentFilenamePolicy";
 
-const ALLOWED_MIME_TYPES = [
-  "image/jpeg",
-  "image/png",
-  "image/webp",
-  "application/pdf",
-] as const;
+const PDF_MIME_TYPE = "application/pdf";
 
 export type WorkOrderAttachmentAcquisitionResult =
   | {
@@ -27,7 +22,7 @@ export type WorkOrderAttachmentAcquisitionResult =
 
 export async function acquireWorkOrderAttachment(): Promise<WorkOrderAttachmentAcquisitionResult> {
   const result = await DocumentPicker.getDocumentAsync({
-    type: [...ALLOWED_MIME_TYPES],
+    type: PDF_MIME_TYPE,
     copyToCacheDirectory: true,
     multiple: false,
   });
@@ -36,8 +31,8 @@ export async function acquireWorkOrderAttachment(): Promise<WorkOrderAttachmentA
   const name = normalizeAttachmentFilenameForTransport(asset.name);
   const mimeType = asset.mimeType?.toLowerCase() ?? "";
   const size = asset.size ?? 0;
-  if (!(ALLOWED_MIME_TYPES as readonly string[]).includes(mimeType)) {
-    return { status: "invalid", message: "JPG, PNG, WEBP, PDF 파일만 첨부할 수 있습니다." };
+  if (mimeType !== PDF_MIME_TYPE) {
+    return { status: "invalid", message: "PDF 파일만 첨부할 수 있습니다." };
   }
   if (!Number.isSafeInteger(size) || size <= 0 || size > 10 * 1024 * 1024) {
     return { status: "invalid", message: "첨부파일은 1개당 10MB 이하만 등록할 수 있습니다." };

@@ -199,3 +199,13 @@ export function selectRepresentativeAsset(
     ?? images.find((asset) => asset.includeInDocument)
     ?? null;
 }
+
+export function selectSupplementalGalleryAssets(
+  assets: readonly WorkOrderIssuedPdfAssetDescriptor[],
+  supportedInlineMimeTypes: ReadonlySet<string>,
+) {
+  return assets.filter((asset) => asset.includeInDocument
+    && !asset.isRepresentative
+    && supportedInlineMimeTypes.has(asset.mimeType)
+    && (asset.assetType === "image" || asset.assetType === "attachment"));
+}

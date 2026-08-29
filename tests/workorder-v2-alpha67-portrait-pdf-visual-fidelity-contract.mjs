@@ -31,7 +31,8 @@ assert.match(styles, /\.coverProductHeading h1 \{[\s\S]*font-size: var\(--pdf-co
 assert.match(styles, /\.page th, \.page td \{[\s\S]*text-align: center;/u);
 assert.match(styles, /\.textCell \{[\s\S]*text-align: left/u);
 assert.match(documentSource, /paginateWeightedRows\(rows,[\s\S]*, 5, 7\)/u);
-assert.match(documentSource, /for \(let index = 0; index < images\.length; index \+= 2\)/u);
+assert.match(documentSource, /paginateIssuedPdfAttachmentImages\(images\)/u);
+assert.match(documentSource, /<IncludedAttachmentGrid continued=\{index > 0\} images=\{pageImages\}/u);
 assert.match(documentSource, /continued=\{index > 0\}/u);
 assert.match(documentSource, /DocumentFooter/u);
 

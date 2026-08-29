@@ -213,6 +213,7 @@ export type WorkOrderImageAsset = {
   readonly sizeBytes: number;
   readonly displayOrder: number;
   readonly isRepresentative: boolean;
+  readonly includeInDocument: boolean;
   readonly state: "active";
   readonly thumbnailUrl: string | null;
   readonly previewUrl: string | null;
@@ -419,6 +420,7 @@ export type WorkOrderImageCommandResult = {
   readonly nextVersion: number;
   readonly isRepresentative: boolean;
   readonly deleted: boolean;
+  readonly includeInDocument?: boolean;
 };
 
 export type WorkOrderAttachmentCommandResult = {

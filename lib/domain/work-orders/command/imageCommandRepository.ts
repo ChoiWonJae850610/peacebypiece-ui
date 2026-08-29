@@ -19,6 +19,7 @@ import { installTenantClaims } from "@/lib/domain/work-orders/command/commandRep
 export const IMAGE_UPLOAD_COMMAND_CODE = "work_order.image.upload";
 export const IMAGE_REPRESENTATIVE_COMMAND_CODE = "work_order.image.representative.set";
 export const IMAGE_DELETE_COMMAND_CODE = "work_order.image.delete";
+export const IMAGE_OUTPUT_INCLUDE_COMMAND_CODE = "work_order.image.output-include.set";
 
 type ImageCommandFailureReason =
   | "not_found"
@@ -137,6 +138,7 @@ export type ImageCommandRepositoryResult = {
     readonly nextVersion: EntityVersion;
     readonly isRepresentative: boolean;
     readonly deleted: boolean;
+    readonly includeInDocument?: boolean;
   };
   readonly idempotentReplay: boolean;
   readonly storageObjectKey: string;
@@ -365,6 +367,7 @@ function wrapResult(input: {
   readonly nextVersion: number;
   readonly isRepresentative: boolean;
   readonly deleted: boolean;
+  readonly includeInDocument?: boolean;
   readonly idempotentReplay: boolean;
   readonly storageObjectKey: string;
   readonly context: RepositoryContext;
@@ -377,6 +380,7 @@ function wrapResult(input: {
       nextVersion: input.nextVersion as EntityVersion,
       isRepresentative: input.isRepresentative,
       deleted: input.deleted,
+      ...(input.includeInDocument === undefined ? {} : { includeInDocument: input.includeInDocument }),
     },
     idempotentReplay: input.idempotentReplay,
     storageObjectKey: input.storageObjectKey,
@@ -723,4 +727,122 @@ export function deleteWorkOrderImageV2(
   input: Omit<Parameters<typeof mutateExistingImage>[0], "kind">,
 ) {
   return mutateExistingImage({ ...input, kind: "delete" });
+}
+
+export async function setWorkOrderImageOutputIncludeV2(input: {
+  readonly scope: TenantMemberScope;
+  readonly assignedCompanyMemberId: CompanyMemberId | null;
+  readonly workOrderId: WorkOrderId;
+  readonly imageId: string;
+  readonly expectedVersion: EntityVersion;
+  readonly clientRequestId: string;
+  readonly includeInDocument: boolean;
+  readonly scopedIdempotencyKeyHash: string;
+  readonly requestHash: string;
+}) {
+  const startedAt = performance.now();
+  const context: RepositoryContext = { statementCount: 0 };
+  const completed = await withWaflV2TenantWriteTransaction(async (client) => {
+    await installTenantClaims(client, input.scope);
+    context.statementCount += 1;
+    const receipt = await reserveReceipt({
+      client,
+      context,
+      scope: input.scope,
+      commandCode: IMAGE_OUTPUT_INCLUDE_COMMAND_CODE,
+      scopedIdempotencyKeyHash: input.scopedIdempotencyKeyHash,
+      requestHash: input.requestHash,
+    });
+    if (receipt) {
+      const replay = await client.query<DbQueryResultRow & {
+        readonly storage_object_key: string;
+        readonly is_representative: boolean;
+        readonly output_include: boolean;
+      }>(`
+        SELECT image.storage_object_key, revision_image.is_representative,
+               revision_image.output_include
+        FROM work_order_revision_images revision_image
+        JOIN work_order_images image
+          ON image.company_id = revision_image.company_id AND image.id = revision_image.image_id
+        WHERE revision_image.company_id = $1 AND revision_image.revision_id = $2::uuid
+          AND revision_image.image_id = $3::uuid AND image.deleted_at IS NULL
+      `, [input.scope.companyId, receipt.result_revision_id, input.imageId]);
+      context.statementCount += 1;
+      const image = replay.rows[0];
+      if (!image) throw new ImageCommandRepositoryError("idempotency_incomplete");
+      return {
+        workOrderId: receipt.work_order_id as string,
+        nextVersion: Number(receipt.result_entity_version),
+        isRepresentative: Boolean(image.is_representative),
+        includeInDocument: Boolean(image.output_include),
+        storageObjectKey: image.storage_object_key,
+        idempotentReplay: true,
+      };
+    }
+    const target = await lockImageTarget({
+      client,
+      context,
+      scope: input.scope,
+      workOrderId: input.workOrderId,
+      imageId: input.imageId,
+      assignedCompanyMemberId: input.assignedCompanyMemberId,
+    });
+    assertCurrentDraft(target, input.expectedVersion);
+    const updated = await client.query(`
+      UPDATE work_order_revision_images
+      SET output_include = $4
+      WHERE company_id = $1 AND revision_id = $2::uuid AND image_id = $3::uuid
+        AND output_include IS DISTINCT FROM $4
+    `, [input.scope.companyId, target.revision_id, input.imageId, input.includeInDocument]);
+    context.statementCount += 1;
+    const nextVersion = updated.rowCount === 0
+      ? toInteger(target.work_order_version)
+      : await advanceVersions({ client, context, scope: input.scope, target, expectedVersion: input.expectedVersion });
+    if (updated.rowCount !== 0) {
+      await appendEvent({
+        client,
+        context,
+        scope: input.scope,
+        target,
+        imageId: input.imageId,
+        commandCode: IMAGE_OUTPUT_INCLUDE_COMMAND_CODE,
+        summary: input.includeInDocument ? "이미지를 작업지시서 출력에 포함" : "이미지를 작업지시서 출력에서 제외",
+        metadata: {
+          clientRequestId: input.clientRequestId,
+          includeInDocument: input.includeInDocument,
+          versionTransition: { from: toInteger(target.work_order_version), to: nextVersion },
+        },
+      });
+    }
+    await completeReceipt({
+      client,
+      context,
+      scope: input.scope,
+      commandCode: IMAGE_OUTPUT_INCLUDE_COMMAND_CODE,
+      scopedIdempotencyKeyHash: input.scopedIdempotencyKeyHash,
+      workOrderId: target.work_order_id,
+      revisionId: target.revision_id,
+      nextVersion,
+    });
+    return {
+      workOrderId: target.work_order_id,
+      nextVersion,
+      isRepresentative: target.is_representative,
+      includeInDocument: input.includeInDocument,
+      storageObjectKey: target.storage_object_key,
+      idempotentReplay: false,
+    };
+  });
+  return wrapResult({
+    workOrderId: completed.workOrderId,
+    imageId: input.imageId,
+    nextVersion: completed.nextVersion,
+    isRepresentative: completed.isRepresentative,
+    deleted: false,
+    includeInDocument: completed.includeInDocument,
+    idempotentReplay: completed.idempotentReplay,
+    storageObjectKey: completed.storageObjectKey,
+    context,
+    startedAt,
+  });
 }

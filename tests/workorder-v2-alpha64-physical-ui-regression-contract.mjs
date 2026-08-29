@@ -34,7 +34,7 @@ assert.match(metric, /backgroundColor:\s*WAFL_THEME\.color\.paper/u);
 assert.match(overview, /<WaflMetricField editable=\{false\} label="총 수량"/u);
 assert.equal((overview.match(/<WaflMetricField/g) ?? []).length, 6);
 
-for (const label of ["이미지·첨부", "사이즈·색상", "원부자재", "제작", "문서"]) assert.match(overview, new RegExp(`label: "${label}"`));
+for (const label of ["이미지", "사이즈·색상", "원부자재", "제작", "문서"]) assert.match(overview, new RegExp(`label: "${label}"`));
 assert.match(intent, /"production"/u);
 assert.match(overview, alpha65ProductionAuthoring
   ? /<WorkOrderProductionAuthoring[\s\S]*workOrderId=\{detail\.header\.id\}/u

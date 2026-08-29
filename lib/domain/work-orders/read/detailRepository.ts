@@ -295,7 +295,7 @@ export const WORK_ORDER_V2_ASSETS_SQL = `
     SELECT ri.revision_id, ri.image_id AS id, 'image'::text AS asset_type,
            ri.filename_snapshot AS filename, i.title AS optional_title,
            ri.mime_type_snapshot AS mime_type, i.size_bytes, ri.display_order,
-           ri.is_representative, false AS include_in_document, i.created_at AS uploaded_at,
+           ri.is_representative, ri.output_include AS include_in_document, i.created_at AS uploaded_at,
            i.storage_object_key, i.thumbnail_object_key
     FROM target t
     JOIN work_order_revision_images ri ON ri.company_id = $1 AND ri.revision_id = t.current_revision_id

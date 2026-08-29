@@ -38,7 +38,8 @@ assert.match(pdf, /if \(data\.sizeColors\.colors\.length && data\.sizeColors\.si
 assert.match(pdf, /paginateWeightedRows/u);
 assert.match(pdf, /textRowWeight/u);
 assert.match(pdf, /continued=\{index > 0\}/u);
-assert.match(pdf, /for \(let index = 0; index < images\.length; index \+= 2\)/u);
+assert.match(pdf, /paginateIssuedPdfAttachmentImages\(images\)/u);
+assert.match(pdf, /<IncludedAttachmentGrid continued=\{index > 0\} images=\{pageImages\}/u);
 
 const generation = read("lib/generated-documents/work-order-pdf/generationService.ts");
 const generationRepository = read("lib/generated-documents/work-order-pdf/generationRepository.ts");

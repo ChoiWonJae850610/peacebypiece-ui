@@ -63,7 +63,7 @@ const dividerIndex = workbench.indexOf("styles.integratedDivider");
 const attachmentsIndex = workbench.indexOf('testID="document-attachment-selection"');
 const overviewCloseIndex = workbench.indexOf('<View style={styles.actionCluster}', attachmentsIndex);
 assert.ok(overviewIndex >= 0 && overviewIndex < dividerIndex && dividerIndex < attachmentsIndex && attachmentsIndex < overviewCloseIndex);
-assert.match(workbench, /testID="document-workbench-action-tiles"[\s\S]*label="첨부"[\s\S]*label="퀵 전달"/);
+assert.match(workbench, /testID="document-workbench-action-tiles"[\s\S]*label="PDF 첨부"[\s\S]*label="전달 선택"[\s\S]*label="퀵 전달"/);
 assert.doesNotMatch(workbench, /document-(?:attachment|quick)-tab|label="첨부 선택"/);
 
 const readiness = evaluateMaterialOrderReadiness({

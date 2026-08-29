@@ -1,4 +1,7 @@
 import * as ImagePicker from "expo-image-picker";
+import { manipulateAsync, SaveFormat } from "expo-image-manipulator";
+
+import { isHeicLikeAcquiredImage } from "@/domain/workOrderHeicPolicy";
 
 export type WorkOrderImageAcquisitionSource = "library" | "camera";
 
@@ -28,6 +31,9 @@ export async function acquireWorkOrderImage(
     mediaTypes: ["images"],
     quality: 1,
     selectionLimit: 1,
+    ...(source === "library" ? {
+      preferredAssetRepresentationMode: ImagePicker.UIImagePickerPreferredAssetRepresentationMode.Compatible,
+    } : {}),
   };
   const result = source === "camera"
     ? await ImagePicker.launchCameraAsync(options)
@@ -65,4 +71,26 @@ export function normalizeAcquiredImageFile(asset: ImagePicker.ImagePickerAsset, 
   // advisory asset.fileSize can describe the pre-export library asset on iOS.
   const size = blob.size;
   return { name: fileName, type: mimeType, size };
+}
+
+export async function prepareAcquiredImageForUpload(asset: ImagePicker.ImagePickerAsset, originalBlob: Blob) {
+  const heic = isHeicLikeAcquiredImage({
+    mimeType: asset.mimeType ?? originalBlob.type,
+    fileName: asset.fileName,
+    uri: asset.uri,
+  });
+  if (!heic) return { blob: originalBlob, file: normalizeAcquiredImageFile(asset, originalBlob), convertedFromHeic: false } as const;
+
+  const converted = await manipulateAsync(asset.uri, [], { compress: 1, format: SaveFormat.JPEG });
+  if (!(converted.width > 0) || !(converted.height > 0)) throw new Error("HEIC_JPEG_DIMENSIONS_INVALID");
+  const response = await fetch(converted.uri);
+  if (!response.ok) throw new Error("HEIC_JPEG_READ_FAILED");
+  const blob = await response.blob();
+  if (blob.size <= 0) throw new Error("HEIC_JPEG_BYTES_INVALID");
+  const sourceName = asset.fileName?.trim().replace(/\.hei[cf]$/i, "") || `wafl-work-order-${Date.now()}`;
+  return {
+    blob,
+    file: { name: `${sourceName}.jpg`, type: "image/jpeg", size: blob.size },
+    convertedFromHeic: true,
+  } as const;
 }

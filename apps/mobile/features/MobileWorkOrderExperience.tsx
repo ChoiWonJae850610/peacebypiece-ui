@@ -99,7 +99,7 @@ function loadWorkOrderChildHydration(detail: WorkOrderDetailCore) {
 }
 
 function childHydrationLabel(unavailable: readonly WorkOrderChildProjection[]) {
-  return unavailable.map((child) => child === "images" ? "이미지·첨부" : child === "partners" ? "거래처" : "작업 이력").join("·");
+  return unavailable.map((child) => child === "images" ? "이미지" : child === "partners" ? "거래처" : "작업 이력").join("·");
 }
 
 function materialLabel(materialType: MaterialType) {
@@ -160,6 +160,9 @@ export default function MobileWorkOrderExperience() {
   const activeBasicSessionRef = useRef<{ readonly field: BasicInfoInlineField; readonly token: number } | null>(null);
   const basicInfoSessionSequence = useRef(0);
   const queuedBasicInfoSessions = useRef(new Set<number>());
+  const productNameAutosaveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const productNameAutosaveGenerationRef = useRef(0);
+  const productNameAutosaveInFlightRef = useRef<Promise<boolean> | null>(null);
   const [basicInfoDraft, setBasicInfoDraft] = useState<BasicInfoDraft>({
     productName: "",
     dueDate: "",
@@ -208,6 +211,16 @@ export default function MobileWorkOrderExperience() {
     sizeColorAuthenticationErrorRef.current(error);
   }, []);
   useEffect(() => { basicInfoDraftRef.current = basicInfoDraft; }, [basicInfoDraft]);
+  useEffect(() => {
+    productNameAutosaveGenerationRef.current += 1;
+    if (productNameAutosaveTimerRef.current) clearTimeout(productNameAutosaveTimerRef.current);
+    productNameAutosaveTimerRef.current = null;
+    return () => {
+      productNameAutosaveGenerationRef.current += 1;
+      if (productNameAutosaveTimerRef.current) clearTimeout(productNameAutosaveTimerRef.current);
+      productNameAutosaveTimerRef.current = null;
+    };
+  }, [detail?.header.id]);
   useEffect(() => { categoryResetIntentRef.current = null; }, [detail?.header.id]);
   useEffect(() => { draftBatch.reset(); }, [draftBatch, selected?.workOrderId]);
   const reconcileCanonicalDetail = useCallback((refreshed: WorkOrderDetailCore) => {
@@ -309,7 +322,7 @@ export default function MobileWorkOrderExperience() {
     }
     resetBasicOverviewEditing();
   }
-  const nextAssetRequestIdentity = useCallback((kind: "upload" | "representative" | "delete" | "attachment-upload" | "attachment-delete" | "memo") => {
+  const nextAssetRequestIdentity = useCallback((kind: "upload" | "representative" | "delete" | "image-output" | "attachment-upload" | "attachment-delete" | "attachment-output" | "memo") => {
     clientRequestCounter.current += 1;
     const suffix = `${Date.now()}-${clientRequestCounter.current}`;
     return {
@@ -323,6 +336,11 @@ export default function MobileWorkOrderExperience() {
     selected,
     user,
     nextIdentity: nextAssetRequestIdentity,
+    beforeAssetMutation: async (workOrderId) => {
+      if (detailRef.current?.header.id !== workOrderId) return null;
+      const saved = await flushPendingProductName();
+      return saved && detailRef.current?.header.id === workOrderId ? detailRef.current : null;
+    },
     onDetailProjection: reconcileAssetDetail,
     onMessage: showToast,
   });
@@ -608,13 +626,16 @@ export default function MobileWorkOrderExperience() {
 
   function leaveWithDraftPolicy(intent: DraftExitIntent, onProceed: () => void) {
     const reason: DraftBatchFlushReason = intent === "feature" ? "tab-change" : intent === "list" || intent === "work-order" ? "detail-exit" : "explicit";
-    const saveInFlight = overviewMutation.inFlight || materialAuthoring.isMutationInFlight() || assetAuthoring.isMutationInFlight()
+    const saveInFlight = overviewMutation.inFlight || productNameAutosaveInFlightRef.current !== null || productNameAutosaveTimerRef.current !== null || materialAuthoring.isMutationInFlight() || assetAuthoring.isMutationInFlight()
       || draftBatch.status("overview") === "saving" || draftBatch.status("sizes") === "saving" || draftBatch.status("materials") === "saving" || draftBatch.status("production") === "saving" || draftBatch.status("finished-spec") === "saving";
     if (saveInFlight || draftBatch.isDirty() || pendingIntentFlush.current) {
       const captured = pendingIntentController.capture({ key: intent, isValid: () => true, run: onProceed });
       if (!captured || pendingIntentFlush.current) return;
       pendingIntentFlush.current = true;
-      void beginWaflPresentationFirstOperation({ enterPending: () => setPendingIntentSaving(true) }).then(() => draftBatch.flushAll(reason)).then((committed) => {
+      void beginWaflPresentationFirstOperation({ enterPending: () => setPendingIntentSaving(true) }).then(async () => {
+        const nameCommitted = await flushPendingProductName();
+        return nameCommitted ? draftBatch.flushAll(reason) : false;
+      }).then((committed) => {
         pendingIntentFlush.current = false;
         setPendingIntentSaving(false);
         if (!committed) {
@@ -627,7 +648,7 @@ export default function MobileWorkOrderExperience() {
       });
       return;
     }
-    void draftBatch.flushAll(reason).then((committed) => {
+    void flushPendingProductName().then((nameCommitted) => nameCommitted ? draftBatch.flushAll(reason) : false).then((committed) => {
       if (!committed) {
         showToast("저장하지 못한 변경이 남아 있습니다. 연결을 확인한 뒤 다시 시도해 주세요.", "error");
         failedDraftExitRef.current = { intent, onProceed };
@@ -1128,7 +1149,72 @@ export default function MobileWorkOrderExperience() {
     setBasicInfoErrors((current) => ({ ...current, [field]: undefined }));
     if (saveState !== "saving") setSaveState("editing");
     setSaveMessage(null);
-    draftBatch.stage("overview");
+    if (field === "productName") scheduleProductNameAutosave(value);
+    else draftBatch.stage("overview");
+  }
+
+  function cancelProductNameAutosaveTimer() {
+    productNameAutosaveGenerationRef.current += 1;
+    if (productNameAutosaveTimerRef.current) clearTimeout(productNameAutosaveTimerRef.current);
+    productNameAutosaveTimerRef.current = null;
+  }
+
+  function scheduleProductNameAutosave(value: string) {
+    cancelProductNameAutosaveTimer();
+    const generation = productNameAutosaveGenerationRef.current;
+    productNameAutosaveTimerRef.current = setTimeout(() => {
+      productNameAutosaveTimerRef.current = null;
+      if (generation !== productNameAutosaveGenerationRef.current) return;
+      void persistProductName(value, true);
+    }, 500);
+  }
+
+  async function persistProductName(value: string, preserveEditor: boolean) {
+    const workOrderId = detailRef.current?.header.id;
+    if (!workOrderId || selected?.workOrderId !== workOrderId) return false;
+    const owner = activeBasicSessionRef.current?.field === "productName" ? activeBasicSessionRef.current : null;
+    const operation = Promise.resolve(saveBasicInfo(
+      { productName: value },
+      owner?.field ?? "productName",
+      owner?.token ?? null,
+      true,
+      false,
+      { preserveEditor, productNameOnly: true },
+    )).then((result) => result !== false);
+    productNameAutosaveInFlightRef.current = operation;
+    try {
+      return await operation;
+    } finally {
+      if (productNameAutosaveInFlightRef.current === operation) productNameAutosaveInFlightRef.current = null;
+      const latest = basicInfoDraftRef.current.productName;
+      if (preserveEditor && detailRef.current?.header.id === workOrderId && latest !== value) scheduleProductNameAutosave(latest);
+    }
+  }
+
+  async function flushPendingProductName(preserveEditor = activeBasicSessionRef.current?.field === "productName") {
+    cancelProductNameAutosaveTimer();
+    const active = productNameAutosaveInFlightRef.current;
+    if (active && !(await active)) return false;
+    cancelProductNameAutosaveTimer();
+    const latestDetail = detailRef.current;
+    if (!latestDetail) return true;
+    const latestValue = basicInfoDraftRef.current.productName;
+    if (latestValue.trim() === latestDetail.header.productName) return true;
+    return persistProductName(latestValue, preserveEditor);
+  }
+
+  async function finalizeProductNameOnBlur(value: string) {
+    if (basicInfoDraftRef.current.productName !== value) changeBasicInfoDraft("productName", value);
+    const saved = await flushPendingProductName(false);
+    if (!saved) return;
+    if (activeBasicSessionRef.current?.field === "productName") {
+      activeBasicFieldRef.current = null;
+      activeBasicSessionRef.current = null;
+      setEditing(false);
+      setActiveBasicField(null);
+      setSaveState(draftBatch.isDirty("overview") ? "editing" : "read-only");
+      setSaveMessage(null);
+    }
   }
 
   function cancelBasicInfoEdit() {
@@ -1155,6 +1241,7 @@ export default function MobileWorkOrderExperience() {
     ownerToken = activeBasicSessionRef.current?.token ?? null,
     commitImmediately = false,
     dependentResetConfirmed = false,
+    options: { readonly preserveEditor?: boolean; readonly productNameOnly?: boolean } = {},
   ) {
     const categoryOverride = override?.categoryMajor;
     const targetOverride = override?.targetAudience;
@@ -1258,6 +1345,7 @@ export default function MobileWorkOrderExperience() {
       || ownerField === "seasonCode";
     const rollbackBasicInline = (refreshLatest = false) => {
       if (!inlineRollback) return false;
+      if (options.preserveEditor) return false;
       if (activeBasicSessionRef.current?.token !== ownerToken) return true;
       if (refreshLatest) reloadLatestBasicInfo();
       else cancelBasicInfoEdit();
@@ -1270,10 +1358,13 @@ export default function MobileWorkOrderExperience() {
       || effectiveDraft.categoryDetail !== basicInfoDraftFromDetail(currentDetail).categoryDetail
       || effectiveDraft.seasonCode !== basicInfoDraftFromDetail(currentDetail).seasonCode;
     if (!effectiveDirty) {
-      if (activeBasicSessionRef.current?.token === ownerToken) cancelBasicInfoEdit();
+      if (!options.preserveEditor && activeBasicSessionRef.current?.token === ownerToken) cancelBasicInfoEdit();
       return;
     }
-    const fieldErrors = validateBasicInfoDraft(effectiveDraft);
+    const productNameError = options.productNameOnly ? validateWorkOrderProductName(effectiveDraft.productName.trim()) : null;
+    const fieldErrors = options.productNameOnly
+      ? productNameError ? { productName: productNameError } : {}
+      : validateBasicInfoDraft(effectiveDraft);
     if (Object.keys(fieldErrors).length > 0) {
       setSaveMessage("입력값을 확인해 주세요.");
       if (rollbackBasicInline()) return;
@@ -1314,7 +1405,7 @@ export default function MobileWorkOrderExperience() {
       return patch;
     };
     if (Object.keys(buildPatch(currentDetail)).length === 0) {
-      if (activeBasicSessionRef.current?.token === ownerToken) cancelBasicInfoEdit();
+      if (!options.preserveEditor && activeBasicSessionRef.current?.token === ownerToken) cancelBasicInfoEdit();
       return;
     }
 
@@ -1396,7 +1487,9 @@ export default function MobileWorkOrderExperience() {
         const currentOwner = activeBasicSessionRef.current;
         const stagedChangedDuringRequest = basicInfoDraftRef.current !== effectiveDraft
           && JSON.stringify(basicInfoDraftRef.current) !== JSON.stringify(effectiveDraft);
-        const resolved = stagedChangedDuringRequest
+        const resolved = options.preserveEditor && currentOwner?.field === "productName"
+          ? { ...next, productName: currentDraft.productName }
+          : stagedChangedDuringRequest
           ? currentDraft
           : currentOwner && currentOwner.token !== ownerToken
             ? { ...next, [currentOwner.field]: currentDraft[currentOwner.field] }
@@ -1419,7 +1512,7 @@ export default function MobileWorkOrderExperience() {
         updatedAt: refreshed.header.updatedAt,
       } : current);
       setConflictVersion(null);
-      if (!activeBasicSessionRef.current || activeBasicSessionRef.current.token === ownerToken) {
+      if (!options.preserveEditor && (!activeBasicSessionRef.current || activeBasicSessionRef.current.token === ownerToken)) {
         activeBasicFieldRef.current = null;
         activeBasicSessionRef.current = null;
         setEditing(false);
@@ -1509,7 +1602,9 @@ export default function MobileWorkOrderExperience() {
   }), [detail?.header.id, draftBatch, selected?.workOrderId]);
 
   useEffect(() => {
-    if (appLifecycle === "background") void draftBatch.flushAll("app-background");
+    if (appLifecycle === "background") {
+      void flushPendingProductName().then((nameCommitted) => nameCommitted ? draftBatch.flushAll("app-background") : false);
+    }
   }, [appLifecycle, draftBatch]);
 
   async function reloadLatestBasicInfo() {
@@ -1647,6 +1742,7 @@ export default function MobileWorkOrderExperience() {
       onBack={returnToList}
       onAcquireImage={(source) => void assetAuthoring.acquireImage(source)}
       onAcquireAttachment={() => void assetAuthoring.acquireAttachment()}
+      onApplyAttachmentSelection={assetAuthoring.setAttachmentOutputIncludes}
       onBeginEdit={beginBasicInfoEdit}
       onBeginMaterialCreate={materialAuthoring.beginCreate}
       onBeginMaterialEdit={materialAuthoring.beginEdit}
@@ -1694,6 +1790,7 @@ export default function MobileWorkOrderExperience() {
       onDeleteAttachment={assetAuthoring.requestDeleteAttachment}
       onOpenAttachment={(attachment) => void assetAuthoring.openAttachment(attachment)}
       onSetRepresentativeImage={(image) => void assetAuthoring.setRepresentativeImage(image)}
+      onSetImageOutputInclude={(image, includeInDocument) => void assetAuthoring.setImageOutputInclude(image, includeInDocument)}
       onRefreshReadinessAfterMutation={() => {
         if (!detail) return;
         void refreshCanonicalDetailAfterMutation(detail.header.id).catch(() => {
@@ -1704,7 +1801,13 @@ export default function MobileWorkOrderExperience() {
       seriesHistoryCount={seriesHistory?.items.length ?? 0}
       onOpenReorder={() => { void createReorderFromMobile(detail); }}
       onOpenSeriesHistory={() => setSeriesHistoryVisible(true)}
-      onSave={(override) => void saveBasicInfo(override)}
+      onSave={(override) => {
+        if (override && Object.keys(override).length === 1 && override.productName !== undefined) {
+          void finalizeProductNameOnBlur(override.productName);
+          return;
+        }
+        void saveBasicInfo(override);
+      }}
       onApplyPicker={(override, dependentResetConfirmed) => void applyBasicInfoPicker(override, dependentResetConfirmed)}
       onSaveDate={(value) => {
         changeBasicInfoDraft("dueDate", value);

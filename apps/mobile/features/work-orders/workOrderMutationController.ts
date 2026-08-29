@@ -7,6 +7,7 @@ import {
   prepareWorkOrderAttachmentUpload,
   putWorkOrderImageBlob,
   setRepresentativeWorkOrderImage,
+  setWorkOrderImageOutputInclude,
   issueWorkOrderAttachmentPreview,
   reconcileWorkOrderImageUpload,
 } from "../../lib/api/assetsApi";
@@ -36,6 +37,7 @@ import {
   upsertWorkOrderColorSizeQuantity,
 } from "../../lib/api/sizeColorApi";
 import { mutateWorkOrderMeasurement } from "../../lib/api/measurementApi";
+import { setAttachmentOutputInclude } from "../../lib/api/documentsApi";
 import type {
   CreateMaterialLineInput,
   CreateWorkOrderDraftInput,
@@ -114,6 +116,9 @@ export const workOrderMutationController = {
   setRepresentativeImage(workOrderId: string, imageId: string, input: Parameters<typeof setRepresentativeWorkOrderImage>[2]) {
     return setRepresentativeWorkOrderImage(workOrderId, imageId, input);
   },
+  setImageOutputInclude(workOrderId: string, imageId: string, input: Parameters<typeof setWorkOrderImageOutputInclude>[2]) {
+    return setWorkOrderImageOutputInclude(workOrderId, imageId, input);
+  },
   deleteImage(workOrderId: string, imageId: string, input: Parameters<typeof deleteWorkOrderImage>[2]) {
     return deleteWorkOrderImage(workOrderId, imageId, input);
   },
@@ -125,6 +130,9 @@ export const workOrderMutationController = {
   },
   deleteAttachment(workOrderId: string, attachmentId: string, input: Parameters<typeof deleteWorkOrderAttachment>[2]) {
     return deleteWorkOrderAttachment(workOrderId, attachmentId, input);
+  },
+  setAttachmentOutputInclude(input: Parameters<typeof setAttachmentOutputInclude>[0]) {
+    return setAttachmentOutputInclude(input);
   },
   issueAttachmentPreview(workOrderId: string, attachmentId: string) {
     return issueWorkOrderAttachmentPreview(workOrderId, attachmentId);

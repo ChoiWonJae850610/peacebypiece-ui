@@ -60,7 +60,7 @@ export async function prepareReorderAssetCopy(input: {
         WHERE company_id=$1 AND id=$2::uuid AND deleted_at IS NULL
       )
       SELECT 'image'::text AS asset_type,i.id,i.storage_object_key,i.thumbnail_object_key,
-             i.original_filename,i.mime_type,true AS output_include,ri.is_representative
+             i.original_filename,i.mime_type,ri.output_include,ri.is_representative
       FROM source s
       JOIN work_order_revision_images ri ON ri.company_id=$1 AND ri.revision_id=s.current_revision_id
         AND ($3::boolean OR (ri.image_id=s.representative_image_id AND ri.is_representative=true))
@@ -109,6 +109,7 @@ export async function prepareReorderAssetCopy(input: {
           storageObjectKey: targetKey,
           thumbnailObjectKey: targetThumbnailKey,
           isRepresentative: row.is_representative,
+          outputInclude: row.output_include,
         };
         images.push(copiedImage);
         if (row.is_representative) image = copiedImage;

@@ -31,7 +31,7 @@ for (const removedPrimitive of ["InfoRow", "countList", "countRow", "countLabel"
 for (const actualField of [
   "header.productName", "header.status", "header.totalQuantity", "header.dueDate", "header.readiness.issues",
   "detail.amounts.fabricTotal", "detail.amounts.accessoryTotal", "detail.amounts.processTotal",
-  "detail.amounts.estimatedTotal", "formatEstimatedUnitCost", "detail.tabCounts.images", "detail.tabCounts.attachments",
+  "detail.amounts.estimatedTotal", "formatEstimatedUnitCost", "detail.tabCounts.images",
   "detail.tabCounts.sizes", "detail.tabCounts.colors", "detail.tabCounts.fabric", "detail.tabCounts.accessory",
   "detail.tabCounts.documents",
 ]) assert.match(detail, new RegExp(actualField.replaceAll(".", "\\.")), `required actual overview source missing: ${actualField}`);
@@ -44,7 +44,7 @@ assert.match(detail, /title:[^\n]+flexShrink: 1[^\n]+minWidth: 0/);
 assert.doesNotMatch(detail, /accessibilityRole="header"[^>]*numberOfLines/);
 assert.match(detail, /scrollContent: \{ paddingBottom: 42 \}/);
 
-for (const label of ["개요", "이미지·첨부", "사이즈·색상", "원부자재", "제작", "문서"]) {
+for (const label of ["개요", "이미지", "사이즈·색상", "원부자재", "제작", "문서"]) {
   assert.match(detail, new RegExp(label), `tab label/count location missing: ${label}`);
 }
 assert.equal(resolveWorkOrderTabVisualState({ selected: false, locked: true }), "locked");

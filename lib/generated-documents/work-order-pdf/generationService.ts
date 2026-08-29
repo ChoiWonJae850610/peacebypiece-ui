@@ -14,6 +14,7 @@ import {
   WORK_ORDER_PDF_INLINE_IMAGE_MIME_TYPES,
 } from "@/lib/workorder/persistence/imageAssetIntegrity.mjs";
 import { createWorkOrderPdfStorageKey } from "@/lib/workorder/pdf/workOrderPdfPolicy";
+import { createWorkOrderImageDerivativeKeys } from "@/lib/storage/r2/r2Keys";
 import { WORK_ORDER_PDF_MAX_FILE_SIZE_BYTES } from "./constants";
 import { GENERATED_DOCUMENT_COMMAND_CODE } from "./generationRepository";
 // @ts-expect-error The canonical renderer is an ESM .mts module loaded by the Node.js route runtime.
@@ -24,6 +25,7 @@ import { R2WorkerGeneratedDocumentTransport } from "./r2WorkerTransport";
 import {
   createWorkOrderIssuedPdfSnapshot,
   hashWorkOrderIssuedPdfSnapshot,
+  selectSupplementalGalleryAssets,
   serializeWorkOrderIssuedPdfSnapshot,
   type WorkOrderIssuedPdfAssetDescriptor,
 } from "./snapshot";
@@ -70,7 +72,7 @@ export async function loadWorkOrderPdfAssetManifest(tenantScope: TenantMemberSco
       SELECT 'image' AS asset_type, ri.image_id AS revision_asset_id,
              ri.company_id, ri.filename_snapshot, ri.mime_type_snapshot,
              ri.storage_object_key_snapshot, ri.display_order, ri.is_representative,
-             true AS include_in_document, i.size_bytes AS source_size_bytes,
+             ri.output_include AS include_in_document, i.size_bytes AS source_size_bytes,
              i.content_sha256 AS source_content_sha256
       FROM work_order_revision_images ri
       JOIN work_order_images i ON i.company_id = ri.company_id AND i.id = ri.image_id
@@ -102,6 +104,27 @@ export async function loadWorkOrderPdfAssetManifest(tenantScope: TenantMemberSco
 
 export async function readWorkOrderPdfAsset(asset: WorkOrderIssuedPdfAssetDescriptor): Promise<string> {
   if (!asset.storageObjectKeySnapshot) throw new Error("PDF_ASSET_STORAGE_KEY_MISSING");
+  if (asset.assetType === "image") {
+    let derivativeKey: string | null = null;
+    try { derivativeKey = createWorkOrderImageDerivativeKeys(asset.storageObjectKeySnapshot).large; } catch { /* legacy image keys use the original object */ }
+    if (derivativeKey) {
+      const derivativeRequest = createR2WorkerFileUrl({ key: derivativeKey });
+      const derivativeResponse = await fetch(derivativeRequest.url, { method: derivativeRequest.method });
+      if (derivativeResponse.ok) {
+        const contentType = derivativeResponse.headers.get("content-type")?.split(";", 1)[0]?.trim().toLowerCase() ?? "";
+        const body = Buffer.from(await derivativeResponse.arrayBuffer());
+        inspectWorkOrderPdfInlineImage({
+          declaredContentType: "image/webp",
+          declaredSizeBytes: body.byteLength,
+          declaredContentSha256: null,
+          actualContentType: contentType,
+          body,
+        });
+        return `data:image/webp;base64,${body.toString("base64")}`;
+      }
+      if (derivativeResponse.status !== 404) throw new Error(`PDF_ASSET_GET_FAILED_${derivativeResponse.status}`);
+    }
+  }
   const request = createR2WorkerFileUrl({ key: asset.storageObjectKeySnapshot });
   const response = await fetch(request.url, { method: request.method });
   if (!response.ok) throw new Error(`PDF_ASSET_GET_FAILED_${response.status}`);
@@ -270,14 +293,13 @@ export async function generateIssuedWorkOrderDocument(input: {
   if (!representative) throw new GeneratedDocumentGenerationError("DOCUMENT_NOT_READY", 409, "대표 이미지가 필요합니다.");
   try {
     const representativeImageDataUrl = await readWorkOrderPdfAsset(representative);
-    const includedAttachmentImages = await Promise.all(assets
-      .filter((asset) => asset.assetType === "attachment" && asset.includeInDocument && SUPPORTED_INLINE_IMAGE.has(asset.mimeType))
+    const includedSupplementalImages = await Promise.all(selectSupplementalGalleryAssets(assets, SUPPORTED_INLINE_IMAGE)
       .map(async (asset) => ({ filename: asset.filename, dataUrl: await readWorkOrderPdfAsset(asset) })));
     const canonicalSnapshotJson = serializeWorkOrderIssuedPdfSnapshot(snapshot);
     const snapshotSha256 = hashWorkOrderIssuedPdfSnapshot(snapshot);
     const objectKey = createWorkOrderPdfStorageKey({ companyId: tenantScope.companyId, workOrderId: input.workOrderId, pdfId: prepared.row.id });
     const runToken = randomBytes(16).toString("hex");
-    await writeLocalIssuedPdfRenderInput(runToken, { snapshot, canonicalSnapshotJson, snapshotSha256, objectKeyPlan: objectKey, representativeImageDataUrl, includedAttachmentImages });
+    await writeLocalIssuedPdfRenderInput(runToken, { snapshot, canonicalSnapshotJson, snapshotSha256, objectKeyPlan: objectKey, representativeImageDataUrl, includedAttachmentImages: includedSupplementalImages });
     const renderOrigin = process.env.WAFL_PDF_RENDER_ORIGIN?.trim() || "http://127.0.0.1:3100";
     const rendered = await new LocalChromiumIssuedWorkOrderPdfRenderer().render({
       snapshot,

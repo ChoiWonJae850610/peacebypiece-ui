@@ -69,7 +69,7 @@ import {
 } from "./workOrderSectionIntent";
 
 const SECTION_TABS = [
-  { id: "media", label: "이미지·첨부", count: (detail: WorkOrderDetailCore) => detail.tabCounts.images + detail.tabCounts.attachments },
+  { id: "media", label: "이미지", count: (detail: WorkOrderDetailCore) => detail.tabCounts.images },
   { id: "sizes", label: "사이즈·색상", count: (detail: WorkOrderDetailCore) => detail.tabCounts.sizes + detail.tabCounts.colors },
   { id: "materials", label: "원부자재", count: (detail: WorkOrderDetailCore) => detail.tabCounts.fabric + detail.tabCounts.accessory },
   { id: "production", label: "제작", count: (detail: WorkOrderDetailCore) => detail.tabCounts.processes },
@@ -198,10 +198,12 @@ type Props = {
   readonly imageMessage: string | null;
   readonly onAcquireImage: (source: WorkOrderImageAcquisitionSource) => void;
   readonly onAcquireAttachment: () => void;
+  readonly onApplyAttachmentSelection: (changes: readonly { readonly attachmentId: string; readonly includeInDocument: boolean }[]) => Promise<boolean>;
   readonly onDeleteImage: (image: WorkOrderImageAsset) => void;
   readonly onDeleteAttachment: (attachment: WorkOrderAttachmentAsset) => void;
   readonly onOpenAttachment: (attachment: WorkOrderAttachmentAsset) => void;
   readonly onSetRepresentativeImage: (image: WorkOrderImageAsset) => void;
+  readonly onSetImageOutputInclude: (image: WorkOrderImageAsset, includeInDocument: boolean) => void;
   readonly onRefreshDocuments: () => Promise<void> | void;
   readonly onRefreshConfirmedDocument: () => Promise<void> | void;
   readonly onRefreshReadinessAfterMutation: () => void;
@@ -482,6 +484,7 @@ export default function WorkOrderDetailOverview(props: Props) {
               <ControlledInlineEditValue
                 accessibilityLabel="제품명"
                 active={props.activeBasicField === "productName"}
+                allowEditingWhileSaving
                 commitMode="blur-submit"
                 containerStyle={styles.heroInlineField}
                 dirty={props.dirty}
@@ -667,14 +670,11 @@ export default function WorkOrderDetailOverview(props: Props) {
               busyImageId={props.imageBusyId}
               canEdit={specificationEditable}
               images={props.images}
-              attachments={props.attachments}
               message={props.imageMessage}
                 onAcquire={props.onAcquireImage}
-                onAcquireAttachment={props.onAcquireAttachment}
                 onDelete={props.onDeleteImage}
-                onDeleteAttachment={props.onDeleteAttachment}
-                onOpenAttachment={props.onOpenAttachment}
               onSetRepresentative={props.onSetRepresentativeImage}
+              onSetOutputInclude={props.onSetImageOutputInclude}
             />
           ) : activeSection === "sizes" ? (
             <WorkOrderSizeColorStructureEditor
@@ -700,11 +700,16 @@ export default function WorkOrderDetailOverview(props: Props) {
           ) : activeSection === "output" ? (
             <WorkOrderDocumentWorkbench
               attachments={props.attachments}
+              attachmentBusy={props.imageBusy}
               detail={detail}
               onFlushDraft={async () => { await props.draftBatch.flushAll("confirm"); }}
               onOpenSizeColor={props.sizeColor.onOpen}
               onRefresh={props.onRefreshDocuments}
               onActionProcessing={props.onActionProcessing}
+              onAcquirePdfAttachment={props.onAcquireAttachment}
+              onApplyAttachmentSelection={props.onApplyAttachmentSelection}
+              onDeleteAttachment={props.onDeleteAttachment}
+              onOpenAttachment={props.onOpenAttachment}
               onRequestActionConfirmation={props.onRequestActionConfirmation}
               sizeColorMatrix={props.sizeColor.state.bundle?.matrix ?? null}
             />

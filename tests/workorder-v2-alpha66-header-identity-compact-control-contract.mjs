@@ -48,7 +48,7 @@ assert.match(list, /작업 구분/u);
 assert.match(list, /selectionMode="multiple"/u);
 
 assert.equal(fs.existsSync("db/v2/migrations/020_v2_sample_reorder_invariant.sql"), true);
-assert.equal(fs.readdirSync("db/v2/migrations").filter((name) => /^\d{3}_.*\.sql$/u.test(name)).length, 20);
+assert.equal(fs.readdirSync("db/v2/migrations").filter((name) => /^\d{3}_.*\.sql$/u.test(name)).length, 21);
 
 console.log(JSON.stringify({
   ok: true,
@@ -59,7 +59,7 @@ console.log(JSON.stringify({
   passiveSourceSubtitleVisible: 0,
   sourceReadModelPreserved: true,
   compactSegments: 2,
-  migrationLedger: "20/20",
+  migrationLedger: "21/21",
   migration020: 1,
   actualReorderCreateE2E: 0,
   actualReworkCreateE2E: 0,

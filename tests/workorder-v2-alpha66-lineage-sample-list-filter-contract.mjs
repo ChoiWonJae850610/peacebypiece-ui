@@ -67,7 +67,7 @@ assert.match(listScreen, /item\.identity\.isSample[\s\S]+item\.identity\.reorder
 assert.equal(fs.existsSync("app/api/v2/work-orders/reorder/route.ts"), false);
 assert.equal(fs.existsSync("app/api/v2/work-orders/rework/route.ts"), false);
 
-assert.equal(fs.readdirSync("db/v2/migrations").filter((name) => /^\d{3}_.*\.sql$/u.test(name)).length, 20);
+assert.equal(fs.readdirSync("db/v2/migrations").filter((name) => /^\d{3}_.*\.sql$/u.test(name)).length, 21);
 assert.ok(fs.existsSync("docs/project/app-v2/66-workorder-lineage-sample-list-filter-evidence.md"));
 
 console.log(JSON.stringify({
@@ -76,7 +76,7 @@ console.log(JSON.stringify({
   previousPermanentInventoryRetained: 156,
   addedPermanentChecks: 1,
   finalPermanentInventory: 157,
-  migrationLedger: "20/20",
+  migrationLedger: "21/21",
   syntheticLineageFixtureOnly: true,
   actualReorderCreateE2E: 0,
   actualReworkCreateE2E: 0,

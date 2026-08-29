@@ -43,7 +43,7 @@ assert.doesNotMatch(outerFront.detailPaths.join(" "), /L270 395|L330 395|L283 44
 for (const [side, expected] of Object.entries(lowerHashes)) assert.equal(sha256(WAFL_STATIC_GARMENT_ASSETS.B[side].assetFile), expected, `lower ${side} remains byte-stable`);
 assert.equal(Object.values(WAFL_SPEC_MEASUREMENT_DIAGRAMS).reduce((sum, definition) => sum + definition.guides.length, 0), 55);
 assert.equal(fs.readdirSync("apps/mobile/assets/garments").filter((name) => /^GARMENT-(?:UPPER|LOWER|OUTER|DRESS)-(?:FRONT|BACK)\.svg$/u.test(name)).length, 8);
-assert.equal(fs.readdirSync("db/v2/migrations").filter((name) => /^\d{3}_.*\.sql$/u.test(name)).length, fs.existsSync("db/v2/migrations/020_v2_sample_reorder_invariant.sql") ? 20 : fs.existsSync("db/v2/migrations/019_v2_work_order_lineage_sample.sql") ? 19 : 18);
+assert.equal(fs.readdirSync("db/v2/migrations").filter((name) => /^\d{3}_.*\.sql$/u.test(name)).length, fs.existsSync("db/v2/migrations/021_v2_work_order_image_output_include.sql") ? 21 : fs.existsSync("db/v2/migrations/020_v2_sample_reorder_invariant.sql") ? 20 : fs.existsSync("db/v2/migrations/019_v2_work_order_lineage_sample.sql") ? 19 : 18);
 assert.equal(fs.existsSync("db/v2/migrations/019_v2_neckline_outer_pocket_fidelity.sql"), false);
 
 console.log(JSON.stringify({

@@ -12,7 +12,7 @@ import {
 // @ts-expect-error Canonical renderer is an ESM .mts module loaded by the Node route runtime.
 import { LocalChromiumIssuedWorkOrderPdfRenderer } from "./localChromiumRenderer.mts";
 import { removeLocalIssuedPdfRenderInput, writeLocalIssuedPdfRenderInput } from "./localRenderInput";
-import { createWorkOrderIssuedPdfSnapshot, hashWorkOrderIssuedPdfSnapshot, serializeWorkOrderIssuedPdfSnapshot } from "./snapshot";
+import { createWorkOrderIssuedPdfSnapshot, hashWorkOrderIssuedPdfSnapshot, selectSupplementalGalleryAssets, serializeWorkOrderIssuedPdfSnapshot } from "./snapshot";
 import { WORK_ORDER_PDF_MAX_FILE_SIZE_BYTES } from "./constants";
 import { WORK_ORDER_PDF_INLINE_IMAGE_MIME_TYPES } from "@/lib/workorder/persistence/imageAssetIntegrity.mjs";
 
@@ -24,6 +24,11 @@ export class WorkOrderPdfPreviewError extends Error {
     super(message);
     this.name = "WorkOrderPdfPreviewError";
   }
+}
+
+function classifyPreviewRenderFailure(error: unknown): string {
+  const message = error instanceof Error ? error.message : String(error);
+  return message.match(/^PDF_[A-Z0-9_]+/)?.[0] ?? "PDF_PREVIEW_RENDER_UNKNOWN";
 }
 
 function tenantScope(input: { companyId: string; companyMemberId: string | null; correlationId: string }): TenantMemberScope {
@@ -46,18 +51,23 @@ export async function renderDraftWorkOrderPdfPreview(input: {
   const snapshot = createWorkOrderIssuedPdfSnapshot({ companyId: input.scope.companyId, requestedWorkOrderId: input.workOrderId, requestedRevisionId: input.revisionId, documentType: "factory_instruction", preview: preview.data, assetManifest: assets, snapshotCreatedAt: new Date().toISOString() });
   const representative = assets.find((asset) => asset.assetType === "image" && asset.isRepresentative);
   const representativeImageDataUrl = representative ? await readWorkOrderPdfAsset(representative) : null;
-  const includedAttachmentImages = await Promise.all(assets.filter((asset) => asset.assetType === "attachment" && asset.includeInDocument && SUPPORTED_INLINE_IMAGE.has(asset.mimeType)).map(async (asset) => ({ filename: asset.filename, dataUrl: await readWorkOrderPdfAsset(asset) })));
+  const includedSupplementalImages = await Promise.all(selectSupplementalGalleryAssets(assets, SUPPORTED_INLINE_IMAGE)
+    .map(async (asset) => ({ filename: asset.filename, dataUrl: await readWorkOrderPdfAsset(asset) })));
   const canonicalSnapshotJson = serializeWorkOrderIssuedPdfSnapshot(snapshot);
   const snapshotSha256 = hashWorkOrderIssuedPdfSnapshot(snapshot);
   const runToken = randomBytes(16).toString("hex");
   const objectKeyPlan = `companies/${input.scope.companyId}/workorders/${input.workOrderId}/pdf/preview-${runToken}.pdf`;
   try {
-    await writeLocalIssuedPdfRenderInput(runToken, { snapshot, canonicalSnapshotJson, snapshotSha256, objectKeyPlan, representativeImageDataUrl, includedAttachmentImages });
+    await writeLocalIssuedPdfRenderInput(runToken, { snapshot, canonicalSnapshotJson, snapshotSha256, objectKeyPlan, representativeImageDataUrl, includedAttachmentImages: includedSupplementalImages });
     const renderOrigin = process.env.WAFL_PDF_RENDER_ORIGIN?.trim() || "http://127.0.0.1:3100";
     const rendered = await new LocalChromiumIssuedWorkOrderPdfRenderer().render({ snapshot, canonicalSnapshotJson, snapshotSha256, renderUrl: `${renderOrigin}/dev/workorder-pdf-render/${runToken}`, outputFileName: `${snapshot.documentIdentity.displayDocumentNumber}.pdf`, options: { printBackground: true, preferCssPageSize: true, maxFileSizeBytes: WORK_ORDER_PDF_MAX_FILE_SIZE_BYTES } });
     if (createHash("sha256").update(rendered.pdf).digest("hex") !== rendered.contentSha256) throw new Error("PDF_PREVIEW_HASH_INVALID");
     return rendered.pdf;
-  } catch {
+  } catch (error) {
+    console.error("[WORK_ORDER_PDF_PREVIEW_RENDER_FAILED]", {
+      code: classifyPreviewRenderFailure(error),
+      errorName: error instanceof Error ? error.name : "UnknownError",
+    });
     throw new WorkOrderPdfPreviewError("RENDER_FAILED", 500, "PDF 미리보기를 만들지 못했습니다.");
   } finally {
     await removeLocalIssuedPdfRenderInput(runToken);

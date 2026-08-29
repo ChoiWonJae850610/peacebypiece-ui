@@ -1,17 +1,27 @@
 # WAFL Current Baseline
 
-Alpha.69 is finalized at `ALPHA69_FINALIZATION_COMPLETE` with product checkpoint `ALPHA69_COMPLETE`. Seven target-audience × major-category WAFL starter specs retain the exact editable Basic Fit Seed V0.1 without runtime interpolation. Active destructive choices keep the shared WAFL INPUT question/helper/reel/V grammar while disabling the parent same-axis ScrollView, so their FlatList reel has one vertical scroll owner. Recommended-spec apply publishes the successfully fetched template content before authoritative refresh, preventing a second hydration GET after blocker release. Shared visible action processing, dirty Production subsection changes, Recipe create/copy/reorder, pending-intent save, and document confirmation cross the real presentation boundary before work begins. Zero-loss replacement remains immediate. Owner physical iPhone QA is explicitly accepted as PASS. APP_VERSION is `2.0.0-alpha.69`; migration stays `20/20`, new migration and production/Owner/ambiguous mutation are zero.
+Alpha.70 is finalized at `ALPHA70_FINALIZATION_COMPLETE` with product checkpoint `ALPHA70_COMPLETE`. The first-page PDF keeps its accepted 58/42 image/fact balance and 140mm cover, while supplemental images remain a 2×5, 10-per-page gallery. Recipe-name editing uses one 500ms product-name-only autosave owner. Photos/Camera keep versioned upload, HEIC/HEIF real JPEG normalization, conflict rebase and orphan safety; normal images persist revision-level document inclusion. Image and Document authoring are separated, new attachments are PDF-only, Preview renders bounded 2048px large derivatives without weakening the canonical PDF size limit, and attachment delivery selection reconciles one authoritative parent asset projection. Owner physical iPhone QA is explicitly accepted as PASS. APP_VERSION is `2.0.0-alpha.70`; DEV/TEST migration is `21/21` with one cumulative alpha.70 additive migration, Production migration is zero, and production/Owner/ambiguous mutation remains `0/0/0`.
 
 Document type: **Current Baseline**
 
 Canonical owner: `docs/codex-current-state.md`
 
-Result version: `2.0.0-alpha.69`
-Status: `ALPHA69_FINALIZATION_COMPLETE`
-Product checkpoint: `ALPHA69_COMPLETE`
+Result version: `2.0.0-alpha.70`
+Status: `ALPHA70_FINALIZATION_COMPLETE`
+Product checkpoint: `ALPHA70_COMPLETE`
 Owner physical result: `PASS`
 
+## Final alpha.70 result
+
+Alpha.70 finalizes the cumulative PDF and media workflow without changing the accepted alpha.69 Size/POM and WAFL INPUT behavior. The issued/preview document preserves cover emphasis at 58/42, `coverMain` 140mm, typography floors, long-name wrapping, and deterministic 10-image gallery pagination. Recipe-name autosave is product-name-only and coordinates with image mutation versions. Photo/Camera acquisition no longer depends on React Native Blob `arrayBuffer`; HEIC/HEIF uses the approved Expo-compatible real JPEG transform before prepare/upload. Image inclusion is revision-persisted through additive migration `021`; representative images stay cover-only while selected non-representative images feed the supplemental gallery. The Image tab owns images, the Document tab owns PDF-only attachments, and legacy selected image attachments remain readable.
+
+Authenticated Draft Preview retains private session transport and uses canonical 2048px large WebP derivatives for PDF embedding, with legacy-original fallback and the existing PDF byte ceiling unchanged. Attachment delivery selection stages in the Workbench but executes and reconciles through the canonical asset controller with sequential expected versions. Owner physical iPhone QA explicitly accepted Photos, Camera, Draft PDF Viewer and attachment delivery-selection behavior before finalization. The reusable EAS Development Build remains unchanged; no finalization dependency/native/config/EAS delta exists.
+
 ## Final alpha.69 result
+
+Status: `ALPHA69_FINALIZATION_COMPLETE`
+
+Product checkpoint: `ALPHA69_COMPLETE`
 
 The system Size universe includes waist labels 24–36 without persistence or migration. Size selection shows
 target × major recommendations first, keeps company/current/direct choices, and discloses the remaining system
@@ -318,8 +328,8 @@ The WorkOrder list stays flat. Existing workflow status chips remain the only pe
 | Entry commit | `feat: WAFL v2 alpha.65 Maker 입력 UX와 완성치수 도식 완성` |
 | Entry ahead/behind | `0/0` |
 | Entry working tree | clean |
-| APP_VERSION | `2.0.0-alpha.69` |
-| Mobile package version | `2.0.0-alpha.69` |
+| APP_VERSION | `2.0.0-alpha.70` |
+| Mobile package version | `2.0.0-alpha.70` |
 | Root package version | `0.5.637` |
 | Expo public version | `2.0.0` |
 | iOS Development Build | build number `1`, reusable while native inputs remain unchanged |
@@ -330,9 +340,9 @@ The source cannot contain the hash of the commit that contains itself. Final alp
 
 ## Latest delivery boundary
 
-- Target Source ZIP: `peacebypiece-ui-2.0.0-alpha.69.zip`.
-- Target repo-state: `repo-state-2.0.0-alpha.69-<actual timestamp>.txt` when the canonical Finish tool emits one.
-- The accepted release handoff is generated from the final synchronized pushed alpha.69 HEAD.
+- Target Source ZIP: `peacebypiece-ui-2.0.0-alpha.70.zip`.
+- Target repo-state: `repo-state-2.0.0-alpha.70-<actual timestamp>.txt` when the canonical Finish tool emits one.
+- The accepted release handoff is generated from the final synchronized pushed alpha.70 HEAD.
 
 ## Current product and transport baseline
 

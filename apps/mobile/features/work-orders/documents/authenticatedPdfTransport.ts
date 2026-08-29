@@ -63,11 +63,23 @@ export async function downloadAuthenticatedDocumentPdf(input: {
     });
     const info = response.info();
     const contentType = responseHeader(response, "content-type").toLowerCase();
+    if (process.env.EXPO_PUBLIC_WAFL_EXTERNAL_QA?.trim().toLowerCase() === "true") {
+      console.info("[WAFL_PDF_BINARY_TRANSPORT]", {
+        kind: input.preview ? "draft-preview" : "issued-document",
+        status: info.status,
+        contentType: contentType.split(";", 1)[0] || "unknown",
+        correlationPresent: Boolean(responseHeader(response, "x-wafl-correlation-id")),
+      });
+    }
     const path = response.path();
     const stat = path ? await ReactNativeBlobUtil.fs.stat(path) : null;
     if (info.status !== 200 || !contentType.includes("application/pdf") || !stat || stat.size < 5) {
       response.flush();
-      throw new MobileApiError({ code: info.status === 401 ? "AUTH_REQUIRED" : "MALFORMED_RESPONSE", message: "PDF를 불러오지 못했습니다.", status: info.status });
+      throw new MobileApiError({
+        code: info.status === 401 ? "AUTH_REQUIRED" : info.status >= 500 ? "INTERNAL_ERROR" : "MALFORMED_RESPONSE",
+        message: info.status >= 500 ? "PDF를 생성하지 못했습니다. 다시 시도해 주세요." : "PDF를 불러오지 못했습니다.",
+        status: info.status,
+      });
     }
     await verifyPdfFile(path, stat.size);
     let disposed = false;

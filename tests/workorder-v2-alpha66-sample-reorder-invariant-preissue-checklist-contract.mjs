@@ -29,7 +29,7 @@ assert.match(migration020, /work_orders_sample_reorder_invariant_check/u);
 assert.match(migration020, /NOT is_sample OR \(derivation_kind <> 'reorder' AND reorder_round = 0\)/u);
 assert.doesNotMatch(migration020, /DROP|TRUNCATE|DELETE\s+FROM|UPDATE\s+work_orders/iu);
 assert.equal(read("db/v2/migrations/019_v2_work_order_lineage_sample.sql"), migration019, "migration019 source owner remains intact");
-assert.equal(fs.readdirSync("db/v2/migrations").filter((name) => /^\d{3}_.*\.sql$/u.test(name)).length, 20);
+assert.equal(fs.readdirSync("db/v2/migrations").filter((name) => /^\d{3}_.*\.sql$/u.test(name)).length, 21);
 
 const sampleOriginal = { isSample: true, derivationKind: "original", reorderRound: 0 };
 const sampleRework = { isSample: true, derivationKind: "rework", reorderRound: 0 };
@@ -91,7 +91,7 @@ console.log(JSON.stringify({
   previousPermanentInventoryRetained: 159,
   addedPermanentChecks: 1,
   finalPermanentInventory: 160,
-  migrationLedger: "20/20",
+  migrationLedger: "21/21",
   migration020: 1,
   actualReorderCreateE2E: 0,
   actualReworkCreateE2E: 0,

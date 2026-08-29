@@ -35,7 +35,7 @@ for (const categoryCode of categories) {
 
 assert.equal(Object.keys(WAFL_SPEC_MEASUREMENT_DIAGRAMS).length, 4);
 assert.equal(Object.values(WAFL_SPEC_MEASUREMENT_DIAGRAMS).reduce((sum, definition) => sum + definition.guides.length, 0), 55);
-assert.equal(fs.readdirSync("db/v2/migrations").filter((name) => /^\d{3}_.*\.sql$/u.test(name)).length, fs.existsSync("db/v2/migrations/020_v2_sample_reorder_invariant.sql") ? 20 : fs.existsSync("db/v2/migrations/019_v2_work_order_lineage_sample.sql") ? 19 : 18);
+assert.equal(fs.readdirSync("db/v2/migrations").filter((name) => /^\d{3}_.*\.sql$/u.test(name)).length, fs.existsSync("db/v2/migrations/021_v2_work_order_image_output_include.sql") ? 21 : fs.existsSync("db/v2/migrations/020_v2_sample_reorder_invariant.sql") ? 20 : fs.existsSync("db/v2/migrations/019_v2_work_order_lineage_sample.sql") ? 19 : 18);
 assert.equal(fs.existsSync("db/v2/migrations/019_v2_shoulder_armhole_fidelity.sql"), false);
 
 console.log(JSON.stringify({

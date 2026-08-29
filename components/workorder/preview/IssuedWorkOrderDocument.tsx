@@ -6,7 +6,7 @@ import { CalendarDays, CircleDollarSign, createLucideIcon, Factory, FileText, Ha
 import type { WorkOrderIssuedPreviewReadModel } from "@/lib/domain/work-orders/contracts";
 import { decodeWorkOrderCategory, workOrderProductClassificationSummary } from "@/lib/domain/work-orders/catalog/workOrderCategoryPolicy";
 import { formatMeasurementFromCm } from "@/lib/domain/work-orders/measurement/measurementPolicy";
-import { ISSUED_PDF_CONTENT_PAGE_CAPACITY, issuedPdfSizeSpecWeight, packIssuedPdfBlocks, paginateIssuedPdfSizeSpecRows } from "@/lib/generated-documents/work-order-pdf/paginationPolicy";
+import { ISSUED_PDF_CONTENT_PAGE_CAPACITY, issuedPdfSizeSpecWeight, packIssuedPdfBlocks, paginateIssuedPdfAttachmentImages, paginateIssuedPdfSizeSpecRows } from "@/lib/generated-documents/work-order-pdf/paginationPolicy";
 import { formatIssuedPdfWon, resolveIssuedPdfCostPresentation } from "@/lib/generated-documents/work-order-pdf/costPresentation";
 import { formatIssuedDocumentQuantity, resolveIssuedPdfFactoryQuantity } from "@/lib/generated-documents/work-order-pdf/quantityFormatter";
 import { resolveIssuedPdfProcessPresentation } from "@/lib/generated-documents/work-order-pdf/processPresentation";
@@ -166,7 +166,12 @@ function buildBlocks(data: WorkOrderIssuedPreviewReadModel, includedAttachmentIm
   processPages.forEach((rows, index) => blocks.push({ key: `process-${index}`, weight: 5 + rows.reduce((sum, row) => sum + textRowWeight([row.processName, row.partnerName, formatProcessInstruction(row)], 3), 0), startsNewPage: processOversized && index === 0, content: <ProcessSection data={data} rows={rows} continued={index > 0} /> }));
 
   const images = includedAttachmentImages ?? [];
-  for (let index = 0; index < images.length; index += 2) blocks.push({ key: `attachment-images-${index / 2}`, weight: ISSUED_PDF_CONTENT_PAGE_CAPACITY, startsNewPage: true, content: <IncludedAttachmentGrid continued={index > 0} images={images.slice(index, index + 2)} /> });
+  paginateIssuedPdfAttachmentImages(images).forEach((pageImages, index) => blocks.push({
+    key: `attachment-images-${index}`,
+    weight: ISSUED_PDF_CONTENT_PAGE_CAPACITY,
+    startsNewPage: true,
+    content: <IncludedAttachmentGrid continued={index > 0} images={pageImages} />,
+  }));
   return blocks;
 }
 

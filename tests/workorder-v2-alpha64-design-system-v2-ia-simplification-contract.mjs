@@ -38,7 +38,7 @@ assert.doesNotMatch(metric, /valueFrameEditable|borderBottomWidth|borderBottomCo
 assert.match(overview, /<WaflMetricField editable=\{false\} label="총 수량"/);
 assert.equal((overview.match(/<WaflMetricField/g) ?? []).length, 6);
 
-for (const label of ["이미지·첨부", "사이즈·색상", "원부자재", "제작", "문서"]) assert.match(overview, new RegExp(`label: "${label}"`));
+for (const label of ["이미지", "사이즈·색상", "원부자재", "제작", "문서"]) assert.match(overview, new RegExp(`label: "${label}"`));
 assert.doesNotMatch(overview, /\{ id: "fabric", label: "원단"|\{ id: "accessory", label: "부자재"/);
 assert.match(overview, /testID="work-order-combined-materials"/);
 assert.match(overview, /<WaflMaterialsCategorySwitch/);
@@ -63,7 +63,7 @@ assert.doesNotMatch(materials, /materialSectionVisibleLimit|hasBoundedItems|show
 assert.doesNotMatch(materials, /WaflListAddCap|addCapAnchor|listWithAddCap/);
 
 for (const doc of [design, ia]) assert.match(doc, /OWNER_PHYSICAL_REVIEW_REQUIRED/);
-assert.match(ia, /개요 \/ 이미지·첨부 \/ 사이즈·색상 \/ 원부자재 \/ 제작 \/ 문서/);
+assert.match(ia, /개요 \/ 이미지(?:·첨부)? \/ 사이즈·색상 \/ 원부자재 \/ 제작 \/ 문서/);
 assert.match(ia, /presentation-only|presentation-only|presentation/i);
 assert.match(roadmap, /(?:Status target: `ALPHA64_[A-Z0-9_]+_IPHONE_REQA_REQUIRED`|Status: `ALPHA[0-9]+_FINALIZATION_COMPLETE`)/);
 assert.doesNotMatch(roadmap, /Status target: `ALPHA64_[A-Z0-9_]+_COMPLETE`/);

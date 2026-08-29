@@ -15,7 +15,7 @@ const service = read("lib/generated-documents/document-access/service.ts");
 const migrationInventory = fs.readdirSync(path.join(root, "db/v2/migrations"));
 const fixture = read("scripts/prepare-wafl-v2-alpha64-document-attachments-owner-fixture.mjs");
 
-for (const copy of ["레시피를 확정합니다", "최종 생성 후에는 주요 생산정보를 수정할 수 없습니다.", "생산 구분 · 미지정", "사이즈·색상별 수량", "전달 첨부"]) {
+for (const copy of ["레시피를 확정합니다", "최종 생성 후에는 주요 생산정보를 수정할 수 없습니다.", "생산 구분 · 미지정", "사이즈·색상별 수량", "첨부 자료", "PDF 첨부", "전달 선택"]) {
   assert.match(workbench, new RegExp(copy), `workbench copy:${copy}`);
 }
 assert.match(workbench, /if \(!detail\.header\.readiness\.canIssue\)[\s\S]*hardBlockers[\s\S]*return;/);
@@ -25,11 +25,10 @@ assert.match(workbench, /documentQuantityDisclosureRows/);
 assert.match(workbench, /DOCUMENT_QUANTITY_INLINE_LIMIT/);
 assert.match(workbench, /전체보기 \{quantityRows\.length\}개/);
 
-assert.match(workbench, /const selectedAttachments = useMemo\(\(\) => attachments\.filter/);
 assert.match(workbench, /const changed = attachments\.filter/);
 assert.doesNotMatch(workbench, /const changed = supportedAttachments\.filter/);
-assert.match(workbench, /PDF 본문 이미지 · 전달 첨부/);
-assert.match(workbench, /선택한 모든 파일은 공유 Viewer의 전달 첨부/);
+assert.match(workbench, /PDF 첨부는 작업지시서 PDF에 합쳐지지 않고 별도 전달 파일로 보관됩니다/);
+assert.match(workbench, /선택한 PDF와 기존 첨부는 공유 Viewer의 전달 자료에 표시됩니다/);
 
 for (const token of ["status === \"requested\"", "line.partnerId", "orderQuantity", "unitCode", "Map<string, QuickDeliveryGroup>"]) {
   assert.match(quickPolicy, new RegExp(token.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")), `quick policy:${token}`);

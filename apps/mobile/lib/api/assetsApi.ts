@@ -25,6 +25,7 @@ export async function getWorkOrderImages(workOrderId: string): Promise<WorkOrder
     && Number.isSafeInteger(item.sizeBytes)
     && Number.isSafeInteger(item.displayOrder)
     && typeof item.isRepresentative === "boolean"
+    && typeof item.includeInDocument === "boolean"
     && (item.thumbnailUrl === null || typeof item.thumbnailUrl === "string")
     && (item.previewUrl === null || typeof item.previewUrl === "string")
     && (item.fullscreenUrl === null || typeof item.fullscreenUrl === "string")
@@ -62,6 +63,7 @@ export async function getWorkOrderImages(workOrderId: string): Promise<WorkOrder
       sizeBytes: Number(item.sizeBytes),
       displayOrder: Number(item.displayOrder),
       isRepresentative: item.isRepresentative === true,
+      includeInDocument: item.includeInDocument === true,
       state: "active",
       thumbnailUrl: typeof item.thumbnailUrl === "string" ? item.thumbnailUrl : null,
       previewUrl: typeof item.previewUrl === "string" ? item.previewUrl : null,
@@ -338,6 +340,35 @@ async function mutateWorkOrderImage(
   );
   if (!body.ok || !body.data || body.data.workOrderId !== workOrderId || body.data.imageId !== imageId || !Number.isSafeInteger(body.data.nextVersion)) {
     throw new MobileApiError({ code: "MALFORMED_RESPONSE", message: "이미지 변경 응답이 올바르지 않습니다." });
+  }
+  return body.data;
+}
+
+export async function setWorkOrderImageOutputInclude(
+  workOrderId: string,
+  imageId: string,
+  input: {
+    readonly expectedVersion: number;
+    readonly clientRequestId: string;
+    readonly idempotencyKey: string;
+    readonly includeInDocument: boolean;
+  },
+): Promise<WorkOrderImageCommandResult> {
+  const body = await requestJson<{ readonly ok: boolean; readonly data?: WorkOrderImageCommandResult }>(
+    `/api/v2/work-orders/${encodeURIComponent(workOrderId)}/images/${encodeURIComponent(imageId)}/output-include`,
+    {
+      method: "PATCH",
+      idempotencyKey: input.idempotencyKey,
+      body: {
+        expectedVersion: input.expectedVersion,
+        clientRequestId: input.clientRequestId,
+        includeInDocument: input.includeInDocument,
+      },
+    },
+  );
+  if (!body.ok || !body.data || body.data.workOrderId !== workOrderId || body.data.imageId !== imageId
+    || body.data.includeInDocument !== input.includeInDocument || !Number.isSafeInteger(body.data.nextVersion)) {
+    throw new MobileApiError({ code: "MALFORMED_RESPONSE", message: "이미지 출력 설정 응답이 올바르지 않습니다." });
   }
   return body.data;
 }

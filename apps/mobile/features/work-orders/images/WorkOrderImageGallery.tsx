@@ -17,7 +17,6 @@ import {
   Expand,
   FileText,
   Images,
-  Paperclip,
   PencilLine,
   Star,
   Trash2,
@@ -26,29 +25,22 @@ import {
 
 import { WAFL_FONTS } from "@/constants/fonts";
 import { WAFL_THEME } from "@/constants/theme";
-import type { WorkOrderAttachmentAsset, WorkOrderImageAsset } from "@/domain/mobileContract";
+import type { WorkOrderImageAsset } from "@/domain/mobileContract";
 import type { WorkOrderImageAcquisitionSource } from "@/features/work-orders/images/workOrderImageAcquisition";
-import {
-  attachmentListSummary,
-  formatAttachmentBytes,
-} from "@/features/work-orders/images/attachmentPresentation";
 import { resolveMobileApiUrl } from "@/lib/apiTransport";
 import WaflActionTile from "@/features/inputs/WaflActionTile";
 import WaflActionTileGroup from "@/features/inputs/WaflActionTileGroup";
 
 type Props = {
   readonly images: readonly WorkOrderImageAsset[];
-  readonly attachments: readonly WorkOrderAttachmentAsset[];
   readonly canEdit: boolean;
   readonly busy: boolean;
   readonly busyImageId: string | null;
   readonly message: string | null;
   readonly onAcquire: (source: WorkOrderImageAcquisitionSource) => void;
-  readonly onAcquireAttachment: () => void;
   readonly onDelete: (image: WorkOrderImageAsset) => void;
-  readonly onDeleteAttachment: (attachment: WorkOrderAttachmentAsset) => void;
-  readonly onOpenAttachment: (attachment: WorkOrderAttachmentAsset) => void;
   readonly onSetRepresentative: (image: WorkOrderImageAsset) => void;
+  readonly onSetOutputInclude: (image: WorkOrderImageAsset, includeInDocument: boolean) => void;
 };
 
 function ImageWithFallback(props: {
@@ -136,14 +128,6 @@ export default function WorkOrderImageGallery(props: Props) {
           testID="work-order-image-camera"
         />
         <WaflActionTile accessibilityLabel="스케치, 준비 중" disabled icon={PencilLine} label="스케치" onPress={() => undefined} testID="work-order-image-sketch" />
-        <WaflActionTile
-          accessibilityLabel="일반 첨부파일 선택"
-          disabled={!props.canEdit || props.busy}
-          icon={Paperclip}
-          label="첨부"
-          onPress={props.onAcquireAttachment}
-          testID="work-order-image-attachment"
-        />
       </WaflActionTileGroup>
 
       {props.busy && !props.busyImageId ? (
@@ -189,6 +173,20 @@ export default function WorkOrderImageGallery(props: Props) {
                 <Star color="#72523f" fill={selected.isRepresentative ? "#72523f" : "transparent"} size={16} />
                 <Text style={styles.selectedActionText}>{selected.isRepresentative ? "현재 대표" : "대표 지정"}</Text>
               </Pressable>
+              {!selected.isRepresentative ? (
+                <Pressable
+                  accessibilityLabel={selected.includeInDocument ? "현재 이미지를 작업지시서에서 제외" : "현재 이미지를 작업지시서에 포함"}
+                  accessibilityRole="switch"
+                  accessibilityState={{ checked: selected.includeInDocument, disabled: props.busy }}
+                  disabled={props.busy}
+                  onPress={() => props.onSetOutputInclude(selected, !selected.includeInDocument)}
+                  style={({ pressed }) => [styles.selectedAction, selected.includeInDocument && styles.includeActionSelected, props.busy && styles.disabled, pressed && styles.pressed]}
+                  testID={`work-order-image-output-include-${selected.id}`}
+                >
+                  <FileText color={selected.includeInDocument ? "#fff" : "#72523f"} size={16} />
+                  <Text style={[styles.selectedActionText, selected.includeInDocument && styles.includeActionTextSelected]}>{selected.includeInDocument ? "문서 포함됨" : "작업지시서 포함"}</Text>
+                </Pressable>
+              ) : null}
               <Pressable
                 accessibilityLabel="현재 이미지 삭제"
                 disabled={props.busy}
@@ -226,24 +224,6 @@ export default function WorkOrderImageGallery(props: Props) {
           <Text style={styles.emptyTitle}>등록된 이미지가 없습니다.</Text>
         </View>
       )}
-
-      <View style={styles.infoSection} testID="work-order-attachment-list">
-        <View style={styles.sectionHeading}><Text style={styles.sectionTitle}>첨부 목록</Text><Text style={styles.sectionCount}>{attachmentListSummary(props.attachments)}</Text></View>
-        {props.attachments.length === 0 ? <Text style={styles.emptyLine}>등록된 첨부가 없습니다.</Text> : props.attachments.map((attachment) => (
-          <View key={attachment.id} style={styles.attachmentRow}>
-            <FileText color="#72523f" size={17} />
-            <Pressable accessibilityLabel={`${attachment.filename} 열기`} onPress={() => props.onOpenAttachment(attachment)} style={styles.attachmentText}>
-              <Text numberOfLines={1} style={styles.attachmentName}>{attachment.filename}</Text>
-              <Text style={styles.attachmentOpen}>{formatAttachmentBytes(attachment.sizeBytes)} · 눌러서 열기</Text>
-            </Pressable>
-            {props.canEdit ? (
-              <Pressable accessibilityLabel={`${attachment.filename} 삭제`} disabled={props.busy} onPress={() => props.onDeleteAttachment(attachment)} style={props.busy && styles.disabled}>
-                <Trash2 color="#a13b35" size={17} />
-              </Pressable>
-            ) : null}
-          </View>
-        ))}
-      </View>
 
       <Modal animationType="fade" onRequestClose={() => setFullscreen(false)} presentationStyle="fullScreen" visible={fullscreen}>
         <View {...swipeResponder.panHandlers} style={styles.fullscreen}>
@@ -285,6 +265,8 @@ const styles = StyleSheet.create({
   selectedActions: { flexDirection: "row", gap: 7, marginTop: 9 },
   selectedAction: { alignItems: "center", borderColor: "#d2c4b5", borderRadius: 9, borderWidth: 1, flex: 1, flexDirection: "row", gap: 5, justifyContent: "center", minHeight: 38, paddingHorizontal: 8 },
   selectedActionText: { color: "#72523f", fontFamily: WAFL_FONTS.bold, fontSize: 10 },
+  includeActionSelected: { backgroundColor: WAFL_THEME.color.deepNavy, borderColor: WAFL_THEME.color.deepNavy },
+  includeActionTextSelected: { color: "#fff" },
   deleteAction: { borderColor: "#e0b8b2" },
   deleteText: { color: "#a13b35" },
   thumbnailStrip: { gap: 7, paddingTop: 10 },

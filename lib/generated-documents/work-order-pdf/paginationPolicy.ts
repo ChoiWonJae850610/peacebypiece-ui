@@ -4,6 +4,10 @@
 export const ISSUED_PDF_CONTENT_PAGE_CAPACITY = 38;
 export const ISSUED_PDF_SIZE_SPEC_CHROME_WEIGHT = 6;
 export const ISSUED_PDF_SIZE_SPEC_ROW_WEIGHT = 2;
+export const ISSUED_PDF_ATTACHMENT_COLUMNS = 2;
+export const ISSUED_PDF_ATTACHMENT_ROWS_PER_PAGE = 5;
+export const ISSUED_PDF_ATTACHMENT_IMAGES_PER_PAGE =
+  ISSUED_PDF_ATTACHMENT_COLUMNS * ISSUED_PDF_ATTACHMENT_ROWS_PER_PAGE;
 
 export type IssuedPdfPackableBlock = {
   readonly startsNewPage?: boolean;
@@ -46,6 +50,14 @@ export function paginateIssuedPdfSizeSpecRows<T>(rows: readonly T[]): readonly (
   const pages: T[][] = [];
   for (let index = 0; index < rows.length; index += balancedRowsPerPage) {
     pages.push(rows.slice(index, index + balancedRowsPerPage));
+  }
+  return pages;
+}
+
+export function paginateIssuedPdfAttachmentImages<T>(images: readonly T[]): readonly (readonly T[])[] {
+  const pages: T[][] = [];
+  for (let index = 0; index < images.length; index += ISSUED_PDF_ATTACHMENT_IMAGES_PER_PAGE) {
+    pages.push(images.slice(index, index + ISSUED_PDF_ATTACHMENT_IMAGES_PER_PAGE));
   }
   return pages;
 }

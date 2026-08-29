@@ -18,7 +18,9 @@ import {
   Paperclip,
   RefreshCw,
   Share2,
+  Trash2,
   Truck,
+  Upload,
 } from "lucide-react-native";
 
 import { beginWaflPresentationFirstOperation } from "@/application/waflPresentationBoundary";
@@ -45,7 +47,6 @@ import {
   issueWorkOrderR0,
   listDocumentAccessTokens,
   revokeDocumentAccessToken,
-  setAttachmentOutputInclude,
 } from "@/lib/api/documentsApi";
 import { resolveMobileApiUrl } from "@/lib/apiTransport";
 import { getWorkOrderMaterialPartners, getWorkOrderMaterials } from "@/lib/api/materialsApi";
@@ -123,20 +124,26 @@ function DocumentAccessMetadata({ token }: { readonly token: DocumentAccessToken
   return <View style={styles.accessMetadata}>{rows.map((row) => <View key={row.label} style={styles.accessMetadataRow}><Text style={styles.accessMetadataLabel}>{row.label}</Text><Text style={styles.accessMetadataValue}>{row.value}</Text></View>)}</View>;
 }
 
-export default function WorkOrderDocumentWorkbench({ detail, attachments, sizeColorMatrix, onFlushDraft, onOpenSizeColor, onRefresh, onActionProcessing, onRequestActionConfirmation }: {
+export default function WorkOrderDocumentWorkbench({ detail, attachments, attachmentBusy, sizeColorMatrix, onFlushDraft, onOpenSizeColor, onRefresh, onActionProcessing, onRequestActionConfirmation, onAcquirePdfAttachment, onApplyAttachmentSelection, onDeleteAttachment, onOpenAttachment }: {
   readonly detail: WorkOrderDetailCore;
   readonly attachments: readonly WorkOrderAttachmentAsset[];
+  readonly attachmentBusy: boolean;
   readonly sizeColorMatrix: WorkOrderSizeColorMatrix | null;
   readonly onFlushDraft: () => Promise<void>;
   readonly onOpenSizeColor: () => void;
   readonly onRefresh: () => Promise<void> | void;
   readonly onActionProcessing: (message: string | null) => void;
   readonly onRequestActionConfirmation: (confirmation: WaflActionConfirmationState | null) => void;
+  readonly onAcquirePdfAttachment: () => void;
+  readonly onApplyAttachmentSelection: (changes: readonly { readonly attachmentId: string; readonly includeInDocument: boolean }[]) => Promise<boolean>;
+  readonly onDeleteAttachment: (attachment: WorkOrderAttachmentAsset) => void;
+  readonly onOpenAttachment: (attachment: WorkOrderAttachmentAsset) => void;
 }) {
   const attachmentProjectionKey = attachments.map((item) => `${item.id}:${item.includeInDocument ? 1 : 0}`).join(",");
   return (
     <WorkOrderDocumentWorkbenchBody
       attachments={attachments}
+      attachmentBusy={attachmentBusy}
       detail={detail}
       key={`${detail.header.id}:${detail.header.entityVersion}:${attachmentProjectionKey}`}
       onFlushDraft={onFlushDraft}
@@ -144,27 +151,35 @@ export default function WorkOrderDocumentWorkbench({ detail, attachments, sizeCo
       onRefresh={onRefresh}
       onActionProcessing={onActionProcessing}
       onRequestActionConfirmation={onRequestActionConfirmation}
+      onAcquirePdfAttachment={onAcquirePdfAttachment}
+      onApplyAttachmentSelection={onApplyAttachmentSelection}
+      onDeleteAttachment={onDeleteAttachment}
+      onOpenAttachment={onOpenAttachment}
       sizeColorMatrix={sizeColorMatrix}
     />
   );
 }
 
-function WorkOrderDocumentWorkbenchBody({ detail, attachments, sizeColorMatrix, onFlushDraft, onOpenSizeColor, onRefresh, onActionProcessing, onRequestActionConfirmation }: {
+function WorkOrderDocumentWorkbenchBody({ detail, attachments, attachmentBusy, sizeColorMatrix, onFlushDraft, onOpenSizeColor, onRefresh, onActionProcessing, onRequestActionConfirmation, onAcquirePdfAttachment, onApplyAttachmentSelection, onDeleteAttachment, onOpenAttachment }: {
   readonly detail: WorkOrderDetailCore;
   readonly attachments: readonly WorkOrderAttachmentAsset[];
+  readonly attachmentBusy: boolean;
   readonly sizeColorMatrix: WorkOrderSizeColorMatrix | null;
   readonly onFlushDraft: () => Promise<void>;
   readonly onOpenSizeColor: () => void;
   readonly onRefresh: () => Promise<void> | void;
   readonly onActionProcessing: (message: string | null) => void;
   readonly onRequestActionConfirmation: (confirmation: WaflActionConfirmationState | null) => void;
+  readonly onAcquirePdfAttachment: () => void;
+  readonly onApplyAttachmentSelection: (changes: readonly { readonly attachmentId: string; readonly includeInDocument: boolean }[]) => Promise<boolean>;
+  readonly onDeleteAttachment: (attachment: WorkOrderAttachmentAsset) => void;
+  readonly onOpenAttachment: (attachment: WorkOrderAttachmentAsset) => void;
 }) {
   const [documents, setDocuments] = useState<readonly GeneratedWorkOrderDocument[]>([]);
   const [tokens, setTokens] = useState<readonly DocumentAccessTokenSummary[]>([]);
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [version, setVersion] = useState(detail.header.entityVersion);
-  const [included, setIncluded] = useState<Record<string, boolean>>(() => Object.fromEntries(attachments.map((item) => [item.id, item.includeInDocument])));
   const [stagedIncluded, setStagedIncluded] = useState<Record<string, boolean>>(() => Object.fromEntries(attachments.map((item) => [item.id, item.includeInDocument])));
   const [attachmentSheetOpen, setAttachmentSheetOpen] = useState(false);
   const [shareSheetOpen, setShareSheetOpen] = useState(false);
@@ -241,43 +256,29 @@ function WorkOrderDocumentWorkbenchBody({ detail, attachments, sizeColorMatrix, 
     return () => { active = false; };
   }, [detail.header.id]);
 
-  const selectedAttachments = useMemo(() => attachments.filter((item) => included[item.id]), [attachments, included]);
   const thumbnailUrl = resolveMobileApiUrl(detail.header.representativeImage?.thumbnailUrl ?? null);
 
   function openAttachmentSheet() {
-    setStagedIncluded({ ...included });
+    setStagedIncluded(Object.fromEntries(attachments.map((item) => [item.id, item.includeInDocument])));
     setAttachmentSheetOpen(true);
   }
 
   async function applyAttachmentSelection() {
-    const changed = attachments.filter((attachment) => Boolean(stagedIncluded[attachment.id]) !== Boolean(included[attachment.id]));
+    const changed = attachments.filter((attachment) => Boolean(stagedIncluded[attachment.id]) !== attachment.includeInDocument);
     if (changed.length === 0) {
       setAttachmentSheetOpen(false);
       return;
     }
     setBusy(true);
     setMessage(null);
-    let nextVersion = version;
     try {
-      for (const attachment of changed) {
-        const includeInDocument = Boolean(stagedIncluded[attachment.id]);
-        const response = await setAttachmentOutputInclude({
-          workOrderId: detail.header.id,
-          attachmentId: attachment.id,
-          expectedVersion: nextVersion,
-          includeInDocument,
-          clientRequestId: requestId("attachment-output"),
-        });
-        if (!response.ok || !Number.isSafeInteger(response.data?.nextVersion)) throw new Error("ATTACHMENT_OUTPUT_RESPONSE_INVALID");
-        nextVersion = response.data.nextVersion;
-        setIncluded((current) => ({ ...current, [attachment.id]: includeInDocument }));
-      }
-      setVersion(nextVersion);
-      setAttachmentSheetOpen(false);
-      setMessage("문서에 포함할 첨부를 저장했습니다.");
+      const saved = await onApplyAttachmentSelection(changed.map((attachment) => ({
+        attachmentId: attachment.id,
+        includeInDocument: Boolean(stagedIncluded[attachment.id]),
+      })));
+      if (saved) setAttachmentSheetOpen(false);
     } catch {
-      setVersion(nextVersion);
-      setMessage("첨부 출력 설정을 모두 저장하지 못했습니다. 현재 선택을 다시 확인해 주세요.");
+      setMessage("첨부 출력 설정을 모두 저장하지 못했습니다. 최신 선택을 다시 확인해 주세요.");
     } finally {
       setBusy(false);
     }
@@ -478,18 +479,21 @@ function WorkOrderDocumentWorkbenchBody({ detail, attachments, sizeColorMatrix, 
           <Text style={styles.subhead}>첨부 자료</Text>
         </View>
         <WaflActionTileGroup testID="document-workbench-action-tiles">
-          <WaflActionTile accessibilityLabel="문서 첨부" disabled={issued || busy || attachments.length === 0} icon={Paperclip} label="첨부" onPress={openAttachmentSheet} testID="document-attachment-action" />
+          <WaflActionTile accessibilityLabel="PDF 파일 첨부" disabled={issued || busy || attachmentBusy} icon={Upload} label="PDF 첨부" onPress={onAcquirePdfAttachment} testID="document-pdf-attachment-action" />
+          <WaflActionTile accessibilityLabel="전달할 첨부 선택" disabled={busy || attachmentBusy || attachments.length === 0} icon={Paperclip} label="전달 선택" onPress={openAttachmentSheet} testID="document-attachment-action" />
           <WaflActionTile accessibilityLabel="문서 퀵 전달" icon={Truck} label="퀵 전달" onPress={() => setQuickDeliveryOpen(true)} testID="document-quick-delivery-action" />
         </WaflActionTileGroup>
-        {selectedAttachments.length > 0 ? (
-          <View style={styles.attachmentListSummary}>{selectedAttachments.map((item) => {
+        <Text style={styles.meta}>PDF 첨부는 작업지시서 PDF에 합쳐지지 않고 별도 전달 파일로 보관됩니다.</Text>
+        {attachments.length > 0 ? (
+          <View style={styles.attachmentListSummary}>{attachments.map((item) => {
             const attachmentUrl = resolveMobileApiUrl(item.viewUrl);
             const image = SUPPORTED_OUTPUT_IMAGE.test(item.mimeType);
             return <View key={item.id} style={styles.attachmentSummaryRow}>
               <View style={styles.attachmentThumbnail}>
                 {image && attachmentUrl ? <Image accessibilityLabel={item.filename} alt={item.filename} resizeMode="cover" source={{ uri: attachmentUrl }} style={styles.attachmentThumbnailImage} /> : <FileText color={WAFL_THEME.color.readOnly} size={16} />}
               </View>
-              <View style={styles.flex}><Text numberOfLines={2} style={styles.attachmentSummaryName}>{item.filename}</Text><Text style={styles.meta}>{image ? "PDF 본문 이미지 · 전달 첨부" : "전달 첨부"}</Text></View>
+              <Pressable accessibilityLabel={`${item.filename} 열기`} onPress={() => onOpenAttachment(item)} style={styles.flex}><Text numberOfLines={2} style={styles.attachmentSummaryName}>{item.filename}</Text><Text style={styles.meta}>{item.includeInDocument ? "전달 선택됨" : "전달 미선택"}{image ? " · 기존 이미지 첨부" : " · PDF"}</Text></Pressable>
+              {!issued ? <Pressable accessibilityLabel={`${item.filename} 삭제`} disabled={busy || attachmentBusy} onPress={() => onDeleteAttachment(item)} style={(busy || attachmentBusy) && styles.disabled}><Trash2 color={WAFL_THEME.color.error} size={17}/></Pressable> : null}
             </View>;
           })}</View>
         ) : <Text style={styles.emptyValue}>{WAFL_UNSET_PLACEHOLDER}</Text>}
@@ -593,7 +597,7 @@ function WorkOrderDocumentWorkbenchBody({ detail, attachments, sizeColorMatrix, 
         title="문서에 포함할 첨부"
         visible={attachmentSheetOpen}
       >
-        <Text style={styles.sheetHelp}>이미지는 PDF 본문에도 넣을 수 있고, 선택한 모든 파일은 공유 Viewer의 전달 첨부에 함께 표시됩니다.</Text>
+        <Text style={styles.sheetHelp}>선택한 PDF와 기존 첨부는 공유 Viewer의 전달 자료에 표시됩니다. PDF 파일은 작업지시서 본문에 병합되지 않습니다.</Text>
         <View style={styles.attachmentList}>
           {attachments.map((attachment) => {
             const supported = true;
@@ -610,7 +614,7 @@ function WorkOrderDocumentWorkbenchBody({ detail, attachments, sizeColorMatrix, 
                 <Paperclip color={selected ? WAFL_THEME.color.deepNavy : "#8a7d71"} size={17} />
                 <View style={styles.flex}>
                   <Text numberOfLines={1} style={styles.attachmentOptionName}>{attachment.filename}</Text>
-                  <Text style={styles.meta}>{SUPPORTED_OUTPUT_IMAGE.test(attachment.mimeType) ? "PDF 본문 이미지 · 전달 첨부" : "전달 첨부"}</Text>
+                  <Text style={styles.meta}>{SUPPORTED_OUTPUT_IMAGE.test(attachment.mimeType) ? "기존 이미지 첨부 · 전달 자료" : "PDF · 전달 자료"}</Text>
                 </View>
                 <View style={[styles.selectionMark, selected && styles.selectionMarkSelected]}>{selected ? <Check color="#fff" size={13} strokeWidth={2.8} /> : null}</View>
               </Pressable>

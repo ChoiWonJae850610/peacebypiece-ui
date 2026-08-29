@@ -100,6 +100,10 @@ not infer this physical result.
 
 Owner physical iPhone QA is explicitly accepted as PASS after the destructive-scroll and global-blocker lifecycle correction. The accepted boundary covers target × major Size guidance, seven exact Basic Fit Seed V0.1 starter templates, item-aware POM guidance, zero-loss replacement, same-sheet destructive decisions without nested same-axis scrolling, and terminal processing-blocker lifecycle. This advances the product checkpoint to `ALPHA69_COMPLETE` and finalization checkpoint to `ALPHA69_FINALIZATION_COMPLETE`; it does not rewrite earlier pre-finalization evidence.
 
+## Alpha.70 final device result
+
+Owner physical iPhone QA is explicitly accepted as PASS for the cumulative alpha.70 PDF and media workflow. The accepted boundary covers 58/42 cover balance, supplemental gallery readability, product-name autosave coordination, Photos/Camera and HEIC/HEIF image acquisition, revision-level image document inclusion, Image/Document authoring separation, PDF-only new attachments, authenticated Draft PDF Viewer derivative rendering, and authoritative attachment delivery-selection reconciliation. This advances the product checkpoint to `ALPHA70_COMPLETE` and finalization checkpoint to `ALPHA70_FINALIZATION_COMPLETE`; finalization itself changes no product behavior.
+
 ## Historical results
 
 Do not copy version-by-version results into this plan. Use immutable evidence:

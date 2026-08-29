@@ -61,7 +61,7 @@ assert.match(editor, /matrix && editorSurfaceVisible \? <View style=\{styles\.ca
 assert.ok(editor.indexOf("editorSurfaceVisible ?") < editor.indexOf("<WorkOrderSizeColorReadOnly"), "normal Size/Color must mount its first card directly after the conditional editor surface");
 assert.doesNotMatch(`${editor}\n${readOnly}`, /marginTop:\s*-|top:\s*-/u, "Size/Color must not use a negative-offset workaround");
 assert.doesNotMatch(readOnly, /sectionCard:\s*\{[^}]*marginTop/u);
-for (const label of ["개요", "이미지·첨부", "사이즈·색상", "원부자재", "제작", "문서"]) assert.match(overview, new RegExp(label));
+for (const label of ["개요", "이미지", "사이즈·색상", "원부자재", "제작", "문서"]) assert.match(overview, new RegExp(label));
 
 assert.match(design, /contentFit[\s\S]*actions immediately follow measured body content/u);
 assert.match(ia, /Size\/Color[\s\S]*does not mount an empty editor wrapper/u);

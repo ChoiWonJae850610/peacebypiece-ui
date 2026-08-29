@@ -1,29 +1,27 @@
 # WAFL v2 App-first Roadmap and Version Delta
 
-Alpha.69 is finalized at `ALPHA69_FINALIZATION_COMPLETE`; its accepted product checkpoint is `ALPHA69_COMPLETE`.
-One shared policy guides target × major Size choices, seven exact Basic Fit Seed V0.1 starter templates, and separate
-detail-aware POM guidance without automatic mutation or runtime grading. Target/major reset and real-loss replacement
-use the canonical question/helper/reel/V destructive-choice state by replacing the active Sheet body; its reel has one vertical scroll owner and zero-loss replacement applies directly. Recommended-spec loading enters pending, reaches a presentation boundary before work, and publishes successful content before refresh so no duplicate hydration remains after release. Shared visible blockers use the same presentation-first lifecycle. Owner physical iPhone QA is explicitly accepted as PASS. Alpha.68 remains finalized at `ALPHA68_FINALIZATION_COMPLETE`; its accepted product checkpoint is
-`ALPHA68_COMPLETE`. Draft local-first authoring and bounded section flush, list Delete/Copy/Reorder,
-independent Copy, locked Reorder production variables and lifecycle, core-first hydration, ephemeral
-final-renderer Preview, fixed 72-hour Share, native attachments, category/detail/template rebase, and
-the unified Maker Recipe/direct-input system are one completed boundary. Content-aware keyboard detent,
-submit-before-blur, internal-tap persistence, keypad-only minimal accessory, footerless reusable create,
-replace-sheet processing, canonical keyboard-plus-sheet close, and close-animation ownership are physically
-accepted on iPhone. APP_VERSION is `2.0.0-alpha.69`; migration remains `20/20`, new migration and
-production/Owner/ambiguous mutation are zero.
+Alpha.70 is finalized at `ALPHA70_FINALIZATION_COMPLETE`; its accepted product checkpoint is `ALPHA70_COMPLETE`.
+PDF cover emphasis remains 58/42 with a 140mm cover and a 2×5 supplemental gallery. Recipe-name-only 500ms autosave
+coordinates with versioned image mutation. Photos/Camera use metadata-first native Blob transport and real HEIC/HEIF
+JPEG normalization, normal images persist revision-level document inclusion, and Image versus Document authoring has
+one clear owner. New Document attachments are PDF-only while legacy image attachments remain compatible. Authenticated
+Draft Preview embeds bounded 2048px large derivatives without weakening the PDF byte ceiling, and attachment delivery
+selection reconciles the authoritative parent asset projection after sequential versioned commands. Owner physical
+iPhone QA is explicitly accepted as PASS. APP_VERSION is `2.0.0-alpha.70`; DEV/TEST migration is `21/21` with one
+cumulative alpha.70 additive migration, Production migration is zero, and production/Owner/ambiguous mutation is
+`0/0/0`. Alpha.69 remains finalized at `ALPHA69_FINALIZATION_COMPLETE` with product checkpoint `ALPHA69_COMPLETE`.
 
 Document role: canonical owner for the current result, next candidate, and Version Delta boundary. It is not the historical implementation ledger; completed details live in numbered immutable evidence.
 
-## Current result — 2.0.0-alpha.69
+## Current result — 2.0.0-alpha.70
 
-Status: `ALPHA69_FINALIZATION_COMPLETE`.
+Status: `ALPHA70_FINALIZATION_COMPLETE`.
 
-Accepted product checkpoint: `ALPHA69_COMPLETE`.
+Accepted product checkpoint: `ALPHA70_COMPLETE`.
 
 Owner physical result: `PASS`.
 
-Alpha.69 finalizes target-audience × major-category Size guidance, seven exact editable WAFL Basic Fit Seed V0.1 starter templates, separate item-aware POM guidance, male Dress authoring restriction, and loss-aware Size/Color replacement. Active destructive choices use one same-sheet WAFL INPUT question/helper/reel/V owner without a nested Modal or same-axis parent scroll. Visible processing actions cross a real presentation boundary before work, and recommended-template content is published before terminal refresh releases the blocker. APP_VERSION is `2.0.0-alpha.69`; dependency/native/EAS/schema/migration additions and production/Owner/ambiguous mutations are zero.
+Alpha.70 finalizes the cumulative PDF and media workflow while preserving the complete alpha.69 recommendation and input boundary. PDF layout retains 58/42 cover image emphasis, `coverMain` 140mm, typography floors, accepted long-name wrapping, and 10-image supplemental pages. Recipe-name autosave is product-name-only and coordinates with image version barriers. Photos and Camera no longer require React Native Blob `arrayBuffer`; HEIC/HEIF uses the approved real JPEG transform. Migration `021` persists normal-image output inclusion at the revision level. The Image tab owns images; the Document tab owns PDF-only new attachments while legacy image attachments remain compatible. Authenticated Preview uses 2048px large derivatives with legacy fallback and the existing PDF size ceiling. Attachment delivery selection reconciles authoritative detail/assets after version-sequenced commands. Owner physical iPhone QA is explicitly accepted as PASS. APP_VERSION is `2.0.0-alpha.70`; finalization adds no product behavior, dependency, native, config, EAS, schema or migration delta.
 
 ## Previous result — 2.0.0-alpha.67
 

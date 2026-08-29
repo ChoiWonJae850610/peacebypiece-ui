@@ -36,7 +36,10 @@ assert.doesNotMatch(renderer, /통합 작업 지침|주의사항|penSpace|R\{dat
 assert.match(renderer, /quantityUnit \? `\$\{number\.format\(data\.header\.totalQuantity\)\}\$\{quantityUnit\}` : `\$\{number\.format\(data\.header\.totalQuantity\)\}개`/);
 assert.match(css, /@page cover \{ size: A4 portrait/);
 assert.match(css, /@page content \{ size: A4 portrait/);
-assert.match(css, /grid-template-columns: minmax\(0, 43fr\) minmax\(0, 57fr\)/);
+// Alpha.31 established the two-column portrait cover. Alpha.70 keeps that
+// structure while making the representative image the visual anchor.
+assert.match(css, /grid-template-columns: minmax\(0, 58fr\) minmax\(0, 42fr\)/);
+assert.doesNotMatch(css, /grid-template-columns: minmax\(0, 43fr\) minmax\(0, 57fr\)/);
 assert.match(css, /thead \{ display: table-header-group/);
 assert.match(css, /tr \{ break-inside: avoid/);
 assert.doesNotMatch(css, /penSpace/);

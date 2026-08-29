@@ -23,6 +23,7 @@ export type ReorderCopiedImagePlan = {
   readonly storageObjectKey: string;
   readonly thumbnailObjectKey: string | null;
   readonly isRepresentative: boolean;
+  readonly outputInclude: boolean;
 };
 
 export type ReorderCopiedAttachmentPlan = {
@@ -373,10 +374,10 @@ export async function createWorkOrderReorderV2(input: {
         image.storageObjectKey, image.thumbnailObjectKey, input.scope.companyMemberId, image.sourceImageId]);
       statementCount += 1;
       await client.query(`
-        INSERT INTO work_order_revision_images(company_id,revision_id,image_id,display_order,is_representative,filename_snapshot,mime_type_snapshot,storage_object_key_snapshot)
-        SELECT $1,$2::uuid,$3::uuid,display_order,true,filename_snapshot,mime_type_snapshot,$4
+        INSERT INTO work_order_revision_images(company_id,revision_id,image_id,display_order,is_representative,output_include,filename_snapshot,mime_type_snapshot,storage_object_key_snapshot)
+        SELECT $1,$2::uuid,$3::uuid,display_order,true,$7,filename_snapshot,mime_type_snapshot,$4
         FROM work_order_revision_images WHERE company_id=$1 AND revision_id=$5::uuid AND image_id=$6::uuid AND is_representative=true
-      `, [input.scope.companyId, input.targetRevisionId, image.targetImageId, image.storageObjectKey, source.revision_id, image.sourceImageId]);
+      `, [input.scope.companyId, input.targetRevisionId, image.targetImageId, image.storageObjectKey, source.revision_id, image.sourceImageId, image.outputInclude]);
       statementCount += 1;
     }
 

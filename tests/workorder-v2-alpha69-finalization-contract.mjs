@@ -12,7 +12,8 @@ const roadmap = read("docs/project/app-v2/08-roadmap-2.0.md");
 const devicePlan = read("docs/project/app-v2/05-device-test-plan.md");
 const normalizedRoadmap = roadmap.replace(/\s+/gu, " ");
 
-assert.equal(version, "2.0.0-alpha.69");
+const currentAlpha = Number(version.match(/alpha\.(\d+)$/u)?.[1] ?? -1);
+assert.ok(currentAlpha >= 69, "the finalized alpha.69 boundary must remain readable in later versions");
 for (const source of [currentState, roadmap]) {
   assert.match(source, /ALPHA69_COMPLETE/u);
   assert.match(source, /ALPHA69_FINALIZATION_COMPLETE/u);
@@ -42,5 +43,6 @@ console.log(JSON.stringify({
   ownerPhysicalResult: "PASS",
   productCheckpoint: "ALPHA69_COMPLETE",
   finalizationCheckpoint: "ALPHA69_FINALIZATION_COMPLETE",
-  alpha70Implementation: 0,
+  currentVersion: version,
+  historicalBoundaryPreserved: true,
 }));

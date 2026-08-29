@@ -44,11 +44,13 @@ import {
   createR2WorkerUploadProxyUrl,
   deleteR2ObjectViaWorker,
   isR2WorkerUploadConfigured,
+  readR2ObjectViaWorker,
 } from "@/lib/storage/r2/r2WorkerUpload";
 import {
   validateAttachmentFile,
   validateAttachmentFileCount,
 } from "@/lib/workorder/persistence/workOrderAttachmentPolicy";
+import { isPdfAttachmentContent } from "@/lib/workorder/persistence/attachmentContentPolicy.mjs";
 
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const IDEMPOTENCY_KEY_PATTERN = /^[A-Za-z0-9._:-]{12,180}$/;
@@ -357,6 +359,16 @@ export async function handleCompleteWorkOrderAttachmentUpload(request: Request, 
     });
     if (!validation.ok) {
       throw new WorkOrderCommandRequestError({ code: "VALIDATION_ERROR", status: 400, message: validation.message });
+    }
+    if (mimeType.toLowerCase() === "application/pdf") {
+      const uploaded = await readR2ObjectViaWorker({ key: storageObjectKey });
+      const validPdf = uploaded.contentType === "application/pdf"
+        && uploaded.body.length === sizeBytes
+        && isPdfAttachmentContent(uploaded.body);
+      if (!validPdf) {
+        await deleteR2ObjectViaWorker({ key: storageObjectKey });
+        throw new WorkOrderCommandRequestError({ code: "VALIDATION_ERROR", status: 400, message: "PDF 파일만 첨부할 수 있습니다." });
+      }
     }
     const scopedKeyHash = sha256([
       ATTACHMENT_UPLOAD_COMMAND_CODE,

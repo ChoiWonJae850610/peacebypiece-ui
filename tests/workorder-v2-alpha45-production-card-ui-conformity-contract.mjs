@@ -55,7 +55,7 @@ assert.match(apiClient, /target\.method/);
 assert.match(apiClient, /export async function deleteWorkOrderMaterial/);
 assert.match(apiClient, /method: "DELETE"/);
 
-for (const tab of ["개요", "이미지·첨부", "사이즈·색상", "원부자재", "제작", "문서"]) assert.match(detail, new RegExp(tab));
+for (const tab of ["개요", "이미지", "사이즈·색상", "원부자재", "제작", "문서"]) assert.match(detail, new RegExp(tab));
 assert.equal(resolveWorkOrderTabVisualState({ selected: false, locked: true }), "locked");
 assert.equal(resolveWorkOrderTabVisualState({ selected: true, locked: false }), "active");
 assert.match(detail, /disabled=\{disabled\}/);
