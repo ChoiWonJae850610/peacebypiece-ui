@@ -56,7 +56,7 @@ for (const apiOwner of [
 ]) assert.match(workbench, new RegExp(`\\b${apiOwner}\\b`), `real document API retained: ${apiOwner}`);
 assert.match(workbench, /\bonApplyAttachmentSelection\b/, "authoritative attachment selection callback retained");
 assert.match(
-  read("apps/mobile/features/work-orders/images/useWorkOrderAssetAuthoringController.ts"),
+  read("apps/mobile/features/work-orders/images/useWorkOrderAttachmentAuthoring.ts"),
   /\bsetAttachmentOutputInclude\b/,
   "versioned attachment output-include API retained by the canonical asset controller",
 );

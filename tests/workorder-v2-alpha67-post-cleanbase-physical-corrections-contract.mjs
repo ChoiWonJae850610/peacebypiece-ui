@@ -80,13 +80,19 @@ for (const source of [materialEditor, materialReadOnly, materialValidation]) {
 assert.match(materialEditor, /WaflCharacterCounter/u);
 assert.match(materialReadOnly, /WaflCharacterCounter/u);
 
-const imageApi = read("apps/mobile/lib/api/assetsApi.ts");
-const imageController = read("apps/mobile/features/work-orders/images/useWorkOrderAssetAuthoringController.ts");
+const imageApi = [
+  read("apps/mobile/lib/api/assetsApi.ts"),
+  read("apps/mobile/lib/api/imageAssetsApi.ts"),
+].join("\n");
+const imageController = [
+  read("apps/mobile/features/work-orders/images/useWorkOrderAssetAuthoringController.ts"),
+  read("apps/mobile/features/work-orders/images/workOrderImageAuthoringActions.ts"),
+].join("\n");
 const imageRoute = read("lib/domain/work-orders/command/imageCommandRoute.ts");
 const imageRepository = read("lib/domain/work-orders/command/imageCommandRepository.ts");
 assert.match(imageApi, /timeoutMs:\s*90_000/u);
 assert.match(imageApi, /reconcileWorkOrderImageUpload/u);
-assert.match(imageController, /const uploadIdentity = input\.nextIdentity\("upload"\)/u);
+assert.match(imageController, /const uploadIdentity = currentBeforeComplete\.nextIdentity\("upload"\)/u);
 assert.match(imageController, /isAmbiguousUploadCompletion/u);
 assert.match(imageController, /reconcileImageUpload\(workOrderId, identity\)/u);
 assert.equal((imageController.match(/completeImageUpload\(/gu) ?? []).length, 1, "ambiguity reconciliation must not rerun derivative completion");

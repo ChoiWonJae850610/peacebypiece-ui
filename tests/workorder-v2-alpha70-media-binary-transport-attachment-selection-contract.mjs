@@ -15,7 +15,12 @@ assert.equal(isHeicLikeAcquiredImage({ mimeType: "image/jpeg", fileName: "camera
 assert.equal(isHeicLikeAcquiredImage({ mimeType: "image/heic", fileName: "photo.HEIC" }), true);
 assert.equal(typeof inaccessibleBinary.arrayBuffer, "function", "binary bytes are intentionally not consulted by metadata policy");
 
-const controller = read("apps/mobile/features/work-orders/images/useWorkOrderAssetAuthoringController.ts");
+const controller = [
+  read("apps/mobile/features/work-orders/images/useWorkOrderAssetAuthoringController.ts"),
+  read("apps/mobile/features/work-orders/images/workOrderImageAuthoringActions.ts"),
+  read("apps/mobile/features/work-orders/images/useWorkOrderAttachmentAuthoring.ts"),
+  read("apps/mobile/features/work-orders/images/useWorkOrderAssetProjectionController.ts"),
+].join("\n");
 for (const stage of ["local-read", "heic-convert", "prepare-command", "r2-put", "complete-reconcile", "projection"]) {
   assert.match(controller, new RegExp(stage), `missing image failure stage ${stage}`);
 }

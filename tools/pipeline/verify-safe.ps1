@@ -1105,6 +1105,9 @@ $profileCommands = @{
                   "tests/workorder-v2-alpha70-image-document-policy-heic-contract.mjs",
                   "tests/workorder-v2-alpha70-media-binary-transport-attachment-selection-contract.mjs",
                   "tests/workorder-v2-alpha70-finalization-contract.mjs",
+                  "tests/workorder-v2-alpha71-pre-drawing-architecture-contract.mjs",
+                  "tests/workorder-v2-alpha71-mobile-orientation-policy-contract.mjs",
+                  "tests/workorder-v2-alpha71-finalization-contract.mjs",
                   "scripts/run-wafl-v2-alpha70-image-output-include-migration.mjs",
                   "tests/workorder-v2-alpha56-accessory-lifecycle-parity-contract.mjs",
                   "scripts/run-wafl-v2-alpha56-accessory-lifecycle-runtime-qa.mjs",
@@ -1319,6 +1322,9 @@ $profileCommands = @{
           @{ Name = "workorder v2 alpha.70 image/document policy and HEIC contract"; Command = "node"; Arguments = @("tests/workorder-v2-alpha70-image-document-policy-heic-contract.mjs") },
           @{ Name = "workorder v2 alpha.70 media binary transport and attachment selection contract"; Command = "node"; Arguments = @("tests/workorder-v2-alpha70-media-binary-transport-attachment-selection-contract.mjs") },
           @{ Name = "workorder v2 alpha.70 finalization contract"; Command = "node"; Arguments = @("tests/workorder-v2-alpha70-finalization-contract.mjs") },
+          @{ Name = "workorder v2 alpha.71 pre-Drawing architecture contract"; Command = "node"; Arguments = @("tests/workorder-v2-alpha71-pre-drawing-architecture-contract.mjs") },
+          @{ Name = "workorder v2 alpha.71 mobile orientation policy contract"; Command = "node"; Arguments = @("tests/workorder-v2-alpha71-mobile-orientation-policy-contract.mjs") },
+          @{ Name = "workorder v2 alpha.71 finalization contract"; Command = "node"; Arguments = @("tests/workorder-v2-alpha71-finalization-contract.mjs") },
           @{ Name = "WAFL external QA stop-state regression contract"; Command = "node"; Arguments = @("tests/wafl-external-qa-stop-state-contract.mjs") },
           @{ Name = "WAFL external QA Tailscale transport contract"; Command = "node"; Arguments = @("tests/wafl-external-qa-tailscale-transport-contract.mjs") },
           @{ Name = "WAFL external QA Tailscale runtime contract"; Command = "powershell.exe"; Arguments = @("-NoProfile", "-File", "tests/wafl-external-qa-tailscale-runtime-contract.ps1") },
@@ -1862,7 +1868,7 @@ if ($Profile -eq "automation-infrastructure" -and (GetProjectAppVersion) -in @("
         "db/v2/migrations/020_v2_sample_reorder_invariant.sql"
     )
 }
-if ($Profile -eq "automation-infrastructure" -and (GetProjectAppVersion) -in @("2.0.0-alpha.69", "2.0.0-alpha.70") -and (Test-Path (Join-Path $ProjectDir "tests/workorder-v2-alpha70-image-document-policy-heic-contract.mjs"))) {
+if ($Profile -eq "automation-infrastructure" -and (GetProjectAppVersion) -in @("2.0.0-alpha.69", "2.0.0-alpha.70", "2.0.0-alpha.71") -and (Test-Path (Join-Path $ProjectDir "tests/workorder-v2-alpha70-image-document-policy-heic-contract.mjs"))) {
     $allowedMigrationChanges = @("db/v2/migrations/021_v2_work_order_image_output_include.sql")
 }
 $unexpectedMigrationChanges = @($migrationChanges | Where-Object { $allowedMigrationChanges -notcontains $_ })

@@ -82,11 +82,11 @@ assert.match(inputSheet, /beginSheetClose/u);
 
 const remainingGlobalDecisionCallsites = [
   "apps/mobile/features/materials/useWorkOrderMaterialAuthoringController.ts",
-  "apps/mobile/features/work-orders/images/useWorkOrderAssetAuthoringController.ts",
+  "apps/mobile/features/work-orders/images/workOrderImageAuthoringActions.ts",
 ].filter((relative) => /confirmWaflDestructiveAction/u.test(read(relative)));
 assert.deepEqual(remainingGlobalDecisionCallsites, [
   "apps/mobile/features/materials/useWorkOrderMaterialAuthoringController.ts",
-  "apps/mobile/features/work-orders/images/useWorkOrderAssetAuthoringController.ts",
+  "apps/mobile/features/work-orders/images/workOrderImageAuthoringActions.ts",
 ], "only standalone material/image actions retain the global Decision owner");
 
 console.log("alpha69 WAFL INPUT presentation-first blocker and same-sheet destructive-choice architecture contract: PASS");

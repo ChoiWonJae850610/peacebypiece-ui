@@ -34,7 +34,7 @@ import WorkOrderProductionAuthoring from "@/features/work-orders/production/Work
 import WorkOrderCharacterChoice from "@/features/work-orders/identity/WorkOrderCharacterChoice";
 import type { SizeColorReadBoundary } from "@/features/work-orders/size-color/useSizeColorReadController";
 import type { SizeColorStructureEditBoundary } from "@/features/work-orders/size-color/useSizeColorStructureEditController";
-import type { WorkOrderImageAcquisitionSource } from "@/features/work-orders/images/workOrderImageAcquisition";
+import type { WorkOrderMediaBoundary } from "@/features/work-orders/images/workOrderMediaBoundary";
 import {
   readOnlyBadgeLabel,
   resolveWorkOrderTabVisualState,
@@ -43,7 +43,7 @@ import ReelInlineEditValue from "@/features/inputs/reel-picker/ReelInlineEditVal
 import WaflReelPickerSheet from "@/features/inputs/reel-picker/WaflReelPickerSheet";
 import WaflInputSheet from "@/features/inputs/WaflInputSheet";
 import { WaflWorkActionRow } from "@/features/work-orders/reorder/WorkOrderReorderSheets";
-import type { MaterialDraftFields, MaterialDraftUpdate, MaterialPartnerOption, MaterialType, WorkOrderAttachmentAsset, WorkOrderDetailCore, WorkOrderImageAsset, WorkOrderMaterialLine } from "@/domain/mobileContract";
+import type { MaterialDraftFields, MaterialDraftUpdate, MaterialPartnerOption, MaterialType, WorkOrderDetailCore, WorkOrderMaterialLine } from "@/domain/mobileContract";
 import type { WaflActionConfirmationState } from "@/features/feedback/WaflActionConfirmationCard";
 import type { WaflDecisionChoiceState } from "@/features/feedback/WaflDecisionChoiceBody";
 import { hasCategoryDependentWorkOrderData, resolveCategoryDependentResetDecision } from "@/domain/categoryResetPolicy";
@@ -191,19 +191,7 @@ type Props = {
   readonly sizeColorEdit: SizeColorStructureEditBoundary;
   readonly onRetryMaterials: (materialType: MaterialType) => void;
   readonly onLoadMoreMaterials: (materialType: MaterialType) => void;
-  readonly images: readonly WorkOrderImageAsset[];
-  readonly attachments: readonly WorkOrderAttachmentAsset[];
-  readonly imageBusy: boolean;
-  readonly imageBusyId: string | null;
-  readonly imageMessage: string | null;
-  readonly onAcquireImage: (source: WorkOrderImageAcquisitionSource) => void;
-  readonly onAcquireAttachment: () => void;
-  readonly onApplyAttachmentSelection: (changes: readonly { readonly attachmentId: string; readonly includeInDocument: boolean }[]) => Promise<boolean>;
-  readonly onDeleteImage: (image: WorkOrderImageAsset) => void;
-  readonly onDeleteAttachment: (attachment: WorkOrderAttachmentAsset) => void;
-  readonly onOpenAttachment: (attachment: WorkOrderAttachmentAsset) => void;
-  readonly onSetRepresentativeImage: (image: WorkOrderImageAsset) => void;
-  readonly onSetImageOutputInclude: (image: WorkOrderImageAsset, includeInDocument: boolean) => void;
+  readonly media: WorkOrderMediaBoundary;
   readonly onRefreshDocuments: () => Promise<void> | void;
   readonly onRefreshConfirmedDocument: () => Promise<void> | void;
   readonly onRefreshReadinessAfterMutation: () => void;
@@ -216,6 +204,7 @@ type Props = {
 
 export default function WorkOrderDetailOverview(props: Props) {
   const { detail, phone, onBack } = props;
+  const { projection: mediaProjection, mutation: mediaMutation, imageActions, attachmentActions } = props.media;
   const [activeSection, setActiveSection] = useState<WorkOrderVisibleSection>("overview");
   const [activeMaterialCategory, setActiveMaterialCategory] = useState<MaterialType>("fabric");
   const [categoryReelField, setCategoryReelField] = useState<"targetAudience" | "categoryMajor" | "categoryDetail" | "seasonCode" | null>(null);
@@ -256,7 +245,7 @@ export default function WorkOrderDetailOverview(props: Props) {
   const specificationEditable = props.canEdit && !basicLocked && !reorderDraft;
   const detailScrollRef = useRef<ScrollView>(null);
   const { onFieldFocus, onScroll } = useFocusedFieldVisibility(detailScrollRef);
-  const representative = props.images.find((image) => image.isRepresentative) ?? null;
+  const representative = mediaProjection.images.find((image) => image.isRepresentative) ?? null;
   const representativeUrl = resolveMobileApiUrl(representative?.viewUrl ?? header.representativeImage?.thumbnailUrl ?? null);
   const readOnlyLabel = readOnlyBadgeLabel(props.canEdit);
   const openSection = (intent: WorkOrderSectionIntent) => {
@@ -454,7 +443,7 @@ export default function WorkOrderDetailOverview(props: Props) {
           <View style={[styles.hero, compactPhoneHero && styles.heroCompactPhone]}>
             <View style={styles.mediaColumn}>
               <Pressable
-                accessibilityLabel={representative ? `대표 이미지 ${representative.filename}, 이미지 ${props.images.length}건` : `대표 이미지 없음, 이미지 ${props.images.length}건`}
+            accessibilityLabel={representative ? `대표 이미지 ${representative.filename}, 이미지 ${mediaProjection.images.length}건` : `대표 이미지 없음, 이미지 ${mediaProjection.images.length}건`}
                 accessibilityRole="button"
                 onPress={() => props.onRequestSectionChange(() => openSection("media"))}
                 style={[styles.mediaFrame, compactPhoneHero && styles.mediaFrameCompactPhone, !phone && styles.mediaFrameTablet]}
@@ -516,7 +505,7 @@ export default function WorkOrderDetailOverview(props: Props) {
                 selected={activeSection === "overview"}
               />
               {SECTION_TABS.map((tab) => {
-                const count = tab.id === "media" ? props.images.length : tab.count(detail);
+              const count = tab.id === "media" ? mediaProjection.images.length : tab.count(detail);
                 const onPress = tab.id === "media"
                   ? () => props.onRequestSectionChange(() => openSection("media"))
                   : tab.id === "sizes"
@@ -666,15 +655,15 @@ export default function WorkOrderDetailOverview(props: Props) {
             </View>
           ) : activeSection === "media" ? (
             <WorkOrderImageGallery
-              busy={props.imageBusy}
-              busyImageId={props.imageBusyId}
+          busy={mediaMutation.busy}
+          busyImageId={mediaMutation.busyAssetId}
               canEdit={specificationEditable}
-              images={props.images}
-              message={props.imageMessage}
-                onAcquire={props.onAcquireImage}
-                onDelete={props.onDeleteImage}
-              onSetRepresentative={props.onSetRepresentativeImage}
-              onSetOutputInclude={props.onSetImageOutputInclude}
+          images={mediaProjection.images}
+          message={mediaMutation.message}
+          onAcquire={imageActions.acquire}
+          onDelete={imageActions.delete}
+          onSetRepresentative={imageActions.setRepresentative}
+          onSetOutputInclude={imageActions.setOutputInclude}
             />
           ) : activeSection === "sizes" ? (
             <WorkOrderSizeColorStructureEditor
@@ -699,17 +688,17 @@ export default function WorkOrderDetailOverview(props: Props) {
             />
           ) : activeSection === "output" ? (
             <WorkOrderDocumentWorkbench
-              attachments={props.attachments}
-              attachmentBusy={props.imageBusy}
+            attachments={mediaProjection.attachments}
+            attachmentBusy={mediaMutation.busy}
               detail={detail}
               onFlushDraft={async () => { await props.draftBatch.flushAll("confirm"); }}
               onOpenSizeColor={props.sizeColor.onOpen}
               onRefresh={props.onRefreshDocuments}
               onActionProcessing={props.onActionProcessing}
-              onAcquirePdfAttachment={props.onAcquireAttachment}
-              onApplyAttachmentSelection={props.onApplyAttachmentSelection}
-              onDeleteAttachment={props.onDeleteAttachment}
-              onOpenAttachment={props.onOpenAttachment}
+            onAcquirePdfAttachment={attachmentActions.acquire}
+            onApplyAttachmentSelection={attachmentActions.applyOutputSelection}
+            onDeleteAttachment={attachmentActions.delete}
+            onOpenAttachment={attachmentActions.open}
               onRequestActionConfirmation={props.onRequestActionConfirmation}
               sizeColorMatrix={props.sizeColor.state.bundle?.matrix ?? null}
             />

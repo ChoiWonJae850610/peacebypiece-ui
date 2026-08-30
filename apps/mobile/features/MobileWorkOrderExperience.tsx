@@ -1722,11 +1722,29 @@ export default function MobileWorkOrderExperience() {
       canEditMaterials={canEditWorkOrder(detail, user)}
       detail={detail}
       draftBatch={draftBatch}
-      images={assetAuthoring.images}
-      attachments={assetAuthoring.attachments}
-      imageBusy={assetAuthoring.busy}
-      imageBusyId={assetAuthoring.busyId}
-      imageMessage={imageMessage}
+      media={{
+        projection: {
+          images: assetAuthoring.images,
+          attachments: assetAuthoring.attachments,
+        },
+        mutation: {
+          busy: assetAuthoring.busy,
+          busyAssetId: assetAuthoring.busyId,
+          message: imageMessage,
+        },
+        imageActions: {
+          acquire: (source) => { void assetAuthoring.acquireImage(source); },
+          delete: assetAuthoring.requestDeleteImage,
+          setRepresentative: (image) => { void assetAuthoring.setRepresentativeImage(image); },
+          setOutputInclude: (image, includeInDocument) => { void assetAuthoring.setImageOutputInclude(image, includeInDocument); },
+        },
+        attachmentActions: {
+          acquire: () => { void assetAuthoring.acquireAttachment(); },
+          applyOutputSelection: assetAuthoring.setAttachmentOutputIncludes,
+          delete: assetAuthoring.requestDeleteAttachment,
+          open: (attachment) => { void assetAuthoring.openAttachment(attachment); },
+        },
+      }}
       dirty={basicInfoDirty}
       draft={basicInfoDraft}
       activeBasicField={activeBasicField}
@@ -1740,9 +1758,6 @@ export default function MobileWorkOrderExperience() {
       materialOrderBusyAction={materialOrderBusyAction}
       materialOrderPolicy={(line) => materialOrderPolicyFor(detail, user, line)}
       onBack={returnToList}
-      onAcquireImage={(source) => void assetAuthoring.acquireImage(source)}
-      onAcquireAttachment={() => void assetAuthoring.acquireAttachment()}
-      onApplyAttachmentSelection={assetAuthoring.setAttachmentOutputIncludes}
       onBeginEdit={beginBasicInfoEdit}
       onBeginMaterialCreate={materialAuthoring.beginCreate}
       onBeginMaterialEdit={materialAuthoring.beginEdit}
@@ -1786,11 +1801,6 @@ export default function MobileWorkOrderExperience() {
       sizeColorEdit={sizeColorEdit}
       onRequestSectionChange={(onProceed) => leaveWithDraftPolicy("feature", onProceed)}
       onRetryMaterials={(materialType) => void materialAuthoring.loadMaterials(detail.header.id, materialType, "retry")}
-      onDeleteImage={assetAuthoring.requestDeleteImage}
-      onDeleteAttachment={assetAuthoring.requestDeleteAttachment}
-      onOpenAttachment={(attachment) => void assetAuthoring.openAttachment(attachment)}
-      onSetRepresentativeImage={(image) => void assetAuthoring.setRepresentativeImage(image)}
-      onSetImageOutputInclude={(image, includeInDocument) => void assetAuthoring.setImageOutputInclude(image, includeInDocument)}
       onRefreshReadinessAfterMutation={() => {
         if (!detail) return;
         void refreshCanonicalDetailAfterMutation(detail.header.id).catch(() => {

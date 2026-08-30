@@ -13,7 +13,7 @@ const documentSource = fs.readFileSync("components/workorder/preview/IssuedWorkO
 const styles = fs.readFileSync("components/workorder/preview/IssuedWorkOrderPreview.module.css", "utf8");
 const versionSource = fs.readFileSync("lib/constants/version.ts", "utf8");
 
-assert.match(versionSource, /2\.0\.0-alpha\.(?:69|70)/);
+assert.match(versionSource, /2\.0\.0-alpha\.(?:69|70|71)/);
 assert.equal(ISSUED_PDF_ATTACHMENT_COLUMNS, 2);
 assert.equal(ISSUED_PDF_ATTACHMENT_ROWS_PER_PAGE, 5);
 assert.equal(ISSUED_PDF_ATTACHMENT_IMAGES_PER_PAGE, 10);

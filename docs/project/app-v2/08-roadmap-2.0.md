@@ -1,27 +1,69 @@
 # WAFL v2 App-first Roadmap and Version Delta
 
-Alpha.70 is finalized at `ALPHA70_FINALIZATION_COMPLETE`; its accepted product checkpoint is `ALPHA70_COMPLETE`.
-PDF cover emphasis remains 58/42 with a 140mm cover and a 2×5 supplemental gallery. Recipe-name-only 500ms autosave
-coordinates with versioned image mutation. Photos/Camera use metadata-first native Blob transport and real HEIC/HEIF
-JPEG normalization, normal images persist revision-level document inclusion, and Image versus Document authoring has
-one clear owner. New Document attachments are PDF-only while legacy image attachments remain compatible. Authenticated
-Draft Preview embeds bounded 2048px large derivatives without weakening the PDF byte ceiling, and attachment delivery
-selection reconciles the authoritative parent asset projection after sequential versioned commands. Owner physical
-iPhone QA is explicitly accepted as PASS. APP_VERSION is `2.0.0-alpha.70`; DEV/TEST migration is `21/21` with one
-cumulative alpha.70 additive migration, Production migration is zero, and production/Owner/ambiguous mutation is
-`0/0/0`. Alpha.69 remains finalized at `ALPHA69_FINALIZATION_COMPLETE` with product checkpoint `ALPHA69_COMPLETE`.
+Alpha.71 is finalized at `ALPHA71_FINALIZATION_COMPLETE`; its accepted product checkpoint is
+`ALPHA71_PRE_DRAWING_COMPLETE`. The release is deliberately pre-Drawing: mobile Media boundaries and APIs have typed,
+separated owners without behavior loss, handsets use one SDK55 runtime portrait-up owner, and tablets retain the global
+default portrait/landscape policy. Owner physical iPhone QA explicitly accepted both orientation checks plus the bounded
+Photos/Camera, PDF attachment, and Sketch-placeholder sanity checks. APP_VERSION is `2.0.0-alpha.71`; DEV/TEST migration
+remains `21/21`, Production migration is zero, and production/Owner/ambiguous mutation is `0/0/0`. Drawing implementation
+and library selection remain zero. Alpha.70 remains finalized at `ALPHA70_FINALIZATION_COMPLETE` with product checkpoint
+`ALPHA70_COMPLETE`.
+
+The next default Delta is alpha.72 Drawing Foundation. It requires a separate Owner-approved work order and library
+selection; no Drawing implementation is authorized by this finalization.
 
 Document role: canonical owner for the current result, next candidate, and Version Delta boundary. It is not the historical implementation ledger; completed details live in numbered immutable evidence.
 
-## Current result — 2.0.0-alpha.70
+## Current result — 2.0.0-alpha.71
 
-Status: `ALPHA70_FINALIZATION_COMPLETE`.
+Status: `ALPHA71_FINALIZATION_COMPLETE`.
 
-Accepted product checkpoint: `ALPHA70_COMPLETE`.
+Accepted product checkpoint: `ALPHA71_PRE_DRAWING_COMPLETE`.
 
 Owner physical result: `PASS`.
 
-Alpha.70 finalizes the cumulative PDF and media workflow while preserving the complete alpha.69 recommendation and input boundary. PDF layout retains 58/42 cover image emphasis, `coverMain` 140mm, typography floors, accepted long-name wrapping, and 10-image supplemental pages. Recipe-name autosave is product-name-only and coordinates with image version barriers. Photos and Camera no longer require React Native Blob `arrayBuffer`; HEIC/HEIF uses the approved real JPEG transform. Migration `021` persists normal-image output inclusion at the revision level. The Image tab owns images; the Document tab owns PDF-only new attachments while legacy image attachments remain compatible. Authenticated Preview uses 2048px large derivatives with legacy fallback and the existing PDF size ceiling. Attachment delivery selection reconciles authoritative detail/assets after version-sequenced commands. Owner physical iPhone QA is explicitly accepted as PASS. APP_VERSION is `2.0.0-alpha.70`; finalization adds no product behavior, dependency, native, config, EAS, schema or migration delta.
+Alpha.71 finalizes the pre-Drawing architecture and handset orientation boundary. Typed Media ownership preserves alpha.70 image/attachment behavior. The stable device classifier and root runtime coordinator apply `PORTRAIT_UP` to handsets and restore `default` rotation on tablets at mount and foreground resume. Owner physical iPhone QA explicitly passed rotate-after-entry and enter-while-landscape behavior, Photos/Camera persistence, PDF attachment open/delivery persistence, and the unchanged Sketch placeholder. Global Expo orientation remains `default`; Drawing implementation remains zero and Drawing library selection remains zero. Finalization adds no product behavior, dependency, native, config, EAS, schema, migration, or data mutation.
+
+## Alpha.71A current candidate — pre-Drawing architecture only
+
+Status: `ALPHA71_PRE_DRAWING_ARCHITECTURE_REFACTOR_IPHONE_QA_REQUIRED`.
+
+This candidate is deliberately behavior-zero. Overview receives one typed Media boundary rather than a flat
+image/attachment prop family. The compatibility authoring controller composes separate image, attachment, and
+shared projection/version owners while retaining one mutation gate and the full alpha.70 upload, expectedVersion,
+reconcile, representative, inclusion, deletion, attachment, and re-entry contracts. Image and attachment APIs are
+separate implementation modules behind the existing facade. The future Drawing architecture contract forbids
+device-sized persisted geometry and requires a fixed logical world, inverse input transforms, viewport-only
+zoom/pan/orientation, editable Scene truth, deterministic derivatives, and adapter-only media export. The current
+disabled `스케치(준비 중)` affordance is unchanged. Physical result: `PHYSICAL_RESULT_NOT_INFERRED`.
+
+### Alpha.71A-1 mobile orientation continuation
+
+Status: `ALPHA71_PRE_DRAWING_REFACTOR_ORIENTATION_POLICY_IPHONE_QA_REQUIRED`.
+
+The installed Expo Router/native-stack and react-native-screens path was initially selected without a new native module.
+One framework-free mobile orientation policy classifies iOS from `Platform.isPad`; Android alone falls back to the
+physical screen's shorter side at 600dp. Width/height swaps therefore preserve classification. Root Stack receives
+`portrait_up` for handsets and `default` for tablets/web. `apps/mobile/app.json` remains globally `default` with
+`ios.supportsTablet: true`. WorkOrder, Media, image/spec, future Drawing coordinates, PDF, Viewer, Share, dependencies,
+native source, and EAS are unchanged. Tablet physical QA is `NOT_RUN` unless hardware is available; source/type/config
+contracts proved the intended tablet rotation policy but did not prove physical enforcement. Owner physical iPhone QA
+later recorded both handset orientation checks as `FAIL`; the root `screenOptions` mechanism is not accepted as effective.
+
+### Alpha.71A-2 physical orientation-lock correction
+
+Status: `ALPHA71_PRE_DRAWING_PHYSICAL_ORIENTATION_LOCK_CORRECTION_IPHONE_REQA_REQUIRED`.
+
+Live Expo Router and React Navigation sources show root `screenOptions` and explicit `Stack.Screen options` merging into
+the same route descriptor and native-stack view, so merely spelling the option on `index` would preserve the failed
+mechanism. The correction installs the official SDK55-compatible `expo-screen-orientation` module and owns it only at
+the root app/navigation boundary. The existing pure device classifier resolves a runtime action: handset locks
+`PORTRAIT_UP`, tablet unlocks to the app's global `default`, and web/other is untouched. Initial mount and each genuine
+background/inactive-to-active transition reconcile through one serialized, coalescing owner; render, WorkOrder state,
+Recipe state, and Media state do not trigger native calls. Internal `development` build
+`8d201f5b…978c` now establishes a binary containing the new native module on the existing EAS
+project/profile; registered-iPhone installation and owner physical orientation judgment remain outstanding. Drawing
+remains unimplemented and `스케치(준비 중)` remains unchanged. Physical result: `PHYSICAL_RESULT_NOT_INFERRED`.
 
 ## Previous result — 2.0.0-alpha.67
 
@@ -76,6 +118,10 @@ production partner/contact management, universal credit billing, and service/pil
 ## Alpha.69 implementation boundary (finalized)
 
 Status: `ALPHA69_FINALIZATION_COMPLETE`.
+
+Accepted product checkpoint: `ALPHA69_COMPLETE`.
+
+Owner physical result: `PASS`.
 
 The first alpha.69 delta adds guidance-only category/detail recommendations. Denim recommends waist labels
 24–36, leggings XS–XL, and the remaining authored apparel details use their declared alpha-size sets. The

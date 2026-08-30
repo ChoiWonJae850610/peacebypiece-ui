@@ -104,6 +104,10 @@ Owner physical iPhone QA is explicitly accepted as PASS after the destructive-sc
 
 Owner physical iPhone QA is explicitly accepted as PASS for the cumulative alpha.70 PDF and media workflow. The accepted boundary covers 58/42 cover balance, supplemental gallery readability, product-name autosave coordination, Photos/Camera and HEIC/HEIF image acquisition, revision-level image document inclusion, Image/Document authoring separation, PDF-only new attachments, authenticated Draft PDF Viewer derivative rendering, and authoritative attachment delivery-selection reconciliation. This advances the product checkpoint to `ALPHA70_COMPLETE` and finalization checkpoint to `ALPHA70_FINALIZATION_COMPLETE`; finalization itself changes no product behavior.
 
+## Alpha.71 final device result
+
+Owner physical iPhone QA is explicitly accepted as PASS on the internal Development Build containing SDK55 `expo-screen-orientation`. Recipe remained portrait-up when the handset rotated after entry and when Recipe was entered while the handset was already landscape. The bounded sanity checks also accepted Photos/Camera persistence, PDF attachment open and delivery-selection persistence, and the unchanged `스케치(준비 중)` affordance. Tablet physical QA was not required; source, type, and global-config evidence preserve tablet `default` portrait/landscape rotation. This advances the product checkpoint to `ALPHA71_PRE_DRAWING_COMPLETE` and finalization checkpoint to `ALPHA71_FINALIZATION_COMPLETE` without inferring unrun tablet hardware evidence.
+
 ## Historical results
 
 Do not copy version-by-version results into this plan. Use immutable evidence:

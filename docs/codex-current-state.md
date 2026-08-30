@@ -1,19 +1,57 @@
 # WAFL Current Baseline
 
-Alpha.70 is finalized at `ALPHA70_FINALIZATION_COMPLETE` with product checkpoint `ALPHA70_COMPLETE`. The first-page PDF keeps its accepted 58/42 image/fact balance and 140mm cover, while supplemental images remain a 2×5, 10-per-page gallery. Recipe-name editing uses one 500ms product-name-only autosave owner. Photos/Camera keep versioned upload, HEIC/HEIF real JPEG normalization, conflict rebase and orphan safety; normal images persist revision-level document inclusion. Image and Document authoring are separated, new attachments are PDF-only, Preview renders bounded 2048px large derivatives without weakening the canonical PDF size limit, and attachment delivery selection reconciles one authoritative parent asset projection. Owner physical iPhone QA is explicitly accepted as PASS. APP_VERSION is `2.0.0-alpha.70`; DEV/TEST migration is `21/21` with one cumulative alpha.70 additive migration, Production migration is zero, and production/Owner/ambiguous mutation remains `0/0/0`.
+Alpha.71 is finalized at `ALPHA71_FINALIZATION_COMPLETE` with product checkpoint `ALPHA71_PRE_DRAWING_COMPLETE`. The release is deliberately pre-Drawing: it preserves the disabled `스케치(준비 중)` affordance and adds no Scene, tool, renderer, gesture, export, or Drawing dependency. The cumulative alpha.71 boundary splits the mobile Media authoring/API ownership without changing behavior and enforces portrait-up on handsets through one SDK55 runtime orientation owner while tablets retain the global default portrait/landscape policy. Owner physical iPhone QA explicitly accepted rotate-after-entry, enter-while-landscape, Photos/Camera, PDF attachment, and Sketch-placeholder checks. APP_VERSION is `2.0.0-alpha.71`; DEV/TEST migration remains `21/21`, Production migration is zero, and production/Owner/ambiguous mutation remains `0/0/0`.
+
+Alpha.70 remains the previous finalized result. Alpha.71 finalization changes no product behavior beyond the already owner-accepted pre-Drawing architecture and handset orientation policy; it synchronizes version, contracts, Git, and artifacts only.
+
+The existing EAS project and internal `development` profile produced installable iOS Development Build
+`8d201f5b…978c` with `expo-screen-orientation` `55.0.20`. The Owner installed that build and accepted the bounded physical orientation and Media/Sketch sanity checks as PASS.
 
 Document type: **Current Baseline**
 
 Canonical owner: `docs/codex-current-state.md`
 
-Result version: `2.0.0-alpha.70`
-Status: `ALPHA70_FINALIZATION_COMPLETE`
-Product checkpoint: `ALPHA70_COMPLETE`
+Result version: `2.0.0-alpha.71`
+Status: `ALPHA71_FINALIZATION_COMPLETE`
+Product checkpoint: `ALPHA71_PRE_DRAWING_COMPLETE`
 Owner physical result: `PASS`
+
+## Final alpha.71 pre-Drawing result
+
+The typed `WorkOrderMediaBoundary`, split image/attachment controllers, projection/version coordinator, and split asset APIs retain the complete alpha.70 image and attachment behavior through compatibility facades. The Drawing architecture guardrail defines only future ownership constraints. Drawing implementation remains zero, and Drawing library selection remains zero.
+
+The first native-stack-only orientation attempt is preserved below as rejected evidence. The accepted runtime owner uses `expo-screen-orientation` only at the app boundary: iPhone/handset locks `PORTRAIT_UP`, tablet unlocks to global `default`, and foreground resume performs one serialized reconciliation. Device classification is independent of Recipe/Media/Drawing state. Owner physical iPhone QA explicitly passed rotation after Recipe entry, Recipe entry while the phone was held landscape, Photos/Camera persistence, PDF attachment open/delivery persistence, and the unchanged `스케치(준비 중)` affordance.
+
+## Active alpha.71A pre-Drawing candidate
+
+Status: `ALPHA71_PRE_DRAWING_ARCHITECTURE_REFACTOR_IPHONE_QA_REQUIRED`
+
+Physical result: `PHYSICAL_RESULT_NOT_INFERRED`
+
+The candidate changes ownership only. `WorkOrderMediaBoundary` carries the current persisted image and attachment projection/actions into Overview. The compatibility asset controller composes separate image, attachment, and projection/version owners through one mutation gate, and the historical mobile `assetsApi` import remains a facade over separate read, upload transport, image command, and attachment command modules. `스케치(준비 중)` remains disabled and unchanged. No Drawing runtime or persisted Scene exists.
+
+### Alpha.71A-1 orientation continuation
+
+Status: `ALPHA71_PRE_DRAWING_REFACTOR_ORIENTATION_POLICY_IPHONE_QA_REQUIRED`
+
+The root Expo Router native stack consumed one pure `mobileOrientationPolicy` owner. Native iPhone idiom resolved to handset and `portrait_up`; native iPad idiom resolved to tablet and `default`. Android used the physical screen's shorter side, so swapping width and height on rotation could not turn a phone into a tablet; 600dp and above resolved to tablet/default. `apps/mobile/app.json` kept `orientation: default` and `ios.supportsTablet: true`. Owner physical iPhone QA subsequently proved that placing the option only in root `Stack.screenOptions` did not lock the active interface: both orientation checks failed. This is preserved as a failed mechanism baseline, not a physical PASS.
+
+### Alpha.71A-2 physical orientation-lock correction
+
+Status: `ALPHA71_PRE_DRAWING_PHYSICAL_ORIENTATION_LOCK_CORRECTION_IPHONE_REQA_REQUIRED`
+
+Physical baseline: orientation checks `1/2 FAIL`; Media and Sketch sanity checks `PASS`. Physical correction result: `PHYSICAL_RESULT_NOT_INFERRED`.
+
+Installed Expo Router source shows navigator `screenOptions` and explicit `Stack.Screen options` merge into the same descriptor before the same native-stack view, so an explicit route declaration would not change the failed mechanism. The correction therefore uses the official SDK55 `expo-screen-orientation` runtime module at the root app/navigation boundary. One lifecycle owner serializes and coalesces native calls: handset uses `OrientationLock.PORTRAIT_UP`, tablet calls `unlockAsync()` to preserve the global default policy, web/other performs no runtime action, and background-to-active performs one bounded reconciliation. The existing iOS native idiom and Android rotation-invariant 600dp shorter-side classifier remain the only device-class owner. WorkOrder/Recipe/Media/Drawing state is not an input.
+
+Internal iOS Development Build `8d201f5b…978c` finished successfully on the existing
+project/profile and is ready for registered-iPhone installation. Build completion is not a physical orientation result.
 
 ## Final alpha.70 result
 
-Alpha.70 finalizes the cumulative PDF and media workflow without changing the accepted alpha.69 Size/POM and WAFL INPUT behavior. The issued/preview document preserves cover emphasis at 58/42, `coverMain` 140mm, typography floors, long-name wrapping, and deterministic 10-image gallery pagination. Recipe-name autosave is product-name-only and coordinates with image mutation versions. Photo/Camera acquisition no longer depends on React Native Blob `arrayBuffer`; HEIC/HEIF uses the approved Expo-compatible real JPEG transform before prepare/upload. Image inclusion is revision-persisted through additive migration `021`; representative images stay cover-only while selected non-representative images feed the supplemental gallery. The Image tab owns images, the Document tab owns PDF-only attachments, and legacy selected image attachments remain readable.
+Status: `ALPHA70_FINALIZATION_COMPLETE`. Product checkpoint: `ALPHA70_COMPLETE`.
+
+Alpha.70 finalizes the cumulative PDF and media workflow without changing the accepted alpha.69 Size/POM and WAFL INPUT behavior. The issued/preview document preserves cover emphasis at 58/42, `coverMain` 140mm, typography floors, long-name wrapping, and deterministic 10-image gallery pagination. Recipe-name autosave is product-name-only with a 500ms debounce and coordinates with image mutation versions. Photo/Camera acquisition no longer depends on React Native Blob `arrayBuffer`; HEIC/HEIF uses the approved Expo-compatible real JPEG transform before prepare/upload. Image inclusion is revision-persisted through additive migration `021`; representative images stay cover-only while selected non-representative images feed the supplemental gallery. The Image tab owns images, the Document tab owns PDF-only new attachments, and legacy selected image attachments remain readable.
 
 Authenticated Draft Preview retains private session transport and uses canonical 2048px large WebP derivatives for PDF embedding, with legacy-original fallback and the existing PDF byte ceiling unchanged. Attachment delivery selection stages in the Workbench but executes and reconciles through the canonical asset controller with sequential expected versions. Owner physical iPhone QA explicitly accepted Photos, Camera, Draft PDF Viewer and attachment delivery-selection behavior before finalization. The reusable EAS Development Build remains unchanged; no finalization dependency/native/config/EAS delta exists.
 
@@ -328,8 +366,8 @@ The WorkOrder list stays flat. Existing workflow status chips remain the only pe
 | Entry commit | `feat: WAFL v2 alpha.65 Maker 입력 UX와 완성치수 도식 완성` |
 | Entry ahead/behind | `0/0` |
 | Entry working tree | clean |
-| APP_VERSION | `2.0.0-alpha.70` |
-| Mobile package version | `2.0.0-alpha.70` |
+| APP_VERSION | `2.0.0-alpha.71` |
+| Mobile package version | `2.0.0-alpha.71` |
 | Root package version | `0.5.637` |
 | Expo public version | `2.0.0` |
 | iOS Development Build | build number `1`, reusable while native inputs remain unchanged |
@@ -340,9 +378,9 @@ The source cannot contain the hash of the commit that contains itself. Final alp
 
 ## Latest delivery boundary
 
-- Target Source ZIP: `peacebypiece-ui-2.0.0-alpha.70.zip`.
-- Target repo-state: `repo-state-2.0.0-alpha.70-<actual timestamp>.txt` when the canonical Finish tool emits one.
-- The accepted release handoff is generated from the final synchronized pushed alpha.70 HEAD.
+- Target Source ZIP: `peacebypiece-ui-2.0.0-alpha.71.zip`.
+- Target repo-state: `repo-state-2.0.0-alpha.71-<actual timestamp>.txt` when the canonical Finish tool emits one.
+- The accepted release handoff is generated from the final synchronized pushed alpha.71 HEAD.
 
 ## Current product and transport baseline
 

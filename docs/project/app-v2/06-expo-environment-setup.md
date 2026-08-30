@@ -16,8 +16,8 @@ Document role: canonical owner for supported Expo/native environment, app identi
 | iOS bundle identifier | `com.wafl.app` |
 | Android package | `com.wafl.app` |
 | Expo public version | `2.0.0` |
-| Internal APP_VERSION | `2.0.0-alpha.50` |
-| iOS Development Build | build number `1` |
+| Internal APP_VERSION | `2.0.0-alpha.71` |
+| iOS Development Build | build number `1`; latest installable alpha.71A-2 development build `8d201f5b…978c` |
 
 `com.wafl.app` is the stable WAFL brand identifier and does not derive from repository project or planned company names.
 
@@ -54,6 +54,15 @@ Reuse the current installed iOS Development Build when a Delta changes only Java
 - EAS profile, credentials, signing, project identity, and device registration.
 
 If any item must change, stop the non-native version. Do not run EAS Build/Update or modify credentials automatically.
+
+### Alpha.71A-2 orientation-module build
+
+Owner approval established one replacement internal iOS Development Build on 2026-08-30 for the existing
+`@lostab/wafl-mobile` project and `development` profile. Build `8d201f5b…978c` finished successfully with
+SDK55-compatible `expo-screen-orientation` `55.0.20`. Distribution remains internal,
+the public app version/build number remain `2.0.0`/`1`, project identity and signing inputs are reused, and no
+preview/production/submit profile or EAS Update channel was introduced. The build is installable on the registered
+iPhone; the Owner installed it and accepted the bounded alpha.71 orientation and Media/Sketch sanity checks as PASS.
 
 ## Development-only ATS boundary
 

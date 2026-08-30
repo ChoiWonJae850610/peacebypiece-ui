@@ -82,7 +82,7 @@ const expectedIssuedDocumentResiduals = new Map([
   ["apps/mobile/features/work-orders/documents/WorkOrderDocumentWorkbench.tsx", 6],
   ["apps/mobile/features/work-orders/documents/documentShareMessage.ts", 3],
   ["apps/mobile/features/work-orders/images/WorkOrderImageGallery.tsx", 3],
-  ["apps/mobile/features/work-orders/images/useWorkOrderAssetAuthoringController.ts", 2],
+    ["apps/mobile/features/work-orders/images/workOrderImageAuthoringActions.ts", 2],
   ["apps/mobile/utils/previewLink.ts", 1],
 ]);
 const actualResiduals = new Map();

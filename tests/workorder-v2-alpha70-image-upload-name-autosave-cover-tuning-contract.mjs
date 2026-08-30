@@ -5,12 +5,15 @@ import fs from "node:fs";
 import { completeImageWithSingleConflictRebase } from "../apps/mobile/domain/workOrderImageCompletionPolicy.ts";
 
 const experience = fs.readFileSync("apps/mobile/features/MobileWorkOrderExperience.tsx", "utf8");
-const assets = fs.readFileSync("apps/mobile/features/work-orders/images/useWorkOrderAssetAuthoringController.ts", "utf8");
+const assets = [
+  fs.readFileSync("apps/mobile/features/work-orders/images/useWorkOrderAssetAuthoringController.ts", "utf8"),
+  fs.readFileSync("apps/mobile/features/work-orders/images/workOrderImageAuthoringActions.ts", "utf8"),
+].join("\n");
 const overview = fs.readFileSync("apps/mobile/features/work-orders/overview/WorkOrderDetailOverview.tsx", "utf8");
 const styles = fs.readFileSync("components/workorder/preview/IssuedWorkOrderPreview.module.css", "utf8");
 const version = fs.readFileSync("lib/constants/version.ts", "utf8");
 
-assert.match(version, /2\.0\.0-alpha\.(?:69|70)/u);
+assert.match(version, /2\.0\.0-alpha\.(?:69|70|71)/u);
 assert.match(experience, /setTimeout\(\(\) => \{[\s\S]*?persistProductName\(value, true\)[\s\S]*?\}, 500\)/u);
 assert.match(experience, /saveBasicInfo\([\s\S]*?\{ productName: value \}[\s\S]*?productNameOnly: true/u);
 assert.match(experience, /flushPendingProductName\(\)[\s\S]*?draftBatch\.flushAll/u);

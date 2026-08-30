@@ -25,6 +25,7 @@ Every fact or rule has one canonical owner. Other documents keep only the contex
 | Device QA matrix | `05-device-test-plan.md` | UI evidence standard | device/support change | no | mutable | mobile/tablet/UI |
 | Mobile visual system | `11a-mobile-design-system-v2.md` | `11b` Maker tab IA, `11c` reference index | approved mobile design-system change | no | mutable normative contract | every current mobile UI task |
 | Mobile input architecture | `11a-mobile-design-system-v2.md` input routing matrix | typed owners under `apps/mobile/features/inputs`, live `ControlledInlineEditValue` | input lifecycle change | no | mutable normative contract | mobile input, sheet, picker, keyboard, validation UI |
+| Future Drawing architecture | `drawing-architecture-guardrails.md` | current typed media boundary and explicitly approved Drawing Version Delta | pre-implementation boundary change | no | mutable normative contract | drawing/sketch architecture or implementation |
 | Expo/native environment | `06-expo-environment-setup.md` | app config, EAS config | environment change | no | mutable | mobile/native/EAS |
 | External Runtime operations | `41-external-mobile-qa-runbook.md` | runner source/contracts | operational change | no | mutable | external Runtime QA |
 | WorkOrder API semantics | `16-workorder-api-command-read-model-contracts.md` | domain contracts | API contract change | no | mutable normative contract | API/read/command |
