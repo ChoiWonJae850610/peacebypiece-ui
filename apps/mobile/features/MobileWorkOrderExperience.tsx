@@ -60,6 +60,7 @@ import { runWorkOrderListReorderFlow } from "@/domain/workOrderListReorderFlow";
 import { reconcileWorkOrderListItemFromDetail, workOrderListWorkflowChanged } from "@/domain/workOrderListReconciliation";
 import { MobileApiError, type MaterialPartnerOption, type MaterialType, type MobileCurrentUser, type WorkOrderCharacterFilter, type WorkOrderDetailCore, type WorkOrderLineageFilter, type WorkOrderListItem, type WorkOrderListStatusFilter, type WorkOrderSeriesHistory } from "@/domain/mobileContract";
 import { generateWorkOrderR0 } from "@/lib/api/documentsApi";
+import { isDrawingRendererPocEnabled } from "@/features/drawing-poc/drawingRendererPocPolicy";
 
 type AppPhase =
   | "booting"
@@ -1722,6 +1723,7 @@ export default function MobileWorkOrderExperience() {
       canEditMaterials={canEditWorkOrder(detail, user)}
       detail={detail}
       draftBatch={draftBatch}
+      drawingRendererPocEnabled={isDrawingRendererPocEnabled({ authenticated: Boolean(user), dev: __DEV__ })}
       media={{
         projection: {
           images: assetAuthoring.images,

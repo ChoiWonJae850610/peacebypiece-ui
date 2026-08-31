@@ -65,8 +65,10 @@ for (const required of [
   "Device dimensions must never become logical canvas dimensions",
 ]) assert.ok(guardrails.includes(required), `missing Drawing guardrail: ${required}`);
 
-assert.match(gallery, /accessibilityLabel="스케치, 준비 중" disabled/u);
-assert.match(gallery, /label="스케치" onPress=\{\(\) => undefined\}/u);
+assert.match(gallery, /"스케치, 준비 중"/u);
+assert.match(gallery, /props\.drawingRendererPocEnabled \? "SVG Performance PoC" : "스케치"/u);
+assert.match(gallery, /disabled=\{!props\.drawingRendererPocEnabled\}/u);
+assert.match(gallery, /if \(props\.drawingRendererPocEnabled\) setDrawingPocVisible\(true\)/u);
 for (const owner of [currentState, roadmap]) {
   assert.match(owner, /ALPHA71_PRE_DRAWING_ARCHITECTURE_REFACTOR_IPHONE_QA_REQUIRED/u);
   assert.match(owner, /PHYSICAL_RESULT_NOT_INFERRED/u);

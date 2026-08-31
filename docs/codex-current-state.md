@@ -1,5 +1,30 @@
 # WAFL Current Baseline
 
+Alpha.72 Drawing Foundation is finalized at `ALPHA72_FINALIZATION_COMPLETE` with product checkpoint
+`ALPHA72_DRAWING_FOUNDATION_COMPLETE` on the finalized alpha.71 baseline.
+The Drawing foundation remains one framework-free, renderer-independent `lib/domain/drawing` owner for the fixed
+`1000 × 1400` logical world, versioned editable Scene v1, camera/viewport transforms, bounded Scene history, strict
+serialization/validation, and library-independent future renderer/editor/export adapter contracts. The continuation adds
+an Expo config-plugin native startup layer without changing that foundation: iPhone metadata supports portrait only while
+iPad metadata retains portrait and both landscapes; Android MainActivity requests portrait before `super.onCreate(null)`
+only when native `smallestScreenWidthDp < 600`, leaving tablets unrestricted. The existing `expo-screen-orientation`
+mount/resume owner remains the matching lifecycle safety net. Global Expo orientation stays `default`. Production Drawing UI,
+routes, export, WorkOrder/API/R2/PDF integration, schema, migration, and product-data mutation remain zero; the bounded DEV
+authoring lab and selected adapter are described below. The Owner has accepted the native iPhone portrait stabilization as physical PASS and selected SVG after
+the bounded physical renderer comparison: SVG and Skia felt broadly similar, SVG felt marginally faster at Medium, and neither
+showed a clear Heavy advantage. `react-native-svg` is therefore the selected renderer and the temporary Skia dependency,
+adapter, reconciler workaround, and dual-renderer toggle are removed. The authenticated development-bundle surface is now one
+memory-only SVG performance lab. Its renderer-independent authoring pipeline keeps completed elements in the committed Scene,
+keeps the active freehand stroke separately in world coordinates during pointer movement, memoizes the committed projection,
+and commits the completed stroke to Scene/history exactly once on release. The continuation keeps those raw world points and
+the `1.5` world-unit acceptance threshold unchanged, but renders active and committed freehand with one deterministic
+midpoint-quadratic display path. It rejects interpolation and schema changes. The committed SVG subtree is memoized separately
+from the active stroke, so pointer movement performs committed projection/path/layer rebuild `0/0/0`. Production keeps the
+disabled `스케치(준비 중)` behavior. The Owner explicitly accepted freehand curve fidelity, the bounded Heavy response,
+active-stroke committed layer/projection/path counters `0/0/0`, and iPhone portrait zero-twitch as physical PASS. SVG is
+the selected renderer. APP_VERSION is `2.0.0-alpha.72`; finalization changes product behavior by zero and alpha.73
+production editor work has not started.
+
 Alpha.71 is finalized at `ALPHA71_FINALIZATION_COMPLETE` with product checkpoint `ALPHA71_PRE_DRAWING_COMPLETE`. The release is deliberately pre-Drawing: it preserves the disabled `스케치(준비 중)` affordance and adds no Scene, tool, renderer, gesture, export, or Drawing dependency. The cumulative alpha.71 boundary splits the mobile Media authoring/API ownership without changing behavior and enforces portrait-up on handsets through one SDK55 runtime orientation owner while tablets retain the global default portrait/landscape policy. Owner physical iPhone QA explicitly accepted rotate-after-entry, enter-while-landscape, Photos/Camera, PDF attachment, and Sketch-placeholder checks. APP_VERSION is `2.0.0-alpha.71`; DEV/TEST migration remains `21/21`, Production migration is zero, and production/Owner/ambiguous mutation remains `0/0/0`.
 
 Alpha.70 remains the previous finalized result. Alpha.71 finalization changes no product behavior beyond the already owner-accepted pre-Drawing architecture and handset orientation policy; it synchronizes version, contracts, Git, and artifacts only.
@@ -11,10 +36,25 @@ Document type: **Current Baseline**
 
 Canonical owner: `docs/codex-current-state.md`
 
-Result version: `2.0.0-alpha.71`
-Status: `ALPHA71_FINALIZATION_COMPLETE`
-Product checkpoint: `ALPHA71_PRE_DRAWING_COMPLETE`
+Result version: `2.0.0-alpha.72`
+Status: `ALPHA72_FINALIZATION_COMPLETE`
+Product checkpoint: `ALPHA72_DRAWING_FOUNDATION_COMPLETE`
 Owner physical result: `PASS`
+
+## Final alpha.72 Drawing Foundation result
+
+The product feature name is `스케치`. Renderer, SVG, Performance, and PoC labels are development-only diagnostics and
+must not become customer-facing product names. Production continues to show the disabled `스케치(준비 중)` affordance;
+alpha.72 does not enable a production editor, persistence, export, WorkOrder/API/R2/PDF integration, schema, or migration.
+
+The finalized foundation owns one framework-free `1000 × 1400` logical world, versioned editable Scene v1, camera and
+viewport transforms, bounded Scene history, strict serialization, and renderer-independent adapter contracts. The
+handset native/runtime orientation layers preserve portrait-up without first-rotation twitch while tablets retain
+portrait and landscape. The selected SVG DEV lab keeps the active stroke transient, commits once on release, renders
+active and committed freehand through the same deterministic midpoint-quadratic path, and performs pointer-move
+committed layer/projection/path rebuild `0/0/0`. Owner physical iPhone QA explicitly accepted curve fidelity, Heavy
+response as sufficient, the zero committed-rebuild counters, and portrait zero-twitch. Finalization adds no behavior,
+dependency, native/config/EAS, migration, or product-data delta.
 
 ## Final alpha.71 pre-Drawing result
 
@@ -46,6 +86,59 @@ Installed Expo Router source shows navigator `screenOptions` and explicit `Stack
 
 Internal iOS Development Build `8d201f5b…978c` finished successfully on the existing
 project/profile and is ready for registered-iPhone installation. Build completion is not a physical orientation result.
+
+### Alpha.72B Drawing renderer PoC comparison
+
+Status: `ALPHA72_DRAWING_RENDERER_POC_ENTRY_GATE_IPHONE_REQA_REQUIRED`
+
+The Owner reports the alpha.72A native iPhone orientation result as PASS (`고정된다`). The bounded comparison PoC is
+available only to an authenticated Recipe session in a development bundle; `system_admin` and `[SIM]` company identity
+are not entry requirements. Release/production retains the disabled `스케치(준비 중)` affordance. Both renderer adapters consume one canonical `DrawingSceneV1`, one renderer-neutral projected
+primitive frame, one camera/viewport transform, and one built-in PanResponder screen-to-world input path. Sparse,
+medium, and heavy deterministic workloads are 5/8, 80/800, and 240/4800 elements/freehand-points respectively. Scene
+identity survives renderer toggles; render/toggle business mutation is zero. JS Scene-update and toggle-to-next-RAF
+timings are labeled narrowly; GPU FPS and memory are not inferred. Persistence, WorkOrder/API/R2/PDF/export integration,
+production Sketch activation, and renderer selection remain zero. The Skia adapter avoids the package-root barrel so
+unused optional Video/Reanimated exports cannot redbox an otherwise static PoC; no Reanimated/worklets/gesture dependency
+was added. Existing-project internal Development Builds
+`71a3b621…3abf` (iOS, 26,154,478 bytes) and `a2416e06…e871` (Android, 282,775,915 bytes) are complete and installable; physical renderer
+quality is not inferred from build completion.
+
+### Alpha.72C SVG selection and authoring pipeline optimization
+
+Status: `ALPHA72_SVG_RENDERER_AUTHORING_PIPELINE_OPTIMIZATION_IPHONE_QA_REQUIRED`
+
+The Owner's physical SVG/Skia comparison selects SVG: the perceived difference was small, SVG felt marginally faster at
+Medium, and Skia showed no clear Heavy advantage that justified its native dependency and binary cost. The framework-free
+adapter boundary remains, while the temporary Skia package/lock transitive entries, adapter, reconciler startup workaround,
+toggle, and comparison-only contract are removed. The existing Development Build may still contain an unused Skia native
+module, but the current JavaScript bundle has no Skia dependency or import and therefore needs no rebuild solely for this
+removal.
+
+The active freehand pipeline no longer reconstructs a preview Scene or reprojects the committed Heavy frame for every point.
+Pointer down creates one renderer-independent transient stroke in the canonical `1000 × 1400` world. Pointer move applies the
+existing conservative `1.5` world-unit minimum-distance policy to that stroke only; the committed Scene identity, serialization,
+and history remain unchanged. The committed SVG frame is memoized by committed Scene and viewport transform, while only the
+active path is reprojected. Pointer release preserves the final point, creates one canonical freehand element, and performs one
+Scene/history commit; terminate/cancel discards the transient stroke with zero commit. Sparse/Medium/Heavy remain
+5/8, 80/800, and 240/4800 elements/freehand-points. Production Sketch, WorkOrder/API/DB/R2/PDF/Viewer/Share, schema,
+migration, and business data remain unchanged. Performance and curve quality still require Owner iPhone QA.
+
+### Alpha.72C-1 freehand fidelity and Heavy render optimization
+
+Status: `ALPHA72_FREEHAND_FIDELITY_HEAVY_RENDER_OPTIMIZATION_IPHONE_QA_REQUIRED`
+
+Owner evidence reported `samples 73 / accepted 73 / decimated 0`, so the continuation does not attribute angular curves to
+sampling and does not alter the accepted `1.5` world-unit threshold. Canonical `DrawingSceneV1` freehand points remain the
+exact raw world-coordinate sequence. A dependency-free `midpoint-quadratic-v1` display builder now derives both active and
+committed SVG paths from that sequence, preserves exact endpoints, adds no interpolated points, and keeps collinear input
+collinear. `measureDrawingPointGaps()` reports average and maximum accepted world gaps without changing acceptance.
+
+The committed SVG layer and active-stroke layer are separate memoized React boundaries. Pointer movement updates only the
+active projection/path and causes committed projection, committed path, committed layer, Scene, and history rebuild/commit
+`0/0/0/0/0`; pointer release remains Scene/history `1/1`. Sparse/Medium/Heavy workloads remain `5/8`, `80/800`, and
+`240/4800`. Production Sketch, persistence, API, DB, R2, PDF, dependencies, native/EAS configuration, and product data are
+unchanged. Owner iPhone physical curve and Heavy-performance PASS is not inferred.
 
 ## Final alpha.70 result
 

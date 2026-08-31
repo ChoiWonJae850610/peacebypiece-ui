@@ -1,28 +1,117 @@
 # WAFL v2 App-first Roadmap and Version Delta
 
-Alpha.71 is finalized at `ALPHA71_FINALIZATION_COMPLETE`; its accepted product checkpoint is
-`ALPHA71_PRE_DRAWING_COMPLETE`. The release is deliberately pre-Drawing: mobile Media boundaries and APIs have typed,
-separated owners without behavior loss, handsets use one SDK55 runtime portrait-up owner, and tablets retain the global
-default portrait/landscape policy. Owner physical iPhone QA explicitly accepted both orientation checks plus the bounded
-Photos/Camera, PDF attachment, and Sketch-placeholder sanity checks. APP_VERSION is `2.0.0-alpha.71`; DEV/TEST migration
-remains `21/21`, Production migration is zero, and production/Owner/ambiguous mutation is `0/0/0`. Drawing implementation
-and library selection remain zero. Alpha.70 remains finalized at `ALPHA70_FINALIZATION_COMPLETE` with product checkpoint
-`ALPHA70_COMPLETE`.
+Alpha.72 is finalized at `ALPHA72_FINALIZATION_COMPLETE`; its accepted product checkpoint is
+`ALPHA72_DRAWING_FOUNDATION_COMPLETE`. The library-independent Drawing foundation, native/runtime handset orientation
+stabilization, selected SVG adapter, transient authoring path, shared freehand display smoothing, and committed render-cache
+boundary are complete. Owner physical iPhone QA explicitly accepts natural curve fidelity, bounded Heavy response,
+active-stroke committed layer/projection/path counters `0/0/0`, and portrait zero-twitch. APP_VERSION is
+`2.0.0-alpha.72`; DEV/TEST migration remains `21/21`, Production migration is zero, and production/Owner/ambiguous
+mutation is `0/0/0`. Production retains disabled `스케치(준비 중)` and alpha.73 editor work has not started.
 
-The next default Delta is alpha.72 Drawing Foundation. It requires a separate Owner-approved work order and library
-selection; no Drawing implementation is authorized by this finalization.
+Alpha.71 remains the previous finalized result at `ALPHA71_FINALIZATION_COMPLETE` with product checkpoint
+`ALPHA71_PRE_DRAWING_COMPLETE`.
+Alpha.70 remains finalized at `ALPHA70_FINALIZATION_COMPLETE` with product checkpoint `ALPHA70_COMPLETE`.
 
 Document role: canonical owner for the current result, next candidate, and Version Delta boundary. It is not the historical implementation ledger; completed details live in numbered immutable evidence.
 
-## Current result — 2.0.0-alpha.71
+## Current result — 2.0.0-alpha.72
 
-Status: `ALPHA71_FINALIZATION_COMPLETE`.
+Status: `ALPHA72_FINALIZATION_COMPLETE`.
 
-Accepted product checkpoint: `ALPHA71_PRE_DRAWING_COMPLETE`.
+Accepted product checkpoint: `ALPHA72_DRAWING_FOUNDATION_COMPLETE`.
 
 Owner physical result: `PASS`.
 
-Alpha.71 finalizes the pre-Drawing architecture and handset orientation boundary. Typed Media ownership preserves alpha.70 image/attachment behavior. The stable device classifier and root runtime coordinator apply `PORTRAIT_UP` to handsets and restore `default` rotation on tablets at mount and foreground resume. Owner physical iPhone QA explicitly passed rotate-after-entry and enter-while-landscape behavior, Photos/Camera persistence, PDF attachment open/delivery persistence, and the unchanged Sketch placeholder. Global Expo orientation remains `default`; Drawing implementation remains zero and Drawing library selection remains zero. Finalization adds no product behavior, dependency, native, config, EAS, schema, migration, or data mutation.
+Alpha.72 finalizes the renderer-independent Drawing foundation and the selected SVG development authoring path. Native
+startup plus runtime orientation ownership keeps handsets portrait-up and tablets unrestricted. Active freehand remains
+transient until one release commit, active and committed display paths share deterministic midpoint-quadratic smoothing,
+and active pointer movement rebuilds committed layer/projection/path `0/0/0`. Owner physical iPhone QA accepted the
+curves, Heavy response, counters, and portrait zero-twitch. The customer-facing feature name is `스케치`; PoC/renderer/
+SVG/performance labels remain DEV-only, and production remains disabled as `스케치(준비 중)`. Finalization adds no
+product behavior, dependency, native, config, EAS, schema, migration, or data mutation. Alpha.73 production editor work
+is a separately approved future Delta and has not started.
+
+## Alpha.72 current candidate — Drawing Foundation
+
+Status: `ALPHA72_DRAWING_FOUNDATION_IPHONE_QA_REQUIRED`.
+
+The foundation introduces one fixed `1000 × 1400` top-left logical world and a serializable versioned Scene whose ordered
+freehand, line, arrow, rectangle, and ellipse elements retain stable IDs. Camera and viewport are separate transient
+state; contain-fit uses one uniform scale and exact inverse world/screen transforms. A bounded immutable Scene history,
+strict JSON validation, and library-independent renderer/editor/export adapter interfaces establish future extension
+points without persisting viewport/device/orientation state. Drawing UI/editor/routes, gestures, derivatives, library
+selection, WorkOrder/API/R2/PDF integration, schema, migration, dependencies, and business-data effects remain zero.
+The disabled `스케치(준비 중)` affordance and all finalized alpha.71 behavior remain unchanged. APP_VERSION stays
+`2.0.0-alpha.71`; physical iPhone regression PASS is not inferred.
+
+### Alpha.72A-1 native orientation stabilization
+
+Status: `ALPHA72_DRAWING_FOUNDATION_NATIVE_ORIENTATION_STABILIZATION_IPHONE_ANDROID_QA_REQUIRED`.
+
+Owner physical evidence found one visible first-rotation twitch even though the alpha.71 runtime lock ultimately returned
+the iPhone to portrait. The accepted architecture therefore has two agreeing layers. A local Expo config plugin owns the
+earliest generated native policy: `UISupportedInterfaceOrientations` is portrait-only for iPhone, the iPad-specific key
+retains portrait/upside-down/left/right support, and Android MainActivity reads native
+`configuration.smallestScreenWidthDp` before `super.onCreate(null)`, requesting portrait only below 600dp. Android's
+manifest remains `unspecified`, so tablets are not globally locked. The existing SDK55 `expo-screen-orientation` owner
+remains the mount/foreground safety net: handset locks `PORTRAIT_UP`, tablet unlocks to default. The global Expo
+orientation remains `default`; Recipe/WorkOrder/Drawing are not policy inputs. Drawing Foundation source hashes and all
+Media behavior remain unchanged. New internal development binaries are required before physical judgment; iPhone and
+Android phone physical PASS are not inferred.
+
+### Alpha.72B Drawing renderer PoC comparison
+
+Status: `ALPHA72_DRAWING_RENDERER_POC_ENTRY_GATE_IPHONE_REQA_REQUIRED`.
+
+Owner iPhone orientation evidence is PASS (`고정된다`). An authenticated Recipe session in a development bundle turns the existing
+Sketch affordance into the comparison entry; neither System Admin nor `[SIM]` identity is required. Production and release continue to expose disabled
+`스케치(준비 중)`. SVG and Skia adapters consume the same immutable Scene, shared renderer-neutral projection, camera,
+viewport transform, and built-in PanResponder `screenToWorld()` path. The toggle retains exact Scene serialization;
+Sparse/Medium/Heavy workloads use deterministic 5/80/240 elements and 8/800/4800 freehand points. Clear/Undo/Redo and
+live freehand are in-memory only. The only dependency/native delta is `@shopify/react-native-skia`; no gesture,
+reanimated, worklets, API, schema, migration, persistence, R2, PDF, export, or product-data change is authorized. The
+static Skia adapter bypasses the package-root barrel that eagerly evaluates optional Video/Reanimated exports. Renderer
+recommendation remains `RECOMMENDATION_PENDING_OWNER_PHYSICAL_POC`, and renderer physical PASS is not inferred.
+The unchanged existing EAS project/profile produced internal Development Builds
+`71a3b621-31e9-493d-ac04-2888f0337abf` (iOS, 26,154,478 bytes) and
+`a2416e06-2ca0-431a-b575-67dafc29e871` (Android, 282,775,915 bytes). These builds make the native Skia comparison
+installable but do not select a renderer.
+
+### Alpha.72C SVG renderer selection and authoring pipeline optimization
+
+Status: `ALPHA72_SVG_RENDERER_AUTHORING_PIPELINE_OPTIMIZATION_IPHONE_QA_REQUIRED`.
+
+Owner physical comparison is authoritative: SVG and Skia were broadly similar, SVG felt marginally faster at Medium, and
+Skia showed no clear Heavy advantage. `DRAWING_RENDERER_SELECTED_SVG` therefore selects existing `react-native-svg`; the
+temporary `@shopify/react-native-skia` package/lock entries, adapter, static reconciler workaround, renderer toggle, and
+comparison-only contract are removed. The framework-free renderer adapter boundary remains available for a future evidence-led
+swap. The currently installed comparison Development Build may retain an unused Skia native module; no rebuild is required when
+the current JS bundle imports none.
+
+The shared authoring pipeline separates committed `DrawingSceneV1` from one transient world-coordinate active stroke. Pointer
+move updates only the transient stroke and performs committed Scene mutation, serialization, and history mutation `0/0/0`.
+The committed projected frame is memoized by Scene identity and viewport transform; the active path alone is reprojected.
+Pointer release preserves the final sample and performs one Scene commit plus one history commit. The conservative sampling
+threshold remains `1.5` logical world units, independent of device pixels; pointer cancel commits nothing. Sparse/Medium/Heavy,
+all five element kinds, uniform scale, world `1000 × 1400`, undo/redo, and the authenticated DEV entry remain. Production
+`스케치(준비 중)`, persistence, WorkOrder/API/R2/PDF/export, schema, migration, and business data remain unchanged.
+Performance and curve quality physical PASS are not inferred.
+
+### Alpha.72C-1 freehand fidelity and Heavy render optimization
+
+Status: `ALPHA72_FREEHAND_FIDELITY_HEAVY_RENDER_OPTIMIZATION_IPHONE_QA_REQUIRED`.
+
+The accepted transient authoring architecture remains intact. Owner counters show that the physical jagged stroke accepted
+every sample (`73/73`, decimated `0`), so the root is the SVG straight-line display path rather than the `1.5` world-unit
+sampling threshold. Raw Scene points remain canonical and unchanged. One shared dependency-free
+`midpoint-quadratic-v1` builder derives active and committed display paths, preserves endpoints, inserts no new points, and
+keeps world geometry invariant across viewports. Average and maximum accepted world-point gaps are exposed as diagnostics.
+
+Committed and active SVG layers are separate memoized subtrees. During one active stroke, the committed frame, paths, and
+layer remain reusable; pointer movement rebuilds only the active path. Pointer release still commits Scene/history exactly
+once. Heavy remains 240 elements/4800 freehand points. This Delta adds no dependency, native/EAS change, persistence,
+schema, migration, WorkOrder/R2/PDF integration, or production Sketch activation. Physical curve fidelity and Heavy response
+remain Owner iPhone judgments.
 
 ## Alpha.71A current candidate — pre-Drawing architecture only
 

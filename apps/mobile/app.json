@@ -9,6 +9,7 @@
     "userInterfaceStyle": "light",
     "plugins": [
       "expo-router",
+      "./plugins/withWaflNativeOrientationPolicy",
       "@config-plugins/react-native-blob-util",
       "@config-plugins/react-native-pdf",
       [
@@ -38,7 +39,7 @@
       }
     },
     "extra": {
-      "appVersion": "2.0.0-alpha.71",
+      "appVersion": "2.0.0-alpha.72",
       "mockOnly": false,
       "dataMode": "dev-test-tailscale-auto-connect",
       "router": {},

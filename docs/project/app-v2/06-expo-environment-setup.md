@@ -16,8 +16,9 @@ Document role: canonical owner for supported Expo/native environment, app identi
 | iOS bundle identifier | `com.wafl.app` |
 | Android package | `com.wafl.app` |
 | Expo public version | `2.0.0` |
-| Internal APP_VERSION | `2.0.0-alpha.71` |
-| iOS Development Build | build number `1`; latest installable alpha.71A-2 development build `8d201f5b…978c` |
+| Internal APP_VERSION | `2.0.0-alpha.72` |
+| iOS Development Build | build number `1`; latest installable alpha.72B development build `71a3b621-31e9-493d-ac04-2888f0337abf` |
+| Android Development Build | version code `1`; latest installable alpha.72B development build `a2416e06-2ca0-431a-b575-67dafc29e871` |
 
 `com.wafl.app` is the stable WAFL brand identifier and does not derive from repository project or planned company names.
 
@@ -63,6 +64,39 @@ SDK55-compatible `expo-screen-orientation` `55.0.20`. Distribution remains inter
 the public app version/build number remain `2.0.0`/`1`, project identity and signing inputs are reused, and no
 preview/production/submit profile or EAS Update channel was introduced. The build is installable on the registered
 iPhone; the Owner installed it and accepted the bounded alpha.71 orientation and Media/Sketch sanity checks as PASS.
+
+### Alpha.72B renderer-comparison builds
+
+Owner approval established replacement internal Development Builds on 2026-08-30 for the existing
+`@lostab/wafl-mobile` project and unchanged `development` profile. iOS build
+`71a3b621-31e9-493d-ac04-2888f0337abf` (26,154,478 bytes) and Android build
+`a2416e06-2ca0-431a-b575-67dafc29e871` (282,775,915 bytes) both finished successfully with
+`@shopify/react-native-skia` `2.4.18`. The measured artifact deltas from the prior orientation builds are
++5,406,537 bytes on iOS and +67,666,201 bytes on Android. Distribution remains internal, public app version/build
+identity remains `2.0.0`/`1`, and project identity, credentials, and signing inputs are reused. No preview,
+production, submit, or EAS Update path was introduced. Build completion proves installability only; renderer physical
+quality and a winner remain `RECOMMENDATION_PENDING_OWNER_PHYSICAL_POC`.
+
+### Alpha.72C selected SVG source/runtime boundary
+
+Owner physical comparison selects the existing `react-native-svg` renderer and removes `@shopify/react-native-skia` plus its
+transitive lock entries and all Skia imports from current source. The already installed alpha.72B internal Development Build may
+still contain the now-unused Skia native module, but the current JS bundle does not import it. A replacement build is not required
+solely to remove unused native bytes from an internal QA binary. Project, profile, credentials, app/build identity, Expo config,
+and EAS policy remain unchanged; production/preview/submit/update paths remain unused.
+
+### Alpha.72C-1 freehand fidelity runtime boundary
+
+The midpoint-quadratic SVG display path, accepted-gap diagnostics, and committed/active memoization split are
+JavaScript/TypeScript-only. They add no dependency, plugin, native source, Expo config, EAS project/profile, credential,
+or app/build identity delta. The current internal Development Build remains valid for bundle-based physical iPhone QA.
+
+### Alpha.72 finalization runtime boundary
+
+Alpha.72 finalization is version, contract, Git, and artifact synchronization only. It adds no dependency, plugin,
+native source, Expo config, EAS project/profile, credential, or app/build identity delta. The Owner explicitly accepted
+the installed-build iPhone orientation and SVG freehand/Heavy checks. The existing internal Development Build remains
+valid; no EAS Build, EAS Update, preview, production, submit, or store delivery is performed for finalization.
 
 ## Development-only ATS boundary
 

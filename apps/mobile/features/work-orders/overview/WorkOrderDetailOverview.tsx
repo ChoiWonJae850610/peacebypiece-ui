@@ -200,6 +200,7 @@ type Props = {
   readonly onOpenReorder: () => void;
   readonly onOpenSeriesHistory: () => void;
   readonly draftBatch: WorkOrderDraftBatchCoordinator;
+  readonly drawingRendererPocEnabled?: boolean;
 };
 
 export default function WorkOrderDetailOverview(props: Props) {
@@ -664,6 +665,7 @@ export default function WorkOrderDetailOverview(props: Props) {
           onDelete={imageActions.delete}
           onSetRepresentative={imageActions.setRepresentative}
           onSetOutputInclude={imageActions.setOutputInclude}
+          drawingRendererPocEnabled={props.drawingRendererPocEnabled}
             />
           ) : activeSection === "sizes" ? (
             <WorkOrderSizeColorStructureEditor

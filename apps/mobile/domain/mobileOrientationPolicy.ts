@@ -1,4 +1,6 @@
-export const WAFL_ANDROID_TABLET_SHORT_SIDE_DP = 600;
+import nativeOrientationPolicy from "../config/waflNativeOrientationPolicy.js";
+
+export const WAFL_ANDROID_TABLET_SHORT_SIDE_DP = nativeOrientationPolicy.androidTabletSmallestWidthDp;
 
 export type WaflMobilePlatform = "ios" | "android" | "web" | "other";
 export type WaflMobileDeviceClass = "handset" | "tablet" | "other";

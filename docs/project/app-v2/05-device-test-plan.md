@@ -108,6 +108,49 @@ Owner physical iPhone QA is explicitly accepted as PASS for the cumulative alpha
 
 Owner physical iPhone QA is explicitly accepted as PASS on the internal Development Build containing SDK55 `expo-screen-orientation`. Recipe remained portrait-up when the handset rotated after entry and when Recipe was entered while the handset was already landscape. The bounded sanity checks also accepted Photos/Camera persistence, PDF attachment open and delivery-selection persistence, and the unchanged `스케치(준비 중)` affordance. Tablet physical QA was not required; source, type, and global-config evidence preserve tablet `default` portrait/landscape rotation. This advances the product checkpoint to `ALPHA71_PRE_DRAWING_COMPLETE` and finalization checkpoint to `ALPHA71_FINALIZATION_COMPLETE` without inferring unrun tablet hardware evidence.
 
+## Alpha.72 renderer comparison QA
+
+The Owner reports the alpha.72A native iPhone portrait stabilization check as PASS (`고정된다`). Checkpoint
+`ALPHA72_DRAWING_RENDERER_POC_ENTRY_GATE_IPHONE_REQA_REQUIRED` requires the existing Skia-capable Development Build and a
+bounded physical iPhone comparison of SVG versus Skia using the same Scene: slow/fast freehand, renderer toggles without
+jump/stretch/reset, Sparse/Medium/Heavy smoothness judgment, portrait-lock regression, and normal Recipe/Image behavior.
+The enabled comparison entry is available to an ordinary authenticated Recipe only in a development bundle; System Admin
+and `[SIM]` identity are not required, while release/production retains disabled `스케치(준비 중)`.
+Automated source/build evidence does not infer renderer physical PASS or select a winner. Android physical comparison
+may remain `NOT_RUN`.
+
+The comparison binaries are internal Development Builds `71a3b621-31e9-493d-ac04-2888f0337abf` for iOS and
+`a2416e06-2ca0-431a-b575-67dafc29e871` for Android. Build completion and installability are verified; the Owner must
+still perform the SVG/Skia physical comparison before any renderer recommendation.
+
+## Alpha.72 SVG selection and authoring performance QA
+
+The Owner completed the bounded renderer comparison and selected SVG: overall difference was small, SVG felt marginally faster
+at Medium, and Skia showed no clear Heavy advantage. The current checkpoint
+`ALPHA72_SVG_RENDERER_AUTHORING_PIPELINE_OPTIMIZATION_IPHONE_QA_REQUIRED` uses an authenticated DEV SVG-only performance lab.
+Automated contracts prove transient world-coordinate authoring, pointer-move Scene/history mutation `0/0`, release commit `1/1`,
+endpoint-preserving `1.5` world-unit sampling, workload identity, Skia source/package residual zero, and production Sketch
+isolation. Owner iPhone QA still judges Sparse/Medium/Heavy response, curve fidelity, whole-stroke Undo/Redo, counters, portrait
+zero-twitch, and normal Recipe/Image regression. Those physical results are not inferred.
+
+## Alpha.72 freehand fidelity and Heavy render optimization QA
+
+Checkpoint `ALPHA72_FREEHAND_FIDELITY_HEAVY_RENDER_OPTIMIZATION_IPHONE_QA_REQUIRED` keeps the authenticated DEV SVG lab and
+the existing installed Development Build because the change is JavaScript/TypeScript-only. Owner iPhone QA must judge slow
+curves, fast curves, short strokes, Heavy drawing response, whole-stroke Undo/Redo, displayed sample/gap/render counters,
+portrait zero-twitch, and normal Recipe/Image regression. Automated contracts prove raw-point preservation, shared
+active/committed smoothing, zero interpolation, pointer-move committed rebuild `0`, and release Scene/history commit `1/1`;
+they do not infer physical curve quality or frame responsiveness. Android physical QA may remain `NOT_RUN`.
+
+## Alpha.72 final device result
+
+Owner physical iPhone QA is explicitly accepted as PASS for natural slow/fast/short freehand curves, bounded Heavy
+response, active-stroke committed layer/projection/path counters remaining `0/0/0`, and portrait zero-twitch. The Owner
+also selected SVG over the bounded Skia candidate. This advances the product checkpoint to
+`ALPHA72_DRAWING_FOUNDATION_COMPLETE` and finalization checkpoint to `ALPHA72_FINALIZATION_COMPLETE`. Production still
+shows disabled `스케치(준비 중)`; DEV renderer/performance labels do not become product naming, and alpha.73 editor work
+is not started. Finalization itself adds no physical behavior delta and requires no additional device pass.
+
 ## Historical results
 
 Do not copy version-by-version results into this plan. Use immutable evidence:

@@ -757,3 +757,18 @@ Alpha.26 adds a static material/order gate: shared fabric/accessory DTOs, bounde
 - Current Baseline, roadmap, and device owner agree on product checkpoint `ALPHA69_COMPLETE`, finalization checkpoint `ALPHA69_FINALIZATION_COMPLETE`, and the explicit Owner physical iPhone result `PASS` without rewriting earlier pre-finalization evidence.
 - Alpha.70 PDF work remains deferred. Dependency, native, EAS, schema and migration additions remain zero; migration ledger is `20/20` and production/Owner/ambiguous mutation remains `0/0/0`.
 - Permanent inventory advances from `211/211` to `212/212`; final verification requires FAIL/SKIP `0/0`.
+
+## 75. Alpha.72 finalization gate
+
+- Canonical root/mobile/package/lock/Expo diagnostic versions resolve to `2.0.0-alpha.72`; Expo public/native identity
+  remains unchanged.
+- Current Baseline, roadmap, device plan, Expo environment, and Drawing guardrail agree on product checkpoint
+  `ALPHA72_DRAWING_FOUNDATION_COMPLETE`, finalization checkpoint `ALPHA72_FINALIZATION_COMPLETE`, and explicit Owner
+  physical iPhone result `PASS`.
+- Product naming is `스케치`; renderer/SVG/performance/PoC labels remain DEV-only, production stays disabled as
+  `스케치(준비 중)`, and alpha.73 production editor work is zero.
+- SVG remains the selected renderer with no direct Skia, perfect-freehand, Reanimated, Gesture Handler, or Worklets
+  dependency. Foundation, orientation, transient active-stroke, midpoint-quadratic display, and committed-cache contracts
+  remain intact.
+- Finalization behavior/dependency/native/config/EAS/schema/migration/data deltas are zero. Migration remains `21/21`,
+  production/Owner/ambiguous mutation remains `0/0/0`, and permanent inventory advances from `226/226` to `227/227`.

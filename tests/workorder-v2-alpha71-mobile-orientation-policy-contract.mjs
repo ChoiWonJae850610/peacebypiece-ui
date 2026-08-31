@@ -114,7 +114,8 @@ const roadmap = read("docs/project/app-v2/08-roadmap-2.0.md");
 
 assert.match(policy, /Math\.min\(width, height\)/u, "Android fallback must use rotation-invariant shorter side");
 assert.doesNotMatch(policy, /WorkOrder|Recipe|Media|Scene|viewport|gesture|renderer/iu);
-assert.doesNotMatch(policy, /^import\s/mu, "policy owner must remain framework-free and Node-testable");
+assert.match(policy, /import nativeOrientationPolicy from "\.\.\/config\/waflNativeOrientationPolicy\.js"/u);
+assert.doesNotMatch(policy, /from ["'](?:react|react-native|expo|@\/)/u, "policy owner must remain framework-free and Node-testable");
 assert.match(layout, /Dimensions\.get\("screen"\)/u);
 assert.match(layout, /Platform\.OS === "ios" && Platform\.isPad/u);
 assert.match(layout, /useWaflRuntimeOrientationPolicy\(mobileDeviceClass\)/u);
@@ -134,7 +135,9 @@ assert.equal(appJson.expo.orientation, "default", "global Expo orientation must 
 assert.equal(appJson.expo.ios.supportsTablet, true);
 assert.equal(mobilePackage.dependencies["expo-screen-orientation"], "~55.0.20");
 assert.equal(mobilePackage.dependencies["expo-device"], undefined);
-assert.match(gallery, /accessibilityLabel="스케치, 준비 중" disabled/u);
+assert.match(gallery, /"스케치, 준비 중"/u);
+assert.match(gallery, /disabled=\{!props\.drawingRendererPocEnabled\}/u);
+assert.match(gallery, /props\.drawingRendererPocEnabled \? "SVG Performance PoC" : "스케치"/u);
 
 for (const owner of [currentState, roadmap]) {
   assert.match(owner, /ALPHA71_PRE_DRAWING_PHYSICAL_ORIENTATION_LOCK_CORRECTION_IPHONE_REQA_REQUIRED/u);
