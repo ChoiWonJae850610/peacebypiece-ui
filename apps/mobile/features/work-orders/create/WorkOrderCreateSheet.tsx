@@ -1,13 +1,13 @@
-import { useCallback, useEffect, useRef } from "react";
-import { StyleSheet, View, type TextInput } from "react-native";
+import { useRef } from "react";
+import { StyleSheet, View } from "react-native";
 
 import WaflInputSheet from "@/features/inputs/WaflInputSheet";
 import WaflSheetValueField from "@/features/inputs/WaflSheetValueField";
+import { WaflSheetSemanticFocusScope } from "@/features/inputs/WaflSheetTextInput";
 import WorkOrderCharacterChoice from "@/features/work-orders/identity/WorkOrderCharacterChoice";
 import { WAFL_THEME } from "@/constants/theme";
 import { WAFL_TEXT_ENTRY_FORM_SIZING } from "@/domain/waflSheetDetentPolicy";
 import { WORK_ORDER_PRODUCT_NAME_MAX_LENGTH } from "@/domain/workOrderValidation";
-import { consumeCreateRecipeEntranceFocus, openCreateRecipeKeyboardFocus, type CreateRecipeKeyboardFocusState } from "./createRecipeKeyboardFocusPolicy";
 
 type Props = {
   readonly visible: boolean;
@@ -22,23 +22,13 @@ type Props = {
 };
 
 export default function WorkOrderCreateSheet(props: Props) {
-  const productNameInputRef = useRef<TextInput>(null);
-  const keyboardFocusStateRef = useRef<CreateRecipeKeyboardFocusState>("closed");
-  useEffect(() => {
-    keyboardFocusStateRef.current = props.visible ? openCreateRecipeKeyboardFocus() : "closed";
-  }, [props.visible]);
-  const focusProductNameOnce = useCallback(() => {
-    const transition = consumeCreateRecipeEntranceFocus(keyboardFocusStateRef.current);
-    keyboardFocusStateRef.current = transition.state;
-    if (transition.shouldFocus) productNameInputRef.current?.focus();
-  }, []);
-  return <WaflInputSheet cancelAccessibilityLabel="새 레시피 만들기 취소" confirmAccessibilityLabel="새 레시피 만들기" confirmDisabled={!props.productName.trim()} keyboardAutoExpand keyboardFocusRevealContext={WAFL_THEME.sheet.textEntryFocusRevealClearance} keyboardMode="directInput" onAfterOpen={focusProductNameOnce} onCancel={props.onCancel} onConfirm={props.onConfirm} pending={props.pending} processingHelper={props.pending ? "잠시만 기다려 주세요." : null} processingMessage={props.pending ? "새 레시피를 생성 중입니다." : null} processingPresentation="replaceSheet" processingTestID="work-order-creation-blocker" sizing={WAFL_TEXT_ENTRY_FORM_SIZING} title="새 레시피" visible={props.visible}>
-    <View style={styles.content}>
+  const characterChoiceMeasurementRef = useRef<View>(null);
+  return <WaflInputSheet cancelAccessibilityLabel="새 레시피 만들기 취소" confirmAccessibilityLabel="새 레시피 만들기" confirmDisabled={!props.productName.trim()} diagnosticRequiredRegionRef={characterChoiceMeasurementRef} diagnosticSurfaceId="new-recipe" keyboardAutoExpand keyboardFocusRevealContext={WAFL_THEME.sheet.textEntryFocusRevealClearance} keyboardMode="directInput" onCancel={props.onCancel} onConfirm={props.onConfirm} pending={props.pending} processingHelper={props.pending ? "잠시만 기다려 주세요." : null} processingMessage={props.pending ? "새 레시피를 생성 중입니다." : null} processingPresentation="replaceSheet" processingTestID="work-order-creation-blocker" sizing={WAFL_TEXT_ENTRY_FORM_SIZING} title="새 레시피" visible={props.visible}>
+    <WaflSheetSemanticFocusScope style={styles.content} testID="new-recipe-product-semantic-reveal-scope">
       <WaflSheetValueField
         editable={!props.pending}
         errorMessage={props.error}
         helpText="이후 상세 화면에서 나머지 정보를 입력할 수 있습니다."
-        inputRef={productNameInputRef}
         label="제품명"
         maxLength={WORK_ORDER_PRODUCT_NAME_MAX_LENGTH}
         onChange={props.onChangeProductName}
@@ -50,8 +40,9 @@ export default function WorkOrderCreateSheet(props: Props) {
         disabled={props.pending}
         isSample={props.isSample}
         onChange={props.onChangeSample}
+        ref={characterChoiceMeasurementRef}
       />
-    </View>
+    </WaflSheetSemanticFocusScope>
   </WaflInputSheet>;
 }
 

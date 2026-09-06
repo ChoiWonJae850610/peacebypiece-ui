@@ -5,7 +5,7 @@ import { ChevronLeft } from "lucide-react-native";
 import { WAFL_FONTS } from "@/constants/fonts";
 import { WAFL_THEME } from "@/constants/theme";
 import WaflSheetValueField from "./WaflSheetValueField";
-import { useWaflSheetDirectInputConfirm } from "./WaflSheetTextInput";
+import { useWaflSheetDirectInputConfirm, WaflSheetSemanticFocusScope } from "./WaflSheetTextInput";
 
 type Props = {
   readonly backLabel: string;
@@ -16,6 +16,7 @@ type Props = {
   readonly placeholder: string;
   readonly value: string;
   readonly pending: boolean;
+  readonly semanticFocusScope?: boolean;
   readonly children?: ReactNode;
   readonly onBack: () => void;
   readonly onChange: (value: string) => void;
@@ -25,20 +26,23 @@ type Props = {
 export default function WaflReusableCreateForm(props: Props) {
   const disabled = props.pending || !props.value.trim();
   useWaflSheetDirectInputConfirm(props.onCreate, disabled);
+  const field = <WaflSheetValueField
+    helpText={props.helpText}
+    inputRef={props.inputRef}
+    label={props.fieldLabel}
+    maxLength={props.maxLength}
+    onChange={props.onChange}
+    placeholder={props.placeholder}
+    value={props.value}
+  />;
   return <View style={styles.root}>
     <Pressable accessibilityLabel={`${props.backLabel}으로 돌아가기`} onPress={props.onBack} style={styles.backButton}>
       <ChevronLeft color={WAFL_THEME.color.navyInk} size={18} />
       <Text style={styles.backText}>{props.backLabel}</Text>
     </Pressable>
-    <WaflSheetValueField
-      helpText={props.helpText}
-      inputRef={props.inputRef}
-      label={props.fieldLabel}
-      maxLength={props.maxLength}
-      onChange={props.onChange}
-      placeholder={props.placeholder}
-      value={props.value}
-    />
+    {props.semanticFocusScope
+      ? <WaflSheetSemanticFocusScope testID="reusable-create-semantic-focus-scope">{field}</WaflSheetSemanticFocusScope>
+      : field}
     {props.children}
   </View>;
 }

@@ -49,7 +49,12 @@ import type { WaflActionConfirmationState } from "@/features/feedback/WaflAction
 import WaflDecisionSheet from "@/features/feedback/WaflDecisionSheet";
 import WaflFeedbackHost from "@/features/feedback/WaflFeedbackHost";
 import { showWaflAlert, type WaflAlertTone } from "@/features/feedback/waflFeedbackStore";
-import { encodeWorkOrderProductType } from "@/domain/workOrderCategoryPolicy";
+import {
+  encodeWorkOrderProductType,
+  resolveWorkOrderMajorCategoryTransition,
+  resolveWorkOrderTargetAudienceTransition,
+  type WorkOrderTargetAudience,
+} from "@/domain/workOrderCategoryPolicy";
 import { hasCategoryDependentWorkOrderData } from "@/domain/categoryResetPolicy";
 import { materialNoun } from "@/domain/materialSemanticCopy";
 import { reconcileCreatedWorkOrderListItem, resolveWorkOrderCreateAttempt, type WorkOrderCreateAttemptIdentity } from "@/domain/workOrderCreatePolicy";
@@ -60,7 +65,7 @@ import { runWorkOrderListReorderFlow } from "@/domain/workOrderListReorderFlow";
 import { reconcileWorkOrderListItemFromDetail, workOrderListWorkflowChanged } from "@/domain/workOrderListReconciliation";
 import { MobileApiError, type MaterialPartnerOption, type MaterialType, type MobileCurrentUser, type WorkOrderCharacterFilter, type WorkOrderDetailCore, type WorkOrderLineageFilter, type WorkOrderListItem, type WorkOrderListStatusFilter, type WorkOrderSeriesHistory } from "@/domain/mobileContract";
 import { generateWorkOrderR0 } from "@/lib/api/documentsApi";
-import { isDrawingRendererPocEnabled } from "@/features/drawing-poc/drawingRendererPocPolicy";
+import { isWorkOrderSketchAuthoringEnabled } from "@/features/work-orders/drawing/workOrderSketchPolicy";
 
 type AppPhase =
   | "booting"
@@ -1231,6 +1236,16 @@ export default function MobileWorkOrderExperience() {
     categoryResetIntentRef.current = null;
   }
 
+  function cancelBasicInfoFieldEdit(field: keyof BasicInfoDraft) {
+    if (activeBasicSessionRef.current?.field !== field) return;
+    activeBasicFieldRef.current = null;
+    activeBasicSessionRef.current = null;
+    setEditing(false);
+    setActiveBasicField(null);
+    setSaveState(draftBatch.isDirty("overview") ? "editing" : "read-only");
+    setSaveMessage(null);
+  }
+
   function nextClientRequestId() {
     clientRequestCounter.current += 1;
     return `alpha46-mobile-basic-${Date.now()}-${clientRequestCounter.current}`;
@@ -1244,6 +1259,26 @@ export default function MobileWorkOrderExperience() {
     dependentResetConfirmed = false,
     options: { readonly preserveEditor?: boolean; readonly productNameOnly?: boolean } = {},
   ) {
+    if (override?.targetAudience !== undefined) {
+      override = {
+        ...override,
+        ...resolveWorkOrderTargetAudienceTransition({
+          categoryDetail: basicInfoDraftRef.current.categoryDetail,
+          categoryMajor: override.categoryMajor ?? basicInfoDraftRef.current.categoryMajor,
+          currentTargetAudience: basicInfoDraftRef.current.targetAudience,
+          nextTargetAudience: override.targetAudience as WorkOrderTargetAudience,
+        }),
+      };
+    } else if (override?.categoryMajor !== undefined) {
+      override = {
+        ...override,
+        ...resolveWorkOrderMajorCategoryTransition({
+          categoryDetail: basicInfoDraftRef.current.categoryDetail,
+          currentCategoryMajor: basicInfoDraftRef.current.categoryMajor,
+          nextCategoryMajor: override.categoryMajor,
+        }),
+      };
+    }
     const categoryOverride = override?.categoryMajor;
     const targetOverride = override?.targetAudience;
     const currentCategory = detail ? basicInfoDraftFromDetail(detail).categoryMajor : "";
@@ -1293,7 +1328,7 @@ export default function MobileWorkOrderExperience() {
           },
           onConfirm: () => {
             setActionConfirmation(null);
-            const next = { ...basicInfoDraftRef.current, ...override, categoryDetail: "" };
+            const next = { ...basicInfoDraftRef.current, ...override };
             basicInfoDraftRef.current = next;
             setBasicInfoDraft(next);
             categoryResetIntentRef.current = { workOrderId: detail.header.id, targetAudience: next.targetAudience, categoryMajor: next.categoryMajor, resetApplied: false };
@@ -1308,7 +1343,6 @@ export default function MobileWorkOrderExperience() {
       }
     }
     if (!commitImmediately && dependentResetConfirmed && dependentField !== null && detail && override) {
-      override = { ...override, categoryDetail: "" };
       const next = { ...basicInfoDraftRef.current, ...override };
       categoryResetIntentRef.current = {
         workOrderId: detail.header.id,
@@ -1723,7 +1757,7 @@ export default function MobileWorkOrderExperience() {
       canEditMaterials={canEditWorkOrder(detail, user)}
       detail={detail}
       draftBatch={draftBatch}
-      drawingRendererPocEnabled={isDrawingRendererPocEnabled({ authenticated: Boolean(user), dev: __DEV__ })}
+      sketchAuthoringEnabled={isWorkOrderSketchAuthoringEnabled({ authenticated: Boolean(user), dev: __DEV__ })}
       media={{
         projection: {
           images: assetAuthoring.images,
@@ -1769,6 +1803,7 @@ export default function MobileWorkOrderExperience() {
       onRequestActionConfirmation={setActionConfirmation}
       onActionSuccess={(message) => showToast(message, "success")}
       onCancelEdit={cancelBasicInfoEdit}
+      onCancelDateEdit={() => cancelBasicInfoFieldEdit("dueDate")}
       onCancelMaterialEditor={materialAuthoring.cancelEditor}
       onCancelMaterialInlineEditor={materialAuthoring.cancelOwnedEditor}
       onChangeDraft={changeBasicInfoDraft}

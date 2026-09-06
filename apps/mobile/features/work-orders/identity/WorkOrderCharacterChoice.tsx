@@ -1,3 +1,4 @@
+import { forwardRef } from "react";
 import { StyleSheet, Text, View } from "react-native";
 
 import { WAFL_FONTS } from "@/constants/fonts";
@@ -11,15 +12,17 @@ const OPTIONS = [
   { value: "sample", label: "샘플" },
 ] as const;
 
-export default function WorkOrderCharacterChoice(props: {
+type Props = {
   readonly disabled?: boolean;
   readonly isSample: boolean;
   readonly onChange: (isSample: boolean) => void;
   readonly presentation?: "form" | "compact";
-}) {
+};
+
+const WorkOrderCharacterChoice = forwardRef<View, Props>(function WorkOrderCharacterChoice(props, ref) {
   const selectedValue: WorkOrderCharacter = props.isSample ? "sample" : "production";
   const compact = props.presentation === "compact";
-  return <View style={[styles.container, compact && styles.containerCompact]}>
+  return <View collapsable={false} ref={ref} style={[styles.container, compact && styles.containerCompact]}>
     {compact ? null : <Text style={styles.label}>작업 구분</Text>}
     <WaflChoiceButtons
       accessibilityLabel="작업 구분"
@@ -30,7 +33,9 @@ export default function WorkOrderCharacterChoice(props: {
       selectedValue={selectedValue}
     />
   </View>;
-}
+});
+
+export default WorkOrderCharacterChoice;
 
 const styles = StyleSheet.create({
   container: { gap: WAFL_THEME.layout.tightGap },

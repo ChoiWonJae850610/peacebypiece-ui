@@ -18,8 +18,7 @@ assert.equal((spec.match(/<WaflReusableCreateForm/gu) ?? []).length, 1);
 assert.match(reusable, /<WaflSheetValueField/u);
 for (const source of [structure, spec]) {
   assert.match(source, /useWaflNestedSheetHandoff/u);
-  assert.match(source, /onAfterOpen/u);
-  assert.match(source, /\.current\?\.focus\(\)/u);
+  assert.doesNotMatch(source, /onPreparedForAutoFocus|\bautoFocus\b/u);
 }
 assert.match(design, /Size, Color, and Spec Item reusable-create children share/u);
 assert.match(ia, /reusable-create form family also shares/u);
@@ -32,4 +31,5 @@ console.log(JSON.stringify({
   sharedSizingOwners: 1,
   draggableCreateConsumers: 3,
   fixedTextEntryCreateConsumers: 0,
+  manualFocusCreateConsumers: 3,
 }));

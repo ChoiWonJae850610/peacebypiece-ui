@@ -1,5 +1,11 @@
 # WAFL v2 Additive Migration Draft and Schema Contract
 
+## Migration 022 — WorkOrder Drawing Scene persistence
+
+`022_v2_work_order_drawings.sql` is additive and approved only for canonical DEV/TEST in alpha.73. It creates one
+revision-owned, slot-addressable Scene table with company scope, strict Scene v1 shape checks, independent entity version,
+tenant/privileged RLS, and no destructive SQL or trigger disable. Production execution remains prohibited.
+
 Version: `2.0.0-alpha.21`
 Status: `LEVEL_2_STATIC_VERIFIED` target; SQL draft only, never applied in alpha.21
 Predecessors: `13-core-domain-schema-v2.md`, `16-workorder-api-command-read-model-contracts.md`, `17-v2-api-contract-test-plan.md`

@@ -24,7 +24,7 @@ const base = {
   measuredSheetTop: 50,
   measuredViewportTop: 100,
   semanticGap: clearance,
-  settledOffset: 200,
+  staticRestingOffset: 200,
   translatedOffset: 200,
   viewportHeight: 340,
 };
@@ -70,7 +70,7 @@ assert.equal(alreadyVisual.requiredRise, normalized.requiredRise);
 const transformZero = resolveWaflSheetVisualRevealPlan({
   ...base,
   expectedVisualSheetTop: 50,
-  settledOffset: 0,
+  staticRestingOffset: 0,
   translatedOffset: 0,
 });
 assert.equal(transformZero.sheetCoordinateCorrection, 0);
@@ -93,16 +93,16 @@ assert.equal(partial.scrollDelta, 50);
 const afterLift = resolveWaflSheetVisualRevealPlan({
   ...base,
   expectedVisualSheetTop: 200,
-  settledOffset: 200,
+  staticRestingOffset: 200,
   translatedOffset: normalized.targetOffset,
 });
 assert.equal(afterLift.sheetCoordinateCorrection, 150);
 assert.equal(afterLift.requiredRise, 0);
 assert.equal(afterLift.targetOffset, normalized.targetOffset);
 for (let cycle = 0; cycle < 3; cycle += 1) {
-  assert.equal(resolveWaflSheetKeyboardRestoreOffset({ settledOffset: 200, userDragged: false }), 200);
+  assert.equal(resolveWaflSheetKeyboardRestoreOffset(200), 200);
 }
-assert.equal(resolveWaflSheetKeyboardRestoreOffset({ settledOffset: 200, userDragged: true }), null);
+assert.equal(resolveWaflSheetKeyboardRestoreOffset(200), 200);
 
 const sheet = read("apps/mobile/features/inputs/WaflInputSheet.tsx");
 assert.equal((sheet.match(/UIManager\.measureInWindow\(/gu) ?? []).length, 1, "numeric-handle measurement is fallback-only");
@@ -110,7 +110,8 @@ assert.match(sheet, /measureMountedTarget\(target\.revealRef\)/u);
 assert.match(sheet, /measureMountedTarget\(resolveBodyViewportMeasureRef\(\)\)/u);
 assert.match(sheet, /measureMountedTarget\(sheetRef\.current\)/u);
 assert.match(sheet, /expectedVisualSheetTop:\s*window\.height - expandedHeight \+ translatedRef\.current/u);
-assert.match(sheet, /completion:\s*\(\) => requestAnimationFrame\(\(\) => requestAnimationFrame\(\(\) => \{ void measureAndScrollFieldBlock\(false\); \}\)\)/u);
+assert.match(sheet, /completion: coordinatedOpening\s*\? \(\) => finishVisibleEntrance\(openGenerationRef\.current\)\s*:\s*keyboardMode === "directInput"\s*\? undefined/u);
+assert.match(sheet, /requestAnimationFrame\(\(\) => requestAnimationFrame\(\(\) => \{ void measureAndScrollFieldBlock\(false\); \}\)\)/u);
 assert.doesNotMatch(sheet, /translatedRef\.current \+ fieldPageY|fieldPageY \+ translatedRef\.current/u);
 
 const inventory = [

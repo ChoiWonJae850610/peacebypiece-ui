@@ -164,10 +164,10 @@ assert.doesNotMatch(modal, /fetch\(|WorkOrder|expectedVersion|upload|R2|PDF/u);
 assert.match(modal, /renderer SVG · workload/);
 assert.match(modal, /stroke Scene commits/);
 assert.match(modal, /History commits/);
-assert.match(gallery, /props\.drawingRendererPocEnabled \? "SVG Performance PoC" : "스케치"/u);
-assert.match(gallery, /disabled=\{!props\.drawingRendererPocEnabled\}/u);
+assert.match(gallery, /props\.sketchAuthoringEnabled \? "스케치" : "스케치\(준비 중\)"/u);
+assert.match(gallery, /disabled=\{!props\.sketchAuthoringEnabled \|\| !props\.canEdit\}/u);
 assert.match(gallery, /"스케치, 준비 중"/u);
-assert.match(experience, /isDrawingRendererPocEnabled\(\{ authenticated: Boolean\(user\), dev: __DEV__ \}\)/);
+assert.match(experience, /isWorkOrderSketchAuthoringEnabled\(\{ authenticated: Boolean\(user\), dev: __DEV__ \}\)/);
 
 const foundationImports = fs.readdirSync("lib/domain/drawing")
   .filter((name) => name.endsWith(".ts"))

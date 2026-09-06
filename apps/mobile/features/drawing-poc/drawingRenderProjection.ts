@@ -9,9 +9,10 @@ import { buildDrawingFreehandSvgPath } from "./drawingFreehandPath";
 type PrimitiveStyle = Readonly<{ strokeColor: string; strokeWidth: number; fillColor: string | null }>;
 
 export type DrawingRenderPrimitive =
-  | Readonly<{ id: string; kind: "path"; d: string; style: PrimitiveStyle }>
-  | Readonly<{ id: string; kind: "line"; x1: number; y1: number; x2: number; y2: number; style: PrimitiveStyle }>
-  | Readonly<{ id: string; kind: "rectangle" | "ellipse"; x: number; y: number; width: number; height: number; style: PrimitiveStyle }>;
+  | Readonly<{ id: string; kind: "path"; d: string; opacity?: number; style: PrimitiveStyle }>
+  | Readonly<{ id: string; kind: "line"; x1: number; y1: number; x2: number; y2: number; opacity?: number; style: PrimitiveStyle }>
+  | Readonly<{ id: string; kind: "text"; x: number; y: number; content: string; fontSize: number; opacity?: number; style: PrimitiveStyle }>
+  | Readonly<{ id: string; kind: "rectangle" | "ellipse"; x: number; y: number; width: number; height: number; opacity?: number; style: PrimitiveStyle }>;
 
 export type DrawingProjectedFrame = readonly DrawingRenderPrimitive[];
 
@@ -50,6 +51,10 @@ export function projectDrawingElement(element: DrawingElement, transform: Drawin
     const end = screenPoint(element.end, transform);
     return Object.freeze({ id: element.id, kind: "path", d: arrowPath(start, end, style.strokeWidth), style });
   }
+  if (element.kind === "text") {
+    const anchor = screenPoint(element.anchor, transform);
+    return Object.freeze({ id: element.id, kind: "text", x: anchor.x, y: anchor.y, content: element.content, fontSize: element.fontSize * transform.scale, style });
+  }
   const origin = screenPoint({ x: element.bounds.x, y: element.bounds.y }, transform);
   return Object.freeze({ id: element.id, kind: element.kind, x: origin.x, y: origin.y, width: element.bounds.width * transform.scale, height: element.bounds.height * transform.scale, style });
 }
@@ -57,6 +62,39 @@ export function projectDrawingElement(element: DrawingElement, transform: Drawin
 export function projectDrawingScene(request: DrawingRenderRequest): DrawingProjectedFrame {
   const { scene, transform } = request;
   return Object.freeze(scene.elements.map((element) => projectDrawingElement(element, transform)));
+}
+
+export function projectDrawingTextInsertionPreview(input: Readonly<{
+  anchor: Readonly<{ x: number; y: number }>;
+  caretStyle: PrimitiveStyle;
+  content: string;
+  fontSize: number;
+  textStyle: PrimitiveStyle;
+}>, transform: DrawingViewportTransform): DrawingProjectedFrame {
+  const verticalStart = screenPoint({ x: input.anchor.x, y: input.anchor.y - input.fontSize * 0.9 }, transform);
+  const verticalEnd = screenPoint({ x: input.anchor.x, y: input.anchor.y + input.fontSize * 0.12 }, transform);
+  const anchor = screenPoint(input.anchor, transform);
+  const preview: DrawingRenderPrimitive[] = [Object.freeze({
+    id: "pending-text-insertion-caret",
+    kind: "line",
+    opacity: 0.72,
+    style: styleFor(input.caretStyle, transform),
+    x1: verticalStart.x,
+    x2: verticalEnd.x,
+    y1: verticalStart.y,
+    y2: verticalEnd.y,
+  })];
+  if (input.content.length > 0) preview.push(Object.freeze({
+    content: input.content,
+    fontSize: input.fontSize * transform.scale,
+    id: "pending-text-ghost-preview",
+    kind: "text",
+    opacity: 0.55,
+    style: styleFor(input.textStyle, transform),
+    x: anchor.x,
+    y: anchor.y,
+  }));
+  return Object.freeze(preview);
 }
 
 export const drawingRenderProjectionAdapter: DrawingRendererAdapter<DrawingProjectedFrame> = Object.freeze({

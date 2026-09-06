@@ -20,9 +20,7 @@ const ia = read("docs/project/app-v2/11b-maker-workorder-tab-ia-v2.md");
 
 assert.equal(WAFL_TEXT_ENTRY_FORM_SIZING, "adaptiveExpandable");
 assert.match(createSheet, /sizing=\{WAFL_TEXT_ENTRY_FORM_SIZING\}/u);
-assert.match(createSheet, /inputRef=\{productNameInputRef\}/u);
-assert.match(createSheet, /onAfterOpen=\{focusProductNameOnce\}/u);
-assert.match(createSheet, /consumeCreateRecipeEntranceFocus/u);
+assert.doesNotMatch(createSheet, /productNameInputRef|onPreparedForAutoFocus|focusProductNameOnce|consumeCreateRecipeEntranceFocus/u, "A73C New Recipe opens before explicit field tap");
 assert.doesNotMatch(createSheet, /\bautoFocus\b/u);
 assert.doesNotMatch(createSheet, /sizing="contentFit"/u);
 assert.match(createSheet, /onCancel=\{props\.onCancel\}/u);
@@ -76,7 +74,7 @@ assert.doesNotMatch(surface.slice(focusedStart, focusedEnd), /borderWidth:/u);
 
 for (const marker of [
   "Every live WAFL TextInput form sheet",
-  "raw mount-time `autoFocus` must not race",
+  "raw mount-time `autoFocus` and prepared focus callbacks are absent",
   "earlier owner-approved Finished Spec inch cell is the visual baseline",
   "earlier owner-approved Finished Spec inch underline is the canonical frozen-table numeric baseline",
 ]) assert.ok(`${design}\n${ia}`.includes(marker), `canonical docs missing ${marker}`);

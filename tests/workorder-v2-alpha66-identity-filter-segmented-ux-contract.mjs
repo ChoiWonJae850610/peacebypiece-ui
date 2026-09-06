@@ -65,7 +65,7 @@ assert.equal(matchesWorkOrderIdentityFilters(originalProduction, "all", ["reorde
 assert.deepEqual(normalizeWorkOrderLineageFilters(["rework", "reorder"]), ["reorder", "rework"]);
 
 assert.equal(fs.existsSync("db/v2/migrations/020_v2_sample_reorder_invariant.sql"), true);
-assert.equal(fs.readdirSync("db/v2/migrations").filter((name) => /^\d{3}_.*\.sql$/u.test(name)).length, 21);
+assert.equal(fs.readdirSync("db/v2/migrations").filter((name) => /^\d{3}_.*\.sql$/u.test(name)).length, fs.existsSync("db/v2/migrations/022_v2_work_order_drawings.sql") ? 22 : 21);
 
 console.log(JSON.stringify({
   ok: true,

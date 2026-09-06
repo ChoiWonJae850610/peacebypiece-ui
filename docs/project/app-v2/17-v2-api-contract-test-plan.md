@@ -1,5 +1,97 @@
 # WAFL v2 API Contract Test Plan
 
+Alpha.73 finalization adds one permanent contract and advances the canonical inventory from `264/264` to `265/265`.
+It locks canonical version `2.0.0-alpha.73`, product/finalization checkpoints, bounded Owner physical attribution,
+Product Sketch's DEV/TEST-versus-Production boundary, Static Sheet retirement invariants, migration `22/22`, unchanged
+native/dependency/API/schema surfaces, and WAFL-only final artifact replacement that preserves unrelated products.
+Finalization itself changes no product behavior or business data.
+
+Alpha.73D live body-scroll authority and numeric mode transition add one permanent contract and advance the inventory
+from `259/259` to `260/260`. Twenty executable checks prove capture-time body offset is not live authority, forward and
+backward signed reveal use the current offset, independent appearance deltas reset, registered handoff continuity remains,
+root-first residual scroll is minimal, final direct-input reconciliation is non-animated, Reel-to-keypad waits for a
+prepared mode-focus transaction without intermediate static settling, numeric accessory opt-out is explicit, and Quick
+phone-pad retains one completion accessory. No API/schema/migration/dependency/native/config/EAS or production/business
+mutation is introduced; physical result is not inferred.
+
+Alpha.73D Quick root-first reveal and numeric direct-input UI adds one permanent contract and advances the inventory
+from `258/258` to `259/259`. Twenty executable checks prove root-first/minimum-residual allocation, Quick surface opt-in,
+canonical semantic readiness and null-rect claim zero, raw parent-local fallback zero, numeric prepared direct-input
+focus, one inline shared mode/action row, redundant-footer zero, stable session-opening value, validation-safe fixed
+extent, prior registered handoff/Reel behavior, and no device-specific correction. No API/schema/migration/dependency/
+native/config/EAS or production/business mutation is introduced; physical result is not inferred.
+
+Alpha.73D registered-input handoff, Quick semantic targeting, and numeric Reel stability add one permanent contract and
+advance the inventory from `256/256` to `257/257`. It executes TEXT↔PHONE and same-class registered handoffs without the
+generic dismiss/static-rest path, preserves true non-input dismissal, asserts five Quick explicit semantic targets, and
+proves validation/legacy/empty quantity status states share one fixed slot with identical per-mode deterministic heights.
+No API/schema/migration/dependency/native/config/EAS or production/business mutation is introduced; physical result is not
+inferred.
+
+Alpha.73D root-animation ownership and Direct Create semantic targeting adds one permanent contract and advances
+the inventory from `255/255` to `256/256`. It proves an incompatible active `staticRest` is superseded even when
+the JavaScript completion equals the requested keyboard target, resolved `trueNoop` is distinct from unresolved,
+did-show cannot become a second writer, and ten cycles retain one deterministic owner. It also proves Direct Size
+and Direct Spec/POM use the same explicit field-plus-helper semantic scope and fast/reconciliation target, while
+Direct Color and unrelated compact body content remain outside. No local offset, drag restoration, API/schema/
+migration/dependency/native/config/EAS or data change is introduced; physical PASS is not inferred.
+
+Alpha.73D keyboard focus-ordering and semantic-clearance adds one permanent contract and advances the
+permanent inventory from `254/254` to `255/255`. It proves native-will-before-RN-focus bridging, candidate
+non-authorship, exact current-identity consumption, stale mutation/claim zero, native transition reuse, and
+one root author per appearance. It also proves shared explicit-semantic clearance, New Recipe full choice-row
+scope, Spec Save name/mode scope, retained ordinary compact behavior, no local offset/timer/drag restoration,
+and no New Recipe `autoCorrect` change. API/schema/migration/data remain unchanged; physical PASS is not inferred.
+
+Alpha.73D actual-device final-geometry evidence adds one permanent instrumentation contract. It proves two
+machine-readable reference IDs, ordered DEV/external-QA persistence, exact native window measurement of the
+Sheet/input/semantic and New Recipe work-character region, requested-versus-applied root separation, native
+keyboard event/claim/body-scroll capture, and a bounded authenticated Production-disabled local JSONL sink.
+It also proves the existing shared direct-input motion owner and New Recipe input behavior are not forked.
+Product behavior, API business contracts, schema/migration, and data remain unchanged; physical PASS and root
+cause are not inferred before Owner capture.
+
+Alpha.73D Spec Save motion-reference/layout normalization adds one permanent contract. It proves the new-mode
+name field precedes the mode selector, the update selector remains before long template content, Spec Save and
+New Recipe share direct-input motion scheduling and static restore, target geometry remains semantic per surface,
+and no local animation/offset/timer or retired root-drag owner returns. API/schema/migration/data remain unchanged;
+physical PASS is not inferred.
+
+## Alpha.73 product sketch
+
+The permanent alpha.73 contract retains all alpha.72 foundation/renderer/history contracts and adds exact DEV versus
+release entry gating, additive/RLS migration shape, narrow GET/PATCH ingress, Scene validation, independent optimistic
+version, idempotent replay, stale conflict, explicit-save-only UI, dirty exit without mutation, editable reopen, and zero
+R2/PDF/export coupling. Runtime evidence uses one isolated retained DEV/TEST Draft Recipe and does not infer Owner PASS.
+Alpha.73A-1 additionally proves the header X is absent, the shared PDF Viewer-style bottom `닫기` is present, the bottom
+button and `Modal.onRequestClose` share one close owner, clean close prompts zero times, dirty close prompts once, cancel
+retains local Scene, discard leaves the persisted Scene unchanged, and explicit `저장` remains separate.
+Alpha.73A-2 proves the nested Decision closes before discard resolution, clean and discard share the same one-shot parent
+close, Decision and parent close each resolve once, the parent Modal/backdrop reaches closed state, and discard performs
+Save/API/DB/R2 mutation zero while preserving persisted Scene/version.
+Alpha.73B through B-3 add the four-tool annotation, session-scoped prepared text focus, neutral WORLD caret/ghost,
+scroll-first minimum-rise keyboard transition, and final visibility-floor reconciliation contracts. Alpha.73B-4 adds one
+permanent contract: only an intentional auto-focused direct-input waits at measured opening geometry, focuses once, and
+uses the keyboard frame's merged B3 target as its first visible entrance. Manual sheets remain ordinary; a two-frame
+lifecycle fallback prevents no-keyboard deadlock; four-point final settling is suppressed only when the field is visibly
+clear; close generation, hide restore, Drawing persistence, and mutation budgets remain unchanged. Permanent inventory
+advances from `234/234` to `235/235` and physical PASS is not inferred.
+Alpha.73B-5 adds one permanent prepared-local-geometry/synchronous-keyboard-target contract. It proves geometry-complete
+prepared gating, compact composition, long-form scroll-first and partial-scroll residual rise, same-handler first target
+without async measurement, retained did-show reconciliation, and neutral-caret regression. Permanent inventory advances
+from `235/235` to `236/236`; physical PASS is not inferred.
+Alpha.73B-6 adds one permanent did-show semantic reconciliation contract. It proves `CLEAR / MICRO_SETTLING /
+REAL_OCCLUSION` classification, semantic field/action visibility before raw delta, zero sheet animation for visible
+settling, retained body-scroll-first residual rise for real clipping, coordinated `FIRST_TARGET_MISS` evidence, and
+hide/close cancellation of queued reconciliation. The B5 synchronous first target and neutral-caret contracts remain
+intact. Permanent inventory advances from `236/236` to `237/237`; physical PASS is not inferred.
+Alpha.73D compact semantic target formula adds one permanent contract with eight cases. It retains the
+Phase 4 ordinary-compact safety rule, distinguishes explicit semantic regions from unrelated compact body,
+proves footerless New Recipe choice-row clearance numerically, preserves persistent-footer behavior, and
+keeps the stricter legal semantic target through floor/measured merge and the single appearance root claim.
+The current iPhone fixture resolves target/clearance to `197/72`; API/schema/migration/data remain unchanged
+and physical PASS is not inferred.
+
 ## 27. Alpha.67 identity/PICK/basic-spec/readiness/public-viewer gate
 
 - Issued/finalized/read-only identity is fixed in mobile and rejected by the server command; draft round-zero identity remains editable and Reorder remains 본생산.

@@ -48,7 +48,8 @@ const fullView = read("apps/mobile/features/work-orders/size-color/WorkOrderSize
 
 assert.match(inputSheet, /renderedChildren = decision \? <WaflDecisionChoiceBody/u);
 assert.match(inputSheet, /effectiveTitle = decision \? "WAFL INPUT" : title/u);
-assert.match(inputSheet, /showCancel=\{decision \? false : showCancelAction\}/u);
+assert.match(inputSheet, /showCancel=\{showFooterCancelAction && \(decision \? false : showCancelAction\)\}/u);
+assert.match(inputSheet, /showConfirm=\{showFooterConfirmAction\}/u);
 assert.doesNotMatch(inputSheet, /<WaflDecisionOverlay/u, "active sheet must not layer the centered card overlay");
 assert.match(decisionChoice, /WaflOptionReel/u);
 assert.doesNotMatch(decisionChoice, /\bModal\b|Pressable|styles\.card/u);

@@ -26,7 +26,7 @@ const ia = read("docs/project/app-v2/11b-maker-workorder-tab-ia-v2.md");
 
 const initialHeight = resolveWaflExpandableInitialHeight({
   windowHeight: 844,
-  detentRatio: 0.68,
+  staticExtentRatio: 0.68,
   headerHeight: 76,
   footerHeight: 48,
   safeBottom: 34,
@@ -59,9 +59,10 @@ assert.match(sheet, /contentContainerStyle=\{\[styles\.scrollBodyContent/u);
 assert.doesNotMatch(sheet, /footerCompensation|paddingBottom:\s*footerHeight|actions[^\n]*position:\s*"absolute"/u);
 assert.ok(sheet.indexOf('testID="wafl-sheet-body-viewport"') < sheet.indexOf('testID="wafl-sheet-actions"'), "body viewport and footer must be real ordered siblings");
 
-for (const gestureMarker of ["onStartShouldSetResponderCapture", "onResponderMove", "resolveWaflSheetDragOffset", "animateDown", "toValue: mediumOffset"]) {
-  assert.match(sheet, new RegExp(gestureMarker), `working gesture owner lost ${gestureMarker}`);
+for (const retiredGestureMarker of ["onStartShouldSetResponderCapture", "onResponderMove", "resolveWaflSheetDragOffset"]) {
+  assert.doesNotMatch(sheet, new RegExp(retiredGestureMarker), `retired root gesture owner remains ${retiredGestureMarker}`);
 }
+for (const systemMotionMarker of ["animateDown", "toValue: mediumOffset"]) assert.match(sheet, new RegExp(systemMotionMarker));
 
 const consumers = [
   ["Size/Color", structure, /<StructureSelectionSheet/u],
@@ -89,7 +90,7 @@ assert.match(quick, /nested\.transition\("address"\)/u);
 assert.match(quick, /setLocation\(activeEndpoint, \{ \.\.\.directDraft, mode: "direct", partnerId: "", place: "" \}\)/u);
 assert.match(quick, /if \(kind === "origin"\) setOrigin\(value\);\s+else setDestination\(value\)/u);
 assert.match(quick, /function cancelAddressSearch\(\) \{[\s\S]*nested\.transition\("direct"\)/u);
-assert.match(address, /function selectItem\(item: AddressSearchItem\) \{\s+props\.onSelect\(item\)/u);
+assert.match(address, /function selectItem\(item: AddressSearchItem\) \{[\s\S]*props\.onSelect\(item\)/u);
 assert.match(address, /onAfterClose=\{props\.onAfterClose\}/u);
 assert.doesNotMatch(quick, /Linking|WebView|kakao|Safari/iu);
 
@@ -107,6 +108,6 @@ console.log(JSON.stringify({
   firstDetentActionsVisible: true,
   nestedOutgoingCloseBeforeIncomingOpen: true,
   productionMutation: 0,
-  physicalSheetDragPassPreserved: true,
+  staticSheetRoot: true,
   physicalSizeColorBodyInsetPassPreserved: true,
 }));

@@ -8,6 +8,7 @@ export default function WaflSheetActionButtons(props: {
   readonly confirmAccessibilityLabel: string;
   readonly confirmDanger?: boolean;
   readonly showCancel?: boolean;
+  readonly showConfirm?: boolean;
   readonly cancelDisabled?: boolean;
   readonly confirmDisabled?: boolean;
   readonly onCancel: () => void;
@@ -17,6 +18,7 @@ export default function WaflSheetActionButtons(props: {
   const cancelDisabled = props.cancelDisabled ?? false;
   const confirmDisabled = props.confirmDisabled ?? false;
   const showCancel = props.showCancel ?? true;
+  const showConfirm = props.showConfirm ?? true;
   return (
     <View style={styles.actions} testID={props.testID ?? "wafl-sheet-action-buttons"}>
       {showCancel ? <Pressable
@@ -29,7 +31,7 @@ export default function WaflSheetActionButtons(props: {
       >
         <X color={WAFL_THEME.color.deepNavy} size={21} strokeWidth={2.4} />
       </Pressable> : null}
-      <Pressable
+      {showConfirm ? <Pressable
         accessibilityLabel={props.confirmAccessibilityLabel}
         accessibilityRole="button"
         accessibilityState={{ disabled: confirmDisabled }}
@@ -38,7 +40,7 @@ export default function WaflSheetActionButtons(props: {
         style={[styles.applyButton, props.confirmDanger && styles.dangerButton, confirmDisabled && styles.disabled]}
       >
         <Check color="#fff" size={21} strokeWidth={2.5} />
-      </Pressable>
+      </Pressable> : null}
     </View>
   );
 }

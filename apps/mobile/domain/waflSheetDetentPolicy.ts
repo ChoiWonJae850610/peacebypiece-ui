@@ -1,4 +1,3 @@
-export type WaflSheetDetent = "medium" | "expanded";
 export type WaflSheetSizing = "contentFit" | "adaptiveExpandable" | "reelAdaptive" | "expandable" | "fullView";
 
 export const WAFL_REUSABLE_CATALOG_CREATE_SIZING: WaflSheetSizing = "adaptiveExpandable";
@@ -38,7 +37,7 @@ export function resolveWaflSheetEntranceReadiness(input: {
     || input.currentGenerationBodyMeasured;
   return {
     ready: chromeReady && bodyReady,
-    targetSource: deterministic ? "deterministic-reel" : input.currentGenerationBodyMeasured ? "current-generation-measurement" : "fixed-detent",
+    targetSource: deterministic ? "deterministic-reel" : input.currentGenerationBodyMeasured ? "current-generation-measurement" : "static-layout",
   } as const;
 }
 
@@ -69,14 +68,14 @@ export function resolveWaflContentFitHeight(input: {
 
 export function resolveWaflExpandableInitialHeight(input: {
   readonly windowHeight: number;
-  readonly detentRatio: number;
+  readonly staticExtentRatio: number;
   readonly headerHeight: number;
   readonly footerHeight: number;
   readonly safeBottom: number;
   readonly verticalChrome: number;
   readonly minimumBodyViewport: number;
 }) {
-  const ratioHeight = Math.round(input.windowHeight * input.detentRatio);
+  const ratioHeight = Math.round(input.windowHeight * input.staticExtentRatio);
   const actionSafeMinimum = input.headerHeight
     + input.footerHeight
     + input.safeBottom
@@ -192,6 +191,7 @@ export type WaflSheetWindowMeasurement = {
 
 export function isValidWaflSheetWindowMeasurement(input: {
   readonly measurement: WaflSheetWindowMeasurement | null;
+  readonly preparedOffscreenHeight?: number;
   readonly target: "field" | "viewport" | "sheet";
   readonly windowHeight: number;
   readonly windowWidth: number;
@@ -209,7 +209,8 @@ export function isValidWaflSheetWindowMeasurement(input: {
   if (input.target === "field") {
     return bottom >= -input.windowHeight && measurement.y <= input.windowHeight * 2;
   }
-  return bottom >= -1 && measurement.y <= input.windowHeight + 1;
+  return bottom >= -1
+    && measurement.y <= input.windowHeight + Math.max(0, input.preparedOffscreenHeight ?? 0) + 1;
 }
 
 export function resolveWaflSheetVisualRevealPlan(input: {
@@ -226,7 +227,7 @@ export function resolveWaflSheetVisualRevealPlan(input: {
   readonly bodyOffset: number;
   readonly availableForwardScroll?: number;
   readonly translatedOffset: number;
-  readonly settledOffset: number;
+  readonly staticRestingOffset: number;
 }) {
   // Native-driven transforms do not have one measurement contract across
   // Paper/Fabric and animation frames. Anchor every child measurement to the
@@ -269,7 +270,7 @@ export function resolveWaflSheetVisualRevealPlan(input: {
     requiredRise: reveal.requiredRise,
     scrollDelta: reveal.scrollDelta,
     semanticGap: input.semanticGap,
-    settledOffset: input.settledOffset,
+    staticRestingOffset: input.staticRestingOffset,
     sheetCoordinateCorrection,
     targetOffset: Math.max(0, input.translatedOffset - reveal.requiredRise),
     translatedOffset: input.translatedOffset,
@@ -282,16 +283,17 @@ export function resolveWaflSheetVisualRevealPlan(input: {
   } as const;
 }
 
-export function resolveWaflSheetDragStartOffset(value: number, expandedHeight: number) {
-  return clampWaflSheetOffset(value, expandedHeight);
-}
-
-export function clampWaflSheetOffset(value: number, expandedHeight: number) {
-  return Math.max(0, Math.min(expandedHeight, value));
-}
-
 export function resolveWaflSheetOpeningOffset(expandedHeight: number) {
   return Math.max(0, expandedHeight);
+}
+
+export function resolveWaflStaticSheetRestingOffset(input: {
+  readonly expandedHeight: number;
+  readonly visibleHeight: number;
+}) {
+  const expandedHeight = Math.max(0, input.expandedHeight);
+  const visibleHeight = Math.max(0, Math.min(expandedHeight, input.visibleHeight));
+  return Math.max(0, expandedHeight - visibleHeight);
 }
 
 export function resolveWaflSheetBodyScrollEnabled(input: {
@@ -299,63 +301,4 @@ export function resolveWaflSheetBodyScrollEnabled(input: {
   readonly decisionVisible: boolean;
 }) {
   return input.bodyScrollable && !input.decisionVisible;
-}
-
-export function resolveWaflSheetDragOffset(input: {
-  readonly dragStartOffset: number;
-  readonly dy: number;
-  readonly expandedHeight: number;
-}) {
-  return clampWaflSheetOffset(input.dragStartOffset + input.dy, input.expandedHeight);
-}
-
-export function shouldCaptureWaflSheetHeaderDrag(input: {
-  readonly actionPending: boolean;
-  readonly dx: number;
-  readonly dy: number;
-}) {
-  if (input.actionPending || Math.abs(input.dy) < 4) return false;
-  return Math.abs(input.dy) >= Math.abs(input.dx);
-}
-
-export function shouldCaptureWaflSheetDrag(input: {
-  readonly actionPending: boolean;
-  readonly bodyOffset: number;
-  readonly detent: WaflSheetDetent;
-  readonly dx: number;
-  readonly dy: number;
-}) {
-  if (input.actionPending || Math.abs(input.dy) <= Math.abs(input.dx) || Math.abs(input.dy) < 7) return false;
-  return (input.dy > 0 && input.bodyOffset <= 0) || (input.dy < 0 && input.detent === "medium");
-}
-
-export function resolveWaflSheetRelease(input: {
-  readonly dragStartOffset: number;
-  readonly dy: number;
-  readonly vy: number;
-  readonly maxSettleOffset: number;
-  readonly dismissDistance: number;
-  readonly dismissVelocity: number;
-  readonly flickVelocity: number;
-  readonly velocityProjectionMs: number;
-  readonly maxVelocityProjection: number;
-}) {
-  const released = input.dragStartOffset + input.dy;
-  const velocityProjection = Math.abs(input.vy) >= input.flickVelocity
-    ? Math.max(
-      -input.maxVelocityProjection,
-      Math.min(input.maxVelocityProjection, input.vy * input.velocityProjectionMs),
-    )
-    : 0;
-  const projected = released + velocityProjection;
-  if (
-    released >= input.maxSettleOffset + input.dismissDistance
-    || (input.vy >= input.dismissVelocity && projected > input.maxSettleOffset)
-  ) {
-    return { kind: "dismiss" as const };
-  }
-  return {
-    kind: "settle" as const,
-    offset: Math.max(0, Math.min(input.maxSettleOffset, projected)),
-  };
 }

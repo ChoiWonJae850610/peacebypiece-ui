@@ -1,5 +1,48 @@
 # Future Drawing Architecture Guardrails
 
+## Alpha.73 first product vertical slice
+
+- The authenticated development Draft surface uses exact product label `스케치`; release keeps disabled
+  `스케치(준비 중)` until separately approved finalization.
+- `WorkOrderSketchEditor` consumes the alpha.72 Scene, authoring, history, viewport, projection, and SVG owners. It does
+  not redefine the canonical world or renderer.
+- Explicit Save is the only persistence boundary. Dirty is serialized Scene relative to the authoritative saved
+  baseline; Undo, Redo, and Clear stay local until Save.
+- The editor has no header X. Its PDF Viewer-pattern bottom `닫기`, Android hardware back, and modal dismiss request
+  resolve through one dirty-aware close owner. Clean close exits immediately; dirty close uses the canonical WAFL
+  Decision; discard never invokes Save or overwrites the persisted Scene.
+- A nested dirty Decision must finish its own sheet/native-Modal close lifecycle before the confirmed discard resolves
+  onto the guarded parent close. One discard invokes the parent close once; no decision backdrop may survive the editor.
+- `work_order_drawings` is revision-owned and slot-addressable, allowing later multiple drawings while alpha.73 exposes
+  one `primary_sketch`. Its version is independent of WorkOrder `entity_version`.
+- No Drawing derivative, R2 object, representative image, output include, PDF, Viewer, Share, or export path exists.
+
+### Final alpha.73 boundary
+
+- `ALPHA73_FINALIZATION_COMPLETE` accepts the authenticated DEV/TEST Product Sketch vertical slice: pen, line, arrow,
+  text, mixed history, explicit Save/reopen, and safe dirty discard.
+- Release/production remains intentionally disabled as `스케치(준비 중)`. Finalization does not expose the editor in
+  Production and does not add derivative, image, PDF, Viewer, Share, R2, or export integration.
+- Drawing Scene v1's additive text element and migration 022 remain the complete alpha.73 persistence boundary. No
+  follow-on schema or Production migration is implied.
+
+### Alpha.73B apparel annotation tools
+
+- Product toolbar exposure is exactly `펜 / 선 / 화살표 / 텍스트`; foundation rectangle/ellipse remain hidden and eraser,
+  selection, movement, resize, image, zoom/pan, pressure, color, and thickness controls remain deferred.
+- Pen retains the accepted midpoint-quadratic-v1 rendering, raw WORLD points, `1.5` WORLD-unit sampling, transient active
+  stroke, and one release Scene/history commit.
+- Line and arrow use one renderer-independent transient segment. Pointer movement changes only the transient preview;
+  release over the WORLD-unit minimum creates one ordered Scene element/history commit. Arrow canonical data is start/end
+  plus style, and its head is a deterministic SVG renderer derivative in start-to-end direction.
+- Text is additive to Drawing Scene schema version 1 as semantic WORLD anchor, bounded single-line content, WORLD font size,
+  and basic style. Existing v1 scenes remain readable without row rewrite or migration. Screen coordinates, measured boxes,
+  SVG paths, and viewport-derived geometry are never persisted.
+- Canvas tap opens the shared WAFL direct-input sheet. Empty/whitespace text cannot confirm. Valid confirm closes the child
+  sheet first, then commits one text element/history entry; cancel commits none and never closes the parent Sketch modal.
+- Mixed pen/line/arrow/text history, explicit Save/reopen, Clear/Undo, dirty baseline comparison, and the alpha.73A2
+  child-before-parent discard lifecycle use the existing owners unchanged.
+
 Status: `FOUNDATION_ARCHITECTURE_CONTRACT`
 
 This document defines the boundary that Drawing/Sketch work must enter. The owner-approved alpha.72 Foundation remains
@@ -14,7 +57,8 @@ approve a production Drawing editor, persistence, API, schema, migration, PDF be
 - Production remains disabled as `스케치(준비 중)`; finalization does not activate an editor.
 - `ALPHA72_DRAWING_FOUNDATION_COMPLETE` closes the reusable foundation, native/runtime orientation, selected SVG adapter,
   transient authoring, freehand display, and committed-cache boundary only.
-- Alpha.73 production editor work requires a separate approved Delta and is not started by alpha.72 finalization.
+- At the alpha.72 checkpoint, Alpha.73 production editor work was not started. The authenticated DEV/TEST editor above
+  is the later separately approved Delta and does not enable a Production editor.
 
 ## Current foundation owner
 
@@ -97,3 +141,59 @@ approve a production Drawing editor, persistence, API, schema, migration, PDF be
 - PDF/viewer/share integration
 
 Any later Drawing package must route through this contract, the current mobile design-system/input owners, API/security contracts, device plan, and an explicit owner-approved Version Delta.
+## Alpha.73B-1 text-entry presentation and preview correction
+
+- A Product Sketch text session owns one immutable WORLD anchor and one monotonically increasing local session identity.
+- Raw mount-time `autoFocus` is forbidden for the nested Sketch text sheet. Focus is requested once from the current
+  session's shared `WaflInputSheet.onAfterOpen` presentation-ready boundary; stale session callbacks are ignored.
+- The insertion crosshair and typed ghost text are renderer-only transient primitives. They do not become Scene elements,
+  history commits, persistence payloads, or network effects. Confirm creates one semantic text element from the exact same
+  WORLD anchor after child close; cancel or tool switch creates zero.
+- While a text session is active, a second canvas tap is ignored until that session closes. Stacked input sheets are forbidden.
+
+## Alpha.73B-2 shared keyboard transition and text caret
+
+- The A73B-1 order remains `WORLD anchor/session → sheet presentation complete → focus → keyboard`; raw autofocus,
+  delay timers, and focus polling remain forbidden.
+- Keyboard show never moves the direct-input sheet to an unconditional detent. The shared WAFL INPUT owner measures the
+  complete focused semantic block, scrolls available body content first, and applies only the remaining minimum rise within
+  the native keyboard transition. Already-visible fields add zero sheet movement. Hide restore and user-drag authority remain.
+- The pending Sketch text marker is one compact neutral vertical caret projected from the immutable WORLD anchor. The former
+  horizontal crosshair and brick-orange treatment are absent. Caret and ghost remain transient renderer primitives with
+  Scene/history/persistence/network mutation zero; confirm uses the same anchor and cancel removes both.
+
+## Alpha.73B-3 shared keyboard visibility reconciliation
+
+- Sketch Text keeps the B1 presentation boundary and delegates final visibility to the shared WAFL INPUT owner. The final
+  keyboard frame merges a theme-owned minimum usable body floor with mounted semantic reveal; Drawing code does not own a
+  local detent or keyboard offset.
+- Final `keyboardDidShow` reconciliation is guarded by open, focus, and measurement identity. It changes no Scene, history,
+  persistence, or network state, and cannot replace the neutral WORLD caret or ghost/final anchor contract.
+
+## Alpha.73B-4 coordinated direct-input entrance
+
+- Sketch Text opts into the shared prepared-auto-focus boundary: the child Modal, sheet layout, and registered text target are
+  ready before its session-scoped focus request, but the ordinary resting sheet is not shown first.
+- The keyboard will-change frame drives the first visible entrance to the shared B3 merged target. Drawing owns no detent,
+  offset, tolerance, or local fallback. Final didShow verification, ordinary hide restore, and close-generation invalidation
+  remain shared WAFL INPUT responsibilities.
+- The neutral WORLD caret, ghost/final anchor equality, text session identity, Scene/history/network zero-mutation preview,
+  mixed persistence, and A73A2 child-before-parent dismissal stay unchanged.
+
+## Alpha.73B-5 prepared local geometry
+
+- Sketch Text uses the same shared geometry-complete prepared boundary as other coordinated direct inputs. Its semantic
+  field block publishes sheet-local bounds before focus; Drawing owns no keyboard-frame measurement, target, offset, or
+  animation policy.
+- The shared first keyboard-frame handler synchronously resolves the compact composition/visibility target and starts one
+  native-timed entrance. Did-show measurement remains safety reconciliation only; any meaningful rise is a first-target
+  miss. The caret, ghost, anchor, Scene/history/network, Save/reopen, and parent-close contracts remain unchanged.
+
+## Alpha.73B-6 did-show semantic reconciliation
+
+- Drawing remains a consumer of the shared WAFL INPUT owner and adds no local keyboard offset, tolerance, or animation.
+- Final did-show measurement classifies actual field and compact action/footer visibility. Visible settling never moves the
+  whole sheet; actual clipping keeps bounded scroll-first correction and residual rise. Queued reconciliation is invalidated
+  by hide/close generation changes.
+- B5 prepared local geometry and synchronous first target, the neutral WORLD caret/ghost, Scene/history/network zero-mutation
+  preview, mixed persistence, and A73A2 parent-close lifecycle remain unchanged.

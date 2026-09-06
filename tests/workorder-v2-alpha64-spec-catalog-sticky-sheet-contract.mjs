@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
 import { createSpecItemCandidates, initialSpecItemSelection, selectedSpecItems, toggleSpecItemSelection } from "../apps/mobile/domain/specItemSelectionPolicy.ts";
-import { resolveWaflSheetRelease, shouldCaptureWaflSheetHeaderDrag } from "../apps/mobile/domain/waflSheetDetentPolicy.ts";
+import { resolveWaflStaticSheetRestingOffset } from "../apps/mobile/domain/waflSheetDetentPolicy.ts";
 import { isTailscaleServePathAllowed } from "../lib/external-qa/configCore.mjs";
 import { MAKER_QA_APPROVAL } from "../lib/external-qa/makerQaCapabilities.mjs";
 
@@ -74,16 +74,13 @@ assert.equal(initial.length, 2);
 const toggled = toggleSpecItemSelection(initial, "legacy:pom-legacy");
 assert.deepEqual(selectedSpecItems(candidates, toggled).map((item) => item.displayName), ["총장"]);
 
-for (const token of ["mediumDetentRatio: 0.68", "expandedDetentRatio: 0.94", "dismissDistance", "dragHandleHeight", "dragZoneMinHeight: 44"]) assert.ok(theme.includes(token), `missing sheet token: ${token}`);
-for (const token of ["onStartShouldSetResponderCapture", "onResponderMove", "resolveWaflSheetRelease", "Animated.spring", "ScrollView", "onRequestClose={cancel}", 'testID="wafl-sheet-bottom-inset"']) assert.ok(inputSheet.includes(token), `missing sheet behavior: ${token}`);
-assert.ok(inputSheet.includes("onStartShouldSetResponderCapture={() => draggable && openReady && !actionPending && !dismissingRef.current}"), "header must capture at touch-down only while the sheet is open and not closing");
+for (const token of ["defaultStaticExtentRatio: 0.68", "maximumStaticExtentRatio: 0.94"]) assert.ok(theme.includes(token), `missing static sizing token: ${token}`);
+for (const token of ["resolveWaflStaticSheetRestingOffset", "Animated.spring", "ScrollView", "onRequestClose={cancel}", 'testID="wafl-sheet-fixed-header"', 'testID="wafl-sheet-bottom-inset"']) assert.ok(inputSheet.includes(token), `missing sheet behavior: ${token}`);
+assert.doesNotMatch(inputSheet, /onStartShouldSetResponderCapture|onResponderMove|resolveWaflSheetRelease|styles\.handle/u);
 assert.ok(!inputSheet.includes("PanResponder.create"), "late-acquisition PanResponder path must not return");
 assert.ok(inputSheet.includes('testID="wafl-sheet-actions"'));
-assert.match(inputSheet, /Swipe|swipe|cancel\(\)/u);
-assert.equal(shouldCaptureWaflSheetHeaderDrag({ actionPending: false, dx: 20, dy: 3 }), false);
-assert.equal(shouldCaptureWaflSheetHeaderDrag({ actionPending: false, dx: 0, dy: 24 }), true);
-assert.deepEqual(resolveWaflSheetRelease({ dragStartOffset: 200, dy: -160, vy: -0.2, maxSettleOffset: 200, dismissDistance: 96, dismissVelocity: 1.15, flickVelocity: 0.45, velocityProjectionMs: 72, maxVelocityProjection: 88 }), { kind: "settle", offset: 40 });
-assert.equal(resolveWaflSheetRelease({ dragStartOffset: 200, dy: 110, vy: 0.2, maxSettleOffset: 200, dismissDistance: 96, dismissVelocity: 1.15, flickVelocity: 0.45, velocityProjectionMs: 72, maxVelocityProjection: 88 }).kind, "dismiss");
+assert.match(inputSheet, /beginSheetClose\("userCancel"\)/u);
+assert.equal(resolveWaflStaticSheetRestingOffset({ expandedHeight: 700, visibleHeight: 500 }), 200);
 
 assert.match(overview, /stickyHeaderIndices=\{\[2\]\}/u);
 const navigationIndex = overview.indexOf("<View style={styles.navigationBar}>", overview.indexOf("<ScrollView"));
@@ -91,6 +88,6 @@ const heroIndex = overview.indexOf('testID="production-card-sheet"', navigationI
 const tabIndex = overview.indexOf("<View style={styles.tabRailFrame}>", heroIndex);
 assert.ok(navigationIndex > -1 && navigationIndex < heroIndex && heroIndex < tabIndex, "back/hero must precede the sticky feature rail inside the detail scroller");
 
-for (const token of ["WAFL Sheet System v2", "medium `0.68`", "expanded `0.94`", "cancel-only", "스펙 항목 〉", "only sticky element"]) assert.ok(`${design}\n${ia}`.includes(token), `missing canonical guidance: ${token}`);
+for (const token of ["WAFL Sheet System v2", "static bottom sheet", "cancel-only", "스펙 항목 〉", "only sticky element"]) assert.ok(`${design}\n${ia}`.includes(token), `missing canonical guidance: ${token}`);
 
-console.log("workorder v2 alpha.64 spec catalog sticky tabs draggable sheets contract: PASS");
+console.log("workorder v2 alpha.64 spec catalog sticky tabs static sheets contract: PASS");

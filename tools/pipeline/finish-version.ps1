@@ -418,6 +418,11 @@ if ($VerificationProfile -eq "automation-infrastructure" -and
     (Test-Path (Join-Path $ProjectDir "tests/workorder-v2-alpha66-lineage-sample-list-filter-contract.mjs"))) {
     $allowedMigrationChanges = @("db/v2/migrations/019_v2_work_order_lineage_sample.sql")
 }
+if ($VerificationProfile -eq "automation-infrastructure" -and
+    $ExpectedAppVersion -eq "2.0.0-alpha.73" -and
+    (Test-Path (Join-Path $ProjectDir "tests/workorder-v2-alpha73-product-sketch-persistence-contract.mjs"))) {
+    $allowedMigrationChanges = @("db/v2/migrations/022_v2_work_order_drawings.sql")
+}
 $pendingApprovedMigrationChanges = @($migrationChanges | Where-Object { $allowedMigrationChanges -notcontains $_ })
 if ($VerificationProfile -eq "automation-infrastructure" -and
     $ExpectedAppVersion -in @("2.0.0-alpha.41", "2.0.0-alpha.42") -and

@@ -1,6 +1,7 @@
 import {
   DRAWING_CANONICAL_CANVAS,
   DRAWING_SCENE_SCHEMA_VERSION,
+  DRAWING_TEXT_MAX_LENGTH,
   type DrawingBounds,
   type DrawingElement,
   type DrawingElementStyle,
@@ -181,6 +182,23 @@ function readElement(
       return null;
     }
     return Object.freeze({ id, kind, style, start, end });
+  }
+
+  if (kind === "text") {
+    rejectUnknownKeys(value, ["id", "kind", "style", "anchor", "content", "fontSize"], path, issues);
+    const anchor = readPoint(value.anchor, `${path}.anchor`, issues);
+    const fontSize = readFiniteNumber(value.fontSize, `${path}.fontSize`, issues);
+    const content = value.content;
+    if (typeof content !== "string" || content.trim().length === 0 || content.length > DRAWING_TEXT_MAX_LENGTH) {
+      addIssue(issues, `${path}.content`, "invalid_text_content", `Text content must contain 1-${DRAWING_TEXT_MAX_LENGTH} meaningful characters.`);
+    }
+    if (fontSize !== null && fontSize <= 0) {
+      addIssue(issues, `${path}.fontSize`, "invalid_text_font_size", "Text font size must be positive.");
+    }
+    if (anchor === null || fontSize === null || fontSize <= 0 || typeof content !== "string" || content.trim().length === 0 || content.length > DRAWING_TEXT_MAX_LENGTH) {
+      return null;
+    }
+    return Object.freeze({ id, kind, style, anchor, content, fontSize });
   }
 
   if (kind === "rectangle" || kind === "ellipse") {

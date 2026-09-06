@@ -67,6 +67,7 @@ export async function handleDeleteDraftWorkOrder(_request: Request, workOrderId:
       await client.query(`DELETE FROM work_order_revision_attachments WHERE company_id=$1 AND revision_id=$2::uuid`, [scope.companyId, target.revision_id]);
       await client.query(`DELETE FROM work_order_colors WHERE company_id=$1 AND revision_id=$2::uuid`, [scope.companyId, target.revision_id]);
       await client.query(`DELETE FROM work_order_sizes WHERE company_id=$1 AND revision_id=$2::uuid`, [scope.companyId, target.revision_id]);
+      await client.query(`DELETE FROM work_order_drawings WHERE company_id=$1 AND revision_id=$2::uuid`, [scope.companyId, target.revision_id]);
       await client.query(`UPDATE work_orders SET current_revision_id=NULL,representative_image_id=NULL WHERE company_id=$1 AND id=$2::uuid`, [scope.companyId, workOrderId]);
       await client.query(`DELETE FROM work_order_command_receipts WHERE company_id=$1 AND work_order_id=$2::uuid`, [scope.companyId, workOrderId]);
       await client.query(`DELETE FROM work_order_attachments WHERE company_id=$1 AND work_order_id=$2::uuid`, [scope.companyId, workOrderId]);

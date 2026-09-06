@@ -6,6 +6,7 @@ import { WAFL_FONTS } from "@/constants/fonts";
 import { WAFL_THEME } from "@/constants/theme";
 import type { MeasurementTemplateSummary } from "@/domain/mobileContract";
 import WaflInputSheet from "@/features/inputs/WaflInputSheet";
+import { WaflSheetSemanticFocusScope } from "@/features/inputs/WaflSheetTextInput";
 import WaflSheetValueField from "@/features/inputs/WaflSheetValueField";
 import WaflChoiceButtons from "@/features/inputs/WaflChoiceButtons";
 import type { WaflDecisionChoiceState } from "@/features/feedback/WaflDecisionChoiceBody";
@@ -121,6 +122,19 @@ export function CompanyTemplateSaveSheet(props: {
     safeLabel: "유지",
     title: "사용자 저장 스펙을 비활성화할까요?",
   } : null;
+  const modeSelector = <WaflChoiceButtons
+    accessibilityLabel="스펙 저장 방식"
+    onSelect={(value) => {
+      const nextMode = value as "new" | "update";
+      const first = nextMode === "update" ? props.companyTemplates[0] : null;
+      setMode(nextMode);
+      setSelectedId(first?.id ?? "");
+      setRenameDraft(first?.name ?? "");
+      setManagementError(null);
+    }}
+    options={modeOptions}
+    selectedValue={mode}
+  />;
 
   return <WaflInputSheet
     cancelAccessibilityLabel="스펙 저장 취소"
@@ -128,6 +142,7 @@ export function CompanyTemplateSaveSheet(props: {
     confirmDisabled={disabled}
     contentStyle={styles.sheetContent}
     decision={disableDecision}
+    diagnosticSurfaceId={mode === "new" ? "spec-save-new" : undefined}
     keyboardAutoExpand
     keyboardFocusRevealContext={WAFL_THEME.sheet.textEntryFocusRevealClearance}
     keyboardMode="directInput"
@@ -143,50 +158,43 @@ export function CompanyTemplateSaveSheet(props: {
     title="스펙 저장"
     visible={props.visible}
   >
-    <WaflChoiceButtons
-      accessibilityLabel="스펙 저장 방식"
-      onSelect={(value) => {
-        const nextMode = value as "new" | "update";
-        const first = nextMode === "update" ? props.companyTemplates[0] : null;
-        setMode(nextMode);
-        setSelectedId(first?.id ?? "");
-        setRenameDraft(first?.name ?? "");
-        setManagementError(null);
-      }}
-      options={modeOptions}
-      selectedValue={mode}
-    />
-    {mode === "new" ? <View style={styles.nameField}>
-      <WaflSheetValueField
-        autoCorrect={false}
-        label="새 스펙 이름"
-        maxLength={120}
-        onChange={setName}
-        placeholder="예: 남성 티셔츠 기본 스펙"
-        value={name}
-      />
-    </View> : <View style={styles.updateFlow}>
-      <TemplateGroup
-        items={props.companyTemplates}
-        label="업데이트할 사용자 저장 스펙"
-        onSelect={(value) => { const template = props.companyTemplates.find((item) => item.id === value); setSelectedId(value); setRenameDraft(template?.name ?? ""); setManagementError(null); }}
-        selectedId={effectiveSelectedId}
-      />
-      {selected ? <View style={styles.management}>
-        <WaflSheetValueField label="사용자 저장 스펙 관리" maxLength={120} onChange={setRenameDraft} placeholder="스펙 이름" value={renameDraft} />
-        <View style={styles.managementActions}>
-          <Pressable disabled={managementPending || !renameDraft.trim() || renameDraft.trim() === selected.name} onPress={() => {
-            setManagementError(null);
-            setManagementPending(true);
-            void props.onRename(selected, renameDraft.trim())
-              .catch(() => { setManagementError("이름을 변경하지 못했습니다. 다시 시도해 주세요."); return false; })
-              .finally(() => setManagementPending(false));
-          }} style={[styles.smallButton, (managementPending || !renameDraft.trim() || renameDraft.trim() === selected.name) && styles.disabled]}><Text style={styles.smallButtonText}>이름 변경</Text></Pressable>
-          <Pressable disabled={managementPending} onPress={() => setDisableDecisionTarget(selected)} style={[styles.smallButton, styles.dangerButton, managementPending && styles.disabled]}><Text style={styles.dangerText}>비활성화</Text></Pressable>
-        </View>
-        {managementError ? <Text style={styles.error}>{managementError}</Text> : null}
-      </View> : null}
-    </View>}
+    {mode === "new" ? <WaflSheetSemanticFocusScope style={styles.newFlow} testID="spec-save-new-semantic-reveal-scope">
+      <View style={styles.nameField}>
+        <WaflSheetValueField
+          autoCorrect={false}
+          label="새 스펙 이름"
+          maxLength={120}
+          onChange={setName}
+          placeholder="예: 남성 티셔츠 기본 스펙"
+          value={name}
+        />
+      </View>
+      {modeSelector}
+    </WaflSheetSemanticFocusScope> : <>
+      {modeSelector}
+      <View style={styles.updateFlow}>
+        <TemplateGroup
+          items={props.companyTemplates}
+          label="업데이트할 사용자 저장 스펙"
+          onSelect={(value) => { const template = props.companyTemplates.find((item) => item.id === value); setSelectedId(value); setRenameDraft(template?.name ?? ""); setManagementError(null); }}
+          selectedId={effectiveSelectedId}
+        />
+        {selected ? <View style={styles.management}>
+          <WaflSheetValueField label="사용자 저장 스펙 관리" maxLength={120} onChange={setRenameDraft} placeholder="스펙 이름" value={renameDraft} />
+          <View style={styles.managementActions}>
+            <Pressable disabled={managementPending || !renameDraft.trim() || renameDraft.trim() === selected.name} onPress={() => {
+              setManagementError(null);
+              setManagementPending(true);
+              void props.onRename(selected, renameDraft.trim())
+                .catch(() => { setManagementError("이름을 변경하지 못했습니다. 다시 시도해 주세요."); return false; })
+                .finally(() => setManagementPending(false));
+            }} style={[styles.smallButton, (managementPending || !renameDraft.trim() || renameDraft.trim() === selected.name) && styles.disabled]}><Text style={styles.smallButtonText}>이름 변경</Text></Pressable>
+            <Pressable disabled={managementPending} onPress={() => setDisableDecisionTarget(selected)} style={[styles.smallButton, styles.dangerButton, managementPending && styles.disabled]}><Text style={styles.dangerText}>비활성화</Text></Pressable>
+          </View>
+          {managementError ? <Text style={styles.error}>{managementError}</Text> : null}
+        </View> : null}
+      </View>
+    </>}
   </WaflInputSheet>;
 }
 
@@ -202,7 +210,8 @@ const styles = StyleSheet.create({
   optionMeta: { color: WAFL_THEME.color.readOnly, fontFamily: WAFL_FONTS.regular, fontSize: 10 },
   empty: { backgroundColor: "#faf7f1", borderRadius: 9, color: "#75665b", fontFamily: WAFL_FONTS.medium, fontSize: 12, padding: 12 },
   error: { color: WAFL_THEME.color.error, fontFamily: WAFL_FONTS.medium, fontSize: 12 },
-  nameField: { gap: 6, marginTop: 12 },
+  newFlow: { gap: 12, marginTop: 12 },
+  nameField: { gap: 6 },
   updateFlow: { gap: 12, marginTop: 12 },
   management: { gap: 7 },
   managementActions: { flexDirection: "row", gap: 8, justifyContent: "flex-end" },

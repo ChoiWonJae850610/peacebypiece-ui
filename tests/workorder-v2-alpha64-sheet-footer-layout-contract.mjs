@@ -53,7 +53,7 @@ for (const marker of [
   'testID="wafl-sheet-body-viewport"',
   'testID="wafl-sheet-actions"',
   'testID="wafl-sheet-bottom-inset"',
-  "layoutOffset.setValue(offset)",
+  "layoutOffset.setValue(boundedOffset)",
 ]) assert.ok(sheet.includes(marker), `shared footer frame missing ${marker}`);
 assert.doesNotMatch(sheet, /KeyboardAvoidingView/u, "the root must not be shifted by keyboard avoidance");
 assert.ok(sheet.indexOf('testID="wafl-sheet-body-viewport"') < sheet.indexOf('testID="wafl-sheet-actions"'), "body must precede footer in the mounted tree");

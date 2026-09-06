@@ -57,7 +57,7 @@ type Props = {
   readonly itemCode: string | null;
 };
 
-function StructureSelectionSheet(props: { readonly title: string; readonly onClose: () => void; readonly onAfterClose?: () => void; readonly onAfterOpen?: () => void; readonly onApply?: () => void; readonly applyDisabled?: boolean; readonly busy?: boolean; readonly children: ReactNode; readonly decision?: WaflDecisionChoiceState | null; readonly reusableCreate?: boolean; readonly sizing?: WaflSheetSizing; readonly visible?: boolean }) {
+function StructureSelectionSheet(props: { readonly title: string; readonly onClose: () => void; readonly onAfterClose?: () => void; readonly onApply?: () => void; readonly applyDisabled?: boolean; readonly busy?: boolean; readonly children: ReactNode; readonly decision?: WaflDecisionChoiceState | null; readonly reusableCreate?: boolean; readonly sizing?: WaflSheetSizing; readonly visible?: boolean }) {
   return <WaflInputSheet
     cancelAccessibilityLabel={`${props.title} 변경 취소`}
     confirmAccessibilityLabel={`${props.title} 변경 적용`}
@@ -69,7 +69,6 @@ function StructureSelectionSheet(props: { readonly title: string; readonly onClo
     keyboardMode={props.reusableCreate ? "directInput" : "default"}
     onCancel={props.onClose}
     onAfterClose={props.onAfterClose}
-    onAfterOpen={props.onAfterOpen}
     onConfirm={props.onApply}
     pending={props.busy}
     sizing={props.sizing ?? "expandable"}
@@ -105,8 +104,8 @@ function SizeChooser(props: {
   const [replacementDecision, setReplacementDecision] = useState<ReplacementDecision | null>(null);
   const [selectedKeys, setSelectedKeys] = useState<readonly string[]>(() => createStagedStructureSelection(props.rows.map((row) => ({ id: row.id, displayName: row.displayLabel, hexValue: null }))));
   const selected = useMemo(() => new Set(selectedKeys), [selectedKeys]);
-  if (nested.route === "create") return <StructureSelectionSheet onAfterClose={nested.finishClose} onAfterOpen={() => directInputRef.current?.focus()} onClose={props.onClose} reusableCreate sizing={WAFL_REUSABLE_CATALOG_CREATE_SIZING} title="직접 사이즈 만들기" visible={nested.visible}>
-    <WaflReusableCreateForm backLabel="기본 사이즈" fieldLabel="사이즈명" helpText="추가하면 회사에서 다음 레시피에도 다시 선택할 수 있습니다." inputRef={directInputRef} maxLength={40} onBack={() => nested.transition("select")} onChange={setDirect} onCreate={() => props.onCreate(direct).then((created) => { if (created) { setSelectedKeys((current) => [...new Set([...current, structureSelectionKey(created.displayName)])]); setDirect(""); nested.transition("select"); } })} pending={props.busy} placeholder="예: 프리사이즈" value={direct} />
+  if (nested.route === "create") return <StructureSelectionSheet onAfterClose={nested.finishClose} onClose={props.onClose} reusableCreate sizing={WAFL_REUSABLE_CATALOG_CREATE_SIZING} title="직접 사이즈 만들기" visible={nested.visible}>
+    <WaflReusableCreateForm backLabel="기본 사이즈" fieldLabel="사이즈명" helpText="추가하면 회사에서 다음 레시피에도 다시 선택할 수 있습니다." inputRef={directInputRef} maxLength={40} onBack={() => nested.transition("select")} onChange={setDirect} onCreate={() => props.onCreate(direct).then((created) => { if (created) { setSelectedKeys((current) => [...new Set([...current, structureSelectionKey(created.displayName)])]); setDirect(""); nested.transition("select"); } })} pending={props.busy} placeholder="예: 프리사이즈" semanticFocusScope value={direct} />
   </StructureSelectionSheet>;
   const sections = resolveSizeChooserCatalogSections({
     targetAudience: props.targetAudience,
@@ -199,7 +198,7 @@ function ColorChooser(props: {
   const [replacementDecision, setReplacementDecision] = useState<ReplacementDecision | null>(null);
   const [selectedKeys, setSelectedKeys] = useState<readonly string[]>(() => createStagedStructureSelection(props.rows.map((row) => ({ id: row.id, displayName: row.displayName, hexValue: row.hexValue }))));
   const selected = useMemo(() => new Set(selectedKeys), [selectedKeys]);
-  if (nested.route === "custom") return <StructureSelectionSheet onAfterClose={nested.finishClose} onAfterOpen={() => nameInputRef.current?.focus()} onClose={props.onClose} reusableCreate sizing={WAFL_REUSABLE_CATALOG_CREATE_SIZING} title="직접 색상 만들기" visible={nested.visible}>
+  if (nested.route === "custom") return <StructureSelectionSheet onAfterClose={nested.finishClose} onClose={props.onClose} reusableCreate sizing={WAFL_REUSABLE_CATALOG_CREATE_SIZING} title="직접 색상 만들기" visible={nested.visible}>
     <WaflReusableCreateForm backLabel="기본 색상" fieldLabel="색상명" helpText="추가하면 회사에서 다음 레시피에도 다시 선택할 수 있습니다." inputRef={nameInputRef} maxLength={80} onBack={() => nested.transition("base")} onChange={setName} onCreate={() => props.onCreate({ displayName: name, hexValue: selectedHex }).then((created) => { if (created) { setSelectedKeys((current) => [...new Set([...current, structureSelectionKey(created.displayName)])]); setName(""); nested.transition("base"); } })} pending={props.busy} placeholder="색상 이름" value={name}>
       <ColorGrid onChange={setSelectedHex} value={selectedHex} />
       <View style={styles.colorPreviewRow}><View style={[styles.customPreview, { backgroundColor: selectedHex }]} /><ReadOnlyColorValues hex={selectedHex} /></View>

@@ -2,35 +2,30 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
 
-import { resolveWaflSheetRelease } from "../apps/mobile/domain/waflSheetDetentPolicy.ts";
+import {
+  resolveWaflSheetOpeningOffset,
+  resolveWaflStaticSheetRestingOffset,
+} from "../apps/mobile/domain/waflSheetDetentPolicy.ts";
 
-const base = {
-  maxSettleOffset: 220,
-  dismissDistance: 96,
-  dismissVelocity: 1.15,
-  flickVelocity: 0.45,
-  velocityProjectionMs: 72,
-  maxVelocityProjection: 88,
-};
-assert.deepEqual(resolveWaflSheetRelease({ ...base, dragStartOffset: 180, dy: -37, vy: -0.2 }), { kind: "settle", offset: 143 });
-assert.deepEqual(resolveWaflSheetRelease({ ...base, dragStartOffset: 80, dy: 29, vy: 0.1 }), { kind: "settle", offset: 109 });
-const flick = resolveWaflSheetRelease({ ...base, dragStartOffset: 180, dy: -20, vy: -0.7 });
-assert.equal(flick.kind, "settle");
-assert.ok(flick.offset > 0 && flick.offset < 160, "flick projection must remain continuous rather than fixed-detent snapping");
-assert.deepEqual(resolveWaflSheetRelease({ ...base, dragStartOffset: 12, dy: -80, vy: -0.2 }), { kind: "settle", offset: 0 });
-assert.equal(resolveWaflSheetRelease({ ...base, dragStartOffset: 220, dy: 100, vy: 0.2 }).kind, "dismiss");
+assert.equal(resolveWaflSheetOpeningOffset(700), 700);
+assert.equal(resolveWaflStaticSheetRestingOffset({ expandedHeight: 700, visibleHeight: 510 }), 190);
+assert.equal(resolveWaflStaticSheetRestingOffset({ expandedHeight: 700, visibleHeight: 900 }), 0);
 
 const sheet = fs.readFileSync("apps/mobile/features/inputs/WaflInputSheet.tsx", "utf8");
-for (const owner of ["settledOffsetRef", "maxSettleOffset: mediumOffset", "commitSettled", "settledOffsetRef.current = mediumOffset"]) {
-  assert.ok(sheet.includes(owner), `free-settle owner missing ${owner}`);
+const policy = fs.readFileSync("apps/mobile/domain/waflSheetDetentPolicy.ts", "utf8");
+for (const retired of ["resolveWaflSheetRelease", "resolveWaflSheetDragStartOffset", "resolveWaflSheetDragOffset", "dragStartRef", "dragVelocityRef", "wafl-sheet-header-drag-zone"]) {
+  assert.doesNotMatch(`${sheet}\n${policy}`, new RegExp(retired, "u"));
 }
-assert.doesNotMatch(sheet, /release\.detent/u);
+assert.match(sheet, /const mediumOffset = [\s\S]*resolveWaflStaticSheetRestingOffset/u, "derived static rest remains the keyboard restore authority");
+assert.doesNotMatch(sheet, /settledOffsetRef|preKeyboardSettledOffsetRef/u);
+assert.match(sheet, /testID="wafl-sheet-fixed-header"/u);
 
 console.log(JSON.stringify({
   contract: "workorder-v2-alpha64-free-settle-sheet-physics",
   previousPermanentInventoryRetained: 122,
   addedPermanentChecks: 1,
   finalPermanentInventory: 123,
-  fixedReleaseDetents: 0,
-  openSessionSettledOffsetOwner: 1,
+  previousSafetyIntent: "superseded-by-static-root",
+  userRootMotionOwners: 0,
+  derivedStaticRestingOwner: 1,
 }));

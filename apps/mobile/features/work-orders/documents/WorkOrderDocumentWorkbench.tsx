@@ -576,9 +576,11 @@ function WorkOrderDocumentWorkbenchBody({ detail, attachments, attachmentBusy, s
       <WaflInputSheet
         cancelAccessibilityLabel="퀵 전달 편집 취소"
         confirmAccessibilityLabel="퀵 전달 편집 확인"
+        diagnosticSurfaceId="quick-main"
         onCancel={() => setQuickDeliveryOpen(false)}
         onConfirm={() => setQuickDeliveryOpen(false)}
         keyboardMode="directInput"
+        keyboardRevealOrder="rootFirst"
         sizing="expandable"
         title="퀵 전달"
         visible={quickDeliveryOpen}

@@ -24,7 +24,7 @@ Every fact or rule has one canonical owner. Other documents keep only the contex
 | Product direction | `01-app-first-product-definition.md` | `02`, `03`, `04`, confirmed policy | policy change only | no | mutable | product/UI/auth |
 | Device QA matrix | `05-device-test-plan.md` | UI evidence standard | device/support change | no | mutable | mobile/tablet/UI |
 | Mobile visual system | `11a-mobile-design-system-v2.md` | `11b` Maker tab IA, `11c` reference index | approved mobile design-system change | no | mutable normative contract | every current mobile UI task |
-| Mobile input architecture | `11a-mobile-design-system-v2.md` input routing matrix | typed owners under `apps/mobile/features/inputs`, live `ControlledInlineEditValue` | input lifecycle change | no | mutable normative contract | mobile input, sheet, picker, keyboard, validation UI |
+| Mobile input architecture | `11a-mobile-design-system-v2.md` input routing matrix plus `input-sheet-keyboard-normalization-audit-design.md` | typed owners under `apps/mobile/features/inputs`, live `ControlledInlineEditValue` | input lifecycle change | no | mutable normative contract | mobile input, sheet, picker, keyboard, validation UI |
 | Future Drawing architecture | `drawing-architecture-guardrails.md` | current typed media boundary and explicitly approved Drawing Version Delta | pre-implementation boundary change | no | mutable normative contract | drawing/sketch architecture or implementation |
 | Expo/native environment | `06-expo-environment-setup.md` | app config, EAS config | environment change | no | mutable | mobile/native/EAS |
 | External Runtime operations | `41-external-mobile-qa-runbook.md` | runner source/contracts | operational change | no | mutable | external Runtime QA |
@@ -68,7 +68,7 @@ Read:
 - `docs/project/32-product-completion-and-ui-evidence-standard.md`
 - relevant recent UI evidence and target components/contracts
 
-For mobile input work, route first through the `11a` input matrix: `WaflInputSheet`, `WaflSheetValueField`/`WaflSheetTextInput`, `WaflReelPickerSheet`/`WaflInputModeSwitch`, `ControlledInlineEditValue`, choice/grid owners, and typed numeric/domain semantics. `InlineEditableFields` and `ProductionCardMock` remain historical/showroom references, not alternative live owners.
+For mobile input work, route first through the `11a` input matrix, the alpha.73C normalization audit/design, and `static-sheet-architecture-migration-audit-design.md`: `WaflInputSheet`, `WaflSheetValueField`/`WaflSheetTextInput`, `WaflReelPickerSheet`/`WaflInputModeSwitch`, `ControlledInlineEditValue`, choice/grid owners, and typed numeric/domain semantics. `InlineEditableFields` and `ProductionCardMock` remain historical/showroom references, not alternative live owners. Alpha.73C owns the exhaustive focus/action audit. Alpha.73D Phase 3 owns the implemented non-draggable static-root architecture, exhaustive live surface inventory, system-only keyboard target, and exception matrix; historical Sheet Drag Owner text is superseded.
 
 ### API Read
 

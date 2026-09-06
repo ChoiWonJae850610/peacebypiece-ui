@@ -3,10 +3,8 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 
 import {
-  resolveWaflSheetDragOffset,
-  resolveWaflSheetDragStartOffset,
   resolveWaflSheetKeyboardLayout,
-  resolveWaflSheetRelease,
+  resolveWaflStaticSheetRestingOffset,
 } from "../apps/mobile/domain/waflSheetDetentPolicy.ts";
 
 const read = (file) => fs.readFileSync(file, "utf8");
@@ -37,19 +35,16 @@ for (const required of [
   "resolveWaflSheetKeyboardLayout",
   "openGenerationRef",
   "animationRef",
-  "dragReadyRef",
-  "dragMovedRef",
   "translateY.stopAnimation();",
-  "resolveWaflSheetDragStartOffset",
-  '"wafl-sheet-header-drag-zone"',
+  "resolveWaflStaticSheetRestingOffset",
+  'testID="wafl-sheet-fixed-header"',
   'testID="wafl-sheet-body-viewport"',
   'testID="wafl-sheet-actions"',
   'testID="wafl-sheet-bottom-inset"',
 ]) assert.ok(sheet.includes(required), `shared owner missing ${required}`);
-assert.match(sheet, /const stableOffset = resolveWaflSheetDragStartOffset\(translatedRef\.current, expandedHeight\)[\s\S]*dragStartRef\.current = stableOffset[\s\S]*dragStartPageYRef\.current = event\.nativeEvent\.pageY[\s\S]*translateY\.setValue\(stableOffset\)[\s\S]*dragReadyRef\.current = true/u);
+assert.doesNotMatch(sheet, /dragReadyRef|dragMovedRef|resolveWaflSheetDragStartOffset|wafl-sheet-header-drag-zone/u);
 assert.doesNotMatch(sheet, /translateY\.stopAnimation\(\(value\)/u);
 assert.doesNotMatch(sheet, /KeyboardAvoidingView/u);
-assert.match(sheet, /if \(!dragReadyRef\.current \|\| !dragMovedRef\.current\)[\s\S]*setDragging\(false\);[\s\S]*return;/u);
 assert.ok(sheet.indexOf('testID="wafl-sheet-body-viewport"') < sheet.indexOf('testID="wafl-sheet-actions"'));
 assert.ok(sheet.indexOf('testID="wafl-sheet-actions"') < sheet.indexOf('testID="wafl-sheet-bottom-inset"'));
 assert.match(theme, /bodyEndGap:\s*12/u);
@@ -92,18 +87,11 @@ assert.equal(keyboardMedium.visibleBodyViewportHeight, 70);
 assert.equal(keyboardExpanded.bottomInset, 34);
 
 for (let cycle = 0; cycle < 3; cycle += 1) {
-  const visualOffset = cycle % 2 === 0 ? 219 : 0;
-  const touchDownOffset = resolveWaflSheetDragStartOffset(visualOffset, 793);
-  assert.equal(touchDownOffset, visualOffset, `cycle ${cycle + 1}: touch-down must move zero pixels`);
-  const moved = resolveWaflSheetDragOffset({ dragStartOffset: touchDownOffset, dy: -80, expandedHeight: 793 });
-  assert.equal(moved, Math.max(0, visualOffset - 80));
-  const snap = resolveWaflSheetRelease({ dragStartOffset: touchDownOffset, dy: -80, vy: -0.2, maxSettleOffset: 219, dismissDistance: 96, dismissVelocity: 1.15, flickVelocity: 0.45, velocityProjectionMs: 72, maxVelocityProjection: 88 });
-  assert.equal(snap.kind, "settle");
+  assert.equal(resolveWaflStaticSheetRestingOffset({ expandedHeight: 793, visibleHeight: 574 }), 219);
 }
 
-assert.match(design, /canonical staged-sheet owner/u);
-assert.match(design, /true-bottom/iu);
-assert.match(design, /TOUCH_DOWN/u);
+assert.match(design, /static bottom sheet/iu);
+assert.match(design, /root.*drag/iu);
 
 console.log(JSON.stringify({
   contract: "workorder-v2-alpha64-shared-sheet-architecture-stability",
@@ -114,7 +102,7 @@ console.log(JSON.stringify({
   auditedConsumerFamilies: consumers.size,
   rootKeyboardShift: 0,
   keyboardExpandedVisibleBodyViewport: keyboardExpanded.visibleBodyViewportHeight,
-  reopenTouchDownDeltaPx: 0,
+  userRootGestureDeltaPx: 0,
   repeatedReopenCycles: 3,
   ownerFixtureMutation: 0,
   productionMutation: 0,

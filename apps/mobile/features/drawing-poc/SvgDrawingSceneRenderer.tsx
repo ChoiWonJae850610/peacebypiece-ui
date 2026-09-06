@@ -1,15 +1,17 @@
 import { memo, useEffect, useMemo } from "react";
-import Svg, { Ellipse, G, Line, Path, Rect } from "react-native-svg";
+import Svg, { Ellipse, G, Line, Path, Rect, Text as SvgText } from "react-native-svg";
 
 import type { DrawingRendererAdapter } from "@/domain/drawing";
+import { WAFL_FONTS } from "@/constants/fonts";
 import { projectDrawingScene, type DrawingProjectedFrame, type DrawingRenderPrimitive } from "./drawingRenderProjection";
 
 export const svgDrawingRendererAdapter: DrawingRendererAdapter<DrawingProjectedFrame> = Object.freeze({ render: projectDrawingScene });
 
 function renderPrimitive(primitive: DrawingRenderPrimitive) {
-  const shared = { fill: primitive.style.fillColor ?? "none", stroke: primitive.style.strokeColor, strokeLinecap: "round" as const, strokeLinejoin: "round" as const, strokeWidth: primitive.style.strokeWidth };
+  const shared = { fill: primitive.style.fillColor ?? "none", opacity: primitive.opacity, stroke: primitive.style.strokeColor, strokeLinecap: "round" as const, strokeLinejoin: "round" as const, strokeWidth: primitive.style.strokeWidth };
   if (primitive.kind === "path") return <Path {...shared} d={primitive.d} key={primitive.id} />;
   if (primitive.kind === "line") return <Line {...shared} key={primitive.id} x1={primitive.x1} x2={primitive.x2} y1={primitive.y1} y2={primitive.y2} />;
+  if (primitive.kind === "text") return <SvgText fill={primitive.style.strokeColor} fontFamily={WAFL_FONTS.regular} fontSize={primitive.fontSize} key={primitive.id} opacity={primitive.opacity} stroke="none" x={primitive.x} y={primitive.y}>{primitive.content}</SvgText>;
   if (primitive.kind === "rectangle") return <Rect {...shared} height={primitive.height} key={primitive.id} width={primitive.width} x={primitive.x} y={primitive.y} />;
   return <Ellipse {...shared} cx={primitive.x + primitive.width / 2} cy={primitive.y + primitive.height / 2} key={primitive.id} rx={primitive.width / 2} ry={primitive.height / 2} />;
 }
@@ -26,8 +28,12 @@ const CommittedSvgLayer = memo(function CommittedSvgLayer(props: Readonly<{
 
 const ActiveStrokeSvgLayer = memo(function ActiveStrokeSvgLayer(props: Readonly<{
   primitive: DrawingRenderPrimitive | null;
+  previewFrame: DrawingProjectedFrame;
 }>) {
-  return <G testID="drawing-poc-svg-active-layer">{props.primitive ? renderPrimitive(props.primitive) : null}</G>;
+  return <G testID="drawing-poc-svg-active-layer">
+    {props.primitive ? renderPrimitive(props.primitive) : null}
+    {props.previewFrame.map(renderPrimitive)}
+  </G>;
 });
 
 export default function SvgDrawingSceneRenderer(props: Readonly<{
@@ -36,9 +42,10 @@ export default function SvgDrawingSceneRenderer(props: Readonly<{
   onCommittedLayerRender: () => void;
   height: number;
   width: number;
+  previewFrame?: DrawingProjectedFrame;
 }>) {
   return <Svg height={props.height} testID="drawing-poc-svg-canvas" width={props.width}>
     <CommittedSvgLayer frame={props.committedFrame} onRender={props.onCommittedLayerRender} />
-    <ActiveStrokeSvgLayer primitive={props.activePrimitive} />
+    <ActiveStrokeSvgLayer previewFrame={props.previewFrame ?? []} primitive={props.activePrimitive} />
   </Svg>;
 }

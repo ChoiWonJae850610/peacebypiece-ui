@@ -17,14 +17,14 @@ const experience = read("apps/mobile/features/MobileWorkOrderExperience.tsx");
 const svgRenderer = read("apps/mobile/features/drawing-poc/SvgDrawingSceneRenderer.tsx");
 const freehandPath = read("apps/mobile/features/drawing-poc/drawingFreehandPath.ts");
 
-assert.equal(version, "2.0.0-alpha.72");
+assert.match(version, /^2\.0\.0-alpha\.\d+$/u);
 for (const owner of [currentState, roadmap, devicePlan]) {
   assert.match(owner, /ALPHA72_DRAWING_FOUNDATION_COMPLETE/u);
   assert.match(owner, /ALPHA72_FINALIZATION_COMPLETE/u);
   assert.match(owner, /Owner physical[\s\S]{0,180}(?:accepted as PASS|result: `PASS`|result[^\n]*PASS)/iu);
 }
 
-assert.match(expoEnvironment, /Internal APP_VERSION \| `2\.0\.0-alpha\.72`/u);
+assert.match(expoEnvironment, /Internal APP_VERSION \| `2\.0\.0-alpha\.\d+`/u);
 assert.match(expoEnvironment, /no dependency, plugin,[\s\S]*native source,[\s\S]*EAS/iu);
 assert.match(guardrails, /customer-facing feature name is `스케치`/u);
 assert.match(guardrails, /Renderer, SVG, Performance, and PoC labels[\s\S]*DEV lab only/iu);
@@ -39,9 +39,9 @@ assert.equal(mobilePackage.dependencies["react-native-worklets"], undefined);
 assert.equal(mobilePackage.dependencies["react-native-svg"], "15.15.3");
 
 assert.match(gallery, /"스케치, 준비 중"/u);
-assert.match(gallery, /: "스케치"/u);
-assert.match(gallery, /disabled=\{!props\.drawingRendererPocEnabled\}/u);
-assert.match(experience, /isDrawingRendererPocEnabled/u);
+assert.match(gallery, /props\.sketchAuthoringEnabled \? "스케치" : "스케치\(준비 중\)"/u);
+assert.match(gallery, /disabled=\{!props\.sketchAuthoringEnabled \|\| !props\.canEdit\}/u);
+assert.match(experience, /isWorkOrderSketchAuthoringEnabled/u);
 assert.match(svgRenderer, /CommittedSvgLayer/u);
 assert.match(svgRenderer, /ActiveStrokeSvgLayer/u);
 assert.match(freehandPath, /midpoint-quadratic-v1/u);
@@ -57,5 +57,5 @@ console.log(JSON.stringify({
   finalizationCheckpoint: "ALPHA72_FINALIZATION_COMPLETE",
   renderer: "SVG",
   behaviorDelta: 0,
-  alpha73Started: false,
+  alpha73Started: true,
 }));

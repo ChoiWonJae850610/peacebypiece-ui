@@ -35,8 +35,8 @@ assert.match(sheetActions, /<X[\s\S]*<Check/u);
 assert.match(sheet, /scrollResponderScrollNativeHandleToKeyboard/u);
 assert.match(sheet, /effectiveFocusRevealContext/u);
 assert.match(sheet, /keyboardAutoExpand/u);
-assert.match(sheet, /const adaptiveSizing = sizing === "adaptiveExpandable" \|\| sizing === "reelAdaptive"[\s\S]*!adaptiveSizing[\s\S]*currentOffset <= mediumOffset/u);
-assert.match(sheet, /settledOffsetRef/u);
+assert.match(sheet, /const adaptiveSizing = sizing === "adaptiveExpandable" \|\| sizing === "reelAdaptive"[\s\S]*Math\.abs\(currentOffset - mediumOffset\) < 1/u);
+assert.match(sheet, /animateTo\(mediumOffset, \{ owner: "staticRest" \}\)/u);
 
 assert.match(nested, /pendingRouteRef/u);
 assert.match(nested, /setVisible\(false\)/u);

@@ -100,7 +100,8 @@ assert.deepEqual(replacement.deletionIds, ["size-32"]);
 
 const editor = readFileSync(new URL("../apps/mobile/features/work-orders/size-color/WorkOrderSizeColorStructureEditor.tsx", import.meta.url), "utf8");
 const overview = readFileSync(new URL("../apps/mobile/features/work-orders/overview/WorkOrderDetailOverview.tsx", import.meta.url), "utf8");
-assert.match(overview, /value === "남성" && props\.draft\.categoryMajor === "원피스"[\s\S]*categoryMajor: "", categoryDetail: ""/u);
+assert.match(overview, /resolveWorkOrderTargetAudienceTransition/u);
+assert.doesNotMatch(overview, /value === "남성" && props\.draft\.categoryMajor === "원피스"/u, "target taxonomy supersedes the narrow male-dress UI special case");
 assert.match(overview, /workOrderMajorCategoryPickerOptions\(props\.draft\.categoryMajor, props\.draft\.targetAudience/u);
 const applyBatchSource = editor.slice(editor.indexOf("const applyBatch"), editor.indexOf("const structureBusy"));
 assert.doesNotMatch(applyBatchSource, /confirmWaflDestructiveAction/u, "selection apply has no second global modal");

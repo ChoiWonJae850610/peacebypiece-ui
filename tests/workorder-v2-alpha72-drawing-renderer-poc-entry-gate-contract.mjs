@@ -45,10 +45,10 @@ const mobilePackage = JSON.parse(read("apps/mobile/package.json"));
 
 assert.match(gate, /return input\.dev && input\.authenticated/);
 assert.doesNotMatch(gate, /system_admin|\[SIM\]|companyName|role/u);
-assert.match(experience, /isDrawingRendererPocEnabled\(\{ authenticated: Boolean\(user\), dev: __DEV__ \}\)/);
-assert.doesNotMatch(experience, /isDrawingRendererPocEnabled\([^)]*(?:system_admin|companyName|role)/u);
-assert.match(gallery, /disabled=\{!props\.drawingRendererPocEnabled\}/);
-assert.match(gallery, /props\.drawingRendererPocEnabled \? "SVG Performance PoC" : "스케치"/);
+assert.match(experience, /isWorkOrderSketchAuthoringEnabled\(\{ authenticated: Boolean\(user\), dev: __DEV__ \}\)/);
+assert.doesNotMatch(experience, /isDrawingRendererPocEnabled\(/u);
+assert.match(gallery, /disabled=\{!props\.sketchAuthoringEnabled \|\| !props\.canEdit\}/);
+assert.match(gallery, /props\.sketchAuthoringEnabled \? "스케치" : "스케치\(준비 중\)"/);
 assert.match(gallery, /"스케치, 준비 중"/);
 assert.doesNotMatch(modal, /fetch\(|WorkOrder|expectedVersion|upload|R2|PDF/u);
 assert.match(modal, /SVG Drawing Fidelity &amp; Performance PoC/);
@@ -64,7 +64,7 @@ console.log(JSON.stringify({
   previousPermanentInventoryRetained: 223,
   addedPermanentChecks: 1,
   finalPermanentInventory: 224,
-  devAuthenticatedOwnerEnabled: true,
+  devAuthenticatedOwnerEnabled: "alpha73-product-entry-supersedes-poc-entry",
   systemAdminRequired: false,
   simCompanyRequired: false,
   releaseEnabled: false,

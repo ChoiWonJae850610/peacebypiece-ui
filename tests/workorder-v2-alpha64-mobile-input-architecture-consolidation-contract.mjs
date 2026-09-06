@@ -35,8 +35,8 @@ const dualNumericBody = resolveWaflReelAdaptiveBodyHeight({
   hasSupplementaryControl: false,
   hasValidationMessage: false,
 });
-assert.equal(singleChoiceBody, 252);
-assert.equal(dualNumericBody, 302);
+assert.equal(singleChoiceBody, 264);
+assert.equal(dualNumericBody, 314);
 assert.ok(dualNumericBody > singleChoiceBody);
 
 const sharedGeometry = {
@@ -50,8 +50,8 @@ const sharedGeometry = {
 };
 const singleChoiceHeight = resolveWaflAdaptiveInitialHeight({ ...sharedGeometry, bodyHeight: singleChoiceBody });
 const dualNumericHeight = resolveWaflAdaptiveInitialHeight({ ...sharedGeometry, bodyHeight: dualNumericBody });
-assert.equal(singleChoiceHeight, 426);
-assert.equal(dualNumericHeight, 476);
+assert.equal(singleChoiceHeight, 438);
+assert.equal(dualNumericHeight, 488);
 assert.ok(singleChoiceHeight < Math.round(844 * 0.68));
 assert.ok(dualNumericHeight < Math.round(844 * 0.68));
 

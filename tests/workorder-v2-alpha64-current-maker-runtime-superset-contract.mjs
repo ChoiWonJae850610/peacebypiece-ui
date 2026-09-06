@@ -23,6 +23,7 @@ const uuid = "10000000-0000-4000-8000-000000000001";
 const capabilities = Object.values(MAKER_QA_CAPABILITY).filter((item) => ![
   MAKER_QA_CAPABILITY.PRODUCTION_AUTHORING,
   MAKER_QA_CAPABILITY.REORDER_CREATE,
+  MAKER_QA_CAPABILITY.DRAWING_AUTHORING,
 ].includes(item));
 
 assert.equal(resolveMakerQaProfile(current)?.id, MAKER_QA_PROFILE.ALPHA64_CURRENT);

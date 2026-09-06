@@ -50,6 +50,8 @@ assert.deepEqual(resolveWaflInputSheetPresentation({
   processingMessagePresent: false,
   processingPresentation: "overlay",
 }), {
+  renderCancelAction: true,
+  renderConfirmAction: true,
   renderFooterActions: false,
   replaceSheetDuringProcessing: false,
 }, "direct input keeps its confirm owner without footer geometry");
@@ -59,6 +61,8 @@ assert.deepEqual(resolveWaflInputSheetPresentation({
   processingMessagePresent: false,
   processingPresentation: "overlay",
 }), {
+  renderCancelAction: true,
+  renderConfirmAction: true,
   renderFooterActions: true,
   replaceSheetDuringProcessing: false,
 }, "non-direct footer behavior remains unchanged");

@@ -1,5 +1,13 @@
 # WAFL v2 WorkOrder API, Command, and Read Model Contracts
 
+## Alpha.73 Drawing Scene route
+
+`GET|PATCH /api/v2/work-orders/{workOrderId}/drawings/primary-sketch` is the narrow authenticated company-scoped owner
+for the development product-sketch slice. GET returns an empty Scene/version zero when the current revision has no
+drawing. PATCH requires editable current Draft ownership, exact Drawing ID/version pairing, valid Scene v1,
+idempotency identity, and Drawing authoring runtime capability. It advances only the independent Drawing version;
+stale writes return `CONFLICT`, and WorkOrder `entity_version` is unchanged.
+
 ## Alpha.67 identity lock, source-backed basic spec, and readiness severity
 
 `work_order.set_sample` is a draft-only command. Its update predicate requires both WorkOrder `draft` and current revision `draft`; issued/finalized/read-only records return `LOCKED`. The pre-existing Reorder/Sample invariant remains a separate validation guard.

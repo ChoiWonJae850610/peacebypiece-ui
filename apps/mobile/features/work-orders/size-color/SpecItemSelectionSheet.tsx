@@ -94,7 +94,6 @@ export default function SpecItemSelectionSheet(props: Props) {
     keyboardMode="directInput"
     onCancel={closeChild}
     onAfterClose={nested.finishClose}
-    onAfterOpen={() => editorInputRef.current?.focus()}
     onConfirm={nested.route === "rename" ? async () => {
       const saved = renameTarget ? await props.onRename(renameTarget, draft) : false;
       if (saved) closeChild();
@@ -115,6 +114,7 @@ export default function SpecItemSelectionSheet(props: Props) {
       onCreate={() => props.onCreate(draft).then((created) => { if (!created) return; setSelectedKeys((current) => [...new Set([...current, `catalog:${created.id}`])]); closeChild(); })}
       pending={props.busy}
       placeholder="예: 총장"
+      semanticFocusScope
       value={draft}
     /> : <View style={styles.editor}>
       <WaflSheetValueField inputRef={editorInputRef} label="스펙 항목명" maxLength={80} onChange={setDraft} placeholder="예: 총장" value={draft} />

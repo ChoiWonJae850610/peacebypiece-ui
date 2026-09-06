@@ -53,8 +53,8 @@ for (const keyboardSystemExpanded of [false, true]) {
     const delayedMediumOffset = expandedHeight - delayedMediumHeight;
     assert.equal(delayedMediumHeight, mediumHeight);
     assert.equal(delayedMediumOffset, mediumOffset);
-    assert.equal(resolveWaflSheetKeyboardRestoreOffset({ settledOffset: mediumOffset, userDragged: false }), mediumOffset);
-    assert.equal(resolveWaflSheetKeyboardRestoreOffset({ settledOffset: mediumOffset, userDragged: true }), null);
+    assert.equal(resolveWaflSheetKeyboardRestoreOffset(mediumOffset), mediumOffset);
+    assert.equal(resolveWaflSheetKeyboardRestoreOffset(mediumOffset), mediumOffset);
     assert.equal(keyboardSystemExpanded === true || keyboardSystemExpanded === false, true);
     restingHeight ??= mediumHeight;
     restingOffset ??= mediumOffset;
@@ -128,7 +128,7 @@ console.log(JSON.stringify({
     delayedContentSizeStable: true,
     intrinsicMeasurementExcludesKeyboard: true,
     keyboardSystemExpandedStates: 2,
-    userDragPreserved: true,
+    derivedStaticRestored: true,
   },
   terminology: {
     issuedDocumentResidualFiles: expectedIssuedDocumentResiduals.size,

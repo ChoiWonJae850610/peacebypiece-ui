@@ -19,11 +19,11 @@ const templates = read("apps/mobile/features/work-orders/size-color/MeasurementT
 const mock = read("apps/mobile/components/ProductionCardMock.tsx");
 
 assert.doesNotMatch(sheet, /PanResponder/u, "the failed late-capture PanResponder path must not remain");
-for (const marker of ["onStartShouldSetResponderCapture", "onResponderGrant", "onResponderMove", "onResponderRelease", "nativeEvent.pageY", "resolveWaflSheetDragOffset"]) assert.match(sheet, new RegExp(marker));
-assert.match(sheet, /onStartShouldSetResponderCapture=\{\(\) => draggable && openReady && !actionPending && !dismissingRef\.current\}/u, "dedicated header must capture from touch-down after entrance but never interrupt close");
-assert.match(sheet, /testID=\{draggable \? "wafl-sheet-header-drag-zone" : "wafl-sheet-fixed-header"\}/u);
-assert.match(sheet, /\{draggable \? <View style=\{styles\.handle\} \/> : null\}/u);
-assert.match(theme, /dragZoneMinHeight:\s*44/u);
+for (const marker of ["onStartShouldSetResponderCapture", "onResponderGrant", "onResponderMove", "onResponderRelease", "nativeEvent.pageY", "resolveWaflSheetDragOffset"]) assert.doesNotMatch(sheet, new RegExp(marker));
+assert.match(sheet, /accessibilityRole="header"/u);
+assert.match(sheet, /testID="wafl-sheet-fixed-header"/u);
+assert.doesNotMatch(sheet, /styles\.handle|accessibilityRole=.*adjustable/u);
+assert.doesNotMatch(theme, /dragZoneMinHeight|dragHandleHeight|dragHandleWidth/u);
 for (const sizing of ["contentFit", "adaptiveExpandable", "expandable", "fullView"]) assert.match(sheet, new RegExp(`"${sizing}"`));
 assert.match(templates, /sizing="adaptiveExpandable"[\s\S]*title="스펙 불러오기"/u);
 assert.match(sheet, /onContentSizeChange=\{\(_width, height\) => measureBody\(height\)\}/u);

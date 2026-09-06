@@ -48,7 +48,7 @@ const singleChoiceBody = resolveWaflReelAdaptiveBodyHeight({
   hasSupplementaryControl: false,
   hasValidationMessage: false,
 });
-assert.equal(singleChoiceBody, 252);
+assert.equal(singleChoiceBody, 264);
 assert.match(reel, /<Text style=\{styles\.reelLabel\}>\{label\}<\/Text>/u);
 assert.match(reel, /requireSpecifiedValue\?: boolean/u);
 assert.match(reel, /requireSpecifiedValue && !state\.selectedValue\.trim\(\)/u);

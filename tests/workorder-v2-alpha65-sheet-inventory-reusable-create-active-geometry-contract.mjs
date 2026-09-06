@@ -2,7 +2,7 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
 
-import { WAFL_HISTORICAL_SHEET_REFERENCES, WAFL_LIVE_SHEET_INVENTORY } from "../apps/mobile/features/inputs/waflLiveSheetInventory.ts";
+import { WAFL_HISTORICAL_SHEET_REFERENCES, WAFL_LIVE_SHEET_INVENTORY, WAFL_PRESENTATION_SOURCE_COUNTS } from "../apps/mobile/features/inputs/waflLiveSheetInventory.ts";
 
 const read = (path) => fs.readFileSync(path, "utf8");
 const inputSheet = read("apps/mobile/features/inputs/WaflInputSheet.tsx");
@@ -18,21 +18,36 @@ const materials = read("apps/mobile/features/materials/WorkOrderMaterialsReadOnl
 const design = read("docs/project/app-v2/11a-mobile-design-system-v2.md");
 const makerIa = read("docs/project/app-v2/11b-maker-workorder-tab-ia-v2.md");
 
-// Complete declared inventory: every class is explicit and every draggable surface shares the root gesture owner.
-assert.equal(WAFL_LIVE_SHEET_INVENTORY.length, 25);
-assert.ok(WAFL_LIVE_SHEET_INVENTORY.every((entry) => entry.classification && entry.physicalPolicy));
-const draggable = WAFL_LIVE_SHEET_INVENTORY.filter((entry) => entry.classification === "A_DRAGGABLE_FREE_SETTLE");
-assert.equal(draggable.length, 22);
-assert.ok(draggable.every((entry) => entry.root === "WaflInputSheet" || entry.root === "WaflReelPickerSheet"));
-assert.equal(WAFL_LIVE_SHEET_INVENTORY.filter((entry) => entry.classification === "B_FIXED").length, 1);
-assert.equal(WAFL_LIVE_SHEET_INVENTORY.filter((entry) => entry.classification === "C_INTERACTION_EXCEPTION").length, 2);
+// Complete declared inventory: every class is explicit and every shared surface uses a static root family.
+assert.equal(WAFL_LIVE_SHEET_INVENTORY.length, 44);
+assert.ok(WAFL_LIVE_SHEET_INVENTORY.every((entry) => entry.classification && entry.physicalPolicy && entry.physicalState));
+const staticRoots = WAFL_LIVE_SHEET_INVENTORY.filter((entry) => entry.root === "WaflInputSheet" || entry.root === "WaflReelPickerSheet");
+assert.equal(staticRoots.length, 35);
+assert.ok(staticRoots.every((entry) => ["STATIC_BOTTOM_SHEET", "STATIC_BOTTOM_SHEET_SCROLLABLE", "STATIC_REEL_PICKER", "CENTER_DIALOG_CANDIDATE"].includes(entry.classification)));
+assert.deepEqual(Object.fromEntries(Object.entries(Object.groupBy(WAFL_LIVE_SHEET_INVENTORY, (entry) => entry.classification)).map(([key, value]) => [key, value.length])), {
+  STATIC_BOTTOM_SHEET: 7,
+  STATIC_BOTTOM_SHEET_SCROLLABLE: 17,
+  STATIC_REEL_PICKER: 9,
+  CENTER_DIALOG_CANDIDATE: 5,
+  FULLSCREEN_KEEP: 5,
+  SPECIAL_FIXED_MODAL_KEEP: 1,
+});
+assert.deepEqual(WAFL_PRESENTATION_SOURCE_COUNTS, {
+  decisionCallsites: 3,
+  inlineDatePickerCallsites: 1,
+  pairedReelCallsites: 1,
+  rawNativeModalHosts: 7,
+  reelPickerCallsites: 8,
+  waflInputSheetJsxInstances: 26,
+});
 assert.equal(WAFL_HISTORICAL_SHEET_REFERENCES.length, 2);
-assert.match(inputSheet, /onStartShouldSetResponderCapture=\{\(\) => draggable && openReady && !actionPending && !dismissingRef\.current\}/u);
-assert.match(inputSheet, /resolveWaflSheetRelease/u);
+assert.match(inputSheet, /testID="wafl-sheet-fixed-header"/u);
+assert.doesNotMatch(inputSheet, /onStartShouldSetResponderCapture|resolveWaflSheetRelease/u);
 
-// Address search waits for the canonical presentation-ready generation before focusing.
+// A73C keeps Address Search presentation-ready while making focus an explicit user action.
 assert.match(address, /sizing="expandable"/u);
-assert.match(address, /onAfterOpen=\{\(\) => searchInputRef\.current\?\.focus\(\)\}/u);
+assert.doesNotMatch(address, /searchInputRef|onAfterOpen=.*focus|requestAnimationFrame/u);
+assert.match(address, /onSubmitEditing=\{submitSearch\}/u);
 assert.doesNotMatch(address, /\sautoFocus(?:\s|=)/u);
 assert.doesNotMatch(address, /PanResponder|onResponderMove/u);
 
@@ -57,6 +72,7 @@ assert.match(production, /<WaflCompactSelectionField/u);
 
 for (const marker of [
   "live sheet inventory",
+  "static bottom sheet",
   "reusable-create form family",
   "source field keeps identical participating geometry",
 ]) assert.ok(`${design}\n${makerIa}`.includes(marker), `canonical docs missing ${marker}`);
@@ -67,9 +83,9 @@ console.log(JSON.stringify({
   addedPermanentChecks: 1,
   finalPermanentInventory: 147,
   liveSheets: WAFL_LIVE_SHEET_INVENTORY.length,
-  draggableSheets: draggable.length,
-  fixedSheets: 1,
-  interactionExceptions: 2,
+  staticSharedSheets: staticRoots.length,
+  centerDialogCandidates: 5,
+  explicitExceptions: 6,
   historicalReferences: WAFL_HISTORICAL_SHEET_REFERENCES.length,
   physicalGestureInferred: false,
   migrationLedger: "18/18",

@@ -1,14 +1,10 @@
-import { useMemo, useRef, useState } from "react";
-import { Pressable, ScrollView, StyleSheet, Text, View, type TextInput } from "react-native";
+import { useMemo, useState } from "react";
+import { Pressable, ScrollView, StyleSheet, Text, View, type PressableProps } from "react-native";
 import { ChevronRight, Eye, MapPin, Search, Truck, UserRound } from "lucide-react-native";
 
 import { WAFL_FONTS } from "@/constants/fonts";
 import { WAFL_THEME } from "@/constants/theme";
 import type { MaterialPartnerOption, WorkOrderMaterialLine } from "@/domain/mobileContract";
-import {
-  matchesWaflNestedSheetFocusIntent,
-  type WaflNestedSheetFocusIntent,
-} from "@/domain/waflNestedSheetTransitionPolicy";
 import {
   resolveQuickDeliveryEndpointEntryRoute,
   type QuickDeliveryEndpointMode,
@@ -17,6 +13,7 @@ import MaterialPartnerPickerSheet from "@/features/materials/MaterialPartnerPick
 import WaflInputSheet from "@/features/inputs/WaflInputSheet";
 import WaflInputModeSwitch from "@/features/inputs/WaflInputModeSwitch";
 import WaflSheetValueField from "@/features/inputs/WaflSheetValueField";
+import { useWaflSheetFocusLifecycle, WaflSheetSemanticFocusScope } from "@/features/inputs/WaflSheetTextInput";
 import { useWaflNestedSheetHandoff } from "@/features/inputs/useWaflNestedSheetHandoff";
 import { WAFL_UNSET_PLACEHOLDER } from "@/lib/displayPlaceholder";
 import type { AddressSearchItem } from "@/lib/api/addressSearchApi";
@@ -26,7 +23,6 @@ import { presentQuickDeliveryLocation } from "./quickDeliveryLocationPresentatio
 
 type LocationKind = "origin" | "destination";
 type QuickNestedRoute = "picker" | "direct" | "address" | "preview";
-type QuickFocusIntent = WaflNestedSheetFocusIntent<LocationKind, "detail-address">;
 type LocationDraft = {
   readonly mode: QuickDeliveryEndpointMode;
   readonly partnerId: string;
@@ -38,6 +34,14 @@ type LocationDraft = {
 };
 
 const EMPTY_LOCATION: LocationDraft = { mode: "unset", partnerId: "", place: "", zonecode: "", basicAddress: "", detailAddress: "", contact: "" };
+
+function QuickNestedPressable(props: PressableProps) {
+  const focusLifecycle = useWaflSheetFocusLifecycle();
+  return <Pressable {...props} onPress={(event) => {
+    focusLifecycle?.dismissEditing();
+    props.onPress?.(event);
+  }} />;
+}
 
 export default function QuickDeliveryFoundation(props: {
   readonly lines: readonly WorkOrderMaterialLine[];
@@ -55,8 +59,6 @@ export default function QuickDeliveryFoundation(props: {
   const [activeEndpoint, setActiveEndpoint] = useState<LocationKind | null>(null);
   const [pickerBaseline, setPickerBaseline] = useState<LocationDraft | null>(null);
   const [directDraft, setDirectDraft] = useState<LocationDraft>(EMPTY_LOCATION);
-  const [focusIntent, setFocusIntent] = useState<QuickFocusIntent | null>(null);
-  const detailAddressInputRef = useRef<TextInput>(null);
   const [addressMessage, setAddressMessage] = useState<string | null>(null);
 
   const effectiveGroupId = groups.some((candidate) => candidate.partnerId === groupId) ? groupId : groups[0]?.partnerId ?? "";
@@ -79,7 +81,6 @@ export default function QuickDeliveryFoundation(props: {
     if (!nested.present(route)) return;
     setPickerBaseline(current);
     setActiveEndpoint(kind);
-    setFocusIntent(null);
     setAddressMessage(null);
     if (route === "direct") setDirectDraft(current);
   }
@@ -88,7 +89,6 @@ export default function QuickDeliveryFoundation(props: {
     if (!nested.present("preview")) return;
     setActiveEndpoint(null);
     setPickerBaseline(null);
-    setFocusIntent(null);
   }
 
   function closePreview() {
@@ -138,14 +138,12 @@ export default function QuickDeliveryFoundation(props: {
     const parent = activeEndpoint;
     if (parent && pickerBaseline) setLocation(parent, pickerBaseline);
     nested.dismiss();
-    setFocusIntent(null);
     setActiveEndpoint(null);
     setPickerBaseline(null);
   }
 
   function returnToPicker() {
     if (!activeEndpoint) return;
-    setFocusIntent(null);
     nested.transition("picker");
   }
 
@@ -155,7 +153,6 @@ export default function QuickDeliveryFoundation(props: {
     nested.dismiss();
     setActiveEndpoint(null);
     setPickerBaseline(null);
-    setFocusIntent(null);
   }
 
   function openAddressSearch() {
@@ -165,7 +162,6 @@ export default function QuickDeliveryFoundation(props: {
   }
 
   function cancelAddressSearch() {
-    setFocusIntent(null);
     nested.transition("direct");
   }
 
@@ -173,23 +169,11 @@ export default function QuickDeliveryFoundation(props: {
     if (!activeEndpoint) return;
     setDirectDraft((current) => ({ ...current, zonecode: item.postalCode, basicAddress: item.roadAddress }));
     setAddressMessage("주소를 선택했습니다. 상세 주소를 입력해 주세요.");
-    setFocusIntent({ endpoint: activeEndpoint, generation: nested.presentationGeneration + 1, target: "detail-address" });
     nested.transition("direct");
   }
 
   function finishNestedClose() {
     nested.finishClose();
-  }
-
-  function handleDirectAfterOpen() {
-    if (!activeEndpoint || !focusIntent) return;
-    if (!matchesWaflNestedSheetFocusIntent(focusIntent, {
-      endpoint: activeEndpoint,
-      generation: nested.presentationGeneration,
-      target: "detail-address",
-    })) return;
-    setFocusIntent(null);
-    requestAnimationFrame(() => detailAddressInputRef.current?.focus());
   }
 
   if (groups.length === 0) {
@@ -201,26 +185,26 @@ export default function QuickDeliveryFoundation(props: {
     <Text style={styles.help}>발주요청한 원단·부자재를 거래처별로 묶어 전달 내용을 미리 확인합니다.</Text>
     {groups.length > 1 ? <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.groupRail}>{groups.map((item) => <Pressable key={item.partnerId} onPress={() => setGroupId(item.partnerId)} style={[styles.groupChip, item.partnerId === group?.partnerId && styles.groupChipSelected]}><Text style={[styles.groupChipText, item.partnerId === group?.partnerId && styles.groupChipTextSelected]}>{item.partnerName} · {item.items.length}</Text></Pressable>)}</ScrollView> : null}
     <View style={styles.deliveryCard}>
-      <Pressable onPress={() => openEndpoint("origin")} style={styles.summaryRow}><MapPin color={WAFL_THEME.color.brickOrange} size={17}/><View style={styles.flex}><Text style={styles.summaryLabel}>출발지</Text><Text style={styles.summaryValue}>{originPresentation.primary}</Text></View><ChevronRight color={WAFL_THEME.color.readOnly} size={17}/></Pressable>
+      <QuickNestedPressable onPress={() => openEndpoint("origin")} style={styles.summaryRow}><MapPin color={WAFL_THEME.color.brickOrange} size={17}/><View style={styles.flex}><Text style={styles.summaryLabel}>출발지</Text><Text style={styles.summaryValue}>{originPresentation.primary}</Text></View><ChevronRight color={WAFL_THEME.color.readOnly} size={17}/></QuickNestedPressable>
       <Text style={styles.meta}>{originPresentation.secondary ?? "등록된 주소 정보 없음"}</Text>
     </View>
     <View style={styles.deliveryCard}>
-      <Pressable onPress={() => openEndpoint("destination")} style={styles.summaryRow}><MapPin color={WAFL_THEME.color.deepNavy} size={17}/><View style={styles.flex}><Text style={styles.summaryLabel}>도착지</Text><Text style={styles.summaryValue}>{destinationPresentation.primary}</Text></View><ChevronRight color={WAFL_THEME.color.readOnly} size={17}/></Pressable>
+      <QuickNestedPressable onPress={() => openEndpoint("destination")} style={styles.summaryRow}><MapPin color={WAFL_THEME.color.deepNavy} size={17}/><View style={styles.flex}><Text style={styles.summaryLabel}>도착지</Text><Text style={styles.summaryValue}>{destinationPresentation.primary}</Text></View><ChevronRight color={WAFL_THEME.color.readOnly} size={17}/></QuickNestedPressable>
       <Text style={styles.meta}>{destinationPresentation.secondary ?? "등록된 주소 정보 없음"}</Text>
     </View>
-    <View style={styles.deliveryCard}><View style={styles.titleRow}><UserRound color={WAFL_THEME.color.deepNavy} size={17}/><Text style={styles.summaryLabel}>기사 정보</Text></View><Text style={styles.meta}>최근 이용 기사 없음</Text><WaflSheetValueField label="기사명 (선택)" value={driverName} placeholder="직접 입력" onChange={setDriverName}/><WaflSheetValueField keyboardType="phone-pad" label="연락처" value={driverPhone} placeholder="연락처 입력" onChange={setDriverPhone}/><WaflSheetValueField label="메모" value={memo} placeholder="전달 메모" onChange={setMemo}/></View>
+    <View style={styles.deliveryCard}><View style={styles.titleRow}><UserRound color={WAFL_THEME.color.deepNavy} size={17}/><Text style={styles.summaryLabel}>기사 정보</Text></View><Text style={styles.meta}>최근 이용 기사 없음</Text><WaflSheetSemanticFocusScope testID="quick-driver-name-semantic-target"><WaflSheetValueField completionMode="dismiss" label="기사명 (선택)" value={driverName} placeholder="직접 입력" onChange={setDriverName}/></WaflSheetSemanticFocusScope><WaflSheetSemanticFocusScope testID="quick-driver-contact-semantic-target"><WaflSheetValueField completionMode="dismiss" keyboardType="phone-pad" label="연락처" value={driverPhone} placeholder="연락처 입력" waflKeyboardAccessory="none" waflReturnKeyPolicy="none" onChange={setDriverPhone}/></WaflSheetSemanticFocusScope><WaflSheetSemanticFocusScope testID="quick-driver-memo-semantic-target"><WaflSheetValueField completionMode="dismiss" label="메모" value={memo} placeholder="전달 메모" onChange={setMemo}/></WaflSheetSemanticFocusScope></View>
     <View style={styles.itemList}>{group?.items.map((item) => <View key={item.materialLineId} style={styles.itemRow}><View style={styles.flex}><Text style={styles.itemName}>{item.name}{item.colorOption ? ` · ${item.colorOption}` : ""}</Text><Text style={styles.meta}>{item.materialType === "fabric" ? "원단" : "부자재"}</Text></View><Text style={styles.itemQuantity}>{Number(item.quantity).toLocaleString("ko-KR")} {item.unitCode}</Text></View>)}</View>
-    <Pressable accessibilityRole="button" onPress={openPreview} style={styles.previewButton}><Eye color="#fff" size={18}/><Text style={styles.previewButtonText}>퀵 전달 요청 미리보기</Text></Pressable>
+    <QuickNestedPressable accessibilityRole="button" onPress={openPreview} style={styles.previewButton}><Eye color="#fff" size={18}/><Text style={styles.previewButtonText}>퀵 전달 요청 미리보기</Text></QuickNestedPressable>
 
     <MaterialPartnerPickerSheet allowUnset items={activeItems} onAfterClose={finishNestedClose} onCancel={cancelPicker} onSelect={selectPartner} onSwitchToDirectInput={openDirectEditor} onUnset={selectUnset} presentationGeneration={nested.presentationGeneration} selectedId={activeLocation.mode === "partner" ? activeLocation.partnerId : ""} visible={nested.visible && nested.route === "picker"}/>
-    <WaflInputSheet cancelAccessibilityLabel="직접 입력 취소" confirmAccessibilityLabel="직접 입력 적용" keyboardAutoExpand keyboardFocusRevealContext={WAFL_THEME.sheet.textEntryFocusRevealClearance} keyboardMode="directInput" onAfterClose={finishNestedClose} onAfterOpen={handleDirectAfterOpen} onCancel={cancelDirectEditor} onConfirm={applyDirectEditor} presentationGeneration={nested.presentationGeneration} sizing="expandable" title={`${activeEndpoint === "origin" ? "출발지" : "도착지"} 직접 입력`} visible={nested.visible && nested.route === "direct"}>
+    <WaflInputSheet cancelAccessibilityLabel="직접 입력 취소" confirmAccessibilityLabel="직접 입력 적용" diagnosticSurfaceId="quick-address-direct" footerPolicy="always" keyboardAutoExpand keyboardFocusRevealContext={WAFL_THEME.sheet.textEntryFocusRevealClearance} keyboardMode="directInput" keyboardRevealOrder="rootFirst" onAfterClose={finishNestedClose} onCancel={cancelDirectEditor} onConfirm={applyDirectEditor} presentationGeneration={nested.presentationGeneration} sizing="expandable" title={`${activeEndpoint === "origin" ? "출발지" : "도착지"} 직접 입력`} visible={nested.visible && nested.route === "direct"}>
       <View style={styles.directFields}>
         <WaflInputModeSwitch mode="direct" onPress={returnToPicker} testID="quick-delivery-return-to-picker" />
-        <View style={styles.addressHeader}><Text style={styles.fieldLabel}>주소</Text><Pressable accessibilityRole="button" onPress={openAddressSearch} style={styles.addressSearchButton}><Search color={WAFL_THEME.color.deepNavy} size={15}/><Text style={styles.addressSearchText}>주소 검색</Text></Pressable></View>
+        <View style={styles.addressHeader}><Text style={styles.fieldLabel}>주소</Text><QuickNestedPressable accessibilityRole="button" onPress={openAddressSearch} style={styles.addressSearchButton}><Search color={WAFL_THEME.color.deepNavy} size={15}/><Text style={styles.addressSearchText}>주소 검색</Text></QuickNestedPressable></View>
         <WaflSheetValueField editable={false} label="우편번호" value={directDraft.zonecode} placeholder="주소 검색으로 입력"/>
         <WaflSheetValueField editable={false} label="기본 주소" value={directDraft.basicAddress} placeholder="주소 검색으로 입력"/>
-        <WaflSheetValueField inputRef={detailAddressInputRef} label="상세주소 (선택)" value={directDraft.detailAddress} placeholder="상세주소" onChange={(detailAddress) => setDirectDraft((current) => ({ ...current, detailAddress }))}/>
-        <WaflSheetValueField keyboardType="phone-pad" label="연락처" value={directDraft.contact} placeholder="연락처" onChange={(contact) => setDirectDraft((current) => ({ ...current, contact }))}/>
+        <WaflSheetSemanticFocusScope testID="quick-address-detail-semantic-target"><WaflSheetValueField completionMode="dismiss" label="상세주소 (선택)" value={directDraft.detailAddress} placeholder="상세주소" onChange={(detailAddress) => setDirectDraft((current) => ({ ...current, detailAddress }))}/></WaflSheetSemanticFocusScope>
+        <WaflSheetSemanticFocusScope testID="quick-address-contact-semantic-target"><WaflSheetValueField completionMode="dismiss" keyboardType="phone-pad" label="연락처" value={directDraft.contact} placeholder="연락처" waflKeyboardAccessory="none" waflReturnKeyPolicy="none" onChange={(contact) => setDirectDraft((current) => ({ ...current, contact }))}/></WaflSheetSemanticFocusScope>
         {addressMessage ? <Text accessibilityLiveRegion="polite" style={styles.addressMessage}>{addressMessage}</Text> : null}
       </View>
     </WaflInputSheet>

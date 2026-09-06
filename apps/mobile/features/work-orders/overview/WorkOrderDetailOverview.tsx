@@ -58,6 +58,8 @@ import { resolveReadinessIssueDestination } from "@/domain/workOrderReadinessNav
 import {
   WORK_ORDER_TARGET_AUDIENCES,
   WORK_ORDER_MAJOR_CATEGORY_CODE_BY_LABEL,
+  resolveWorkOrderMajorCategoryTransition,
+  resolveWorkOrderTargetAudienceTransition,
   workOrderMajorCategoryPickerOptions,
   type WorkOrderTargetAudience,
 } from "@/domain/workOrderCategoryPolicy";
@@ -152,6 +154,7 @@ type Props = {
   readonly onBeginEdit: (field: BasicInfoInlineField) => void;
   readonly onChangeDraft: (field: keyof BasicInfoDraft, value: string) => void;
   readonly onCancelEdit: () => void;
+  readonly onCancelDateEdit: () => void;
   readonly onSave: (override?: Partial<BasicInfoDraft>) => void;
   readonly onApplyPicker: (override: Partial<BasicInfoDraft>, dependentResetConfirmed?: boolean) => void;
   readonly onSaveDate: (value: string) => void;
@@ -200,7 +203,7 @@ type Props = {
   readonly onOpenReorder: () => void;
   readonly onOpenSeriesHistory: () => void;
   readonly draftBatch: WorkOrderDraftBatchCoordinator;
-  readonly drawingRendererPocEnabled?: boolean;
+  readonly sketchAuthoringEnabled?: boolean;
 };
 
 export default function WorkOrderDetailOverview(props: Props) {
@@ -279,7 +282,7 @@ export default function WorkOrderDetailOverview(props: Props) {
           editable={(props.canEdit || props.canEditConfirmedMutable) && !basicLocked}
           errorMessage={props.fieldErrors.dueDate ?? null}
           onActivate={() => props.onBeginEdit("dueDate")}
-          onCancel={props.onCancelEdit}
+          onCancel={props.onCancelDateEdit}
           onCommit={props.onSaveDate}
           saving={savingBasic}
           value={props.draft.dueDate}
@@ -548,9 +551,12 @@ export default function WorkOrderDetailOverview(props: Props) {
                     kind="option"
                     label="대상"
                     onApply={(value) => {
-                      const override = value === "남성" && props.draft.categoryMajor === "원피스"
-                        ? { targetAudience: value, categoryMajor: "", categoryDetail: "" }
-                        : { targetAudience: value };
+                      const override = resolveWorkOrderTargetAudienceTransition({
+                        categoryDetail: props.draft.categoryDetail,
+                        categoryMajor: props.draft.categoryMajor,
+                        currentTargetAudience: props.draft.targetAudience,
+                        nextTargetAudience: value as WorkOrderTargetAudience,
+                      });
                       if (value !== props.draft.targetAudience && hasCategoryDependents) {
                         setCategoryDecision({ field: "targetAudience", override });
                         return false;
@@ -560,7 +566,6 @@ export default function WorkOrderDetailOverview(props: Props) {
                     }}
                     onCancel={() => {
                       setCategoryReelField(null);
-                      props.onCancelEdit();
                     }}
                     options={["", ...WORK_ORDER_TARGET_AUDIENCES]}
                     unitCode=""
@@ -575,7 +580,11 @@ export default function WorkOrderDetailOverview(props: Props) {
                     kind="option"
                     label="대분류"
                     onApply={(value) => {
-                      const override = { categoryMajor: value };
+                      const override = resolveWorkOrderMajorCategoryTransition({
+                        categoryDetail: props.draft.categoryDetail,
+                        currentCategoryMajor: props.draft.categoryMajor,
+                        nextCategoryMajor: value,
+                      });
                       if (value !== props.draft.categoryMajor && hasCategoryDependents) {
                         setCategoryDecision({ field: "categoryMajor", override });
                         return false;
@@ -585,7 +594,6 @@ export default function WorkOrderDetailOverview(props: Props) {
                     }}
                     onCancel={() => {
                       setCategoryReelField(null);
-                      props.onCancelEdit();
                     }}
                     options={workOrderMajorCategoryPickerOptions(props.draft.categoryMajor, props.draft.targetAudience as WorkOrderTargetAudience)}
                     unitCode=""
@@ -599,7 +607,7 @@ export default function WorkOrderDetailOverview(props: Props) {
                     setCategoryReelField(null);
                     props.onApplyPicker({ categoryDetail: value });
                   }}
-                  onCancel={() => { setCategoryReelField(null); props.onCancelEdit(); }}
+                  onCancel={() => { setCategoryReelField(null); }}
                   value={props.draft.categoryDetail}
                 /> : null}
                 {categoryReelField === "seasonCode" ? <WorkOrderSeasonPickerSheet
@@ -607,7 +615,7 @@ export default function WorkOrderDetailOverview(props: Props) {
                     setCategoryReelField(null);
                     props.onApplyPicker({ seasonCode: value });
                   }}
-                  onCancel={() => { setCategoryReelField(null); props.onCancelEdit(); }}
+                  onCancel={() => { setCategoryReelField(null); }}
                   value={props.draft.seasonCode}
                 /> : null}
               </Section>
@@ -665,7 +673,8 @@ export default function WorkOrderDetailOverview(props: Props) {
           onDelete={imageActions.delete}
           onSetRepresentative={imageActions.setRepresentative}
           onSetOutputInclude={imageActions.setOutputInclude}
-          drawingRendererPocEnabled={props.drawingRendererPocEnabled}
+          sketchAuthoringEnabled={props.sketchAuthoringEnabled}
+          workOrderId={detail.header.id}
             />
           ) : activeSection === "sizes" ? (
             <WorkOrderSizeColorStructureEditor
@@ -727,6 +736,9 @@ export default function WorkOrderDetailOverview(props: Props) {
                   cancelAccessibilityLabel={`${activeMaterialCategory === "fabric" ? "원단" : "부자재"} 추가 취소`}
                   confirmAccessibilityLabel={`${activeMaterialCategory === "fabric" ? "원단" : "부자재"} 저장`}
                   confirmDisabled={!props.materialEditorDirty || props.materialEditor.saveState === "locked" || props.materialEditor.saveState === "conflict" || props.materialEditor.saveState === "refresh-error"}
+                  footerPolicy="always"
+                  keyboardAutoExpand
+                  keyboardMode="directInput"
                   onCancel={props.onCancelMaterialEditor}
                   onConfirm={props.onSaveMaterial}
                   pending={props.materialEditor.saveState === "saving"}

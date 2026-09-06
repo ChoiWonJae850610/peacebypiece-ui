@@ -13,8 +13,8 @@ import {
 const read = (file) => fs.readFileSync(file, "utf8");
 
 assert.deepEqual(resolveWaflDirectInputTapPersistence("directInput"), {
-  keyboardDismissMode: "none",
-  keyboardShouldPersistTaps: "always",
+  keyboardDismissMode: "interactive",
+  keyboardShouldPersistTaps: "handled",
 });
 assert.deepEqual(resolveWaflDirectInputTapPersistence("default"), {
   keyboardDismissMode: null,
@@ -59,7 +59,8 @@ assert.equal((sheet.match(/keyboardShouldPersistTaps=\{directInputTapPersistence
 assert.equal((sheet.match(/keyboardDismissMode=\{directInputTapPersistence\.keyboardDismissMode \?\? undefined\}/gu) ?? []).length, 2);
 assert.match(sheet, /resolveWaflDirectInputTapPersistence\(keyboardMode\)/u);
 assert.match(sheet, /directInputMinimalAccessoryAction !== null/u);
-assert.match(sheet, /onPress=\{\(\) => runDirectInputNavigation\(directInputMinimalAccessoryAction\)\}/u);
+assert.match(sheet, /directInputMinimalAccessoryFocusedKey/u);
+assert.match(sheet, /submitDirectInput\(directInputMinimalAccessoryFocusedKey\)/u);
 
 assert.match(textInput, /resolveWaflDirectInputAccessoryMode/u);
 assert.match(textInput, /directInput !== null && accessoryMode === "singleAction"/u);
@@ -88,7 +89,7 @@ assert.doesNotMatch(spec, /Keyboard\.dismiss|\.blur\(/u, "Spec/POM internal taps
 
 console.log(JSON.stringify({
   contract: "workorder-v2-alpha68-direct-input-tap-persist-minimal-accessory",
-  directInputTapPersistence: "always/none",
+  directInputTapPersistence: "handled/interactive",
   nonDirectInputTapPersistence: "handled/inherited",
   normalAccessoryRender: 0,
   phonePadMinimalAccessoryRender: 1,

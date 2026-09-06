@@ -1,8 +1,9 @@
-import { useCallback, useMemo, useReducer, useState, type ReactNode } from "react";
+import { useCallback, useMemo, useReducer, useRef, useState, type ReactNode } from "react";
 import {
   Pressable,
   StyleSheet,
   Text,
+  TextInput,
   View,
 } from "react-native";
 
@@ -10,7 +11,8 @@ import { WAFL_FONTS } from "@/constants/fonts";
 import { WAFL_THEME } from "@/constants/theme";
 import WaflInputSheet from "../WaflInputSheet";
 import WaflInputModeSwitch from "../WaflInputModeSwitch";
-import WaflSheetTextInput from "../WaflSheetTextInput";
+import WaflSheetActionButtons from "../WaflSheetActionButtons";
+import WaflSheetTextInput, { WaflSheetSemanticFocusScope } from "../WaflSheetTextInput";
 import {
   normalizeNumericDraft,
   prepareNumericDraftOnFocus,
@@ -33,7 +35,7 @@ import { INITIAL_REEL_PICKER_STATE, reelPickerReducer } from "./reelPickerState"
 import { composeInchMeasurement, decomposeInchMeasurement, inchEighthOptions } from "@/domain/measurementPolicy";
 import { WAFL_UNSET_PLACEHOLDER } from "@/lib/displayPlaceholder";
 import { resolveWaflPickerRenderPath, type WaflPickerKind } from "./waflPickerRenderPolicy";
-import { resolveWaflReelAdaptiveBodyHeight } from "./waflReelSheetSizingPolicy";
+import { resolveWaflNumericAuxiliaryStatus, resolveWaflReelAdaptiveBodyHeight, WAFL_REEL_AUXILIARY_STATUS_HEIGHT } from "./waflReelSheetSizingPolicy";
 import { useExternalReelVisibilityLifecycle } from "./useExternalReelVisibilityLifecycle";
 import {
   exceedsMaterialQuantityPrecision,
@@ -171,6 +173,9 @@ export default function WaflReelPickerSheet({ visible, field, label, value, unit
   const eighthInch = kind === "eighth-inch";
   const [state, dispatch] = useReducer(reelPickerReducer, INITIAL_REEL_PICKER_STATE);
   const [windowAnchor, setWindowAnchor] = useState(value);
+  const [sessionOpeningValue, setSessionOpeningValue] = useState(value);
+  const [numericDirectFocusGeneration, setNumericDirectFocusGeneration] = useState(0);
+  const keypadInputRef = useRef<TextInput>(null);
   const openValue = resolveWaflReelOpeningValue({
     candidateValues: (suppliedOptionItems ?? options.map((option) => ({ value: option, label: option }))).map((option) => option.value),
     currentValue: value,
@@ -181,6 +186,7 @@ export default function WaflReelPickerSheet({ visible, field, label, value, unit
       ? openValue
       : normalizeReelValue(openValue) ?? openValue;
     setWindowAnchor(stagedOpeningValue);
+    setSessionOpeningValue(openValue.trim());
     dispatch({
       type: "open",
       field,
@@ -232,16 +238,25 @@ export default function WaflReelPickerSheet({ visible, field, label, value, unit
     && exceedsMaterialQuantityPrecision(state.selectedValue)
     ? materialQuantityPrecisionMessage()
     : null;
+  const renderPath = resolveWaflPickerRenderPath(kind, state.mode);
+  const auxiliaryStatus = resolveWaflNumericAuxiliaryStatus({
+    legacyValue: kind === "quantity"
+      ? renderPath === "numeric-keypad"
+        ? sessionOpeningValue || null
+        : quantityParts.preservedValue
+      : null,
+    validationMessage: quantityPrecisionError,
+  });
   const applyDisabled = kind === "unit"
     ? !state.selectedUnit.trim()
     : optionOnly
       ? !optionItems.some((option) => option.value === state.selectedValue) || (requireSpecifiedValue && !state.selectedValue.trim())
       : normalized === null || quantityPrecisionError !== null;
-  const renderPath = resolveWaflPickerRenderPath(kind, state.mode);
   const reelAdaptiveBodyHeight = resolveWaflReelAdaptiveBodyHeight({
     hasModeSwitch: kind !== "unit" && !optionOnly && !eighthInch,
     hasSupplementaryControl: Boolean(footer),
-    hasValidationMessage: quantityPrecisionError !== null,
+    hasValidationMessage: false,
+    reserveAuxiliaryStatus: kind === "quantity",
     renderPath,
   });
 
@@ -305,7 +320,10 @@ export default function WaflReelPickerSheet({ visible, field, label, value, unit
   function toggleMode() {
     const nextMode = state.mode === "reel" ? "keypad" : "reel";
     if (nextMode === "reel") setWindowAnchor(state.selectedValue.trim() || "0");
-    else dispatch({ type: "select-value", value: prepareNumericDraftOnFocus(state.selectedValue) });
+    else {
+      dispatch({ type: "select-value", value: prepareNumericDraftOnFocus(state.selectedValue) });
+      setNumericDirectFocusGeneration((generation) => generation + 1);
+    }
     dispatch({ type: "set-mode", mode: nextMode });
   }
 
@@ -317,13 +335,19 @@ export default function WaflReelPickerSheet({ visible, field, label, value, unit
       confirmAccessibilityLabel="변경 저장"
       confirmDisabled={applyDisabled || pending}
       decision={decision}
+      diagnosticSurfaceId={renderPath === "numeric-keypad" ? "numeric-direct" : undefined}
+      footerPolicy={renderPath === "numeric-keypad" ? "hidden" : undefined}
       keyboardAutoExpand={renderPath === "numeric-keypad"}
       keyboardFocusRevealContext={renderPath === "numeric-keypad" ? WAFL_THEME.sheet.numericFocusRevealContext : undefined}
+      keyboardMode={renderPath === "numeric-keypad" ? "directInput" : "default"}
+      keyboardRevealOrder={renderPath === "numeric-keypad" ? "rootFirst" : "bodyFirst"}
       measurementVariant={renderPath}
       onCancel={cancel}
       onAfterClose={onAfterClose}
       onConfirm={apply}
+      onPreparedForAutoFocus={renderPath === "numeric-keypad" ? () => keypadInputRef.current?.focus() : undefined}
       pending={pending}
+      preparedFocusRequestGeneration={numericDirectFocusGeneration}
       presentationGeneration={presentationGeneration}
       sizing="reelAdaptive"
       title={label}
@@ -357,28 +381,50 @@ export default function WaflReelPickerSheet({ visible, field, label, value, unit
               </View>}
             </View>
           ) : (
-            <View style={styles.keypadPanel}>
-              <Text style={styles.reelLabel}>숫자 직접 입력</Text>
-              <View style={[styles.keypadRow, quantityPrecisionError && styles.keypadRowInvalid]}>
-                <WaflSheetTextInput
-                  accessibilityLabel={`${label} 숫자 직접 입력`}
-                  autoFocus
-                  keyboardType={integerOnly ? "number-pad" : "decimal-pad"}
-                  maxLength={16}
-                  onChangeText={(next) => dispatch({ type: "select-value", value: normalizeNumericDraft(next) })}
-                  placeholder="0"
-                  style={[styles.keypadInput, quantityPrecisionError && styles.keypadInputInvalid]}
-                  value={state.selectedValue}
-                />
-                <Text style={styles.keypadUnit}>{state.selectedUnit}</Text>
+            <WaflSheetSemanticFocusScope testID="wafl-numeric-keypad-semantic-target">
+              <View style={styles.keypadPanel}>
+                <Text style={styles.reelLabel}>숫자 직접 입력</Text>
+                <View style={[styles.keypadRow, quantityPrecisionError && styles.keypadRowInvalid]}>
+                  <WaflSheetTextInput
+                    accessibilityLabel={`${label} 숫자 직접 입력`}
+                    keyboardType={integerOnly ? "number-pad" : "decimal-pad"}
+                    maxLength={16}
+                    onChangeText={(next) => dispatch({ type: "select-value", value: normalizeNumericDraft(next) })}
+                    placeholder="0"
+                    ref={keypadInputRef}
+                    style={[styles.keypadInput, quantityPrecisionError && styles.keypadInputInvalid]}
+                    value={state.selectedValue}
+                    waflKeyboardAccessory="none"
+                    waflReturnKeyPolicy="none"
+                  />
+                  <Text style={styles.keypadUnit}>{state.selectedUnit}</Text>
+                </View>
               </View>
-              {quantityPrecisionError ? <Text accessibilityLiveRegion="polite" style={styles.validationError}>{quantityPrecisionError}</Text> : null}
-            </View>
+              {kind === "quantity" ? <View accessibilityLiveRegion="polite" style={styles.auxiliaryStatus}>
+                {auxiliaryStatus.legacyText ? <Text style={styles.legacyValue}>{auxiliaryStatus.legacyText}</Text> : null}
+                {auxiliaryStatus.validationText ? <Text style={styles.validationError}>{auxiliaryStatus.validationText}</Text> : null}
+              </View> : null}
+              <View style={styles.inlineActionRow} testID="wafl-numeric-keypad-inline-actions">
+                <View style={styles.inlineModeSwitch}>{kind !== "unit" && !optionOnly && !eighthInch ? <WaflInputModeSwitch disabled={pending} mode="direct" onPress={toggleMode} /> : null}</View>
+                <WaflSheetActionButtons
+                  cancelAccessibilityLabel="변경 취소"
+                  cancelDisabled={pending}
+                  confirmAccessibilityLabel="변경 저장"
+                  confirmDisabled={applyDisabled || pending}
+                  onCancel={cancel}
+                  onConfirm={() => { void apply(); }}
+                  testID="wafl-numeric-keypad-action-buttons"
+                />
+              </View>
+            </WaflSheetSemanticFocusScope>
           )}
 
-          {kind === "quantity" && quantityParts.preservedValue ? <Text style={styles.legacyValue}>기존값 {quantityParts.preservedValue}</Text> : null}
+          {renderPath !== "numeric-keypad" && kind === "quantity" ? <View accessibilityLiveRegion="polite" style={styles.auxiliaryStatus}>
+            {auxiliaryStatus.legacyText ? <Text style={styles.legacyValue}>{auxiliaryStatus.legacyText}</Text> : null}
+            {auxiliaryStatus.validationText ? <Text style={styles.validationError}>{auxiliaryStatus.validationText}</Text> : null}
+          </View> : null}
 
-          {kind !== "unit" && !optionOnly && !eighthInch ? <WaflInputModeSwitch mode={state.mode === "reel" ? "picker" : "direct"} onPress={toggleMode} /> : null}
+          {renderPath !== "numeric-keypad" && kind !== "unit" && !optionOnly && !eighthInch ? <WaflInputModeSwitch mode="picker" onPress={toggleMode} /> : null}
           {footer}
 
     </WaflInputSheet>
@@ -407,6 +453,9 @@ const styles = StyleSheet.create({
   keypadInput: { color: WAFL_THEME.color.deepNavy, flex: 1, fontFamily: WAFL_FONTS.black, fontSize: 22, minHeight: 58, paddingHorizontal: 14 },
   keypadInputInvalid: { backgroundColor: "#fff9f7", color: WAFL_THEME.color.error },
   keypadUnit: { color: "#67584c", fontFamily: WAFL_FONTS.bold, fontSize: 14 },
-  validationError: { color: WAFL_THEME.color.error, fontFamily: WAFL_FONTS.medium, fontSize: 11, lineHeight: 16, marginTop: WAFL_THEME.spacing.xs },
-  legacyValue: { color: "#75695d", fontFamily: WAFL_FONTS.medium, fontSize: 10, marginTop: 6 },
+  auxiliaryStatus: { height: WAFL_REEL_AUXILIARY_STATUS_HEIGHT, justifyContent: "center" },
+  inlineActionRow: { alignItems: "center", flexDirection: "row", justifyContent: "space-between", minHeight: 50 },
+  inlineModeSwitch: { flex: 1, minWidth: 0 },
+  validationError: { color: WAFL_THEME.color.error, fontFamily: WAFL_FONTS.medium, fontSize: 11, lineHeight: 16 },
+  legacyValue: { color: "#75695d", fontFamily: WAFL_FONTS.medium, fontSize: 10, lineHeight: 16 },
 });

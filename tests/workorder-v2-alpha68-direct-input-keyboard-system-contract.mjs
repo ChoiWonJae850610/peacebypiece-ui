@@ -7,7 +7,6 @@ import {
   resolveWaflDirectInputAccessoryMode,
   resolveWaflDirectInputMinimalAccessoryAction,
   resolveWaflDirectInputAccessoryState,
-  resolveWaflDirectInputKeyboardDetent,
   resolveWaflDirectInputNavigation,
   resolveWaflDirectInputReturnKey,
   resolveWaflDirectInputSubmitBehavior,
@@ -15,11 +14,6 @@ import {
 import { resolveWaflSheetKeyboardRestoreOffset } from "../apps/mobile/domain/waflSheetKeyboardRestorePolicy.ts";
 
 const read = (file) => fs.readFileSync(file, "utf8");
-
-const detentInput = { expandedHeight: 800, headerHeight: 72, intrinsicBodyHeight: 128, keyboardInset: 320, minimumBodyViewport: 180, restingOffset: 236, safeBottom: 20, semanticGap: 16 };
-const directDetent = resolveWaflDirectInputKeyboardDetent({ ...detentInput, keyboardMode: "directInput", keyboardVisible: true, currentOffset: 236 });
-assert.ok(directDetent > 0 && directDetent < 236, "direct-input now owns a bounded intermediate detent");
-assert.equal(resolveWaflDirectInputKeyboardDetent({ ...detentInput, keyboardMode: "default", keyboardVisible: true, currentOffset: 236 }), 236);
 
 const idA = resolveWaflDirectInputAccessoryNativeID({ instanceId: 3, sessionGeneration: 1 });
 const idB = resolveWaflDirectInputAccessoryNativeID({ instanceId: 3, sessionGeneration: 2 });
@@ -45,9 +39,9 @@ assert.equal(done.confirm, true);
 assert.equal(done.targetKey, null);
 
 for (let cycle = 0; cycle < 3; cycle += 1) {
-  assert.equal(resolveWaflSheetKeyboardRestoreOffset({ settledOffset: 236, userDragged: false }), 236);
+  assert.equal(resolveWaflSheetKeyboardRestoreOffset(236), 236);
 }
-assert.equal(resolveWaflSheetKeyboardRestoreOffset({ settledOffset: 236, userDragged: true }), null);
+assert.equal(resolveWaflSheetKeyboardRestoreOffset(236), 236);
 
 const sheet = read("apps/mobile/features/inputs/WaflInputSheet.tsx");
 const textInput = read("apps/mobile/features/inputs/WaflSheetTextInput.tsx");
@@ -64,12 +58,13 @@ assert.equal(resolveWaflDirectInputMinimalAccessoryAction({ fieldKeys: ["phone",
 assert.equal(resolveWaflDirectInputMinimalAccessoryAction({ fieldKeys: ["phone"], focusedKey: "phone" }), "done");
 assert.match(textInput, /accessoryMode === "singleAction"/u);
 assert.match(textInput, /registerEditableTarget/u);
-assert.match(textInput, /props\.editable !== false/u);
+assert.match(textInput, /props\.editable (?:!==|===) false/u);
 assert.equal(resolveWaflDirectInputSubmitBehavior({ directInput: true, multiline: false }), "submit");
 assert.equal(resolveWaflDirectInputSubmitBehavior({ directInput: true, multiline: true }), null);
 assert.match(textInput, /resolveWaflDirectInputSubmitBehavior/u);
-assert.match(sheet, /resolveWaflDirectInputKeyboardDetent/u);
-assert.match(sheet, /completion: \(\) => revealFocusedTarget\(\)/u);
+assert.doesNotMatch(sheet, /resolveWaflDirectInputKeyboardDetent/u, "A73B2 removes the unconditional detent call from the live owner");
+assert.match(sheet, /resolveWaflDirectInputRevealMotion/u);
+assert.match(sheet, /keyboardTransitionRef/u);
 assert.match(sheet, /directInputConfirmRef\.current\(\)/u);
 assert.match(sheet, /Keyboard\.dismiss\(\)/u);
 assert.doesNotMatch(reusable, /InputAccessoryView|inputAccessoryViewID|keyboardMode/u, "reusable form must inherit the parent owner");
@@ -100,7 +95,7 @@ console.log(JSON.stringify({
   accessoryNativeIdsUnique: 3,
   directInputInventory: 7,
   semanticCallsites: 8,
-  deterministicDetent: directDetent,
+  unconditionalKeyboardDetent: 0,
   finalDoneConvergesToConfirm: true,
   keyboardCycles: 3,
   phonePadAccessory: true,

@@ -51,7 +51,8 @@ assert.match(
 assert.match(inlineField, /disabled=\{saveDisabled\}/);
 assert.match(detail, /label="총 수량"[\s\S]{0,140}header\.totalQuantity\.toLocaleString/);
 assert.doesNotMatch(detail, /field="totalQuantity"|overview-inline-total-quantity/);
-assert.match(detail, /onCancel=\{\(\) => \{[\s\S]*props\.onCancelEdit\(\)/);
+assert.match(detail, /onCancel=\{\(\) => \{\s*setCategoryReelField\(null\);\s*\}\}/, "A73C child X closes only the child and preserves the parent Overview draft");
+assert.doesNotMatch(detail, /onCancel=\{\(\) => \{\s*setCategoryReelField\(null\);\s*props\.onCancelEdit\(\)/, "child cancel must not roll back the whole Overview draft");
 assert.match(reelPicker, /keyboardType=\{integerOnly \? "number-pad" : "decimal-pad"\}/);
 assert.match(inputShell, /cancelAccessibilityLabel = "변경 취소"/);
 assert.match(inputShell, /confirmAccessibilityLabel = "변경 저장"/);

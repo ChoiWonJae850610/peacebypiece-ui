@@ -1,5 +1,61 @@
 # WAFL v2 App Device Test Plan
 
+## Alpha.73 final device result
+
+Owner actual-iPhone QA is accepted as PASS for the cumulative A73D Keyboard / Static Sheet stabilization gate. The final
+statement `다 잘된다. 이제 키보드는 다 되는거같다` supersedes the earlier intermediate failures for New Recipe,
+Spec Save, Direct Size/Spec/POM, repeated show/hide/refocus, registered TEXT↔PHONE_NUMBER handoff, Start/Destination
+detail/contact, Quick driver name/contact/memo, nested address keyboard ownership, Required Quantity/Loss-Allowance,
+direct input↔Reel, numeric X/V/height/body-scroll, and Quick phone accessory/return-key behavior. No exact cycle count is
+inferred. Earlier actual-iPhone evidence separately accepts Product Sketch pen/line/arrow/text, mixed Undo/Redo,
+Save/reopen, and dirty discard without black screen. Address Search provider-result execution remains `NOT_RUN`; its
+alpha.73 generation/crash/Search guards are automated regression evidence only. This advances the product checkpoint to
+`ALPHA73_COMPLETE` and finalization checkpoint to `ALPHA73_FINALIZATION_COMPLETE` without inferring tablet, Android, or
+unrun provider evidence.
+
+## Alpha.73D registered handoff / Quick / numeric Reel iPhone re-QA
+
+- In Quick direct address, alternate detail-address TEXT and contact PHONE_NUMBER ten times in each direction. The keyboard
+  must not fully hide, root must not drop to static rest, and only the destination field may own the semantic reveal.
+- In Quick driver information, repeat name → contact → memo → name ten times. Current field visibility, destination keyboard
+  class, no stale target, no delayed second positioning, and no hide/show flicker are required.
+- In required quantity and loss/allowance quantity keypad mode, edit `1`, `1.`, `1.0`, and `1.07`, delete/retype, and trigger
+  legacy/validation/empty states. Root/body extent remains identical and `WAFL PICK으로 변경` stays fully visible.
+- Switch keypad ↔ Reel ten times. Each actual mode change settles once; after settlement, numeric edits author root movement
+  zero. Spot-check New Recipe, Spec Save, Direct Size/Spec, Direct Color, and Sketch Text. Automated PASS does not infer
+  Owner physical PASS.
+
+## Alpha.73D root-owner and Direct Create semantic-target re-QA
+
+- On an actual iPhone, alternate New Recipe and Spec Save new-mode open/focus/hide/close for 20 cycles each, then
+  alternate the two surfaces for five cross-surface chains. Each keyboard appearance may have one continuous root
+  reveal only; delayed recovery, double rise, owner overlap, final-Y drift, and static-rest drift must all be zero.
+- Repeat Direct Size create and Direct Spec/POM create for 20 cycles each. The field and its helper must remain above
+  the keyboard with the shared gap, without pulling unrelated body content into the reveal. Direct Color must retain
+  its existing palette interaction and must not inherit the new semantic scope.
+- Verify keyboard hide returns to the exact current derived static rest and close/reopen starts a new owner generation.
+  Automated evidence and contract PASS do not infer Owner physical PASS.
+
+## Alpha.73D Spec Save motion-reference re-QA
+
+- In `스펙 저장` new mode, verify `새 스펙 이름` appears before the new/update selector. Focus, hide, and
+  refocus the name field: keyboard and Sheet use one continuous shared reveal, restore the same static rest,
+  and accumulate no drift.
+- Switch to update mode and verify its selector remains ahead of the long template/management content.
+- Cold-launch New Recipe as a regression spot: its larger explicit semantic target remains intact while motion
+  scheduling stays shared with Spec Save. Automated evidence does not infer Owner physical PASS.
+
+## Alpha.73D compact semantic target formula re-QA
+
+- Fully terminate and relaunch WAFL, open New Recipe, and tap product name once. Product, helper, work-
+  character label, and the complete production/sample button row must remain above the keyboard with no
+  second rise or delayed repair.
+- Dismiss and refocus in the same session, then close/reopen and repeat. Cold and warm final geometry must
+  match, static rest must restore exactly, and cumulative drift must remain zero.
+- Spot-check Direct Size and Direct Spec/POM: their smaller semantic scopes must not expand merely because
+  unrelated compact body content exists. Single-root, footer/action, nested, multiline, Quick, Reel, and
+  fullscreen regression checks remain required. Automated evidence does not infer Owner physical PASS.
+
 Document role: canonical owner for supported-device matrix, physical-device acceptance, and UI/product QA classification. Permanent execution rules belong to `09-codex-working-rules.md`; external start/stop commands belong to `41-external-mobile-qa-runbook.md`; historical device results belong to numbered evidence.
 
 ## Completion model
@@ -68,6 +124,14 @@ The active Delta should tailor this minimal sequence:
 The canonical operational steps and teardown remain in `41-external-mobile-qa-runbook.md`.
 
 ## Current installed-build boundary
+
+Alpha.73D semantic-scope replay re-QA uses the current installed Development Build. Fully terminate and relaunch WAFL,
+open New Recipe, and immediately tap product name. Product name, helper, work-character label, and the complete production/
+sample button row must all remain above the keyboard with one visible root reveal and no delayed correction. This exact
+cold launch is repeated after another full termination; cold and warm final geometry must match. Dismiss restores exact
+static rest with no auto-refocus. Direct Size, Direct Spec/POM, Quick contact, Address Direct TEXT↔PHONE_NUMBER, and Sketch
+Text remain regression surfaces. DEV semantic subscription/replay and geometry evidence supports diagnosis but cannot
+replace Owner physical judgment.
 
 - Official QA uses the installed EAS Development Build, not Expo Go.
 - Current iOS Development Build number is `1`.
@@ -151,6 +215,15 @@ also selected SVG over the bounded Skia candidate. This advances the product che
 shows disabled `스케치(준비 중)`; DEV renderer/performance labels do not become product naming, and alpha.73 editor work
 is not started. Finalization itself adds no physical behavior delta and requires no additional device pass.
 
+## Alpha.73B apparel annotation tools QA
+
+Automated contracts prove the exact `펜 / 선 / 화살표 / 텍스트` product controls, WORLD-space line/arrow endpoints,
+renderer-derived arrow direction, additive legacy-compatible text validation, bounded single-line Korean/English/number/
+symbol round-trip, mixed four-step Undo/Redo, deterministic Save serialization, and child text-sheet ownership. Owner iPhone
+QA remains required for touch-target/clipping, line straightness, visible arrow direction, text placement and keyboard close,
+mixed Save/reopen fidelity, and dirty discard without black screen. Rectangle, ellipse, eraser, selection, PDF, and export
+are not part of this device gate. Physical PASS is not inferred.
+
 ## Historical results
 
 Do not copy version-by-version results into this plan. Use immutable evidence:
@@ -162,3 +235,148 @@ Do not copy version-by-version results into this plan. Use immutable evidence:
 - developer auto-connect: `46-mobile-tailscale-serve-developer-auto-connect-evidence.md`;
 - material Read: `47-mobile-materials-real-read-evidence.md`.
 - material draft create/update: `49-mobile-material-draft-create-update-evidence.md`.
+## Alpha.73B-1 Product Sketch text input physical re-QA
+
+- Repeat Text sessions at different canvas positions and verify the WAFL INPUT sheet is visibly presented before the
+  keyboard every time; a keyboard-only state is a failure.
+- Verify the WORLD-anchored insertion marker appears immediately and typed Korean/English/numeric/symbol content appears
+  as ghost text at the same point. Confirmed text must not jump; canceled text leaves no marker, preview, or element.
+- Repeat cancel/confirm sessions, mixed Undo/Redo, explicit Save/reopen, and dirty discard. The A73A2 black-screen and
+  parent-close one-shot regressions remain required. Physical PASS is not inferred from automated projection contracts.
+
+## Alpha.73B-2 shared WAFL INPUT transition and Sketch caret physical QA
+
+- In Sketch Text, a normal Recipe single-line input, numeric/direct input, and a genuinely bottom-occluded field, verify
+  sheet entrance plus keyboard/correction reads as one continuous transition. A distinct second sheet jump, overshoot,
+  redundant final gap, keyboard-only sheet, or repeated-cycle offset drift is a failure.
+- Already-visible fields must add no keyboard-show sheet movement. Occluded fields scroll the body first and expand only by
+  the remaining minimum distance required for the full label/input/help semantic block. Keyboard hide restores the prior
+  settled geometry unless a deliberate drag owns the new height.
+- Sketch Text shows one small neutral vertical insertion caret, not the prior brick-orange crosshair. Typed ghost and final
+  text share the exact WORLD anchor; cancel removes both transients, mixed Save/reopen remains stable, and dirty discard must
+  not regress the A73A2 black-screen fix. Physical PASS is not inferred from automated contracts.
+
+## Alpha.73B-3 shared keyboard visibility reconciliation physical re-QA
+
+- In Sketch Text and New Recipe, verify the focused input itself—not only the WAFL INPUT header—is fully reachable above
+  the final keyboard. Repeat five to ten times; keyboard-only, hidden-input, large second-jump, and offset-drift counts are zero.
+- Verify numeric/direct input, a lower scrollable field, and a multiline/memo owner. Actual forward body scroll is consumed
+  first; a minimum usable body floor or residual sheet rise supplies only the remaining visibility requirement.
+- Keyboard hide restores the settled geometry with no delayed jump. Neutral vertical WORLD caret/ghost equality, mixed
+  Save/reopen, A73A2 discard without black screen, pen/line/arrow, and portrait behavior remain regression gates.
+- Automated floor/merged-target/didShow contracts do not infer physical PASS.
+
+## Alpha.73B-4 coordinated direct-input entrance physical re-QA
+
+- Sketch Text, New Recipe product name, and one direct Size/Color/POM create flow must present the mounted input and keyboard
+  as one coordinated visible rise. The ordinary medium/resting sheet must not appear as an intermediate stage.
+- Repeat each core path five to ten times. Focused input visibility remains complete, keyboard-only and hidden-input states
+  are zero, visible sheet movement is one, large or micro third rises are absent, and open/hide offset drift is zero.
+- A lower field still consumes actual forward body scroll before any meaningful residual sheet correction. Keyboard hide
+  restores the ordinary resting geometry; manual drag ownership and no-keyboard ordinary-opening fallback remain usable.
+- Neutral WORLD caret/ghost, mixed Save/reopen, A73A2 discard without black screen, pen/line/arrow, and portrait behavior remain
+  regression gates. Automated coordinated-entrance contracts do not infer physical PASS.
+
+## Alpha.73B-5 prepared local-geometry keyboard target physical re-QA
+
+- Start with New Recipe, then Sketch Text and one other coordinated single-line input. The focused field and the intended
+  compact content/action composition must reach their final keyboard-visible position in the first visible sheet movement;
+  keyboard-leading, intermediate stop, second rise, hidden input, and repeated-cycle drift are failures.
+- Repeat New Recipe and Sketch Text five to ten times. Normal core paths expect one synchronous keyboard-frame target and
+  no visible did-show sheet correction. A meaningful did-show correction is recorded as a first-target miss.
+- In a lower-field/long-form case, prepared forward body scroll is used first and only the residual visibility requirement
+  may move the sheet. Keyboard hide restores ordinary geometry; drag, close, neutral caret/ghost, Save/reopen, dirty
+  discard, pen/line/arrow, and portrait behavior remain regression gates. Automated contracts do not infer physical PASS.
+
+## Alpha.73B-6 did-show micro reconciliation physical re-QA
+
+- In New Recipe and Sketch Text, preserve the B5 coordinated main rise and repeat each flow five to ten times. After the
+  first movement, final did-show sheet rise, hidden input, keyboard-only state, and offset drift must each remain zero.
+- Confirm the focused semantic block and compact action composition are visible without an ornamental gap. A lower or long
+  field must still use actual remaining body scroll first and allow residual sheet rise only for real clipping.
+- Keyboard hide restores ordinary settled geometry without a delayed correction. Close/cancel/unmount cannot resurrect a
+  stale sheet. Neutral WORLD caret/ghost, mixed Save/reopen, discard without black screen, pen/line/arrow, and portrait
+  behavior remain regression gates. Automated classification contracts do not infer physical PASS.
+
+## Alpha.73C Phase 4 compact reveal and keyboard-class transition physical re-QA
+
+- New Recipe, Direct Size create, Direct Spec/POM create, and Sketch Text must reveal the measured semantic block with the
+  minimum root movement. New Recipe still includes the full `본생산/샘플` row; Size/Spec helper text remains visible.
+- Repeat each compact flow five to ten times. Over-rise, normal did-show second spring, stale session compensation, and
+  cumulative root/body drift are failures. Close/reopen and a new Sketch text session must not inherit the prior generation.
+- On Quick Contact first focus, the incoming phone keyboard frame and sheet target must coordinate once; Quick-local offsets
+  are forbidden. In Address Direct, alternate detail TEXT and contact PHONE_NUMBER ten times. Old-frame reveal, incomplete
+  rise, oscillation, and accumulated compensation must remain zero while X/V and numeric accessory stay available.
+- Season/Detail, Direct Color, material multiline, Quick driver/memo, saved Spec, Overview state/taxonomy, Drawing, and Reel
+  are regression-only. Address Search physical PASS is not inferred when the owner environment lacks the address API; its
+  automated generation/crash/Search guards remain required.
+
+## Alpha.73D Phase 1 static Sheet primitive core physical QA
+
+- On New Recipe, Season/Detail direct input, Direct Size/Color/Spec, saved Spec, materials, and Quick surfaces, confirm the
+  header cannot move the root and exposes no drag handle. Body scrolling, X/V or Done, backdrop/back cancel, processing,
+  and nested return remain usable and exactly once.
+- On target/major/detail/Season and other Reel surfaces, wheel movement and haptics remain local while the root stays fixed;
+  X/V staging is unchanged.
+- Smoke the full-view Size/Color/Spec table, due-date local cancel, Sketch fullscreen/dirty Decision, PDF/attachment viewer,
+  image carousel, and list-row/body gestures as explicit exceptions.
+- New Recipe, Direct Size, Direct Spec/POM, Sketch Text, Quick contact, and Address Direct keyboard-class issues remain
+  acceptance targets. Static-core automation does not infer those previously failing surfaces solved.
+
+## Alpha.73D Phase 2 static keyboard/input migration physical QA
+
+- New Recipe must open Sheet-first without automatic keyboard, then reach one stable absolute reveal after field tap. A
+  non-input tap dismisses the keyboard, keeps the Sheet open, and restores the same current static rest. Repeat ten cycles
+  and three close/reopen sessions with root drift zero.
+- Repeat the same manual-focus and ten-cycle drift check for Direct Size and Direct Spec/POM create; saved/edit Spec and
+  Direct Color are regression-protected. X/V and canonical confirm remain exactly once.
+- Quick contact must use the actual first PHONE_NUMBER frame. In Address Direct, alternate detail TEXT and contact
+  PHONE_NUMBER ten times with no stale outgoing-frame reveal, oscillation, double rise, or accumulated root target.
+- Sketch Text retains its WORLD caret/ghost/final anchor, zero-mutation preview, Save/reopen, and dirty-discard lifecycle
+  while its child input Sheet shows no intermittent root drift. Fabric/Accessory multiline uses actual body capacity first,
+  retains stable footer actions, and restores static root without stealing reasonable user body position.
+- Reel wheel/haptics, due-date local cancel, Drawing/image/PDF/viewer/list-row gestures, footer/processing/nested close, and
+  Overview state/taxonomy remain regression gates. Address Search remains NOT TESTED when its owner API is unavailable.
+  Automated static-rest, ephemeral-target, class-transition, and generation contracts do not infer physical PASS.
+
+### Alpha.73D Phase 2 New Recipe single-reveal blocker re-QA
+
+- Open New Recipe and verify no keyboard appears before an explicit product-name tap.
+- On tap, one fresh TEXT keyboard frame may author at most one visible system root reveal. A same-frame `didShow` may
+  assert visibility and reconcile body scroll, but must not produce a second root rise.
+- Dismiss and refocus ten times, then fully close/reopen and repeat: revealed and current-derived resting geometry must
+  remain identical with zero cumulative drift.
+- This narrow automated blocker contract does not infer New Recipe physical PASS or the broader Phase 2 surfaces PASS.
+
+## Alpha.73D Phase 3 Static Sheet closure spot checks
+
+- Compact Static Sheet: open `리오더 만들기` or an equivalent compact surface. The root must not drag; X/V/backdrop retain their existing meanings.
+- Long Static Sheet: open `작업 이력`, `스펙 불러오기`, attachment selection, or full-view Size/Color/Spec. Only the body scrolls and the footer remains a stable sibling.
+- Static Reel: open target/major/detail/Season or a material unit picker. The wheel/haptics move while root Y remains fixed; X/V remains staged and exactly once.
+- Nested route: open a chooser child and return. Ordering remains outgoing close → `onAfterClose` → next presentation generation, with no duplicate or black frame.
+- Due-date calendar: X/backdrop/back closes only the calendar child and preserves unrelated Overview staged fields.
+- Fullscreen exception: smoke Product Sketch, image carousel, attachment viewer, or authenticated PDF viewer and preserve its local gesture owner.
+- Keyboard regression: spot-check New Recipe. The Owner already reported Phase 2 PASS; Phase 3 must not reintroduce visible double rise or drift.
+- Automated device matrix covers iPhone portrait, Android phone portrait, tablet portrait/landscape, and static layout recompute. Tablet/Android physical PASS remains `NOT TESTED` unless Owner reports it.
+
+### Alpha.73D Phase 2 New Recipe keyboard-appearance single-reveal blocker re-QA
+
+- The prior exact-frame checkpoint physically failed: one manual product-name focus still produced two visible rises when
+  iOS emitted distinct intermediate/final keyboard frames inside one appearance.
+- Open New Recipe and confirm Sheet-first presentation with keyboard auto-show `0`. Tap product name once. Across all native
+  frames in that appearance, the root may perform at most one visually continuous reveal; intermediate stop, second rise,
+  and delayed micro-rise are failures.
+- Dismiss and explicitly refocus ten times, then fully close/reopen and repeat. Every appearance must have the same reveal,
+  every hide must return to the current derived static rest, and root/body/session drift must remain zero.
+- This blocker-first automated contract does not infer New Recipe physical PASS or any broader Phase 2 surface PASS.
+
+### Alpha.73D cold-start first-focus geometry freshness re-QA
+
+- Fully terminate WAFL, relaunch it, open New Recipe, and confirm the Sheet presents without automatic keyboard focus.
+- On the first product-name tap, verify product name, helper, `작업 구분`, and the complete `본생산 / 샘플` row are above
+  the keyboard. One root reveal is allowed; under-reveal, double-rise, and delayed second correction are failures.
+- Dismiss the keyboard and verify exact derived static rest plus no automatic refocus. Tap again and compare the warm final
+  geometry with the cold first-focus geometry; they must match while the warm fast response remains.
+- Fully close/reopen New Recipe and repeat. Session-dependent geometry and cumulative drift are failures.
+- Spot-check Direct Size, Direct Spec/POM, Sketch Text, Quick contact, and Address Direct keyboard-class transitions. This
+  automated checkpoint remains `PHYSICAL_RESULT_NOT_INFERRED` until the Owner reports the cold-start device result.

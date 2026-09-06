@@ -4,10 +4,9 @@ import fs from "node:fs";
 import path from "node:path";
 
 import {
-  resolveWaflSheetDragOffset,
   resolveWaflContentFitHeight,
   resolveWaflSheetOpeningOffset,
-  resolveWaflSheetRelease,
+  resolveWaflStaticSheetRestingOffset,
 } from "../apps/mobile/domain/waflSheetDetentPolicy.ts";
 import {
   WORK_ORDER_CATEGORY_MAJORS,
@@ -29,22 +28,15 @@ const optionRepository = read("lib/domain/work-orders/catalog/structureOptionRep
 const migration = read("db/v2/migrations/018_v2_company_spec_item_category_scope.sql");
 const mobileMetroConfig = read("apps/mobile/metro.config.js");
 
-assert.match(theme, /dragZoneMinHeight:\s*44/u);
+assert.doesNotMatch(theme, /dragZoneMinHeight|dragHandleHeight|dragHandleWidth/u);
 assert.match(theme, /entranceDurationMs:\s*2[2-9]0/u);
 assert.match(theme, /exitDurationMs:\s*2\d\d/u);
-assert.match(sheet, /testID=\{draggable \? "wafl-sheet-header-drag-zone" : "wafl-sheet-fixed-header"\}/u);
+assert.match(sheet, /testID="wafl-sheet-fixed-header"/u);
 assert.doesNotMatch(sheet, /PanResponder|panResponder\.panHandlers/u);
 assert.match(sheet, /pointerEvents=\{replacesSheetDuringProcessing \? "none" : "auto"\}/u);
 assert.match(sheet, /decision \? <WaflDecisionChoiceBody/u);
 for (const token of [
-  "onStartShouldSetResponderCapture",
-  "onMoveShouldSetResponderCapture",
-  "onResponderGrant",
-  "onResponderMove",
-  "onResponderRelease",
-  "resolveWaflSheetDragOffset({ dragStartOffset",
-  "translateY.setValue(offset)",
-  "layoutOffset.setValue(offset)",
+  "resolveWaflStaticSheetRestingOffset",
   "resolveWaflSheetOpeningOffset(expandedHeight)",
   "requestAnimationFrame",
   "toValue: mediumOffset",
@@ -54,18 +46,15 @@ for (const token of [
   'animationType="none"',
 ]) assert.ok(sheet.includes(token), `mounted sheet path missing ${token}`);
 assert.ok(sheet.indexOf("animateDown(() =>") < sheet.indexOf("setRendered(false)"), "close must animate down before unmount");
-assert.ok(sheet.indexOf("onStartShouldSetResponderCapture") < sheet.indexOf("effectiveBodyScrollable ?"), "header responder must not depend on the effective body scroll owner");
-assert.match(sheet, /\{draggable \? <View style=\{styles\.handle\} \/> : null\}/u, "fixed sheets must not expose a fake handle");
+assert.doesNotMatch(sheet, /onStartShouldSetResponderCapture|onMoveShouldSetResponderCapture|onResponderGrant|onResponderMove|onResponderRelease/u);
+assert.doesNotMatch(sheet, /styles\.handle/u, "static sheets must not expose a drag handle");
 
 const expandedHeight = 700;
 const mediumOffset = 190;
 assert.equal(resolveWaflSheetOpeningOffset(expandedHeight), 700);
-assert.equal(resolveWaflSheetDragOffset({ dragStartOffset: mediumOffset, dy: -37, expandedHeight }), 153);
-assert.equal(resolveWaflSheetDragOffset({ dragStartOffset: 0, dy: 55, expandedHeight }), 55);
+assert.equal(resolveWaflStaticSheetRestingOffset({ expandedHeight, visibleHeight: expandedHeight - mediumOffset }), mediumOffset);
 assert.deepEqual(resolveWaflContentFitHeight({ windowHeight: 800, headerHeight: 74, bodyHeight: 118, footerHeight: 56, safeBottom: 20, minHeight: 220, maxRatio: 0.72, verticalChrome: 16 }), { bodyViewportHeight: 118, height: 284, overflow: false });
 assert.deepEqual(resolveWaflContentFitHeight({ windowHeight: 800, headerHeight: 74, bodyHeight: 700, footerHeight: 56, safeBottom: 20, minHeight: 220, maxRatio: 0.72, verticalChrome: 16 }), { bodyViewportHeight: 410, height: 576, overflow: true });
-assert.deepEqual(resolveWaflSheetRelease({ dragStartOffset: mediumOffset, dy: -120, vy: -0.2, maxSettleOffset: mediumOffset, dismissDistance: 96, dismissVelocity: 1.15, flickVelocity: 0.45, velocityProjectionMs: 72, maxVelocityProjection: 88 }), { kind: "settle", offset: mediumOffset - 120 });
-assert.equal(resolveWaflSheetRelease({ dragStartOffset: mediumOffset, dy: 105, vy: 0.2, maxSettleOffset: mediumOffset, dismissDistance: 96, dismissVelocity: 1.15, flickVelocity: 0.45, velocityProjectionMs: 72, maxVelocityProjection: 88 }).kind, "dismiss");
 
 assert.deepEqual(WORK_ORDER_CATEGORY_MAJORS, ["상의", "하의", "아우터", "원피스", "셋업", "기타"]);
 assert.equal(decodeWorkOrderMajorCategoryCode("wafl-c1|U|T"), "T");
@@ -119,13 +108,13 @@ const consumers = [
   "apps/mobile/features/work-orders/documents/WorkOrderDocumentWorkbench.tsx",
   "apps/mobile/features/work-orders/overview/WorkOrderDetailOverview.tsx",
 ];
-for (const consumer of consumers) assert.match(read(consumer), /WaflInputSheet/u, `${consumer} must use the canonical draggable owner`);
+for (const consumer of consumers) assert.match(read(consumer), /WaflInputSheet/u, `${consumer} must use the canonical static sheet owner`);
 
 console.log(JSON.stringify({
   contract: "workorder-v2-alpha64-real-sheet-category-spec",
   previousPermanentInventoryRetained: 115,
   addedPermanentChecks: 1,
-  sheetEvidence: "mounted-owner-wiring-plus-continuous-translation-policy",
+  sheetEvidence: "mounted-owner-wiring-plus-derived-static-translation-policy",
   physicalGestureInferred: false,
   categories: Object.fromEntries(Object.entries(WAFL_SYSTEM_SPEC_ITEM_CATALOG).map(([code, items]) => [code, items.length])),
 }));

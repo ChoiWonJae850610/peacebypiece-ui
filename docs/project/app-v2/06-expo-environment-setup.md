@@ -16,7 +16,7 @@ Document role: canonical owner for supported Expo/native environment, app identi
 | iOS bundle identifier | `com.wafl.app` |
 | Android package | `com.wafl.app` |
 | Expo public version | `2.0.0` |
-| Internal APP_VERSION | `2.0.0-alpha.72` |
+| Internal APP_VERSION | `2.0.0-alpha.73` |
 | iOS Development Build | build number `1`; latest installable alpha.72B development build `71a3b621-31e9-493d-ac04-2888f0337abf` |
 | Android Development Build | version code `1`; latest installable alpha.72B development build `a2416e06-2ca0-431a-b575-67dafc29e871` |
 
@@ -97,6 +97,14 @@ Alpha.72 finalization is version, contract, Git, and artifact synchronization on
 native source, Expo config, EAS project/profile, credential, or app/build identity delta. The Owner explicitly accepted
 the installed-build iPhone orientation and SVG freehand/Heavy checks. The existing internal Development Build remains
 valid; no EAS Build, EAS Update, preview, production, submit, or store delivery is performed for finalization.
+
+### Alpha.73 finalization runtime boundary
+
+Alpha.73 finalization synchronizes the already verified JavaScript/TypeScript, server, contract, version, Git, and source
+artifact state. It adds no dependency, plugin, native source, Expo public config, EAS project/profile, credential, or
+app/build identity delta. The current installed internal Development Build remains valid for the Owner-accepted
+Keyboard/Static Sheet and Product Sketch evidence. No EAS Build, EAS Update, preview, production, submit, TestFlight, or
+store delivery is performed by finalization.
 
 ## Development-only ATS boundary
 

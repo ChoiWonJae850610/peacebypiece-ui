@@ -3,7 +3,11 @@ import type { Ref } from "react";
 
 import { WAFL_FONTS } from "@/constants/fonts";
 import { WAFL_THEME } from "@/constants/theme";
-import WaflSheetTextInput, { WaflSheetFocusBlock } from "./WaflSheetTextInput";
+import type {
+  WaflDirectInputAccessoryPolicy,
+  WaflDirectInputReturnKeyPolicy,
+} from "@/domain/waflDirectInputKeyboardPolicy";
+import WaflSheetTextInput, { WaflSheetFocusBlock, type WaflSheetCompletionMode } from "./WaflSheetTextInput";
 
 type Props = {
   readonly label: string;
@@ -17,6 +21,9 @@ type Props = {
   readonly autoCorrect?: boolean;
   readonly returnKeyType?: TextInputProps["returnKeyType"];
   readonly submitBehavior?: TextInputProps["submitBehavior"];
+  readonly completionMode?: WaflSheetCompletionMode;
+  readonly waflKeyboardAccessory?: WaflDirectInputAccessoryPolicy;
+  readonly waflReturnKeyPolicy?: WaflDirectInputReturnKeyPolicy;
   readonly inputAccessoryViewID?: string;
   readonly errorMessage?: string | null;
   readonly helpText?: string | null;
@@ -39,6 +46,9 @@ export default function WaflSheetValueField({
   autoCorrect,
   returnKeyType,
   submitBehavior,
+  completionMode = "form",
+  waflKeyboardAccessory = "auto",
+  waflReturnKeyPolicy = "auto",
   inputAccessoryViewID,
   errorMessage = null,
   helpText = null,
@@ -68,6 +78,9 @@ export default function WaflSheetValueField({
       ref={inputRef}
       returnKeyType={returnKeyType}
       submitBehavior={submitBehavior}
+      waflCompletionMode={completionMode}
+      waflKeyboardAccessory={waflKeyboardAccessory}
+      waflReturnKeyPolicy={waflReturnKeyPolicy}
       style={[styles.surface, styles.editable, multiline && styles.multiline, errorMessage && styles.invalid]}
       value={value}
     /> : <View accessibilityLabel={`${label}, 읽기 전용`} style={[styles.surface, styles.readOnly]}>

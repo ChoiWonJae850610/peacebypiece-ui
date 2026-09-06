@@ -49,7 +49,8 @@ assert.match(sheet, /testID="wafl-sheet-actions"/u);
 assert.ok(sheet.indexOf("sizing === \"contentFit\" && (decision || (!contentFit.overflow") < sheet.indexOf('testID="wafl-sheet-actions"'), "contentFit body must precede the measured footer");
 assert.match(sheet, /content:\s*\{\s*flex:\s*1/u, "expandable/fullView body remains flexible");
 assert.match(sheet, /scrollBodyContent:\s*\{\s*flexGrow:\s*1/u, "expandable/fullView scroll fill remains unchanged");
-for (const gestureMarker of ["onStartShouldSetResponderCapture", "onResponderMove", "resolveWaflSheetDragOffset", "animateDown"]) assert.match(sheet, new RegExp(gestureMarker));
+for (const retiredGestureMarker of ["onStartShouldSetResponderCapture", "onResponderMove", "resolveWaflSheetDragOffset"]) assert.doesNotMatch(sheet, new RegExp(retiredGestureMarker));
+assert.match(sheet, /animateDown/u);
 assert.match(templates, /sizing="adaptiveExpandable"[\s\S]*title="스펙 불러오기"/u);
 assert.match(templates, /CompanyTemplateSaveSheet[\s\S]*sizing="adaptiveExpandable"[\s\S]*title="스펙 저장"/u);
 
@@ -72,5 +73,5 @@ console.log(JSON.stringify({
   addedPermanentChecks: 1,
   oneCardHeight: oneCard.height,
   expandableMediumHeight: Math.round(844 * 0.68),
-  physicalSheetDragPassPreserved: true,
+  staticSheetRoot: true,
 }));

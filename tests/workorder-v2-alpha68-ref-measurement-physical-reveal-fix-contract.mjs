@@ -31,7 +31,7 @@ const base = {
   measuredSheetTop: 200,
   measuredViewportTop: 300,
   semanticGap: 72,
-  settledOffset: 200,
+  staticRestingOffset: 200,
   translatedOffset: 200,
   viewportHeight: 340,
 };
@@ -58,15 +58,16 @@ assert.equal(translatedOffset, 150);
 assert.equal(scrollToCalls, 0);
 
 for (let cycle = 0; cycle < 3; cycle += 1) {
-  assert.equal(resolveWaflSheetKeyboardRestoreOffset({ settledOffset: 200, userDragged: false }), 200);
+  assert.equal(resolveWaflSheetKeyboardRestoreOffset(200), 200);
 }
-assert.equal(resolveWaflSheetKeyboardRestoreOffset({ settledOffset: 200, userDragged: true }), null);
+assert.equal(resolveWaflSheetKeyboardRestoreOffset(200), 200);
 
 const sheet = read("apps/mobile/features/inputs/WaflInputSheet.tsx");
 const focus = read("apps/mobile/features/inputs/WaflSheetTextInput.tsx");
 assert.match(focus, /readonly inputRef: TextInput/u);
 assert.match(focus, /readonly revealRef: View \| TextInput/u);
-assert.match(focus, /const mountedReveal = resolveFocusBlockRef\?\.\(\) \?\? mountedInput/u);
+assert.match(focus, /const revealBlock = semanticFocusScope \?\? focusBlock/u);
+assert.match(focus, /const mountedReveal = revealBlock\?\.resolveRef\(\) \?\? mountedInput/u);
 assert.match(sheet, /measureMountedTarget\(target\.revealRef\)/u);
 assert.match(sheet, /measureMountedTarget\(resolveBodyViewportMeasureRef\(\)\)/u);
 assert.match(sheet, /measureMountedTarget\(sheetRef\.current\)/u);
@@ -78,8 +79,10 @@ assert.match(sheet, /focusedTargetRef\.current\?\.focusGeneration === target\.fo
 assert.match(sheet, /target\.openGeneration === openGenerationRef\.current/u);
 assert.match(sheet, /revealRunGenerationRef\.current === runGeneration/u);
 assert.match(sheet, /resolveWaflDirectInputRevealMotion/u);
-assert.match(sheet, /motion\.sheetRise > 0/u);
-assert.match(sheet, /animateTo\(motion\.targetOffset/u);
+assert.match(sheet, /resolveWaflDirectInputMergedKeyboardTarget/u);
+assert.match(sheet, /requiredRise: motion\.sheetRise/u);
+assert.match(sheet, /mergedTargetOffset < currentOffset/u);
+assert.match(sheet, /resolveWaflDirectInputMergedKeyboardTarget[\s\S]*animateTo\(mergedTargetOffset/u);
 assert.match(sheet, /bodyScrollRef\.current\?\.scrollTo/u);
 assert.doesNotMatch(sheet, /textEntryFocusRevealClearance\s*=\s*(100|112)/u);
 

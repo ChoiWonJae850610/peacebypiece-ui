@@ -43,7 +43,8 @@ assert.match(route, /requireWorkspaceApiGuard\(\{ permissionCode: "workorder\.re
 assert.match(route, /Cache-Control": "no-store"/);
 for (const field of ["id", "roadAddress", "jibunAddress", "postalCode", "buildingName", "page", "totalCount", "hasMore"]) assert.ok(`${service}\n${api}`.includes(field), field);
 assert.match(sheet, /SEARCH_DEBOUNCE_MS/);
-assert.match(sheet, /generationRef\.current !== generation/);
+assert.match(sheet, /canPublishQuickDeliveryAddressSearchResult\(\{ currentGeneration: generationRef\.current, requestGeneration: generation, visible: visibleRef\.current \}\)/);
+assert.match(sheet, /onSubmitEditing=\{submitSearch\}/, "Search return owns the actual Search action");
 assert.match(sheet, /주소 검색을 사용할 수 없습니다\. 직접 입력해주세요\./);
 assert.match(sheet, /주소 검색에 실패했습니다\. 다시 시도해주세요\./);
 assert.match(quick, /visible=\{nested\.visible && nested\.route === "direct"\}/);

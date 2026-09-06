@@ -30,7 +30,7 @@ import type { WorkOrderImageAcquisitionSource } from "@/features/work-orders/ima
 import { resolveMobileApiUrl } from "@/lib/apiTransport";
 import WaflActionTile from "@/features/inputs/WaflActionTile";
 import WaflActionTileGroup from "@/features/inputs/WaflActionTileGroup";
-import DrawingRendererPocModal from "@/features/drawing-poc/DrawingRendererPocModal";
+import WorkOrderSketchEditor from "@/features/work-orders/drawing/WorkOrderSketchEditor";
 
 type Props = {
   readonly images: readonly WorkOrderImageAsset[];
@@ -42,7 +42,8 @@ type Props = {
   readonly onDelete: (image: WorkOrderImageAsset) => void;
   readonly onSetRepresentative: (image: WorkOrderImageAsset) => void;
   readonly onSetOutputInclude: (image: WorkOrderImageAsset, includeInDocument: boolean) => void;
-  readonly drawingRendererPocEnabled?: boolean;
+  readonly sketchAuthoringEnabled?: boolean;
+  readonly workOrderId: string;
 };
 
 function ImageWithFallback(props: {
@@ -72,7 +73,7 @@ function ImageWithFallback(props: {
 export default function WorkOrderImageGallery(props: Props) {
   const [selectedId, setSelectedId] = useState<string | null>(props.images[0]?.id ?? null);
   const [fullscreen, setFullscreen] = useState(false);
-  const [drawingPocVisible, setDrawingPocVisible] = useState(false);
+  const [sketchVisible, setSketchVisible] = useState(false);
 
   const selectedIndex = useMemo(() => {
     const index = props.images.findIndex((image) => image.id === selectedId);
@@ -131,11 +132,11 @@ export default function WorkOrderImageGallery(props: Props) {
           testID="work-order-image-camera"
         />
         <WaflActionTile
-          accessibilityLabel={props.drawingRendererPocEnabled ? "SVG Drawing Performance PoC 열기" : "스케치, 준비 중"}
-          disabled={!props.drawingRendererPocEnabled}
+          accessibilityLabel={props.sketchAuthoringEnabled && props.canEdit ? "레시피 스케치 열기" : "스케치, 준비 중"}
+          disabled={!props.sketchAuthoringEnabled || !props.canEdit}
           icon={PencilLine}
-          label={props.drawingRendererPocEnabled ? "SVG Performance PoC" : "스케치"}
-          onPress={() => { if (props.drawingRendererPocEnabled) setDrawingPocVisible(true); }}
+          label={props.sketchAuthoringEnabled ? "스케치" : "스케치(준비 중)"}
+          onPress={() => { if (props.sketchAuthoringEnabled && props.canEdit) setSketchVisible(true); }}
           testID="work-order-image-sketch"
         />
       </WaflActionTileGroup>
@@ -248,7 +249,7 @@ export default function WorkOrderImageGallery(props: Props) {
           <Text style={styles.fullscreenIndex}>{selectedIndex + 1} / {props.images.length}</Text>
         </View>
       </Modal>
-      {props.drawingRendererPocEnabled ? <DrawingRendererPocModal onClose={() => setDrawingPocVisible(false)} visible={drawingPocVisible} /> : null}
+      {props.sketchAuthoringEnabled ? <WorkOrderSketchEditor editable={props.canEdit} onClose={() => setSketchVisible(false)} visible={sketchVisible} workOrderId={props.workOrderId} /> : null}
     </View>
   );
 }

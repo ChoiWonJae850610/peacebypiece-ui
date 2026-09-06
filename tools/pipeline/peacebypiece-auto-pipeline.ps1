@@ -2037,8 +2037,15 @@ function PublishLocalRepoHandoffNewestSet {
     )
 
     EnsureDirectory -Path $NewestResultDIr
-    Get-ChildItem -LiteralPath $NewestResultDIr -Force -ErrorAction SilentlyContinue | ForEach-Object {
-        Remove-Item -LiteralPath $_.FullName -Recurse -Force
+    $existingWaflArtifacts = @(
+        Get-ChildItem -LiteralPath $NewestResultDIr -File -Force -ErrorAction SilentlyContinue |
+            Where-Object {
+                $_.Name -like "peacebypiece-ui-*" -or
+                $_.Name -like "repo-state-2.0.0-*"
+            }
+    )
+    foreach ($artifact in $existingWaflArtifacts) {
+        Remove-Item -LiteralPath $artifact.FullName -Force
     }
 
     foreach ($sourcePath in @($ZipPath, $RepoStatePath)) {
@@ -2054,7 +2061,13 @@ function PublishLocalRepoHandoffNewestSet {
 
     $newestZip = Get-ChildItem -LiteralPath $NewestResultDIr -File -Filter "peacebypiece-ui-$Version*.zip" -ErrorAction SilentlyContinue
     $newestRepoState = Get-ChildItem -LiteralPath $NewestResultDIr -File -Filter "repo-state-$Version-*.txt" -ErrorAction SilentlyContinue
-    $newestFiles = @(Get-ChildItem -LiteralPath $NewestResultDIr -File -ErrorAction SilentlyContinue)
+    $newestFiles = @(
+        Get-ChildItem -LiteralPath $NewestResultDIr -File -ErrorAction SilentlyContinue |
+            Where-Object {
+                $_.Name -like "peacebypiece-ui-$Version*" -or
+                $_.Name -like "repo-state-$Version-*"
+            }
+    )
 
     if ($newestFiles.Count -ne 2 -or $newestZip.Count -ne 1 -or $newestRepoState.Count -ne 1) {
         throw "4. Newest set contract failed. files=$($newestFiles.Count) ZIP=$($newestZip.Count) repo-state=$($newestRepoState.Count)"

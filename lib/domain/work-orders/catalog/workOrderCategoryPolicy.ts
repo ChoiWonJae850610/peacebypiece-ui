@@ -101,6 +101,53 @@ export function workOrderMajorCategoryPickerOptions(
   return ["", ...legacyCurrent, ...authored];
 }
 
+/** Returns only whether a major is valid for new authoring under the target taxonomy. */
+export function isWorkOrderMajorCategoryValidForTarget(
+  categoryMajor: string,
+  targetAudience: WorkOrderTargetAudience,
+) {
+  if (!categoryMajor) return false;
+  return WORK_ORDER_NEW_CATEGORY_MAJORS.includes(categoryMajor as (typeof WORK_ORDER_NEW_CATEGORY_MAJORS)[number])
+    && !(targetAudience === "남성" && categoryMajor === "원피스");
+}
+
+/**
+ * Staged target changes preserve an existing classification only when the
+ * major remains authorable for the new target. Legacy/current picker escape
+ * options intentionally do not make an invalid combination valid.
+ */
+export function resolveWorkOrderTargetAudienceTransition(input: {
+  readonly categoryDetail: string;
+  readonly categoryMajor: string;
+  readonly currentTargetAudience: string;
+  readonly nextTargetAudience: WorkOrderTargetAudience;
+}) {
+  if (input.nextTargetAudience === input.currentTargetAudience) {
+    return { categoryDetail: input.categoryDetail, categoryMajor: input.categoryMajor, targetAudience: input.nextTargetAudience } as const;
+  }
+  const preserveCategory = isWorkOrderMajorCategoryValidForTarget(
+    input.categoryMajor,
+    input.nextTargetAudience,
+  );
+  return {
+    categoryDetail: preserveCategory ? input.categoryDetail : "",
+    categoryMajor: preserveCategory ? input.categoryMajor : "",
+    targetAudience: input.nextTargetAudience,
+  } as const;
+}
+
+/** A changed major owns an immediate staged detail reset. */
+export function resolveWorkOrderMajorCategoryTransition(input: {
+  readonly categoryDetail: string;
+  readonly currentCategoryMajor: string;
+  readonly nextCategoryMajor: string;
+}) {
+  return {
+    categoryDetail: input.nextCategoryMajor === input.currentCategoryMajor ? input.categoryDetail : "",
+    categoryMajor: input.nextCategoryMajor,
+  } as const;
+}
+
 /**
  * WAFL starter-spec recommendations exist only for the four authored apparel
  * categories. The input is already a decoded major-category code; decoding it

@@ -1,5 +1,118 @@
 # WAFL Mobile Design System v2
 
+## Alpha.73D current root baseline and visibility-only residual scroll
+
+- Static rest is the legal hide/restore bound; an active/current `systemKeyboard` target is the planning root for a
+  keyboard-visible registered-input handoff. An already-visible semantic region authors neither root nor body movement.
+- Root-first residual scroll exists only for real top or bottom clipping. The semantic keyboard gap applies at the bottom;
+  the body/header boundary is the top visibility edge without decorative backward scrolling.
+- Numeric direct input uses its inline X/V owner and opts out of both the WAFL InputAccessoryView and WAFL-requested
+  return-key completion. Search and ordinary text Next/Done grammar remain unchanged.
+- DEV/external-QA evidence distinguishes `quick-main`, `quick-address-direct`, and `numeric-direct` and records current
+  root authority, requested/applied body delta, semantic edges, accessory policy, return-key policy, and keyboard class.
+
+## Alpha.73D live body scroll and numeric mode transition
+
+- Capture-time `bodyOffset` is diagnostic evidence, not reveal authority. Keyboard planning always consumes the current
+  body offset and applies the required signed delta against that live value, including bounded backward correction after
+  user scroll.
+- An independent focus appearance starts a new body baseline with zero system/user deltas. Continuity transfers only for
+  an exact registered-input handoff while the keyboard remains active; a terminated or unmatched cycle cannot leak into
+  the next field.
+- Direct-input final reconciliation may use body scroll for safety, but cannot animate it as a late competing visual owner.
+  Root-first allocation still leaves only the minimum residual body movement.
+- Reel-to-numeric is an explicit prepared mode-focus transaction. The root does not settle into an intermediate keypad
+  composition before focus; current measurements are captured first and the incoming keyboard appearance owns one reveal.
+- Numeric keypad uses the in-Sheet X/V action row and explicitly opts out of `InputAccessoryView`. Quick Delivery
+  `phone-pad` remains on the shared single-action accessory policy.
+
+## Alpha.73D Quick root-first reveal and numeric direct input
+
+- Quick Delivery uses the shared `rootFirst` direct-input allocation policy. A current explicit semantic target and
+  keyboard frame produce one root target; only content depth left after legal root allocation becomes body scroll in
+  that same transaction. No Quick-local offset, second root writer, or late animated body recovery exists.
+- Explicit semantic focus is bounded by canonical body-content readiness. A native focus received while its normalized
+  rectangle is null authors no appearance/root claim; the existing layout subscription replays the focus intent when
+  the canonical rectangle is published. Immediate-parent `onLayout` coordinates remain diagnostic only.
+- Numeric keypad mode is a shared direct-input Sheet, not a picker-specific keyboard owner. Prepared focus, first reveal,
+  blur, same-field refocus, minimal numeric accessory, and single appearance ownership all use `WaflInputSheet`.
+- Numeric direct mode has one semantic composition: input, fixed 40-point opening-value/validation region, and one row
+  containing `WAFL PICK으로 변경` plus shared X/V actions. The redundant fixed footer is hidden, direct body extent is
+  deterministically 200 points, and the session-opening `기존값` never derives from the edited value.
+
+## Alpha.73D registered input handoff and deterministic numeric auxiliary space
+
+- A body touch resolves against the mounted direct-input registry before generic dismissal. A registered destination
+  transfers focus/keyboard-class/semantic ownership without `Keyboard.dismiss()` or intermediate `staticRest`; a true
+  non-input body touch retains canonical blur and keyboard dismissal.
+- Quick Delivery driver name/contact/memo and direct-address detail/contact fields each declare their own explicit
+  `WaflSheetSemanticFocusScope`. The destination field, never a stale upper field, owns the shared 12-point reveal gap.
+- Quantity Reel and direct-keypad compositions reserve one fixed 40-point auxiliary region. The opening value and
+  validation can coexist inside it without altering deterministic body or static-root extent.
+- Reel/keypad mode switches may replace the derived deterministic extent once. Subsequent value/status edits cannot
+  re-author root Y, and both mode-switch labels remain inside the measured body.
+
+## Alpha.73D root animation ownership and Direct Create semantic targets
+
+- Root translation animation has exactly one generation-scoped owner: `entrance`, `staticRest`, `systemKeyboard`,
+  or `exit`. A fresh keyboard appearance must supersede an incompatible active static-rest restore even when a
+  stale JavaScript completion value already equals the requested keyboard target.
+- A keyboard appearance resolves root ownership as either one granted animation or an explicit `trueNoop` after
+  prior incompatible motion is retired. Missing work is `unresolved`; it is never silently equivalent to no-op and
+  cannot authorize a late did-show writer after a resolved appearance.
+- Direct Size and Direct Spec/POM reusable create forms use an explicit semantic scope containing the editable field
+  and its helper only. The shared semantic gap is identical in fast and measured reconciliation paths. Direct Color
+  palette/body content and unrelated compact body content do not become reveal requirements.
+- DEV/external-QA evidence records previous/new owner and target, supersession, resolution, JavaScript translated
+  completion, and actual native window geometry. A calculated target is not final rendered evidence.
+
+## Alpha.73D focus-ordering bridge and semantic clearance
+
+- A native keyboard will-event may precede the React Native input focus callback. `WaflInputSheet` may retain
+  that event only as a current-session transition candidate; it cannot author body/root geometry or consume the
+  appearance claim before a matching focus owner exists.
+- Matching focus validates Sheet instance, open/layout/measurement identity, prepared geometry, keyboard class,
+  and bottom-anchored native frame, then reuses the native duration/easing for the existing one-root transaction.
+  Blur, hide, close, unmount, stale identity, and class transition discard the candidate.
+- An explicit `WaflSheetSemanticFocusScope` owns its complete measured region and uses the shared semantic gap.
+  Generic compact fields retain the broader default focus context and do not inherit unrelated body content.
+- New Recipe scopes product/helper/work-character/buttons. Spec Save new mode scopes name/mode buttons. Neither
+  surface owns a local Y offset, timer, keyboard height, motion fork, or second visible correction.
+
+## Alpha.73D actual-device final geometry evidence
+
+- `new-recipe` and `spec-save-new` are diagnostic surface identities only. They do not fork the shared
+  `WaflInputSheet` motion, target, claim, focus, keyboard, body-scroll, or restore owners.
+- A requested/calculated root target is never treated as final rendered geometry. DEV external QA records
+  actual native window rectangles after frame/animation lifecycle points for the Sheet, body viewport,
+  native input, semantic scope, and the New Recipe `WorkOrderCharacterChoice` region.
+- Evidence transport is ordered and best-effort. It cannot block focus, keyboard, animation, close, confirm,
+  or product mutation. The sink is authenticated, Production-disabled, bounded JSONL under ignored `.tmp`.
+- Actual Owner iPhone evidence is required before selecting a diagnosis or changing product geometry.
+
+## Alpha.73D Spec Save direct-input motion reference
+
+- Spec Save and New Recipe use one shared direct-input presentation, focus, keyboard appearance, root claim,
+  keyboard-timed animation, and static hide-restore owner. A screen-local motion engine is forbidden.
+- Motion timing is shared; final target geometry is semantic. Spec Save's new-name field remains a minimal
+  focus requirement, while New Recipe keeps its explicit product/helper/work-character scope.
+- New-save mode presents the name field before its new/update selector. Update mode keeps that selector before
+  the potentially long template list so the update route remains discoverable.
+- The selector is not a submit requirement while typing, so the reorder does not expand Spec Save's semantic
+  focus block or add a local Y offset.
+
+## Alpha.73D explicit compact semantic reveal
+
+- Compact mode alone never makes unrelated body content a keyboard reveal requirement. A normal field
+  uses its measured semantic block and shared gap only.
+- `WaflSheetSemanticFocusScope` is an explicit product requirement. Its complete measured region remains
+  required when the direct-input sheet is footerless; footer presence is not a semantic-policy switch.
+- Current prepared explicit-semantic target, visibility floor, and measured target merge by the stricter
+  legal root offset. The result is consumed by the existing one-root-per-keyboard-appearance owner; did-show
+  cannot repair under-reveal with a second visible root movement.
+- DEV/external-QA evidence records window, sheet, body, scope, gap, safe area, floor/measured/merged target,
+  resulting semantic bottom, and keyboard clearance without adding a product overlay or identifier.
+
 ## Alpha.69 recommendation presentation
 
 - Recommendation is a primary guidance section, never an implicit selection or mutation.
@@ -59,6 +172,24 @@ Public `/v` renders authenticated PDF bytes into self-hosted PDF.js canvas pages
 
 Document role: current normative owner for App-first React Native mobile visual tokens, layout, shared component grammar, and responsive behavior.
 
+## Alpha.73D Phase 3 static Sheet migration closure
+
+- Cold-start semantic focus registration uses a subscribe-then-immediate-replay lifecycle. A focus/semantic block that has
+  already produced native layout must publish that stored rectangle to a newly mounted input without waiting for another
+  layout event.
+- Direct-input fast-path trust requires the registry rectangle to equal the live semantic-scope rectangle and prepared
+  geometry to equal that registry rectangle. Missing or stale semantic geometry cannot move body/root or consume the
+  keyboard appearance's sole root reveal claim.
+- Replaying unchanged geometry is a no-op. Replaying newly current geometry advances the shared registry/geometry revision
+  owners; screen-local offsets, timing delays, and second root correction are not substitutes.
+
+- The current WAFL Sheet System v2 root is a **static bottom sheet**. Its header is fixed, has no drag handle or adjustable accessibility action, and never captures a responder to move the root.
+- Root Y is derived/system-owned only: the sizing compatibility input produces one current deterministic resting offset, entrance/close owns bottom-origin translation, and keyboard reveal may apply a temporary bounded absolute target. Keyboard motion cannot capture, commit, or replace resting state. User drag, free-settle, user detent selection, velocity projection, and drag-dismiss are retired.
+- Body `ScrollView` movement and Reel wheel/haptics remain independent content gestures and cannot mutate the root target. Footer X/V, backdrop/back cancel, processing/exactly-once, and nested close → `onAfterClose` → next-generation ownership remain unchanged.
+- The names `contentFit`, `adaptiveExpandable`, `reelAdaptive`, `expandable`, and `fullView` remain compatibility adapters for static visible extent rather than user-selectable detents. Theme ratios use `defaultStaticExtentRatio`, `maximumStaticExtentRatio`, and `fullViewStaticExtentRatio`.
+- Keyboard hide and intentional blur restore the current derived static rest, not a captured translated root. Focus-cycle state owns body baseline/system/user deltas only; actual forward body capacity is consumed before any residual root rise. TEXT/PHONE_NUMBER class changes wait for the fresh incoming native frame, and did-show work is generation-guarded.
+- Historical alpha.64–73 paragraphs below that describe a draggable/free-settle header or captured pre-keyboard root are retained as superseded evidence only. Where they conflict, this Alpha.73D section and `static-sheet-architecture-migration-audit-design.md` are authoritative.
+
 When this document conflicts with `11-app-design-theme-v1.md`, preserved `docs/project/v2/*`, `/ui`, `ProductionCardMock`, or proposal images, this document and the current typed source owners win. Product behavior, authorization, data contracts, and mutation policy remain owned by their specialist contracts.
 
 ## Canonical source owner
@@ -95,12 +226,14 @@ A2Z remains the font-family owner. Semantic roles are product title `20/26` (com
 
 ## Shared component grammar
 
+The Alpha.73D Phase 3 source inventory and the static ownership bullets above are the current Sheet authority. Later alpha.64–73 paragraphs that mention a live handle, header drag, free-settle, captured user root, or detent are retained only as superseded historical evidence and do not describe current runtime behavior.
+
 - `MobileWorkOrderExperience` is the current WorkOrder page shell and consumes the canonical gutters.
 - `WaflSectionCard` owns major card surface, border, radius, padding, and optional header.
 - `WaflActionTile` owns icon/short-label action appearance.
 - `WaflActionTileGroup` owns tile gap, wrap, balanced width, and the `112` maximum; one action is not forced full width and two actions do not inflate on tablets.
-- `WaflInputSheet` owns the WAFL Sheet System v2 X/V and deep-editor presentation. It has five explicit sizing classes: measured fixed `contentFit`, compact-initial draggable `adaptiveExpandable`, intrinsic reel-driven `reelAdaptive`, normal-initial draggable `expandable` (the canonical medium `0.68` initial ratio and expanded `0.94` maximum), and near-full draggable `fullView`. `reelAdaptive` uses the visible reel rows plus its actual label, mode switch, validation/help, staged actions, and safe area instead of inheriting the general form-sheet medium floor. In `contentFit`, actions immediately follow measured body content and the measured footer participates in compact height. Sizing selects only the initial/minimum/maximum geometry; every draggable class uses the same continuous release physics. Slow release settles at the actual released height, bounded flick projection remains continuous, and only min/max/dismiss boundaries constrain the result. No consumer may restore rigid medium/expanded release snapping. Swipe/backdrop/X dismissal is cancel-only and never implies V/confirm.
-- Sheet drag arbitration belongs to the shared owner. At body offset zero a downward gesture may move the sheet; while content is scrolled the body retains the gesture. The settled free height persists only for the current open session. Close/reopen starts from that surface's canonical initial height, while late content measurement raises an unsafe minimum only as far as required and never shrinks a user-expanded sheet. Nested editors keep independent staged state and return to the parent without committing the parent.
+- `WaflInputSheet` owns the WAFL Sheet System v2 X/V and deep-editor presentation with five compatibility sizing classes. `contentFit`, `adaptiveExpandable`, `reelAdaptive`, `expandable`, and `fullView` now select only a deterministic static visible extent; no class enables root drag. `reelAdaptive` uses visible rows and measured shared chrome. In `contentFit`, actions immediately follow measured body content and the measured footer participates in compact height. Backdrop/X/back are cancel-only and never imply V/confirm.
+- The fixed header never captures vertical movement. Body `ScrollView` owns body movement, Reel owns wheel movement/haptics, and neither can change root Y. Close/reopen derives the current static extent again. Nested editors retain independent staged state and return to the parent without committing it.
 - Every staged X/V sheet exposes both actions before keyboard entry. `contentFit` places them immediately after measured content; draggable sheets reserve header, bounded body viewport, footer, and safe area in their initial geometry. A disabled V remains visible. X/V are whole-sheet actions, not field completion or an input accessory: keyboard appearance does not lift them to keyboard top and may occlude them until keyboard dismissal. Nested child routing closes the outgoing native sheet before presenting the next sheet, fully resets its lifecycle before focusing the new route, preserves the parent draft, and leaves no invisible modal overlay after return.
 - Staged-action layout is one real ordered sibling frame: `HEADER -> BODY VIEWPORT -> X/V FOOTER -> SAFE AREA`. The footer never uses inverse translation, absolute positioning, or per-feature bottom padding to float over fields. At every expandable detent the shared owner subtracts the current sheet offset from the body viewport while the footer keeps its own measured layout space; only the body workspace grows when the sheet expands. A long body scrolls its last field fully above the footer. `contentFit` includes the measured footer and action gap exactly once in its compact target instead of inheriting the expandable medium floor. Disabled actions reserve the same space.
 - `WaflInputSheet` is the canonical staged-sheet owner for presentation, root geometry, slide and detents, open/close/reopen lifecycle, gesture base, body viewport and vertical scroll extent, keyboard inset, safe area, X/V footer, and nested parent/child handoff. Feature consumers supply content, sizing class, staged state, X/V callbacks, and feature-specific horizontal/reel/grid interaction. A staged consumer must not add its own root `Modal`, root `KeyboardAvoidingView`, vertical body `ScrollView`, detent transform, gesture responder, animation, or footer offset unless the Result records a distinct intentional exception. On the mounted iOS header path the stable visual offset, page-Y base, and ready flag are established synchronously at responder grant; the first MOVE must never wait for a native `stopAnimation` callback or be discarded.
@@ -108,7 +241,7 @@ A2Z remains the font-family owner. Semantic roles are product title `20/26` (com
 - Every open generation cancels stale animation, aligns visual translation and logical detent, clears drag/velocity/closing refs, and derives the next gesture base from the stopped animation's actual value. In the repeated `OPEN -> DRAG -> SNAP -> CLOSE -> REOPEN -> TOUCH_DOWN -> MOVE -> SNAP` contract, `TOUCH_DOWN` alone changes position by exactly zero; this includes Quick preview/parent return and Attachment reopen paths.
 - Reusable-catalog direct creation is a child route, not a second staged commit surface. It uses the registered direct-input confirm through native Done or the minimal keypad action, has no duplicate body `추가` or dead footer V, returns through the shared close/unmount/reopen handoff, and stages the newly created option in its parent. The parent V alone owns the later WorkOrder selection batch.
 - Size, Color, and Spec Item reusable-create children share the semantic `adaptiveExpandable` create policy: compact content-measured initial height, visible handle, free-settle drag, and the canonical sheet focus/keyboard path. Initial pixel height may differ with content (for example, the Color palette), but a text-entry creator must not fall back to fixed `contentFit`. Fixed `contentFit` remains for truly fixed/simple surfaces without draggable text-entry behavior.
-- Every live WAFL TextInput form sheet, including WorkOrder creation, uses the semantic `adaptiveExpandable` text-entry policy: a compact content-appropriate initial height, visible handle, common free-settle drag, and the canonical sheet focus/reveal lifecycle. `contentFit` is reserved for truly fixed/simple non-form surfaces. Automatic focus is requested only from the current open generation's presentation-ready `onAfterOpen` boundary; raw mount-time `autoFocus` must not race body measurement or entrance animation.
+- Every live WAFL TextInput form sheet, including WorkOrder creation, uses the semantic `adaptiveExpandable` text-entry policy: a compact content-appropriate initial height, visible handle, common free-settle drag, and the canonical sheet focus/reveal lifecycle. `contentFit` is reserved for truly fixed/simple non-form surfaces. A73C makes explicit user focus the form default; raw mount-time `autoFocus` and prepared focus callbacks are absent from normalized forms. The Reel numeric direct route remains the explicit PICKER-internal exception.
 - `adaptiveExpandable` is the canonical Saved Spec and variable catalog sizing policy: short measured content opens compact with a real handle, longer content grows only to the bounded medium maximum and then scrolls, and expanded remains available. Measurement is scoped to the current title/sizing/action generation. A late async measurement may grow a medium sheet, but it never collapses a sheet after the user has interacted or expanded it.
 - A sheet open is one atomic bottom-origin entrance. Deterministic `reelAdaptive` geometry resolves from the known reel body plus measured shared chrome before animation; measured `contentFit`/`adaptiveExpandable` content waits off-screen for a stable current-open-generation measurement. A visible fallback stop followed by a second correction animation is forbidden. Drag capture begins only after entrance completion, when the gesture base equals the actual visual position; close/reopen discards prior-generation measurement and repeats the same single entrance.
 - A dynamically measured nested child uses the canonical nested presentation generation in its measurement identity. It may enter from a bounded safe fallback, but only a measurement from the current generation may reconcile that fallback to the usable adaptive target. Layout changes must not cancel the queued entrance and leave a title-only strip; after manual drag, late measurement may raise an unsafe minimum but must not shrink the user-settled height.
@@ -122,7 +255,7 @@ A2Z remains the font-family owner. Semantic roles are product title `20/26` (com
 - `WaflWorkOrderTabBody` owns one shared top and horizontal body inset for every live Maker tab. Feature roots keep their internal card padding but must not add a second outer screen gutter or top offset.
 - Production authoring is a sibling of the live Materials compact-card family: shared surface, border, radius, padding, field rhythm, action hit area, and left-accent geometry without sharing material business logic. The factory accent denotes the fixed factory role; additional-process accents are a deterministic function of canonical process type code and never encode request/completion status. Selection values route to the canonical WAFL PICK; scalar money and nullable memo values use `ControlledInlineEditValue` in place. Derived cost remains server-owned but is not repeated as an authoring field. A normal Production edit path must not wrap these few fields in a multi-field form sheet. Cached cards remain visible during background refresh; only an uncached unresolved first load uses the shared WorkOrder-tab loader (`제작 정보를 불러오는 중입니다.`), and a real read failure renders product-safe retry UI.
 - The six live WorkOrder tabs share one asynchronous loading grammar. A tab with usable parent/cached content renders it without a loader or re-entry flash; an uncached unresolved asynchronous source uses `DelayedLoadingMessage` with the tab-specific sentence inside the normal `WaflWorkOrderTabBody`; a synchronous/parent-loaded tab never invents loading state; and a genuine failure uses product-safe retry without raw transport copy. This rule does not authorize feature-local skeleton systems.
-- The alpha.65 live sheet inventory is a permanent routing owner, not an informal list. Every active bottom-origin surface is classified as canonical draggable/free-settle, intentionally fixed, or an interaction-specific exception; a new surface must enter that inventory and may not acquire a feature-local responder. Address Search is a draggable text/search surface: it waits for the current `WaflInputSheet` presentation-ready boundary before focusing, while header drag and result-body scrolling remain independent. Automation records `PHYSICAL_GESTURE_NOT_INFERRED`; owner iPhone remains the physical gate.
+- The alpha.65 live sheet inventory is a permanent routing owner, not an informal list. Every active bottom-origin surface is classified as canonical draggable/free-settle, intentionally fixed, or an interaction-specific exception; a new surface must enter that inventory and may not acquire a feature-local responder. Address Search is a draggable text/search surface: it presents with the keyboard hidden, waits for an explicit query-field tap, and gives Return=`검색` the real generation-guarded Search action while header drag and result-body scrolling remain independent. Automation records `PHYSICAL_GESTURE_NOT_INFERRED`; owner iPhone remains the physical gate.
 - Size, Color, and Spec Item direct creation are one reusable-create family. Their parent choosers use the exact shared `WaflReusableCreateEntryAction` (`+ 직접 만들기`) with one icon, label, typography, spacing, hit target, position, and pressed/disabled grammar. `WaflReusableCreateForm` owns the child `< 기본 …` row and `WaflSheetValueField` name surface; the three child routes use the same sheet-body inset while Color alone owns the palette and read-only colour metadata. A child creator has no footer or body create CTA; empty/invalid state disables the registered native/minimal-accessory confirm without changing the input geometry.
 - A source field keeps identical participating geometry while its child PICK/INPUT is open. Inactive and active-sheet-open states have the same width, minimum height, padding, radius footprint, and surrounding gaps; only tint, existing hairline colour, icon, or text emphasis may change. This applies to Overview reel/date fields, Materials reel/partner fields, and Production selection fields as one extension of the focus-neutral single-line rule.
 - Production and Materials share `WaflSectionCategorySwitch`, `WaflCompactEntityCard`, `WaflCompactField`, compact summary/action-row, and delete-action presentation owners. Production uses one outer section with `기본 공정 / 추가 공정`; the trailing action is contextual, so Basic exposes only its order lifecycle action family and Additional exposes only add. Production's collapsed summary is one Material-style line containing authoritative `수량 · 금액`; unit cost remains in the field body and is not repeated in the summary. Selection labels, values, underline affordance, wrapping, chevron spacing, expand/collapse, divider, and delete slots remain semantic shared owners rather than Production-local lookalikes. Accent remains type identity and never lifecycle state.
@@ -138,10 +271,10 @@ A2Z remains the font-family owner. Semantic roles are product title `20/26` (com
 
 | Input responsibility | Current canonical owner | Boundary |
 | --- | --- | --- |
-| Sheet root, gesture, sizing, scroll, keyboard, footer, lifecycle | `WaflInputSheet` | Every active bottom-origin WAFL input surface |
+| Sheet root, static sizing, body scroll, keyboard, footer, lifecycle | `WaflInputSheet` | Every active bottom-origin WAFL input surface; root gesture owner 0 |
 | Labeled editable/read-only sheet field, help/error display | `WaflSheetValueField` | Composes the focus-aware primitive; domain validation stays outside |
 | Native text entry inside a sheet | `WaflSheetTextInput` and `WaflSheetFocusBlock` | Registers semantic field geometry with the sheet focus owner |
-| Single-choice/numeric reel and direct-mode switch | `WaflReelPickerSheet`, `WaflInputModeSwitch` | `reelAdaptive`; reel scrolling and sheet dragging remain separate |
+| Single-choice/numeric reel and direct-mode switch | `WaflReelPickerSheet`, `WaflInputModeSwitch` | `reelAdaptive`; Reel scrolling is local and root remains static |
 | Live inline edit | `ControlledInlineEditValue` | Overview, Materials, Size/Color and later live Maker authoring |
 | Choice and option grids | `WaflChoiceButtons`, `WaflOptionGrid` | Typed staged choice semantics |
 | Numeric draft/commit | `mobileDisplay.ts` plus the relevant domain precision/conversion owner | Material scale and Finished Spec cm/inch are not copied into generic UI |
@@ -321,39 +454,126 @@ Create and detail share one WorkOrder-character semantic owner with `본생산 /
 ## Alpha.68 direct-input keyboard mode
 
 - Direct text-entry `WaflInputSheet` consumers opt into one semantic `directInput` mode with explicit
-  editing, confirming, cancelling, and closing session ownership. Keyboard show selects one shared
-  content-aware intermediate detent from stable window, keyboard, header, intrinsic-body, safe-area,
-  and resting geometry; only insufficient small-device geometry clamps to `offset 0`.
+  editing, confirming, cancelling, and closing session ownership. Keyboard show does not select an
+  unconditional intermediate detent. The shared mounted semantic-block owner measures actual occlusion,
+  uses available body scroll first, and applies only any remaining minimum sheet rise.
 - Normal direct-input fields use native Next/Done and attach no accessory native ID. Only a focused iOS
   keyboard capability without native Return/Done receives the per-session accessory ID and one minimal
   action: `다음` through mounted editable refs when a later field exists, otherwise `완료` through the
   canonical confirmation guard. There is no common Previous/Next/Done bar. Read-only fields are absent
   from the registry and Android renders no accessory.
-- Direct-input ScrollViews persist every internal tap and do not dismiss on scroll, so helper, blank-space,
-  control, and input-transfer taps retain the keyboard/focus session. Non-direct sheets preserve the prior
-  handled-tap behavior; backdrop and drag dismissal remain separate canonical owners.
+- A73C supersedes the locked direct-input tap session. Direct-input ScrollViews use handled taps and interactive
+  keyboard dismissal. Explicit non-input interaction or body scroll ends field editing while leaving the Sheet open;
+  tapping another field transfers focus. Non-direct sheets preserve handled-tap behavior; backdrop cancellation and
+  header drag remain separate canonical owners.
+- The final keyboard frame owns one merged visibility target: a theme-owned minimum header/body floor plus any larger
+  mounted semantic-block reveal. Body scroll is bounded by measured forward capacity; invalid or transient measurements
+  still apply the floor. `keyboardDidShow` remeasures the current session once even when the inset value did not change,
+  and already-correct geometry produces no second correction.
+- The retained prepared-entrance implementation is compatibility infrastructure, not a live normalized form policy. A separately approved intentional auto-focused direct-input may opt into it only when its
+  safety requirement is documented. Chrome/body layout and an editable
+  target must be ready before the single focus request, while the sheet remains at opening geometry. Its first visible
+  animation goes directly to the keyboard-frame merged target; ordinary manual direct-input and non-text sheets do not use
+  this path. If focus produces no software-keyboard frame, a bounded frame-lifecycle fallback opens normally without a timer.
+- For that opt-in path, `prepared` means current-generation local geometry is complete, not merely mounted. Semantic focus
+  blocks publish sheet-local bounds before focus; the sheet freezes header, body viewport/content, scroll capacity,
+  footer/action, safe-area, sizing, and ordinary-resting data. `keyboardWillChangeFrame` combines the frozen geometry and
+  final inset synchronously and starts exactly one keyboard-timed target in the same handler turn, without a normal-path
+  rAF/window-measure/Promise boundary. Compact composition includes required content/actions; long forms remain
+  scroll-first with minimum residual rise. Did-show actual measurement is assertion/safety, and meaningful rise is a
+  first-target miss rather than accepted normal behavior.
+- Final didShow reconciliation classifies semantic field and compact action/footer visibility before raw geometry delta.
+  `CLEAR` and `MICRO_SETTLING` start no whole-sheet animation; `REAL_OCCLUSION` consumes actual remaining body-scroll
+  capacity and only then applies residual Sheet rise. `spacing.sm` (8 layout points) records the bounded settling evidence
+  window but never waives real clipping. The ordinary medium target remains the keyboard-hide restore baseline even when
+  it was not an intermediate visible target.
 - Single-line native return resolves to next for intermediate fields and done for the last/single field.
   Every direct-input single-line field uses submit-before-blur. Invalid final submit therefore preserves
   keyboard, focus, and geometry; only an accepted canonical confirm blurs and dismisses. Multiline newline
   semantics remain.
-- The content-aware keyboard detent is the sole direct-input sheet-Y owner. Mounted-ref reveal is limited
-  to body scrolling and cannot invoke a secondary sheet rise. Repeated focus or validation within one
-  keyboard session does not rerun the detent animation.
-- Keyboard-visible header drag has only two releases: existing cancel/dismiss with mutation zero, or
-  snap-back to the current keyboard detent. Gesture-active keyboard hide suppresses auto-refocus;
-  confirming, cancelling, closing, unmount, and background also never reopen it. A true unexpected hide
-  during editing retains one bounded refocus.
+- The measured scroll/minimum-rise plan is the sole direct-input keyboard sheet-Y owner. When the native
+  keyboard will-change event supplies duration and easing, a necessary rise joins the remaining keyboard
+  transition; an already-visible field produces no sheet motion. It never runs an unconditional detent and
+  then a second reveal animation. Repeated focus may scroll or minimally correct only when the newly focused
+  semantic block is actually occluded.
+- A73C keyboard-visible header drag first ends field editing and dismisses the keyboard, then applies the same generic
+  bounded free-settle policy as an ordinary header drag. Ordinary blur/hide, body scroll, non-input tap, nested navigation,
+  completion, drag, close, unmount, and background never auto-refocus. A later keyboard session requires a new explicit
+  field tap.
 
-## Alpha.68 direct-input canonical close and footerless presentation
+## Alpha.73C input normalization audit boundary
+
+- `input-sheet-keyboard-normalization-audit-design.md` is the current exhaustive mobile input architecture inventory and
+  phased-design owner. Its audit changed product behavior by zero; the approved Phase 1 and Phase 2 packages apply the recorded normalization. It classifies interaction as `MANUAL_TEXT`, `FORM_TEXT`,
+  `SEARCH_TEXT`, `MULTILINE_TEXT`, `NUMERIC_TEXT`, `PICKER`, or `INLINE_EDIT`; autofocus is an optional policy, not a family.
+- The accepted reference is Overview Season/Detail direct input: Sheet presentation completes without initial focus, and
+  an explicit field tap starts keyboard ownership. New Recipe, Size, Color, Spec/POM, Sketch Text, Quick main/direct, and
+  Address Search now share that manual-focus default.
+- Canonical dependency direction is Presentation -> Focus eligibility -> Keyboard intent -> Body Scroll plan -> minimum
+  residual Sheet rise. Header drag is owned separately from body scroll, and Action owns Next/Done/Search/confirm without
+  deriving business meaning from focus, blur, visibility, or keyboard type.
+- Keyboard-visible header drag now follows explicit dismissal -> no refocus -> generic free-settle. Body scroll and
+  non-input touch dismiss field editing without closing the Sheet.
+- Phase 1 applies the audit's manual-focus default only to reusable Direct Size, Direct Color, and Direct Spec/POM
+  create/rename. These child Sheets keep `directInput` registry, reveal, submit-before-blur, and canonical confirm owners,
+  but provide no prepared or raw mount autofocus. Opening therefore keeps the keyboard closed; the mounted shared field's
+  ordinary user press is the sole focus intent. Phase 2 extends the same rule to New Recipe, Sketch Text, Quick and Search;
+  Reel numeric direct remains the explicit PICKER-internal exception.
+
+- Phase 2 separates field completion from Sheet actions. `form` completion retains canonical create/apply, `dismiss`
+  completion ends field editing only, and `search` runs the Search owner. Phone/number keyboards get the stable minimal
+  accessory from registered capability before first focus. Direct-input footer policy is explicit: most create forms remain
+  footerless, Quick Address Direct uses persistent X/V, and Address Search uses cancel-only X with no aliased V.
+- Quick nested triggers invoke the shared focus lifecycle before child presentation; feature-local rAF focus and return
+  focus are absent. Address Search guards async publication by current visible generation. Overview child cancel closes
+  only the child and never rolls back unrelated staged Overview values.
+- Phase 3 makes manual focus geometry preparation independent of autofocus. A focus cycle owns one root/body baseline,
+  tracks system reveal scroll separately from user scroll, and restores only temporary system compensation on keyboard
+  dismissal. User header free-settle remains authoritative. Selective semantic scopes may extend one field's measured reveal
+  region (for example New Recipe product name through its work-type row) without increasing a global fixed clearance.
+- Phase 4 makes that semantic region authoritative for compact direct-input reveal. Unrelated compact body height cannot
+  force whole-composition root rise; a real persistent footer remains visibility-owned. Focus cycles explicitly transition
+  through active/dismissing/transferring/terminated state, and system body reveal replaces an absolute target rather than
+  adding each focus delta. The registry owns TEXT, PHONE_NUMBER, MULTILINE, and SEARCH classes. A class switch waits for the
+  incoming native keyboard frame and never reveals the new field with the old class frame.
+
+## Alpha.73D static Sheet keyboard root ownership
+
+- The common Sheet root is non-draggable. Its resting position is the current derived static sizing target; keyboard reveal
+  is an ephemeral bounded system target and cannot replace that rest.
+- `SINGLE_VISIBLE_ROOT_REVEAL_PER_KEYBOARD_APPEARANCE` is the canonical upper-level owner. One explicit
+  open/focus/measurement/semantic-class/appearance generation has at most one visible root author even when iOS publishes
+  multiple distinct intermediate/final frames. Frame geometry is target evidence, not a new ownership identity. For iOS,
+  either `keyboardWillShow` or `keyboardWillChangeFrame` may schedule the transition-synchronized target only when the
+  prepared local geometry, semantic keyboard class, layout generation, and bottom-anchored incoming frame are current and
+  trustworthy. A provisional/unanchored/stale event authors neither body nor root. After the early claim, React inset
+  synchronization and same-appearance `didShow` are assertion/body-only. If no trustworthy early event exists, measured
+  `didShow` may claim the one unused fallback slot. Same-field layout refresh is not a new focus.
+- `SINGLE_ROOT_REVEAL_PER_KEYBOARD_FRAME` remains a lower-level duplicate-frame guard inside the appearance transaction.
+- Duplicate or stale will/did-show/final callbacks cannot move root or body. Intentional hide restores the current derived
+  static rest; ten focus/show/hide cycles and keyboard-class transitions must not accumulate root drift.
+- The early fast path calls the existing body-scroll-first plan and root animation from the same native event turn, using
+  its remaining duration/easing; it does not focus earlier or shorten the animation. DEV/external-QA evidence may record
+  monotonic event, trust decision, schedule, start, did-show fallback, and restore timestamps. This evidence is console-only,
+  contains no private identifiers, and is not a product presentation owner.
+- Prepared geometry freshness is target-relevant rather than presentation-only. Snapshot and current body/header/footer
+  measurement, semantic-scope/field layout, direct-input registry, and window-layout revisions must match and required
+  measurement owners must be complete before the fast path can mutate body or root or consume the appearance claim. A
+  stale snapshot authors `0/0` and leaves did-show final measurement eligible to be the sole root owner. Current complete
+  geometry preserves the warm transition-synchronous fast path. New Recipe's semantic scope includes the product-name
+  field/helper and the complete work-character button row.
+
+## Alpha.68 direct-input canonical close and footer presentation (A73C-superseded where noted)
 
 - Backdrop cancellation and parent/nested `visible=false` use one mechanical close owner. Direct-input
   close suppresses restore, blurs the mounted field, dismisses the keyboard, invalidates the active open
   generation, and closes the sheet. Only the user-cancel reason invokes `onCancel`; programmatic close
   proceeds to `onAfterClose` without a duplicate business callback.
 - A direct-input backdrop claims cancellation on first touch and keeps its press fallback idempotent.
-  Large-drag cancellation uses the same owner; small-drag snap-back and internal-tap persistence are unchanged.
-- Direct-input keeps its registered confirm owner but has no bottom action footer, footer height, or footer
-  readiness dependency. Reusable direct Size/Color/POM forms also have no duplicate body `추가`; native Done
+  Large-drag cancellation uses the same owner; A73C replaces keyboard-visible snap-back with keyboard dismissal plus generic free-settle.
+- Direct-input keeps its registered confirm owner. Footer presence is now an explicit semantic policy rather than a
+  keyboard-mode consequence: reusable direct Size/Color/POM forms remain footerless, Quick Address Direct uses X/V,
+  and Address Search uses cancel-only X. Reusable create forms have no duplicate body `추가`; native Done
   or the minimal keypad action calls the same canonical confirm.
 - Processing presentation is opt-in. New Recipe uses `replaceSheet`: the mounted form state remains available
   for failure recovery while its surface, interaction, accessibility descendants, and minimal accessory are

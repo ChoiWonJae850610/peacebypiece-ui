@@ -53,14 +53,14 @@ for (const currentOffset of [24, 80, 240]) {
 
 const restingOffset = 318;
 for (let cycle = 0; cycle < 3; cycle += 1) {
-  assert.equal(resolveWaflSheetKeyboardRestoreOffset({ settledOffset: restingOffset, userDragged: false }), restingOffset);
+  assert.equal(resolveWaflSheetKeyboardRestoreOffset(restingOffset), restingOffset);
 }
-assert.equal(resolveWaflSheetKeyboardRestoreOffset({ settledOffset: restingOffset, userDragged: true }), null);
+assert.equal(resolveWaflSheetKeyboardRestoreOffset(restingOffset), restingOffset);
 
 const sheet = read("apps/mobile/features/inputs/WaflInputSheet.tsx");
 assert.match(sheet, /intrinsicBodyContentHeightRef\.current - viewport\.height - bodyOffsetRef\.current/u);
 assert.doesNotMatch(sheet, /availableForwardScroll:[^\n]*bodyContentHeightRef\.current/u);
-assert.match(sheet, /allowExpansion && keyboardAutoExpand && keyboardInset > 0/u);
+assert.match(sheet, /allowExpansion[\s\S]*effectiveKeyboardInset > 0[\s\S]*\(keyboardAutoExpand \|\| keyboardMode === "directInput"\)/u);
 
 const inventory = [
   ["apps/mobile/features/work-orders/create/WorkOrderCreateSheet.tsx", 1],

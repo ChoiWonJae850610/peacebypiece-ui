@@ -1,10 +1,15 @@
 import { useEffect, useRef, useState } from "react";
-import { ActivityIndicator, Pressable, StyleSheet, Text, type TextInput, View } from "react-native";
+import { ActivityIndicator, Pressable, StyleSheet, Text, View } from "react-native";
 import { MapPin, Search } from "lucide-react-native";
 
 import { WAFL_FONTS } from "@/constants/fonts";
 import { WAFL_THEME } from "@/constants/theme";
 import { MobileApiError } from "@/domain/mobileContract";
+import {
+  canPublishQuickDeliveryAddressSearchResult,
+  resolveQuickDeliveryAddressSearchLifecycle,
+  type QuickDeliveryAddressSearchLifecyclePhase,
+} from "@/domain/quickDeliveryAddressSearchLifecyclePolicy";
 import WaflInputSheet from "@/features/inputs/WaflInputSheet";
 import WaflSheetTextInput from "@/features/inputs/WaflSheetTextInput";
 import { searchAddresses, type AddressSearchItem } from "@/lib/api/addressSearchApi";
@@ -33,33 +38,65 @@ export default function QuickDeliveryAddressSearchSheet(props: {
   const [status, setStatus] = useState<"idle" | "loading" | "loaded" | "error">("idle");
   const [message, setMessage] = useState<string | null>(null);
   const generationRef = useRef(0);
-  const searchInputRef = useRef<TextInput>(null);
+  const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const visibleRef = useRef(props.visible);
+  const lifecyclePhaseRef = useRef<QuickDeliveryAddressSearchLifecyclePhase>(props.visible ? "idle" : "closed");
+
+  async function performSearch(normalized: string, targetPage: number, append: boolean) {
+    const generation = generationRef.current + 1;
+    generationRef.current = generation;
+    setStatus("loading");
+    setMessage(null);
+    try {
+      const result = await searchAddresses(normalized, targetPage);
+      if (!canPublishQuickDeliveryAddressSearchResult({ currentGeneration: generationRef.current, requestGeneration: generation, visible: visibleRef.current })) return;
+      if (append) {
+        setItems((current) => {
+          const seen = new Set(current.map((item) => item.id));
+          return [...current, ...result.items.filter((item) => !seen.has(item.id))];
+        });
+      } else {
+        setItems(result.items);
+      }
+      setPage(result.page);
+      setHasMore(result.hasMore);
+      setStatus("loaded");
+      setMessage(!append && result.items.length === 0 ? "검색 결과가 없습니다." : null);
+    } catch (error) {
+      if (!canPublishQuickDeliveryAddressSearchResult({ currentGeneration: generationRef.current, requestGeneration: generation, visible: visibleRef.current })) return;
+      if (!append) setItems([]);
+      setHasMore(false);
+      setStatus("error");
+      setMessage(messageFor(error));
+    }
+  }
+
+  useEffect(() => {
+    visibleRef.current = props.visible;
+    lifecyclePhaseRef.current = resolveQuickDeliveryAddressSearchLifecycle({
+      action: props.visible ? "open" : "close",
+      phase: lifecyclePhaseRef.current,
+    }).phase;
+    if (props.visible) return;
+    generationRef.current += 1;
+    if (debounceTimerRef.current !== null) clearTimeout(debounceTimerRef.current);
+    debounceTimerRef.current = null;
+  }, [props.visible, props.presentationGeneration]);
 
   useEffect(() => {
     const normalized = keyword.normalize("NFC").trim();
-    const generation = generationRef.current + 1;
-    generationRef.current = generation;
-    if (Array.from(normalized).length < 2) return;
-    const timer = setTimeout(() => {
-      setStatus("loading");
-      setMessage(null);
-      void searchAddresses(normalized, 1).then((result) => {
-        if (generationRef.current !== generation) return;
-        setItems(result.items);
-        setPage(result.page);
-        setHasMore(result.hasMore);
-        setStatus("loaded");
-        setMessage(result.items.length === 0 ? "검색 결과가 없습니다." : null);
-      }).catch((error: unknown) => {
-        if (generationRef.current !== generation) return;
-        setItems([]);
-        setHasMore(false);
-        setStatus("error");
-        setMessage(messageFor(error));
-      });
+    if (debounceTimerRef.current !== null) clearTimeout(debounceTimerRef.current);
+    debounceTimerRef.current = null;
+    if (!props.visible || Array.from(normalized).length < 2) return;
+    debounceTimerRef.current = setTimeout(() => {
+      debounceTimerRef.current = null;
+      void performSearch(normalized, 1, false);
     }, SEARCH_DEBOUNCE_MS);
-    return () => clearTimeout(timer);
-  }, [keyword]);
+    return () => {
+      if (debounceTimerRef.current !== null) clearTimeout(debounceTimerRef.current);
+      debounceTimerRef.current = null;
+    };
+  }, [keyword, props.visible]);
 
   function changeKeyword(value: string) {
     setKeyword(value);
@@ -75,36 +112,39 @@ export default function QuickDeliveryAddressSearchSheet(props: {
   async function loadMore() {
     if (status === "loading" || !hasMore) return;
     const normalized = keyword.normalize("NFC").trim();
-    const generation = generationRef.current + 1;
-    generationRef.current = generation;
-    setStatus("loading");
-    setMessage(null);
-    try {
-      const result = await searchAddresses(normalized, page + 1);
-      if (generationRef.current !== generation) return;
-      const seen = new Set(items.map((item) => item.id));
-      setItems([...items, ...result.items.filter((item) => !seen.has(item.id))]);
-      setPage(result.page);
-      setHasMore(result.hasMore);
-      setStatus("loaded");
-    } catch (error) {
-      if (generationRef.current !== generation) return;
-      setStatus("error");
-      setMessage(messageFor(error));
+    await performSearch(normalized, page + 1, true);
+  }
+
+  function submitSearch() {
+    const submit = resolveQuickDeliveryAddressSearchLifecycle({ action: "submit", phase: lifecyclePhaseRef.current });
+    lifecyclePhaseRef.current = submit.phase;
+    if (!submit.runSearch) return;
+    const normalized = keyword.normalize("NFC").trim();
+    if (debounceTimerRef.current !== null) clearTimeout(debounceTimerRef.current);
+    debounceTimerRef.current = null;
+    if (Array.from(normalized).length < 2) {
+      setMessage("검색어를 두 글자 이상 입력해 주세요.");
+      return;
     }
+    void performSearch(normalized, 1, false);
   }
 
   function selectItem(item: AddressSearchItem) {
+    lifecyclePhaseRef.current = resolveQuickDeliveryAddressSearchLifecycle({ action: "close", phase: lifecyclePhaseRef.current }).phase;
+    generationRef.current += 1;
+    if (debounceTimerRef.current !== null) clearTimeout(debounceTimerRef.current);
+    debounceTimerRef.current = null;
     props.onSelect(item);
   }
 
   return <WaflInputSheet
     cancelAccessibilityLabel="주소 검색 닫기"
     confirmAccessibilityLabel="주소 검색 닫기"
+    footerPolicy="cancelOnly"
+    keyboardMode="directInput"
+    keyboardRevealOrder="rootFirst"
     onCancel={props.onCancel}
     onAfterClose={props.onAfterClose}
-    onAfterOpen={() => searchInputRef.current?.focus()}
-    onConfirm={props.onCancel}
     presentationGeneration={props.presentationGeneration}
     sizing="expandable"
     title="주소 검색"
@@ -116,12 +156,15 @@ export default function QuickDeliveryAddressSearchSheet(props: {
         autoCapitalize="none"
         autoCorrect={false}
         onChangeText={changeKeyword}
+        onBlur={() => { lifecyclePhaseRef.current = resolveQuickDeliveryAddressSearchLifecycle({ action: "blur", phase: lifecyclePhaseRef.current }).phase; }}
+        onFocus={() => { lifecyclePhaseRef.current = resolveQuickDeliveryAddressSearchLifecycle({ action: "focus", phase: lifecyclePhaseRef.current }).phase; }}
+        onSubmitEditing={submitSearch}
         placeholder="도로명, 건물명 또는 지번 검색"
         placeholderTextColor={WAFL_THEME.color.disabled}
-        ref={searchInputRef}
         returnKeyType="search"
         style={styles.searchInput}
         value={keyword}
+        waflCompletionMode="search"
       />
     </View>
     <View style={styles.results}>

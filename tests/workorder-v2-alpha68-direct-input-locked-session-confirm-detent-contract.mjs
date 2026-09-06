@@ -3,7 +3,6 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 
 import {
-  resolveWaflDirectInputKeyboardDetent,
   resolveWaflDirectInputNavigation,
   shouldRestoreDirectInputKeyboard,
 } from "../apps/mobile/domain/waflDirectInputKeyboardPolicy.ts";
@@ -18,43 +17,13 @@ const restoreBase = {
   restoreAlreadyAttempted: false,
   visible: true,
 };
-assert.equal(shouldRestoreDirectInputKeyboard({ ...restoreBase, sessionState: "editing" }), true);
+assert.equal(shouldRestoreDirectInputKeyboard({ ...restoreBase, sessionState: "editing" }), false, "A73C manual blur must not auto-refocus");
 for (const sessionState of ["confirming", "cancelling", "closing"]) {
   assert.equal(shouldRestoreDirectInputKeyboard({ ...restoreBase, sessionState }), false, sessionState);
 }
 assert.equal(shouldRestoreDirectInputKeyboard({ ...restoreBase, appActive: false, sessionState: "editing" }), false);
 assert.equal(shouldRestoreDirectInputKeyboard({ ...restoreBase, restoreAlreadyAttempted: true, sessionState: "editing" }), false);
 assert.equal(shouldRestoreDirectInputKeyboard({ ...restoreBase, visible: false, sessionState: "editing" }), false);
-
-const geometry = {
-  currentOffset: 236,
-  expandedHeight: 800,
-  headerHeight: 72,
-  keyboardInset: 320,
-  keyboardMode: "directInput",
-  keyboardVisible: true,
-  minimumBodyViewport: 180,
-  restingOffset: 236,
-  safeBottom: 20,
-  semanticGap: 16,
-};
-const shortForm = resolveWaflDirectInputKeyboardDetent({ ...geometry, intrinsicBodyHeight: 112 });
-const recipeForm = resolveWaflDirectInputKeyboardDetent({ ...geometry, intrinsicBodyHeight: 230 });
-const colorForm = resolveWaflDirectInputKeyboardDetent({ ...geometry, intrinsicBodyHeight: 620 });
-const quickDelivery = resolveWaflDirectInputKeyboardDetent({ ...geometry, intrinsicBodyHeight: 920 });
-assert.ok(shortForm > 0 && shortForm < geometry.restingOffset);
-assert.ok(recipeForm > 0 && recipeForm < shortForm);
-assert.ok(colorForm > 0 && colorForm < recipeForm);
-assert.equal(quickDelivery, colorForm, "long forms share the bounded viewport and scroll internally");
-const smallDevice = resolveWaflDirectInputKeyboardDetent({
-  ...geometry,
-  expandedHeight: 520,
-  headerHeight: 76,
-  intrinsicBodyHeight: 700,
-  keyboardInset: 310,
-  restingOffset: 130,
-});
-assert.equal(smallDevice, 0, "only insufficient small-device geometry clamps to expanded");
 
 assert.equal(resolveWaflDirectInputNavigation({ action: "done", fieldKeys: ["field"], focusedKey: "field" }).confirm, true);
 assert.equal(resolveWaflDirectInputNavigation({ action: "next", fieldKeys: ["a", "b"], focusedKey: "a" }).targetKey, "b");
@@ -82,8 +51,8 @@ assert.match(sheet, /directInputSessionStateRef\.current = "confirming"/u);
 assert.match(sheet, /resolveWaflSheetClosePlan/u);
 assert.match(sheet, /prepareSheetClose\(plan\.sessionState, plan\.blurAndDismissKeyboard\)/u);
 assert.match(sheet, /appStateRef\.current === "active"/u);
-assert.match(sheet, /minimumBodyViewport: WAFL_THEME\.sheet\.initialBodyViewportMinHeight/u);
-assert.match(sheet, /intrinsicBodyHeight: intrinsicBodyContentHeightRef\.current/u);
+assert.doesNotMatch(sheet, /resolveWaflDirectInputKeyboardDetent/u, "A73B2 removes the unconditional keyboard-show detent from the sheet owner");
+assert.match(sheet, /systemKeyboardTargetOffsetRef\.current = translatedRef\.current/u);
 assert.match(textInput, /registerFormConfirm/u);
 assert.match(reusable, /useWaflSheetDirectInputConfirm\(props\.onCreate, disabled\)/u);
 assert.doesNotMatch(create, /onSubmitEditing=|onKeyboardHide=/u);
@@ -101,17 +70,17 @@ for (const file of directCallsites) assert.match(read(file), /keyboardMode=(?:"d
 
 const quick = read("apps/mobile/features/work-orders/documents/QuickDeliveryFoundation.tsx");
 assert.match(quick, /keyboardType="phone-pad"/u);
-assert.match(textInput, /if \(directInput !== null && !props\.multiline\)/u, "multiline inputs retain newline semantics");
+assert.match(
+  textInput,
+  /if \(directInput !== null && !props\.multiline && waflReturnKeyPolicy !== "none"\)/u,
+  "multiline inputs retain newline semantics while explicit numeric return-key opt-out stays outside submit navigation",
+);
 
 console.log(JSON.stringify({
   contract: "workorder-v2-alpha68-direct-input-locked-session-confirm-detent",
   sessionStates: 4,
-  restoreAttempts: 1,
-  shortFormOffset: shortForm,
-  recipeOffset: recipeForm,
-  colorOffset: colorForm,
-  quickDeliveryOffset: quickDelivery,
-  smallDeviceOffset: smallDevice,
+  restoreAttempts: 0,
+  unconditionalKeyboardDetent: 0,
   convergedCommandCount: commandCount,
   directInputCallsites: directCallsites.length,
   physicalResultInferred: false,

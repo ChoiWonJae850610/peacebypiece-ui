@@ -50,7 +50,8 @@ for (const kind of ["save-company-template", "update-company-template"]) {
 
 const experience = read("apps/mobile/features/MobileWorkOrderExperience.tsx");
 const categoryConfirm = experience.slice(experience.indexOf("if (!commitImmediately && dependentField"), experience.indexOf('return "confirmation" as const'));
-assert.match(categoryConfirm, /categoryDetail: ""/u, "category confirmation immediately clears the local detail projection");
+assert.match(experience, /resolveWorkOrderTargetAudienceTransition/u, "target changes use the current taxonomy transition policy");
+assert.match(experience, /resolveWorkOrderMajorCategoryTransition/u, "major changes clear detail through the shared transition policy");
 assert.doesNotMatch(categoryConfirm, /updateOverview|flushSection/u, "category confirmation remains local-only");
 assert.match(experience, /if \(patch\.resetCategoryDependents\)[\s\S]{0,2600}expectedVersion: saved\.nextVersion,[\s\S]{0,220}patch: \{ itemCode: desiredItemCode \}/u, "boundary serializes reset then detail patch");
 assert.match(experience, /resetApplied: true/u, "a failed second command retains a retryable post-reset intent");
@@ -64,7 +65,7 @@ assert.match(detail, /saveCompanyTemplate/u);
 assert.match(detail, /updateCompanyTemplate/u);
 
 const createSheet = read("apps/mobile/features/work-orders/create/WorkOrderCreateSheet.tsx");
-assert.match(createSheet, /consumeCreateRecipeEntranceFocus/u);
+assert.doesNotMatch(createSheet, /consumeCreateRecipeEntranceFocus|onPreparedForAutoFocus/u, "A73C supersedes entrance autofocus with explicit field tap");
 assert.doesNotMatch(createSheet, /dismissCreateRecipeKeyboard|Keyboard\.dismiss|onSubmitEditing=/u);
 assert.match(read("apps/mobile/features/inputs/WaflInputSheet.tsx"), /directInputSessionStateRef/u);
 assert.match(createSheet, /processingMessage=\{props\.pending \? "새 레시피를 생성 중입니다\." : null\}/u);
@@ -72,7 +73,7 @@ assert.match(experience, /copyPending \|\| reorderPending \? "레시피를 생�
 
 console.log(JSON.stringify({
   contract: "workorder-v2-alpha68-category-detail-template-rebase-keyboard-feedback",
-  category: { immediateDetailClear: true, serializedBoundary: true, retryIntent: true },
+  category: { taxonomyTransitionPolicy: true, serializedBoundary: true, retryIntent: true },
   templateRebase: { saveAndUpdate: true, targetedRefresh: true },
   keyboardCycles: 3,
   production: { dirtyBlocker: true, cleanBlocker: false, failureSwitch: false },

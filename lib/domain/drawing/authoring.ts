@@ -1,10 +1,24 @@
-import type {
-  DrawingElementStyle,
-  DrawingFreehandElement,
-  DrawingPoint,
+import {
+  DRAWING_TEXT_DEFAULT_FONT_SIZE,
+  DRAWING_TEXT_MAX_LENGTH,
+  type DrawingArrowElement,
+  type DrawingElementStyle,
+  type DrawingFreehandElement,
+  type DrawingLineElement,
+  type DrawingPoint,
+  type DrawingTextElement,
 } from "./contracts";
 
 export const DRAWING_ACTIVE_STROKE_MIN_WORLD_DISTANCE = 1.5;
+export const DRAWING_ACTIVE_SEGMENT_MIN_WORLD_LENGTH = 1.5;
+
+export type DrawingActiveSegment = Readonly<{
+  id: string;
+  kind: "line" | "arrow";
+  start: DrawingPoint;
+  end: DrawingPoint;
+  style: DrawingElementStyle;
+}>;
 
 export type DrawingActiveStroke = Readonly<{
   id: string;
@@ -99,6 +113,73 @@ export function finalizeDrawingActiveStroke(stroke: DrawingActiveStroke): Drawin
 
 export function cancelDrawingActiveStroke(): null {
   return null;
+}
+
+export function beginDrawingActiveSegment(input: Readonly<{
+  id: string;
+  kind: "line" | "arrow";
+  point: DrawingPoint;
+  style: DrawingElementStyle;
+}>): DrawingActiveSegment {
+  const point = freezePoint(input.point);
+  return Object.freeze({
+    id: input.id,
+    kind: input.kind,
+    start: point,
+    end: point,
+    style: freezeStyle(input.style),
+  });
+}
+
+export function updateDrawingActiveSegment(
+  segment: DrawingActiveSegment,
+  point: DrawingPoint,
+): DrawingActiveSegment {
+  return Object.freeze({ ...segment, end: freezePoint(point) });
+}
+
+export function finalizeDrawingActiveSegment(
+  segment: DrawingActiveSegment,
+  minimumWorldLength = DRAWING_ACTIVE_SEGMENT_MIN_WORLD_LENGTH,
+): DrawingLineElement | DrawingArrowElement | null {
+  if (!Number.isFinite(minimumWorldLength) || minimumWorldLength < 0) {
+    throw new RangeError("Drawing segment minimum length must be finite and non-negative.");
+  }
+  if (Math.hypot(segment.end.x - segment.start.x, segment.end.y - segment.start.y) < minimumWorldLength) {
+    return null;
+  }
+  return Object.freeze({
+    id: segment.id,
+    kind: segment.kind,
+    start: segment.start,
+    end: segment.end,
+    style: segment.style,
+  });
+}
+
+export function cancelDrawingActiveSegment(): null {
+  return null;
+}
+
+export function createDrawingTextElement(input: Readonly<{
+  id: string;
+  anchor: DrawingPoint;
+  content: string;
+  fontSize?: number;
+  style: DrawingElementStyle;
+}>): DrawingTextElement | null {
+  const content = input.content.trim();
+  if (content.length === 0 || content.length > DRAWING_TEXT_MAX_LENGTH) return null;
+  const fontSize = input.fontSize ?? DRAWING_TEXT_DEFAULT_FONT_SIZE;
+  if (!Number.isFinite(fontSize) || fontSize <= 0) return null;
+  return Object.freeze({
+    id: input.id,
+    kind: "text",
+    anchor: freezePoint(input.anchor),
+    content,
+    fontSize,
+    style: freezeStyle(input.style),
+  });
 }
 
 export function measureDrawingPointGaps(points: readonly DrawingPoint[]): DrawingPointGapMetrics {

@@ -13,8 +13,7 @@ assert.match(sheet, /onAfterOpen\?\.\(\)/u);
 assert.ok(sheet.indexOf("dismissingRef.current = false") < sheet.indexOf("onAfterClose?.()"), "outgoing sheet must clear lifecycle state before presenting child");
 assert.equal((handoff.match(/requestAnimationFrame/gu) ?? []).length >= 2, true);
 for (const source of [structure, spec]) {
-  assert.match(source, /onAfterOpen/u);
-  assert.match(source, /\.current\?\.focus\(\)/u);
+  assert.doesNotMatch(source, /onPreparedForAutoFocus|\bautoFocus\b/u);
 }
 assert.doesNotMatch(spec, /accessibilityLabel="스펙 항목명" autoFocus/u);
 assert.match(spec, /onConfirm=\{nested\.route === "rename"[\s\S]*: undefined\}/u);
@@ -33,4 +32,5 @@ console.log(JSON.stringify({
   nativeModalWorkarounds: 0,
   deadCreateConfirmActions: 0,
   createdItemParentAutoSelectPaths: 3,
+  childOpeningKeyboardRequests: 0,
 }));

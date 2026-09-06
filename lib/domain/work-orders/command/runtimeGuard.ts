@@ -203,6 +203,14 @@ export function getWorkOrderV2ReorderMutationRuntimeGuard(): WorkOrderV2CommandR
   return getWorkOrderV2CommandRuntimeGuard({ requireMutationApproval: true, requiredMutationApproval: configuredApproval });
 }
 
+export function getWorkOrderV2DrawingMutationRuntimeGuard(): WorkOrderV2CommandRuntimeGuard {
+  const configuredApproval = process.env.WAFL_V2_COMMAND_MUTATION_APPROVED ?? "";
+  if (!isMakerQaCapabilityEnabled(process.env, MAKER_QA_CAPABILITY.DRAWING_AUTHORING)) {
+    return { ok: false, reason: "drawing-authoring-mutation-approval-missing" };
+  }
+  return getWorkOrderV2CommandRuntimeGuard({ requireMutationApproval: true, requiredMutationApproval: configuredApproval });
+}
+
 export function getWorkOrderV2DraftChildHardDeleteMutationRuntimeGuard(): WorkOrderV2CommandRuntimeGuard {
   const configuredApproval = process.env.WAFL_V2_COMMAND_MUTATION_APPROVED ?? "";
   if (!isMakerQaCapabilityEnabled(process.env, MAKER_QA_CAPABILITY.WORK_ORDER_DRAFT_DELETE)) {

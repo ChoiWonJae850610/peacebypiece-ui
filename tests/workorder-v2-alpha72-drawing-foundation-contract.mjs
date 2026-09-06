@@ -175,7 +175,8 @@ assert.doesNotMatch(packageJson, /@shopify\/react-native-skia|react-native-gestu
 assert.doesNotMatch(mobilePackageJson, /react-native-gesture-handler|react-native-reanimated|react-native-worklets/);
 const gallery = fs.readFileSync("apps/mobile/features/work-orders/images/WorkOrderImageGallery.tsx", "utf8");
 assert.match(gallery, /"스케치, 준비 중"/);
-assert.match(gallery, /disabled=\{!props\.drawingRendererPocEnabled\}/);
+assert.match(gallery, /disabled=\{!props\.sketchAuthoringEnabled \|\| !props\.canEdit\}/);
+assert.match(gallery, /sketchAuthoringEnabled \? "스케치" : "스케치\(준비 중\)"/);
 assert.match(gallery, /testID="work-order-image-sketch"/);
 const currentState = fs.readFileSync("docs/codex-current-state.md", "utf8");
 const roadmap = fs.readFileSync("docs/project/app-v2/08-roadmap-2.0.md", "utf8");
@@ -192,7 +193,7 @@ console.log(JSON.stringify({
   addedPermanentChecks: 1,
   finalPermanentInventory: 221,
   canonicalWorld: "1000x1400",
-  drawingUi: 0,
+  drawingUi: "alpha73-product-slice-built-on-alpha72-foundation",
   drawingLibrarySelection: 0,
   physicalResultInferred: false,
 }));

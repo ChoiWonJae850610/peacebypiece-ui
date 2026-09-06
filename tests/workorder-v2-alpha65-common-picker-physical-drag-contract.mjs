@@ -3,9 +3,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 
 import {
-  resolveWaflSheetDragOffset,
-  resolveWaflSheetDragStartOffset,
-  resolveWaflSheetRelease,
+  resolveWaflStaticSheetRestingOffset,
 } from "../apps/mobile/domain/waflSheetDetentPolicy.ts";
 import { resolveWaflReelOpeningValue } from "../apps/mobile/features/inputs/reel-picker/waflRequiredChoicePolicy.ts";
 
@@ -19,20 +17,12 @@ const production = read("apps/mobile/features/work-orders/production/WorkOrderPr
 const design = read("docs/project/app-v2/11a-mobile-design-system-v2.md");
 const makerIa = read("docs/project/app-v2/11b-maker-workorder-tab-ia-v2.md");
 
-assert.match(sheet, /onStartShouldSetResponderCapture=\{\(\) => draggable && openReady && !actionPending && !dismissingRef\.current\}/u);
-assert.match(sheet, /onResponderGrant=\{draggable && openReady \? startDrag : undefined\}/u);
-assert.match(sheet, /const stableOffset = resolveWaflSheetDragStartOffset\(translatedRef\.current, expandedHeight\)[\s\S]*dragStartRef\.current = stableOffset[\s\S]*translateY\.setValue\(stableOffset\)[\s\S]*layoutOffset\.setValue\(stableOffset\)[\s\S]*dragReadyRef\.current = true/u);
-assert.doesNotMatch(sheet, /translateY\.stopAnimation\(\(value\)/u);
-assert.match(sheet, /if \(!dragReadyRef\.current\) return;[\s\S]*const dy = pageY - dragStartPageYRef\.current[\s\S]*translateY\.setValue\(offset\)/u);
+assert.match(sheet, /testID="wafl-sheet-fixed-header"/u);
+assert.match(sheet, /accessibilityRole="header"/u);
+assert.doesNotMatch(sheet, /onStartShouldSetResponderCapture|onResponderGrant|dragStartRef|resolveWaflSheetDrag/u);
 
 for (let cycle = 0; cycle < 3; cycle += 1) {
-  const settled = cycle === 0 ? 190 : cycle === 1 ? 77 : 132;
-  const granted = resolveWaflSheetDragStartOffset(settled, 790);
-  assert.equal(granted, settled, `cycle ${cycle + 1}: GRANT must not move the sheet`);
-  const moved = resolveWaflSheetDragOffset({ dragStartOffset: granted, dy: -31, expandedHeight: 790 });
-  assert.equal(moved, settled - 31, `cycle ${cycle + 1}: first MOVE must follow the finger 1:1`);
-  const release = resolveWaflSheetRelease({ dragStartOffset: granted, dy: -31, vy: -0.1, maxSettleOffset: 220, dismissDistance: 96, dismissVelocity: 1.15, flickVelocity: 0.45, velocityProjectionMs: 72, maxVelocityProjection: 88 });
-  assert.deepEqual(release, { kind: "settle", offset: settled - 31 });
+  assert.equal(resolveWaflStaticSheetRestingOffset({ expandedHeight: 790, visibleHeight: 600 }), 190, `cycle ${cycle + 1}: reel shell root is deterministic`);
 }
 
 assert.equal(resolveWaflReelOpeningValue({ candidateValues: ["partner-a"], currentValue: "", stageFirstRealOption: true }), "partner-a");
@@ -56,9 +46,8 @@ assert.match(optionReel, /if \(options\.length === 0\)[\s\S]*return undefined/u)
 assert.match(reel, /confirmDisabled=\{applyDisabled \|\| pending\}/u);
 
 for (const marker of [
-  "synchronously at responder grant",
+  "static bottom sheet",
   "invalid persisted candidate",
-  "physical iPhone",
 ]) assert.ok(`${design}\n${makerIa}`.includes(marker), `canonical docs missing ${marker}`);
 
 console.log(JSON.stringify({
@@ -66,9 +55,9 @@ console.log(JSON.stringify({
   previousPermanentInventoryRetained: 144,
   addedPermanentChecks: 1,
   finalPermanentInventory: 145,
-  mountedResponderFirstMoveLoss: 0,
+  rootDragOwner: 0,
   requiredChoiceCases: 6,
-  repeatedOpenDragCycles: 3,
+  repeatedStaticOpenCycles: 3,
   physicalGestureInferred: false,
   migrationLedger: "18/18",
   migration019: 0,

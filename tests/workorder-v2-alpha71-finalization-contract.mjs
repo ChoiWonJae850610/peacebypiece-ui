@@ -29,8 +29,8 @@ const mobilePackage = JSON.parse(read("apps/mobile/package.json"));
 assert.equal(mobilePackage.dependencies["perfect-freehand"], undefined, "alpha.72 PoC must not add a stroke helper dependency");
 assert.equal(mobilePackage.dependencies["@shopify/react-native-skia"], undefined, "selected alpha.72 SVG path removes the temporary Skia candidate");
 assert.equal(mobilePackage.dependencies["react-native-svg"], "15.15.3", "selected alpha.72 SVG path reuses the existing renderer dependency");
-assert.match(read("apps/mobile/features/work-orders/images/WorkOrderImageGallery.tsx"), /disabled=\{!props\.drawingRendererPocEnabled\}/u);
-assert.match(read("apps/mobile/features/MobileWorkOrderExperience.tsx"), /isDrawingRendererPocEnabled/u);
+assert.match(read("apps/mobile/features/work-orders/images/WorkOrderImageGallery.tsx"), /disabled=\{!props\.sketchAuthoringEnabled \|\| !props\.canEdit\}/u);
+assert.match(read("apps/mobile/features/MobileWorkOrderExperience.tsx"), /isWorkOrderSketchAuthoringEnabled/u);
 
 console.log(JSON.stringify({
   ok: true,

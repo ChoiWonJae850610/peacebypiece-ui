@@ -1,5 +1,253 @@
 # WAFL v2 App-first Roadmap and Version Delta
 
+Alpha.73 is finalized at `ALPHA73_FINALIZATION_COMPLETE` with accepted product checkpoint `ALPHA73_COMPLETE`. Product
+Sketch retains the Owner-accepted pen/line/arrow/text, mixed history, explicit Save/reopen, and dirty-discard behavior;
+release/production still exposes only disabled `스케치(준비 중)`. The Owner's final actual-iPhone statement
+`다 잘된다. 이제 키보드는 다 되는거같다` is canonical `OWNER_IPHONE_PHYSICAL_PASS` for the A73D Keyboard / Static
+Sheet gate only, superseding that chain's intermediate failures without inventing cycle counts. Static root drag,
+free-settle, user detent, drag-dismiss, and drag handle remain retired. APP_VERSION is `2.0.0-alpha.73`; DEV/TEST migration
+is `22/22`, Production migration is zero, and finalization adds no behavior, API/schema, dependency/native/config/EAS,
+or business-data mutation. Alpha.74 work has not started.
+
+Alpha.73D Quick phone return-key opt-out is implemented at
+`ALPHA73D_QUICK_PHONE_RETURN_KEY_OPT_OUT_FIX_IPHONE_QA_REQUIRED`. The shared ValueField passes the existing typed
+return-key policy through with default `auto`; only Quick driver-contact and nested address-contact phone-pad fields use
+`none`. They keep PHONE_NUMBER, accessory `none`, registered handoff, root/body planning, and nested Sheet X/V, while
+Quick Search, ordinary direct text, numeric direct, and all other phone-pad behavior remain unchanged. This is a bounded
+causal test with no geometry, API/schema, dependency/native/config/EAS, migration, or data mutation delta. Permanent
+inventory advances to `264/264`; APP_VERSION stays `2.0.0-alpha.72`, and physical PASS is not inferred.
+
+Alpha.73D Quick phone accessory geometry correction is implemented at
+`ALPHA73D_QUICK_PHONE_ACCESSORY_GEOMETRY_FIX_IPHONE_QA_REQUIRED`. The shared ValueField passes the existing typed
+accessory policy through with default `auto`; only Quick driver-contact and nested address-contact phone-pad fields select
+`none`. Both remain PHONE_NUMBER registered inputs with unchanged semantic regions, completion behavior, and nested
+Sheet X/V, while other phone/number inputs keep automatic minimal accessories. Nested keyboard ownership,
+structural/runtime geometry separation, capture-only recapture, current-root/live-body planning, New Recipe, Spec Save,
+Direct create, and numeric direct geometry are unchanged. Permanent inventory advances to `263/263`; APP_VERSION stays
+`2.0.0-alpha.72`, and physical PASS is not inferred.
+
+Alpha.73D nested keyboard ownership and structural prepared-geometry refresh are implemented at
+`ALPHA73D_NESTED_KEYBOARD_OWNER_PREPARED_RECAPTURE_AND_NUMERIC_DISPLAY_FIX_IPHONE_QA_REQUIRED`. The topmost rendered
+direct-input Sheet exclusively owns global keyboard geometry events; underlying nested parents record but do not mutate.
+Runtime scroll metrics no longer advance the structural prepared revision, and a true structural change can recapture the
+next-focus snapshot while the keyboard is visible without moving root or body. Numeric opening-value formatting is
+presentation-only. Permanent inventory advances to `262/262`; APP_VERSION stays `2.0.0-alpha.72`, and physical PASS is
+not inferred.
+
+Alpha.73D live-root baseline, visibility-only residual scroll, and numeric return-key correction is implemented at
+`ALPHA73D_LIVE_ROOT_BASELINE_RESIDUAL_SCROLL_AND_NUMERIC_RETURN_KEY_FIX_IPHONE_QA_REQUIRED`. A keyboard-visible
+registered handoff plans from the authoritative current `systemKeyboard` target instead of static rest. The planner
+allocates any remaining legal root reveal, then scrolls only for actual clipping; bottom keyboard clearance is not reused
+as a top alignment margin. Numeric direct retains inline X/V while requesting neither a WAFL InputAccessoryView nor a
+WAFL return-key completion action. Quick/numeric DEV evidence surfaces are persisted for the next physical run. The
+permanent inventory advances to `261/261`; APP_VERSION stays `2.0.0-alpha.72`, all mutation/release budgets remain zero,
+and Physical PASS is not inferred.
+
+Alpha.73D live body-scroll authority and numeric mode-transition correction is implemented at
+`ALPHA73D_LIVE_BODY_SCROLL_AUTHORITY_AND_NUMERIC_MODE_TRANSITION_FIX_IPHONE_QA_REQUIRED`. Direct-input reveal no longer
+treats the capture-time body offset as live truth: current body scroll is read when each keyboard transaction is planned,
+and signed system deltas are bounded by actual forward/back capacity. New independent appearances reset cycle deltas;
+only a validated registered-input handoff transfers them. Numeric Reel-to-keypad now suppresses intermediate static-root
+settling and focuses after current prepared geometry is ready, while its inline X/V owner replaces the redundant numeric
+accessory. Quick phone-pad completion is unchanged. The permanent inventory advances to `260/260`. APP_VERSION stays
+`2.0.0-alpha.72`; dependency/native/config/EAS, API/schema/migration, data, Git, and release state are unchanged. Physical
+PASS is not inferred.
+
+Alpha.73D Quick root-first reveal and numeric direct-input UI correction is implemented at
+`ALPHA73D_QUICK_ROOT_FIRST_REVEAL_AND_NUMERIC_DIRECT_INPUT_UI_FIX_IPHONE_QA_REQUIRED`. Quick Delivery surfaces select
+the shared root-first allocation policy: one prepared keyboard transaction allocates legal static-root reveal before
+the minimum residual body scroll, without a late recovery writer. Explicit semantic input focus is replayed only after
+canonical body-content geometry exists, so a null semantic rect cannot consume the appearance claim and raw parent-local
+geometry cannot substitute. Numeric keypad mode joins the shared direct-input prepared lifecycle and renders one compact
+mode/action row using the canonical X/V component; its default footer is suppressed. A fixed status region retains the
+session-opening value and validation without value-edit extent churn. APP_VERSION stays `2.0.0-alpha.72`; dependency/
+native/config/EAS, API/schema/migration, data, Git, and release state are unchanged. Physical PASS is not inferred.
+
+Alpha.73D semantic-coordinate normalization, Quick Delivery reveal, and numeric keypad composition are implemented at
+`ALPHA73D_SEMANTIC_COORDINATE_NORMALIZATION_QUICK_REVEAL_AND_NUMERIC_KEYPAD_FIX_IPHONE_QA_REQUIRED`. Every shared
+semantic focus target used by prepared keyboard reveal is now measured relative to the canonical Sheet body-content
+ancestor; nested card-local `onLayout` coordinates are retained only as evidence and cannot author prepared geometry.
+Quick driver/address fields consequently compute non-animated body-scroll-first reveal in the same appearance transaction.
+Numeric direct mode treats its input, fixed auxiliary status slot, and `WAFL PICK으로 변경` row as one semantic region;
+the deterministic Reel extent includes the shared body-end-gap token. Existing root owners, one visible reveal, registered
+handoff, New Recipe, Spec Save, and Direct Create behavior remain intact. APP_VERSION stays `2.0.0-alpha.72`; dependency/
+native/config/EAS, API/schema/migration, data, Git, and release state are unchanged. Physical PASS is not inferred.
+
+Alpha.73D registered-input handoff, Quick Delivery semantic targeting, and numeric Reel stability are implemented at
+`ALPHA73D_REGISTERED_INPUT_HANDOFF_QUICK_DELIVERY_AND_NUMERIC_REEL_STABILITY_FIX_IPHONE_QA_REQUIRED`. Mounted input native
+identities now distinguish a same-Sheet field handoff from a true non-input body tap, preventing the generic dismiss path
+from creating a full hide/static-rest/refocus cycle. Quick driver and direct-address editable fields each own an explicit
+semantic region. The shared quantity picker reserves a deterministic auxiliary status slot in both Reel and keypad modes;
+legacy/validation/empty changes leave body and root extent unchanged, while a real mode switch may choose one new derived
+extent. Existing generation-scoped root writers and one-reveal-per-appearance rules are preserved. APP_VERSION stays
+`2.0.0-alpha.72`; dependency/native/config/EAS, API/schema/migration, data, Git, and release state are unchanged. Physical
+PASS is not inferred.
+
+Alpha.73D root-animation ownership and Direct Create semantic-target correction is implemented at
+`ALPHA73D_ROOT_ANIMATION_OWNERSHIP_AND_DIRECT_CREATE_SEMANTIC_TARGET_FIX_IPHONE_QA_REQUIRED`. Actual-device
+evidence separated requested target from native applied root and proved that a still-active `staticRest` animation
+could survive a new keyboard appearance when a stale JavaScript completion value made the keyboard target look like
+a no-op. Root motion now has one explicit generation-scoped owner (`entrance`, `staticRest`, `systemKeyboard`, or
+`exit`); incompatible restore is superseded, and `trueNoop` is a terminal resolved state rather than an implicit
+absence of work. Direct Size and Direct Spec/POM reusable create forms declare field plus helper as their semantic
+region without pulling unrelated body content or Direct Color palette into reveal. One visible root writer, static
+hide restore, and the shared semantic gap remain. APP_VERSION stays `2.0.0-alpha.72`; dependency/native/config/EAS,
+API/schema/migration, data, Git, and release state are unchanged. Physical PASS is not inferred.
+
+Alpha.73D keyboard focus-ordering and semantic-clearance correction is implemented at
+`ALPHA73D_KEYBOARD_FOCUS_ORDERING_AND_SEMANTIC_CLEARANCE_FIX_IPHONE_QA_REQUIRED`. A native iOS keyboard
+will-frame that precedes the React Native focus callback is retained only inside the current Sheet/open/layout/
+measurement identity. Matching focus consumes it through the existing keyboard-timed single-root transaction;
+the candidate itself owns no mutation or claim, and stale/duplicate/dismissed candidates are discarded. Explicit
+semantic scopes now use the shared semantic gap while ordinary fields retain their existing focus context. New
+Recipe keeps product/helper/work-character/buttons in one scope, and Spec Save new mode declares name plus mode
+buttons as its scope. No local offset, delay, second root correction, drag owner, API/schema/migration/dependency/
+native/config/EAS or data change was added. APP_VERSION remains `2.0.0-alpha.72`; physical PASS is not inferred.
+
+Alpha.73D actual-device final-geometry evidence is implemented at
+`ALPHA73D_NEW_RECIPE_ACTUAL_DEVICE_FINAL_GEOMETRY_EVIDENCE_IPHONE_QA_REQUIRED`. It is an instrumentation-only
+checkpoint for Owner cold-first-focus New Recipe and Spec Save reference capture. The shared Static Sheet
+motion/root transaction and input behavior are unchanged. Machine-readable `new-recipe` / `spec-save-new`
+events persist ordered native keyboard frames, target/claim decisions, body scroll, and actual post-frame
+window rectangles including the work-character choice row. The sink is DEV + external-QA-only, local ignored
+JSONL, bounded, authenticated, and Production-disabled. APP_VERSION remains `2.0.0-alpha.72`; dependency,
+native/config/EAS, API business contracts, schema/migration, data, Git, and release state are unchanged.
+Actual Owner evidence must precede diagnosis or a product correction; physical PASS is not inferred.
+
+Alpha.73D Spec Save motion reference and layout normalization is implemented at
+`ALPHA73D_SPEC_SAVE_MOTION_REFERENCE_LAYOUT_NORMALIZATION_IPHONE_QA_REQUIRED`. Owner-selected Spec Save
+motion remains the shared direct-input reference without forking animation code. New-save composition is
+name input followed by the new/update mode selector; update composition keeps the selector ahead of its long
+template and management content. Spec Save retains minimal field reveal, while New Recipe retains the larger
+explicit semantic-region target through the same appearance/root scheduling owner. APP_VERSION remains
+`2.0.0-alpha.72`; dependency/native/config/EAS, API/schema/migration, data, Git, and release state are unchanged.
+Physical PASS is not inferred.
+
+Alpha.73D compact semantic target formula correction is implemented at
+`ALPHA73D_COMPACT_SEMANTIC_TARGET_FORMULA_UNDER_REVEAL_IPHONE_REQA_REQUIRED`. A compact field's
+surrounding body remains advisory unless a real footer or an explicit `WaflSheetSemanticFocusScope`
+declares the larger composition. For New Recipe, the product/helper/work-character/button scope is an
+explicit requirement. Its current prepared target is preserved through visibility-floor and measured-
+target merging, then consumed by the existing single appearance root owner. DEV/external-QA evidence now
+records the complete target chain and resulting keyboard clearance. No local offset, second root repair,
+or broad compact expansion was added. APP_VERSION remains `2.0.0-alpha.72`; other product, data, native,
+dependency, migration, Git, and release state is unchanged. Owner physical PASS is not inferred.
+
+Alpha.73D cold-start semantic-scope registration replay is implemented at
+`ALPHA73D_COLD_START_SEMANTIC_SCOPE_REGISTRATION_REPLAY_IPHONE_REQA_REQUIRED`. A semantic scope's first native `onLayout`
+can no longer be lost when it precedes input subscription: the input installs its listener in a layout-synchronous phase,
+then immediately re-registers the current stored rectangle. An unchanged replay does not churn revisions; a newly observed
+full scope advances registry/geometry revisions and invalidates stale prepared geometry. Early keyboard fast-path trust now
+also proves registry geometry equals the live scope and prepared geometry equals the registry. Missing/stale semantic data
+moves neither body nor root and consumes no root slot; current geometry or final measured fallback may author the one target.
+New Recipe's full product/helper/work-character/button composition, warm fast path, single-root, static restore, and drift
+contracts remain. APP_VERSION is `2.0.0-alpha.72`; dependency/native/config/EAS, API/schema/migration, production data, and
+Git/release state are unchanged. Owner cold-start physical PASS is not inferred.
+
+Alpha.73D cold-start first-focus geometry freshness is implemented at
+`ALPHA73D_COLD_START_FIRST_FOCUS_GEOMETRY_FRESHNESS_IPHONE_REQA_REQUIRED`. A prepared direct-input snapshot is now trusted
+only when its open/focus/keyboard class/layout identity and explicit target-geometry plus registry revisions still match,
+all required body/header/footer measurements are complete, and the current semantic target is represented. A stale cold-
+start snapshot authors body/root `0/0` and consumes no appearance root claim. The first current trustworthy frame retains
+the fast path; when early current geometry is unavailable, did-show final measurement may own the one unused root target.
+The New Recipe semantic scope still includes product name, helper, work character, and both character buttons. Existing
+single-root-per-appearance, static hide restore, keyboard-class transition, and drift contracts remain. APP_VERSION is
+`2.0.0-alpha.72`; dependency/native/config/EAS, API/schema/migration, production data, and Git/release state are unchanged.
+Owner physical cold-start PASS is not inferred.
+
+Alpha.73D keyboard-reveal latency evidence/safe-fast-path is implemented at
+`ALPHA73D_KEYBOARD_REVEAL_LATENCY_EVIDENCE_SAFE_FAST_PATH_IPHONE_REQA_REQUIRED`. It preserves the accepted Static Sheet
+correctness and changes only when the existing system target may begin. A current, anchored iOS native will-show or
+will-change frame with fresh prepared local geometry may claim the one appearance-level root slot immediately and start
+the keyboard-timed body/root plan in that callback. Provisional or stale events author neither body nor root; if no safe
+early frame exists, did-show final measurement remains the sole fallback. Later events in the same appearance cannot make
+a second root animation. DEV/external-QA monotonic structured evidence identifies trust, schedule, start, fallback, and
+restore, while product UI and focus timing are unchanged. APP_VERSION is `2.0.0-alpha.72`; dependency/native/config/EAS,
+API/schema/migration, production data, and Git/release state are unchanged. Owner physical latency PASS is not inferred.
+
+Alpha.73D Phase 3 closes the Static Sheet migration at
+`ALPHA73D_PHASE3_STATIC_SHEET_REMAINING_SURFACES_CLEANUP_IPHONE_QA_REQUIRED`. The LIVE JSX/native recount remains
+`26 / 8 / 1 / 3 / 1 / 7` for shared Sheet, Reel, paired Reel, Decision, calendar, and raw Modal hosts. The expanded
+source-owned product inventory covers 44 logical surfaces across compact Static, scrollable Static, Static Reel, Decision
+candidate, fullscreen, and special fixed Modal classes. The last live theme/policy detent parameter names are now static-
+extent names with identical values; the broad sizing union and policy filename remain compatibility routes only. Common
+root drag/free-settle/user-detent/drag-dismiss/accessibility owners are zero, while body, Reel, Drawing, image, row-swipe,
+and viewer gestures remain explicitly scoped exceptions. Phase 2 Owner physical keyboard/input results are recorded as
+PASS and the slight delay remains non-blocking. Phase 3 physical PASS and tablet/Android physical PASS are not inferred.
+Subject to the Phase 3 iPhone spot checks, the automated state is `FINALIZATION_READY`; finalization remains a separate
+explicit package.
+
+Alpha.73D Phase 2 New Recipe keyboard-appearance blocker correction is implemented at
+`ALPHA73D_PHASE2_NEW_RECIPE_KEYBOARD_APPEARANCE_SINGLE_REVEAL_IPHONE_REQA_REQUIRED`. The prior exact-frame checkpoint
+physically failed because a single iOS keyboard appearance can emit multiple distinct frames. Phase 1's fixed header and
+non-draggable root remain.
+The current derived sizing target is the only static rest; system keyboard reveal is a bounded ephemeral absolute target,
+never a captured/session rest. Hide/blur restores the current derived target. Focus cycles retain body-scroll ownership only,
+with actual-capacity-first absolute replacement and generation-guarded final visibility reconciliation. TEXT ↔ PHONE_NUMBER
+continues to wait for the fresh incoming frame. `SINGLE_VISIBLE_ROOT_REVEAL_PER_KEYBOARD_APPEARANCE` gives one explicit
+open/focus/measurement/class/appearance transaction at most one visible root animation across all intermediate/final native
+frames and React inset synchronization. iOS initial hidden-to-visible scheduling uses `keyboardWillShow`; frame-change and
+did-show remain evidence/body/assertion owners after a root claim. Without a prior stable target, final measured did-show may
+claim the transaction's still-unused fallback. The exact-frame contract remains a lower-level duplicate-event guard.
+Footer/action/processing/nested lifecycle, Reel/content/fullscreen gestures,
+and regression-protected inputs are unchanged. Remaining callsite sizing cleanup, Quick IA, Decision redesign, and
+Drawing/API/schema work remain separate. APP_VERSION and migration remain `2.0.0-alpha.72` and 22/22; physical PASS is not inferred.
+
+Alpha.73C Phase 4 is implemented at
+`ALPHA73C_PHASE4_COMPACT_REVEAL_KEYBOARD_CLASS_TRANSITION_IPHONE_REQA_REQUIRED`. It preserves Phase 3 explicit manual focus,
+Overview integrity/taxonomy, system-vs-user restore, Quick Search guards, numeric accessory, and stable Address Direct actions.
+Compact planning reveals the measured semantic target rather than the entire compact body composition; a persistent footer
+remains safety-owned. Focus lifecycle is explicit, and system body compensation replaces an absolute target so field switches
+cannot accumulate reveal. TEXT, PHONE_NUMBER, MULTILINE, and SEARCH are registry-owned keyboard classes. Class switches wait
+for the incoming native frame instead of revealing once with the old keyboard geometry. Reel, Drawing, API/schema,
+APP_VERSION, migration 22/22, dependency/native/config/EAS, and release/data boundaries are unchanged. Owner iPhone PASS is
+not inferred.
+
+Alpha.73 is the current DEV/TEST product-sketch candidate at
+`ALPHA73_DIRECT_INPUT_DIDSHOW_MICRO_RECONCILIATION_IPHONE_REQA_REQUIRED`. It adds the first bounded product vertical slice:
+authenticated development Draft Recipes expose freehand/Undo/Redo/Clear/explicit Save and editable reopen through the
+finalized alpha.72 Scene/SVG owners. Release remains disabled `스케치(준비 중)`. Revision-owned Scene persistence has
+its own optimistic version and no WorkOrder-version, R2, PDF, Viewer, Share, derivative, or export coupling. Migration
+022 is DEV/TEST-only and Production migration remains zero. APP_VERSION remains `2.0.0-alpha.72`; Owner physical PASS
+and alpha.73 finalization are outstanding. Alpha.73A-1 removes the unreliable Sketch header X, reuses the PDF Viewer
+bottom-action pattern for large `닫기` and explicit `저장`, and keeps bottom close, Android back, and modal dismiss on one
+dirty-aware close owner without implicit Save or persistence/API/schema changes.
+Alpha.73A-2 preserves that UI and persistence boundary while closing the nested dirty Decision sheet before executing
+the same guarded parent dismissal used by clean close, eliminating the discard-only native black-screen transition.
+Alpha.73B adds the first apparel annotation set: `펜 / 선 / 화살표 / 텍스트`. It keeps line/arrow previews transient,
+stores semantic WORLD endpoints/anchors only, derives arrowheads in the SVG renderer, and uses the canonical WAFL input
+sheet for bounded single-line text. The Scene v1 union evolves additively with no stored-row or DB migration. Existing
+freehand, explicit Save, dirty discard, independent Drawing versioning, and production isolation remain unchanged.
+Alpha.73B-1 orders text entry as WORLD anchor/session → Sheet entrance completion → one session-scoped focus request.
+Its crosshair and typed ghost preview are transient renderer projections of the same anchor later committed by confirm;
+cancel, tool switch, and stale callbacks leave no Scene/history/network or parent-Modal effect.
+Alpha.73B-2 preserves that safe focus order but removes the direct-input keyboard-show detent as an unconditional Y owner.
+Mounted semantic focus geometry now yields scroll-first/minimum-rise correction, and the rise shares the native keyboard
+transition duration/easing instead of starting a distinct second spring. Pre-keyboard restore, user-drag authority,
+submit-before-blur, direct-input close, and nested Modal ownership remain unchanged. The Sketch transient crosshair becomes
+a neutral vertical insertion caret without changing its WORLD anchor or ghost/final location.
+Alpha.73B-3 corrects the physical hidden-input regression by merging a canonical minimum usable-body visibility floor and
+the measured scroll-first reveal into one keyboard-frame target. Measurement failure cannot terminate at scroll-only;
+`keyboardDidShow` performs one generation-guarded actual-geometry reconciliation independent of React inset equality.
+This does not restore the old intrinsic-body detent or alter the accepted neutral caret and close/restore owners.
+Alpha.73B-4 removes the remaining visible ordinary-resting stage only for intentional auto-focused direct-input sessions.
+The mounted/layout-measured input focuses from an opt-in prepared boundary while the sheet remains offscreen; the keyboard
+will-change frame supplies the first visible merged B3 target and native transition timing. Manual direct inputs and
+picker/reel sheets keep ordinary opening. Final didShow reconciliation remains generation-safe, but a four-point theme-token
+dead-zone suppresses a sheet rise only when body scroll has left the field visibly clear. A bounded frame-lifecycle fallback
+opens to the ordinary target when focus yields no software keyboard, and that target remains keyboard-hide restore truth.
+Alpha.73B-5 prepares generation-scoped sheet-local field and composition geometry before the opt-in focus request. The
+first keyboard will-change callback combines that frozen geometry with the final keyboard inset and schedules one
+keyboard-timed target synchronously, without starting an async window-measure/retry chain. Compact forms reveal the
+coherent content/action composition in that target; long forms use actual prepared forward-scroll capacity before minimal
+residual rise. Did-show actual-window measurement remains a safety assertion and a meaningful correction is classified as
+a first-target miss. Lifecycle fallback, ordinary restore, drag/close ownership, and the neutral WORLD caret are unchanged.
+Alpha.73B-6 retains that B5 entrance and changes only the final did-show safety pass. It classifies actual field and compact
+action/footer visibility before considering raw layout delta: `CLEAR` and visible `MICRO_SETTLING` perform no sheet
+animation, while `REAL_OCCLUSION` keeps bounded body-scroll-first correction and only its residual sheet rise. The shared
+eight-point `spacing.sm` token characterizes the reproduced five-to-eight-point settling window; it never waives actual
+clipping. Hide/close cancel queued reconciliation, and physical PASS remains owner-gated.
+
 Alpha.72 is finalized at `ALPHA72_FINALIZATION_COMPLETE`; its accepted product checkpoint is
 `ALPHA72_DRAWING_FOUNDATION_COMPLETE`. The library-independent Drawing foundation, native/runtime handset orientation
 stabilization, selected SVG adapter, transient authoring path, shared freehand display smoothing, and committed render-cache
@@ -14,22 +262,21 @@ Alpha.70 remains finalized at `ALPHA70_FINALIZATION_COMPLETE` with product check
 
 Document role: canonical owner for the current result, next candidate, and Version Delta boundary. It is not the historical implementation ledger; completed details live in numbered immutable evidence.
 
-## Current result — 2.0.0-alpha.72
+## Current result — 2.0.0-alpha.73
 
-Status: `ALPHA72_FINALIZATION_COMPLETE`.
+Status: `ALPHA73_FINALIZATION_COMPLETE`.
 
-Accepted product checkpoint: `ALPHA72_DRAWING_FOUNDATION_COMPLETE`.
+Accepted product checkpoint: `ALPHA73_COMPLETE`.
 
 Owner physical result: `PASS`.
 
-Alpha.72 finalizes the renderer-independent Drawing foundation and the selected SVG development authoring path. Native
-startup plus runtime orientation ownership keeps handsets portrait-up and tablets unrestricted. Active freehand remains
-transient until one release commit, active and committed display paths share deterministic midpoint-quadratic smoothing,
-and active pointer movement rebuilds committed layer/projection/path `0/0/0`. Owner physical iPhone QA accepted the
-curves, Heavy response, counters, and portrait zero-twitch. The customer-facing feature name is `스케치`; PoC/renderer/
-SVG/performance labels remain DEV-only, and production remains disabled as `스케치(준비 중)`. Finalization adds no
-product behavior, dependency, native, config, EAS, schema, migration, or data mutation. Alpha.73 production editor work
-is a separately approved future Delta and has not started.
+Alpha.73 finalizes the first authenticated DEV/TEST Product Sketch vertical slice and the shared Static Sheet / keyboard
+normalization. Product Sketch uses the alpha.72 SVG/world foundation and provides pen, line, arrow, text, mixed history,
+explicit Save/reopen, and guarded discard without PDF/image/R2/export coupling. Static Sheets keep one derived root,
+body-scroll-first reveal, registered keyboard-class handoff, nested ownership, numeric direct/Reel stability, and exact
+hide restore without common root dragging or user detents. Owner actual-iPhone evidence accepts the cumulative A73D
+Keyboard / Static Sheet gate, while earlier retained evidence accepts the Sketch tool and persistence gate. Production
+keeps disabled `스케치(준비 중)`. Finalization changes only version, contracts, Git, and artifacts; alpha.74 has not started.
 
 ## Alpha.72 current candidate — Drawing Foundation
 

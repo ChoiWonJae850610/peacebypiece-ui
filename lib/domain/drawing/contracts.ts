@@ -1,4 +1,6 @@
 export const DRAWING_SCENE_SCHEMA_VERSION = 1 as const;
+export const DRAWING_TEXT_MAX_LENGTH = 120;
+export const DRAWING_TEXT_DEFAULT_FONT_SIZE = 34;
 
 export const DRAWING_CANONICAL_CANVAS = Object.freeze({
   width: 1_000,
@@ -46,6 +48,14 @@ export type DrawingArrowElement = DrawingElementBase &
     end: DrawingPoint;
   }>;
 
+export type DrawingTextElement = DrawingElementBase &
+  Readonly<{
+    kind: "text";
+    anchor: DrawingPoint;
+    content: string;
+    fontSize: number;
+  }>;
+
 export type DrawingBounds = Readonly<{
   x: number;
   y: number;
@@ -69,6 +79,7 @@ export type DrawingElement =
   | DrawingFreehandElement
   | DrawingLineElement
   | DrawingArrowElement
+  | DrawingTextElement
   | DrawingRectangleElement
   | DrawingEllipseElement;
 

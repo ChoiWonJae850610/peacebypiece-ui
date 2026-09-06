@@ -14,9 +14,9 @@ const read = (file) => fs.readFileSync(file, "utf8");
 
 for (let cycle = 0; cycle < 3; cycle += 1) {
   const restingOffset = 184;
-  assert.equal(resolveWaflSheetKeyboardRestoreOffset({ settledOffset: restingOffset, userDragged: false }), restingOffset);
-  assert.equal(resolveWaflSheetKeyboardRestoreOffset({ settledOffset: restingOffset, userDragged: true }), null);
-  assert.equal(resolveWaflSheetKeyboardRestoreOffset(null), null);
+  assert.equal(resolveWaflSheetKeyboardRestoreOffset(restingOffset), restingOffset);
+  assert.equal(resolveWaflSheetKeyboardRestoreOffset(restingOffset), restingOffset);
+  assert.equal(resolveWaflSheetKeyboardRestoreOffset(Number.NaN), 0);
 
   let focus = openCreateRecipeKeyboardFocus();
   const entrance = consumeCreateRecipeEntranceFocus(focus);
@@ -79,7 +79,7 @@ assert.match(experience, /copyPending \|\| reorderPending \? "레시피를 생�
 
 console.log(JSON.stringify({
   contract: "workorder-v2-alpha68-create-sheet-keyboard-restore-blocker-parity",
-  keyboard: { cycles: 3, nativeHideRestores: true, userDragPreserved: true, focusReacquire: false },
+  keyboard: { cycles: 3, nativeHideRestores: true, derivedStaticRestored: true, focusReacquire: false },
   production: { helperParity: true, dirtyOnly: true, failureSwitch: false },
   create: { modalOwnedBlocker: true, duplicateGlobalBlocker: false, exactCopy: true },
   physicalResultInferred: false,

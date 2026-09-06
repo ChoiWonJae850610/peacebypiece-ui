@@ -90,8 +90,9 @@ for (const marker of [
   "setHeaderMeasured(false)",
   "setFooterMeasured(false)",
   "measured: true",
-  "draggable && openReady && !actionPending",
+  'testID="wafl-sheet-fixed-header"',
 ]) assert.ok(sheet.includes(marker), `shared entrance owner missing ${marker}`);
+assert.doesNotMatch(sheet, /draggable|PanResponder|onMoveShouldSetResponder|onResponderMove/u);
 assert.match(reel, /sizing="reelAdaptive"/u);
 assert.match(reel, /adaptiveMinimumBodyHeight=\{reelAdaptiveBodyHeight\}/u);
 assert.match(reelSizing, /WAFL_REEL_ROW_HEIGHT = 44/u);

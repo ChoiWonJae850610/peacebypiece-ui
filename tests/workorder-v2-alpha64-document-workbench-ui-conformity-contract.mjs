@@ -89,7 +89,8 @@ assert.doesNotMatch(workbench, /ProductionCardMock|mockProductionCard|배송요�
 assert.match(workbench, /QuickDeliveryFoundation/);
 assert.doesNotMatch(workbench, /detail\.amounts\.(?:unitPrice|estimatedTotal|fabricTotal|accessoryTotal|processTotal)/);
 
-assert.match(picker, /<WaflInputModeSwitch[\s\S]*mode=\{state\.mode === "reel" \? "picker" : "direct"\}/);
+assert.match(picker, /renderPath === "numeric-keypad"[\s\S]*<WaflInputModeSwitch[^>]*mode="direct"/);
+assert.match(picker, /renderPath !== "numeric-keypad"[\s\S]*<WaflInputModeSwitch mode="picker"/);
 assert.doesNotMatch(picker, /릴로 선택|릴 선택|릴 피커로 입력/);
 assert.match(picker, /resolveWaflPickerRenderPath\(kind, state\.mode\)/);
 assert.match(picker, /dispatch\(\{ type: "set-mode", mode: nextMode \}\)/);

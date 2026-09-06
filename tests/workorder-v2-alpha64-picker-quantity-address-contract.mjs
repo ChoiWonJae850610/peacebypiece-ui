@@ -45,8 +45,9 @@ assert.match(quick, /cancelDirectEditor[\s\S]*nested\.dismiss\(\)[\s\S]*setActiv
 assert.match(quick, /returnToPicker[\s\S]*nested\.transition\("picker"\)/);
 assert.match(quick, /applyDirectEditor[\s\S]*setLocation/);
 assert.match(quick, /QuickDeliveryAddressSearchSheet/);
-assert.match(quick, /inputRef=\{detailAddressInputRef\}/);
-assert.match(quick, /onAfterOpen=\{handleDirectAfterOpen\}/);
+assert.doesNotMatch(quick, /detailAddressInputRef|onPreparedForAutoFocus|requestAnimationFrame/, "A73C nested return is manual focus");
+assert.match(quick, /footerPolicy="always"/, "address direct retains stable sheet-level X\/V independently of keyboard completion");
+assert.match(quick, /completionMode="dismiss" keyboardType="phone-pad"/, "phone completion dismisses editing without applying the whole address");
 assert.match(addressSheet, /title="주소 검색"/);
 assert.match(addressSheet, /도로명, 건물명 또는 지번 검색/);
 assert.match(addressSheet, /generationRef/);

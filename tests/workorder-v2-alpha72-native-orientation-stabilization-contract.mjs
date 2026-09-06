@@ -96,10 +96,11 @@ assert.doesNotMatch(pluginSource, /android:screenOrientation/u, "Android tablet 
 
 const drawingHashes = {
   "adapters.ts": "ceda989898686b350eeda736571566c7cc2050ea450228fa68a7c04d8fee6cd8",
-  "contracts.ts": "c6c70cb2748ae1cb9fd95cb540fe21f5adfcd67a9abbb0fa0115508743cf8b62",
+  // Alpha.73B's approved additive v1 text-kind evolution is the current protected foundation identity.
+  "contracts.ts": "2f1b9caa5a949d161da51e9acabc325668b213e31922f26e9b8788cedda1657b",
   "history.ts": "b0e68332df7d345c2b9f138609819d0602593127fe6afe3dc838e727d783d510",
   "index.ts": "e370028eee95dce7d5464a147985a5b421fd18257b165f72e714df7c4ac99a1b",
-  "scene.ts": "f4ab19825166166388228a0061c05228a5cbfed58e1e3cf6d2c7b04e42f95385",
+  "scene.ts": "c3ca2262336770bf8c73bb48d409fcd333493641f09ba7cda2b54cb22fdd4192",
   "viewport.ts": "d5070d7f2bc44c90f3f6f4f779fb2df03954318af1b21b8f3ef15129538383be",
 };
 for (const [name, expected] of Object.entries(drawingHashes)) {
@@ -107,7 +108,7 @@ for (const [name, expected] of Object.entries(drawingHashes)) {
 }
 const gallery = read("apps/mobile/features/work-orders/images/WorkOrderImageGallery.tsx");
 assert.match(gallery, /"스케치, 준비 중"/u);
-assert.match(gallery, /disabled=\{!props\.drawingRendererPocEnabled\}/u);
+assert.match(gallery, /disabled=\{!props\.sketchAuthoringEnabled \|\| !props\.canEdit\}/u);
 for (const owner of [
   read("docs/codex-current-state.md"),
   read("docs/project/app-v2/08-roadmap-2.0.md"),
