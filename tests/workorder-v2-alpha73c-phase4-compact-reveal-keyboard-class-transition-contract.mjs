@@ -100,7 +100,7 @@ assert.match(sheet, /compactCompositionGap[\s\S]{0,180}footer !== null/u);
 assert.doesNotMatch(sheet, /keyboardClassTransition[\s\S]{0,300}(setTimeout|keyboardVerticalOffset)/u);
 
 assert.equal(fs.readdirSync("db/v2/migrations").filter((name) => name.endsWith(".sql")).length, 22);
-assert.match(fs.readFileSync("lib/constants/version.ts", "utf8"), /2\.0\.0-alpha\.(?:72|73)/u);
+assert.match(fs.readFileSync("lib/constants/version.ts", "utf8"), /2\.0\.0-alpha\.(?:72|73|74)/u);
 
 console.log(JSON.stringify({
   ok: true,

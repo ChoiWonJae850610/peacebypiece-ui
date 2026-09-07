@@ -18,7 +18,7 @@ const finishVersion = read("tools/pipeline/finish-version.ps1");
 const mobilePackage = JSON.parse(read("apps/mobile/package.json"));
 const migrationFiles = fs.readdirSync("db/v2/migrations").filter((name) => /^\d{3}_.*\.sql$/u.test(name)).sort();
 
-assert.equal(version, "2.0.0-alpha.73");
+assert.match(version, /^2\.0\.0-alpha\.\d+$/u);
 for (const owner of [currentState, roadmap, devicePlan]) {
   assert.match(owner, /ALPHA73_COMPLETE/u);
   assert.match(owner, /ALPHA73_FINALIZATION_COMPLETE/u);
@@ -26,7 +26,7 @@ for (const owner of [currentState, roadmap, devicePlan]) {
 }
 assert.match(currentState, /OWNER_IPHONE_PHYSICAL_PASS[\s\S]{0,220}(?:A73D|Keyboard|Static Sheet)/u);
 assert.match(devicePlan, /Address Search provider-result[\s\S]{0,120}NOT_RUN/u);
-assert.match(expoEnvironment, /Internal APP_VERSION \| `2\.0\.0-alpha\.73`/u);
+assert.match(expoEnvironment, /Internal APP_VERSION \| `2\.0\.0-alpha\.\d+`/u);
 assert.match(expoEnvironment, /Alpha\.73 finalization runtime boundary/u);
 
 assert.match(guardrails, /Final alpha\.73 boundary/u);
@@ -50,9 +50,9 @@ assert.match(pipeline, /\.Name -like "repo-state-2\.0\.0-\*"/u);
 assert.doesNotMatch(pipeline, /Get-ChildItem -LiteralPath \$NewestResultDIr -Force[^\n]*\| ForEach-Object \{[\s\S]{0,120}Remove-Item/u);
 assert.match(
   finishVersion,
-  /ExpectedAppVersion -eq "2\.0\.0-alpha\.73"[\s\S]*db\/v2\/migrations\/022_v2_work_order_drawings\.sql/u,
+  /ExpectedAppVersion -in @\("2\.0\.0-alpha\.73", "2\.0\.0-alpha\.74"\)[\s\S]*db\/v2\/migrations\/022_v2_work_order_drawings\.sql/u,
 );
-assert.match(roadmap, /Alpha\.74 work has not started/u);
+assert.match(roadmap, /ALPHA74_SKETCH_RESPONSIVE_SHAPE_AUTHORING_IPHONE_IPAD_QA_REQUIRED/u);
 
 console.log(JSON.stringify({
   ok: true,

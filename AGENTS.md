@@ -29,7 +29,7 @@ The responsibility matrix and task routing live in `docs/project/app-v2/00-start
 - `docs/project/app-v2/*` is the priority authority for the `2.0.x` App-first line.
 - Expo React Native is the customer-facing mobile/tablet priority. Next.js remains for public web, administration, operations, API, documents, internal showroom, and test tooling.
 - `docs/project/v2/*` remains the preserved `0.30.x` Product/Sheet/Card and `/ui` design baseline. It is a task-routed reference, not the active App-first delivery ledger.
-- Normal production-card phone screens are portrait-first. Tablets support portrait and landscape without becoming compressed desktop administration.
+- Phone and compact-tablet production screens are portrait-only. Regular/large tablets support portrait and landscape without becoming compressed desktop administration. Product Sketch is portrait-only on every device class while its WORLD-coordinate Drawing model remains orientation-independent.
 - `/system` and `/workspace` remain until a separately approved phased replacement and removal.
 - Do not infer current authority from an old completion paragraph. Use the current snapshot, roadmap Delta, normative specialist owner, and applicable immutable evidence.
 

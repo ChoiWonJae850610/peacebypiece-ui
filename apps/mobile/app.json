@@ -27,6 +27,7 @@
     },
     "ios": {
       "supportsTablet": true,
+      "requireFullScreen": true,
       "bundleIdentifier": "com.wafl.app",
       "config": {
         "usesNonExemptEncryption": false
@@ -39,7 +40,7 @@
       }
     },
     "extra": {
-      "appVersion": "2.0.0-alpha.73",
+      "appVersion": "2.0.0-alpha.74",
       "mockOnly": false,
       "dataMode": "dev-test-tailscale-auto-connect",
       "router": {},

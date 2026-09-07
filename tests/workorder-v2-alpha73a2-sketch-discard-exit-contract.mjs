@@ -47,7 +47,7 @@ assert.match(decisionSheet, /pendingResolutionRef\.current = value;\s*setVisible
 assert.match(decisionSheet, /onAfterClose=\{props\.resolveAfterClose \? resolveAfterSheetClose : undefined\}/u);
 assert.match(decisionSheet, /visible=\{visible\}/u);
 assert.match(editor, /<WaflDecisionSheet decision=\{decision\} resolveAfterClose/u);
-assert.match(editor, /function closeEditorSession\(\) \{\s*if \(!parentCloseGuardRef\.current\.close\(\)\) return;\s*props\.onClose\(\);\s*discardActiveStroke\(\);\s*setDecision\(null\);/u);
+assert.match(editor, /function closeEditorSession\(\) \{\s*if \(!parentCloseGuardRef\.current\.close\(\)\) return;\s*props\.onClose\(\);\s*discardActiveGesture\(\);\s*setDecision\(null\);/u);
 assert.match(editor, /if \(intent === "close"\) \{ closeEditorSession\(\); return; \}/u);
 assert.match(editor, /onConfirm: closeEditorSession/u);
 assert.match(editor, /onCancel: \(\) => setDecision\(null\)/u);

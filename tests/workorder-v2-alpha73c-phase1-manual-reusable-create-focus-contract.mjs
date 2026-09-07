@@ -57,7 +57,7 @@ const drawingApi = read("apps/mobile/lib/api/drawingApi.ts");
 assert.match(drawingApi, /primary-sketch/u, "Drawing persistence boundary must remain present");
 
 const version = read("lib/constants/version.ts");
-assert.match(version, /2\.0\.0-alpha\.(?:72|73)/u);
+assert.match(version, /2\.0\.0-alpha\.(?:72|73|74)/u);
 assert.equal(fs.readdirSync(path.join(root, "db", "v2", "migrations")).filter((name) => name.endsWith(".sql")).length, 22);
 
 const design = read("docs/project/app-v2/input-sheet-keyboard-normalization-audit-design.md");

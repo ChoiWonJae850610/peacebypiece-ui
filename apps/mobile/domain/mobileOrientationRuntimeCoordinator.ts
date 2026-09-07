@@ -5,6 +5,7 @@ import {
 
 export type WaflRuntimeOrientationCoordinator = {
   start: () => Promise<void>;
+  updateAction: (action: WaflRuntimeOrientationAction) => Promise<void>;
   handleAppStateChange: (nextAppState: string) => Promise<void>;
   dispose: () => void;
 };
@@ -14,13 +15,14 @@ export function createWaflRuntimeOrientationCoordinator(input: {
   initialAppState: string;
   apply: (action: WaflRuntimeOrientationAction) => Promise<void>;
 }): WaflRuntimeOrientationCoordinator {
+  let currentAction = input.action;
   let currentAppState = input.initialAppState;
   let disposed = false;
   let applying: Promise<void> | null = null;
   let queued = false;
 
   const reconcile = async () => {
-    if (disposed || currentAppState !== "active" || input.action === "none") {
+    if (disposed || currentAppState !== "active" || currentAction === "none") {
       return;
     }
     if (applying) {
@@ -32,7 +34,7 @@ export function createWaflRuntimeOrientationCoordinator(input: {
     applying = (async () => {
       do {
         queued = false;
-        await input.apply(input.action);
+        await input.apply(currentAction);
       } while (queued && !disposed && currentAppState === "active");
     })();
 
@@ -45,6 +47,11 @@ export function createWaflRuntimeOrientationCoordinator(input: {
 
   return {
     start: reconcile,
+    updateAction: async (action) => {
+      if (action === currentAction) return;
+      currentAction = action;
+      await reconcile();
+    },
     handleAppStateChange: async (nextAppState) => {
       const previousAppState = currentAppState;
       currentAppState = nextAppState;

@@ -1,5 +1,103 @@
 # WAFL v2 App Device Test Plan
 
+## Alpha.74 final device result
+
+- Owner actual iPhone QA: `PASS` for general WAFL portrait-only, Product Sketch portrait/open continuity, and alpha.74
+  Drawing regression. Its prior Save count is one; finalization adds no Save.
+- Owner actual iPad-mini QA: `PASS` for general/Sketch portrait-only, content and native outer-frame/black-diamond motion
+  `0`, bounce `0`, split-layout flash `0`, Recipe/tab/Sketch continuity, pen/line/arrow/rectangle/ellipse, touch/render
+  alignment, mixed Undo/Redo, and exactly one Save followed by close/reopen of the editable WORLD Scene.
+- Regular/Large iPad actual-device QA: `NOT_RUN`. Its general portrait+landscape and Sketch portrait-only policy remains
+  automated contract evidence and a later production gate.
+- Android phone/tablet actual-device QA: `NOT_RUN`. It is not inferred PASS and is not an alpha.74 finalization blocker.
+- Address Search provider-result physical path remains `NOT_RUN`. No additional Owner device action is required for
+  alpha.74 finalization.
+- This advances `ALPHA74_COMPLETE` and `ALPHA74_FINALIZATION_COMPLETE`.
+
+## Alpha.74 iOS Compact Native app/window mask gate
+
+- Install only fresh existing-project iOS `development` build `90ec13f2-b6ec-4e2e-baba-c1195161a69c`, which contains
+  the generated AppDelegate compact mask.
+- On iPad mini, cold-launch first in portrait and then while physically held landscape. Both WAFL content and the outer
+  native window must remain portrait with black edge/diamond/frame rotation attempt and bounce `0`.
+- In retained Recipe detail, repeated left/right rotation must preserve selected Recipe/tab/detail and keep split-layout
+  flash, Decision, automatic Save, content motion, and native-frame motion at `0`.
+- In Product Sketch, rotate both directions without touching the canvas. The Sketch stays open and portrait with native
+  frame motion, underlying Recipe replacement, Decision, and automatic Save `0`.
+- Only after every no-motion gate passes may Owner perform the single remaining iPad Drawing Save/Reopen. Additional
+  iPhone Save is `0`. Regular/Large iPad base landscape remains contract evidence until such a device is available.
+- Automated evidence never infers Owner physical zero-motion PASS.
+
+## Alpha.74 Compact Tablet zero-rotation-motion re-QA gate
+
+- Reuse the currently installed fullscreen-enabled iOS Development Build; a new EAS Build/re-sign/reinstall is not part
+  of this checkpoint.
+- Cold-launch iPad mini in portrait and while physically held landscape. General WAFL must remain visually portrait with
+  rotation animation/bounce `0`, temporary landscape/split presentation `0`, and navigation reset `0`.
+- Repeat physical left/right rotation in retained Recipe detail. Selected Recipe/tab and the stable detail subtree must
+  remain continuous, with split-layout flash `0` and Save `0`.
+- Open Product Sketch without touching the canvas and rotate both directions. Portrait presentation, open continuity,
+  Scene visibility, Decision `0`, and automatic Save `0` are required before any Drawing Save QA.
+- Only after those gates PASS, run the retained mixed-tool regression and exactly one iPad Save/reopen. Regular/Large
+  Tablet rotation remains contract/simulation evidence in this checkpoint. Physical PASS is not inferred.
+
+## Alpha.74 iOS fullscreen native-build gate
+
+- Install only existing-project internal iOS `development` build `035dd0f3-8be1-4c24-8cd0-6759788bebef`; an older IPA,
+  re-sign, EAS Update,
+  preview/production build, TestFlight, or App Store delivery is not evidence for this gate.
+- On iPhone, verify base WAFL and Product Sketch remain portrait-only without performing an additional Drawing Save.
+- On iPad mini, cold-launch general WAFL while held landscape and verify it presents portrait; then verify selected Recipe,
+  active tab, and responsive detail continuity. Open Product Sketch and verify it remains portrait-only with no automatic
+  close, Decision, or Save. Perform the single permitted iPad Save/Reopen only after those no-save orientation gates pass.
+- Regular/large iPad base portrait+landscape remains a contract/simulation gate because no such physical device is
+  available. `UIRequiresFullScreen` intentionally disables iPad Split View and Slide Over. Automated evidence never
+  infers Owner physical PASS.
+
+## Alpha.74 compact-tablet and Product Sketch portrait-policy gate
+
+- iPhone general WAFL and Product Sketch must remain portrait-only; no additional iPhone Save is permitted.
+- iPad mini is the compact-tablet physical reference, not a runtime model-name branch. General WAFL and Product Sketch
+  must remain/return portrait while selected Recipe, current tab, Sketch session, and Scene remain continuous.
+- Product Sketch must remain open during physical rotation and cause no Decision or automatic Save. One iPad Save/Reopen
+  is allowed only after orientation and no-save Drawing smoke gates pass.
+- Regular/large tablet base WAFL portrait+landscape and post-Sketch restore are contract/runtime-simulation gates because
+  no such physical device is currently available. Large-tablet physical PASS is not inferred.
+
+## Alpha.74 iPad responsive detail-continuity re-QA gate
+
+- The first Sketch supported-orientation correction remains installed, but Owner iPad mini physical QA still closed
+  Sketch in both directions. The current correction preserves one selected Recipe detail/gallery/Sketch subtree identity
+  while the responsive list/detail layout changes.
+- First perform the no-gesture portrait→landscape and landscape→portrait gate in one open Sketch session. Sketch, selected
+  Recipe, current tab, unsaved Scene, and existing Scene must remain; close/Decision/automatic Save count is zero.
+- Only after both directions pass, close Sketch without saving, rotate the active Recipe once, verify Recipe/tab continuity,
+  reopen Sketch, then resume geometry, repeat-rotation, stale-gesture cancellation, and exactly-one iPad Save/Reopen QA.
+- iPhone remains a no-save portrait/open-close smoke because its alpha.74 Save budget is already consumed. Automated
+  stable-identity and orientation contracts do not infer Owner physical PASS.
+
+## Alpha.74 iPad Sketch orientation-lifecycle re-QA gate
+
+- Owner iPhone portrait QA is PASS; its one permitted Save is consumed. Re-QA is a no-save open/close smoke only.
+- Owner iPad mini physical rotation closed Product Sketch in both portrait→landscape and landscape→portrait before any
+  active gesture or iPad Save. After the Product Sketch-local Modal orientation correction, first verify both rotations
+  keep Sketch open with no Decision, navigation, or automatic Save.
+- Only after that lifecycle gate passes, resume the blocked iPad WORLD geometry, repeated-rotation/no-drift,
+  active-gesture cancellation, and exactly-one Save/Reopen checks. iPad Save budget remains one.
+- Automated source/runtime evidence does not infer the iPad physical result.
+
+## Alpha.74 responsive shape-authoring iPhone/iPad gate
+
+- On iPhone portrait, verify the six-tool toolbar without clipping, draw rectangle/ellipse in opposite drag directions,
+  confirm transient preview and exact Undo/Redo order, save once, close, and reopen with unchanged geometry.
+- On iPad portrait and landscape, inspect the same saved Scene before drawing. Rotation alone must not stretch, move, or
+  rewrite any element. Draw ellipse/line in landscape, rotate repeatedly, and confirm unchanged world geometry.
+- Rotate during an active rectangle gesture. The stale gesture must cancel without a malformed element/history commit;
+  after layout settles, a new rectangle must author normally. Save at most once on iPad and reopen in the opposite
+  orientation with the same element IDs/order/geometry.
+- Pen/line/arrow/text, text child-sheet lifecycle, explicit Save/reopen, dirty discard, and phone portrait policy remain
+  regression gates. Automated evidence does not infer Owner iPhone or iPad PASS.
+
 ## Alpha.73 final device result
 
 Owner actual-iPhone QA is accepted as PASS for the cumulative A73D Keyboard / Static Sheet stabilization gate. The final
@@ -72,12 +170,12 @@ Document role: canonical owner for supported-device matrix, physical-device acce
 | Device | Primary orientation | Required concerns | Current actual evidence |
 | --- | --- | --- | --- |
 | iPhone | portrait | one-card flow, Korean input, touch targets, loading/error, background/re-entry, share/camera when implemented | alpha.43–50 evidence |
-| iPad mini | portrait and landscape | readable centered workspace, drawer/selection, tab and table overflow | actual feature QA remains task-specific |
+| iPad mini / compact tablet | portrait only | larger-phone continuity, readable workspace, tab and table overflow | alpha.74 policy requires actual compact-tablet QA |
 | iPad Pro | portrait and landscape | useful expanded/split review without desktop-admin compression | actual feature QA remains task-specific |
 | Galaxy phone | portrait | Android permissions/input/navigation and production-card density | actual feature QA remains task-specific |
-| Galaxy Tab | portrait and landscape | Android file/camera permission, Korean input, rotation recovery | actual feature QA remains task-specific |
+| Galaxy Tab | class-dependent: compact portrait-only, regular/large both | Android file/camera permission, Korean input, stable short-side classification | actual feature QA remains task-specific |
 
-Normal phone production-card work is portrait-first. A future drawing/sketch module may define a separately approved phone-landscape exception. Tablet layouts must support both orientations in code before actual-device acceptance can be requested.
+Phone and compact-tablet production work is portrait-only. Regular/large tablet general WAFL supports both orientations. Product Sketch is portrait-only on every class; its Drawing model remains viewport-independent.
 
 ## Shared acceptance requirements
 

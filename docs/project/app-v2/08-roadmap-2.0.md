@@ -1,5 +1,78 @@
 # WAFL v2 App-first Roadmap and Version Delta
 
+Alpha.74 is finalized at `ALPHA74_FINALIZATION_COMPLETE` with accepted product checkpoint `ALPHA74_COMPLETE`.
+Owner actual physical QA passes iPhone and iPad mini for the finalized Drawing and portrait policy: compact-device
+content/native-window rotation motion, bounce, and split-layout flash are `0`; Recipe/tab/Sketch continuity and
+pen/line/arrow/rectangle/ellipse, alignment, mixed Undo/Redo, and the one iPad Save/close/reopen WORLD Scene pass.
+Regular/Large iPad and Android actual-device QA remain `NOT_RUN`, not blockers or inferred PASS. APP_VERSION is
+`2.0.0-alpha.74`; Scene v1, migration `22/22`, Production `스케치(준비 중)`, tag/release `0/0`, and data safety remain.
+The next recommended alpha.75 boundary is shared WORLD hit-testing, selection, object delete, and eraser; it is not
+started by alpha.74 finalization.
+
+Alpha.74 iOS Compact Native app/window orientation-mask correction is implemented at
+`ALPHA74_IOS_COMPACT_NATIVE_ORIENTATION_MASK_QA_REQUIRED`. Owner iPad-mini video narrowed the remaining failure to
+outer native-window rotation motion after React content, split-layout continuity, root native-stack portrait policy,
+and `UIRequiresFullScreen` were already correct. The Expo config plugin now reproducibly injects the top AppDelegate
+mask using logical `min(screen.width, screen.height)` and the shared `768` regular-tablet boundary: handset/compact
+tablet return portrait; regular tablet delegates to Expo's existing subscriber intersection and retains landscape.
+Info.plist remains broad for iPad, runtime Product Sketch transitions and Android policy remain intact. Existing-project
+iOS `development`/internal build `90ec13f2-b6ec-4e2e-baba-c1195161a69c` finished after all gates with no credential,
+Team, bundle, or registered-device change. Dependency/API/schema/migration/version and business data remain unchanged;
+Owner physical zero-motion PASS is not inferred.
+
+Alpha.74 Compact Tablet zero-rotation-motion correction is implemented at
+`ALPHA74_COMPACT_TABLET_ZERO_ROTATION_MOTION_REQA_REQUIRED`. Owner iPad-mini evidence on the fullscreen-enabled build
+showed a visible rotate/bounce and transient split layout before portrait restoration. The already-approved
+orientation-invariant device class now owns both the root Expo Router native-stack `orientation` option and Recipe
+responsive presentation: handset/compact tablet resolve to `portrait_up` plus phone-like presentation, while regular
+tablet resolves to `default` and remains tablet-eligible. Runtime reconciliation, `UIRequiresFullScreen`, broad iPad
+native orientation metadata, Product Sketch portrait scope/Modal, stable detail-host identity, Drawing, API/schema,
+dependencies, native/config/EAS, migration, and version remain unchanged. The installed Development Build is reused;
+Owner physical no-motion PASS is not inferred.
+
+Alpha.74 iOS fullscreen orientation native prerequisite is implemented at
+`ALPHA74_IOS_FULLSCREEN_ORIENTATION_NATIVE_BUILD_QA_REQUIRED`. The existing compact-tablet base portrait policy,
+regular/large-tablet rotation policy, Product Sketch portrait scope, native orientation arrays, and stable responsive
+detail host are retained. Expo iOS config adds only `requireFullScreen: true`; generated SDK55 Info.plist introspection
+proves `UIRequiresFullScreen: true`, accepting the product consequence that iPad Split View and Slide Over are disabled.
+One and only one new existing-project internal `development` build was submitted after all pre-build gates passed. Build
+`035dd0f3-8be1-4c24-8cd0-6759788bebef` finished successfully with public version `2.0.0` and build number `1`; Owner
+iPhone/iPad installation and physical QA remain. Dependency, API/schema/migration, APP_VERSION, Git, release, and
+business-data mutation remain unchanged; physical PASS is not inferred.
+
+Alpha.74 compact-tablet and Product Sketch portrait policy is implemented at
+`ALPHA74_COMPACT_TABLET_SKETCH_PORTRAIT_POLICY_QA_REQUIRED`. The product now treats phone and compact tablet as
+portrait-only, regular/large tablet base WAFL as portrait+landscape, and Product Sketch as portrait-only on every mobile
+device class. Device class is orientation-invariant: iOS retains its tablet idiom, Android retains the 600dp native tablet
+boundary, and both use the physical-screen short side with the existing canonical 768 responsive token to distinguish
+compact from regular tablet. A root orientation provider remains the sole native-call owner; Product Sketch acquires a
+declarative portrait scope and close restores the base policy. Stable responsive Recipe detail identity and the complete
+Drawing WORLD/viewport/persistence architecture remain. Dependency/native/config/EAS/API/schema/migration delta is zero,
+APP_VERSION stays `2.0.0-alpha.73`, and physical PASS is not inferred.
+
+Alpha.74 iPad responsive Recipe-detail subtree continuity correction is implemented at
+`ALPHA74_IPAD_RESPONSIVE_DETAIL_CONTINUITY_REQA_REQUIRED`. The first Sketch-local Modal orientation correction remains,
+but Owner iPad physical QA failed identically in both directions. LIVE React identity analysis proved the responsive
+tablet/phone branch replaced the selected detail subtree and reset its local tab/gallery/Sketch visibility state. The
+bounded correction renders one stable keyed detail host across responsive mode changes while preserving list/detail
+visibility and layout policy. Breakpoint numbers, iPhone/tablet orientation policy, Drawing geometry/persistence,
+dependencies, native/config/EAS, API/schema, and migration remain unchanged. APP_VERSION stays `2.0.0-alpha.73`; Owner
+iPad lifecycle, geometry, stale-gesture, and one-Save/Reopen re-QA remains required.
+
+Alpha.74 iPad Product Sketch fullscreen orientation lifecycle correction is implemented at
+`ALPHA74_IPAD_SKETCH_ORIENTATION_LIFECYCLE_REQA_REQUIRED`. Actual iPhone portrait QA passed and consumed its one Save;
+actual iPad rotation in either direction dismissed the fullscreen Sketch with no active gesture and no iPad Save. The
+bounded correction adds the explicit four-orientation contract to Product Sketch's React Native fullscreen Modal. It
+does not claim the precise native dismissal callback, change global phone/tablet orientation policy, or touch other
+fullscreen surfaces, Drawing geometry/persistence, dependency/native/config/EAS, API/schema, or migration. APP_VERSION
+stays `2.0.0-alpha.73`; Owner iPad rotation/geometry/stale-gesture/one-Save re-QA remains required.
+
+Alpha.74 responsive Product Sketch shape authoring is implemented at
+`ALPHA74_SKETCH_RESPONSIVE_SHAPE_AUTHORING_IPHONE_IPAD_QA_REQUIRED`. The authenticated DEV/TEST toolbar adds
+`사각형 / 타원` through one pure WORLD-coordinate bounded-shape session and one viewport-generation cancellation guard.
+Scene v1, persistence/API, production exposure, dependencies, native/config/EAS, and migration remain unchanged;
+APP_VERSION stays `2.0.0-alpha.73` and Owner iPhone/iPad physical PASS is not inferred.
+
 Alpha.73 is finalized at `ALPHA73_FINALIZATION_COMPLETE` with accepted product checkpoint `ALPHA73_COMPLETE`. Product
 Sketch retains the Owner-accepted pen/line/arrow/text, mixed history, explicit Save/reopen, and dirty-discard behavior;
 release/production still exposes only disabled `스케치(준비 중)`. The Owner's final actual-iPhone statement
@@ -7,7 +80,7 @@ release/production still exposes only disabled `스케치(준비 중)`. The Owne
 Sheet gate only, superseding that chain's intermediate failures without inventing cycle counts. Static root drag,
 free-settle, user detent, drag-dismiss, and drag handle remain retired. APP_VERSION is `2.0.0-alpha.73`; DEV/TEST migration
 is `22/22`, Production migration is zero, and finalization adds no behavior, API/schema, dependency/native/config/EAS,
-or business-data mutation. Alpha.74 work has not started.
+or business-data mutation. It is the finalized baseline for the bounded alpha.74 candidate above.
 
 Alpha.73D Quick phone return-key opt-out is implemented at
 `ALPHA73D_QUICK_PHONE_RETURN_KEY_OPT_OUT_FIX_IPHONE_QA_REQUIRED`. The shared ValueField passes the existing typed
@@ -262,21 +335,20 @@ Alpha.70 remains finalized at `ALPHA70_FINALIZATION_COMPLETE` with product check
 
 Document role: canonical owner for the current result, next candidate, and Version Delta boundary. It is not the historical implementation ledger; completed details live in numbered immutable evidence.
 
-## Current result — 2.0.0-alpha.73
+## Current result — 2.0.0-alpha.74
 
-Status: `ALPHA73_FINALIZATION_COMPLETE`.
+Status: `ALPHA74_FINALIZATION_COMPLETE`.
 
-Accepted product checkpoint: `ALPHA73_COMPLETE`.
+Accepted product checkpoint: `ALPHA74_COMPLETE`.
 
 Owner physical result: `PASS`.
 
-Alpha.73 finalizes the first authenticated DEV/TEST Product Sketch vertical slice and the shared Static Sheet / keyboard
-normalization. Product Sketch uses the alpha.72 SVG/world foundation and provides pen, line, arrow, text, mixed history,
-explicit Save/reopen, and guarded discard without PDF/image/R2/export coupling. Static Sheets keep one derived root,
-body-scroll-first reveal, registered keyboard-class handoff, nested ownership, numeric direct/Reel stability, and exact
-hide restore without common root dragging or user detents. Owner actual-iPhone evidence accepts the cumulative A73D
-Keyboard / Static Sheet gate, while earlier retained evidence accepts the Sketch tool and persistence gate. Production
-keeps disabled `스케치(준비 중)`. Finalization changes only version, contracts, Git, and artifacts; alpha.74 has not started.
+Alpha.74 finalizes responsive Product Sketch rectangle/ellipse authoring and the compact-tablet/native orientation
+boundary over the alpha.73 Static Sheet and Drawing foundation. Owner actual iPhone and iPad-mini QA accepts portrait
+continuity, zero compact native-frame motion, stable Recipe/tab/Sketch identity, touch/render alignment, mixed history,
+and one explicit iPad Save/reopen of the editable WORLD Scene. Regular/Large iPad and Android physical execution remain
+`NOT_RUN`; their supported policy is contract evidence only. Production keeps disabled `스케치(준비 중)`. Finalization
+changes version, contracts, Git, and artifacts only; alpha.75 has not started.
 
 ## Alpha.72 current candidate — Drawing Foundation
 
@@ -1099,3 +1171,15 @@ fresh cm section followed by a separately fresh inch section derived from cm thr
 admitted on that host, while root/private routes stay 404 and internal file APIs remain workspace-
 authenticated. Evidence is recorded in `88-final-pdf-monochrome-branded-viewer-evidence.md`; only
 the new PDF visual delta remains physical re-QA.
+## Alpha.74 responsive Product Sketch shape authoring
+
+Status: `ALPHA74_SKETCH_RESPONSIVE_SHAPE_AUTHORING_IPHONE_IPAD_QA_REQUIRED`.
+
+The authenticated DEV/TEST Product Sketch exposes six authoring tools: `펜 / 선 / 화살표 / 사각형 / 타원 / 텍스트`.
+Rectangle and ellipse reuse Drawing Scene v1 and the selected SVG projection. A shared pure bounded-shape authoring owner
+keeps active preview outside Scene/history, clamps inverse-projected points to the canonical world, normalizes bounds in
+every drag direction, rejects WORLD-degenerate shapes, and commits once on release. The responsive toolbar wraps without
+shrinking below its usable touch width. Phone portrait and tablet portrait/landscape all project the same immutable Scene;
+a material canvas-layout generation change cancels an active drawing gesture before a stale release can commit. No eraser,
+selection, zoom/pan, image, pencil, PDF integration, WaflInputSheet refactor, dependency, native/config/EAS, API/schema,
+migration, release, or Production exposure is added. APP_VERSION stays `2.0.0-alpha.73`; physical PASS is not inferred.

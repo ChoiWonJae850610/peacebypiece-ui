@@ -8,16 +8,20 @@ import {
   Text,
   View,
   type LayoutChangeEvent,
+  type ModalProps,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { ArrowUpRight, Minus, PenLine, Redo2, Trash2, Type, Undo2 } from "lucide-react-native";
+import { ArrowUpRight, Circle, Minus, PenLine, Redo2, Square, Trash2, Type, Undo2 } from "lucide-react-native";
 
 import {
   appendDrawingActiveStrokePoint,
   beginDrawingActiveSegment,
+  beginDrawingActiveShape,
   beginDrawingActiveStroke,
   cancelDrawingActiveSegment,
+  cancelDrawingActiveShape,
   cancelDrawingActiveStroke,
+  clampDrawingPointToCanvas,
   commitDrawingScene,
   createDrawingCamera,
   createDrawingScene,
@@ -27,14 +31,18 @@ import {
   DRAWING_TEXT_MAX_LENGTH,
   drawingScenesEqual,
   finalizeDrawingActiveSegment,
+  finalizeDrawingActiveShape,
   finalizeDrawingActiveStroke,
+  isDrawingAuthoringViewportGenerationCurrent,
   redoDrawingScene,
   resolveDrawingViewportTransform,
   screenToWorld,
   serializeDrawingScene,
   undoDrawingScene,
   updateDrawingActiveSegment,
+  updateDrawingActiveShape,
   type DrawingActiveSegment,
+  type DrawingActiveShape,
   type DrawingActiveStroke,
   type DrawingElement,
   type DrawingPoint,
@@ -43,6 +51,7 @@ import {
 } from "@/domain/drawing";
 import { WAFL_FONTS } from "@/constants/fonts";
 import { WAFL_THEME } from "@/constants/theme";
+import { useWaflProductSketchOrientationPolicy } from "@/application/useWaflRuntimeOrientationPolicy";
 import { MobileApiError } from "@/domain/mobileContract";
 import WaflActionProcessingBlocker from "@/features/feedback/WaflActionProcessingBlocker";
 import type { WaflActionConfirmationState } from "@/features/feedback/WaflActionConfirmationCard";
@@ -67,14 +76,13 @@ const camera = createDrawingCamera();
 const penStyle = Object.freeze({ strokeColor: "#17263D", strokeWidth: 4, fillColor: null });
 const annotationStyle = Object.freeze({ strokeColor: "#17263D", strokeWidth: 3, fillColor: null });
 const textInsertionCaretStyle = Object.freeze({ strokeColor: WAFL_THEME.color.readOnly, strokeWidth: 2, fillColor: null });
+const WORK_ORDER_SKETCH_SUPPORTED_ORIENTATIONS: NonNullable<ModalProps["supportedOrientations"]> = [
+  "portrait",
+];
 
-type SketchTool = "pen" | "line" | "arrow" | "text";
+type SketchTool = "pen" | "line" | "arrow" | "rectangle" | "ellipse" | "text";
 
 type SaveIdentity = Readonly<{ clientRequestId: string; idempotencyKey: string }>;
-
-function clampWorldPoint(point: DrawingPoint): DrawingPoint {
-  return Object.freeze({ x: Math.max(0, Math.min(1_000, point.x)), y: Math.max(0, Math.min(1_400, point.y)) });
-}
 
 function newHistory() {
   return createDrawingSceneHistory(createDrawingScene());
@@ -86,10 +94,12 @@ export default function WorkOrderSketchEditor(props: Readonly<{
   visible: boolean;
   workOrderId: string;
 }>) {
+  useWaflProductSketchOrientationPolicy(props.visible);
   const [history, setHistory] = useState<DrawingSceneHistory>(newHistory);
   const [tool, setTool] = useState<SketchTool>("pen");
   const [activeStroke, setActiveStroke] = useState<DrawingActiveStroke | null>(null);
   const [activeSegment, setActiveSegment] = useState<DrawingActiveSegment | null>(null);
+  const [activeShape, setActiveShape] = useState<DrawingActiveShape | null>(null);
   const [textSheetVisible, setTextSheetVisible] = useState(false);
   const [textSession, setTextSession] = useState<WorkOrderSketchTextSession | null>(null);
   const [viewport, setViewport] = useState<DrawingViewport>({ width: 1, height: 1 });
@@ -104,6 +114,9 @@ export default function WorkOrderSketchEditor(props: Readonly<{
   const viewportRef = useRef(viewport);
   const activeStrokeRef = useRef<DrawingActiveStroke | null>(null);
   const activeSegmentRef = useRef<DrawingActiveSegment | null>(null);
+  const activeShapeRef = useRef<DrawingActiveShape | null>(null);
+  const viewportGenerationRef = useRef(0);
+  const activeGestureViewportGenerationRef = useRef<number | null>(null);
   const toolRef = useRef<SketchTool>("pen");
   const pendingTextAnchorRef = useRef<DrawingPoint | null>(null);
   const textSessionRef = useRef<WorkOrderSketchTextSession | null>(null);
@@ -131,8 +144,12 @@ export default function WorkOrderSketchEditor(props: Readonly<{
   const activePrimitive = useMemo(() => {
     if (activeStroke) return projectDrawingElement(finalizeDrawingActiveStroke(activeStroke), transform);
     if (activeSegment) return projectDrawingElement(activeSegment, transform);
+    if (activeShape) {
+      const preview = finalizeDrawingActiveShape(activeShape, 0);
+      return preview ? projectDrawingElement(preview, transform) : null;
+    }
     return null;
-  }, [activeSegment, activeStroke, transform]);
+  }, [activeSegment, activeShape, activeStroke, transform]);
   const textPreviewFrame = useMemo(() => textSession === null ? [] : projectDrawingTextInsertionPreview({
     anchor: textSession.anchor,
     caretStyle: textInsertionCaretStyle,
@@ -154,8 +171,11 @@ export default function WorkOrderSketchEditor(props: Readonly<{
       setDecision(null);
       activeStrokeRef.current = null;
       activeSegmentRef.current = null;
+      activeShapeRef.current = null;
+      activeGestureViewportGenerationRef.current = null;
       setActiveStroke(null);
       setActiveSegment(null);
+      setActiveShape(null);
       setTextSheetVisible(false);
       textSheetVisibleRef.current = false;
       textSessionRef.current = null;
@@ -197,9 +217,16 @@ export default function WorkOrderSketchEditor(props: Readonly<{
     setActiveSegment(null);
   }
 
+  function discardActiveShape() {
+    activeShapeRef.current = cancelDrawingActiveShape();
+    setActiveShape(null);
+  }
+
   function discardActiveGesture() {
     discardActiveStroke();
     discardActiveSegment();
+    discardActiveShape();
+    activeGestureViewportGenerationRef.current = null;
     pendingTextAnchorRef.current = null;
   }
 
@@ -219,7 +246,14 @@ export default function WorkOrderSketchEditor(props: Readonly<{
   }
 
   function worldPointFromEvent(locationX: number, locationY: number) {
-    return clampWorldPoint(screenToWorld({ x: locationX, y: locationY }, camera, viewportRef.current));
+    return clampDrawingPointToCanvas(screenToWorld({ x: locationX, y: locationY }, camera, viewportRef.current));
+  }
+
+  function activeGestureUsesCurrentViewport() {
+    return isDrawingAuthoringViewportGenerationCurrent(
+      activeGestureViewportGenerationRef.current,
+      viewportGenerationRef.current,
+    );
   }
 
   // Native gesture callbacks read mutable session refs; no renderer or Scene mutation occurs during render.
@@ -229,6 +263,7 @@ export default function WorkOrderSketchEditor(props: Readonly<{
     onMoveShouldSetPanResponder: () => editableRef.current && !savingRef.current && textSessionRef.current === null,
     onPanResponderGrant: (event) => {
       const point = worldPointFromEvent(event.nativeEvent.locationX, event.nativeEvent.locationY);
+      activeGestureViewportGenerationRef.current = viewportGenerationRef.current;
       if (toolRef.current === "text") {
         pendingTextAnchorRef.current = point;
         return;
@@ -239,17 +274,35 @@ export default function WorkOrderSketchEditor(props: Readonly<{
         setActiveSegment(segment);
         return;
       }
+      if (toolRef.current === "rectangle" || toolRef.current === "ellipse") {
+        const shape = beginDrawingActiveShape({ id: `${toolRef.current}:${Date.now()}:${sequenceRef.current += 1}`, kind: toolRef.current, point, style: annotationStyle });
+        activeShapeRef.current = shape;
+        setActiveShape(shape);
+        return;
+      }
       const stroke = beginDrawingActiveStroke({ id: `stroke:${Date.now()}:${sequenceRef.current += 1}`, point, style: penStyle });
       activeStrokeRef.current = stroke;
       setActiveStroke(stroke);
     },
     onPanResponderMove: (event) => {
+      if (!activeGestureUsesCurrentViewport()) {
+        discardActiveGesture();
+        return;
+      }
       if (toolRef.current === "line" || toolRef.current === "arrow") {
         const current = activeSegmentRef.current;
         if (!current) return;
         const next = updateDrawingActiveSegment(current, worldPointFromEvent(event.nativeEvent.locationX, event.nativeEvent.locationY));
         activeSegmentRef.current = next;
         setActiveSegment(next);
+        return;
+      }
+      if (toolRef.current === "rectangle" || toolRef.current === "ellipse") {
+        const current = activeShapeRef.current;
+        if (!current) return;
+        const next = updateDrawingActiveShape(current, worldPointFromEvent(event.nativeEvent.locationX, event.nativeEvent.locationY));
+        activeShapeRef.current = next;
+        setActiveShape(next);
         return;
       }
       const current = activeStrokeRef.current;
@@ -259,6 +312,11 @@ export default function WorkOrderSketchEditor(props: Readonly<{
       if (next.points !== current.points) setActiveStroke(next);
     },
     onPanResponderRelease: (event) => {
+      if (!activeGestureUsesCurrentViewport()) {
+        discardActiveGesture();
+        return;
+      }
+      activeGestureViewportGenerationRef.current = null;
       if (toolRef.current === "text") {
         const anchor = pendingTextAnchorRef.current;
         pendingTextAnchorRef.current = null;
@@ -278,6 +336,16 @@ export default function WorkOrderSketchEditor(props: Readonly<{
         activeSegmentRef.current = null;
         setActiveSegment(null);
         const element = finalizeDrawingActiveSegment(completed);
+        if (element) commitElement(element);
+        return;
+      }
+      if (toolRef.current === "rectangle" || toolRef.current === "ellipse") {
+        const current = activeShapeRef.current;
+        if (!current) return;
+        const completed = updateDrawingActiveShape(current, worldPointFromEvent(event.nativeEvent.locationX, event.nativeEvent.locationY));
+        activeShapeRef.current = null;
+        setActiveShape(null);
+        const element = finalizeDrawingActiveShape(completed);
         if (element) commitElement(element);
         return;
       }
@@ -353,6 +421,10 @@ export default function WorkOrderSketchEditor(props: Readonly<{
     const { width, height } = event.nativeEvent.layout;
     if (width <= 0 || height <= 0) return;
     const next = { width, height };
+    const current = viewportRef.current;
+    if (Math.abs(current.width - width) < 0.5 && Math.abs(current.height - height) < 0.5) return;
+    viewportGenerationRef.current += 1;
+    discardActiveGesture();
     viewportRef.current = next;
     setViewport(next);
   }
@@ -397,9 +469,8 @@ export default function WorkOrderSketchEditor(props: Readonly<{
   function closeEditorSession() {
     if (!parentCloseGuardRef.current.close()) return;
     props.onClose();
-    discardActiveStroke();
+    discardActiveGesture();
     setDecision(null);
-    discardActiveSegment();
     cancelText();
   }
 
@@ -420,16 +491,18 @@ export default function WorkOrderSketchEditor(props: Readonly<{
     });
   }
 
-  return <Modal animationType="slide" onRequestClose={requestClose} presentationStyle="fullScreen" visible={props.visible}>
+  return <Modal animationType="slide" onRequestClose={requestClose} presentationStyle="fullScreen" supportedOrientations={WORK_ORDER_SKETCH_SUPPORTED_ORIENTATIONS} visible={props.visible}>
     <SafeAreaView style={styles.safe}>
       <View style={styles.header}>
         <Text style={styles.title}>스케치</Text>
       </View>
       <View style={styles.toolPicker} testID="work-order-sketch-tool-picker">
-        <Tool accessibilityLabel="펜 도구" disabled={loading || saving} icon={<PenLine color={tool === "pen" ? "#FFFFFF" : WAFL_THEME.color.deepNavy} size={17} />} label="펜" onPress={() => selectTool("pen")} selected={tool === "pen"} />
-        <Tool accessibilityLabel="선 도구" disabled={loading || saving} icon={<Minus color={tool === "line" ? "#FFFFFF" : WAFL_THEME.color.deepNavy} size={17} />} label="선" onPress={() => selectTool("line")} selected={tool === "line"} />
-        <Tool accessibilityLabel="화살표 도구" disabled={loading || saving} icon={<ArrowUpRight color={tool === "arrow" ? "#FFFFFF" : WAFL_THEME.color.deepNavy} size={17} />} label="화살표" onPress={() => selectTool("arrow")} selected={tool === "arrow"} />
-        <Tool accessibilityLabel="텍스트 도구" disabled={loading || saving} icon={<Type color={tool === "text" ? "#FFFFFF" : WAFL_THEME.color.deepNavy} size={17} />} label="텍스트" onPress={() => selectTool("text")} selected={tool === "text"} />
+        <Tool accessibilityLabel="펜 도구" disabled={loading || saving} icon={<PenLine color={tool === "pen" ? "#FFFFFF" : WAFL_THEME.color.deepNavy} size={17} />} label="펜" onPress={() => selectTool("pen")} selected={tool === "pen"} style={styles.authoringTool} />
+        <Tool accessibilityLabel="선 도구" disabled={loading || saving} icon={<Minus color={tool === "line" ? "#FFFFFF" : WAFL_THEME.color.deepNavy} size={17} />} label="선" onPress={() => selectTool("line")} selected={tool === "line"} style={styles.authoringTool} />
+        <Tool accessibilityLabel="화살표 도구" disabled={loading || saving} icon={<ArrowUpRight color={tool === "arrow" ? "#FFFFFF" : WAFL_THEME.color.deepNavy} size={17} />} label="화살표" onPress={() => selectTool("arrow")} selected={tool === "arrow"} style={styles.authoringTool} />
+        <Tool accessibilityLabel="사각형 도구" disabled={loading || saving} icon={<Square color={tool === "rectangle" ? "#FFFFFF" : WAFL_THEME.color.deepNavy} size={17} />} label="사각형" onPress={() => selectTool("rectangle")} selected={tool === "rectangle"} style={styles.authoringTool} />
+        <Tool accessibilityLabel="타원 도구" disabled={loading || saving} icon={<Circle color={tool === "ellipse" ? "#FFFFFF" : WAFL_THEME.color.deepNavy} size={17} />} label="타원" onPress={() => selectTool("ellipse")} selected={tool === "ellipse"} style={styles.authoringTool} />
+        <Tool accessibilityLabel="텍스트 도구" disabled={loading || saving} icon={<Type color={tool === "text" ? "#FFFFFF" : WAFL_THEME.color.deepNavy} size={17} />} label="텍스트" onPress={() => selectTool("text")} selected={tool === "text"} style={styles.authoringTool} />
       </View>
       <View style={styles.toolbar}>
         <Tool accessibilityLabel="실행 취소" disabled={loading || saving || history.past.length === 0} icon={<Undo2 color={WAFL_THEME.color.deepNavy} size={18} />} label="Undo" onPress={() => updateHistory(undoDrawingScene(historyRef.current))} />
@@ -484,17 +557,18 @@ export default function WorkOrderSketchEditor(props: Readonly<{
   </Modal>;
 }
 
-function Tool(props: Readonly<{ accessibilityLabel: string; disabled: boolean; icon: ReactNode; label: string; onPress: () => void; selected?: boolean; tone?: "danger" }>) {
-  return <Pressable accessibilityLabel={props.accessibilityLabel} accessibilityState={{ disabled: props.disabled, selected: props.selected }} disabled={props.disabled} onPress={props.onPress} style={({ pressed }) => [styles.tool, props.selected && styles.toolPrimary, props.tone === "danger" && styles.toolDanger, props.disabled && styles.disabled, pressed && styles.pressed]}><View style={styles.toolIcon}>{props.icon}</View><Text style={[styles.toolText, props.selected && styles.toolTextPrimary, props.tone === "danger" && styles.toolTextDanger]}>{props.label}</Text></Pressable>;
+function Tool(props: Readonly<{ accessibilityLabel: string; disabled: boolean; icon: ReactNode; label: string; onPress: () => void; selected?: boolean; style?: object; tone?: "danger" }>) {
+  return <Pressable accessibilityLabel={props.accessibilityLabel} accessibilityState={{ disabled: props.disabled, selected: props.selected }} disabled={props.disabled} onPress={props.onPress} style={({ pressed }) => [styles.tool, props.style, props.selected && styles.toolPrimary, props.tone === "danger" && styles.toolDanger, props.disabled && styles.disabled, pressed && styles.pressed]}><View style={styles.toolIcon}>{props.icon}</View><Text style={[styles.toolText, props.selected && styles.toolTextPrimary, props.tone === "danger" && styles.toolTextDanger]}>{props.label}</Text></Pressable>;
 }
 
 const styles = StyleSheet.create({
   safe: { backgroundColor: WAFL_THEME.color.paperMuted, flex: 1, paddingHorizontal: WAFL_THEME.layout.screenGutterPhone },
   header: { alignItems: "center", justifyContent: "center", minHeight: 52 },
   title: { color: WAFL_THEME.color.deepNavy, fontFamily: WAFL_FONTS.bold, fontSize: 18 },
-  toolPicker: { flexDirection: "row", gap: WAFL_THEME.spacing.xs, paddingBottom: WAFL_THEME.spacing.xs },
+  toolPicker: { flexDirection: "row", flexWrap: "wrap", gap: WAFL_THEME.spacing.xs, paddingBottom: WAFL_THEME.spacing.xs },
   toolbar: { flexDirection: "row", gap: WAFL_THEME.spacing.xs, paddingBottom: WAFL_THEME.spacing.sm },
   tool: { alignItems: "center", backgroundColor: WAFL_THEME.color.paper, borderColor: WAFL_THEME.color.border, borderRadius: WAFL_THEME.radius.actionTile, borderWidth: WAFL_THEME.border.hairline, flex: 1, flexDirection: "row", gap: 4, justifyContent: "center", minHeight: WAFL_THEME.touch.minimum },
+  authoringTool: { flexBasis: 96 },
   toolPrimary: { backgroundColor: WAFL_THEME.color.navyInk, borderColor: WAFL_THEME.color.navyInk },
   toolDanger: { borderColor: "#D9AAA4" },
   toolIcon: { alignItems: "center", justifyContent: "center" },

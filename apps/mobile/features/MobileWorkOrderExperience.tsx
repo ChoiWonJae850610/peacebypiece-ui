@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import { ActivityIndicator, Pressable, StyleSheet, Text, useWindowDimensions, View } from "react-native";
 import { ChevronLeft, LogOut } from "lucide-react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -66,6 +66,12 @@ import { reconcileWorkOrderListItemFromDetail, workOrderListWorkflowChanged } fr
 import { MobileApiError, type MaterialPartnerOption, type MaterialType, type MobileCurrentUser, type WorkOrderCharacterFilter, type WorkOrderDetailCore, type WorkOrderLineageFilter, type WorkOrderListItem, type WorkOrderListStatusFilter, type WorkOrderSeriesHistory } from "@/domain/mobileContract";
 import { generateWorkOrderR0 } from "@/lib/api/documentsApi";
 import { isWorkOrderSketchAuthoringEnabled } from "@/features/work-orders/drawing/workOrderSketchPolicy";
+import { useWaflMobileDeviceClass } from "@/application/useWaflRuntimeOrientationPolicy";
+import {
+  resolveWorkOrderTabletPresentation,
+  resolveWorkOrderResponsiveWorkspacePlan,
+  WORK_ORDER_RESPONSIVE_PANE_IDENTITY,
+} from "@/domain/workOrderResponsiveWorkspacePolicy";
 
 type AppPhase =
   | "booting"
@@ -118,9 +124,44 @@ function transientToneFor(message: string): WaflAlertTone {
   return "success";
 }
 
+function WorkOrderResponsiveWorkspace(props: Readonly<{
+  detailPane: ReactNode;
+  listPane: ReactNode;
+  selected: boolean;
+  tablet: boolean;
+}>) {
+  const plan = resolveWorkOrderResponsiveWorkspacePlan({ selected: props.selected, tablet: props.tablet });
+  return (
+    <View style={props.tablet ? styles.split : styles.phoneBody} testID="work-order-responsive-workspace">
+      {plan.showList ? (
+        <View
+          key={WORK_ORDER_RESPONSIVE_PANE_IDENTITY.list}
+          style={props.tablet ? styles.listPane : styles.singlePane}
+          testID="work-order-responsive-list-host"
+        >
+          {props.listPane}
+        </View>
+      ) : null}
+      {plan.showDetail ? (
+        <View
+          key={WORK_ORDER_RESPONSIVE_PANE_IDENTITY.detail}
+          style={styles.detailPane}
+          testID="work-order-responsive-detail-host"
+        >
+          {props.detailPane}
+        </View>
+      ) : null}
+    </View>
+  );
+}
+
 export default function MobileWorkOrderExperience() {
   const { width } = useWindowDimensions();
-  const tablet = width >= 768;
+  const mobileDeviceClass = useWaflMobileDeviceClass();
+  const tablet = resolveWorkOrderTabletPresentation({
+    deviceClass: mobileDeviceClass,
+    windowWidth: width,
+  });
   const [phase, setPhase] = useState<AppPhase>("booting");
   const [user, setUser] = useState<MobileCurrentUser | null>(null);
   const [items, setItems] = useState<readonly WorkOrderListItem[]>([]);
@@ -1742,6 +1783,31 @@ export default function MobileWorkOrderExperience() {
     );
   }
 
+  const listPane = (
+    <WorkOrderListScreen
+      characterFilter={listCharacterFilter}
+      hasMore={hasMore}
+      items={items}
+      lineageFilters={listLineageFilters}
+      loading={phase === "authenticated-loading-list"}
+      loadingMore={listLoadingMore}
+      onCopy={(item) => void createCopyFromList(item)}
+      onCreate={openCreateSheet}
+      onDelete={requestDeleteWorkOrder}
+      onIdentityFilters={applyListIdentityFilters}
+      onLoadMore={() => void loadMoreList()}
+      onRefresh={loadListSafely}
+      onReorder={createReorderFromList}
+      onSearch={applyListSearch}
+      onSelect={selectItemSafely}
+      onStatusFilter={applyListStatusFilter}
+      query={listQuery}
+      searching={listSearching}
+      selectedId={selected?.workOrderId ?? null}
+      statusFilter={listStatusFilter}
+    />
+  );
+
   const detailPane = phase === "detail-loading" ? (
     <DelayedLoadingMessage
       identity={`detail:${selected?.workOrderId ?? "none"}`}
@@ -1893,19 +1959,13 @@ export default function MobileWorkOrderExperience() {
         <WaflFeedbackHost />
         <WaflNativeAttachmentViewer onClose={assetAuthoring.closeAttachmentPreview} preview={assetAuthoring.attachmentPreview} />
 
-        {globalError && errorState ? <ErrorPanel error={errorState} onRetry={retry} /> : tablet ? (
-          <View style={styles.split}>
-            <View style={styles.listPane}>
-              <WorkOrderListScreen items={items} hasMore={hasMore} selectedId={selected?.workOrderId ?? null} loading={phase === "authenticated-loading-list"} loadingMore={listLoadingMore} searching={listSearching} query={listQuery} statusFilter={listStatusFilter} characterFilter={listCharacterFilter} lineageFilters={listLineageFilters} onCreate={openCreateSheet} onCopy={(item)=>void createCopyFromList(item)} onDelete={requestDeleteWorkOrder} onReorder={createReorderFromList} onIdentityFilters={applyListIdentityFilters} onLoadMore={() => void loadMoreList()} onRefresh={loadListSafely} onSearch={applyListSearch} onStatusFilter={applyListStatusFilter} onSelect={selectItemSafely} />
-            </View>
-            <View style={styles.detailPane}>{detailPane}</View>
-          </View>
-        ) : selected ? (
-          <View style={styles.phoneBody}>{detailPane}</View>
-        ) : (
-          <View style={styles.phoneBody}>
-            <WorkOrderListScreen items={items} hasMore={hasMore} selectedId={null} loading={phase === "authenticated-loading-list"} loadingMore={listLoadingMore} searching={listSearching} query={listQuery} statusFilter={listStatusFilter} characterFilter={listCharacterFilter} lineageFilters={listLineageFilters} onCreate={openCreateSheet} onCopy={(item)=>void createCopyFromList(item)} onDelete={requestDeleteWorkOrder} onReorder={createReorderFromList} onIdentityFilters={applyListIdentityFilters} onLoadMore={() => void loadMoreList()} onRefresh={loadListSafely} onSearch={applyListSearch} onStatusFilter={applyListStatusFilter} onSelect={selectItemSafely} />
-          </View>
+        {globalError && errorState ? <ErrorPanel error={errorState} onRetry={retry} /> : (
+          <WorkOrderResponsiveWorkspace
+            detailPane={detailPane}
+            listPane={listPane}
+            selected={Boolean(selected)}
+            tablet={tablet}
+          />
         )}
       </View>
       <WaflActionProcessingBlocker
@@ -1963,6 +2023,7 @@ const styles = StyleSheet.create({
   phoneBody: { flex: 1, minHeight: 0, paddingTop: 14 },
   split: { flex: 1, flexDirection: "row", gap: 18, minHeight: 0, paddingTop: 16 },
   listPane: { flexBasis: 360, flexGrow: 0, flexShrink: 0, minHeight: 0 },
+  singlePane: { flex: 1, minHeight: 0 },
   detailPane: { flex: 1, minHeight: 0, minWidth: 0 },
   center: { alignItems: "center", flex: 1, gap: 12, justifyContent: "center", padding: 24 },
   loadingText: { color: "#665a50", fontFamily: WAFL_FONTS.medium, fontSize: 13 },

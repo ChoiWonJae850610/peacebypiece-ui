@@ -76,7 +76,8 @@ for (const removedSection of ["문서 요약", "구성 요약", "Revision 상태
   assert.doesNotMatch(detail, new RegExp(removedSection), `overview must not contain ${removedSection}`);
 }
 assert.match(app, /numberOfLines=\{1\} style=\{styles\.context\}/);
-assert.match(app, /width >= 768/);
+assert.match(app, /resolveWorkOrderTabletPresentation\(\{/);
+assert.match(app, /deviceClass: mobileDeviceClass/);
 assert.match(app, /styles\.split/);
 assert.match(app, /onReturnToList=\{returnToList\}/);
 assert.match(app, /detailRequestInFlight\.current/);

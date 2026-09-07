@@ -1,5 +1,66 @@
 # Future Drawing Architecture Guardrails
 
+## Final alpha.74 boundary
+
+- `ALPHA74_FINALIZATION_COMPLETE` accepts the authenticated DEV/TEST Product Sketch tool set `펜 / 선 / 화살표 /
+  사각형 / 타원 / 텍스트`, mixed history, explicit Save/reopen, and safe dirty discard on Scene schema v1.
+- Owner actual iPhone and iPad-mini QA accepts portrait/open continuity, compact native zero-motion, touch/render
+  alignment, mixed Undo/Redo, and the single iPad Save/close/reopen editable WORLD Scene.
+- Selection, eraser, object delete/move/transform, zoom/pan, image underlay, pencil pressure, and PDF/export integration
+  remain deferred. Release/production remains intentionally disabled as `스케치(준비 중)`.
+- Regular/Large iPad and Android actual-device results remain `NOT_RUN`; their orientation matrix is preserved by
+  source/contracts and is not inferred physical PASS.
+
+## Alpha.74 Product Sketch portrait policy
+
+- Product Sketch is portrait-only on handset, compact tablet, and regular/large tablet. Its React Native fullscreen Modal
+  declares portrait only and registers a declarative scope with the single runtime orientation owner.
+- On close, handset and compact tablet remain portrait-only; regular/large tablet regains general WAFL portrait+landscape
+  permission without a forced landscape rotation.
+- Device classification uses orientation-invariant physical-screen short side and no model-name branch. The stable
+  responsive Recipe detail host remains required for regular/large tablet rotation.
+- This UI policy does not change the canonical WORLD `1000 x 1400`, viewport transform, inverse input mapping, Scene v1,
+  SVG renderer, history, persistence, or stale-gesture cancellation.
+
+## Alpha.74 iPad responsive detail-subtree continuity correction
+
+- A responsive window-width change may alter list/detail layout, but it must not replace the active selected Recipe
+  detail lifecycle owner. The detail host keeps one stable key under one stable responsive-workspace parent.
+- `WorkOrderDetailOverview`, its current tab, `WorkOrderImageGallery`, local `sketchVisible`, and an open Product Sketch
+  remain mounted across tablet/phone-like breakpoint transitions while the selected Recipe is unchanged.
+- Rotation alone invokes no Sketch close, Decision, Save, Scene/history/network mutation, or tab reset. Canvas viewport
+  recompute and stale active-gesture cancellation remain the only Drawing-local resize response.
+- The stable detail-host architecture, other fullscreen surfaces, Drawing schema/API, dependency/native/config/EAS, and
+  migration remain unchanged. The later compact-tablet/Product Sketch portrait policy supersedes only the earlier
+  all-tablet/all-Sketch orientation allowance. Physical PASS is not inferred from the stable-host contract.
+
+## Alpha.74 iPad Sketch fullscreen orientation-lifecycle correction
+
+- Owner physical iPhone portrait authoring is PASS with its one Save consumed. Owner iPad rotation in both directions
+  closed Product Sketch before geometry QA and before any iPad Save, so iPad remains a re-QA gate.
+- This historical correction first aligned Product Sketch with the then-current all-orientation iPad allowance. The later
+  alpha.74 product policy supersedes the surface contract to portrait-only while native iPad metadata remains broad enough
+  for regular-tablet general WAFL rotation.
+- Rotation alone does not own close, navigation, Save, Scene/history/network mutation, or dirty Decision semantics.
+  The exact native callback that caused the prior dismissal is not asserted without trace evidence.
+- Canvas layout still advances viewport generation, cancels an in-flight cross-layout gesture, and reprojects the same
+  WORLD Scene. Other fullscreen surfaces are backlog-only and unchanged in this bounded correction.
+
+## Alpha.74 responsive shape-authoring boundary
+
+- The authenticated DEV/TEST Product Sketch toolbar is `펜 / 선 / 화살표 / 사각형 / 타원 / 텍스트`; eraser, selection,
+  movement, resize, zoom/pan, image underlay, pencil, and PDF/export integration remain deferred.
+- Rectangle and ellipse use one pure renderer-independent bounded-shape session. Start/end are clamped WORLD points;
+  normalized bounds are independent of drag direction. Active updates are preview-only, release above the WORLD minimum
+  commits one Scene element/history entry, and cancel/termination/tool switch commits zero.
+- A material canvas viewport-layout change advances a Drawing-local generation and cancels active pen, line, arrow,
+  rectangle, ellipse, or pending pre-sheet text input. A presented text session keeps its immutable WORLD anchor and draft.
+- Scene v1, stable element identity/order, uniform contain-fit projection, inverse screen-to-world input, explicit Save,
+  independent Drawing version, and the alpha.73 dirty-close lifecycle remain canonical. Viewport size/orientation is never
+  persisted or used to rewrite geometry.
+- The toolbar may wrap responsively, but no device-specific coordinate, renderer dependency, WaflInputSheet architecture,
+  native/EAS, schema, migration, image/PDF/R2, or Production behavior is introduced.
+
 ## Alpha.73 first product vertical slice
 
 - The authenticated development Draft surface uses exact product label `스케치`; release keeps disabled

@@ -112,7 +112,8 @@ for (const forbiddenAction of ["저장", "수정", "발주", "완료", "삭제",
 }
 assert.doesNotMatch(runtime, /setInterval|polling/i);
 assert.match(app, /useWindowDimensions/);
-assert.match(app, /width >= 768/);
+assert.match(app, /resolveWorkOrderTabletPresentation\(\{/);
+assert.match(app, /deviceClass: mobileDeviceClass/);
 assert.match(app, /styles\.split/);
 assert.match(app, /detailRequestInFlight\.current/);
 assert.match(app, /if \(detailRequestInFlight\.current\) return/);

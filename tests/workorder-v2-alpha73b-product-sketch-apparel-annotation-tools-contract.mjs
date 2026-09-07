@@ -129,7 +129,8 @@ assert.equal(serializeDrawingScene(undoDrawingScene(cleared).current), mixedSeri
 
 // Product controls and child-sheet close ownership remain explicit and bounded.
 for (const label of ["펜", "선", "화살표", "텍스트"]) assert.match(editor, new RegExp(`label="${label}"`, "u"));
-for (const hidden of ["사각형", "원", "지우개", "선택", "이동", "크기조절", "이미지"]) assert.doesNotMatch(editor, new RegExp(`label="${hidden}"`, "u"));
+// Alpha.74 may add the foundation rectangle/ellipse kinds; the alpha.73 annotation tools and deferred controls remain guarded.
+for (const hidden of ["원", "지우개", "선택", "이동", "크기조절", "이미지"]) assert.doesNotMatch(editor, new RegExp(`label="${hidden}"`, "u"));
 assert.match(editor, /onPanResponderTerminate: discardActiveGesture/u);
 assert.match(editor, /onAfterClose=\{completeTextSheetClose\}/u);
 assert.match(editor, /pendingTextCommitRef\.current = Object\.freeze\(\{ element, sessionId: session\.id \}\);[\s\S]*setTextSheetVisible\(false\)/u);

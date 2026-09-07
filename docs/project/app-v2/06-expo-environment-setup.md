@@ -1,5 +1,55 @@
 # WAFL v2 Expo Environment Setup
 
+## Alpha.74 finalization runtime boundary
+
+- Internal APP_VERSION is `2.0.0-alpha.74`; Expo public version remains `2.0.0` and iOS build number remains `1`.
+- The accepted existing-project internal development build is `90ec13f2-b6ec-4e2e-baba-c1195161a69c`; finalization
+  creates no EAS Build, EAS Update, re-sign, Production build, TestFlight, or App Store submission.
+- Canonical physical-device QA runtime remains Node `24.14.0`, Next `3100`, Metro `8081`, Tailscale Serve HTTPS
+  `443 -> 3100`, and DeveloperAutoConnect. Finalization changes no dependency/native/config/EAS behavior.
+
+## Alpha.74 iOS Compact Native app/window orientation mask
+
+- Expo SDK55 routes `UIApplicationDelegate.application(_:supportedInterfaceOrientationsFor:)` through
+  `ExpoAppDelegateSubscriberManager`; `expo-screen-orientation` contributes its registry mask as one subscriber.
+- The canonical config plugin uses `withAppDelegate` to generate one app-specific top-mask override on every clean iOS
+  prebuild/EAS build. Non-iPad returns portrait. iPad uses logical screen short side; below the shared `768` regular-
+  tablet boundary returns portrait, otherwise calls `super` so native-stack/runtime subscriber intersections remain.
+- Global iPad Info.plist stays portrait/upside-down/both landscape and `UIRequiresFullScreen=true`; regular/large iPad
+  base landscape and Product Sketch runtime transitions are retained. Android generation is unchanged.
+- This native-code delta was compiled by exactly one fresh existing-project internal `development` build
+  `90ec13f2-b6ec-4e2e-baba-c1195161a69c` with pinned EAS CLI `21.0.1`. Re-sign, EAS Update, preview/production build,
+  TestFlight/App Store submission, credentials, Team, bundle ID, and registered-device changes were `0`.
+
+## Alpha.74 root native-stack orientation wiring
+
+The installed Expo Router `55.0.17`, `@react-navigation/native-stack 7.18.2`, and `react-native-screens 4.23.0` expose
+`NativeStackNavigationOptions.orientation` with `portrait_up/default`, and the existing native-stack runtime forwards it
+to the native screen `screenOrientation` prop. Root Stack now consumes the canonical orientation-invariant device policy:
+handset/compact tablet use `portrait_up`; regular tablet uses `default`. The existing `expo-screen-orientation` coordinator
+remains the lifecycle reconciliation owner. This is JS/TS option wiring supported by the already-installed native module;
+new EAS Build, re-sign, reinstall, dependency, native source, Expo config, and EAS config delta are all `0`.
+
+## Alpha.74 iOS fullscreen orientation native prerequisite
+
+- Canonical Expo iOS config declares `requireFullScreen: true`; SDK55 generated-config introspection must prove
+  `UIRequiresFullScreen: true` before an iOS build is submitted.
+- This disables iPad Split View and Slide Over. It does not narrow the iPad supported-orientation array: regular/large
+  tablet base WAFL retains portrait+landscape, while the existing runtime owner locks compact tablets and every Product
+  Sketch session to portrait-up.
+- The Info.plist delta requires one new existing-project internal `development` build. The pinned EAS CLI is `21.0.1`;
+  credentials, Apple Team, bundle ID, registered devices, production/preview/submit profiles, and EAS Update remain out of
+  scope. Build completion is not an Owner physical result.
+
+## Alpha.74 runtime orientation policy
+
+- Existing native metadata remains broad for iOS tablets and Android tablets at/above the native 600dp boundary; there is
+  no new native/config/EAS delta.
+- The installed SDK55 `expo-screen-orientation` owner classifies physical-screen short side once through the canonical
+  device policy. Phone and compact tablet lock `PORTRAIT_UP`; regular tablet base WAFL unlocks to default.
+- Product Sketch registers one declarative portrait-only scope with the root runtime owner. Scope release restores the
+  device base policy without forcing landscape. Product UI never calls native orientation APIs directly.
+
 Document role: canonical owner for supported Expo/native environment, app identity, installed-build reuse, and setup boundaries. Runtime operations belong to `41-external-mobile-qa-runbook.md`; device acceptance belongs to `05-device-test-plan.md`; permanent approval and delivery rules belong to `09-codex-working-rules.md`.
 
 ## Canonical identity
@@ -16,8 +66,8 @@ Document role: canonical owner for supported Expo/native environment, app identi
 | iOS bundle identifier | `com.wafl.app` |
 | Android package | `com.wafl.app` |
 | Expo public version | `2.0.0` |
-| Internal APP_VERSION | `2.0.0-alpha.73` |
-| iOS Development Build | build number `1`; latest installable alpha.72B development build `71a3b621-31e9-493d-ac04-2888f0337abf` |
+| Internal APP_VERSION | `2.0.0-alpha.74` |
+| iOS Development Build | build number `1`; latest installable alpha.74 compact native-mask development build `90ec13f2-b6ec-4e2e-baba-c1195161a69c` |
 | Android Development Build | version code `1`; latest installable alpha.72B development build `a2416e06-2ca0-431a-b575-67dafc29e871` |
 
 `com.wafl.app` is the stable WAFL brand identifier and does not derive from repository project or planned company names.

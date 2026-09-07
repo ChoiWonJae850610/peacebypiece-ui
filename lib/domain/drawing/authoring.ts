@@ -1,16 +1,28 @@
 import {
   DRAWING_TEXT_DEFAULT_FONT_SIZE,
   DRAWING_TEXT_MAX_LENGTH,
+  DRAWING_CANONICAL_CANVAS,
   type DrawingArrowElement,
+  type DrawingEllipseElement,
   type DrawingElementStyle,
   type DrawingFreehandElement,
   type DrawingLineElement,
   type DrawingPoint,
+  type DrawingRectangleElement,
   type DrawingTextElement,
 } from "./contracts";
 
 export const DRAWING_ACTIVE_STROKE_MIN_WORLD_DISTANCE = 1.5;
 export const DRAWING_ACTIVE_SEGMENT_MIN_WORLD_LENGTH = 1.5;
+export const DRAWING_ACTIVE_SHAPE_MIN_WORLD_SIZE = 1.5;
+
+export type DrawingActiveShape = Readonly<{
+  id: string;
+  kind: "rectangle" | "ellipse";
+  start: DrawingPoint;
+  end: DrawingPoint;
+  style: DrawingElementStyle;
+}>;
 
 export type DrawingActiveSegment = Readonly<{
   id: string;
@@ -44,6 +56,25 @@ function freezeStyle(style: DrawingElementStyle): DrawingElementStyle {
     strokeColor: style.strokeColor,
     strokeWidth: style.strokeWidth,
   });
+}
+
+export function clampDrawingPointToCanvas(point: DrawingPoint): DrawingPoint {
+  return freezePoint({
+    x: Math.max(0, Math.min(DRAWING_CANONICAL_CANVAS.width, point.x)),
+    y: Math.max(0, Math.min(DRAWING_CANONICAL_CANVAS.height, point.y)),
+  });
+}
+
+export function isDrawingAuthoringViewportGenerationCurrent(
+  startedGeneration: number | null,
+  currentGeneration: number,
+): boolean {
+  return startedGeneration !== null
+    && Number.isInteger(startedGeneration)
+    && Number.isInteger(currentGeneration)
+    && startedGeneration >= 0
+    && currentGeneration >= 0
+    && startedGeneration === currentGeneration;
 }
 
 function createActiveStroke(
@@ -158,6 +189,56 @@ export function finalizeDrawingActiveSegment(
 }
 
 export function cancelDrawingActiveSegment(): null {
+  return null;
+}
+
+export function beginDrawingActiveShape(input: Readonly<{
+  id: string;
+  kind: "rectangle" | "ellipse";
+  point: DrawingPoint;
+  style: DrawingElementStyle;
+}>): DrawingActiveShape {
+  const point = clampDrawingPointToCanvas(input.point);
+  return Object.freeze({
+    id: input.id,
+    kind: input.kind,
+    start: point,
+    end: point,
+    style: freezeStyle(input.style),
+  });
+}
+
+export function updateDrawingActiveShape(
+  shape: DrawingActiveShape,
+  point: DrawingPoint,
+): DrawingActiveShape {
+  return Object.freeze({ ...shape, end: clampDrawingPointToCanvas(point) });
+}
+
+export function finalizeDrawingActiveShape(
+  shape: DrawingActiveShape,
+  minimumWorldSize = DRAWING_ACTIVE_SHAPE_MIN_WORLD_SIZE,
+): DrawingRectangleElement | DrawingEllipseElement | null {
+  if (!Number.isFinite(minimumWorldSize) || minimumWorldSize < 0) {
+    throw new RangeError("Drawing shape minimum size must be finite and non-negative.");
+  }
+  const width = Math.abs(shape.end.x - shape.start.x);
+  const height = Math.abs(shape.end.y - shape.start.y);
+  if (width <= 0 || height <= 0 || width < minimumWorldSize || height < minimumWorldSize) return null;
+  return Object.freeze({
+    id: shape.id,
+    kind: shape.kind,
+    bounds: Object.freeze({
+      x: Math.min(shape.start.x, shape.end.x),
+      y: Math.min(shape.start.y, shape.end.y),
+      width,
+      height,
+    }),
+    style: shape.style,
+  });
+}
+
+export function cancelDrawingActiveShape(): null {
   return null;
 }
 

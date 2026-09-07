@@ -84,7 +84,7 @@ assert.match(sheet, /target\.openGeneration !== openGenerationRef\.current/u);
 assert.doesNotMatch(`${sheet}\n${rootPolicy}`, /PanResponder|wafl-sheet-header-drag-zone|resolveWaflSheetRelease/u);
 
 assert.equal(fs.readdirSync(path.join(root, "db", "v2", "migrations")).filter((name) => name.endsWith(".sql")).length, 22);
-assert.match(read("lib/constants/version.ts"), /2\.0\.0-alpha\.(?:72|73)/u);
+assert.match(read("lib/constants/version.ts"), /2\.0\.0-alpha\.(?:72|73|74)/u);
 
 console.log(JSON.stringify({
   ok: true,

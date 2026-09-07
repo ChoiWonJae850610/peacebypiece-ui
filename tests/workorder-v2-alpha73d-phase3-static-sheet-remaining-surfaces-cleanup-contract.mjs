@@ -105,10 +105,12 @@ assert.match(gallery, /PanResponder\.create/u);
 const deviceCases = [
   { platform: "ios", isPad: false, width: 390, height: 844, expectedClass: "handset" },
   { platform: "android", isPad: false, width: 412, height: 915, expectedClass: "handset" },
-  { platform: "ios", isPad: true, width: 1024, height: 1366, expectedClass: "tablet" },
-  { platform: "ios", isPad: true, width: 1366, height: 1024, expectedClass: "tablet" },
-  { platform: "android", isPad: false, width: 800, height: 1280, expectedClass: "tablet" },
-  { platform: "android", isPad: false, width: 1280, height: 800, expectedClass: "tablet" },
+  { platform: "ios", isPad: true, width: 744, height: 1133, expectedClass: "compact-tablet" },
+  { platform: "ios", isPad: true, width: 1133, height: 744, expectedClass: "compact-tablet" },
+  { platform: "ios", isPad: true, width: 1024, height: 1366, expectedClass: "regular-tablet" },
+  { platform: "ios", isPad: true, width: 1366, height: 1024, expectedClass: "regular-tablet" },
+  { platform: "android", isPad: false, width: 800, height: 1280, expectedClass: "regular-tablet" },
+  { platform: "android", isPad: false, width: 1280, height: 800, expectedClass: "regular-tablet" },
 ];
 const stagedDomainState = Object.freeze({ productName: "보존", quantity: 12 });
 for (const item of deviceCases) {
@@ -134,7 +136,7 @@ for (const item of deviceCases) {
   assert.deepEqual(stagedDomainState, { productName: "보존", quantity: 12 });
 }
 
-assert.match(read("lib/constants/version.ts"), /2\.0\.0-alpha\.(?:72|73)/u);
+assert.match(read("lib/constants/version.ts"), /2\.0\.0-alpha\.(?:72|73|74)/u);
 assert.equal(fs.readdirSync(path.join(root, "db", "v2", "migrations")).filter((name) => name.endsWith(".sql")).length, 22);
 
 console.log(JSON.stringify({

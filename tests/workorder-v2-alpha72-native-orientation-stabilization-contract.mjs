@@ -43,10 +43,14 @@ const classifyAndroid = (width, height) => resolveWaflMobileDeviceClass({
 });
 assert.equal(classifyAndroid(599, 1_280), "handset");
 assert.equal(classifyAndroid(1_280, 599), "handset", "rotation must not reclassify a phone");
-assert.equal(classifyAndroid(600, 960), "tablet");
-assert.equal(classifyAndroid(960, 600), "tablet", "rotation must not reclassify a tablet");
+assert.equal(classifyAndroid(600, 960), "compact-tablet");
+assert.equal(classifyAndroid(960, 600), "compact-tablet", "rotation must not reclassify a compact tablet");
+assert.equal(classifyAndroid(800, 1_280), "regular-tablet");
+assert.equal(classifyAndroid(1_280, 800), "regular-tablet", "rotation must not reclassify a regular tablet");
 assert.equal(resolveWaflRuntimeOrientationAction("handset"), "lock-portrait-up");
-assert.equal(resolveWaflRuntimeOrientationAction("tablet"), "unlock-default");
+assert.equal(resolveWaflRuntimeOrientationAction("compact-tablet"), "lock-portrait-up");
+assert.equal(resolveWaflRuntimeOrientationAction("regular-tablet"), "unlock-default");
+assert.equal(resolveWaflRuntimeOrientationAction("regular-tablet", "product-sketch"), "lock-portrait-up");
 
 const kotlinInput = `package com.wafl.app
 
@@ -90,8 +94,10 @@ assert.match(pluginSource, /withMainActivity/u);
 assert.match(pluginSource, /smallestScreenWidthDp/u);
 assert.match(runtimeSource, /OrientationLock\.PORTRAIT_UP/u);
 assert.match(runtimeSource, /ScreenOrientation\.unlockAsync\(\)/u);
-assert.doesNotMatch(pluginSource, /WorkOrder|Recipe|Drawing|Scene|R2|PDF/u);
+assert.doesNotMatch(pluginSource, /WorkOrder|Recipe|Drawing|R2|PDF|domain\/drawing|features\/work-orders/u);
+assert.match(pluginSource, /windowScene/u, "the iOS native mask may use the active UIWindowScene without coupling to Drawing Scene data");
 assert.doesNotMatch(stackSource, /orientation:\s*["']portrait/u);
+assert.match(stackSource, /orientation:\s*rootStackOrientation/u, "runtime reconciliation is paired with the installed native-stack orientation declaration");
 assert.doesNotMatch(pluginSource, /android:screenOrientation/u, "Android tablet must not receive a global manifest portrait lock");
 
 const drawingHashes = {
@@ -127,7 +133,9 @@ console.log(JSON.stringify({
   iosPhone: "portrait-only-native-metadata",
   iosTablet: "portrait-and-landscape-native-metadata",
   androidPhone: "portrait-before-super-onCreate",
-  androidTablet: "unrestricted-default",
+  androidTabletNative: "unrestricted-default",
+  compactTabletRuntime: "portrait-up",
+  regularTabletRuntime: "unrestricted-default",
   runtimeSafetyNet: "expo-screen-orientation",
   drawingFoundationChanged: false,
   physicalResultInferred: false,

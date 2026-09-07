@@ -1,5 +1,59 @@
 # WAFL v2 API Contract Test Plan
 
+## Alpha.74 finalization contract
+
+- The permanent finalization contract pins `ALPHA74_COMPLETE` / `ALPHA74_FINALIZATION_COMPLETE`, canonical version
+  consistency, all seven alpha.74 feature contracts, Scene schema v1, migration `22/22`, Production Sketch gating,
+  compact/regular orientation policy, fullscreen/native-mask generation, stable responsive detail-host identity, and
+  deferred Selection/Eraser/Zoom/Pan/Image/Pencil exposure.
+- Finalization adds no API/schema/migration, dependency/native/config/EAS behavior, business-data mutation, tag, or
+  release. Owner physical evidence is recorded separately from automated PASS and deferred device gates remain
+  `NOT_RUN`.
+
+Alpha.74 iOS Compact Native orientation-mask correction adds one permanent contract and advances the canonical
+inventory to `272/272`. It proves the reproducible AppDelegate override, handset/compact portrait mask, regular-tablet
+`super` delegation with landscape retained, orientation-invariant logical short-side classification using the shared
+768 seed, Expo subscriber ownership, generated-source idempotence, root Stack/runtime/Sketch layers, stable responsive
+detail host, unchanged Android generation, broad iPad Info.plist plus `UIRequiresFullScreen`, and zero API/schema/
+migration/business mutation. Owner physical zero-motion PASS is not inferred.
+
+Alpha.74 Compact Tablet zero-rotation-motion correction adds one permanent contract and advances the canonical inventory
+to `271/271`. It proves the installed native-stack orientation type/runtime forwarding, one root consumer of the
+canonical `portrait_up/default` result, stable provider-owned device class, swapped-dimension compact phone-like
+presentation, regular-tablet eligibility, stable detail-host identity, retained Product Sketch/fullscreen prerequisite,
+Drawing/schema/migration safety, and EAS build/re-sign/reinstall `0/0/0`. Owner physical no-motion PASS is not inferred.
+
+Alpha.74 iOS fullscreen orientation native prerequisite adds one permanent contract and advances the canonical inventory
+from `269/269` to `270/270`. It proves canonical `ios.requireFullScreen`, generated Info.plist
+`UIRequiresFullScreen`, unchanged iPhone portrait and iPad four-orientation arrays, exact development-only ATS scope,
+pinned EAS CLI/profile, retained compact/regular runtime policy, stable responsive detail identity, Sketch portrait
+surface, and zero dependency/API/schema/migration/version delta. Build success does not infer Owner physical PASS.
+
+Alpha.74 compact-tablet and Product Sketch portrait policy adds one permanent contract and advances the canonical
+inventory from `268/268` to `269/269`. It executes orientation-swapped handset, compact-tablet, and regular-tablet cases;
+proves compact base portrait, regular base rotation, Product Sketch portrait on every mobile class, base-policy restoration,
+one centralized 768 threshold, one runtime native-call owner, portrait-only Sketch surface declaration, retained stable
+Recipe detail identity, and zero dependency/native/config/EAS/API/schema/migration delta. iPhone/iPad-mini physical PASS
+and unavailable regular/large-tablet physical PASS are not inferred.
+
+Alpha.74 iPad responsive Recipe-detail subtree continuity correction adds one permanent contract and advances the
+canonical inventory from `267/267` to `268/268`. It executes phone/tablet selected/list visibility plans and proves one
+stable keyed selected-detail host across responsive mode changes, unchanged selected Recipe/tab/gallery/Sketch visibility
+owners, retained Sketch supported orientations and viewport-generation cancellation, unchanged breakpoint and device
+orientation policies, and zero dependency/native/config/EAS/API/schema/migration delta. Owner iPad physical PASS is not
+inferred.
+
+Alpha.74 iPad Product Sketch orientation lifecycle correction adds one permanent contract and advances the canonical
+inventory from `266/266` to `267/267`. It locks the Sketch-local fullscreen Modal's explicit four-orientation contract,
+unchanged iPhone portrait and iPad all-orientation native/runtime policies, no intentional close from canvas layout,
+viewport-generation gesture cancellation, unchanged Production gate, and zero unrelated fullscreen, dependency,
+native/config/EAS, API/schema, or migration delta. Owner iPad physical PASS is not inferred.
+
+Alpha.74 responsive Product Sketch shape authoring adds one permanent contract and advances the canonical inventory
+from `265/265` to `266/266`. It verifies pure rectangle/ellipse WORLD authoring, responsive viewport invariance,
+viewport-generation stale gesture rejection, mixed history/serialization, unchanged Scene v1/API/migration, and the
+bounded six-tool DEV/TEST Product UI. Physical PASS is not inferred.
+
 Alpha.73 finalization adds one permanent contract and advances the canonical inventory from `264/264` to `265/265`.
 It locks canonical version `2.0.0-alpha.73`, product/finalization checkpoints, bounded Owner physical attribution,
 Product Sketch's DEV/TEST-versus-Production boundary, Static Sheet retirement invariants, migration `22/22`, unchanged
@@ -864,3 +918,14 @@ Alpha.26 adds a static material/order gate: shared fabric/accessory DTOs, bounde
   remain intact.
 - Finalization behavior/dependency/native/config/EAS/schema/migration/data deltas are zero. Migration remains `21/21`,
   production/Owner/ambiguous mutation remains `0/0/0`, and permanent inventory advances from `226/226` to `227/227`.
+## Alpha.74 responsive Product Sketch shape-authoring contract
+
+- `workorder-v2-alpha74-sketch-responsive-shape-authoring-contract.mjs` compiles the Drawing domain and verifies rectangle
+  and ellipse four-direction WORLD bounds, canvas clamp, minimum size, preview isolation, release/history exactly once,
+  mixed six-tool history/serialization, phone/tablet transform invariance, repeated orientation drift zero, and viewport-
+  generation stale-gesture rejection.
+- Source guards require the six Product tool labels, responsive non-clipping toolbar, existing SVG Rect/Ellipse projection,
+  transient active layer, and absence of eraser/selection/image/pencil, Skia, gesture dependencies, or device/keyboard pixel
+  workarounds.
+- Scene schema/version, Drawing route/API/persistence, migration 022, explicit Save, idempotency/reconcile, and all finalized
+  alpha.72/alpha.73 contracts remain unchanged. The permanent inventory advances from 265 to 266 with FAIL/SKIP `0/0`.

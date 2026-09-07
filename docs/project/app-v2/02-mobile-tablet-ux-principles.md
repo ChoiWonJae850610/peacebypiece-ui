@@ -1,6 +1,26 @@
 # WAFL v2 Mobile and Tablet UX Principles - 2.0.0-alpha.1
 
+## Current orientation product policy
+
+- Phone and compact tablet are portrait-only for the entire WAFL app.
+- Regular/large tablet keeps portrait and landscape for general WAFL work.
+- Product Sketch is portrait-only on every mobile device class. Leaving Sketch restores the base class policy without
+  forcing an orientation.
+- Compact versus regular tablet uses one orientation-invariant measured class based on physical-screen short side and the
+  canonical 768 responsive threshold; model names and width-only rotation-sensitive classification are forbidden.
+- Drawing remains WORLD-coordinate and orientation-independent internally, and the stable responsive Recipe detail host
+  remains required for regular/large-tablet rotation.
+
 Current detailed visual tokens, shared component grammar, and responsive layout rules are owned by `11a-mobile-design-system-v2.md`; current Maker six-tab IA is owned by `11b-maker-workorder-tab-ia-v2.md`. This document retains product-level mobile/tablet principles and does not duplicate those owners.
+
+## Responsive active-detail lifecycle continuity
+
+- Tablet/phone-like breakpoint changes may alter pane visibility, direction, width, and spacing, but must not remount the
+  active selected Recipe detail solely because window dimensions changed.
+- The responsive workspace owns stable keyed list/detail hosts. When a Recipe remains selected, its detail host identity,
+  current tab, nested editors, and local transient state survive the responsive layout transition.
+- Device-specific breakpoint avoidance, orientation-specific offsets, and reopening a child after state loss are not
+  substitutes for preserving the owning subtree identity.
 
 ## 2.0.0-alpha.4 app design theme direction
 
@@ -12,9 +32,7 @@ Current detailed visual tokens, shared component grammar, and responsive layout 
 
 The app should feel like a professional Korean apparel production workroom: dense, fast, deadline-aware, and material-aware. It should not feel like a portfolio, landing page, generic sample app, or oversized-card design exercise.
 
-Normal mobile production-card screens are portrait-first. Mobile landscape is not the default target for ordinary production-card work. The future drawing/sketch module may allow mobile landscape because visual drawing and review are a different interaction mode.
-
-Tablet screens must support portrait and landscape. Tablet layouts should expand the production-card workspace with centered width or useful side-by-side review, but they must not become a squeezed PC admin three-panel interface.
+Normal phone and compact-tablet production-card screens are portrait-only. Regular/large-tablet layouts support both orientations and should expand the workspace with centered width or useful side-by-side review without becoming a squeezed PC admin interface. Product Sketch remains portrait-only while its stored geometry stays device-independent.
 
 ## Core structure
 
@@ -43,11 +61,11 @@ iPhone should prioritize:
 
 The default screen should not look like a compressed PC table.
 
-## iPad mini
+## iPad mini / compact tablet
 
 iPad mini should prioritize:
 
-- tablet portrait review,
+- portrait review,
 - drawer-style product selection,
 - overflow controls that do not crowd the header,
 - readable size/color verification.

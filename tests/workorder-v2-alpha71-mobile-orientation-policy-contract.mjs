@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import {
   WAFL_ANDROID_TABLET_SHORT_SIDE_DP,
+  WAFL_RESPONSIVE_TABLET_BREAKPOINT_DP,
   resolveWaflMobileDeviceClass,
   resolveWaflRootStackOrientation,
   resolveWaflRuntimeOrientationAction,
@@ -25,12 +26,16 @@ const orientation = (platform, isPad, width, height) => resolveWaflRootStackOrie
 });
 
 assert.equal(WAFL_ANDROID_TABLET_SHORT_SIDE_DP, 600);
+assert.equal(WAFL_RESPONSIVE_TABLET_BREAKPOINT_DP, 768);
 
 assert.equal(classify("ios", false, 390, 844), "handset");
 assert.equal(classify("ios", false, 844, 390), "handset");
 assert.equal(orientation("ios", false, 390, 844), "portrait_up");
 assert.equal(orientation("ios", false, 844, 390), "portrait_up");
-assert.equal(classify("ios", true, 500, 900), "tablet", "native iPad idiom must outrank narrow window geometry");
+assert.equal(classify("ios", true, 744, 1133), "compact-tablet");
+assert.equal(classify("ios", true, 1133, 744), "compact-tablet", "rotation must not reclassify a compact tablet");
+assert.equal(orientation("ios", true, 744, 1133), "portrait_up");
+assert.equal(classify("ios", true, 1024, 1366), "regular-tablet");
 assert.equal(orientation("ios", true, 1024, 1366), "default");
 assert.equal(orientation("ios", true, 1366, 1024), "default");
 
@@ -39,8 +44,10 @@ assert.equal(classify("android", false, 800, 360), "handset");
 assert.equal(orientation("android", false, 360, 800), "portrait_up");
 assert.equal(orientation("android", false, 800, 360), "portrait_up");
 assert.equal(classify("android", false, 599, 1280), "handset");
-assert.equal(classify("android", false, 600, 960), "tablet");
-assert.equal(classify("android", false, 960, 600), "tablet");
+assert.equal(classify("android", false, 600, 960), "compact-tablet");
+assert.equal(classify("android", false, 960, 600), "compact-tablet");
+assert.equal(orientation("android", false, 600, 960), "portrait_up");
+assert.equal(classify("android", false, 800, 1280), "regular-tablet");
 assert.equal(orientation("android", false, 800, 1280), "default");
 assert.equal(orientation("android", false, 1280, 800), "default");
 assert.equal(orientation("android", false, Number.NaN, 800), "portrait_up", "invalid Android geometry fails closed to handset");
@@ -49,7 +56,9 @@ assert.equal(classify("web", false, 390, 844), "other");
 assert.equal(orientation("web", false, 390, 844), "default");
 assert.equal(orientation("other", false, 390, 844), "default");
 assert.equal(resolveWaflRuntimeOrientationAction("handset"), "lock-portrait-up");
-assert.equal(resolveWaflRuntimeOrientationAction("tablet"), "unlock-default");
+assert.equal(resolveWaflRuntimeOrientationAction("compact-tablet"), "lock-portrait-up");
+assert.equal(resolveWaflRuntimeOrientationAction("regular-tablet"), "unlock-default");
+assert.equal(resolveWaflRuntimeOrientationAction("regular-tablet", "product-sketch"), "lock-portrait-up");
 assert.equal(resolveWaflRuntimeOrientationAction("other"), "none");
 assert.equal(shouldReconcileWaflRuntimeOrientation("background", "active"), true);
 assert.equal(shouldReconcileWaflRuntimeOrientation("inactive", "active"), true);
@@ -118,9 +127,9 @@ assert.match(policy, /import nativeOrientationPolicy from "\.\.\/config\/waflNat
 assert.doesNotMatch(policy, /from ["'](?:react|react-native|expo|@\/)/u, "policy owner must remain framework-free and Node-testable");
 assert.match(layout, /Dimensions\.get\("screen"\)/u);
 assert.match(layout, /Platform\.OS === "ios" && Platform\.isPad/u);
-assert.match(layout, /useWaflRuntimeOrientationPolicy\(mobileDeviceClass\)/u);
-assert.doesNotMatch(layout, /orientation:\s*rootStackOrientation/u, "ineffective root screenOptions-only mechanism must not return");
-assert.doesNotMatch(layout, /<Stack\.Screen[\s\S]*orientation:/u, "an explicit route option is not a different native mechanism");
+assert.match(layout, /WaflRuntimeOrientationPolicyProvider deviceClass=\{mobileDeviceClass\}/u);
+assert.match(layout, /orientation:\s*rootStackOrientation/u, "the canonical device policy must reach the installed native-stack screen orientation prop");
+assert.doesNotMatch(layout, /<Stack\.Screen[\s\S]*orientation:/u, "general WAFL orientation stays owned once at the root Stack");
 assert.match(runtimeOwner, /expo-screen-orientation/u);
 assert.match(runtimeOwner, /lockAsync\(ScreenOrientation\.OrientationLock\.PORTRAIT_UP\)/u);
 assert.match(runtimeOwner, /ScreenOrientation\.unlockAsync\(\)/u);
@@ -153,9 +162,10 @@ console.log(JSON.stringify({
   addedPermanentChecks: 1,
   finalPermanentInventory: 219,
   handsetOrientation: "portrait_up",
-  tabletOrientation: "default",
+  compactTabletOrientation: "portrait_up",
+  regularTabletOrientation: "default",
   runtimeMechanism: "expo-screen-orientation",
-  activeRouteScreenOptionsOnly: false,
+  rootNativeStackOrientationWired: true,
   lifecycleReconcile: "mount-and-resume",
   globalExpoOrientation: "default",
   drawingImplementation: 0,
