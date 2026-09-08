@@ -35,6 +35,10 @@ compile(
   [[/require\("@\/domain\/drawing"\)/g, 'require("./drawing/index.js")']],
 );
 compile(
+  "apps/mobile/features/drawing-poc/drawingEraserVisualFeedback.ts",
+  path.join(compiledRoot, "drawingEraserVisualFeedback.js"),
+);
+compile(
   "apps/mobile/features/drawing-poc/drawingRenderProjection.ts",
   path.join(compiledRoot, "projection.js"),
   [[/require\("@\/domain\/drawing"\)/g, 'require("./drawing/index.js")']],

@@ -419,7 +419,7 @@ if ($VerificationProfile -eq "automation-infrastructure" -and
     $allowedMigrationChanges = @("db/v2/migrations/019_v2_work_order_lineage_sample.sql")
 }
 if ($VerificationProfile -eq "automation-infrastructure" -and
-    $ExpectedAppVersion -in @("2.0.0-alpha.73", "2.0.0-alpha.74") -and
+    $ExpectedAppVersion -in @("2.0.0-alpha.73", "2.0.0-alpha.74", "2.0.0-alpha.75") -and
     (Test-Path (Join-Path $ProjectDir "tests/workorder-v2-alpha73-product-sketch-persistence-contract.mjs"))) {
     $allowedMigrationChanges = @("db/v2/migrations/022_v2_work_order_drawings.sql")
 }

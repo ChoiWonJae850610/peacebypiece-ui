@@ -309,3 +309,11 @@ export function parseDrawingScene(serialized: string): DrawingSceneV1 {
 export function drawingScenesEqual(left: DrawingSceneV1, right: DrawingSceneV1): boolean {
   return serializeDrawingScene(left) === serializeDrawingScene(right);
 }
+
+export function removeDrawingElementsById(
+  scene: DrawingSceneV1,
+  elementIds: ReadonlySet<string>,
+): DrawingSceneV1 {
+  if (elementIds.size === 0 || !scene.elements.some((element) => elementIds.has(element.id))) return scene;
+  return createDrawingScene(scene.elements.filter((element) => !elementIds.has(element.id)));
+}

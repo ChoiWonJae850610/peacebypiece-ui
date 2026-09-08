@@ -11,9 +11,10 @@ import {
   type ModalProps,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { ArrowUpRight, Circle, Minus, PenLine, Redo2, Square, Trash2, Type, Undo2 } from "lucide-react-native";
+import { ArrowUpRight, BrushCleaning, ChevronDown, Circle, Eraser, Minus, MousePointer2, PenLine, Redo2, Square, Trash2, Type, Undo2 } from "lucide-react-native";
 
 import {
+  applyDrawingStrokePartialErasePlan,
   appendDrawingActiveStrokePoint,
   beginDrawingActiveSegment,
   beginDrawingActiveShape,
@@ -34,7 +35,10 @@ import {
   finalizeDrawingActiveShape,
   finalizeDrawingActiveStroke,
   isDrawingAuthoringViewportGenerationCurrent,
+  hitTestDrawingSceneTopmost,
+  planDrawingStrokePartialErase,
   redoDrawingScene,
+  removeDrawingElementsById,
   resolveDrawingViewportTransform,
   screenToWorld,
   serializeDrawingScene,
@@ -45,6 +49,7 @@ import {
   type DrawingActiveShape,
   type DrawingActiveStroke,
   type DrawingElement,
+  type DrawingStrokePartialErasePlan,
   type DrawingPoint,
   type DrawingSceneHistory,
   type DrawingViewport,
@@ -59,7 +64,16 @@ import WaflDecisionSheet from "@/features/feedback/WaflDecisionSheet";
 import WaflInputSheet from "@/features/inputs/WaflInputSheet";
 import WaflPrimaryActionButton from "@/features/inputs/WaflPrimaryActionButton";
 import WaflSheetValueField from "@/features/inputs/WaflSheetValueField";
-import { projectDrawingElement, projectDrawingTextInsertionPreview } from "@/features/drawing-poc/drawingRenderProjection";
+import {
+  projectDrawingElement,
+  projectDrawingEraserCursor,
+  projectDrawingSelectionOutline,
+  projectDrawingTextInsertionPreview,
+} from "@/features/drawing-poc/drawingRenderProjection";
+import {
+  resolveDrawingEraserScreenRadius,
+  resolveDrawingEraserWorldRadius,
+} from "@/features/drawing-poc/drawingEraserVisualFeedback";
 import SvgDrawingSceneRenderer, { svgDrawingRendererAdapter } from "@/features/drawing-poc/SvgDrawingSceneRenderer";
 import { getPrimaryWorkOrderDrawing, savePrimaryWorkOrderDrawing } from "@/lib/api/drawingApi";
 import { createWorkOrderSketchParentCloseGuard, resolveWorkOrderSketchCloseIntent } from "./workOrderSketchClosePolicy";
@@ -76,11 +90,35 @@ const camera = createDrawingCamera();
 const penStyle = Object.freeze({ strokeColor: "#17263D", strokeWidth: 4, fillColor: null });
 const annotationStyle = Object.freeze({ strokeColor: "#17263D", strokeWidth: 3, fillColor: null });
 const textInsertionCaretStyle = Object.freeze({ strokeColor: WAFL_THEME.color.readOnly, strokeWidth: 2, fillColor: null });
+const DRAWING_ERASER_SCREEN_RADIUS = resolveDrawingEraserScreenRadius(WAFL_THEME.touch.minimum);
 const WORK_ORDER_SKETCH_SUPPORTED_ORIENTATIONS: NonNullable<ModalProps["supportedOrientations"]> = [
   "portrait",
 ];
 
-type SketchTool = "pen" | "line" | "arrow" | "rectangle" | "ellipse" | "text";
+type SketchTool = "pen" | "line" | "arrow" | "rectangle" | "ellipse" | "text" | "selection" | "eraser";
+type SketchAuthoringTool = Exclude<SketchTool, "selection" | "eraser">;
+
+const AUTHORING_TOOLS: readonly SketchAuthoringTool[] = Object.freeze([
+  "pen",
+  "line",
+  "arrow",
+  "rectangle",
+  "ellipse",
+  "text",
+]);
+
+const AUTHORING_TOOL_LABELS: Readonly<Record<SketchAuthoringTool, string>> = Object.freeze({
+  arrow: "화살표",
+  ellipse: "타원",
+  line: "선",
+  pen: "펜",
+  rectangle: "사각형",
+  text: "텍스트",
+});
+
+function isAuthoringTool(tool: SketchTool): tool is SketchAuthoringTool {
+  return tool !== "selection" && tool !== "eraser";
+}
 
 type SaveIdentity = Readonly<{ clientRequestId: string; idempotencyKey: string }>;
 
@@ -97,6 +135,8 @@ export default function WorkOrderSketchEditor(props: Readonly<{
   useWaflProductSketchOrientationPolicy(props.visible);
   const [history, setHistory] = useState<DrawingSceneHistory>(newHistory);
   const [tool, setTool] = useState<SketchTool>("pen");
+  const [lastAuthoringTool, setLastAuthoringTool] = useState<SketchAuthoringTool>("pen");
+  const [drawingToolMenuVisible, setDrawingToolMenuVisible] = useState(false);
   const [activeStroke, setActiveStroke] = useState<DrawingActiveStroke | null>(null);
   const [activeSegment, setActiveSegment] = useState<DrawingActiveSegment | null>(null);
   const [activeShape, setActiveShape] = useState<DrawingActiveShape | null>(null);
@@ -110,11 +150,18 @@ export default function WorkOrderSketchEditor(props: Readonly<{
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [decision, setDecision] = useState<WaflActionConfirmationState | null>(null);
+  const [selectedElementId, setSelectedElementId] = useState<string | null>(null);
+  const [eraserCursorWorld, setEraserCursorWorld] = useState<DrawingPoint | null>(null);
+  const [eraserRadiusWorld, setEraserRadiusWorld] = useState(DRAWING_ERASER_SCREEN_RADIUS);
+  const [eraserPreviewScene, setEraserPreviewScene] = useState<ReturnType<typeof createDrawingScene> | null>(null);
   const historyRef = useRef(history);
   const viewportRef = useRef(viewport);
   const activeStrokeRef = useRef<DrawingActiveStroke | null>(null);
   const activeSegmentRef = useRef<DrawingActiveSegment | null>(null);
   const activeShapeRef = useRef<DrawingActiveShape | null>(null);
+  const selectedElementIdRef = useRef<string | null>(null);
+  const eraserTrailRef = useRef<readonly DrawingPoint[]>(Object.freeze([]));
+  const eraserRadiusWorldRef = useRef(DRAWING_ERASER_SCREEN_RADIUS);
   const viewportGenerationRef = useRef(0);
   const activeGestureViewportGenerationRef = useRef<number | null>(null);
   const toolRef = useRef<SketchTool>("pen");
@@ -140,7 +187,12 @@ export default function WorkOrderSketchEditor(props: Readonly<{
   useEffect(() => { editableRef.current = props.editable; }, [props.editable]);
   useEffect(() => { editorVisibleRef.current = props.visible; }, [props.visible]);
   const transform = useMemo(() => resolveDrawingViewportTransform(camera, viewport), [viewport]);
-  const committedFrame = useMemo(() => svgDrawingRendererAdapter.render({ scene: currentScene, transform }), [currentScene, transform]);
+  const displayedScene = eraserPreviewScene ?? currentScene;
+  const committedFrame = useMemo(() => svgDrawingRendererAdapter.render({ scene: displayedScene, transform }), [displayedScene, transform]);
+  const selectedElement = useMemo(
+    () => currentScene.elements.find((element) => element.id === selectedElementId) ?? null,
+    [currentScene, selectedElementId],
+  );
   const activePrimitive = useMemo(() => {
     if (activeStroke) return projectDrawingElement(finalizeDrawingActiveStroke(activeStroke), transform);
     if (activeSegment) return projectDrawingElement(activeSegment, transform);
@@ -157,6 +209,19 @@ export default function WorkOrderSketchEditor(props: Readonly<{
     fontSize: DRAWING_TEXT_DEFAULT_FONT_SIZE,
     textStyle: annotationStyle,
   }, transform), [textSession, transform]);
+  const eraserPreviewFrame = useMemo(() => Object.freeze([
+    ...(eraserCursorWorld === null ? [] : [projectDrawingEraserCursor(
+      eraserCursorWorld,
+      transform,
+      WAFL_THEME.color.editActive,
+      eraserRadiusWorld,
+    )]),
+  ]), [eraserCursorWorld, eraserRadiusWorld, transform]);
+  const transientPreviewFrame = useMemo(() => Object.freeze([
+    ...(selectedElement ? [projectDrawingSelectionOutline(selectedElement, transform, WAFL_THEME.color.brickOrange)] : []),
+    ...eraserPreviewFrame,
+    ...textPreviewFrame,
+  ]), [eraserPreviewFrame, selectedElement, textPreviewFrame, transform]);
 
   useEffect(() => {
     if (!props.visible) return;
@@ -172,10 +237,16 @@ export default function WorkOrderSketchEditor(props: Readonly<{
       activeStrokeRef.current = null;
       activeSegmentRef.current = null;
       activeShapeRef.current = null;
+      selectedElementIdRef.current = null;
+      eraserTrailRef.current = Object.freeze([]);
+      setEraserPreviewScene(null);
+      setEraserCursorWorld(null);
+      setDrawingToolMenuVisible(false);
       activeGestureViewportGenerationRef.current = null;
       setActiveStroke(null);
       setActiveSegment(null);
       setActiveShape(null);
+      setSelectedElementId(null);
       setTextSheetVisible(false);
       textSheetVisibleRef.current = false;
       textSessionRef.current = null;
@@ -207,6 +278,16 @@ export default function WorkOrderSketchEditor(props: Readonly<{
     setHistory(next);
   }
 
+  function clearSelection() {
+    selectedElementIdRef.current = null;
+    setSelectedElementId(null);
+  }
+
+  function selectElement(id: string | null) {
+    selectedElementIdRef.current = id;
+    setSelectedElementId(id);
+  }
+
   function discardActiveStroke() {
     activeStrokeRef.current = cancelDrawingActiveStroke();
     setActiveStroke(null);
@@ -222,12 +303,19 @@ export default function WorkOrderSketchEditor(props: Readonly<{
     setActiveShape(null);
   }
 
+  function clearEraserVisualFeedback() {
+    eraserTrailRef.current = Object.freeze([]);
+    setEraserPreviewScene(null);
+    setEraserCursorWorld(null);
+  }
+
   function discardActiveGesture() {
     discardActiveStroke();
     discardActiveSegment();
     discardActiveShape();
     activeGestureViewportGenerationRef.current = null;
     pendingTextAnchorRef.current = null;
+    clearEraserVisualFeedback();
   }
 
   function commitElement(element: DrawingElement) {
@@ -237,12 +325,82 @@ export default function WorkOrderSketchEditor(props: Readonly<{
     ));
   }
 
+  function makeElementId(kind: "arrow" | "ellipse" | "line" | "rectangle" | "stroke" | "text") {
+    // eslint-disable-next-line react-hooks/purity -- IDs are allocated only from user-event handlers.
+    return `${kind}:${Date.now()}:${sequenceRef.current += 1}`;
+  }
+
   function selectTool(next: SketchTool) {
+    setDrawingToolMenuVisible(false);
     if (next === toolRef.current) return;
     discardActiveGesture();
     if (textSessionRef.current !== null) cancelText();
+    if (next !== "selection") clearSelection();
+    if (isAuthoringTool(next)) setLastAuthoringTool(next);
     toolRef.current = next;
     setTool(next);
+  }
+
+  function toggleDrawingToolMenu() {
+    discardActiveGesture();
+    setDrawingToolMenuVisible((visible) => !visible);
+  }
+
+  function extendEraserGesture(point: DrawingPoint, present = true): DrawingStrokePartialErasePlan {
+    const previous = eraserTrailRef.current[eraserTrailRef.current.length - 1];
+    const trail = previous && previous.x === point.x && previous.y === point.y
+      ? eraserTrailRef.current
+      : Object.freeze([...eraserTrailRef.current, point]);
+    eraserTrailRef.current = trail;
+    const scene = historyRef.current.current;
+    const plan = planDrawingStrokePartialErase(scene, trail, { radius: eraserRadiusWorldRef.current });
+    if (present) {
+      setEraserCursorWorld(point);
+      setEraserPreviewScene(plan.changed
+        ? applyDrawingStrokePartialErasePlan(
+          scene,
+          plan,
+          (originalId, fragmentIndex) => `eraser-preview:${fragmentIndex}:${originalId.slice(0, 88)}`,
+        )
+        : null);
+    }
+    return plan;
+  }
+
+  function commitEraserGesture(plan: DrawingStrokePartialErasePlan) {
+    const scene = historyRef.current.current;
+    clearEraserVisualFeedback();
+    if (!plan.changed) return;
+    const nextScene = applyDrawingStrokePartialErasePlan(
+      scene,
+      plan,
+      () => makeElementId("stroke"),
+    );
+    updateHistory(commitDrawingScene(historyRef.current, nextScene));
+    clearSelection();
+  }
+
+  function deleteSelectedElement() {
+    const selectedId = selectedElementIdRef.current;
+    if (selectedId === null) return;
+    const nextScene = removeDrawingElementsById(historyRef.current.current, new Set([selectedId]));
+    updateHistory(commitDrawingScene(historyRef.current, nextScene));
+    clearSelection();
+  }
+
+  function undo() {
+    updateHistory(undoDrawingScene(historyRef.current));
+    clearSelection();
+  }
+
+  function redo() {
+    updateHistory(redoDrawingScene(historyRef.current));
+    clearSelection();
+  }
+
+  function clearScene() {
+    updateHistory(commitDrawingScene(historyRef.current, createDrawingScene()));
+    clearSelection();
   }
 
   function worldPointFromEvent(locationX: number, locationY: number) {
@@ -268,25 +426,42 @@ export default function WorkOrderSketchEditor(props: Readonly<{
         pendingTextAnchorRef.current = point;
         return;
       }
+      if (toolRef.current === "selection") return;
+      if (toolRef.current === "eraser") {
+        clearEraserVisualFeedback();
+        const radius = resolveDrawingEraserWorldRadius(
+          DRAWING_ERASER_SCREEN_RADIUS,
+          resolveDrawingViewportTransform(camera, viewportRef.current).scale,
+        );
+        eraserRadiusWorldRef.current = radius;
+        setEraserRadiusWorld(radius);
+        extendEraserGesture(point);
+        return;
+      }
       if (toolRef.current === "line" || toolRef.current === "arrow") {
-        const segment = beginDrawingActiveSegment({ id: `${toolRef.current}:${Date.now()}:${sequenceRef.current += 1}`, kind: toolRef.current, point, style: annotationStyle });
+        const segment = beginDrawingActiveSegment({ id: makeElementId(toolRef.current), kind: toolRef.current, point, style: annotationStyle });
         activeSegmentRef.current = segment;
         setActiveSegment(segment);
         return;
       }
       if (toolRef.current === "rectangle" || toolRef.current === "ellipse") {
-        const shape = beginDrawingActiveShape({ id: `${toolRef.current}:${Date.now()}:${sequenceRef.current += 1}`, kind: toolRef.current, point, style: annotationStyle });
+        const shape = beginDrawingActiveShape({ id: makeElementId(toolRef.current), kind: toolRef.current, point, style: annotationStyle });
         activeShapeRef.current = shape;
         setActiveShape(shape);
         return;
       }
-      const stroke = beginDrawingActiveStroke({ id: `stroke:${Date.now()}:${sequenceRef.current += 1}`, point, style: penStyle });
+      const stroke = beginDrawingActiveStroke({ id: makeElementId("stroke"), point, style: penStyle });
       activeStrokeRef.current = stroke;
       setActiveStroke(stroke);
     },
     onPanResponderMove: (event) => {
       if (!activeGestureUsesCurrentViewport()) {
         discardActiveGesture();
+        return;
+      }
+      if (toolRef.current === "selection") return;
+      if (toolRef.current === "eraser") {
+        extendEraserGesture(worldPointFromEvent(event.nativeEvent.locationX, event.nativeEvent.locationY));
         return;
       }
       if (toolRef.current === "line" || toolRef.current === "arrow") {
@@ -317,6 +492,22 @@ export default function WorkOrderSketchEditor(props: Readonly<{
         return;
       }
       activeGestureViewportGenerationRef.current = null;
+      if (toolRef.current === "selection") {
+        const hit = hitTestDrawingSceneTopmost(
+          historyRef.current.current,
+          worldPointFromEvent(event.nativeEvent.locationX, event.nativeEvent.locationY),
+        );
+        selectElement(hit?.id ?? null);
+        return;
+      }
+      if (toolRef.current === "eraser") {
+        const plan = extendEraserGesture(
+          worldPointFromEvent(event.nativeEvent.locationX, event.nativeEvent.locationY),
+          false,
+        );
+        commitEraserGesture(plan);
+        return;
+      }
       if (toolRef.current === "text") {
         const anchor = pendingTextAnchorRef.current;
         pendingTextAnchorRef.current = null;
@@ -363,7 +554,7 @@ export default function WorkOrderSketchEditor(props: Readonly<{
     const session = textSessionRef.current;
     if (!session || session.phase !== "presented") return;
     const element = createDrawingTextElement({
-      id: `text:${Date.now()}:${sequenceRef.current += 1}`,
+      id: makeElementId("text"),
       anchor: session.anchor,
       content: session.draft,
       style: annotationStyle,
@@ -471,6 +662,7 @@ export default function WorkOrderSketchEditor(props: Readonly<{
     props.onClose();
     discardActiveGesture();
     setDecision(null);
+    clearSelection();
     cancelText();
   }
 
@@ -496,22 +688,44 @@ export default function WorkOrderSketchEditor(props: Readonly<{
       <View style={styles.header}>
         <Text style={styles.title}>스케치</Text>
       </View>
-      <View style={styles.toolPicker} testID="work-order-sketch-tool-picker">
-        <Tool accessibilityLabel="펜 도구" disabled={loading || saving} icon={<PenLine color={tool === "pen" ? "#FFFFFF" : WAFL_THEME.color.deepNavy} size={17} />} label="펜" onPress={() => selectTool("pen")} selected={tool === "pen"} style={styles.authoringTool} />
-        <Tool accessibilityLabel="선 도구" disabled={loading || saving} icon={<Minus color={tool === "line" ? "#FFFFFF" : WAFL_THEME.color.deepNavy} size={17} />} label="선" onPress={() => selectTool("line")} selected={tool === "line"} style={styles.authoringTool} />
-        <Tool accessibilityLabel="화살표 도구" disabled={loading || saving} icon={<ArrowUpRight color={tool === "arrow" ? "#FFFFFF" : WAFL_THEME.color.deepNavy} size={17} />} label="화살표" onPress={() => selectTool("arrow")} selected={tool === "arrow"} style={styles.authoringTool} />
-        <Tool accessibilityLabel="사각형 도구" disabled={loading || saving} icon={<Square color={tool === "rectangle" ? "#FFFFFF" : WAFL_THEME.color.deepNavy} size={17} />} label="사각형" onPress={() => selectTool("rectangle")} selected={tool === "rectangle"} style={styles.authoringTool} />
-        <Tool accessibilityLabel="타원 도구" disabled={loading || saving} icon={<Circle color={tool === "ellipse" ? "#FFFFFF" : WAFL_THEME.color.deepNavy} size={17} />} label="타원" onPress={() => selectTool("ellipse")} selected={tool === "ellipse"} style={styles.authoringTool} />
-        <Tool accessibilityLabel="텍스트 도구" disabled={loading || saving} icon={<Type color={tool === "text" ? "#FFFFFF" : WAFL_THEME.color.deepNavy} size={17} />} label="텍스트" onPress={() => selectTool("text")} selected={tool === "text"} style={styles.authoringTool} />
-      </View>
-      <View style={styles.toolbar}>
-        <Tool accessibilityLabel="실행 취소" disabled={loading || saving || history.past.length === 0} icon={<Undo2 color={WAFL_THEME.color.deepNavy} size={18} />} label="Undo" onPress={() => updateHistory(undoDrawingScene(historyRef.current))} />
-        <Tool accessibilityLabel="다시 실행" disabled={loading || saving || history.future.length === 0} icon={<Redo2 color={WAFL_THEME.color.deepNavy} size={18} />} label="Redo" onPress={() => updateHistory(redoDrawingScene(historyRef.current))} />
-        <Tool accessibilityLabel="스케치 모두 지우기" disabled={loading || saving || currentScene.elements.length === 0} icon={<Trash2 color={WAFL_THEME.color.error} size={18} />} label="Clear" onPress={() => updateHistory(commitDrawingScene(historyRef.current, createDrawingScene()))} tone="danger" />
+      {drawingToolMenuVisible ? <Pressable
+        accessibilityLabel="그리기 도구 목록 닫기"
+        accessibilityRole="button"
+        onPress={() => setDrawingToolMenuVisible(false)}
+        style={styles.drawingToolDismissLayer}
+        testID="work-order-sketch-drawing-tool-menu-dismiss-layer"
+      /> : null}
+      <View style={styles.toolbar} testID="work-order-sketch-compact-toolbar">
+        <View style={styles.drawingToolSelectorAnchor}>
+          <IconTool
+            accessibilityLabel={`그리기 도구: ${AUTHORING_TOOL_LABELS[lastAuthoringTool]}`}
+            disabled={loading || saving}
+            icon={<View style={styles.drawingToolIcon}>{renderSketchToolIcon(lastAuthoringTool, isAuthoringTool(tool) ? "#FFFFFF" : WAFL_THEME.color.deepNavy, 19)}<ChevronDown color={isAuthoringTool(tool) ? "#FFFFFF" : WAFL_THEME.color.readOnly} size={11} /></View>}
+            onPress={toggleDrawingToolMenu}
+            selected={isAuthoringTool(tool)}
+            testID="work-order-sketch-drawing-tool-selector"
+          />
+          {drawingToolMenuVisible ? <View accessibilityLabel="그리기 도구 목록" style={styles.drawingToolMenu} testID="work-order-sketch-drawing-tool-menu">
+            {AUTHORING_TOOLS.map((candidate) => <DrawingToolMenuItem
+              disabled={loading || saving}
+              key={candidate}
+              label={AUTHORING_TOOL_LABELS[candidate]}
+              onPress={() => selectTool(candidate)}
+              selected={tool === candidate}
+              tool={candidate}
+            />)}
+          </View> : null}
+        </View>
+        <IconTool accessibilityLabel="선택" disabled={loading || saving} icon={<MousePointer2 color={tool === "selection" ? "#FFFFFF" : WAFL_THEME.color.deepNavy} size={19} />} onPress={() => selectTool("selection")} selected={tool === "selection"} testID="work-order-sketch-selection-tool" />
+        <IconTool accessibilityLabel="지우개" disabled={loading || saving} icon={<Eraser color={tool === "eraser" ? "#FFFFFF" : WAFL_THEME.color.deepNavy} size={19} />} onPress={() => selectTool("eraser")} selected={tool === "eraser"} testID="work-order-sketch-eraser-tool" />
+        <IconTool accessibilityLabel="실행 취소" disabled={loading || saving || history.past.length === 0} icon={<Undo2 color={WAFL_THEME.color.deepNavy} size={19} />} onPress={undo} testID="work-order-sketch-undo" />
+        <IconTool accessibilityLabel="다시 실행" disabled={loading || saving || history.future.length === 0} icon={<Redo2 color={WAFL_THEME.color.deepNavy} size={19} />} onPress={redo} testID="work-order-sketch-redo" />
+        <IconTool accessibilityLabel="선택 객체 삭제" danger disabled={loading || saving || selectedElement === null} icon={<Trash2 color={WAFL_THEME.color.error} size={19} />} onPress={deleteSelectedElement} testID="work-order-sketch-delete-selected" />
+        <IconTool accessibilityLabel="전체 지우기" danger disabled={loading || saving || currentScene.elements.length === 0} icon={<BrushCleaning color={WAFL_THEME.color.error} size={19} />} onPress={clearScene} testID="work-order-sketch-clear-all" />
       </View>
       {loading ? <View style={styles.center}><ActivityIndicator color={WAFL_THEME.color.brickOrange} /><Text style={styles.status}>스케치를 불러오고 있습니다.</Text></View> : (
         <View onLayout={onCanvasLayout} style={styles.canvas} testID="work-order-sketch-canvas" {...panResponder.panHandlers}>
-          {viewport.width > 1 && viewport.height > 1 ? <SvgDrawingSceneRenderer activePrimitive={activePrimitive} committedFrame={committedFrame} height={viewport.height} onCommittedLayerRender={() => undefined} previewFrame={textPreviewFrame} width={viewport.width} /> : null}
+          {viewport.width > 1 && viewport.height > 1 ? <SvgDrawingSceneRenderer activePrimitive={activePrimitive} committedFrame={committedFrame} height={viewport.height} onCommittedLayerRender={() => undefined} previewFrame={transientPreviewFrame} width={viewport.width} /> : null}
         </View>
       )}
       <View pointerEvents="auto" style={styles.footer} testID="work-order-sketch-footer">
@@ -557,24 +771,68 @@ export default function WorkOrderSketchEditor(props: Readonly<{
   </Modal>;
 }
 
-function Tool(props: Readonly<{ accessibilityLabel: string; disabled: boolean; icon: ReactNode; label: string; onPress: () => void; selected?: boolean; style?: object; tone?: "danger" }>) {
-  return <Pressable accessibilityLabel={props.accessibilityLabel} accessibilityState={{ disabled: props.disabled, selected: props.selected }} disabled={props.disabled} onPress={props.onPress} style={({ pressed }) => [styles.tool, props.style, props.selected && styles.toolPrimary, props.tone === "danger" && styles.toolDanger, props.disabled && styles.disabled, pressed && styles.pressed]}><View style={styles.toolIcon}>{props.icon}</View><Text style={[styles.toolText, props.selected && styles.toolTextPrimary, props.tone === "danger" && styles.toolTextDanger]}>{props.label}</Text></Pressable>;
+function renderSketchToolIcon(tool: SketchAuthoringTool, color: string, size: number) {
+  if (tool === "pen") return <PenLine color={color} size={size} />;
+  if (tool === "line") return <Minus color={color} size={size} />;
+  if (tool === "arrow") return <ArrowUpRight color={color} size={size} />;
+  if (tool === "rectangle") return <Square color={color} size={size} />;
+  if (tool === "ellipse") return <Circle color={color} size={size} />;
+  return <Type color={color} size={size} />;
+}
+
+function IconTool(props: Readonly<{
+  accessibilityLabel: string;
+  danger?: boolean;
+  disabled: boolean;
+  icon: ReactNode;
+  onPress: () => void;
+  selected?: boolean;
+  testID: string;
+}>) {
+  return <Pressable
+    accessibilityLabel={props.accessibilityLabel}
+    accessibilityRole="button"
+    accessibilityState={{ disabled: props.disabled, selected: props.selected }}
+    disabled={props.disabled}
+    onPress={props.onPress}
+    style={({ pressed }) => [styles.iconTool, props.selected && styles.toolPrimary, props.danger && styles.toolDanger, props.disabled && styles.disabled, pressed && styles.pressed]}
+    testID={props.testID}
+  >{props.icon}</Pressable>;
+}
+
+function DrawingToolMenuItem(props: Readonly<{
+  disabled: boolean;
+  label: string;
+  onPress: () => void;
+  selected: boolean;
+  tool: SketchAuthoringTool;
+}>) {
+  const color = props.selected ? "#FFFFFF" : WAFL_THEME.color.deepNavy;
+  return <Pressable
+    accessibilityLabel={`${props.label} 도구`}
+    accessibilityRole="button"
+    accessibilityState={{ disabled: props.disabled, selected: props.selected }}
+    disabled={props.disabled}
+    onPress={props.onPress}
+    style={({ pressed }) => [styles.drawingToolMenuItem, props.selected && styles.toolPrimary, props.disabled && styles.disabled, pressed && styles.pressed]}
+  >
+    {renderSketchToolIcon(props.tool, color, 18)}
+  </Pressable>;
 }
 
 const styles = StyleSheet.create({
-  safe: { backgroundColor: WAFL_THEME.color.paperMuted, flex: 1, paddingHorizontal: WAFL_THEME.layout.screenGutterPhone },
+  safe: { backgroundColor: WAFL_THEME.color.paperMuted, flex: 1, paddingHorizontal: WAFL_THEME.layout.screenGutterPhone, position: "relative" },
   header: { alignItems: "center", justifyContent: "center", minHeight: 52 },
   title: { color: WAFL_THEME.color.deepNavy, fontFamily: WAFL_FONTS.bold, fontSize: 18 },
-  toolPicker: { flexDirection: "row", flexWrap: "wrap", gap: WAFL_THEME.spacing.xs, paddingBottom: WAFL_THEME.spacing.xs },
-  toolbar: { flexDirection: "row", gap: WAFL_THEME.spacing.xs, paddingBottom: WAFL_THEME.spacing.sm },
-  tool: { alignItems: "center", backgroundColor: WAFL_THEME.color.paper, borderColor: WAFL_THEME.color.border, borderRadius: WAFL_THEME.radius.actionTile, borderWidth: WAFL_THEME.border.hairline, flex: 1, flexDirection: "row", gap: 4, justifyContent: "center", minHeight: WAFL_THEME.touch.minimum },
-  authoringTool: { flexBasis: 96 },
+  toolbar: { flexDirection: "row", gap: WAFL_THEME.spacing.xs, paddingBottom: WAFL_THEME.spacing.sm, zIndex: 30 },
+  iconTool: { alignItems: "center", backgroundColor: WAFL_THEME.color.paper, borderColor: WAFL_THEME.color.border, borderRadius: WAFL_THEME.radius.actionTile, borderWidth: WAFL_THEME.border.hairline, flex: 1, justifyContent: "center", minHeight: WAFL_THEME.touch.minimum, minWidth: 0 },
+  drawingToolIcon: { alignItems: "center", flexDirection: "row", gap: 1, justifyContent: "center" },
+  drawingToolSelectorAnchor: { flex: 1, minWidth: 0, position: "relative", zIndex: 40 },
+  drawingToolDismissLayer: { ...StyleSheet.absoluteFillObject, zIndex: 20 },
+  drawingToolMenu: { backgroundColor: WAFL_THEME.color.paper, borderColor: WAFL_THEME.color.border, borderRadius: WAFL_THEME.radius.card, borderWidth: WAFL_THEME.border.hairline, gap: WAFL_THEME.spacing.xs, left: 0, padding: WAFL_THEME.spacing.xs, position: "absolute", right: 0, top: WAFL_THEME.touch.minimum + WAFL_THEME.spacing.xs, zIndex: 50 },
+  drawingToolMenuItem: { alignItems: "center", borderColor: WAFL_THEME.color.border, borderRadius: WAFL_THEME.radius.actionTile, borderWidth: WAFL_THEME.border.hairline, justifyContent: "center", minHeight: WAFL_THEME.touch.minimum, minWidth: WAFL_THEME.touch.minimum },
   toolPrimary: { backgroundColor: WAFL_THEME.color.navyInk, borderColor: WAFL_THEME.color.navyInk },
   toolDanger: { borderColor: "#D9AAA4" },
-  toolIcon: { alignItems: "center", justifyContent: "center" },
-  toolText: { color: WAFL_THEME.color.deepNavy, fontFamily: WAFL_FONTS.semibold, fontSize: 10 },
-  toolTextPrimary: { color: "#FFFFFF" },
-  toolTextDanger: { color: WAFL_THEME.color.error },
   canvas: { backgroundColor: "#FFFDF8", borderColor: WAFL_THEME.color.border, borderRadius: WAFL_THEME.radius.cardMajor, borderWidth: WAFL_THEME.border.hairline, flex: 1, overflow: "hidden" },
   center: { alignItems: "center", flex: 1, gap: 9, justifyContent: "center" },
   status: { color: WAFL_THEME.color.readOnly, fontFamily: WAFL_FONTS.medium, fontSize: 12 },

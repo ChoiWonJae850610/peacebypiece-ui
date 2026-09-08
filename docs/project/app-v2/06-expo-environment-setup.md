@@ -1,5 +1,13 @@
 # WAFL v2 Expo Environment Setup
 
+## Alpha.75 finalization runtime boundary
+
+- Internal APP_VERSION is `2.0.0-alpha.75`; Expo public version remains `2.0.0` and iOS build number remains `1`.
+- The accepted existing-project internal development build remains `90ec13f2-b6ec-4e2e-baba-c1195161a69c`;
+  finalization creates no EAS Build, EAS Update, re-sign, Production build, TestFlight, or App Store submission.
+- Canonical physical-device QA runtime remains Node `24.14.0`, Next `3100`, Metro `8081`, Tailscale Serve HTTPS
+  `443 -> 3100`, and DeveloperAutoConnect. Finalization changes no dependency/native/config/EAS behavior.
+
 ## Alpha.74 finalization runtime boundary
 
 - Internal APP_VERSION is `2.0.0-alpha.74`; Expo public version remains `2.0.0` and iOS build number remains `1`.
@@ -66,7 +74,7 @@ Document role: canonical owner for supported Expo/native environment, app identi
 | iOS bundle identifier | `com.wafl.app` |
 | Android package | `com.wafl.app` |
 | Expo public version | `2.0.0` |
-| Internal APP_VERSION | `2.0.0-alpha.74` |
+| Internal APP_VERSION | `2.0.0-alpha.75` |
 | iOS Development Build | build number `1`; latest installable alpha.74 compact native-mask development build `90ec13f2-b6ec-4e2e-baba-c1195161a69c` |
 | Android Development Build | version code `1`; latest installable alpha.72B development build `a2416e06-2ca0-431a-b575-67dafc29e871` |
 

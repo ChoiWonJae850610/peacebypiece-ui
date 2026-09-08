@@ -1,13 +1,90 @@
 # Future Drawing Architecture Guardrails
 
+## Final alpha.75 boundary
+
+- `ALPHA75_FINALIZATION_COMPLETE` accepts the authenticated DEV/TEST Product Sketch overlay palette, Selection/Delete,
+  partial stroke Eraser, exact transient feedback, and one-release/one-history-entry semantics on Scene schema v1.
+- Owner actual iPhone and iPad-mini QA is `PASS`, including Save/close/reopen with at most one alpha.75 Save per device;
+  iPad-mini orientation regression is `0`. Regular/Large iPad and Android remain `NOT_RUN`.
+- Move/transform, zoom/pan, image underlay, pressure, PDF/export integration, and Production Sketch remain deferred.
+  Release/production remains intentionally disabled as `스케치(준비 중)`.
+
+## Alpha.75 overlay palette and stroked-vector partial-eraser boundary
+
+- `ALPHA75_OVERLAY_PALETTE_STROKE_ERASER_IPHONE_IPAD_QA_REQUIRED` supersedes the freehand-only product Eraser while
+  preserving Selection + Delete as the sole whole-object deletion path. Eraser affects freehand, line, arrow shaft and
+  renderer-derived head, and unfilled rectangle/ellipse visible strokes. Text and filled future shapes are immune.
+- Each supported semantic vector has deterministic WORLD stroke components. A touched element is replaced in-place by
+  surviving Scene-v1 freehand fragments; an untouched element retains its semantic kind. Rectangle uses four ordered
+  sides, arrow uses shaft/left-head/right-head, and ellipse uses a bounded clockwise polyline with a canonical top start.
+- Screen radius is `0.7` of the shared minimum touch target, converted by viewport scale and frozen for the gesture.
+  The exact WORLD radius owns both the projected ring and swept-capsule clipping. Device/model pixels and adjustable
+  radius remain absent.
+- Pointer move owns only trail, ring, and derived preview. Release performs at most one Scene/history commit; Undo
+  restores exact original kinds/ids/order/geometry and Redo restores the flattened Scene. Schema/API/network writes do
+  not gain eraser metadata.
+- The authoring palette is an icon-only vertical absolute overlay anchored to the selector. It cannot author layout
+  height or canvas reflow; outside canvas dismissal consumes the press. Seven top-level controls and accessibility
+  semantics remain. Move/transform, zoom/pan, image, pressure, PDF/export, schema/migration, and Production exposure
+  remain out of scope. Physical PASS is not inferred.
+
+## Alpha.75 partial eraser and compact-toolbar boundary
+
+- `ALPHA75_PARTIAL_ERASER_COMPACT_TOOLBAR_IPHONE_IPAD_QA_REQUIRED` supersedes whole-object Eraser. Selection + Delete
+  remains the only whole-object removal path; Eraser affects only freehand/Pen elements.
+- One eraser gesture is an ordered WORLD trail. Each trail segment forms a swept capsule against visible freehand
+  stroke width, preventing gaps between sparse pointer samples. Release replaces each touched stroke with deterministic
+  zero/one/many freehand fragments in original z-order and creates one Scene/history commit; one Undo restores exact
+  original ids/order/points and Redo restores the exact fragment Scene.
+- The first surviving fragment retains the source id; additional fragments use the existing editor Drawing-id owner.
+  Fragments shorter than the canonical active-stroke sampling distance are dropped. Scene schema stays v1 and adds no
+  eraser or fragment kind.
+- Pointer move owns only a thin exact-radius ring and a derived preview Scene. Canonical Scene/history/network/
+  persistence/export mutation remains `0/0/0/0`; line, arrow, rectangle, ellipse, and text receive no eraser highlight
+  or mutation.
+- The top toolbar is seven icon-only, accessible controls. Pen/line/arrow/rectangle/ellipse/text live in one current-
+  authoring-tool menu; Selection and Eraser remain independent. `선택 객체 삭제` uses `Trash2`, while `전체 지우기`
+  uses the distinct existing `BrushCleaning` icon. Move/transform, partial vector erasure, adjustable radius, zoom/pan,
+  image, pressure, and PDF/export remain out of scope. Physical PASS is not inferred.
+
+## Alpha.75 eraser visual-feedback correction boundary
+
+- `ALPHA75_ERASER_VISUAL_FEEDBACK_IPHONE_IPAD_REQA_REQUIRED` adds only presentation feedback to the accepted
+  whole-object eraser: a thin cursor ring on pointer down/move and accumulated derived outlines for current candidates.
+- Cursor radius is the canonical WORLD hit tolerance projected through the current viewport scale; the shared spacing
+  token supplies only a bounded visibility floor. There is no device/model-specific radius or adjustable eraser size.
+- Cursor and candidate ids remain React editor state projected in the non-interactive transient SVG layer. They do not
+  alter canonical element styles or enter Scene/history/API/persistence/export, and are cleared by release, cancel,
+  viewport-invalidated gesture, tool switch, close, or reopen.
+- Pointer move remains Scene/history/network `0/0/0`; release retains one unique whole-object set and one history
+  commit, with freehand splitting `0` and one-Undo z-order restoration. Physical visual PASS is not inferred.
+
+## Alpha.75 selection and whole-object eraser boundary
+
+- `ALPHA75_SELECTION_HITTEST_OBJECT_ERASER_IPHONE_IPAD_QA_REQUIRED` adds only single selection, selected-object Delete,
+  and whole-object eraser to Product Sketch. Move/resize/rotate, endpoint editing, partial erasing/path splitting,
+  multi-select/lasso, zoom/pan, image underlay, pencil pressure, PDF/export, and Production gate changes remain deferred.
+- `lib/domain/drawing/hitTest.ts` is the pure WORLD-coordinate owner. It uses deterministic WORLD tolerance, reverse
+  ordered Scene elements for topmost selection, polyline/segment distance, arrow shaft/head geometry, visible-border
+  semantics for unfilled rectangle/ellipse, and deterministic semantic text bounds. React Native, viewport pixels, and
+  device classes do not participate.
+- Selected id, selection outline, eraser swept candidates, and eraser gesture points are editor-only transient state.
+  They are absent from Scene serialization, API payloads, history snapshots, and reopen state.
+- Selection itself mutates Scene/history/network `0/0/0`. Selected Delete commits one local Scene/history entry. One
+  completed eraser gesture removes its unique targeted whole elements in one local Scene/history entry; pointer move
+  and cancel mutate `0/0/0`, and Undo restores original z-order.
+- Scene schema stays v1, migration stays `22/22`, explicit Save remains the only network mutation owner, and alpha.74
+  WORLD/viewport/orientation/responsive/Static Sheet boundaries remain unchanged. Physical PASS is not inferred.
+
 ## Final alpha.74 boundary
 
 - `ALPHA74_FINALIZATION_COMPLETE` accepts the authenticated DEV/TEST Product Sketch tool set `펜 / 선 / 화살표 /
   사각형 / 타원 / 텍스트`, mixed history, explicit Save/reopen, and safe dirty discard on Scene schema v1.
 - Owner actual iPhone and iPad-mini QA accepts portrait/open continuity, compact native zero-motion, touch/render
   alignment, mixed Undo/Redo, and the single iPad Save/close/reopen editable WORLD Scene.
-- Selection, eraser, object delete/move/transform, zoom/pan, image underlay, pencil pressure, and PDF/export integration
-  remain deferred. Release/production remains intentionally disabled as `스케치(준비 중)`.
+- Alpha.74 deferred selection/eraser/object delete until the bounded alpha.75 candidate above. Move/transform, zoom/pan,
+  image underlay, pencil pressure, and PDF/export remain deferred. Release/production remains intentionally disabled as
+  `스케치(준비 중)`.
 - Regular/Large iPad and Android actual-device results remain `NOT_RUN`; their orientation matrix is preserved by
   source/contracts and is not inferred physical PASS.
 

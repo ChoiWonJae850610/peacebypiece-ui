@@ -30,7 +30,7 @@ const ActiveStrokeSvgLayer = memo(function ActiveStrokeSvgLayer(props: Readonly<
   primitive: DrawingRenderPrimitive | null;
   previewFrame: DrawingProjectedFrame;
 }>) {
-  return <G testID="drawing-poc-svg-active-layer">
+  return <G pointerEvents="none" testID="drawing-poc-svg-active-layer">
     {props.primitive ? renderPrimitive(props.primitive) : null}
     {props.previewFrame.map(renderPrimitive)}
   </G>;

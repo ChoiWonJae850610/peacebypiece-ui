@@ -73,7 +73,7 @@ for (const classification of [
 assert.doesNotMatch(inventory, /A_DRAGGABLE_FREE_SETTLE|canonical header follows the finger/u);
 
 assert.equal(fs.readdirSync(path.join(root, "db", "v2", "migrations")).filter((name) => name.endsWith(".sql")).length, 22);
-assert.match(read("lib/constants/version.ts"), /2\.0\.0-alpha\.(?:72|73|74)/u);
+assert.match(read("lib/constants/version.ts"), /2\.0\.0-alpha\.(?:72|73|74|75)/u);
 
 console.log(JSON.stringify({
   ok: true,

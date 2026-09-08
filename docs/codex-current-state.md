@@ -1,5 +1,60 @@
 # WAFL Current Baseline
 
+Alpha.75 is finalized at `ALPHA75_FINALIZATION_COMPLETE` with product checkpoint `ALPHA75_COMPLETE`. Owner actual
+physical QA is `PASS` on iPhone and iPad mini for the complete overlay drawing palette, Selection/Delete, partial stroke
+Eraser, eraser feedback, Undo/Redo, portrait continuity, and Save/close/reopen persistence. Each device used at most one
+alpha.75 Save, and iPad-mini orientation regression is `0`. Regular/Large iPad and Android actual-device QA remain
+`NOT_RUN`; they are neither inferred PASS nor alpha.75 finalization blockers. APP_VERSION is `2.0.0-alpha.75`.
+Finalization adds no product behavior, API/schema/migration, dependency/native/config/EAS, Production/Owner/ambiguous
+business mutation, tag, or release. Scene schema v1, migration `22/22`, and Production `스케치(준비 중)` remain.
+
+Alpha.75 Overlay Drawing Palette + Stroke Partial Eraser is implemented at
+`ALPHA75_OVERLAY_PALETTE_STROKE_ERASER_IPHONE_IPAD_QA_REQUIRED`, pending Owner physical iPhone and iPad-mini QA.
+The current drawing-tool selector now opens a vertically stacked, icon-only absolute overlay; it does not resize the
+toolbar/canvas, and its canvas-side dismiss layer consumes the outside tap. Eraser radius is derived as `0.7` of the
+shared minimum touch size in screen space and converted once to WORLD radius for each gesture, so its ring and swept
+corridor remain identical across viewport scales. Touched freehand, line, arrow shaft/head, unfilled rectangle borders,
+and unfilled ellipse borders become deterministic surviving Scene-v1 freehand fragments on release; untouched
+semantic vectors remain their original kinds, while text and filled future shapes are immune. Pointer movement remains
+transient and one release remains one Scene/history commit with exact semantic Undo and flattened Redo. This explicitly
+supersedes the prior freehand-only product Eraser, fixed 12-WORLD-radius product policy, and normal-flow labelled menu.
+Scene schema/API/migration `22/22`, dependency/native/config/EAS, orientation, version, and Production gate remain
+unchanged. Physical PASS is not inferred.
+
+Alpha.75 Partial Eraser + Compact Sketch Toolbar is implemented at
+`ALPHA75_PARTIAL_ERASER_COMPACT_TOOLBAR_IPHONE_IPAD_QA_REQUIRED`, pending Owner physical iPhone and iPad-mini QA.
+Selection + Delete remains the sole whole-object deletion path. `지우개` now affects only freehand/Pen geometry: one
+pointer trail forms a WORLD-coordinate swept capsule corridor, and release deterministically replaces each touched
+stroke with zero, one, or multiple Scene-v1 freehand fragments in one local Scene/history commit. Pointer movement,
+the exact-radius ring, and the derived erased-segment preview remain transient with Scene/history/network/persistence
+mutation `0/0/0/0`; line, arrow, rectangle, ellipse, and text are immune. The top toolbar is seven icon-only controls,
+with the six authoring tools in one current-tool menu and distinct selected-delete/whole-scene-clear actions. This
+checkpoint explicitly supersedes the earlier whole-object Eraser and whole-object candidate-highlight semantics while
+preserving their accepted Selection/hit-test/Delete evidence. Scene schema v1, API, migration `22/22`, dependencies,
+native/config/EAS, orientation, Static Sheet/Keyboard, Production Sketch gate, and APP_VERSION `2.0.0-alpha.74` remain
+unchanged. Physical PASS is not inferred.
+
+Alpha.75 Eraser Visual Feedback correction is implemented at
+`ALPHA75_ERASER_VISUAL_FEEDBACK_IPHONE_IPAD_REQA_REQUIRED`, pending Owner visual/tactile iPhone and iPad-mini re-QA.
+An eraser gesture now projects a thin cursor ring from the canonical WORLD hit tolerance and viewport scale, with the
+shared spacing token as only a minimum screen-radius floor. Every unique whole-object candidate remains highlighted by
+a derived outline until release/cancel/tool switch; cursor and candidates use the existing non-interactive transient
+SVG layer and never enter Scene/history/persistence/network/export. Release still deletes the accumulated whole-object
+set in exactly one local Scene/history commit, and one Undo restores its original order. The Owner already physically
+accepted Selection/Delete/whole-object Eraser behavior; this checkpoint does not infer the remaining visual PASS and
+requires no additional Save. Scene schema v1, API, migration `22/22`, dependencies/native/config/EAS, orientation,
+Static Sheet/Keyboard, APP_VERSION `2.0.0-alpha.74`, and Production Sketch gate remain unchanged.
+
+Alpha.75 Selection / Hit-Test / Object Delete / Eraser is implemented at
+`ALPHA75_SELECTION_HITTEST_OBJECT_ERASER_IPHONE_IPAD_QA_REQUIRED`, pending Owner physical iPhone and iPad-mini QA.
+Product Sketch exposes `선택` and whole-object `지우개` beside the finalized six alpha.74 tools. One pure
+WORLD-coordinate owner hit-tests freehand, line, arrow shaft/head, unfilled shape borders, and deterministic text
+bounds; Scene reverse order owns topmost selection. Selected-id, outline, and eraser candidates remain transient.
+Selected Delete and each completed multi-object eraser gesture create exactly one local Scene/history commit; no
+network write occurs before explicit Save, and Undo restores original object order. Scene schema v1, Drawing API,
+migration `22/22`, orientation/native policy, Static Sheet/Keyboard, APP_VERSION `2.0.0-alpha.74`, and Production
+`스케치(준비 중)` remain unchanged. Automated evidence does not infer physical PASS.
+
 Alpha.74 is finalized at `ALPHA74_FINALIZATION_COMPLETE` with product checkpoint `ALPHA74_COMPLETE`. Owner actual
 physical QA is `PASS` on iPhone and iPad mini: general WAFL and Product Sketch remain portrait-only; iPad-mini content,
 native outer-frame/black-diamond rotation motion, rotation bounce, and split-layout flash are all `0`; Recipe/tab and
@@ -418,10 +473,18 @@ Document type: **Current Baseline**
 
 Canonical owner: `docs/codex-current-state.md`
 
-Result version: `2.0.0-alpha.74`
-Status: `ALPHA74_FINALIZATION_COMPLETE`
-Product checkpoint: `ALPHA74_COMPLETE`
+Result version: `2.0.0-alpha.75`
+Status: `ALPHA75_FINALIZATION_COMPLETE`
+Product checkpoint: `ALPHA75_COMPLETE`
 Owner physical result: `PASS`
+
+## Final alpha.75 Sketch editing-tools result
+
+Alpha.75 finalizes the icon-only overlay authoring palette, shared WORLD hit testing, Selection/Delete, deterministic
+partial erasure of supported visible strokes, exact transient eraser feedback, and one-release/one-history-entry
+Undo/Redo semantics on Scene schema v1. Owner physical iPhone and iPad-mini QA accepts the complete bounded tool set and
+Save/close/reopen on both devices with at most one Save each; iPad-mini orientation regression is `0`. Regular/Large
+iPad and Android actual-device QA remain `NOT_RUN`. Production continues to show `스케치(준비 중)`.
 
 ## Final alpha.74 Sketch tools and tablet orientation result
 

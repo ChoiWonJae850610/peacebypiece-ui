@@ -1,11 +1,79 @@
 # WAFL v2 API Contract Test Plan
 
+## Alpha.75 finalization contract
+
+- `workorder-v2-alpha75-finalization-contract.mjs` pins `ALPHA75_COMPLETE` /
+  `ALPHA75_FINALIZATION_COMPLETE`, canonical internal version consistency, all four alpha.75 feature contracts, Scene
+  schema v1, migration `22/22`, Production Sketch gating, unchanged orientation/native identity, and the bounded
+  deferred tool set.
+- It records Owner physical iPhone/iPad-mini `PASS`, at-most-one Save per device, iPad-mini orientation regression `0`,
+  and honest Regular/Large iPad and Android `NOT_RUN`. Finalization adds no product behavior, API/schema/migration,
+  dependency/native/config/EAS, business-data mutation, tag, or release. Permanent inventory advances from `276/276`
+  to `277/277`.
+
+## Alpha.75 overlay palette and stroked-vector partial-eraser contract
+
+- `workorder-v2-alpha75-overlay-palette-stroke-partial-eraser-contract.mjs` compiles the Drawing domain and executes
+  partial erasure for freehand, line, arrow shaft/head, rectangle border, and a deterministic clockwise ellipse
+  polyline. It proves text/filled-shape immunity, swept multi-kind operation, unique fragment ids, stable source-order
+  replacement, one history commit, exact semantic Undo, and exact flattened Redo.
+- Source guards require the radius to derive from `0.7 * WAFL_THEME.touch.minimum`, convert to WORLD units once per
+  gesture, and feed both ring projection and the shared swept-corridor planner. Arrowheads reuse canonical renderer
+  geometry; no screen/device dependency enters the pure clipping owner.
+- UI guards require an absolute, vertically stacked, icon-only palette with an outside-tap consuming dismiss layer,
+  retained Korean accessibility labels/current-tool identity, and unchanged seven top-level controls. They reject
+  Scene-v1 eraser/fragment state and preserve pointer-move Scene/history/network/persistence mutation zero.
+- This contract explicitly supersedes the earlier freehand-only product immunity, fixed 12-WORLD-radius product
+  policy, and normal-flow labelled-menu expectations. Permanent inventory advances from `276/276` to `277/277`;
+  physical PASS is not inferred.
+
+## Alpha.75 partial eraser and compact-toolbar contract
+
+- `workorder-v2-alpha75-partial-eraser-compact-toolbar-contract.mjs` compiles the complete Drawing domain and executes
+  middle split, start/end trim, full removal, sparse-sample swept-corridor crossing, non-freehand immunity, no-hit
+  identity, multi-stroke one-commit history, exact Undo/Redo, degenerate-fragment removal, unique ids, and deterministic
+  source-order replacement.
+- Source guards prove the ring and eraser share one WORLD radius; pointer movement renders a derived preview without
+  canonical Scene mutation; the old whole-object candidate owner is absent; Scene v1 has no eraser/fragment kind; and
+  no UI/device dependency enters the pure geometry owner.
+- Toolbar guards require seven accessible icon-only top controls, the six Korean-labelled authoring menu entries,
+  current-tool icon/disclosure behavior, independent Selection/Eraser, and distinct `Trash2` selected-delete versus
+  `BrushCleaning` whole-scene-clear actions using the existing Lucide package.
+- This contract explicitly supersedes the whole-object Eraser portions of the `274/274` selection contract and the
+  whole-object candidate portions of the `275/275` visual contract while retaining their Selection/hit-test/Delete and
+  transient-overlay safety evidence. Permanent inventory advances from `275/275` to `276/276`; physical PASS is not
+  inferred.
+
+## Alpha.75 eraser visual-feedback contract
+
+- `workorder-v2-alpha75-eraser-visual-feedback-contract.mjs` executes the ring-radius policy at compact, unit, and
+  enlarged viewport scales and guards the canonical WORLD tolerance, thin unfilled ellipse, derived generic candidate
+  outlines, pointer-down/move updates, duplicate-candidate stability, and release/cancel/tool-switch cleanup.
+- Source guards prove the transient SVG layer owns no pointer events and that cursor/candidate feedback has no Scene,
+  history, persistence, network, or schema route. The retained alpha.75 functional contract separately proves one
+  whole-object eraser commit and one-Undo restoration. Permanent inventory advances from `274/274` to `275/275`;
+  physical PASS is not inferred.
+
+## Alpha.75 selection / hit-test / object delete / eraser contract
+
+- `workorder-v2-alpha75-selection-hit-test-object-eraser-contract.mjs` compiles the complete Drawing domain and proves
+  freehand/line/arrow shaft+head/rectangle-border/ellipse-border/text hit and miss behavior, deterministic WORLD
+  tolerance, empty and reverse-order topmost results, and the absence of UI/device dependencies in the geometry owner.
+- It proves selection Scene/history mutation `0/0`, transient serialization, presentation-only outline, exact selected
+  Delete with one history entry and z-order-restoring Undo/Redo, unique whole-object eraser collection, pointer-move and
+  cancel mutation zero, one gesture/one commit, one-Undo full restoration, and atomic freehand preservation.
+- Source guards require the eight Product tool labels plus stable Delete, retain the finalized alpha.72/73/74 tools,
+  orientation/viewport/persistence contracts, and reject Move/Resize/Rotate/Zoom/Image/Pencil exposure. Scene schema v1,
+  API/schema/migration/dependency/native/config/EAS remain unchanged. Permanent inventory advances from `273/273` to
+  `274/274`; physical PASS is not inferred.
+
 ## Alpha.74 finalization contract
 
 - The permanent finalization contract pins `ALPHA74_COMPLETE` / `ALPHA74_FINALIZATION_COMPLETE`, canonical version
   consistency, all seven alpha.74 feature contracts, Scene schema v1, migration `22/22`, Production Sketch gating,
   compact/regular orientation policy, fullscreen/native-mask generation, stable responsive detail-host identity, and
-  deferred Selection/Eraser/Zoom/Pan/Image/Pencil exposure.
+  the alpha.74-time deferred Selection/Eraser boundary plus continuing Zoom/Pan/Image/Pencil absence; alpha.75
+  supersedes only the Selection/Eraser absence through its dedicated contract.
 - Finalization adds no API/schema/migration, dependency/native/config/EAS behavior, business-data mutation, tag, or
   release. Owner physical evidence is recorded separately from automated PASS and deferred device gates remain
   `NOT_RUN`.

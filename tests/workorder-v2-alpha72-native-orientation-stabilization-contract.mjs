@@ -104,9 +104,13 @@ const drawingHashes = {
   "adapters.ts": "ceda989898686b350eeda736571566c7cc2050ea450228fa68a7c04d8fee6cd8",
   // Alpha.73B's approved additive v1 text-kind evolution is the current protected foundation identity.
   "contracts.ts": "2f1b9caa5a949d161da51e9acabc325668b213e31922f26e9b8788cedda1657b",
+  // Alpha.75 partial Eraser adds one framework-free swept WORLD-corridor owner without changing Scene v1.
+  "eraseFreehand.ts": "e7bb947b39fc0a2a06da22f8b6f14d8a6d47114bba198bc8963ae05b77897ee2",
   "history.ts": "b0e68332df7d345c2b9f138609819d0602593127fe6afe3dc838e727d783d510",
-  "index.ts": "e370028eee95dce7d5464a147985a5b421fd18257b165f72e714df7c4ac99a1b",
-  "scene.ts": "c3ca2262336770bf8c73bb48d409fcd333493641f09ba7cda2b54cb22fdd4192",
+  // Selection retains pure hit testing and ordered removal; the superseded whole-object Eraser helpers are removed.
+  "hitTest.ts": "2a882ec05bf0c6c609f978179c23ea618aacac888e9aec6690e2b3f7df9b7580",
+  "index.ts": "e6ce961ea438749ebb65ab98aa5840a3eedbe832bfcc1fcfe5accbd6048dbca0",
+  "scene.ts": "a6aa1415c8f9c6922af50af29f00f4f066a79f00b7a741434e66d898fabfedda",
   "viewport.ts": "d5070d7f2bc44c90f3f6f4f779fb2df03954318af1b21b8f3ef15129538383be",
 };
 for (const [name, expected] of Object.entries(drawingHashes)) {

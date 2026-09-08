@@ -4,7 +4,9 @@ import type {
   DrawingRendererAdapter,
   DrawingViewportTransform,
 } from "@/domain/drawing";
+import { resolveDrawingArrowHeadWorldGeometry, resolveDrawingElementWorldBounds } from "@/domain/drawing";
 import { buildDrawingFreehandSvgPath } from "./drawingFreehandPath";
+import { resolveDrawingEraserCursorScreenRadius } from "./drawingEraserVisualFeedback";
 
 type PrimitiveStyle = Readonly<{ strokeColor: string; strokeWidth: number; fillColor: string | null }>;
 
@@ -28,11 +30,7 @@ function pathFromPoints(points: readonly Readonly<{ x: number; y: number }>[]) {
   return points.map((point, index) => `${index === 0 ? "M" : "L"}${point.x.toFixed(3)} ${point.y.toFixed(3)}`).join(" ");
 }
 
-function arrowPath(start: Readonly<{ x: number; y: number }>, end: Readonly<{ x: number; y: number }>, strokeWidth: number) {
-  const angle = Math.atan2(end.y - start.y, end.x - start.x);
-  const head = Math.max(12, strokeWidth * 4);
-  const left = { x: end.x - head * Math.cos(angle - Math.PI / 6), y: end.y - head * Math.sin(angle - Math.PI / 6) };
-  const right = { x: end.x - head * Math.cos(angle + Math.PI / 6), y: end.y - head * Math.sin(angle + Math.PI / 6) };
+function arrowPath(start: Readonly<{ x: number; y: number }>, end: Readonly<{ x: number; y: number }>, left: Readonly<{ x: number; y: number }>, right: Readonly<{ x: number; y: number }>) {
   return `${pathFromPoints([start, end])} ${pathFromPoints([left, end, right])}`;
 }
 
@@ -47,9 +45,12 @@ export function projectDrawingElement(element: DrawingElement, transform: Drawin
     return Object.freeze({ id: element.id, kind: "line", x1: start.x, y1: start.y, x2: end.x, y2: end.y, style });
   }
   if (element.kind === "arrow") {
+    const head = resolveDrawingArrowHeadWorldGeometry(element.start, element.end, element.style.strokeWidth);
     const start = screenPoint(element.start, transform);
     const end = screenPoint(element.end, transform);
-    return Object.freeze({ id: element.id, kind: "path", d: arrowPath(start, end, style.strokeWidth), style });
+    const left = screenPoint(head.left, transform);
+    const right = screenPoint(head.right, transform);
+    return Object.freeze({ id: element.id, kind: "path", d: arrowPath(start, end, left, right), style });
   }
   if (element.kind === "text") {
     const anchor = screenPoint(element.anchor, transform);
@@ -57,6 +58,49 @@ export function projectDrawingElement(element: DrawingElement, transform: Drawin
   }
   const origin = screenPoint({ x: element.bounds.x, y: element.bounds.y }, transform);
   return Object.freeze({ id: element.id, kind: element.kind, x: origin.x, y: origin.y, width: element.bounds.width * transform.scale, height: element.bounds.height * transform.scale, style });
+}
+
+export function projectDrawingSelectionOutline(
+  element: DrawingElement,
+  transform: DrawingViewportTransform,
+  strokeColor: string,
+): DrawingRenderPrimitive {
+  const bounds = resolveDrawingElementWorldBounds(element, 8);
+  const origin = screenPoint({ x: bounds.x, y: bounds.y }, transform);
+  return Object.freeze({
+    id: `selection-outline:${element.id}`,
+    kind: "rectangle",
+    opacity: 0.78,
+    style: Object.freeze({ fillColor: null, strokeColor, strokeWidth: Math.max(1.5, 2 * transform.scale) }),
+    x: origin.x,
+    y: origin.y,
+    width: bounds.width * transform.scale,
+    height: bounds.height * transform.scale,
+  });
+}
+
+export function projectDrawingEraserCursor(
+  point: Readonly<{ x: number; y: number }>,
+  transform: DrawingViewportTransform,
+  strokeColor: string,
+  worldRadius: number,
+): DrawingRenderPrimitive {
+  const center = screenPoint(point, transform);
+  const radius = resolveDrawingEraserCursorScreenRadius(
+    worldRadius,
+    transform.scale,
+    0,
+  );
+  return Object.freeze({
+    id: "eraser-cursor-ring",
+    kind: "ellipse",
+    opacity: 0.84,
+    style: Object.freeze({ fillColor: null, strokeColor, strokeWidth: Math.max(1.25, 1.5 * transform.scale) }),
+    x: center.x - radius,
+    y: center.y - radius,
+    width: radius * 2,
+    height: radius * 2,
+  });
 }
 
 export function projectDrawingScene(request: DrawingRenderRequest): DrawingProjectedFrame {

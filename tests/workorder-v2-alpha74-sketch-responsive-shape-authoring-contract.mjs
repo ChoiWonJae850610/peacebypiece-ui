@@ -113,17 +113,17 @@ assert.equal(drawing.isDrawingAuthoringViewportGenerationCurrent(7, 8), false);
 assert.equal(drawing.isDrawingAuthoringViewportGenerationCurrent(null, 8), false);
 
 for (const label of ["펜", "선", "화살표", "사각형", "타원", "텍스트"]) {
-  assert.match(editor, new RegExp(`label="${label}"`, "u"));
+  assert.match(editor, new RegExp(`"${label}"`, "u"), `${label} remains available after compact-toolbar migration`);
 }
-for (const hidden of ["지우개", "선택", "이동", "크기조절", "이미지", "연필"]) {
+for (const hidden of ["이동", "크기조절", "이미지", "연필"]) {
   assert.doesNotMatch(editor, new RegExp(`label="${hidden}"`, "u"));
 }
 assert.match(editor, /activeGestureViewportGenerationRef/u);
 assert.match(editor, /viewportGenerationRef\.current \+= 1;[\s\S]*discardActiveGesture\(\)/u);
 assert.match(editor, /if \(!activeGestureUsesCurrentViewport\(\)\) \{[\s\S]*discardActiveGesture\(\);[\s\S]*return;/u);
 assert.match(editor, /textSessionRef\.current !== null\) cancelText\(\)/u);
-assert.match(editor, /toolPicker: \{[^}]*flexWrap: "wrap"/u);
-assert.match(editor, /authoringTool: \{ flexBasis: 96 \}/u);
+assert.match(editor, /drawingToolMenu: \{[^}]*position: "absolute"/u, "alpha.75 supersedes the normal-flow wrapping menu with an overlay palette");
+assert.match(editor, /drawingToolMenuItem: \{[^}]*minHeight: WAFL_THEME\.touch\.minimum/u);
 assert.match(renderer, /primitive\.kind === "rectangle"[\s\S]*<Rect/u);
 assert.match(renderer, /<Ellipse/u);
 assert.match(projection, /kind: element\.kind[\s\S]*width: element\.bounds\.width \* transform\.scale[\s\S]*height: element\.bounds\.height \* transform\.scale/u);
@@ -134,6 +134,7 @@ console.log(JSON.stringify({
   contract: "workorder-v2-alpha74-sketch-responsive-shape-authoring",
   previousPermanentInventoryRetained: 265,
   addedPermanentChecks: 1,
+  normalFlowToolMenuSupersededBy: "workorder-v2-alpha75-overlay-palette-stroke-partial-eraser",
   finalPermanentInventory: 266,
   shapeTools: ["rectangle", "ellipse"],
   viewportGenerationGuard: true,

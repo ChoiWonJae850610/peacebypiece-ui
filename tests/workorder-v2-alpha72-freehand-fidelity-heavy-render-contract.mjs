@@ -25,6 +25,10 @@ for (const name of fs.readdirSync("lib/domain/drawing").filter((candidate) => ca
 }
 compile("apps/mobile/features/drawing-poc/drawingFreehandPath.ts", path.join(compiledRoot, "freehand.js"));
 compile(
+  "apps/mobile/features/drawing-poc/drawingEraserVisualFeedback.ts",
+  path.join(compiledRoot, "drawingEraserVisualFeedback.js"),
+);
+compile(
   "apps/mobile/features/drawing-poc/drawingRenderProjection.ts",
   path.join(compiledRoot, "projection.js"),
   [

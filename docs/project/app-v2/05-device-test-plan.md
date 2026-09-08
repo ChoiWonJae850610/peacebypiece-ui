@@ -1,5 +1,72 @@
 # WAFL v2 App Device Test Plan
 
+## Alpha.75 final device result
+
+- Owner actual iPhone QA: `PASS` for the complete alpha.75 overlay palette, Selection/Delete, stroke-partial Eraser,
+  visual feedback, Undo/Redo, portrait continuity, and Save/close/reopen. Alpha.75 Save count is at most one.
+- Owner actual iPad-mini QA: `PASS` for the same bounded tool and persistence path. Alpha.75 Save count is at most one,
+  and orientation regression is `0`.
+- Regular/Large iPad actual-device QA: `NOT_RUN`; supported orientation and Drawing behavior remain contract evidence.
+- Android phone/tablet actual-device QA: `NOT_RUN`; physical PASS is not inferred.
+- Finalization adds no Save or device mutation. This advances `ALPHA75_COMPLETE` and
+  `ALPHA75_FINALIZATION_COMPLETE`.
+
+## Alpha.75 Overlay Palette + Stroke Partial Eraser gate
+
+- Checkpoint: `ALPHA75_OVERLAY_PALETTE_STROKE_ERASER_IPHONE_IPAD_QA_REQUIRED`; physical PASS is not inferred.
+- On iPhone portrait and iPad-mini portrait, open the current drawing-tool selector. Verify one vertical icon-only
+  overlay presents pen/line/arrow/rectangle/ellipse/text without moving or shrinking the canvas. Select each tool and
+  verify the overlay closes/current icon changes. Tap canvas outside it and verify the menu closes while Scene/history
+  remain unchanged and no stroke begins.
+- Create freehand, line, arrow, unfilled rectangle, unfilled ellipse, and text. With Eraser, verify its thin ring is
+  comfortably larger than the former tiny cursor and matches the touched removal area. Partially cross every supported
+  stroked vector; only touched portions disappear in preview/release, text stays unchanged, and untouched semantic
+  elements preserve their original rendering.
+- Verify shaft and both arrowhead sides, all rectangle sides, and several ellipse arcs. One drag may cross multiple
+  kinds but must Undo in one step to exact original kinds/ids/order/geometry, then Redo to the exact flattened Scene.
+  Cancel/tool switch clears ring/preview without mutation. Each device may Save at most once after all local checks,
+  then close/reopen to verify the flattened Scene. Regular/Large iPad and Android remain `NOT_RUN`.
+
+## Alpha.75 Partial Eraser + Compact Sketch Toolbar gate
+
+- Checkpoint: `ALPHA75_PARTIAL_ERASER_COMPACT_TOOLBAR_IPHONE_IPAD_QA_REQUIRED`; physical PASS is not inferred.
+- On iPhone portrait and iPad-mini portrait, verify the seven icon-only top controls fit without clipping, the current
+  drawing-tool icon opens a compact menu containing `펜 / 선 / 화살표 / 사각형 / 타원 / 텍스트`, selection and eraser
+  remain independent, and choosing a menu item closes it and updates the current icon.
+- Verify `선택 객체 삭제` is disabled without selection and deletes only the selected object; verify `전체 지우기`
+  has a different icon, is disabled for an empty Scene, and clears the entire Scene. Undo/Redo must restore both paths.
+- Draw a long Pen stroke and erase its middle, start, and end. The exact-radius ring and would-be-erased segment preview
+  must follow the finger; release must leave deterministic visible fragments with no gap between sparse samples. Cross
+  line/arrow/rectangle/ellipse/text and verify no highlight, partial change, or deletion.
+- Verify one partial-erase drag over multiple Pen strokes is undone by one Undo and restored by one Redo. Cancel/tool
+  switch clears ring/preview without Scene change. Each device may use at most one alpha.75 Save, only after local
+  authoring/history checks, followed by close/reopen Scene verification. Regular/Large iPad and Android remain
+  `NOT_RUN`; automated evidence does not infer their physical PASS.
+
+## Alpha.75 Eraser Visual Feedback re-QA gate
+
+- Checkpoint: `ALPHA75_ERASER_VISUAL_FEEDBACK_IPHONE_IPAD_REQA_REQUIRED`; physical PASS is not inferred.
+- On iPhone and iPad mini, choose `지우개`, touch empty canvas, and verify the thin circular ring appears immediately
+  and follows the finger. Cross each of freehand/line/arrow/rectangle/ellipse/text and verify each candidate outline
+  stays visible for the remainder of that one gesture.
+- Release, cancel/terminate where physically available, and switch tools; cursor and every candidate highlight must
+  disappear with no residual. Repeat a multi-object drag and Undo once to retain the already accepted whole-object set,
+  one-history-entry, and original-order restoration semantics.
+- This re-QA is visual/tactile only. Do not perform an additional Drawing Save; persistence/reopen was accepted in the
+  prior alpha.75 physical gate.
+
+## Alpha.75 Selection / Hit-Test / Object Delete / Eraser gate
+
+- Checkpoint: `ALPHA75_SELECTION_HITTEST_OBJECT_ERASER_IPHONE_IPAD_QA_REQUIRED`; automated evidence must not be
+  reported as Owner physical PASS.
+- Retained DEV QA Recipe: `QA A73 product sketch retained` (`fb1f3f75fd06`); do not delete or reset it.
+- iPhone and iPad mini each have at most one authorized alpha.75 Save. Confirm the eight-tool toolbar, selection outline,
+  empty-tap clear, topmost overlap, border-only unfilled rectangle/ellipse selection, exact selected Delete, multi-object
+  whole eraser, one-step Undo/Redo, explicit Save/reopen with no restored selection, portrait continuity, and retained
+  pen/line/arrow/rectangle/ellipse/text behavior.
+- Regular/Large iPad and Android physical results remain `NOT_RUN`; source/contract regressions preserve their existing
+  orientation policy without inferring physical PASS.
+
 ## Alpha.74 final device result
 
 - Owner actual iPhone QA: `PASS` for general WAFL portrait-only, Product Sketch portrait/open continuity, and alpha.74
