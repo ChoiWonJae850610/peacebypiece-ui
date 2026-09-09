@@ -47,12 +47,16 @@ assert.match(editor, /eraserCursorWorld/u);
 assert.match(editor, /eraserPreviewScene/u);
 assert.match(editor, /setEraserCursorWorld\(point\)/u, "cursor follows each presented pointer sample");
 assert.match(editor, /planDrawingStrokePartialErase/u, "current preview includes every supported stroked vector kind");
-assert.match(editor, /displayedScene = eraserPreviewScene \?\? currentScene/u, "transient partial preview replaces only displayed committed geometry");
+assert.match(editor, /displayedScene = (?:selectionMovePreviewScene \?\? )?eraserPreviewScene \?\? currentScene/u, "transient previews replace only displayed committed geometry");
 assert.match(editor, /function clearEraserVisualFeedback\(\)[\s\S]*setEraserPreviewScene\(null\)[\s\S]*setEraserCursorWorld\(null\)/u);
 assert.match(editor, /onPanResponderGrant:[\s\S]*toolRef\.current === "eraser"[\s\S]*clearEraserVisualFeedback\(\)[\s\S]*extendEraserGesture\(point\)/u);
 assert.match(editor, /onPanResponderMove:[\s\S]*toolRef\.current === "eraser"[\s\S]*extendEraserGesture/u);
 assert.match(editor, /onPanResponderRelease:[\s\S]*toolRef\.current === "eraser"[\s\S]*commitEraserGesture/u);
-assert.match(editor, /onPanResponderTerminate: discardActiveGesture/u);
+assert.match(
+  editor,
+  /onPanResponderTerminate:[\s\S]*cameraInputActiveRef\.current \|\| suppressOneFingerUntilReleaseRef\.current\) return;[\s\S]*cancelAllTransientGestures\(\)/u,
+  "one-finger termination still clears eraser feedback while raw Camera ownership preserves its release suppression",
+);
 assert.match(editor, /function selectTool[\s\S]*discardActiveGesture\(\)/u, "tool switch clears feedback through the canonical gesture cancel owner");
 assert.match(renderer, /<G pointerEvents="none" testID="drawing-poc-svg-active-layer">/u, "transient feedback cannot take pointer ownership");
 

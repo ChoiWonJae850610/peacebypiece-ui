@@ -1,12 +1,182 @@
 # Future Drawing Architecture Guardrails
 
+## Final alpha.76 boundary
+
+- `ALPHA76_FINALIZATION_COMPLETE` accepts Selection Move/pickup, visible WORLD paper, compact workspace, centered
+  Cover, Fit `1`, focal pinch Zoom, two-finger Pan, raw multi-touch acquisition, clamp rebase, RAF projection, and the
+  read-only integer Zoom HUD on Scene schema v1 / WORLD `1000×1400`.
+- Owner actual iPhone and iPad-mini QA is `PASS` for the latest Zoom/Pan/HUD workflow and Pen/Eraser/Selection Move
+  isolation; iPad-mini orientation regression is `0`. Regular/Large iPad and Android remain `NOT_RUN`.
+- Fresh open/reopen starts centered Cover and may display above `100%`; zoom `1` is full-paper Fit and exactly `100%`.
+  The HUD remains `Math.round(camera.zoom * 100)%`, while Pan-only leaves it unchanged.
+- Camera/HUD remain transient and absent from Scene/history/dirty/Save/API/DB/PDF. Resize/Rotate/endpoints,
+  multi-select, image/pressure, persistent Camera, zoom buttons, Fit button, z-order, and Production Sketch stay deferred.
+
+## Alpha.76 zoom percent HUD boundary
+
+- `ALPHA76_ZOOM_PERCENT_HUD_IPHONE_IPAD_QA_REQUIRED` adds one status-only Product Sketch footer row immediately above
+  Close/Save. It reads the current transient `DrawingCamera.zoom` and displays `round(zoom * 100)` as an integer
+  percent beside the existing magnifier icon.
+- The HUD is non-interactive, owns no pointer event, and cannot introduce zoom buttons, Fit, menus, saved camera state,
+  or a second Camera owner. Pan-only motion leaves the label unchanged because the display derives only from zoom.
+- HUD state is presentation-only and remains absent from Scene v1, WORLD data, history, dirty comparison, Save/API,
+  network, output, and migration. Every existing raw touch, pinch/Pan, clamp-rebase, RAF, tool, layout, and orientation
+  invariant remains canonical. Physical PASS is not inferred.
+
+## Alpha.76 raw multi-touch Camera acquisition boundary
+
+- Product Sketch interaction ownership is split by active touch cardinality. PanResponder owns one-finger Pen, shape,
+  Text entry, Eraser, Selection, and object Move only. The workbench raw View touch stream owns multi-touch Camera
+  acquisition, continuous update, end, and cancellation; a second physical Camera update path is forbidden.
+- A valid second-finger `onTouchStart` is the Camera acquisition boundary. It restores the pre-first-finger Selection,
+  cancels all provisional one-finger transient work with commit zero, marks Camera/suppression ownership, and creates
+  the stable-pair gesture from the current authoritative camera and viewport before any move event is required.
+- Pair loss ends and flushes Camera presentation once, while any remaining finger is Drawing-suppressed. Only the raw
+  active-touch set reaching zero releases suppression and permits a new one-finger gesture. Raw cancellation follows
+  the same no-Scene/no-history terminal boundary.
+- The raw owner feeds the existing pure Camera domain unchanged: stable identifiers, page-space distance/centroid,
+  reconstructed local focal point, two-finger Pan, Fit/Max boundary rebase, bounds, and latest-frame RAF projection.
+  Camera lifecycle state remains transient and absent from Scene v1, history, dirty state, Save, API, and output.
+
+## Alpha.76 pinch clamp boundary rebase
+
+- `ALPHA76_PINCH_CLAMP_BOUNDARY_REBASE_IPHONE_IPAD_REQA_REQUIRED` retains the exact proportional zoom equation and
+  existing Fit `1` / maximum `4` clamp, but removes hidden clamp overshoot hysteresis. Only a stable-pair sample that
+  pushes farther into an active clamp may rebase the gesture from that frame's authoritative clamped camera, current
+  page centroid/distance, reconstructed local centroid, WORLD anchor, and current viewport generation.
+- The boundary-rebase frame preserves camera center, zoom, and focal projection. The first opposite-direction sample
+  uses the rebased boundary distance and therefore leaves the clamp immediately. Reversal and every normal-range
+  sample cannot rebase; no gain, exponent, dead zone, snap, device pixel, or model-specific threshold is introduced.
+- Camera and rebase state stay transient. Stable identifiers, absolute page-space continuous tracking, current-camera
+  membership rebase, latest-value RAF coalescing, takeover/cancellation, Scene/history/dirty/Save/API/output, WORLD
+  `1000×1400`, schema v1, and migration remain unchanged. Physical PASS is not inferred.
+
+## Alpha.76 native pinch tracking and camera frame boundary
+
+- `ALPHA76_NATIVE_PINCH_TRACKING_FRAME_COALESCING_IPHONE_IPAD_REQA_REQUIRED` preserves the current Cover, stable
+  touch-pair, current-camera rebase, and immediate camera-takeover policies while making native coordinate ownership
+  explicit. Local coordinates are acquisition-only for the WORLD focal anchor; continuous distance and centroid
+  displacement use each stable identifier's absolute page coordinates.
+- Zoom stays exactly `baseZoom * currentPageDistance / basePageDistance`, clamped only to `1..4`. The current local
+  focal centroid is `baseLocalCentroid + (currentPageCentroid - basePageCentroid)`. No gain, exponent, dead zone,
+  snapping, device table, hot-path native measurement, or screen-pixel persistence is allowed.
+- Every valid native sample immediately updates the authoritative camera ref. React/SVG projection is a latest-value
+  frame-coalesced view: one pending RAF maximum, newest camera wins, and no sample queue exists. Gesture end flushes;
+  initial Cover, hard reset, viewport invalidation, close, and unmount cancel obsolete frames so stale presentation
+  cannot overwrite authoritative camera state.
+- React Native `nativeEvent.touches` remains the active-membership source because it carries current samples for all
+  active touches; no duplicate changed-touch map is introduced. Camera/touch/scheduler state stays transient and
+  absent from Scene v1, history, dirty state, Save/API/network/output, and migration. Physical PASS is not inferred.
+
+## Alpha.76 Initial Cover and reliable pinch boundary
+
+- `ALPHA76_INITIAL_COVER_PINCH_RELIABILITY_IPHONE_IPAD_REQA_REQUIRED` supersedes only the prior camera contract's
+  fresh-open Fit presentation. The first valid workbench viewport of every open/reopen consumes a one-shot centered
+  Cover derived solely from canonical WORLD `1000×1400` and viewport dimensions. Fit remains zoom `1`, Cover is
+  `clamp(coverScale / fitScale, 1, 4)`, and later layout/tool/Undo/Redo/Save events cannot reapply it.
+- A camera gesture starts immediately when two native touches exist anywhere in the workbench. Stable native touch
+  identifiers own the pair independent of event-array ordering; a persistent third touch cannot replace it, while
+  membership loss rebases a replacement pair from the current camera/current centroid and distance without a jump.
+  Small deltas and inward/outward direction reversals remain continuous without slop or rounded zoom steps.
+- First-finger Selection is provisional until camera takeover is ruled out. If a second finger arrives, the prior
+  selection is restored before transient authoring is cancelled, so pinch over objects/text has no Selection/Scene/
+  history side effect. A remaining finger stays suppressed until complete release.
+- Cover/camera/touch-pair/selection-arbitration state is transient editor state and remains absent from Scene v1,
+  history, dirty comparison, Save/API/DB/network, output, and migration. Physical PASS is not inferred.
+
+## Alpha.76 Fit Paper and transient camera boundary
+
+- `ALPHA76_FIT_PAPER_PINCH_ZOOM_PAN_IPHONE_IPAD_QA_REQUIRED` activates the existing `DrawingCamera` and canonical
+  viewport transform without changing Scene v1 or WORLD `1000×1400`. Its original fresh-open centered Fit rule is
+  superseded by the Initial Cover contract above; Fit remains the minimum zoom and same-session tool changes,
+  Undo/Redo, and Save retain camera. Camera is absent from Scene, serialization, history, API/DB/network, output, and
+  dirty state.
+- Fixed title/toolbar and fixed status/Close/Save surround one flexible clipped muted workbench. That workbench is the
+  sole renderer/input viewport. The white paper is the projected rect of WORLD corners through the same current camera
+  as the Scene; it is non-interactive and can reveal muted workbench margins. This supersedes only the earlier compact
+  fixed-ratio paper host, outer ScrollView, and paper-only responder placement.
+- Pinch zoom is pure, device-independent, bounded to `1..4`, and preserves the WORLD point below the moving two-touch
+  centroid before deterministic paper-edge camera clamp. Two-finger translation pans in the same gesture. One-finger
+  empty drag never pans; Hand remains Selection/object Move.
+- One-finger gesture start uses raw `screenToWorld` and must be inside WORLD before any edge clamp. A second touch
+  cancels every uncommitted Pen/segment/shape/Move/Eraser/Text transient with Scene/history/network mutation zero;
+  after pinch, a remaining finger stays suppressed until all touches release. A material viewport-generation change
+  invalidates authoring and camera gestures and clamps the current camera for the new viewport without a session reset.
+- Exact A4 migration, Resize/Rotate/endpoints, one-finger pan, camera controls/persistence, image/PDF integration,
+  schema/API/migration, dependency/native/config/EAS, and Production exposure remain deferred. Physical PASS is not
+  inferred.
+
+## Alpha.76 compact Product Sketch workspace boundary
+
+- `ALPHA76_SKETCH_WORKSPACE_COMPACT_LAYOUT_IPHONE_IPAD_REQA_REQUIRED` supersedes only the tall flex-stage layout from
+  the visible-paper correction. The normal vertical composition is semantic title -> seven-control toolbar -> exact
+  white paper -> one-line state -> Close/Save, separated only by canonical spacing tokens.
+- The paper host uses the maximum established safe content width and derives height from canonical WORLD
+  `1000×1400`; `flex:1`, vertical centering, filler/min-height, duplicate horizontal inset, and non-uniform stretch are
+  forbidden on this host. The pure surface-fit owner and inner white active-surface ownership remain canonical.
+- One outer workspace ScrollView is a short-height fallback. It may scroll from surrounding chrome, but a gesture
+  beginning on the inner paper remains owned by the paper PanResponder. The outer stage/scroll owner cannot author
+  Drawing viewport, Scene, history, or pointer coordinates.
+- Safe-area, minimum toolbar/action touch targets, Drawing Tool overlay, dirty status, Close/Save semantics, Scene v1,
+  viewport transform, Pen/shapes/Text, A75 Eraser, A76 Selection pickup/Move, explicit Save, and orientation/native
+  policy remain unchanged. Physical PASS is not inferred.
+
+## Alpha.76 visible-paper / WORLD-surface boundary
+
+- `ALPHA76_VISIBLE_CANVAS_WORLD_SURFACE_IPHONE_IPAD_REQA_REQUIRED` separates the flexible Product Sketch stage from
+  the active Drawing surface. The stage owns remaining layout space and muted background only; it owns no Drawing
+  PanResponder and cannot forward margin coordinates into authoring.
+- One pure device-independent policy uniformly fits canonical WORLD `1000×1400` inside the stage. The centered inner
+  rect is the only white Drawing paper, PanResponder host, viewport layout/generation owner, and SVG renderer host.
+  Thus visible white paper equals the complete interactive WORLD surface and internal white letterbox/dead-zone is zero.
+- The general alpha.72 viewport transform remains arbitrary-viewport, uniform, camera-aware, and invertible. Default
+  camera offsets approach zero because Product Sketch supplies a matching `5:7` viewport, never because offsets are
+  hard-coded or WORLD is stretched.
+- Scene v1, stored WORLD coordinates, A75 partial Eraser/ring, Drawing Tool overlay, A76 Hand Selection/Move/pickup,
+  Undo/Redo, explicit Save, orientation/native policy, and Production gate remain unchanged. Zoom/Pan/Resize/Rotate,
+  schema/API/migration, dependency/native/config/EAS, and physical PASS remain out of scope/not inferred.
+
+## Alpha.76 selected-object pickup boundary
+
+- `ALPHA76_SELECTION_MOVE_PICKUP_UX_IPHONE_IPAD_REQA_REQUIRED` changes only the Selection glyph and already-selected
+  pickup affordance. The top-level control uses installed Lucide `Hand` and the accessibility label `선택 및 이동`;
+  tool enum, active/disabled state, and shared minimum touch target do not change.
+- Pointer-down precedence is immutable: canonical precise/topmost Scene hit first, already-selected pickup fallback
+  second, true empty deselect last. The fallback cannot trap a different actual object inside the selected bounds and
+  never broadens initial selection.
+- The forgiving region reuses `resolveDrawingElementWorldBounds`, the same owner as the rendered selection outline.
+  It consists of the outline bounds plus one shared screen-spacing token converted by current viewport scale. Device
+  model thresholds and duplicate kind-specific bounds formulas remain forbidden.
+- A fallback tap below the retained A76 drag slop keeps selection with Scene/history `0/0`; a drag reuses the existing
+  WORLD move session, transient replacement Scene, one-release/one-history commit, exact Undo/Redo, whole-delta clamp,
+  and Text keyboard suppression. Schema/API/migration, dependencies, native/config/EAS, and Save ownership do not change.
+
+## Alpha.76 single-object Move boundary
+
+- `ALPHA76_SELECTION_OBJECT_MOVE_IPHONE_IPAD_QA_REQUIRED` adds only direct single-object translation to the existing
+  Selection tool. Pointer-down uses the shared reverse-order WORLD hit-test, selects the topmost object, and captures
+  its pre-gesture element plus viewport generation. Empty drag never pans.
+- Drag activation is measured in device-independent screen space from the shared spacing token. After activation, the
+  current pointer is inverse-projected and `currentWorld - startWorld` owns translation. Screen coordinates, selection,
+  and gesture state never enter Scene serialization.
+- A derived Scene replaces exactly the selected element during pointer movement; it preserves id/kind/order/style and
+  removes visual duplication while the outline follows the preview. Pointer movement is Scene/history/network/
+  persistence `0/0/0/0`; a meaningful release is exactly one Scene/history commit.
+- The pure domain translator moves every freehand point, both line/arrow endpoints, rectangle/ellipse position without
+  size change, and text anchor without content/style change. The existing Scene-v1 persisted-coordinate canvas bounds
+  constrain only the whole-object delta and do not distort geometry.
+- Undo restores exact pre-move geometry/order and Redo restores the moved Scene; selection remains on the same id while
+  present. Cancel, tool switch, close, viewport invalidation, and missing selection clear preview without mutation.
+- Resize, rotate, handles, endpoint editing, multi-select, lasso, snapping, zoom/pan, image/pressure, PDF/export,
+  schema/API/migration, and Production exposure remain deferred. Physical PASS is not inferred.
+
 ## Final alpha.75 boundary
 
 - `ALPHA75_FINALIZATION_COMPLETE` accepts the authenticated DEV/TEST Product Sketch overlay palette, Selection/Delete,
   partial stroke Eraser, exact transient feedback, and one-release/one-history-entry semantics on Scene schema v1.
 - Owner actual iPhone and iPad-mini QA is `PASS`, including Save/close/reopen with at most one alpha.75 Save per device;
   iPad-mini orientation regression is `0`. Regular/Large iPad and Android remain `NOT_RUN`.
-- Move/transform, zoom/pan, image underlay, pressure, PDF/export integration, and Production Sketch remain deferred.
+- Resize/rotate and other transforms, zoom/pan, image underlay, pressure, PDF/export integration, and Production Sketch remain deferred.
   Release/production remains intentionally disabled as `스케치(준비 중)`.
 
 ## Alpha.75 overlay palette and stroked-vector partial-eraser boundary

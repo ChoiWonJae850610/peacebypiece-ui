@@ -4,7 +4,11 @@ import type {
   DrawingRendererAdapter,
   DrawingViewportTransform,
 } from "@/domain/drawing";
-import { resolveDrawingArrowHeadWorldGeometry, resolveDrawingElementWorldBounds } from "@/domain/drawing";
+import {
+  DRAWING_SELECTION_OUTLINE_PADDING_WORLD,
+  resolveDrawingArrowHeadWorldGeometry,
+  resolveDrawingElementWorldBounds,
+} from "@/domain/drawing";
 import { buildDrawingFreehandSvgPath } from "./drawingFreehandPath";
 import { resolveDrawingEraserCursorScreenRadius } from "./drawingEraserVisualFeedback";
 
@@ -65,7 +69,7 @@ export function projectDrawingSelectionOutline(
   transform: DrawingViewportTransform,
   strokeColor: string,
 ): DrawingRenderPrimitive {
-  const bounds = resolveDrawingElementWorldBounds(element, 8);
+  const bounds = resolveDrawingElementWorldBounds(element, DRAWING_SELECTION_OUTLINE_PADDING_WORLD);
   const origin = screenPoint({ x: bounds.x, y: bounds.y }, transform);
   return Object.freeze({
     id: `selection-outline:${element.id}`,

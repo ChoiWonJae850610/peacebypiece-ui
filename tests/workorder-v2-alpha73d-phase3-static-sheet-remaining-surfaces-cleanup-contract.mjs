@@ -136,7 +136,7 @@ for (const item of deviceCases) {
   assert.deepEqual(stagedDomainState, { productName: "보존", quantity: 12 });
 }
 
-assert.match(read("lib/constants/version.ts"), /2\.0\.0-alpha\.(?:72|73|74|75)/u);
+assert.match(read("lib/constants/version.ts"), /2\.0\.0-alpha\.(?:72|73|74|75|76)/u);
 assert.equal(fs.readdirSync(path.join(root, "db", "v2", "migrations")).filter((name) => name.endsWith(".sql")).length, 22);
 
 console.log(JSON.stringify({

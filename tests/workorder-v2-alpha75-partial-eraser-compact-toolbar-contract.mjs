@@ -142,7 +142,7 @@ assert.match(editor, /accessibilityRole="button"/u);
 assert.match(editor, /minHeight: WAFL_THEME\.touch\.minimum/u);
 assert.match(editor, /setDrawingToolMenuVisible\(false\)[\s\S]*if \(next === toolRef\.current\) return/u, "tool choice closes menu even when reselecting current tool");
 assert.match(editor, /if \(isAuthoringTool\(next\)\) setLastAuthoringTool\(next\)/u);
-assert.match(editor, /displayedScene = eraserPreviewScene \?\? currentScene/u, "partial preview renders without canonical Scene mutation");
+assert.match(editor, /displayedScene = (?:selectionMovePreviewScene \?\? )?eraserPreviewScene \?\? currentScene/u, "transient previews render without canonical Scene mutation");
 assert.match(editor, /onPanResponderMove:[\s\S]*extendEraserGesture/u);
 assert.match(editor, /onPanResponderRelease:[\s\S]*commitEraserGesture/u);
 assert.doesNotMatch(editor, /eraserCandidateIds|projectDrawingEraserCandidateOutline|appendDrawingEraserTarget/u, "whole-object Eraser candidate semantics are removed");

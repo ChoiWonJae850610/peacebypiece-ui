@@ -1,5 +1,18 @@
 # WAFL v2 App Device Test Plan
 
+## Alpha.76 final device result
+
+- Owner actual iPhone QA: `PASS` for the latest centered Cover, focal pinch Zoom, two-finger Pan, Fit `100%`, integer
+  Zoom HUD, Pan-only stable HUD, and Pen/Eraser/Selection Move interaction isolation.
+- Owner actual iPad-mini QA: `PASS` for centered Cover and actual HUD scale, pinch Zoom/Pan, pinch-in Fit `100%`,
+  Pan-only stable HUD, Pen/Eraser/Selection Move interaction isolation, and orientation regression `0`.
+- Fresh open/reopen is centered Cover and may show above `100%` such as `111%`; full-paper Fit is zoom `1` and `100%`.
+  The final HUD owner is `Math.round(camera.zoom * 100)%`. This supersedes any earlier fresh-open `100%` requirement.
+- Regular/Large iPad actual-device QA: `NOT_RUN`; supported orientation and Drawing behavior remain contract evidence.
+- Android phone/tablet actual-device QA: `NOT_RUN`; physical PASS is not inferred.
+- Finalization performs no Owner Save or business mutation. This advances `ALPHA76_COMPLETE` and
+  `ALPHA76_FINALIZATION_COMPLETE`.
+
 ## Alpha.75 final device result
 
 - Owner actual iPhone QA: `PASS` for the complete alpha.75 overlay palette, Selection/Delete, stroke-partial Eraser,

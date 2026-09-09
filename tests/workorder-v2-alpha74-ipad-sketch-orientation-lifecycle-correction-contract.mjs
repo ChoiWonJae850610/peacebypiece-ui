@@ -43,12 +43,12 @@ assert.equal(appJson.expo.ios.supportsTablet, true);
 assert.doesNotMatch(rootLayout, /orientation:\s*["']portrait/u);
 
 const canvasLayoutOwner = editor.slice(
-  editor.indexOf("function onCanvasLayout"),
+  editor.indexOf("function onWorkbenchLayout"),
   editor.indexOf("function makeSaveIdentity"),
 );
-assert.match(canvasLayoutOwner, /viewportGenerationRef\.current \+= 1;[\s\S]*discardActiveGesture\(\);[\s\S]*setViewport\(next\)/u);
+assert.match(canvasLayoutOwner, /viewportGenerationRef\.current \+= 1;[\s\S]*cancelAllTransientGestures\(\);[\s\S]*setViewport\(next\)/u);
 assert.doesNotMatch(canvasLayoutOwner, /props\.onClose|requestClose|closeEditorSession|setSketchVisible|save\(/u);
-assert.match(editor, /if \(!activeGestureUsesCurrentViewport\(\)\) \{[\s\S]*discardActiveGesture\(\);[\s\S]*return;/u);
+assert.match(editor, /if \(!activeGestureUsesCurrentViewport\(\)\) \{[\s\S]*cancelAllTransientGestures\(\);[\s\S]*return;/u);
 
 assert.match(gallery, /onClose=\{\(\) => setSketchVisible\(false\)\}/u);
 assert.equal((gallery.match(/setSketchVisible\(false\)/gu) ?? []).length, 1, "only explicit Sketch close may clear parent visibility");

@@ -66,9 +66,9 @@ assert.equal((gallery.match(/setSketchVisible\(false\)/gu) ?? []).length, 1);
 assert.match(gallery, /onClose=\{\(\) => setSketchVisible\(false\)\} visible=\{sketchVisible\}/u);
 
 assert.match(editor, /supportedOrientations=\{WORK_ORDER_SKETCH_SUPPORTED_ORIENTATIONS\}/u);
-const canvasLayoutOwner = editor.slice(editor.indexOf("function onCanvasLayout"), editor.indexOf("function makeSaveIdentity"));
+const canvasLayoutOwner = editor.slice(editor.indexOf("function onWorkbenchLayout"), editor.indexOf("function makeSaveIdentity"));
 assert.doesNotMatch(canvasLayoutOwner, /props\.onClose|requestClose|closeEditorSession|save\(/u);
-assert.match(canvasLayoutOwner, /viewportGenerationRef\.current \+= 1;[\s\S]*discardActiveGesture\(\);[\s\S]*setViewport\(next\)/u);
+assert.match(canvasLayoutOwner, /viewportGenerationRef\.current \+= 1;[\s\S]*cancelAllTransientGestures\(\);[\s\S]*setViewport\(next\)/u);
 
 const phonePlist = nativeOrientation.applyWaflIosOrientationPolicy({});
 assert.deepEqual(phonePlist.UISupportedInterfaceOrientations, ["UIInterfaceOrientationPortrait"]);

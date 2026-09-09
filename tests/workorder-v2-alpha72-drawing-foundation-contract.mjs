@@ -162,12 +162,13 @@ assert.doesNotMatch(JSON.stringify(history), /data:image|png|raster/i);
 
 const drawingRoot = drawingSourceRoot;
 const drawingSources = drawingSourceNames;
-assert.deepEqual(drawingSources.sort(), ["adapters.ts", "authoring.ts", "contracts.ts", "eraseFreehand.ts", "history.ts", "hitTest.ts", "index.ts", "scene.ts", "viewport.ts"]);
+assert.deepEqual(drawingSources.sort(), ["adapters.ts", "authoring.ts", "cameraGesture.ts", "contracts.ts", "eraseFreehand.ts", "history.ts", "hitTest.ts", "index.ts", "scene.ts", "surfaceLayout.ts", "translation.ts", "viewport.ts"]);
 const importSource = drawingSources
   .map((name) => fs.readFileSync(path.join(drawingRoot, name), "utf8"))
   .flatMap((source) => source.split(/\r?\n/).filter((line) => /^import\s/.test(line.trim())))
   .join("\n");
-assert.doesNotMatch(importSource, /work-orders|generated-documents|r2|pdf|react|expo|skia|gesture-handler|reanimated|canvas/i);
+assert.doesNotMatch(importSource, /work-orders|generated-documents|r2|pdf|react|expo|skia|gesture-handler|reanimated/i);
+assert.doesNotMatch(importSource, /from\s+["'](?:canvas|[^"']*\/canvas(?:\/[^"']*)?)["']/i, "Drawing domain cannot import a Canvas runtime/package");
 
 const packageJson = fs.readFileSync("package.json", "utf8");
 const mobilePackageJson = fs.readFileSync("apps/mobile/package.json", "utf8");

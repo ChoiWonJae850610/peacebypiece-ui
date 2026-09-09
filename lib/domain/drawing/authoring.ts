@@ -65,6 +65,15 @@ export function clampDrawingPointToCanvas(point: DrawingPoint): DrawingPoint {
   });
 }
 
+export function isDrawingWorldPointInsideCanvas(point: DrawingPoint): boolean {
+  return Number.isFinite(point.x)
+    && Number.isFinite(point.y)
+    && point.x >= 0
+    && point.x <= DRAWING_CANONICAL_CANVAS.width
+    && point.y >= 0
+    && point.y <= DRAWING_CANONICAL_CANVAS.height;
+}
+
 export function isDrawingAuthoringViewportGenerationCurrent(
   startedGeneration: number | null,
   currentGeneration: number,

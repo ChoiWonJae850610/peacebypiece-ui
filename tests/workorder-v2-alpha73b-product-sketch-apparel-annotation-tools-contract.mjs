@@ -133,7 +133,11 @@ for (const label of ["펜", "선", "화살표", "텍스트"]) {
 }
 // Later bounded Product Sketch increments may add shapes and object editing; alpha.73 still guards unrelated transforms/media.
 for (const hidden of ["원", "이동", "크기조절", "이미지"]) assert.doesNotMatch(editor, new RegExp(`label="${hidden}"`, "u"));
-assert.match(editor, /onPanResponderTerminate: discardActiveGesture/u);
+assert.match(
+  editor,
+  /onPanResponderTerminate:[\s\S]*cameraInputActiveRef\.current \|\| suppressOneFingerUntilReleaseRef\.current\) return;[\s\S]*cancelAllTransientGestures\(\)/u,
+  "one-finger authoring termination remains canonical while raw Camera owns multi-touch suppression",
+);
 assert.match(editor, /onAfterClose=\{completeTextSheetClose\}/u);
 assert.match(editor, /pendingTextCommitRef\.current = Object\.freeze\(\{ element, sessionId: session\.id \}\);[\s\S]*setTextSheetVisible\(false\)/u);
 const textCloseBody = editor.match(/function completeTextSheetClose\(\) \{([\s\S]*?)\n  \}/u)?.[1] ?? "";

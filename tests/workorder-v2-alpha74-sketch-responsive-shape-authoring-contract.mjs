@@ -119,8 +119,8 @@ for (const hidden of ["이동", "크기조절", "이미지", "연필"]) {
   assert.doesNotMatch(editor, new RegExp(`label="${hidden}"`, "u"));
 }
 assert.match(editor, /activeGestureViewportGenerationRef/u);
-assert.match(editor, /viewportGenerationRef\.current \+= 1;[\s\S]*discardActiveGesture\(\)/u);
-assert.match(editor, /if \(!activeGestureUsesCurrentViewport\(\)\) \{[\s\S]*discardActiveGesture\(\);[\s\S]*return;/u);
+assert.match(editor, /viewportGenerationRef\.current \+= 1;[\s\S]*cancelAllTransientGestures\(\)/u);
+assert.match(editor, /if \(!activeGestureUsesCurrentViewport\(\)\) \{[\s\S]*cancelAllTransientGestures\(\);[\s\S]*return;/u);
 assert.match(editor, /textSessionRef\.current !== null\) cancelText\(\)/u);
 assert.match(editor, /drawingToolMenu: \{[^}]*position: "absolute"/u, "alpha.75 supersedes the normal-flow wrapping menu with an overlay palette");
 assert.match(editor, /drawingToolMenuItem: \{[^}]*minHeight: WAFL_THEME\.touch\.minimum/u);

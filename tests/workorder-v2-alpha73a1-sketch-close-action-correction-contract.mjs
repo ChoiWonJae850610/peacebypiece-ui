@@ -23,7 +23,7 @@ if (closeGuard.close()) closeCount += 1;
 assert.equal(closeCount, 2);
 
 assert.doesNotMatch(editor, /<X\b|styles\.iconButton|\{\s*X\s*\} from "lucide-react-native"/);
-assert.match(editor, /<View style=\{styles\.header\}>\s*<Text style=\{styles\.title\}>스케치<\/Text>\s*<\/View>/);
+assert.match(editor, /<View style=\{styles\.header\}>\s*<Text accessibilityRole="header" style=\{styles\.title\}>스케치<\/Text>\s*<\/View>/);
 assert.match(editor, /testID="work-order-sketch-footer"/);
 assert.match(editor, /label="닫기" onPress=\{requestClose\} testID="work-order-sketch-close"/);
 assert.match(editor, /label="저장" onPress=\{\(\) => \{ void save\(\); \}\}/);

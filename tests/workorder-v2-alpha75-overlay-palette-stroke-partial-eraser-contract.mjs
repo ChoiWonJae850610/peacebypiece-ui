@@ -123,7 +123,7 @@ assert.match(editor, /accessibilityRole="button"/u);
 assert.match(editor, /minHeight: WAFL_THEME\.touch\.minimum/u);
 assert.match(editor, /onPanResponderMove:[\s\S]*extendEraserGesture/u);
 assert.match(editor, /onPanResponderRelease:[\s\S]*commitEraserGesture/u);
-assert.match(editor, /displayedScene = eraserPreviewScene \?\? currentScene/u, "pointerMove preview is transient");
+assert.match(editor, /displayedScene = (?:selectionMovePreviewScene \?\? )?eraserPreviewScene \?\? currentScene/u, "pointerMove previews remain transient and derive one displayed Scene");
 assert.doesNotMatch(contracts, /eraser|fragment/u, "eraser state and flattened-fragment metadata do not enter Scene v1");
 
 console.log(JSON.stringify({

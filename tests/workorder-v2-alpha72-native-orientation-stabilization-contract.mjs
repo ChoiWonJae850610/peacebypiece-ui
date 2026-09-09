@@ -107,10 +107,16 @@ const drawingHashes = {
   // Alpha.75 partial Eraser adds one framework-free swept WORLD-corridor owner without changing Scene v1.
   "eraseFreehand.ts": "e7bb947b39fc0a2a06da22f8b6f14d8a6d47114bba198bc8963ae05b77897ee2",
   "history.ts": "b0e68332df7d345c2b9f138609819d0602593127fe6afe3dc838e727d783d510",
-  // Selection retains pure hit testing and ordered removal; the superseded whole-object Eraser helpers are removed.
-  "hitTest.ts": "2a882ec05bf0c6c609f978179c23ea618aacac888e9aec6690e2b3f7df9b7580",
-  "index.ts": "e6ce961ea438749ebb65ab98aa5840a3eedbe832bfcc1fcfe5accbd6048dbca0",
+  // Alpha.76 pickup UX adds only canonical-bounds selected fallback helpers to the pure WORLD hit-test owner.
+  "hitTest.ts": "fbf4a09cd55d1dd769af6f1b8ce6549a5f28c2801e2375919b298a1e9eeef607",
+  // Alpha.76 keeps Cover/stable IDs while moving continuous native pinch geometry to stable page coordinates.
+  // Alpha.76 adds transient clamp-boundary gesture rebase while preserving Scene-v1 persistence.
+  "cameraGesture.ts": "fc7f382058a1b952d2ad73c9c5a015f7c8b4158def46ffdcaffb59a04df3a7ef",
+  // Alpha.76 exports the additive WORLD translation, surface-fit, and transient camera owners.
+  "index.ts": "8344fde89aceb66670144ad1b96ce553eed8d13c870ac24e9b907b61c62303a8",
   "scene.ts": "a6aa1415c8f9c6922af50af29f00f4f066a79f00b7a741434e66d898fabfedda",
+  "surfaceLayout.ts": "21624f2fd362a2387c1b72cb7c08a3c28d64b66440a4aba0b75870e81fd7cdd1",
+  "translation.ts": "06eed2321324f1c95db7ef62a9ef87bbb77991a1b37d6e7afa05ffa724e3886b",
   "viewport.ts": "d5070d7f2bc44c90f3f6f4f779fb2df03954318af1b21b8f3ef15129538383be",
 };
 for (const [name, expected] of Object.entries(drawingHashes)) {
@@ -141,6 +147,6 @@ console.log(JSON.stringify({
   compactTabletRuntime: "portrait-up",
   regularTabletRuntime: "unrestricted-default",
   runtimeSafetyNet: "expo-screen-orientation",
-  drawingFoundationChanged: false,
+  drawingFoundationChanged: "alpha76-additive-translation-selected-pickup-and-surface-fit-owners",
   physicalResultInferred: false,
 }));

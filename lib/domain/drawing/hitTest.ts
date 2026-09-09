@@ -127,6 +127,34 @@ function isPointInsideBounds(point: DrawingPoint, bounds: DrawingBounds, toleran
     && point.y <= bounds.y + bounds.height + tolerance;
 }
 
+export function resolveDrawingSelectedElementPickupBounds(
+  element: DrawingElement,
+  screenPadding: number,
+  viewportScale: number,
+): DrawingBounds {
+  const safeScreenPadding = assertTolerance(screenPadding);
+  if (!Number.isFinite(viewportScale) || viewportScale <= 0) {
+    throw new RangeError("Drawing viewport scale must be finite and positive.");
+  }
+  return resolveDrawingElementWorldBounds(
+    element,
+    DRAWING_SELECTION_OUTLINE_PADDING_WORLD + safeScreenPadding / viewportScale,
+  );
+}
+
+export function hitTestDrawingSelectedElementPickup(
+  element: DrawingElement,
+  point: DrawingPoint,
+  screenPadding: number,
+  viewportScale: number,
+): boolean {
+  return isPointInsideBounds(
+    point,
+    resolveDrawingSelectedElementPickupBounds(element, screenPadding, viewportScale),
+    0,
+  );
+}
+
 function hitPolyline(
   point: DrawingPoint,
   points: readonly DrawingPoint[],
