@@ -6,6 +6,7 @@ export * from "./eraseFreehand";
 export * from "./history";
 export * from "./hitTest";
 export * from "./scene";
+export * from "./selectionHandles";
 export * from "./surfaceLayout";
 export * from "./translation";
 export * from "./viewport";

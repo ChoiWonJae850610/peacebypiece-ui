@@ -1,5 +1,15 @@
 # WAFL v2 App Device Test Plan
 
+## Alpha.77 final device result
+
+- Owner actual iPhone QA: `PASS` for Rectangle/Ellipse corner resize, Line/Arrow endpoint editing, exact Undo/Redo,
+  handle-versus-Move precedence, and second-finger Camera takeover cancellation.
+- Owner actual iPad-mini QA: `PASS` for the same alpha.77 bounded Selection workflow and retained Drawing behavior.
+- Regular/Large iPad actual-device QA: `NOT_RUN`; supported Drawing and orientation behavior remain contract evidence.
+- Android phone/tablet actual-device QA: `NOT_RUN`; physical PASS is not inferred.
+- Finalization performs no Owner Save or business mutation. This advances `ALPHA77_COMPLETE` and
+  `ALPHA77_FINALIZATION_COMPLETE`.
+
 ## Alpha.76 final device result
 
 - Owner actual iPhone QA: `PASS` for the latest centered Cover, focal pinch Zoom, two-finger Pan, Fit `100%`, integer

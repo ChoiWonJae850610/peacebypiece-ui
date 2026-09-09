@@ -50,7 +50,7 @@ assert.match(pipeline, /\.Name -like "repo-state-2\.0\.0-\*"/u);
 assert.doesNotMatch(pipeline, /Get-ChildItem -LiteralPath \$NewestResultDIr -Force[^\n]*\| ForEach-Object \{[\s\S]{0,120}Remove-Item/u);
 assert.match(
   finishVersion,
-  /ExpectedAppVersion -in @\("2\.0\.0-alpha\.73", "2\.0\.0-alpha\.74", "2\.0\.0-alpha\.75", "2\.0\.0-alpha\.76"\)[\s\S]*db\/v2\/migrations\/022_v2_work_order_drawings\.sql/u,
+  /ExpectedAppVersion -in @\("2\.0\.0-alpha\.73", "2\.0\.0-alpha\.74", "2\.0\.0-alpha\.75", "2\.0\.0-alpha\.76", "2\.0\.0-alpha\.77"\)[\s\S]*db\/v2\/migrations\/022_v2_work_order_drawings\.sql/u,
 );
 assert.match(roadmap, /ALPHA74_SKETCH_RESPONSIVE_SHAPE_AUTHORING_IPHONE_IPAD_QA_REQUIRED/u);
 

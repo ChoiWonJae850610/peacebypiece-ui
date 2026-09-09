@@ -42,6 +42,7 @@ import {
   isDrawingWorldPointInsideCanvas,
   isDrawingAuthoringViewportGenerationCurrent,
   hitTestDrawingSceneTopmost,
+  hitTestDrawingSelectionHandlesScreen,
   planDrawingStrokePartialErase,
   redoDrawingScene,
   removeDrawingElementsById,
@@ -49,6 +50,8 @@ import {
   replaceDrawingSceneElement,
   resolveDrawingElementTranslation,
   resolveDrawingSelectionMoveDelta,
+  resolveDrawingSelectionHandles,
+  resolveDrawingSelectionHandleTransform,
   resolveDrawingCameraGestureUpdate,
   resolveDrawingViewportTransform,
   screenToWorld,
@@ -67,6 +70,7 @@ import {
   type DrawingStrokePartialErasePlan,
   type DrawingPoint,
   type DrawingSceneHistory,
+  type DrawingSelectionHandleKind,
   type DrawingViewport,
 } from "@/domain/drawing";
 import { WAFL_FONTS } from "@/constants/fonts";
@@ -83,6 +87,7 @@ import {
   projectDrawingElement,
   projectDrawingEraserCursor,
   projectDrawingSelectionOutline,
+  projectDrawingSelectionHandles,
   projectDrawingTextInsertionPreview,
 } from "@/features/drawing-poc/drawingRenderProjection";
 import {
@@ -113,6 +118,8 @@ const textInsertionCaretStyle = Object.freeze({ strokeColor: WAFL_THEME.color.re
 const DRAWING_ERASER_SCREEN_RADIUS = resolveDrawingEraserScreenRadius(WAFL_THEME.touch.minimum);
 const DRAWING_SELECTION_MOVE_SCREEN_SLOP = WAFL_THEME.spacing.sm;
 const DRAWING_SELECTION_PICKUP_SCREEN_PADDING = WAFL_THEME.spacing.sm;
+const DRAWING_SELECTION_HANDLE_VISUAL_RADIUS = WAFL_THEME.spacing.sm;
+const DRAWING_SELECTION_HANDLE_TOUCH_RADIUS = WAFL_THEME.touch.minimum / 2;
 const WORK_ORDER_SKETCH_SUPPORTED_ORIENTATIONS: NonNullable<ModalProps["supportedOrientations"]> = [
   "portrait",
 ];
@@ -124,6 +131,13 @@ type SelectionMoveGesture = Readonly<{
   elementId: string;
   startScreen: DrawingPoint;
   startWorld: DrawingPoint;
+  viewportGeneration: number;
+}>;
+type SelectionTransformGesture = Readonly<{
+  baseElement: DrawingElement;
+  elementId: string;
+  fixedAnchor: DrawingPoint;
+  handle: DrawingSelectionHandleKind;
   viewportGeneration: number;
 }>;
 
@@ -208,6 +222,7 @@ export default function WorkOrderSketchEditor(props: Readonly<{
   const activeShapeRef = useRef<DrawingActiveShape | null>(null);
   const selectedElementIdRef = useRef<string | null>(null);
   const selectionMoveGestureRef = useRef<SelectionMoveGesture | null>(null);
+  const selectionTransformGestureRef = useRef<SelectionTransformGesture | null>(null);
   const eraserTrailRef = useRef<readonly DrawingPoint[]>(Object.freeze([]));
   const eraserRadiusWorldRef = useRef(DRAWING_ERASER_SCREEN_RADIUS);
   const viewportGenerationRef = useRef(0);
@@ -291,6 +306,11 @@ export default function WorkOrderSketchEditor(props: Readonly<{
   ]), [eraserCursorWorld, eraserRadiusWorld, transform]);
   const transientPreviewFrame = useMemo(() => Object.freeze([
     ...(displayedSelectedElement ? [projectDrawingSelectionOutline(displayedSelectedElement, transform, WAFL_THEME.color.brickOrange)] : []),
+    ...(displayedSelectedElement ? projectDrawingSelectionHandles(displayedSelectedElement, transform, {
+      fillColor: WAFL_THEME.color.paper,
+      screenRadius: DRAWING_SELECTION_HANDLE_VISUAL_RADIUS,
+      strokeColor: WAFL_THEME.color.brickOrange,
+    }) : []),
     ...eraserPreviewFrame,
     ...textPreviewFrame,
   ]), [displayedSelectedElement, eraserPreviewFrame, textPreviewFrame, transform]);
@@ -338,6 +358,7 @@ export default function WorkOrderSketchEditor(props: Readonly<{
       selectionSnapshotActiveRef.current = false;
       selectedElementIdRef.current = null;
       selectionMoveGestureRef.current = null;
+      selectionTransformGestureRef.current = null;
       eraserTrailRef.current = Object.freeze([]);
       setEraserPreviewScene(null);
       setEraserCursorWorld(null);
@@ -420,6 +441,11 @@ export default function WorkOrderSketchEditor(props: Readonly<{
     setSelectionMovePreviewScene(null);
   }
 
+  function clearSelectionTransformPreview() {
+    selectionTransformGestureRef.current = null;
+    setSelectionMovePreviewScene(null);
+  }
+
   function discardActiveGesture() {
     discardActiveStroke();
     discardActiveSegment();
@@ -428,6 +454,7 @@ export default function WorkOrderSketchEditor(props: Readonly<{
     pendingTextAnchorRef.current = null;
     clearEraserVisualFeedback();
     clearSelectionMovePreview();
+    clearSelectionTransformPreview();
   }
 
   function endCameraGesture() {
@@ -667,6 +694,24 @@ export default function WorkOrderSketchEditor(props: Readonly<{
     return replaceDrawingSceneElement(scene, gesture.elementId, translation.element);
   }
 
+  function planSelectionTransform(locationX: number, locationY: number) {
+    const gesture = selectionTransformGestureRef.current;
+    if (!gesture || gesture.viewportGeneration !== viewportGenerationRef.current) return null;
+    const transformResult = resolveDrawingSelectionHandleTransform({
+      element: gesture.baseElement,
+      handle: gesture.handle,
+      pointerWorld: rawWorldPointFromEvent(locationX, locationY),
+    });
+    if (transformResult === null || !transformResult.changed) return null;
+    if (
+      transformResult.fixedAnchor.x !== gesture.fixedAnchor.x
+      || transformResult.fixedAnchor.y !== gesture.fixedAnchor.y
+    ) return null;
+    const scene = historyRef.current.current;
+    if (!scene.elements.some((element) => element.id === gesture.elementId)) return null;
+    return replaceDrawingSceneElement(scene, gesture.elementId, transformResult.element);
+  }
+
   function activeGestureUsesCurrentViewport() {
     return isDrawingAuthoringViewportGenerationCurrent(
       activeGestureViewportGenerationRef.current,
@@ -697,6 +742,40 @@ export default function WorkOrderSketchEditor(props: Readonly<{
       ) return;
       captureSelectionBeforeOneFingerGesture();
       const rawPoint = rawWorldPointFromEvent(event.nativeEvent.locationX, event.nativeEvent.locationY);
+      if (toolRef.current === "selection") {
+        const scene = historyRef.current.current;
+        const selectedElement = selectedElementIdRef.current === null
+          ? null
+          : scene.elements.find((element) => element.id === selectedElementIdRef.current) ?? null;
+        if (selectedElement !== null) {
+          const handleHit = hitTestDrawingSelectionHandlesScreen({
+            handles: resolveDrawingSelectionHandles(selectedElement),
+            point: { x: event.nativeEvent.locationX, y: event.nativeEvent.locationY },
+            screenRadius: DRAWING_SELECTION_HANDLE_TOUCH_RADIUS,
+            transform: resolveDrawingViewportTransform(cameraRef.current, viewportRef.current),
+          });
+          if (handleHit !== null) {
+            const initialTransform = resolveDrawingSelectionHandleTransform({
+              element: selectedElement,
+              handle: handleHit.handle.kind,
+              pointerWorld: handleHit.handle.anchor,
+            });
+            if (initialTransform !== null) {
+              activeGestureViewportGenerationRef.current = viewportGenerationRef.current;
+              selectionMoveGestureRef.current = null;
+              selectionTransformGestureRef.current = Object.freeze({
+                baseElement: selectedElement,
+                elementId: selectedElement.id,
+                fixedAnchor: initialTransform.fixedAnchor,
+                handle: handleHit.handle.kind,
+                viewportGeneration: viewportGenerationRef.current,
+              });
+              setSelectionMovePreviewScene(null);
+              return;
+            }
+          }
+        }
+      }
       if (!isDrawingWorldPointInsideCanvas(rawPoint)) {
         activeGestureViewportGenerationRef.current = null;
         pendingTextAnchorRef.current = null;
@@ -725,6 +804,7 @@ export default function WorkOrderSketchEditor(props: Readonly<{
           );
         const moveTarget = actualHit ?? (selectedPickup ? selectedElement : null);
         selectElement(moveTarget?.id ?? null);
+        selectionTransformGestureRef.current = null;
         selectionMoveGestureRef.current = moveTarget ? Object.freeze({
           baseElement: moveTarget,
           elementId: moveTarget.id,
@@ -773,10 +853,17 @@ export default function WorkOrderSketchEditor(props: Readonly<{
         return;
       }
       if (toolRef.current === "selection") {
-        setSelectionMovePreviewScene(planSelectionMove(
-          event.nativeEvent.locationX,
-          event.nativeEvent.locationY,
-        ));
+        if (selectionTransformGestureRef.current === null) {
+          setSelectionMovePreviewScene(planSelectionMove(
+            event.nativeEvent.locationX,
+            event.nativeEvent.locationY,
+          ));
+        } else {
+          setSelectionMovePreviewScene(planSelectionTransform(
+            event.nativeEvent.locationX,
+            event.nativeEvent.locationY,
+          ));
+        }
         return;
       }
       if (toolRef.current === "eraser") {
@@ -814,8 +901,11 @@ export default function WorkOrderSketchEditor(props: Readonly<{
       }
       activeGestureViewportGenerationRef.current = null;
       if (toolRef.current === "selection") {
-        const nextScene = planSelectionMove(event.nativeEvent.locationX, event.nativeEvent.locationY);
+        const nextScene = (selectionTransformGestureRef.current === null
+          ? planSelectionMove
+          : planSelectionTransform)(event.nativeEvent.locationX, event.nativeEvent.locationY);
         clearSelectionMovePreview();
+        clearSelectionTransformPreview();
         if (nextScene !== null) updateHistory(commitDrawingScene(historyRef.current, nextScene));
         return;
       }

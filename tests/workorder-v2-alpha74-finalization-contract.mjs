@@ -25,7 +25,7 @@ const mobilePackage = JSON.parse(read("apps/mobile/package.json"));
 const appConfig = JSON.parse(read("apps/mobile/app.json"));
 const migrationFiles = fs.readdirSync("db/v2/migrations").filter((name) => /^\d{3}_.*\.sql$/u.test(name)).sort();
 
-assert.match(version, /^2\.0\.0-alpha\.(?:74|75|76)$/u);
+assert.match(version, /^2\.0\.0-alpha\.(?:74|75|76|77)$/u);
 for (const owner of [currentState, roadmap, devicePlan]) {
   assert.match(owner, /ALPHA74_COMPLETE/u);
   assert.match(owner, /ALPHA74_FINALIZATION_COMPLETE/u);
@@ -83,7 +83,7 @@ assert.equal(mobilePackage.dependencies["react-native-gesture-handler"], undefin
 assert.equal(mobilePackage.dependencies["react-native-worklets"], undefined);
 assert.match(
   finishVersion,
-  /ExpectedAppVersion -in @\("2\.0\.0-alpha\.73", "2\.0\.0-alpha\.74", "2\.0\.0-alpha\.75", "2\.0\.0-alpha\.76"\)[\s\S]*db\/v2\/migrations\/022_v2_work_order_drawings\.sql/u,
+  /ExpectedAppVersion -in @\("2\.0\.0-alpha\.73", "2\.0\.0-alpha\.74", "2\.0\.0-alpha\.75", "2\.0\.0-alpha\.76", "2\.0\.0-alpha\.77"\)[\s\S]*db\/v2\/migrations\/022_v2_work_order_drawings\.sql/u,
 );
 assert.match(currentState, /tag, or release/u);
 assert.match(roadmap, /tag\/release `0\/0`/u);

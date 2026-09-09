@@ -6,8 +6,10 @@ import type {
 } from "@/domain/drawing";
 import {
   DRAWING_SELECTION_OUTLINE_PADDING_WORLD,
+  projectDrawingSelectionHandleToScreen,
   resolveDrawingArrowHeadWorldGeometry,
   resolveDrawingElementWorldBounds,
+  resolveDrawingSelectionHandles,
 } from "@/domain/drawing";
 import { buildDrawingFreehandSvgPath } from "./drawingFreehandPath";
 import { resolveDrawingEraserCursorScreenRadius } from "./drawingEraserVisualFeedback";
@@ -81,6 +83,37 @@ export function projectDrawingSelectionOutline(
     width: bounds.width * transform.scale,
     height: bounds.height * transform.scale,
   });
+}
+
+export function projectDrawingSelectionHandles(
+  element: DrawingElement,
+  transform: DrawingViewportTransform,
+  input: Readonly<{
+    fillColor: string;
+    screenRadius: number;
+    strokeColor: string;
+  }>,
+): DrawingProjectedFrame {
+  if (!Number.isFinite(input.screenRadius) || input.screenRadius <= 0) {
+    throw new RangeError("Drawing selection handle radius must be finite and positive.");
+  }
+  return Object.freeze(resolveDrawingSelectionHandles(element).map((handle) => {
+    const center = projectDrawingSelectionHandleToScreen(handle, transform);
+    return Object.freeze({
+      id: `selection-handle:${element.id}:${handle.kind}`,
+      kind: "ellipse" as const,
+      opacity: 0.96,
+      style: Object.freeze({
+        fillColor: input.fillColor,
+        strokeColor: input.strokeColor,
+        strokeWidth: 2,
+      }),
+      x: center.x - input.screenRadius,
+      y: center.y - input.screenRadius,
+      width: input.screenRadius * 2,
+      height: input.screenRadius * 2,
+    });
+  }));
 }
 
 export function projectDrawingEraserCursor(

@@ -1,5 +1,30 @@
 # Future Drawing Architecture Guardrails
 
+## Final alpha.77 boundary
+
+- `ALPHA77_FINALIZATION_COMPLETE` accepts Selection resize and endpoint editing on Scene schema v1 / WORLD
+  `1000×1400`: four Rectangle/Ellipse corners and Line/Arrow start/end handles remain screen-space UI over semantic
+  WORLD anchors, with transient preview and at most one release Scene/history commit.
+- Owner actual iPhone and iPad-mini QA is `PASS`; Regular/Large iPad and Android remain `NOT_RUN`. Second-finger Camera
+  takeover, exact Undo/Redo, Move, partial Eraser, Cover/Fit/Zoom/Pan/HUD, orientation, and explicit Save remain intact.
+- Rotate, side handles, freehand resize, Text scaling, multi-select/grouping, snapping/guides, z-order, exact A4
+  migration, Image/Pencil, PDF/output integration, and Production Sketch remain deferred.
+
+## Alpha.77 Selection resize and endpoint-editing boundary
+
+- Selection projects four constant-screen-space corner handles for Rectangle/Ellipse and start/end handles for Line/Arrow.
+  Handle UI and hit radius are transient; their anchors are semantic WORLD points projected through the current Camera.
+- Pointer priority is selected handle, actual topmost object, forgiving selected-object Move pickup, then true empty
+  deselection. Handle drag never enters the whole-object Move owner.
+- Rectangle/Ellipse resize is axis-aligned, opposite-corner fixed, independent-axis, no-flip, and bounded by the existing
+  `1.5` WORLD minimum shape size. Line/Arrow edit only the dragged semantic endpoint and use the existing `1.5` WORLD
+  minimum segment length; Arrow head geometry remains derived by the renderer.
+- Pointer move owns only a replacement preview plus following outline/handles. One meaningful release creates one local
+  Scene/history entry at the same id/order; no-op and cancellation create zero. Second-finger Camera takeover cancels the
+  transform through the shared transient owner before Camera acquisition.
+- Freehand/Text and partial-erased fragments expose no resize handles and retain whole-object Move. Rotate, multi-select,
+  text/freehand scaling, schema/API/migration, dependency/native/config/EAS, and output integration remain excluded.
+
 ## Final alpha.76 boundary
 
 - `ALPHA76_FINALIZATION_COMPLETE` accepts Selection Move/pickup, visible WORLD paper, compact workspace, centered

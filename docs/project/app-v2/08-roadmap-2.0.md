@@ -1,5 +1,29 @@
 # WAFL v2 App-first Roadmap and Version Delta
 
+## Alpha.77 finalization
+
+Alpha.77 is finalized at `ALPHA77_FINALIZATION_COMPLETE` with accepted product checkpoint `ALPHA77_COMPLETE`. Owner
+actual iPhone and iPad-mini physical QA is `PASS` for Selection resize and endpoint editing, including the four-corner
+Rectangle/Ellipse handles, Line/Arrow start/end handles, transient preview, exact Undo/Redo, and Camera takeover
+cancellation. Regular/Large iPad and Android actual execution remain `NOT_RUN`. APP_VERSION is `2.0.0-alpha.77`;
+Scene v1, WORLD `1000×1400`, migration `22/22`, Production `스케치(준비 중)`, and tag/release `0/0` remain.
+Finalization changes only bounded version, contracts, Git, and artifacts. The next direction is Sketch/PDF output
+integration and fidelity rather than further editor feature expansion.
+
+## Alpha.77 Selection resize and endpoint-editing Delta
+
+- Checkpoint: `ALPHA77_SELECTION_RESIZE_ENDPOINTS_IPHONE_IPAD_QA_REQUIRED`.
+- The existing Selection tool exposes four constant-screen-size corner handles for Rectangle/Ellipse and start/end handles
+  for Line/Arrow. Handle hit owns pointer-down before topmost object hit and forgiving Move pickup. Geometry remains WORLD-
+  coordinate and preview-only until one meaningful release commits one Scene/history entry.
+- Shape resize keeps the opposite corner fixed, remains axis-aligned, supports independent width/height, forbids flip and
+  rotation, and reuses the `1.5` WORLD shape minimum. Endpoint editing keeps the opposite endpoint fixed, reuses the `1.5`
+  WORLD segment minimum, and leaves Arrow head geometry renderer-derived. No-op, cancel, tool switch, viewport invalidation,
+  selection loss, and second-finger Camera takeover commit zero.
+- Freehand/Text remain Move-only with no handles. Scene v1, WORLD `1000×1400`, explicit Save, alpha.75 partial Eraser and
+  toolbar, alpha.76 Camera/Move/HUD, orientation/native policy, dependencies, API/schema, migration `22/22`, and Production
+  Sketch gate remain unchanged. The Delta is accepted into APP_VERSION `2.0.0-alpha.77` by the finalization above.
+
 ## Alpha.76 finalization
 
 Alpha.76 is finalized at `ALPHA76_FINALIZATION_COMPLETE` with accepted product checkpoint `ALPHA76_COMPLETE`. Owner
@@ -492,21 +516,19 @@ Alpha.70 remains finalized at `ALPHA70_FINALIZATION_COMPLETE` with product check
 
 Document role: canonical owner for the current result, next candidate, and Version Delta boundary. It is not the historical implementation ledger; completed details live in numbered immutable evidence.
 
-## Current result — 2.0.0-alpha.76
+## Current result — 2.0.0-alpha.77
 
-Status: `ALPHA76_FINALIZATION_COMPLETE`.
+Status: `ALPHA77_FINALIZATION_COMPLETE`.
 
-Accepted product checkpoint: `ALPHA76_COMPLETE`.
+Accepted product checkpoint: `ALPHA77_COMPLETE`.
 
-Owner physical result: `PASS`.
+Owner physical result: `PASS` on iPhone and iPad mini; Regular/Large iPad and Android are `NOT_RUN`.
 
-Alpha.76 finalizes Selection Move/pickup, visible WORLD paper, compact Product Sketch layout, centered Cover, Fit `1`,
-focal pinch Zoom, two-finger Pan, native/raw multi-touch acquisition, clamp rebase, RAF projection, and a read-only
-integer Zoom HUD over the finalized alpha.75 tool foundation. Owner actual iPhone and iPad-mini QA accepts the latest
-Zoom/Pan/HUD workflow and Drawing-tool interaction isolation; iPad-mini orientation regression is `0`. Fresh Cover may
-display above `100%`; full-paper Fit is exactly `100%`, and Pan-only leaves the HUD unchanged. Regular/Large iPad and
-Android physical execution remain `NOT_RUN`. Production keeps disabled `스케치(준비 중)`. Finalization adds no product
-behavior, Scene/API/schema/migration, dependency/native/config/EAS, business-data mutation, tag, or release.
+Alpha.77 finalizes the Selection resize and endpoint-editing capability over the complete alpha.76 Drawing foundation.
+Owner actual iPhone and iPad-mini QA accepts Rectangle/Ellipse corner resize, Line/Arrow endpoint editing, transient
+preview, exact Undo/Redo, and second-finger Camera takeover. Regular/Large iPad and Android physical execution remain
+`NOT_RUN`. Production keeps disabled `스케치(준비 중)`. Finalization adds no product behavior, Scene/API/schema/
+migration, dependency/native/config/EAS, business-data mutation, tag, or release.
 
 ## Alpha.72 current candidate — Drawing Foundation
 

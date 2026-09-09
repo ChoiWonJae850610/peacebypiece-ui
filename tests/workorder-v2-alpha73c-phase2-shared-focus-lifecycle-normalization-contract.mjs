@@ -128,7 +128,7 @@ assert.match(reel, /keyboardMode=\{renderPath === "numeric-keypad" \? "directInp
 assert.match(reel, /onPreparedForAutoFocus=\{renderPath === "numeric-keypad"/u, "the later A73D numeric migration owns picker focus through one prepared transaction");
 assert.doesNotMatch(reel, /\sautoFocus(?:\s|=)/u, "the superseded raw PICKER autofocus contract must not return");
 assert.equal(fs.readdirSync(path.join(root, "db", "v2", "migrations")).filter((name) => name.endsWith(".sql")).length, 22);
-assert.match(read("lib/constants/version.ts"), /2\.0\.0-alpha\.(?:72|73|74|75|76)/u);
+assert.match(read("lib/constants/version.ts"), /2\.0\.0-alpha\.(?:72|73|74|75|76|77)/u);
 
 console.log(JSON.stringify({
   ok: true,

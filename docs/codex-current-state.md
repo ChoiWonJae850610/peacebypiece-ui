@@ -1,5 +1,24 @@
 # WAFL Current Baseline
 
+Alpha.77 is finalized at `ALPHA77_FINALIZATION_COMPLETE` with product checkpoint `ALPHA77_COMPLETE`. Owner actual
+physical QA is `PASS` on iPhone and iPad mini for Selection resize and endpoint editing: Rectangle/Ellipse corner
+handles, Line/Arrow semantic endpoints, transient WORLD-coordinate preview, exact Undo/Redo, and second-finger Camera
+takeover all retain the accepted alpha.76 Drawing behavior. Regular/Large iPad and Android actual-device QA remain
+`NOT_RUN` and are not inferred PASS. APP_VERSION is `2.0.0-alpha.77`. Finalization adds no feature behavior, Scene/API/
+schema/migration, dependency/native/config/EAS, Production/Owner/ambiguous business mutation, tag, or release. Scene
+schema v1, WORLD `1000×1400`, migration `22/22`, and Production `스케치(준비 중)` remain.
+
+The completed alpha.77 Selection resize and endpoint-editing Delta established that the
+existing `선택 및 이동` tool now projects four constant-screen-space corner handles for Rectangle/Ellipse and semantic
+start/end handles for Line/Arrow. Handle hit-testing precedes ordinary topmost selection and forgiving Move pickup;
+dragging a handle inverse-projects through the current Camera into one transient WORLD-coordinate replacement preview.
+Rectangle/Ellipse keep the opposite corner fixed, remain axis-aligned, do not flip, and reuse the canonical `1.5` WORLD
+minimum size. Line/Arrow keep the opposite endpoint fixed, reuse the canonical `1.5` WORLD minimum length, and keep
+arrowheads renderer-derived. One meaningful release creates one Scene/history commit; no-op and every cancellation path,
+including second-finger Camera takeover, create none. Freehand/Text expose no handles and retain Move-only behavior.
+Scene v1, WORLD `1000×1400`, explicit Save, Camera/HUD, partial Eraser, toolbar, orientation, dependency/native/config/EAS,
+API/schema and migration `22/22` remain unchanged.
+
 Alpha.76 is finalized at `ALPHA76_FINALIZATION_COMPLETE` with product checkpoint `ALPHA76_COMPLETE`. Owner actual
 physical QA is `PASS` on iPhone and iPad mini for the latest centered Cover, focal pinch Zoom, two-finger Pan, Fit
 `100%`, integer Zoom HUD, Pan-only stable HUD, and Pen/Eraser/Selection Move interaction isolation; iPad-mini
@@ -597,9 +616,9 @@ Document type: **Current Baseline**
 
 Canonical owner: `docs/codex-current-state.md`
 
-Result version: `2.0.0-alpha.76`
-Status: `ALPHA75_FINALIZATION_COMPLETE`
-Product checkpoint: `ALPHA75_COMPLETE`
+Result version: `2.0.0-alpha.77`
+Status: `ALPHA77_FINALIZATION_COMPLETE`
+Product checkpoint: `ALPHA77_COMPLETE`
 Owner physical result: `PASS`
 
 ## Final alpha.75 Sketch editing-tools result

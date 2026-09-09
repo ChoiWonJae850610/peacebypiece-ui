@@ -1,5 +1,15 @@
 # WAFL v2 API Contract Test Plan
 
+## Alpha.77 finalization contract
+
+- `workorder-v2-alpha77-finalization-contract.mjs` pins `ALPHA77_COMPLETE` /
+  `ALPHA77_FINALIZATION_COMPLETE`, canonical internal version consistency, the alpha.77 resize/endpoint contract,
+  every retained alpha.72 through alpha.76 Drawing contract, Scene schema v1, migration `22/22`, Production Sketch
+  gating, and the frozen deferred feature set.
+- It records Owner physical iPhone/iPad-mini `PASS` and honest Regular/Large iPad plus Android `NOT_RUN`.
+  Finalization adds no product behavior, API/schema/migration, dependency/native/config/EAS, business-data mutation,
+  tag, or release. Permanent inventory advances from `289/289` to `290/290`.
+
 ## Alpha.76 finalization contract
 
 - `workorder-v2-alpha76-finalization-contract.mjs` pins `ALPHA76_COMPLETE` /
