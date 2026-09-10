@@ -23,7 +23,11 @@ function compile(sourcePath, outputPath, replacements = []) {
 for (const name of fs.readdirSync("lib/domain/drawing").filter((candidate) => candidate.endsWith(".ts"))) {
   compile(path.join("lib/domain/drawing", name), path.join(drawingRoot, name.replace(/\.ts$/, ".js")));
 }
-compile("apps/mobile/features/drawing-poc/drawingFreehandPath.ts", path.join(compiledRoot, "freehand.js"));
+compile(
+  "apps/mobile/features/drawing-poc/drawingFreehandPath.ts",
+  path.join(compiledRoot, "freehand.js"),
+  [[/require\("@\/domain\/drawing"\)/g, 'require("./drawing/index.js")']],
+);
 compile(
   "apps/mobile/features/drawing-poc/drawingEraserVisualFeedback.ts",
   path.join(compiledRoot, "drawingEraserVisualFeedback.js"),

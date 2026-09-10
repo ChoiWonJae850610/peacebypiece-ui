@@ -18,7 +18,7 @@ assert.equal(appJson.expo.orientation, "default", "regular/large tablets must re
 assert.equal(appJson.expo.ios.supportsTablet, true);
 assert.equal(appJson.expo.ios.requireFullScreen, true, "iPad orientation locks require fullscreen native eligibility");
 assert.equal(appJson.expo.ios.bundleIdentifier, "com.wafl.app");
-assert.match(appJson.expo.extra.appVersion, /^2\.0\.0-alpha\.(?:74|75|76|77)$/u);
+assert.match(appJson.expo.extra.appVersion, /^2\.0\.0-alpha\.(?:74|75|76|77|78)$/u);
 
 const generated = nativeOrientation.applyWaflIosOrientationPolicy({ UIRequiresFullScreen: true });
 assert.equal(generated.UIRequiresFullScreen, true, "orientation plugin must preserve Expo's generated fullscreen prerequisite");
@@ -81,7 +81,7 @@ assert.deepEqual(
 );
 
 assert.equal(fs.readdirSync(path.join(repoRoot, "db", "v2", "migrations")).filter((name) => /^\d{3}_.+\.sql$/u.test(name)).length, 22);
-assert.match(read("lib/constants/version.ts"), /2\.0\.0-alpha\.(?:74|75|76|77)/u);
+assert.match(read("lib/constants/version.ts"), /2\.0\.0-alpha\.(?:74|75|76|77|78)/u);
 
 console.log(JSON.stringify({
   ok: true,

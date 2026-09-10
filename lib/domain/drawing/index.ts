@@ -3,6 +3,8 @@ export * from "./authoring";
 export * from "./cameraGesture";
 export * from "./contracts";
 export * from "./eraseFreehand";
+export * from "./exportProjection";
+export * from "./freehandPath";
 export * from "./history";
 export * from "./hitTest";
 export * from "./scene";

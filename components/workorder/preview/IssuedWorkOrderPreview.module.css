@@ -89,6 +89,8 @@
 .attachmentGrid figure { margin: 0; min-width: 0; border: 1px solid var(--pdf-card-border); border-radius: 2.2mm; background: #f7f7f7; padding: 1.5mm; break-inside: avoid; }
 .includedAttachmentImage { display: block; width: 100%; height: 35mm; object-fit: contain; background: #fff; }
 .attachmentGrid figcaption { margin-top: 1mm; color: var(--pdf-secondary); font-size: 8px; line-height: 1.2; overflow-wrap: anywhere; }
+.sketchOutputFrame { width: min(100%, 150mm); aspect-ratio: 5 / 7; height: auto; margin-inline: auto; border: 1px solid var(--pdf-card-border); border-radius: 2.2mm; background: #fff; overflow: hidden; }
+.sketchOutputSvg { display: block; width: 100%; height: 100%; font-family: var(--font-noto-sans-kr), "Noto Sans KR", sans-serif; }
 .pageNumberFooter { position: absolute; left: 12mm; right: 12mm; bottom: 8mm; display: grid; grid-template-columns: minmax(0,1fr) auto minmax(0,1fr); align-items: center; gap: 4mm; border-top: 1px solid var(--pdf-card-border); padding-top: 2.5mm; color: var(--pdf-muted); font-size: var(--pdf-footer-size); font-weight: 650; font-variant-numeric: tabular-nums; line-height: 1; pointer-events: none; }
 .pageNumberFooter span:first-child { overflow-wrap: anywhere; }
 .footerPage { display: flex; align-items: center; justify-content: flex-end; gap: 3mm; }
@@ -125,5 +127,6 @@
   .page tr { break-inside: avoid; }
   .tableWrap { overflow: visible; }
   .tableWrap table { min-width: 0; }
+  .sketchOutputFrame { width: 150mm; height: 210mm; }
   .coverPage, .coverFact, .coverSummary, .deliveryMemo, .sectionHeading, .page th, .page tbody tr:nth-child(even) td { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
 }

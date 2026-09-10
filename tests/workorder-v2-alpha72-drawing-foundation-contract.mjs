@@ -162,7 +162,7 @@ assert.doesNotMatch(JSON.stringify(history), /data:image|png|raster/i);
 
 const drawingRoot = drawingSourceRoot;
 const drawingSources = drawingSourceNames;
-assert.deepEqual(drawingSources.sort(), ["adapters.ts", "authoring.ts", "cameraGesture.ts", "contracts.ts", "eraseFreehand.ts", "history.ts", "hitTest.ts", "index.ts", "scene.ts", "selectionHandles.ts", "surfaceLayout.ts", "translation.ts", "viewport.ts"]);
+assert.deepEqual(drawingSources.sort(), ["adapters.ts", "authoring.ts", "cameraGesture.ts", "contracts.ts", "eraseFreehand.ts", "exportProjection.ts", "freehandPath.ts", "history.ts", "hitTest.ts", "index.ts", "scene.ts", "selectionHandles.ts", "surfaceLayout.ts", "translation.ts", "viewport.ts"]);
 const importSource = drawingSources
   .map((name) => fs.readFileSync(path.join(drawingRoot, name), "utf8"))
   .flatMap((source) => source.split(/\r?\n/).filter((line) => /^import\s/.test(line.trim())))

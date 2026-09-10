@@ -1,5 +1,31 @@
 # Future Drawing Architecture Guardrails
 
+## Final alpha.78 boundary
+
+- `ALPHA78_FINALIZATION_COMPLETE` accepts the saved-Scene Sketch Preview/PDF output and corrected `5:7` visible frame
+  at product checkpoint `ALPHA78_COMPLETE`. WORLD `1000×1400`, Scene v1, output `1500×2100`, uniform scale `1.5`, and
+  offsets `0,0` are permanent; the former `1880×2100` visible frame is retired.
+- Owner actual iPhone and iPad-mini QA is `PASS` for the corrected frame, unchanged geometry, crop/stretch `0`, Camera
+  independence, and PDF/Download identity. Print, Regular/Large iPad, and Android remain `NOT_RUN` rather than inferred.
+- Finalization adds no Drawing behavior, Scene/API/schema, dependency/native/config/EAS, migration, business mutation,
+  tag, or release. Production continues to expose `스케치(준비 중)` under its existing gate.
+
+## Alpha.78 saved-Scene PDF output and frame-aspect boundary
+
+- Draft WorkOrder PDF Preview and issued PDF generation read the exact revision's validated `primary_sketch` Scene v1
+  through one tenant-scoped read-only owner and capture it in the immutable PDF snapshot. The optional snapshot field
+  preserves historical generated documents and missing/empty Drawing adds no output page.
+- One pure export projection owns saved WORLD `1000×1400` to arbitrary output-box mapping: a single uniform scale,
+  centered contain offsets, full canvas visibility, deterministic order, and no Scene mutation. The canonical WorkOrder
+  Sketch output box is `1500×2100`, matching WORLD `5:7` at scale `1.5` and offsets `0,0`; screen Preview is centered
+  and capped at available width, while print is exact `150mm×210mm`. Exact A4 WORLD migration remains forbidden.
+- Freehand uses the canonical `midpoint-quadratic-v1` path; Line stays straight, Arrow head remains renderer-derived,
+  Rectangle/Ellipse/Text remain semantic, and partial-erased fragments remain ordinary freehand elements.
+- Camera, Cover/Fit/Zoom/Pan, selection outline, handles, HUD, toolbar, workbench, active gesture and transform previews
+  are editor-only and cannot enter snapshot or export input. Preview/generated PDF/View/Download/print share the same
+  PDF renderer/artifact path. Scene/API schema, editor features, dependency/native/config/EAS, migration and Production
+  Sketch exposure remain unchanged. Physical PASS is not inferred.
+
 ## Final alpha.77 boundary
 
 - `ALPHA77_FINALIZATION_COMPLETE` accepts Selection resize and endpoint editing on Scene schema v1 / WORLD

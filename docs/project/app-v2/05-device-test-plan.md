@@ -1,5 +1,15 @@
 # WAFL v2 App Device Test Plan
 
+## Alpha.78 final device result
+
+- Owner actual iPhone QA: `PASS` for the corrected centered `5:7` Sketch Preview/PDF frame, removal of the former
+  side gutters, unchanged Drawing geometry, crop/stretch `0`, Camera independence, and matching PDF/Download output.
+- Owner actual iPad-mini QA: `PASS` for the same corrected alpha.78 Sketch output boundary.
+- Chromium Print actual Owner execution: `NOT_RUN`; its canonical-artifact behavior remains automated evidence only.
+- Regular/Large iPad actual-device QA: `NOT_RUN`; Android phone/tablet actual-device QA: `NOT_RUN`. PASS is not inferred.
+- Finalization performs no Owner Save or business mutation. This advances `ALPHA78_COMPLETE` and
+  `ALPHA78_FINALIZATION_COMPLETE`.
+
 ## Alpha.77 final device result
 
 - Owner actual iPhone QA: `PASS` for Rectangle/Ellipse corner resize, Line/Arrow endpoint editing, exact Undo/Redo,

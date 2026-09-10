@@ -15,6 +15,7 @@ import { removeLocalIssuedPdfRenderInput, writeLocalIssuedPdfRenderInput } from 
 import { createWorkOrderIssuedPdfSnapshot, hashWorkOrderIssuedPdfSnapshot, selectSupplementalGalleryAssets, serializeWorkOrderIssuedPdfSnapshot } from "./snapshot";
 import { WORK_ORDER_PDF_MAX_FILE_SIZE_BYTES } from "./constants";
 import { WORK_ORDER_PDF_INLINE_IMAGE_MIME_TYPES } from "@/lib/workorder/persistence/imageAssetIntegrity.mjs";
+import { loadWorkOrderPdfDrawingScene } from "./drawingSnapshot";
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const SUPPORTED_INLINE_IMAGE = new Set(WORK_ORDER_PDF_INLINE_IMAGE_MIME_TYPES);
@@ -48,7 +49,8 @@ export async function renderDraftWorkOrderPdfPreview(input: {
   const preview = await getIssuedWorkOrderPreviewV2({ scope, workOrderId: input.workOrderId as WorkOrderId, revisionId: input.revisionId as WorkOrderRevisionId, assignedCompanyMemberId: input.scope.visibility?.mode === "assigned" ? input.scope.visibility.companyMemberId : null, mode: "draft_preview" });
   if (!preview.data) throw new WorkOrderPdfPreviewError("NOT_FOUND", 404, "작성 중인 작업지시서를 찾을 수 없습니다.");
   const assets = await loadWorkOrderPdfAssetManifest(scope, input.revisionId);
-  const snapshot = createWorkOrderIssuedPdfSnapshot({ companyId: input.scope.companyId, requestedWorkOrderId: input.workOrderId, requestedRevisionId: input.revisionId, documentType: "factory_instruction", preview: preview.data, assetManifest: assets, snapshotCreatedAt: new Date().toISOString() });
+  const drawingScene = await loadWorkOrderPdfDrawingScene(scope, input.workOrderId, input.revisionId);
+  const snapshot = createWorkOrderIssuedPdfSnapshot({ companyId: input.scope.companyId, requestedWorkOrderId: input.workOrderId, requestedRevisionId: input.revisionId, documentType: "factory_instruction", preview: preview.data, assetManifest: assets, drawingScene, snapshotCreatedAt: new Date().toISOString() });
   const representative = assets.find((asset) => asset.assetType === "image" && asset.isRepresentative);
   const representativeImageDataUrl = representative ? await readWorkOrderPdfAsset(representative) : null;
   const includedSupplementalImages = await Promise.all(selectSupplementalGalleryAssets(assets, SUPPORTED_INLINE_IMAGE)

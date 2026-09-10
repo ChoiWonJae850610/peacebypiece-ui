@@ -159,7 +159,7 @@ assert.doesNotMatch(create, /keyboardVerticalOffset|setTimeout/u);
 for (const retiredOwner of ["PanResponder", "wafl-sheet-header-drag-zone", "settledOffsetRef", "preKeyboardSettledOffsetRef"]) {
   assert.doesNotMatch(sheet, new RegExp(retiredOwner, "u"));
 }
-assert.match(read("lib/constants/version.ts"), /2\.0\.0-alpha\.(?:72|73|74|75|76|77)/u);
+assert.match(read("lib/constants/version.ts"), /2\.0\.0-alpha\.(?:72|73|74|75|76|77|78)/u);
 
 console.log(JSON.stringify({
   ok: true,

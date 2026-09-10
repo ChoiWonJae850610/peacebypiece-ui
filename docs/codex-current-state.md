@@ -1,5 +1,14 @@
 # WAFL Current Baseline
 
+Alpha.78 is finalized at `ALPHA78_FINALIZATION_COMPLETE` with product checkpoint `ALPHA78_COMPLETE`. Owner actual
+physical QA is `PASS` on iPhone and iPad mini for the corrected Sketch Preview/PDF frame: the visible paper is centered
+at `5:7`, the former side gutters are absent, Drawing geometry is unchanged with crop/stretch `0`, Camera state remains
+independent, and PDF/Download agree. Print, Regular/Large iPad, and Android actual-device execution remain `NOT_RUN` and
+are not inferred PASS. The exact-revision saved `primary_sketch` Scene v1 remains the immutable output source; WORLD
+`1000×1400` maps to `1500×2100` at uniform scale `1.5` and offsets `0,0`, screen Preview is responsive and capped at
+`150mm`, and PDF/Print is `150mm×210mm`. APP_VERSION is `2.0.0-alpha.78`. Finalization adds no product behavior,
+Scene/API/schema/migration, dependency/native/config/EAS, Production/Owner/ambiguous mutation, tag, or release.
+
 Alpha.77 is finalized at `ALPHA77_FINALIZATION_COMPLETE` with product checkpoint `ALPHA77_COMPLETE`. Owner actual
 physical QA is `PASS` on iPhone and iPad mini for Selection resize and endpoint editing: Rectangle/Ellipse corner
 handles, Line/Arrow semantic endpoints, transient WORLD-coordinate preview, exact Undo/Redo, and second-finger Camera
@@ -616,9 +625,9 @@ Document type: **Current Baseline**
 
 Canonical owner: `docs/codex-current-state.md`
 
-Result version: `2.0.0-alpha.77`
-Status: `ALPHA77_FINALIZATION_COMPLETE`
-Product checkpoint: `ALPHA77_COMPLETE`
+Result version: `2.0.0-alpha.78`
+Status: `ALPHA78_FINALIZATION_COMPLETE`
+Product checkpoint: `ALPHA78_COMPLETE`
 Owner physical result: `PASS`
 
 ## Final alpha.75 Sketch editing-tools result

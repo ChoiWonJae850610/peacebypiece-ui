@@ -1,5 +1,14 @@
 # WAFL v2 WorkOrder API, Command, and Read Model Contracts
 
+## Alpha.78 saved Sketch PDF snapshot read boundary
+
+Draft PDF Preview and issued PDF generation read `work_order_drawings` only by authenticated tenant, exact WorkOrder,
+exact revision, and slot `primary_sketch`. The loader validates Scene v1 and adds the saved Scene only to the immutable
+server-side PDF snapshot; it does not expand the WorkOrder Preview API DTO or Drawing route. Historical PDF snapshots
+without the optional Drawing field remain readable. Generated View/Download/print continue to serve the same canonical
+PDF bytes. Its visible output frame follows WORLD `5:7`: export `1500×2100`, responsive Preview capped at `150mm`, and
+print `150mm×210mm`, with uniform scale `1.5` and no side gutter. API and Scene schema deltas are zero.
+
 ## Alpha.73 Drawing Scene route
 
 `GET|PATCH /api/v2/work-orders/{workOrderId}/drawings/primary-sketch` is the narrow authenticated company-scoped owner

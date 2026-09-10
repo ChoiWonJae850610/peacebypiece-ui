@@ -1,9 +1,10 @@
 import type { ReactNode } from "react";
-import { CalendarDays, CircleDollarSign, createLucideIcon, Factory, FileText, Hash, Image as ImageIcon, Layers3, Package, Palette, Ruler, Shirt, Spool, WalletCards, type LucideIcon } from "lucide-react";
+import { CalendarDays, CircleDollarSign, createLucideIcon, Factory, FileText, Hash, Image as ImageIcon, Layers3, Package, Palette, PenTool, Ruler, Shirt, Spool, WalletCards, type LucideIcon } from "lucide-react";
 
 /* eslint-disable @next/next/no-img-element -- PDF readiness requires the native HTMLImageElement contract. */
 
 import type { WorkOrderIssuedPreviewReadModel } from "@/lib/domain/work-orders/contracts";
+import type { DrawingSceneV1 } from "@/lib/domain/drawing";
 import { decodeWorkOrderCategory, workOrderProductClassificationSummary } from "@/lib/domain/work-orders/catalog/workOrderCategoryPolicy";
 import { formatMeasurementFromCm } from "@/lib/domain/work-orders/measurement/measurementPolicy";
 import { ISSUED_PDF_CONTENT_PAGE_CAPACITY, issuedPdfSizeSpecWeight, packIssuedPdfBlocks, paginateIssuedPdfAttachmentImages, paginateIssuedPdfSizeSpecRows } from "@/lib/generated-documents/work-order-pdf/paginationPolicy";
@@ -11,6 +12,7 @@ import { formatIssuedPdfWon, resolveIssuedPdfCostPresentation } from "@/lib/gene
 import { formatIssuedDocumentQuantity, resolveIssuedPdfFactoryQuantity } from "@/lib/generated-documents/work-order-pdf/quantityFormatter";
 import { resolveIssuedPdfProcessPresentation } from "@/lib/generated-documents/work-order-pdf/processPresentation";
 import { formatProcessInstruction } from "./processInstruction";
+import IssuedWorkOrderSketch from "./IssuedWorkOrderSketch";
 import styles from "./IssuedWorkOrderPreview.module.css";
 
 export type WorkOrderPreviewCoverFacts = { readonly productTypeLabel?: string; readonly factoryName?: string; readonly managerName?: string };
@@ -21,6 +23,7 @@ type PreviewProps = {
   readonly quantityUnit?: string;
   readonly coverFacts?: WorkOrderPreviewCoverFacts;
   readonly includedAttachmentImages?: readonly { readonly filename: string; readonly dataUrl: string }[];
+  readonly drawingScene?: DrawingSceneV1;
 };
 type DocumentBlock = { readonly key: string; readonly weight: number; readonly content: ReactNode; readonly startsNewPage?: boolean };
 type MaterialKind = "fabric" | "accessory";
@@ -130,13 +133,13 @@ function ProcessSection({ data, rows, continued }: { readonly data: WorkOrderIss
     </tbody></table></section>;
 }
 
-function IncludedAttachmentGrid({ images, continued }: { readonly images: readonly { readonly filename: string; readonly dataUrl: string }[]; readonly continued: boolean }) {
-  return <section className={styles.documentSection}><SectionHeading Icon={ImageIcon} numberLabel="06" title="선택 첨부 이미지" continued={continued} /><div className={styles.attachmentGrid}>
+function IncludedAttachmentGrid({ images, continued, numberLabel }: { readonly images: readonly { readonly filename: string; readonly dataUrl: string }[]; readonly continued: boolean; readonly numberLabel: string }) {
+  return <section className={styles.documentSection}><SectionHeading Icon={ImageIcon} numberLabel={numberLabel} title="선택 첨부 이미지" continued={continued} /><div className={styles.attachmentGrid}>
     {images.map((image) => <figure key={image.filename}><img alt={image.filename} className={styles.includedAttachmentImage} src={image.dataUrl} /><figcaption>{image.filename}</figcaption></figure>)}
   </div></section>;
 }
 
-function buildBlocks(data: WorkOrderIssuedPreviewReadModel, includedAttachmentImages: PreviewProps["includedAttachmentImages"]): readonly DocumentBlock[] {
+function buildBlocks(data: WorkOrderIssuedPreviewReadModel, includedAttachmentImages: PreviewProps["includedAttachmentImages"], drawingScene: PreviewProps["drawingScene"]): readonly DocumentBlock[] {
   const blocks: DocumentBlock[] = [];
   const addMaterials = (key: MaterialKind, title: string, rows: WorkOrderIssuedPreviewReadModel["materials"]["fabrics"]) => {
     const pages = paginateWeightedRows(rows, (row) => textRowWeight([row.name, row.partnerName, row.colorOption, row.usageArea, row.memo]), 5, 7);
@@ -165,12 +168,21 @@ function buildBlocks(data: WorkOrderIssuedPreviewReadModel, includedAttachmentIm
   const processPages = paginateWeightedRows(additionalProcesses, (row) => textRowWeight([row.processName, row.partnerName, formatProcessInstruction(row)], 3)); const processOversized = processPages.length > 1;
   processPages.forEach((rows, index) => blocks.push({ key: `process-${index}`, weight: 5 + rows.reduce((sum, row) => sum + textRowWeight([row.processName, row.partnerName, formatProcessInstruction(row)], 3), 0), startsNewPage: processOversized && index === 0, content: <ProcessSection data={data} rows={rows} continued={index > 0} /> }));
 
+  if (drawingScene && drawingScene.elements.length > 0) {
+    blocks.push({
+      key: "product-sketch",
+      weight: ISSUED_PDF_CONTENT_PAGE_CAPACITY,
+      startsNewPage: true,
+      content: <section className={styles.documentSection}><SectionHeading Icon={PenTool} numberLabel="06" title="제품 스케치" /><IssuedWorkOrderSketch scene={drawingScene} /></section>,
+    });
+  }
+
   const images = includedAttachmentImages ?? [];
   paginateIssuedPdfAttachmentImages(images).forEach((pageImages, index) => blocks.push({
     key: `attachment-images-${index}`,
     weight: ISSUED_PDF_CONTENT_PAGE_CAPACITY,
     startsNewPage: true,
-    content: <IncludedAttachmentGrid continued={index > 0} images={pageImages} />,
+    content: <IncludedAttachmentGrid continued={index > 0} images={pageImages} numberLabel={drawingScene && drawingScene.elements.length > 0 ? "07" : "06"} />,
   }));
   return blocks;
 }
@@ -187,9 +199,9 @@ function identityLabels(data: WorkOrderIssuedPreviewReadModel) {
   return labels;
 }
 
-export default function IssuedWorkOrderDocument({ data, representativeImageSrc, representativeImageLabel, quantityUnit, coverFacts, includedAttachmentImages }: PreviewProps) {
+export default function IssuedWorkOrderDocument({ data, representativeImageSrc, representativeImageLabel, quantityUnit, coverFacts, includedAttachmentImages, drawingScene }: PreviewProps) {
   const timeZone = data.layoutMetadata.businessTimezone;
-  const contentPages = packIssuedPdfBlocks(buildBlocks(data, includedAttachmentImages), ISSUED_PDF_CONTENT_PAGE_CAPACITY);
+  const contentPages = packIssuedPdfBlocks(buildBlocks(data, includedAttachmentImages, drawingScene), ISSUED_PDF_CONTENT_PAGE_CAPACITY);
   const totalPages = contentPages.length + 1;
   const quantity = quantityUnit ? `${number.format(data.header.totalQuantity)}${quantityUnit}` : `${number.format(data.header.totalQuantity)}개`;
   const category = decodeWorkOrderCategory({ productTypeCode: data.header.productTypeCode, itemCode: data.header.itemCode, seasonCode: data.header.seasonCode });

@@ -20,11 +20,13 @@ export async function GET(request: Request) {
   const processScenario = requestedProcessScenario === "basic-only" || requestedProcessScenario === "basic-additional" ? requestedProcessScenario : null;
   const requestedRedesignScenario = new URL(request.url).searchParams.get("redesignScenario");
   const redesignScenario = requestedRedesignScenario === "rich" || requestedRedesignScenario === "sparse" ? requestedRedesignScenario : "normal";
-  const foundation = await createAlpha37SamplePdfFoundation({ pomRowCount: pomRows, processScenario, redesignScenario });
+  const sketchScenario = new URL(request.url).searchParams.get("sketchScenario") === "alpha78" ? "alpha78" as const : null;
+  const foundation = await createAlpha37SamplePdfFoundation({ pomRowCount: pomRows, processScenario, redesignScenario, sketchScenario });
   const renderUrl = new URL("/dev/workorder-preview-sample", request.url);
   if (pomRows) renderUrl.searchParams.set("pomRows", pomRows);
   if (processScenario) renderUrl.searchParams.set("processScenario", processScenario);
   renderUrl.searchParams.set("redesignScenario", redesignScenario);
+  if (sketchScenario) renderUrl.searchParams.set("sketchScenario", sketchScenario);
   const result = await new LocalChromiumIssuedWorkOrderPdfRenderer().render({
     snapshot: foundation.snapshot,
     canonicalSnapshotJson: foundation.canonicalSnapshotJson,

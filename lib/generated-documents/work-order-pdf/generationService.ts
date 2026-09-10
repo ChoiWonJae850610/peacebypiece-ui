@@ -17,6 +17,7 @@ import { createWorkOrderPdfStorageKey } from "@/lib/workorder/pdf/workOrderPdfPo
 import { createWorkOrderImageDerivativeKeys } from "@/lib/storage/r2/r2Keys";
 import { WORK_ORDER_PDF_MAX_FILE_SIZE_BYTES } from "./constants";
 import { GENERATED_DOCUMENT_COMMAND_CODE } from "./generationRepository";
+import { loadWorkOrderPdfDrawingScene } from "./drawingSnapshot";
 // @ts-expect-error The canonical renderer is an ESM .mts module loaded by the Node.js route runtime.
 import { LocalChromiumIssuedWorkOrderPdfRenderer } from "./localChromiumRenderer.mts";
 import { writeLocalIssuedPdfRenderInput } from "./localRenderInput";
@@ -188,6 +189,7 @@ export async function generateIssuedWorkOrderDocument(input: {
   });
   if (!previewResult.data) throw new GeneratedDocumentGenerationError("DOCUMENT_NOT_READY", 409, "발행 완료된 Revision만 생성할 수 있습니다.");
   const assets = await loadWorkOrderPdfAssetManifest(tenantScope, input.revisionId);
+  const drawingScene = await loadWorkOrderPdfDrawingScene(tenantScope, input.workOrderId, input.revisionId);
   const now = new Date().toISOString();
   const snapshot = createWorkOrderIssuedPdfSnapshot({
     companyId: input.scope.companyId,
@@ -196,6 +198,7 @@ export async function generateIssuedWorkOrderDocument(input: {
     documentType: "factory_instruction",
     preview: previewResult.data,
     assetManifest: assets,
+    drawingScene,
     snapshotCreatedAt: now,
   });
   const scopedKey = hash([GENERATED_DOCUMENT_COMMAND_CODE, tenantScope.companyId, tenantScope.companyMemberId, input.workOrderId, input.revisionId, input.idempotencyKey].join("\0"));

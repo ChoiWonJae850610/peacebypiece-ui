@@ -16,11 +16,12 @@ import {
 import { createWorkOrderPdfStorageKey } from "@/lib/workorder/pdf/workOrderPdfPolicy";
 import { createPdfPaginationEvidencePreview, createPdfProcessEvidencePreview, normalizePdfPaginationEvidencePomCount, type PdfProcessEvidenceScenario } from "./samplePaginationEvidence";
 import { createPdfRedesignEvidencePreview, type PdfRedesignEvidenceScenario } from "./sampleRedesignEvidence";
+import { createAlpha78SampleDrawingScene } from "./sampleDrawingEvidence";
 
 export const ALPHA37_SAMPLE_COMPANY_ID = "wafl-fn-company-a";
 export const ALPHA37_SAMPLE_GENERATED_DOCUMENT_ID = "00000000-0000-4000-8000-000000000037";
 
-export async function createAlpha37SamplePdfFoundation(input?: { readonly pomRowCount?: string | number | null; readonly processScenario?: PdfProcessEvidenceScenario | null; readonly redesignScenario?: PdfRedesignEvidenceScenario | null }) {
+export async function createAlpha37SamplePdfFoundation(input?: { readonly pomRowCount?: string | number | null; readonly processScenario?: PdfProcessEvidenceScenario | null; readonly redesignScenario?: PdfRedesignEvidenceScenario | null; readonly sketchScenario?: "alpha78" | null }) {
   const paginationPreview = createPdfPaginationEvidencePreview(
     issuedWorkOrderPreviewSample,
     normalizePdfPaginationEvidencePomCount(input?.pomRowCount),
@@ -37,6 +38,7 @@ export async function createAlpha37SamplePdfFoundation(input?: { readonly pomRow
     documentType: WORK_ORDER_PDF_DOCUMENT_TYPE,
     preview,
     assetManifest: [asset],
+    drawingScene: input?.sketchScenario === "alpha78" ? createAlpha78SampleDrawingScene() : null,
     snapshotCreatedAt: preview.document.issuedAt,
   });
   const resolver = new RepositorySampleGeneratedDocumentAssetResolver();

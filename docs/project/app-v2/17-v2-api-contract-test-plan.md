@@ -1,5 +1,41 @@
 # WAFL v2 API Contract Test Plan
 
+## Alpha.78 finalization contract
+
+- `workorder-v2-alpha78-finalization-contract.mjs` pins `ALPHA78_COMPLETE` / `ALPHA78_FINALIZATION_COMPLETE`, canonical
+  internal version `2.0.0-alpha.78`, Owner actual iPhone/iPad-mini `PASS`, honest Print/Regular-Large-iPad/Android
+  `NOT_RUN`, and finalization behavior delta `0`.
+- It retains the two alpha.78 output contracts, corrected output box `1500×2100`, WORLD `1000×1400`, uniform scale
+  `1.5`, offsets `0,0`, responsive screen `5:7`, exact print `150mm×210mm`, Scene v1, migration `22/22`, and the
+  permanent alpha.72 through alpha.77 Drawing inventory.
+- Dependency/native/config/EAS, API/Scene schema, new/Production migration, and Production/Owner/ambiguous mutation
+  remain zero. Tag/release remain `0/0`; finalization creates no feature behavior.
+
+## Alpha.78 Sketch frame / WORLD aspect correction contract
+
+- `workorder-v2-alpha78-sketch-frame-world-aspect-correction-contract.mjs` proves canonical WORLD `1000×1400`, output
+  box `1500×2100`, equal `5:7` aspects, uniform scale `1.5`, offsets `0,0`, a centered mobile-safe Preview frame capped
+  at `100%`, and exact print geometry `150mm×210mm`.
+- It retains SVG `xMidYMid meet`, every semantic primitive, Camera/editor-transient exclusion, shared Preview/PDF owner,
+  generated artifact Download/Chromium Print ownership, Scene v1, and the alpha.77 editor regression. The prior
+  `1880×2100` plus fixed `width:100%; height:210mm` acceptance is explicitly retired.
+- Scene/API schema, dependency/native/config/EAS, migration, and business-data mutation deltas remain zero. Permanent
+  inventory advances from `291/291` to `292/292`; physical PASS is not inferred.
+
+## Alpha.78 Sketch PDF output fidelity contract
+
+- `workorder-v2-alpha78-sketch-pdf-output-fidelity-contract.mjs` compiles the pure Drawing domain and proves uniform
+  centered contain projection into the canonical `1500×2100` frame, full WORLD visibility, deterministic element/z-order mapping, midpoint-quadratic
+  freehand/fragments, semantic Line/Arrow/Rectangle/Ellipse/Text output, Arrow direction, arbitrary output-box
+  invariance, Scene immutability, and Camera Fit/Cover/zoom/pan independence.
+- Source guards require an exact-revision tenant read-only Drawing loader, validated optional immutable snapshot field,
+  one dedicated non-empty Sketch page, the shared Preview/generated renderer, and canonical generated-document
+  View/Download/print artifact ownership. Camera, selection, handles, caret, HUD, toolbar and transient previews are
+  excluded from snapshot and export component.
+- Missing/empty Scene remains safe. Scene v1/WORLD `1000×1400`, explicit Save, editor behavior, API/schema,
+  dependency/native/config/EAS, migration `22/22`, and Production/Owner/ambiguous mutation remain unchanged/zero.
+  Permanent inventory advances from `290/290` to `291/291`; physical PASS is not inferred.
+
 ## Alpha.77 finalization contract
 
 - `workorder-v2-alpha77-finalization-contract.mjs` pins `ALPHA77_COMPLETE` /

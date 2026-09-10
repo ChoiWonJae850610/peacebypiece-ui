@@ -4,6 +4,7 @@ import type {
   WorkOrderDocumentType,
   WorkOrderIssuedPreviewReadModel,
 } from "@/lib/domain/work-orders/contracts";
+import type { DrawingSceneV1 } from "@/lib/domain/drawing";
 import {
   WORK_ORDER_PDF_ALLOWED_REVISION_STATUSES,
   WORK_ORDER_PDF_ALLOWED_WORK_ORDER_STATUSES,
@@ -39,6 +40,7 @@ export type WorkOrderIssuedPdfSnapshot = {
   readonly revisionId: string;
   readonly preview: WorkOrderIssuedPreviewReadModel;
   readonly assetManifest: readonly WorkOrderIssuedPdfAssetDescriptor[];
+  readonly drawingScene?: DrawingSceneV1;
   readonly rendererVersion: string;
   readonly dtoSchemaVersion: typeof WORK_ORDER_PDF_DTO_SCHEMA_VERSION;
   readonly snapshotCreatedAt: string;
@@ -109,6 +111,7 @@ export function createWorkOrderIssuedPdfSnapshot(input: {
   readonly assetManifest: readonly WorkOrderIssuedPdfAssetDescriptor[];
   readonly snapshotCreatedAt: string;
   readonly embeddedQrPolicy?: WorkOrderIssuedPdfSnapshot["embeddedQrPolicy"];
+  readonly drawingScene?: DrawingSceneV1 | null;
 }): WorkOrderIssuedPdfSnapshot {
   const { preview } = input;
   if (!input.companyId.trim()) {
@@ -148,6 +151,7 @@ export function createWorkOrderIssuedPdfSnapshot(input: {
     revisionId: preview.header.revisionId,
     preview,
     assetManifest: assertSafeAssetManifest(input.companyId, input.assetManifest),
+    ...(input.drawingScene ? { drawingScene: structuredClone(input.drawingScene) } : {}),
     rendererVersion: WORK_ORDER_PDF_RENDERER_VERSION,
     dtoSchemaVersion: WORK_ORDER_PDF_DTO_SCHEMA_VERSION,
     snapshotCreatedAt: assertIsoDateTime(input.snapshotCreatedAt),

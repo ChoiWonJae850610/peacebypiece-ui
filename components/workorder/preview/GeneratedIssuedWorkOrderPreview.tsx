@@ -25,6 +25,7 @@ export default function GeneratedIssuedWorkOrderPreview({ input }: {
         data={input.snapshot.preview}
         representativeImageSrc={input.representativeImageDataUrl ?? undefined}
         includedAttachmentImages={input.includedAttachmentImages}
+        drawingScene={input.snapshot.drawingScene}
       />
     </main>
   );

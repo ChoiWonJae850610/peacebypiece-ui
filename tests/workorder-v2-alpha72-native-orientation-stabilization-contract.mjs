@@ -112,8 +112,10 @@ const drawingHashes = {
   // Alpha.76 keeps Cover/stable IDs while moving continuous native pinch geometry to stable page coordinates.
   // Alpha.76 adds transient clamp-boundary gesture rebase while preserving Scene-v1 persistence.
   "cameraGesture.ts": "fc7f382058a1b952d2ad73c9c5a015f7c8b4158def46ffdcaffb59a04df3a7ef",
-  // Alpha.77 additionally exports the framework-free selection handle/endpoint owner.
-  "index.ts": "62e7f07bda0142fb9032d52d035deedd0005869c1b86b8ee843bbf5cfdb6f355",
+  // Alpha.78 additionally exports the framework-free freehand path and PDF projection owners.
+  "index.ts": "7a70cbd277935bb87dbabe6992f93b8854a13d2b09c1c9f079411952af0f709f",
+  "exportProjection.ts": "cc8e882760afa09e746ec6ac489673a2c81282f47f885c1f2face3fc8dda77c1",
+  "freehandPath.ts": "ac2dde0ec9afe88c19ed2f041d1cf28342c5a9c0c78c585839fe498bdd18c981",
   "scene.ts": "a6aa1415c8f9c6922af50af29f00f4f066a79f00b7a741434e66d898fabfedda",
   // Alpha.77 keeps resize/endpoint geometry in pure WORLD space without changing Scene v1.
   "selectionHandles.ts": "a7f8e29373888cc067c9bb20338818c050a5a3e78611404c9b27edb219c45682",

@@ -1,5 +1,27 @@
 # WAFL v2 App-first Roadmap and Version Delta
 
+## Alpha.78 finalization
+
+- Status: `ALPHA78_FINALIZATION_COMPLETE`; accepted product checkpoint: `ALPHA78_COMPLETE`.
+- Owner actual physical result is `PASS` on iPhone and iPad mini for the corrected centered `5:7` Sketch frame,
+  side-gutter removal, unchanged geometry, crop/stretch `0`, Camera independence, and matching PDF/Download. Print,
+  Regular/Large iPad, and Android remain honest `NOT_RUN`.
+- Draft PDF Preview and issued PDF generation now load the exact revision's saved `primary_sketch` through a tenant-
+  scoped read-only owner, validate Scene v1, and freeze it into the immutable PDF snapshot. Historical snapshots remain
+  compatible because the field is additive and optional; missing/empty Drawing adds no blank page.
+- One pure export owner maps WORLD `1000×1400` into the corrected `1500×2100` Sketch box with uniform scale `1.5` and
+  offsets `0,0`. Screen Preview uses a centered responsive `5:7` frame capped at `150mm`; print uses exact
+  `150mm×210mm`. This removes the former `1880×2100` visible border and hidden 190-unit side gutters without changing
+  the physical drawing size. The owner retains
+  saved element order and all current semantic kinds, shares midpoint-quadratic freehand and derived Arrow geometry,
+  and accepts neither Camera nor editor/transient state.
+- The existing document renderer adds one Korean-labelled `제품 스케치` page. Preview, generated PDF, View/Download,
+  and print therefore share the canonical artifact; no screenshot/current Camera viewport path is introduced.
+- The corrected deterministic local Chromium artifact is five A4 portrait pages and is re-inspected at 200dpi for a
+  centered `5:7` Sketch frame, full Scene, text/shapes, and crop/stretch/clipping/overlap/blank-page zero. APP_VERSION is
+  `2.0.0-alpha.78`; finalization adds no API/Scene schema, dependency/native/config/EAS, migration, business-data
+  mutation, tag, or release.
+
 ## Alpha.77 finalization
 
 Alpha.77 is finalized at `ALPHA77_FINALIZATION_COMPLETE` with accepted product checkpoint `ALPHA77_COMPLETE`. Owner
@@ -516,19 +538,21 @@ Alpha.70 remains finalized at `ALPHA70_FINALIZATION_COMPLETE` with product check
 
 Document role: canonical owner for the current result, next candidate, and Version Delta boundary. It is not the historical implementation ledger; completed details live in numbered immutable evidence.
 
-## Current result — 2.0.0-alpha.77
+## Current result — 2.0.0-alpha.78
 
-Status: `ALPHA77_FINALIZATION_COMPLETE`.
+Status: `ALPHA78_FINALIZATION_COMPLETE`.
 
-Accepted product checkpoint: `ALPHA77_COMPLETE`.
+Accepted product checkpoint: `ALPHA78_COMPLETE`.
 
 Owner physical result: `PASS` on iPhone and iPad mini; Regular/Large iPad and Android are `NOT_RUN`.
 
-Alpha.77 finalizes the Selection resize and endpoint-editing capability over the complete alpha.76 Drawing foundation.
-Owner actual iPhone and iPad-mini QA accepts Rectangle/Ellipse corner resize, Line/Arrow endpoint editing, transient
-preview, exact Undo/Redo, and second-finger Camera takeover. Regular/Large iPad and Android physical execution remain
-`NOT_RUN`. Production keeps disabled `스케치(준비 중)`. Finalization adds no product behavior, Scene/API/schema/
-migration, dependency/native/config/EAS, business-data mutation, tag, or release.
+Alpha.78 finalizes saved exact-revision Sketch output fidelity. WORLD `1000×1400` maps into the corrected
+`1500×2100` output at uniform scale `1.5` and offsets `0,0`; the responsive centered Preview and exact
+`150mm×210mm` PDF/Print frame share the WORLD `5:7` aspect without restoring the retired `1880×2100` side-gutter
+frame. Owner actual iPhone and iPad-mini QA accepts the frame, unchanged geometry, Camera independence, and matching
+PDF/Download. Print, Regular/Large iPad, and Android remain `NOT_RUN`. Production keeps disabled `스케치(준비 중)`.
+Finalization adds no product behavior, Scene/API/schema/migration, dependency/native/config/EAS, business-data mutation,
+tag, or release.
 
 ## Alpha.72 current candidate — Drawing Foundation
 

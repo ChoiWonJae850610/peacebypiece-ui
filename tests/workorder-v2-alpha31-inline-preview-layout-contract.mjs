@@ -29,7 +29,8 @@ assert.match(loader, /<IssuedWorkOrderDocument data=\{data\}/);
 assert.doesNotMatch(loader, /<table|documentHeader|MaterialTable/);
 assert.match(renderer, /export function formatRevisionLabel/);
 assert.match(renderer, /return `\$\{revisionNumber\}차`/);
-assert.match(renderer, /packIssuedPdfBlocks\(buildBlocks\(data, includedAttachmentImages\), ISSUED_PDF_CONTENT_PAGE_CAPACITY\)/);
+// Alpha.78 preserves the same block packer while adding the optional saved-Scene input.
+assert.match(renderer, /packIssuedPdfBlocks\(buildBlocks\(data, includedAttachmentImages, drawingScene\), ISSUED_PDF_CONTENT_PAGE_CAPACITY\)/);
 assert.match(renderer, /<h2>공장 전달 메모<\/h2>[\s\S]*?data\.header\.factoryDeliveryMemo/);
 assert.doesNotMatch(renderer, /factoryDeliveryMemo[\s\S]{0,120}header\.memo/);
 assert.doesNotMatch(renderer, /통합 작업 지침|주의사항|penSpace|R\{data\.document\.revisionNumber\}/);
