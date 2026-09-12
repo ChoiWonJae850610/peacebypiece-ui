@@ -1,5 +1,111 @@
 # WAFL v2 App-first Roadmap and Version Delta
 
+## Alpha.79 finalization
+
+- Status: `ALPHA79_FINALIZATION_COMPLETE`; accepted product checkpoint: `ALPHA79_COMPLETE`.
+- Owner actual Final Combined Smoke is `PASS` on iPhone and iPad mini. Healthy current-Revision generated output remains
+  usable across re-entry; terminal deleted output remains inaccessible with historical fallback and automatic generation
+  both zero; the DEV/external-QA selector harness clears current actions/tokens on generated-to-none. Regular/Large iPad
+  and Android remain honest `NOT_RUN`.
+- The finalized lifecycle retains exact current-Revision ownership, stale-token guards, advisory-lock/idempotent
+  generation, exact-created-object failure cleanup, immutable unhealthy rows plus same-Revision N+1 recovery, newest-
+  attempt authority, logical revoke access invalidation, and exact absence before terminal deleted finalization.
+- Alpha.78 Drawing Scene v1, WORLD `1000×1400`, Sketch output `1500×2100` at `5:7`, and Camera-independent canonical
+  Preview/PDF/Download semantics remain unchanged. APP_VERSION is `2.0.0-alpha.79`; migration remains `22/22`.
+  Finalization adds no feature behavior, dependency/native/config/EAS, API/schema/migration, Production/Owner/ambiguous
+  mutation, tag, or release.
+
+## Alpha.79 Stage 3B revoked artifact purge / deleted lifecycle Delta
+
+- Checkpoint: `ALPHA79_STAGE3B_REVOKED_ARTIFACT_PURGE_DELETED_IPHONE_IPAD_QA_REQUIRED`; Stage 3B physical PASS is not
+  inferred. Stage 3A iPhone revoke PASS is carried as prior evidence; iPad mini remains `NOT_RUN`.
+- The canonical purge command accepts no caller storage key. It validates tenant, company, exact current WorkOrder and
+  Revision, document id, generation, newest attempt, issued lifecycle, and `revoked` status before deriving the trusted
+  key from persisted metadata.
+- The service HEAD-checks the exact key, deletes it at most once when present, proves exact absence, then performs the
+  existing legal `revoked -> deleted` transition. The document/audit row and storage identity remain retained. A
+  revoked+absent replay safely finalizes deleted; ambiguous present/unknown results remain revoked and retryable.
+- Newest deleted is terminal and authoritative: historical generated fallback, automatic regeneration, View, Save,
+  Share, native/branded Viewer, token controls/resolution/creation, file, Preview target, and Retry are all absent.
+- Bounded DEV evidence deleted only `QA A79 generated revoke access automated`: exact delete `1`, replay/second request
+  delete `0/0`, deleted event delta `1`, object absent, row retained, all access denied, and unrelated/Production/Owner
+  R2 mutation `0/0/0`. `QA A79 generated revoke access` remains revoked and healthy for one Owner physical purge.
+- APP_VERSION stays `2.0.0-alpha.78`; schema/migration, dependency/native/config/EAS, Production/Owner/ambiguous
+  business mutation, commit/push/tag/release/finalization deltas remain zero.
+
+## Alpha.79 Stage 3A logical revoke / access invalidation Delta
+
+- Checkpoint: `ALPHA79_STAGE3A_REVOKE_ACCESS_INVALIDATION_IPHONE_IPAD_QA_REQUIRED`; physical PASS is not inferred.
+- The exact current generated-document lifecycle now has one tenant-scoped, receipt-backed revoke command. It validates
+  company, WorkOrder, Revision, document id, generation number, newest-attempt ownership, and legal status before using
+  the existing `generated -> revoked` transition.
+- The same transaction revokes only active tokens for that document and emits one event. WorkOrder/Revision mutation,
+  automatic regeneration, generated-row replacement, R2 delete/overwrite, and Stage 3B are all zero.
+- A revoked newest attempt is explicitly unavailable and cannot fall back to an older generated attempt. Workbench
+  View/Save/Share/Viewer/token/Retry, file, Preview target, branded/public Viewer, and new/existing token access are denied.
+- Exact DEV evidence proves the stored object remains healthy after logical revoke, every product access route denies,
+  replay/second/concurrent calls produce one terminal state and one event, and the separate Owner fixture remains healthy.
+- APP_VERSION remains `2.0.0-alpha.78`; migration `22/22`; dependency/native/config/EAS and
+  Production/Owner/ambiguous mutations remain `0/0/0/0` and `0/0/0`.
+
+## Alpha.79 Stage 2B missing / corrupt generated-artifact recovery Delta
+
+- Checkpoint: `ALPHA79_STAGE2B_MISSING_CORRUPT_RECOVERY_IPHONE_IPAD_QA_REQUIRED`; physical PASS is not inferred.
+- The exact current Revision's newest generation attempt owns state. A generated attempt additionally requires a healthy
+  exact artifact; missing/corrupt state suppresses every artifact action and exposes only bounded generation Retry.
+- Health classification validates stored metadata, exact object presence, size, SHA-256, PDF header, and EOF. Transport
+  ambiguity is `transient_error`, never silently classified corrupt and never an automatic regeneration signal.
+- Recovery inserts generation N+1 under the existing exact-Revision advisory lock and receipt owner. It never changes a
+  historical generated row to pending/failed or replaces that row's object identity.
+- Exact-owned DEV evidence proves missing and corrupt recovery, same-key replay, valid newest PDF, Revision/issue-event
+  delta `0/0`, and unrelated R2 mutation `0`. The missing fixture is retained with its newest object absent for Owner QA.
+  Stage 3 remains zero.
+- APP_VERSION remains `2.0.0-alpha.78`; schema/migration, dependency/native/config/EAS, Production/Owner/ambiguous
+  mutation, commit/push/tag/release/finalization deltas are zero.
+
+## Alpha.79 Stage 2A generation failure / retry / exact R2 cleanup Delta
+
+- Checkpoint: `ALPHA79_STAGE2A_FAILURE_RETRY_R2_CLEANUP_IPHONE_IPAD_QA_REQUIRED`; physical PASS is not inferred.
+- Internal generation hooks deterministically fail before object PUT or after verified PUT and before DB finalization.
+  Public/mobile requests have no failpoint selector. The local DEV runner is fail-closed outside non-production external
+  QA, current-Maker document capability, loopback host, and tenant `workorder.update` permission.
+- The service journals only a successfully created exact key. A known pre-finalization failure persists `failed`, deletes
+  only that key, and HEAD-verifies absence. Once finalization begins, ambiguity forbids cleanup.
+- DEV evidence proves before-PUT `put/delete=0/0`, after-PUT-before-finalize `1/1`, exact residual `0`, normal Retry to one
+  valid generated current artifact, no duplicate, no new Revision, and no Recipe re-issue. The failed physical fixture is
+  retained and accounted. Stage 2B now owns finalized-object recovery; Stage 3 remains zero.
+- APP_VERSION remains `2.0.0-alpha.78`; schema/migration, dependency/native/config/EAS, Production/Owner/ambiguous
+  mutation, commit/push/tag/release/finalization deltas are zero.
+
+## Alpha.79 Stage 1.5 physical Revision artifact QA harness Delta
+
+- Checkpoint: `ALPHA79_STAGE1_PHYSICAL_HARNESS_IPHONE_IPAD_QA_REQUIRED`; physical PASS is not inferred.
+- Because DEV has no reusable two-Revision generated lineage and no product command for creating Revision B on the same
+  WorkOrder, physical identity QA uses a DEV/external-QA-only in-memory harness instead of fabricated DB/R2 history.
+- A small pure Workbench model now binds generated state, View, Save, Share, Viewer, token owner, and failed-generation
+  Retry to the exact current Revision. The production Workbench and harness consume that same owner; duplicate selectors
+  and historical action takeover remain zero.
+- Synthetic Revision A generated output remains present while Revision B moves through none/pending/failed/generated.
+  Harness actions only record resolved ids, Retry is a local counter, Recipe issue count is zero, and no synthetic id can
+  reach an API client.
+- APP_VERSION remains `2.0.0-alpha.78`; Stage 2, business/API/DB/R2/schema/migration, dependency/native/config/EAS,
+  commit/push/tag/release/finalization deltas are zero.
+
+## Alpha.79 Stage 1 current-Revision artifact identity Delta
+
+- Checkpoint: `ALPHA79_CURRENT_REVISION_ARTIFACT_IDENTITY_IPHONE_IPAD_QA_REQUIRED`; physical PASS is not inferred.
+- The documents endpoint intentionally retains newest-first history across revisions. Mobile now filters that history by
+  the exact current Revision before resolving `generated > pending > failed > none`, so no historical PDF, share token,
+  failure, or viewer identity can own a current action.
+- View, Save, Share, in-app viewer, token list/revoke, current pending feedback, and generation-only Retry share one pure
+  projection. Missing current generated state clears tokens, and asynchronous token results are accepted only for the
+  still-current generation/document identity.
+- Existing exact-Revision generation locking, receipts, immutable generated rows, history ordering, R2/file integrity,
+  and alpha.78 PDF/Drawing output are retained. Stage 2 failure injection, orphan cleanup, missing/corrupt object policy,
+  and document deletion remain deferred.
+- APP_VERSION remains `2.0.0-alpha.78`; migration remains `22/22`; API/schema, dependency/native/config/EAS, Production/
+  Owner/ambiguous mutation, commit/push/tag/release/finalization deltas are zero.
+
 ## Alpha.78 finalization
 
 - Status: `ALPHA78_FINALIZATION_COMPLETE`; accepted product checkpoint: `ALPHA78_COMPLETE`.
@@ -538,21 +644,20 @@ Alpha.70 remains finalized at `ALPHA70_FINALIZATION_COMPLETE` with product check
 
 Document role: canonical owner for the current result, next candidate, and Version Delta boundary. It is not the historical implementation ledger; completed details live in numbered immutable evidence.
 
-## Current result — 2.0.0-alpha.78
+## Current result — 2.0.0-alpha.79
 
-Status: `ALPHA78_FINALIZATION_COMPLETE`.
+Status: `ALPHA79_FINALIZATION_COMPLETE`.
 
-Accepted product checkpoint: `ALPHA78_COMPLETE`.
+Accepted product checkpoint: `ALPHA79_COMPLETE`.
 
 Owner physical result: `PASS` on iPhone and iPad mini; Regular/Large iPad and Android are `NOT_RUN`.
 
-Alpha.78 finalizes saved exact-revision Sketch output fidelity. WORLD `1000×1400` maps into the corrected
-`1500×2100` output at uniform scale `1.5` and offsets `0,0`; the responsive centered Preview and exact
-`150mm×210mm` PDF/Print frame share the WORLD `5:7` aspect without restoring the retired `1880×2100` side-gutter
-frame. Owner actual iPhone and iPad-mini QA accepts the frame, unchanged geometry, Camera independence, and matching
-PDF/Download. Print, Regular/Large iPad, and Android remain `NOT_RUN`. Production keeps disabled `스케치(준비 중)`.
-Finalization adds no product behavior, Scene/API/schema/migration, dependency/native/config/EAS, business-data mutation,
-tag, or release.
+Alpha.79 finalizes the generated-document lifecycle from exact current-Revision action identity through failure cleanup,
+missing/corrupt same-Revision N+1 recovery, logical revoke, and exact-object purge into retained terminal deleted audit
+state. Owner Final Combined Smoke accepts healthy generated re-entry, deleted persistence with no actions/fallback/auto-
+generation, and generated-to-none selector clearing on iPhone and iPad mini. Alpha.78 Drawing Scene v1, WORLD
+`1000×1400`, `1500×2100`/`5:7` output and Camera independence remain unchanged. Finalization adds no feature behavior,
+dependency/native/config/EAS, API/schema/migration, business-data mutation, tag, or release.
 
 ## Alpha.72 current candidate — Drawing Foundation
 

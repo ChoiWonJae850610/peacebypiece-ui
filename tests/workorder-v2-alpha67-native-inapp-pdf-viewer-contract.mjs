@@ -57,7 +57,7 @@ const openFunction = workbench.match(/function openInAppDocumentViewer\(\) \{[\s
 assert.match(openFunction, /setDocumentViewerOpen\(true\)/u);
 assert.doesNotMatch(openFunction, /createDocumentShare|getDocumentViewerTarget|Linking\.openURL/u);
 assert.match(workbench, /<WaflAuthenticatedPdfViewer/u);
-assert.match(workbench, /generated\.inlineUrl/u);
+assert.match(workbench, /currentDocumentState\.viewerTarget\.inlineUrl/u);
 assert.match(workbench, /label="공유"/u);
 assert.match(workbench, /label="저장"/u);
 assert.match(workbench, /prepareAuthenticatedDocumentPdfForSave/u);

@@ -74,7 +74,7 @@ assert.match(workbench, /borderRadius: WAFL_THEME\.radius\.card/);
 assert.match(workbench, /borderWidth: WAFL_THEME\.border\.hairline/);
 assert.match(workbench, /fontSize: WAFL_THEME\.typography\.title/);
 assert.match(workbench, /minHeight: 44/);
-assert.match(workbench, /createDocumentShare\(generated\.id, 3,/);
+assert.match(workbench, /createDocumentShare\(shareTarget\.id, 3,/);
 assert.doesNotMatch(workbench, /selectedDays|1일|7일|30일/);
 assert.match(workbench, /SUPPORTED_OUTPUT_IMAGE/);
 assert.match(workbench, /WAFL_UNSET_PLACEHOLDER/);

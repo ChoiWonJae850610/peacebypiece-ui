@@ -109,7 +109,7 @@ assert.doesNotMatch(androidBefore, /768|waflRegularTabletShortSidePoints/u);
 assert.match(read("lib/domain/drawing/contracts.ts"), /DRAWING_SCENE_SCHEMA_VERSION = 1 as const/u);
 assert.equal(fs.readdirSync(path.join(repoRoot, "db", "v2", "migrations")).filter((name) => /^\d{3}_.+\.sql$/u.test(name)).length, 22);
 assert.equal(fs.existsSync(path.join(repoRoot, "apps", "mobile", "ios")), false, "generated iOS source remains config-plugin owned, not manually tracked");
-assert.match(read("lib/constants/version.ts"), /2\.0\.0-alpha\.(?:74|75|76|77|78)/u);
+assert.match(read("lib/constants/version.ts"), /2\.0\.0-alpha\.(?:74|75|76|77|78|79)/u);
 
 console.log(JSON.stringify({
   ok: true,

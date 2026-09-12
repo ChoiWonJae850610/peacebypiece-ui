@@ -67,6 +67,7 @@ import { MobileApiError, type MaterialPartnerOption, type MaterialType, type Mob
 import { generateWorkOrderR0 } from "@/lib/api/documentsApi";
 import { isWorkOrderSketchAuthoringEnabled } from "@/features/work-orders/drawing/workOrderSketchPolicy";
 import { useWaflMobileDeviceClass } from "@/application/useWaflRuntimeOrientationPolicy";
+import A79Stage1PhysicalHarness, { A79_STAGE1_PHYSICAL_HARNESS_ENABLED } from "@/features/work-orders/documents/A79Stage1PhysicalHarness";
 import {
   resolveWorkOrderTabletPresentation,
   resolveWorkOrderResponsiveWorkspacePlan,
@@ -191,6 +192,7 @@ export default function MobileWorkOrderExperience() {
   const [seriesHistory, setSeriesHistory] = useState<WorkOrderSeriesHistory | null>(null);
   const [seriesHistoryVisible, setSeriesHistoryVisible] = useState(false);
   const [failedDraftExitVisible, setFailedDraftExitVisible] = useState(false);
+  const [a79PhysicalHarnessVisible, setA79PhysicalHarnessVisible] = useState(false);
   const failedDraftExitRef = useRef<{ readonly intent: DraftExitIntent; readonly onProceed: () => void } | null>(null);
   const pendingIntentController = useRef(createFirstPendingIntentController()).current;
   const pendingIntentFlush = useRef(false);
@@ -1952,9 +1954,16 @@ export default function MobileWorkOrderExperience() {
             <Text numberOfLines={1} style={styles.context}>{user?.companyName} · {user?.name}</Text>
             <Text style={styles.readOnly}>dev/test 제한 연결</Text>
           </View>
-          <Pressable accessibilityLabel="개발용 연결 해제" accessibilityRole="button" onPress={disconnectSafely} style={({ pressed }) => [styles.disconnect, pressed && styles.pressed]}>
-            <LogOut color="#67584c" size={19} /><Text style={styles.disconnectText}>연결 해제</Text>
-          </Pressable>
+          <View style={styles.headerActions}>
+            {A79_STAGE1_PHYSICAL_HARNESS_ENABLED ? (
+              <Pressable accessibilityLabel="A79 리비전 문서 QA 열기" accessibilityRole="button" onPress={() => setA79PhysicalHarnessVisible(true)} style={({ pressed }) => [styles.harnessEntry, pressed && styles.pressed]}>
+                <Text style={styles.harnessEntryText}>A79 문서 QA</Text>
+              </Pressable>
+            ) : null}
+            <Pressable accessibilityLabel="개발용 연결 해제" accessibilityRole="button" onPress={disconnectSafely} style={({ pressed }) => [styles.disconnect, pressed && styles.pressed]}>
+              <LogOut color="#67584c" size={19} /><Text style={styles.disconnectText}>연결 해제</Text>
+            </Pressable>
+          </View>
         </View>
         <WaflFeedbackHost />
         <WaflNativeAttachmentViewer onClose={assetAuthoring.closeAttachmentPreview} preview={assetAuthoring.attachmentPreview} />
@@ -1974,6 +1983,9 @@ export default function MobileWorkOrderExperience() {
         testID={copyPending || reorderPending ? "work-order-creation-blocker" : "work-order-action-processing-blocker"}
       />
       <WaflDecisionSheet decision={actionConfirmation} testID="work-order-action-confirmation" />
+      {A79_STAGE1_PHYSICAL_HARNESS_ENABLED ? (
+        <A79Stage1PhysicalHarness onClose={() => setA79PhysicalHarnessVisible(false)} visible={a79PhysicalHarnessVisible} />
+      ) : null}
       <WorkOrderCreateSheet error={createError} isSample={createIsSample} onCancel={cancelCreateSheet} onChangeProductName={changeCreateProductName} onChangeSample={(value) => { createAttemptIdentity.current = null; setCreateIsSample(value); }} onConfirm={createWorkOrderDraftFromMobile} pending={createPending} productName={createProductName} visible={createSheetVisible} />
       <WorkOrderSeriesHistorySheet history={seriesHistory} onClose={() => setSeriesHistoryVisible(false)} onSelect={(workOrderId) => void openSeriesWorkOrder(workOrderId)} visible={seriesHistoryVisible} />
       <WaflInputSheet cancelAccessibilityLabel="저장 실패 변경 취소 후 나가기" cancelActionLabel="변경 취소 후 나가기" confirmAccessibilityLabel="변경 다시 저장" confirmActionLabel="다시 저장" onCancel={discardFailedDraftExit} onConfirm={retryFailedDraftExit} sizing="contentFit" title="저장하지 못한 변경" visible={failedDraftExitVisible}>
@@ -2013,6 +2025,9 @@ const styles = StyleSheet.create({
   appTablet: { paddingHorizontal: WAFL_THEME.layout.screenGutterTablet },
   connectPage: { flex: 1, justifyContent: "center", padding: 18 },
   header: { alignItems: "center", borderBottomColor: "#d9cfc2", borderBottomWidth: 1, flexDirection: "row", gap: 12, justifyContent: "space-between", paddingVertical: 12 },
+  headerActions: { alignItems: "center", flexDirection: "row", gap: 7 },
+  harnessEntry: { alignItems: "center", backgroundColor: WAFL_THEME.color.deepNavy, borderRadius: WAFL_THEME.radius.field, justifyContent: "center", minHeight: 44, paddingHorizontal: 11 },
+  harnessEntryText: { color: "#fffdf8", fontFamily: WAFL_FONTS.bold, fontSize: 10 },
   headerMain: { flex: 1, minWidth: 0 },
   brand: { color: WAFL_THEME.color.brickOrange, fontFamily: WAFL_FONTS.black, fontSize: 18, letterSpacing: 1.5 },
   context: { color: WAFL_THEME.color.deepNavy, fontFamily: WAFL_FONTS.bold, fontSize: 14, marginTop: 1 },

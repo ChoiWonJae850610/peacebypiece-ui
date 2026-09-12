@@ -27,6 +27,15 @@ export async function resolveIssuedPreviewTargetV2(input: {
       FROM work_orders w
       JOIN work_order_revisions r
         ON r.company_id = w.company_id AND r.work_order_id = w.id
+      JOIN LATERAL (
+        SELECT d.status,d.revoked_at,d.deleted_at
+        FROM generated_documents d
+        WHERE d.company_id=w.company_id AND d.work_order_id=w.id
+          AND d.work_order_revision_id=r.id AND d.document_type='factory_instruction'
+        ORDER BY d.generation_no DESC,d.id DESC
+        LIMIT 1
+      ) latest_document ON latest_document.status='generated'
+        AND latest_document.revoked_at IS NULL AND latest_document.deleted_at IS NULL
       WHERE w.company_id = $1
         AND w.document_number_base = $2
         AND r.revision_no = $3

@@ -23,7 +23,7 @@ const mobilePackage = JSON.parse(read("apps/mobile/package.json"));
 const appConfig = JSON.parse(read("apps/mobile/app.json"));
 const migrationFiles = fs.readdirSync("db/v2/migrations").filter((name) => /^\d{3}_.*\.sql$/u.test(name)).sort();
 
-assert.match(version, /^2\.0\.0-alpha\.(?:76|77|78)$/u);
+assert.match(version, /^2\.0\.0-alpha\.(?:76|77|78|79)$/u);
 for (const owner of [currentState, roadmap, devicePlan]) {
   assert.match(owner, /ALPHA76_COMPLETE/u);
   assert.match(owner, /ALPHA76_FINALIZATION_COMPLETE/u);
@@ -83,7 +83,7 @@ for (const contractName of [
 
 assert.match(
   finishVersion,
-  /ExpectedAppVersion -in @\("2\.0\.0-alpha\.73", "2\.0\.0-alpha\.74", "2\.0\.0-alpha\.75", "2\.0\.0-alpha\.76", "2\.0\.0-alpha\.77", "2\.0\.0-alpha\.78"\)[\s\S]*db\/v2\/migrations\/022_v2_work_order_drawings\.sql/u,
+  /ExpectedAppVersion -in @\("2\.0\.0-alpha\.73", "2\.0\.0-alpha\.74", "2\.0\.0-alpha\.75", "2\.0\.0-alpha\.76", "2\.0\.0-alpha\.77", "2\.0\.0-alpha\.78", "2\.0\.0-alpha\.79"\)[\s\S]*db\/v2\/migrations\/022_v2_work_order_drawings\.sql/u,
 );
 assert.match(currentState, /tag, or release/u);
 assert.match(roadmap, /tag\/release `0\/0`/u);

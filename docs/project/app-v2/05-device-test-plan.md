@@ -1,5 +1,78 @@
 # WAFL v2 App Device Test Plan
 
+## Alpha.79 final device result
+
+- Owner actual iPhone Final Combined Smoke: `PASS` for healthy generated identity/view/re-entry, persistent terminal
+  deleted state with every artifact action absent, historical fallback and auto-generation zero, and the A79 selector
+  harness generated-to-none clearing behavior.
+- Owner actual iPad-mini Final Combined Smoke: `PASS` for the same healthy/deleted read-only smoke and orientation
+  regression zero.
+- Prior focused actual evidence remains Stage 2A iPad mini `PASS`, Stage 3A iPhone `PASS`, and Stage 3B iPhone `PASS`.
+  Unrun focused stage/device combinations are not inferred.
+- Regular/Large iPad actual-device QA: `NOT_RUN`; Android phone/tablet actual-device QA: `NOT_RUN`.
+- Finalization performs no fixture, generated-document, token, DB, R2, or Owner mutation. This advances
+  `ALPHA79_COMPLETE` and `ALPHA79_FINALIZATION_COMPLETE`.
+
+## Alpha.79 Stage 3B revoked artifact purge / deleted lifecycle gate
+
+- Checkpoint: `ALPHA79_STAGE3B_REVOKED_ARTIFACT_PURGE_DELETED_IPHONE_IPAD_QA_REQUIRED`; Stage 3B physical PASS is not
+  inferred. Stage 3A iPhone revoke PASS is prior evidence, not a substitute for this purge QA.
+- On iPhone open exact DEV Recipe `QA A79 generated revoke access`. Confirm revoked state and absence of View/Save/
+  Share, then tap DEV/external-QA `PDF 삭제 QA` exactly once and approve the WAFL Decision once.
+- After authoritative reload confirm `현재 리비전의 PDF가 삭제되었습니다.`, with View/Save/Share/Viewer/token/Retry
+  still absent. Exit and reopen the Recipe; deleted must persist, older output must not take over, and regeneration must
+  not start. Do not repeat the purge action.
+- Automated evidence owns exact R2 absence, retained audit row, delete count/idempotency, and access denial. iPad mini
+  may remain `NOT_RUN`; if inspected after iPhone it must only confirm the already-deleted state and orientation, without
+  another purge. No Drawing Save budget is required.
+
+## Alpha.79 Stage 2B missing / corrupt generated-artifact recovery gate
+
+- Checkpoint: `ALPHA79_STAGE2B_MISSING_CORRUPT_RECOVERY_IPHONE_IPAD_QA_REQUIRED`; physical PASS is not inferred.
+- On iPhone first, open exact DEV Recipe `QA A79 generated missing recovery`, then `문서`. Confirm the broken PDF shows
+  `PDF 파일을 확인할 수 없습니다.`, View/Save/Share/Viewer/token actions are absent, and `PDF 다시 생성` is present.
+- Tap Retry exactly once. Observe pending, then one healthy newest generated PDF. Confirm actions target the recovered
+  document, close/reopen retains it, and no Recipe issue/new Revision action occurs.
+- On iPad mini, inspect the same already-recovered fixture without another Retry and confirm identity/actions and
+  orientation regression zero. Do not run the corrupt fixture physically; automated exact-owned evidence owns it.
+- Automated DEV evidence already proved missing and corrupt N+1 recovery, old-row immutability, same-key replay,
+  Revision/issue-event delta `0/0`, and unrelated R2 mutation `0`. No Drawing Save budget is required.
+
+## Alpha.79 Stage 2A failure / retry / R2 cleanup gate
+
+- Checkpoint: `ALPHA79_STAGE2A_FAILURE_RETRY_R2_CLEANUP_IPHONE_IPAD_QA_REQUIRED`; physical PASS is not inferred.
+- On iPhone, open exact DEV Recipe `QA A79 generation failure retry`, open `문서`, confirm current PDF generation failed,
+  and tap `PDF 다시 생성` exactly once. It must transition to one current generated PDF without Recipe issue/revision
+  action. View/Save/Share/Viewer must all target that document after authoritative refresh.
+- Close/reopen and confirm generated state persists. Do not tap Retry a second time. On iPad mini, open the same already
+  generated Recipe and verify the same current artifact identity and document actions without another generation.
+- Automated evidence owns deterministic before-PUT and after-PUT-before-finalize failures, exact cleanup, valid PDF,
+  idempotency/concurrency, and orphan zero. Owner physical QA owns the normal mobile retry/re-entry experience.
+
+## Alpha.79 Stage 1.5 physical Revision artifact harness gate
+
+- Checkpoint: `ALPHA79_STAGE1_PHYSICAL_HARNESS_IPHONE_IPAD_QA_REQUIRED`; physical PASS is not inferred.
+- After DeveloperAutoConnect succeeds, tap the authenticated header action `A79 문서 QA`. This entry is present only
+  when both `__DEV__` and `EXPO_PUBLIC_WAFL_EXTERNAL_QA=true`; production navigation exposure is zero.
+- On iPhone, exercise `B 없음`, `B 생성 중`, `B 생성 실패`, and `B 생성 완료`. Historical `doc-a-generated` remains
+  present but must never own View, Save, Share, Viewer, or token diagnostics. Retry increments only the local generation
+  counter and Recipe issue count remains zero.
+- Verify generated-to-none/pending/failed and rapid generated-to-none-to-generated transitions clear stale action/token
+  ownership immediately. On iPad mini, repeat the abbreviated matrix and verify orientation regression zero.
+- This is a synthetic in-memory client-ownership harness; it does not prove real generation/storage failure behavior.
+  Stage 2 remains deferred, and no Drawing Save or business-mutation budget is required.
+
+## Alpha.79 Stage 1 current-Revision artifact identity gate
+
+- Checkpoint: `ALPHA79_CURRENT_REVISION_ARTIFACT_IDENTITY_IPHONE_IPAD_QA_REQUIRED`; physical PASS is not inferred.
+- On iPhone, verify a DEV lineage whose historical Revision has a generated PDF while the current Revision advances
+  through none, pending, failed, and generated. Historical View/Share/Save/token controls must remain absent until the
+  current Revision is generated; pending shows `PDF를 생성 중입니다.`; failed exposes generation-only Retry.
+- When current generation completes, View, Save, Share, and token management must bind that exact current document.
+  Close/reopen must retain that identity, with Recipe re-issue and historical-token takeover both zero.
+- On iPad mini, repeat the abbreviated none/pending/failed/generated identity flow and verify orientation regression zero.
+  No Drawing Save budget is required. Production and Owner fixtures remain read-only.
+
 ## Alpha.78 final device result
 
 - Owner actual iPhone QA: `PASS` for the corrected centered `5:7` Sketch Preview/PDF frame, removal of the former

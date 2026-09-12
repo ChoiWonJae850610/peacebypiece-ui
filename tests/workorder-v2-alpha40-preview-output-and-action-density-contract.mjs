@@ -17,6 +17,7 @@ const sketch = read("public/dev-samples/linen-round-dress-sketch.svg");
 const chromiumRenderer = read("lib/generated-documents/work-order-pdf/localChromiumRenderer.mts");
 const samplePdfRoute = read("app/dev/workorder-preview-sample/pdf/route.ts");
 const fileRoute = read("lib/generated-documents/work-order-pdf/internalFileRoute.ts");
+const artifactHealthCore = read("lib/generated-documents/work-order-pdf/artifactHealthCore.ts");
 const fileRouteEntry = read("app/api/v2/work-orders/documents/[documentRef]/file/route.ts");
 const readModels = read("lib/domain/work-orders/contracts/read-models.ts");
 const detailRepository = read("lib/domain/work-orders/read/detailRepository.ts");
@@ -95,8 +96,8 @@ assert.match(fileRoute, /document\.deleted_at IS NULL/);
 assert.match(fileRoute, /R2WorkerGeneratedDocumentTransport\(\)\.get/);
 assert.match(fileRoute, /Content-Disposition/);
 assert.match(fileRoute, /Content-Length/);
-assert.match(fileRoute, /createHash\("sha256"\)/);
-assert.match(fileRoute, /body\.subarray\(0, 5\).*"%PDF-"/s);
+assert.match(fileRoute, /classifyGeneratedDocumentArtifact/);
+assert.match(artifactHealthCore, /body\.subarray\(0, 5\).*"%PDF-"/s);
 assert.doesNotMatch(fileRoute, /\.put\(|\.delete\(|INSERT\s+INTO|UPDATE\s+|DELETE\s+FROM/i);
 
 assert.match(samplePdfRoute, /isLocalOnlyRouteHostAllowed/);

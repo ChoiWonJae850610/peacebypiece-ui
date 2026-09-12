@@ -5,6 +5,7 @@ import { createHash } from "node:crypto";
 import {
   createR2WorkerFileUrl,
   createR2WorkerUploadUrl,
+  deleteR2ObjectViaWorker,
 } from "@/lib/storage/r2/r2WorkerUpload";
 import { isCanonicalWorkOrderPdfStorageKey } from "@/lib/workorder/pdf/workOrderPdfPolicy";
 import type {
@@ -69,7 +70,7 @@ export class R2WorkerGeneratedDocumentTransport implements GeneratedDocumentR2Tr
     return readPdfResponse(response);
   }
 
-  delete(): Promise<void> {
-    return Promise.reject(new Error("PDF_R2_DELETE_DISABLED_ALPHA38"));
+  delete(key: string): Promise<void> {
+    return deleteR2ObjectViaWorker({ key: assertKey(key) });
   }
 }

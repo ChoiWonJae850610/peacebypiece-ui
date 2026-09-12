@@ -49,6 +49,15 @@ export async function generateWorkOrderR0(workOrderId: string, revisionId: strin
   return body.data;
 }
 
+export async function getGeneratedDocumentArtifactHealth(documentId: string) {
+  const body = await requestJson<{ ok: boolean; data?: { documentId: string; health: "healthy" | "missing" | "corrupt" | "transient_error" } }>(
+    `/api/v2/work-orders/documents/${encodeURIComponent(documentId)}/health`,
+    { method: "GET" },
+  );
+  if (!body.ok || !body.data?.health) throw new MobileApiError({ code: "MALFORMED_RESPONSE", message: "PDF 상태 응답이 올바르지 않습니다." });
+  return body.data;
+}
+
 export async function getDocumentViewerTarget(documentId: string) {
   const body = await requestJson<{ ok: boolean; data?: { viewerUrl: string } }>(
     `/api/v2/work-orders/documents/${encodeURIComponent(documentId)}/viewer-target`,
@@ -79,4 +88,42 @@ export async function createDocumentShare(documentId: string, expiresInDays: 3, 
 
 export async function revokeDocumentAccessToken(documentId: string, tokenId: string) {
   return requestJson<{ ok: boolean }>(`/api/v2/work-orders/documents/${encodeURIComponent(documentId)}/access-tokens/${encodeURIComponent(tokenId)}/revoke`, { method: "POST", body: {} });
+}
+
+export async function revokeGeneratedDocument(input: {
+  readonly workOrderId: string;
+  readonly revisionId: string;
+  readonly documentId: string;
+  readonly generationNumber: number;
+  readonly clientRequestId: string;
+  readonly reason: string;
+}) {
+  return requestJson<{ ok: boolean; data?: { documentId: string; status: "revoked"; revokedAt: string; revokedTokenCount: number } }>(
+    `/api/v2/work-orders/${encodeURIComponent(input.workOrderId)}/documents/${encodeURIComponent(input.documentId)}/revoke`,
+    { method: "POST", idempotencyKey: input.clientRequestId, body: {
+      revisionId: input.revisionId,
+      generationNumber: input.generationNumber,
+      clientRequestId: input.clientRequestId,
+      reason: input.reason,
+    } },
+  );
+}
+
+export async function purgeRevokedGeneratedDocument(input: {
+  readonly workOrderId: string;
+  readonly revisionId: string;
+  readonly documentId: string;
+  readonly generationNumber: number;
+  readonly clientRequestId: string;
+  readonly reason: string;
+}) {
+  return requestJson<{ ok: boolean; data?: { documentId: string; status: "deleted"; deletedAt: string; objectAbsent: true } }>(
+    `/api/v2/work-orders/${encodeURIComponent(input.workOrderId)}/documents/${encodeURIComponent(input.documentId)}/purge`,
+    { method: "POST", idempotencyKey: input.clientRequestId, body: {
+      revisionId: input.revisionId,
+      generationNumber: input.generationNumber,
+      clientRequestId: input.clientRequestId,
+      reason: input.reason,
+    } },
+  );
 }

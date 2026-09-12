@@ -81,7 +81,8 @@ const generationService = read("lib/generated-documents/work-order-pdf/generatio
 assert.match(commandRepository, /confirmedMutable[\s\S]*changedFields\.every\(\(field\) => field === "dueDate"\)/u);
 assert.match(workOrderPolicy, /canEditConfirmedWorkOrderMutableFields/u);
 assert.match(productionAuthoring, /confirmedMemoEditable[\s\S]*confirmed-memo-/u);
-assert.match(generationService, /refreshActive[\s\S]*status='pending'[\s\S]*snapshot=\$6::jsonb/u);
+assert.match(generationService, /refreshActive[\s\S]*INSERT INTO generated_documents[\s\S]*'pending'[\s\S]*snapshot/u);
+assert.doesNotMatch(generationService, /SET\s+status='pending'/u);
 
 const workbench = read("apps/mobile/features/work-orders/documents/WorkOrderDocumentWorkbench.tsx");
 const previewService = read("lib/generated-documents/work-order-pdf/previewService.ts");
@@ -89,7 +90,7 @@ assert.match(workbench, /await onFlushDraft\(\)/u);
 assert.match(workbench, /레시피를 확정합니다/u);
 assert.match(workbench, /최종 생성 후에는 주요 생산정보를 수정할 수 없습니다\./u);
 assert.match(workbench, /PDF 미리보기/u);
-assert.match(workbench, /createDocumentShare\(generated\.id, 3,/u);
+assert.match(workbench, /createDocumentShare\(shareTarget\.id, 3,/u);
 assert.doesNotMatch(workbench, /1일|7일|30일|selectedDays/u);
 assert.match(previewService, /mode: "draft_preview"/u);
 assert.match(previewService, /removeLocalIssuedPdfRenderInput/u);

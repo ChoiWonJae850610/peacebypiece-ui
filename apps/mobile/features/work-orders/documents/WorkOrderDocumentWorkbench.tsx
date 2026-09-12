@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   Image,
   Pressable,
@@ -14,6 +14,7 @@ import {
   Download,
   ExternalLink,
   FileText,
+  FileX2,
   Link2,
   Paperclip,
   RefreshCw,
@@ -43,10 +44,13 @@ import { WAFL_UNSET_PLACEHOLDER } from "@/lib/displayPlaceholder";
 import {
   createDocumentShare,
   generateWorkOrderR0,
+  getGeneratedDocumentArtifactHealth,
   getWorkOrderDocuments,
   issueWorkOrderR0,
   listDocumentAccessTokens,
+  purgeRevokedGeneratedDocument,
   revokeDocumentAccessToken,
+  revokeGeneratedDocument,
 } from "@/lib/api/documentsApi";
 import { resolveMobileApiUrl } from "@/lib/apiTransport";
 import { getWorkOrderMaterialPartners, getWorkOrderMaterials } from "@/lib/api/materialsApi";
@@ -56,11 +60,18 @@ import { prepareAuthenticatedDocumentPdfForSave } from "./authenticatedPdfTransp
 import { buildWorkOrderShareMessage } from "./documentShareMessage";
 import type { WaflActionConfirmationState } from "@/features/feedback/WaflActionConfirmationCard";
 import { requestWaflDecision, showWaflAlert } from "@/features/feedback/waflFeedbackStore";
+import {
+  resolveCurrentRevisionDocumentState,
+  resolveCurrentRevisionDocumentWorkbenchModel,
+  type CurrentGeneratedArtifactHealth,
+} from "./currentRevisionDocumentState";
 import { DOCUMENT_QUANTITY_INLINE_LIMIT, documentQuantityDisclosureRows } from "./quantityDisclosurePolicy";
 
 const SUPPORTED_OUTPUT_IMAGE = /^image\/(?:jpeg|png|webp)$/i;
 const requestId = (kind: string) => `alpha64-${kind}-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
 const manualShareTokens = (items: readonly DocumentAccessTokenSummary[]) => items.filter((item) => item.tokenPurpose === "manual_share");
+const stage3aExternalQa = __DEV__ && process.env.EXPO_PUBLIC_WAFL_EXTERNAL_QA?.trim().toLowerCase() === "true";
+const stage3ExternalQa = stage3aExternalQa;
 
 type DocumentActionIcon = typeof ExternalLink;
 
@@ -145,7 +156,7 @@ export default function WorkOrderDocumentWorkbench({ detail, attachments, attach
       attachments={attachments}
       attachmentBusy={attachmentBusy}
       detail={detail}
-      key={`${detail.header.id}:${detail.header.entityVersion}:${attachmentProjectionKey}`}
+      key={`${detail.header.id}:${detail.header.currentRevisionId}:${detail.header.entityVersion}:${attachmentProjectionKey}`}
       onFlushDraft={onFlushDraft}
       onOpenSizeColor={onOpenSizeColor}
       onRefresh={onRefresh}
@@ -188,22 +199,61 @@ function WorkOrderDocumentWorkbenchBody({ detail, attachments, attachmentBusy, s
   const [quantitySheetOpen, setQuantitySheetOpen] = useState(false);
   const [quickDeliveryOpen, setQuickDeliveryOpen] = useState(false);
   const [documentViewerOpen, setDocumentViewerOpen] = useState(false);
+  const [currentArtifactHealth, setCurrentArtifactHealth] = useState<CurrentGeneratedArtifactHealth>("unknown");
   const [materialLines, setMaterialLines] = useState<readonly WorkOrderMaterialLine[]>([]);
   const [partnerOptions, setPartnerOptions] = useState<readonly MaterialPartnerOption[]>([]);
+  const mountedRef = useRef(true);
+  const tokenLoadGenerationRef = useRef(0);
+  const currentGeneratedDocumentIdRef = useRef<string | null>(null);
 
-  const generated = documents.find((item) => item.status === "generated") ?? null;
-  const failed = documents.find((item) => item.status === "failed") ?? null;
+  const currentDocumentState = useMemo(
+    () => resolveCurrentRevisionDocumentWorkbenchModel(documents, detail.header.currentRevisionId, currentArtifactHealth),
+    [currentArtifactHealth, detail.header.currentRevisionId, documents],
+  );
+  const { generated, pending: pendingDocument } = currentDocumentState;
   const issued = detail.header.status === "issued" || detail.header.status === "revised" || detail.header.status === "completed";
   const quantityRows = useMemo(() => documentQuantityDisclosureRows(sizeColorMatrix), [sizeColorMatrix]);
   const inlineQuantityRows = quantityRows.slice(0, DOCUMENT_QUANTITY_INLINE_LIMIT);
 
+  const loadTokensForCurrentDocument = useCallback(async (document: GeneratedWorkOrderDocument | null) => {
+    const generation = tokenLoadGenerationRef.current + 1;
+    tokenLoadGenerationRef.current = generation;
+    if (!document) {
+      if (!mountedRef.current || currentGeneratedDocumentIdRef.current !== null) return;
+      setTokens([]);
+      return;
+    }
+    if (currentGeneratedDocumentIdRef.current !== document.id) return;
+    const nextTokens = manualShareTokens(await listDocumentAccessTokens(document.id));
+    if (mountedRef.current && tokenLoadGenerationRef.current === generation && currentGeneratedDocumentIdRef.current === document.id) {
+      setTokens(nextTokens);
+    }
+  }, []);
+
+  const applyDocumentPage = useCallback(async (items: readonly GeneratedWorkOrderDocument[]) => {
+    const state = resolveCurrentRevisionDocumentState(items, detail.header.currentRevisionId);
+    let artifactHealth: CurrentGeneratedArtifactHealth = "unknown";
+    if (state.generated) {
+      try {
+        artifactHealth = (await getGeneratedDocumentArtifactHealth(state.generated.id)).health;
+      } catch {
+        artifactHealth = "transient_error";
+      }
+    }
+    if (!mountedRef.current) return state;
+    currentGeneratedDocumentIdRef.current = state.generated?.id ?? null;
+    setCurrentArtifactHealth(artifactHealth);
+    setDocuments(items);
+    const model = resolveCurrentRevisionDocumentWorkbenchModel(items, detail.header.currentRevisionId, artifactHealth);
+    await loadTokensForCurrentDocument(model.tokenTarget);
+    return state;
+  }, [detail.header.currentRevisionId, loadTokensForCurrentDocument]);
+
   const load = useCallback(async () => {
     const page = await getWorkOrderDocuments(detail.header.id);
-    setDocuments(page.items);
-    const current = page.items.find((item) => item.status === "generated");
-    setTokens(current ? manualShareTokens(await listDocumentAccessTokens(current.id)) : []);
+    await applyDocumentPage(page.items);
     return page;
-  }, [detail.header.id]);
+  }, [applyDocumentPage, detail.header.id]);
 
   const generateAndReconcile = useCallback(async (kind: string) => {
     let generatedDocumentId: string | null = null;
@@ -220,9 +270,10 @@ function WorkOrderDocumentWorkbenchBody({ detail, attachments, attachmentBusy, s
     }
     for (let attempt = 0; attempt < 45; attempt += 1) {
       const page = await load();
+      const state = resolveCurrentRevisionDocumentState(page.items, detail.header.currentRevisionId);
       const current = generatedDocumentId
-        ? page.items.find((item) => item.id === generatedDocumentId)
-        : page.items.find((item) => item.revisionId === detail.header.currentRevisionId && (item.status === "pending" || item.status === "generated"));
+        ? state.documents.find((item) => item.id === generatedDocumentId) ?? null
+        : state.generated ?? state.pending ?? state.failed;
       if (current?.status === "generated") return;
       if (current?.status === "failed") throw requestError ?? new Error("PDF_GENERATION_FAILED");
       if (!current && requestError) throw requestError;
@@ -245,16 +296,23 @@ function WorkOrderDocumentWorkbenchBody({ detail, attachments, attachmentBusy, s
     ])
       .then(async ([page, fabrics, accessories, partners]) => {
         if (!active) return;
-        setDocuments(page.items);
+        await applyDocumentPage(page.items);
+        if (!active) return;
         setMaterialLines([...fabrics.items, ...accessories.items]);
         setPartnerOptions(partners.items);
-        const current = page.items.find((item) => item.status === "generated");
-        const nextTokens = current ? manualShareTokens(await listDocumentAccessTokens(current.id)) : [];
-        if (active) setTokens(nextTokens);
       })
       .catch(() => { if (active) setMessage("문서 상태를 불러오지 못했습니다."); });
     return () => { active = false; };
-  }, [detail.header.id]);
+  }, [applyDocumentPage, detail.header.id]);
+
+  useEffect(() => {
+    mountedRef.current = true;
+    return () => {
+      mountedRef.current = false;
+      tokenLoadGenerationRef.current += 1;
+      currentGeneratedDocumentIdRef.current = null;
+    };
+  }, []);
 
   const thumbnailUrl = resolveMobileApiUrl(detail.header.representativeImage?.thumbnailUrl ?? null);
 
@@ -333,11 +391,12 @@ function WorkOrderDocumentWorkbenchBody({ detail, attachments, attachmentBusy, s
   }
 
   async function shareDocument() {
-    if (!generated) return;
+    const shareTarget = currentDocumentState.shareTarget;
+    if (!shareTarget) return;
     setBusy(true);
     setMessage(null);
     try {
-      const created = await createDocumentShare(generated.id, 3, requestId("manual-share"));
+      const created = await createDocumentShare(shareTarget.id, 3, requestId("manual-share"));
       await Share.share({
         title: "작업지시서",
         message: buildWorkOrderShareMessage({
@@ -347,7 +406,7 @@ function WorkOrderDocumentWorkbenchBody({ detail, attachments, attachmentBusy, s
           viewerUrl: created.viewerUrl,
         }),
       });
-      setTokens(manualShareTokens(await listDocumentAccessTokens(generated.id)));
+      await loadTokensForCurrentDocument(currentDocumentState.tokenTarget);
       setShareSheetOpen(false);
     } catch {
       setMessage("공유 링크를 만들지 못했습니다.");
@@ -357,7 +416,8 @@ function WorkOrderDocumentWorkbenchBody({ detail, attachments, attachmentBusy, s
   }
 
   async function saveDocument() {
-    if (!generated?.inlineUrl) {
+    const saveTarget = currentDocumentState.saveTarget;
+    if (!saveTarget?.inlineUrl) {
       setMessage("문서를 저장할 수 없습니다.");
       return;
     }
@@ -366,9 +426,9 @@ function WorkOrderDocumentWorkbenchBody({ detail, attachments, attachmentBusy, s
     let saveFile: Awaited<ReturnType<typeof prepareAuthenticatedDocumentPdfForSave>> | null = null;
     try {
       saveFile = await prepareAuthenticatedDocumentPdfForSave({
-        displayDocumentNumber: generated.displayDocumentNumber,
-        documentId: generated.id,
-        inlineUrl: generated.inlineUrl,
+        displayDocumentNumber: saveTarget.displayDocumentNumber,
+        documentId: saveTarget.id,
+        inlineUrl: saveTarget.inlineUrl,
       });
       await Share.share({
         title: saveFile.filename,
@@ -383,7 +443,7 @@ function WorkOrderDocumentWorkbenchBody({ detail, attachments, attachmentBusy, s
   }
 
   function openInAppDocumentViewer() {
-    if (!generated?.inlineUrl) {
+    if (!currentDocumentState.viewerTarget?.inlineUrl) {
       setMessage("문서를 볼 수 없습니다.");
       return;
     }
@@ -423,13 +483,95 @@ function WorkOrderDocumentWorkbenchBody({ detail, attachments, attachmentBusy, s
           setBusy(true);
           try {
             await revokeDocumentAccessToken(generated.id, token.tokenId);
-            setTokens(manualShareTokens(await listDocumentAccessTokens(generated.id)));
+            await loadTokensForCurrentDocument(generated);
           } catch {
             setMessage("문서 접근을 해제하지 못했습니다.");
           } finally {
             setBusy(false);
           }
         })(),
+    });
+  }
+
+  function confirmGeneratedDocumentRevoke() {
+    const target = currentDocumentState.generated;
+    if (!stage3ExternalQa || !target || currentArtifactHealth !== "healthy") return;
+    requestWaflDecision({
+      title: "PDF를 폐기합니다",
+      helper: "폐기하면 이 PDF의 보기·저장·공유와 기존 링크 접근이 즉시 차단됩니다. 파일 bytes는 보존됩니다.",
+      cancelAccessibilityLabel: "PDF 폐기 취소",
+      confirmAccessibilityLabel: "PDF 폐기 QA 실행",
+      safeOptionLabel: "유지",
+      actionOptionLabel: "폐기",
+      destructive: true,
+      onConfirm: () => void (async () => {
+        const clientRequestId = requestId("revoke-generated-document");
+        setBusy(true);
+        setMessage(null);
+        try {
+          await revokeGeneratedDocument({
+            workOrderId: detail.header.id,
+            revisionId: detail.header.currentRevisionId,
+            documentId: target.id,
+            generationNumber: target.generationNumber,
+            clientRequestId,
+            reason: "alpha79-stage3a-external-qa",
+          });
+          tokenLoadGenerationRef.current += 1;
+          currentGeneratedDocumentIdRef.current = null;
+          setTokens([]);
+          setDocumentViewerOpen(false);
+          setShareSheetOpen(false);
+          setAccessManagementOpen(false);
+          await load();
+          setMessage("PDF가 폐기되어 모든 접근이 차단되었습니다.");
+        } catch {
+          setMessage("PDF 폐기를 완료하지 못했습니다. 최신 상태를 다시 확인해 주세요.");
+        } finally {
+          setBusy(false);
+        }
+      })(),
+    });
+  }
+
+  function confirmRevokedDocumentPurge() {
+    const target = currentDocumentState.revoked;
+    if (!target || busy) return;
+    requestWaflDecision({
+      title: "폐기된 PDF 삭제",
+      helper: "폐기된 현재 PDF 파일을 영구 삭제합니다. 문서 이력은 삭제됨 상태로 남습니다.",
+      cancelAccessibilityLabel: "PDF 삭제 취소",
+      confirmAccessibilityLabel: "PDF 삭제 QA 실행",
+      safeOptionLabel: "유지",
+      actionOptionLabel: "삭제",
+      destructive: true,
+      onConfirm: () => void (async () => {
+        const clientRequestId = requestId("purge-revoked-document");
+        setBusy(true);
+        setMessage(null);
+        try {
+          await purgeRevokedGeneratedDocument({
+            workOrderId: detail.header.id,
+            revisionId: detail.header.currentRevisionId,
+            documentId: target.id,
+            generationNumber: target.generationNumber,
+            clientRequestId,
+            reason: "alpha79-stage3b-external-qa",
+          });
+          tokenLoadGenerationRef.current += 1;
+          currentGeneratedDocumentIdRef.current = null;
+          setTokens([]);
+          setDocumentViewerOpen(false);
+          setShareSheetOpen(false);
+          setAccessManagementOpen(false);
+          await load();
+          setMessage("현재 리비전의 PDF가 삭제되었습니다.");
+        } catch {
+          setMessage("PDF 삭제를 완료하지 못했습니다. 최신 상태를 다시 확인해 주세요.");
+        } finally {
+          setBusy(false);
+        }
+      })(),
     });
   }
 
@@ -507,17 +649,39 @@ function WorkOrderDocumentWorkbenchBody({ detail, attachments, attachmentBusy, s
             <CompactAction disabled={busy} emphasis="primary" icon={FileText} label="레시피 확정" onPress={confirmIssue} />
           </>
         ) : null}
-        {failed && !generated ? (
+        {currentDocumentState.canRetry ? (
           <CompactAction disabled={busy} emphasis="primary" icon={RefreshCw} label="PDF 다시 생성" onPress={() => void retryGeneration()} />
         ) : null}
-        {generated ? (
+        {currentDocumentState.canView && currentDocumentState.canSave && currentDocumentState.canShare ? (
           <>
             <CompactAction disabled={busy} icon={ExternalLink} label="보기" onPress={openInAppDocumentViewer} />
             <CompactAction disabled={busy} icon={Share2} label="공유" onPress={() => setShareSheetOpen(true)} />
             <CompactAction disabled={busy} icon={Download} label="저장" onPress={() => void saveDocument()} />
           </>
         ) : null}
+        {stage3ExternalQa && currentDocumentState.canView ? (
+          <CompactAction disabled={busy} emphasis="danger" icon={FileX2} label="PDF 폐기 QA" onPress={confirmGeneratedDocumentRevoke} />
+        ) : null}
+        {stage3ExternalQa && currentDocumentState.state === "revoked" ? (
+          <CompactAction disabled={busy} emphasis="danger" icon={Trash2} label="PDF 삭제 QA" onPress={confirmRevokedDocumentPurge} />
+        ) : null}
       </View>
+
+      {issued && pendingDocument && !generated ? (
+        <Text accessibilityLiveRegion="polite" style={styles.documentState} testID="current-revision-document-pending">PDF를 생성 중입니다.</Text>
+      ) : null}
+      {issued && currentDocumentState.state === "none" ? (
+        <Text style={styles.documentState} testID="current-revision-document-none">현재 리비전의 PDF가 없습니다.</Text>
+      ) : null}
+      {issued && currentDocumentState.state === "revoked" ? (
+        <Text style={styles.documentState} testID="current-revision-document-revoked">현재 리비전의 PDF가 폐기되었습니다.</Text>
+      ) : null}
+      {issued && currentDocumentState.state === "deleted" ? (
+        <Text style={styles.documentState} testID="current-revision-document-deleted">현재 리비전의 PDF가 삭제되었습니다.</Text>
+      ) : null}
+      {issued && currentDocumentState.artifactUnavailable ? (
+        <Text style={styles.documentState} testID="current-revision-document-unavailable">PDF 파일을 확인할 수 없습니다.</Text>
+      ) : null}
 
       {!issued && !detail.header.readiness.canIssue ? (
         <View style={styles.blockerPanel} testID="document-generation-blockers">
@@ -526,7 +690,7 @@ function WorkOrderDocumentWorkbenchBody({ detail, attachments, attachmentBusy, s
         </View>
       ) : null}
 
-      {generated ? (
+      {currentDocumentState.tokenTarget ? (
         <View style={styles.secondaryControls} testID="document-secondary-controls">
           <Pressable accessibilityRole="button" onPress={() => setAccessManagementOpen((current) => !current)} style={styles.secondaryControlHeader}>
             <View style={styles.secondaryControlTitle}><Link2 color={WAFL_THEME.color.deepNavy} size={17} /><Text style={styles.subhead}>공유 링크 관리</Text></View>
@@ -554,11 +718,11 @@ function WorkOrderDocumentWorkbenchBody({ detail, attachments, attachmentBusy, s
 
       {message ? <Text accessibilityLiveRegion="polite" style={styles.message}>{message}</Text> : null}
 
-      {generated?.inlineUrl ? (
+      {currentDocumentState.viewerTarget?.inlineUrl ? (
         <WaflAuthenticatedPdfViewer
-          displayDocumentNumber={generated.displayDocumentNumber}
-          documentId={generated.id}
-          inlineUrl={generated.inlineUrl}
+          displayDocumentNumber={currentDocumentState.viewerTarget.displayDocumentNumber}
+          documentId={currentDocumentState.viewerDocumentId ?? undefined}
+          inlineUrl={currentDocumentState.viewerTarget.inlineUrl}
           onClose={() => setDocumentViewerOpen(false)}
           visible={documentViewerOpen}
         />
@@ -720,6 +884,7 @@ const styles = StyleSheet.create({
   accessMetadataLabel: { color: WAFL_THEME.color.readOnly, fontFamily: WAFL_FONTS.medium, fontSize: 10, width: 60 },
   accessMetadataValue: { color: WAFL_THEME.color.deepNavy, flex: 1, fontFamily: WAFL_FONTS.medium, fontSize: 10, lineHeight: 15 },
   message: { backgroundColor: "#fff5e8", borderRadius: WAFL_THEME.radius.card, color: "#784325", fontFamily: WAFL_FONTS.body, fontSize: 11, lineHeight: 17, marginHorizontal: WAFL_THEME.spacing.md, padding: 9 },
+  documentState: { color: WAFL_THEME.color.readOnly, fontFamily: WAFL_FONTS.medium, fontSize: 11, lineHeight: 17, marginHorizontal: WAFL_THEME.spacing.md },
   sheetHelp: { color: "#6c6055", fontFamily: WAFL_FONTS.body, fontSize: 12, lineHeight: 18, marginBottom: 10, marginTop: 8 },
   attachmentScroll: { maxHeight: 330 },
   attachmentList: { gap: 7, paddingBottom: 4 },

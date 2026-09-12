@@ -37,7 +37,13 @@ const generation = read("lib/generated-documents/work-order-pdf/generationServic
 for (const token of ["status='generated'", "status='failed'", "R2WorkerGeneratedDocumentObjectStore", "LocalChromiumIssuedWorkOrderPdfRenderer", "includedAttachmentImages", "PDF_R2_VALIDATION_FAILED"]) assert.match(generation, new RegExp(token.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")));
 assert.doesNotMatch(generation, /createEmbeddedQrAccessToken|embeddedQrPolicy|embeddedQrContext/u);
 assert.match(generation, /status='generated'.*CONFLICT/s);
-assert.doesNotMatch(generation, /deletePdf\(/);
+// Alpha.79 Stage 2A supersedes the old blanket "no generated PDF delete"
+// assertion with an exact-attempt cleanup boundary. Cleanup is allowed only
+// for a key proven to have been created by the current pre-finalization
+// attempt; ambiguous/finalized outcomes remain non-destructive.
+assert.match(generation, /exactCreatedObjectKey && !generatedFinalizationStarted && !generatedFinalizationCompleted/);
+assert.match(generation, /await store\.deletePdf\(exactCreatedObjectKey\)/);
+assert.match(generation, /PDF_R2_EXACT_CLEANUP_VERIFICATION_FAILED/);
 
 const document = read("components/workorder/preview/IssuedWorkOrderDocument.tsx");
 assert.match(document, /partnerName/);
@@ -46,7 +52,7 @@ assert.doesNotMatch(document, /row\.(?:unitPrice|amount|inventoryUsageQuantity|s
 
 const mobile = read("apps/mobile/features/work-orders/documents/WorkOrderDocumentWorkbench.tsx");
 for (const token of ["issueWorkOrderR0", "generateWorkOrderR0", "createDocumentShare", "revokeDocumentAccessToken", "onApplyAttachmentSelection", "보기", "저장", "공유"]) assert.match(mobile, new RegExp(token));
-assert.match(mobile, /createDocumentShare\(generated\.id, 3,/);
+assert.match(mobile, /createDocumentShare\(shareTarget\.id, 3,/);
 assert.doesNotMatch(mobile, />PDF QR<|title="PDF QR"/u);
 assert.match(read("apps/mobile/lib/api/documentsApi.ts"), /output-include/);
 assert.match(read("apps/mobile/features/work-orders/images/useWorkOrderAssetAuthoringController.ts"), /setAttachmentOutputInclude/);

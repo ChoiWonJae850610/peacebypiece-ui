@@ -1,5 +1,32 @@
 # WAFL v2 API Contract Test Plan
 
+## Alpha.79 finalization contract
+
+- `workorder-v2-alpha79-finalization-contract.mjs` pins `ALPHA79_COMPLETE` / `ALPHA79_FINALIZATION_COMPLETE`, canonical
+  internal version `2.0.0-alpha.79`, Owner actual Final Combined Smoke `PASS` on iPhone/iPad mini, and honest Regular/
+  Large iPad plus Android `NOT_RUN`.
+- It retains alpha.79 Stage 1, Stage 1.5, Stage 2A, Stage 2B, Stage 3A, and Stage 3B contracts: exact current-Revision
+  ownership, stale-token guard, immutable generation attempts, exact-created-object cleanup, same-Revision N+1 recovery,
+  newest-attempt authority, revoke access denial, exact-absence purge, retained audit row, and no fallback/auto-generation.
+- Alpha.67 lifecycle and alpha.72–78 regressions remain registered. Scene v1, WORLD `1000×1400`, output `1500×2100`,
+  migration `22/22`, and dependency/native/config/EAS, API/schema, Production/Owner/ambiguous mutation deltas remain
+  unchanged/zero. Tag/release remain `0/0`; finalization creates no feature behavior.
+
+## Alpha.79 Stage 3B revoked artifact purge / deleted lifecycle contract
+
+- `workorder-v2-alpha79-stage3b-revoked-artifact-purge-deleted-contract.mjs` executes the legal lifecycle, exact-key
+  storage plan, absent reconciliation, ambiguous-delete policy, idempotent/concurrent ownership, deleted current-state
+  projection, action denial, access denial, and retained Stage 1 through Stage 3A boundaries.
+- The route delegates to one canonical service and accepts document/generation/idempotency identity only; company,
+  current Revision, newest attempt, issued lifecycle, revoked status, and trusted storage key are server validated.
+  Exact HEAD -> optional one DELETE -> exact absence -> DB deleted ordering is mandatory. Hard row deletion, wildcard/
+  prefix cleanup, false deleted, resurrection, historical fallback, and automatic regeneration are rejected.
+- Runtime evidence proves the exact automated DEV fixture transitioned revoked+healthy -> deleted+absent with physical
+  delete `1`, replay/second request delete `0/0`, event delta `1`, audit row/storage identity retained, all access routes
+  denied, and unrelated/Production/Owner mutation zero. The separate Owner fixture remains revoked+healthy.
+- APP_VERSION stays `2.0.0-alpha.78`; migration stays `22/22`; API schema, dependency/native/config/EAS, new/Production
+  migration, and Production/Owner/ambiguous business mutation deltas remain zero. Permanent inventory advances by one.
+
 ## Alpha.78 finalization contract
 
 - `workorder-v2-alpha78-finalization-contract.mjs` pins `ALPHA78_COMPLETE` / `ALPHA78_FINALIZATION_COMPLETE`, canonical
@@ -1042,6 +1069,54 @@ Alpha.26 adds a static material/order gate: shared fabric/accessory DTOs, bounde
   remain intact.
 - Finalization behavior/dependency/native/config/EAS/schema/migration/data deltas are zero. Migration remains `21/21`,
   production/Owner/ambiguous mutation remains `0/0/0`, and permanent inventory advances from `226/226` to `227/227`.
+
+## Alpha.79 Stage 2B missing / corrupt generated-artifact recovery contract
+
+- `tests/workorder-v2-alpha79-stage2b-missing-corrupt-recovery-contract.mjs` executes the pure artifact-health classifier
+  and current-Revision newest-attempt projection, and guards the production health route, mobile action suppression,
+  immutable N+1 generator policy, exact-owned DEV route, and runtime runner.
+- Health requires matching metadata, object presence, size, SHA-256, `%PDF-`, and `%%EOF`; storage ambiguity remains a
+  separate transient state. Missing/corrupt artifacts cannot own View, Save, Share, Viewer, or token actions.
+- The exact-owned runner proved missing N1 -> healthy N2 and corrupt N1 -> healthy N2, same-key canonical replay,
+  old-row immutability, Recipe re-issue/new Revision `0/0`, and unrelated R2 mutation `0`. It leaves only the named
+  missing fixture's newest exact object absent for Owner physical Retry.
+- Permanent inventory advances from `296/296` to `297/297`; migration remains `22/22`, Stage 3 remains zero, and
+  Production/Owner/ambiguous mutation remains `0/0/0`.
+
+## Alpha.79 Stage 2A generation failure / retry / exact-owned R2 cleanup contract
+
+- `tests/workorder-v2-alpha79-stage2a-failure-retry-r2-cleanup-contract.mjs` verifies internal-only failure hooks,
+  zero public/mobile failpoint selectors, loopback/non-production/current-Maker/tenant guards, exact successful-PUT
+  journaling, known pre-finalization cleanup, post-delete absence verification, and no unrelated-key delete.
+- The executable DEV runner covers failure before PUT, failure after verified PUT before finalize, failed audit rows,
+  canonical mobile-equivalent Retry, valid `%PDF-` bytes, same-key replay, concurrent/different-key canonical reuse,
+  one generated current artifact, new Revision zero, Recipe re-issue zero, and failed-attempt orphan zero.
+- Cleanup is forbidden after a finalization transaction starts because its commit outcome can be ambiguous. Stage 2B
+  now separately owns missing/corrupt finalized artifact recovery; Stage 3 revoke/delete is not implemented.
+- Migration remains `22/22`; APP_VERSION remains `2.0.0-alpha.78`; Production/Owner/ambiguous mutation remains `0/0/0`.
+
+## Alpha.79 Stage 1.5 physical Revision artifact QA harness contract
+
+- `tests/workorder-v2-alpha79-stage1-physical-harness-contract.mjs` executes the shared pure Workbench model against an
+  always-present historical Revision A generated artifact and current Revision B none/pending/failed/generated states.
+- It verifies exact B ownership for View, Save, Share, Viewer, and token management; historical A takeover zero; failed
+  generation-only Retry; stale transition clearing; production/external-QA fail-closed gating; real API/business/DB/R2
+  mutation zero; and retained Stage 1 registration.
+- The authenticated app header exposes the harness only for `__DEV__` plus external QA. Safe actions record ids locally,
+  the generation Retry counter is local, and Recipe issue count is permanently zero.
+- Permanent inventory advances from `294/294` to `295/295`; migration remains `22/22`, and Stage 2, API/schema,
+  dependency/native/config/EAS, Production/Owner/ambiguous mutation deltas are zero.
+
+## Alpha.79 Stage 1 current-Revision artifact identity contract
+
+- The pure mobile selector filters document history by exact current Revision before applying deterministic
+  `generated > pending > failed > none` precedence while retaining endpoint ordering within that Revision.
+- Workbench View, Save, Share, viewer, access-token, pending, failed-Retry, and reconciliation owners all consume that
+  projection. An absent current generated document clears token state; stale async token generations cannot repopulate it.
+- The server continues returning revision history, while web Preview and generation remain exact-Revision scoped.
+  Advisory lock, idempotency receipt, generated-document immutability, and alpha.67 retry semantics remain permanent.
+- Permanent inventory advances from `293/293` to `294/294`; migration stays `22/22`, and API/schema, dependency/native/
+  config/EAS, Production/Owner/ambiguous mutation deltas are zero.
 ## Alpha.74 responsive Product Sketch shape-authoring contract
 
 - `workorder-v2-alpha74-sketch-responsive-shape-authoring-contract.mjs` compiles the Drawing domain and verifies rectangle

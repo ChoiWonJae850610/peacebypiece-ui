@@ -29,7 +29,7 @@ assert.equal(count(mobileTsx, /<WaflReelPickerSheet\b/gu), 8, "all live reel con
 assert.equal(count(mobileTsx, /<WaflPairedOptionReelPickerSheet\b/gu), 1, "paired reel consumer must stay inventoried");
 assert.equal(count(mobileTsx, /<WaflDecisionSheet\b/gu), 3, "all shared Decision callsites must stay inventoried");
 assert.equal(count(mobileTsx, /<InlineDatePicker\b/gu), 1, "fixed calendar must stay inventoried");
-assert.equal(count(mobileTsx, /<Modal\b/gu), 7, "all raw native Modal hosts must stay inventoried");
+assert.equal(count(mobileTsx, /<Modal\b/gu), 8, "all raw native Modal hosts must stay inventoried");
 
 for (const classification of [
   "STATIC_BOTTOM_SHEET",
@@ -112,7 +112,7 @@ console.log(JSON.stringify({
   reelConsumers: 8,
   pairedReelConsumers: 1,
   decisionCallsites: 3,
-  rawNativeModals: 7,
+  rawNativeModals: 8,
   physical: "PHYSICAL_RESULT_NOT_INFERRED",
 }, null, 2));
 console.log("workorder v2 alpha.73D static sheet architecture migration audit contract: PASS");

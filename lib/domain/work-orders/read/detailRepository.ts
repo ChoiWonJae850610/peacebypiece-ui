@@ -107,7 +107,7 @@ export const WORK_ORDER_V2_DETAIL_CORE_SQL = `
            row_number() OVER (ORDER BY d.created_at DESC, d.id DESC) AS row_number
     FROM generated_documents d
     JOIN target t ON t.id = d.work_order_id
-    WHERE d.company_id = $1 AND d.deleted_at IS NULL
+    WHERE d.company_id = $1
   )
   SELECT t.id, t.product_name, t.product_type_code, t.season_code, t.item_code,
          t.status, t.due_date, t.work_order_total, t.matrix_total, t.revision_total,
@@ -155,7 +155,7 @@ export const WORK_ORDER_V2_DETAIL_CORE_SQL = `
           WHERE ra.company_id = $1 AND ra.revision_id = t.current_revision_id
             AND ra.output_include = true) AS included_attachment_count,
          (SELECT count(*)::integer FROM generated_documents d
-          WHERE d.company_id = $1 AND d.work_order_id = t.id AND d.deleted_at IS NULL) AS document_count,
+          WHERE d.company_id = $1 AND d.work_order_id = t.id) AS document_count,
          (SELECT count(*)::integer FROM domain_events e
           WHERE e.company_id = $1 AND e.entity_type = 'work_order' AND e.entity_id = t.id::text) AS history_count,
          ld.id AS latest_document_id, ld.status AS latest_document_status,
@@ -334,7 +334,7 @@ export const WORK_ORDER_V2_DOCUMENTS_SQL = `
          ) AS access_token_available
   FROM target t
   LEFT JOIN generated_documents d
-    ON d.company_id = $1 AND d.work_order_id = t.id AND d.deleted_at IS NULL
+    ON d.company_id = $1 AND d.work_order_id = t.id
    AND ($4::timestamptz IS NULL OR (d.created_at, d.id) < ($4::timestamptz, $5::uuid))
   ORDER BY d.created_at DESC NULLS LAST, d.id DESC NULLS LAST
   LIMIT $6

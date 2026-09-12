@@ -36,7 +36,7 @@ assert.deepEqual(WAFL_PRESENTATION_SOURCE_COUNTS, {
   decisionCallsites: 3,
   inlineDatePickerCallsites: 1,
   pairedReelCallsites: 1,
-  rawNativeModalHosts: 7,
+  rawNativeModalHosts: 8,
   reelPickerCallsites: 8,
   waflInputSheetJsxInstances: 26,
 });

@@ -128,7 +128,7 @@ matches(objectStore, /getPdf/u, "generated document delivery reads the canonical
 matches(internalFileRoute, /handleGetInternalGeneratedDocumentFile/u, "Download uses the canonical generated-document file owner");
 matches(localRenderer, /page\.pdf/u, "Print PDF bytes are authored once by canonical Chromium print");
 matches(localRenderer, /printBackground: input\.options\.printBackground/u, "canonical print options are applied to the same renderer artifact");
-matches(mobileWorkbench, /generated\.inlineUrl/u, "mobile viewer opens the generated canonical artifact");
+matches(mobileWorkbench, /currentDocumentState\.viewerTarget\.inlineUrl/u, "mobile viewer opens the generated canonical artifact");
 matches(mobileWorkbench, /saveDocument/u, "mobile Save/Download retains the generated artifact owner");
 
 const expectedKinds = ["path", "path", "path", "line", "path", "rectangle", "ellipse", "text", "rectangle"];

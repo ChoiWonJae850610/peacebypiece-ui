@@ -57,7 +57,7 @@ assert.doesNotMatch(repository, /randomUUID|deterministicUuid/i);
 assert.match(transport, /createR2WorkerUploadUrl/);
 assert.match(transport, /createR2WorkerFileUrl/);
 assert.match(transport, /application\/pdf/);
-assert.match(transport, /PDF_R2_DELETE_DISABLED_ALPHA38/);
+assert.match(transport, /deleteR2ObjectViaWorker\(\{ key: assertKey\(key\) \}\)/);
 assert.doesNotMatch(transport, /createR2WorkerDeleteUrl|method:\s*"DELETE"/);
 assert.match(renderer, /workorder-pdf-render/);
 assert.match(renderer, /waitUntil: "domcontentloaded"/);

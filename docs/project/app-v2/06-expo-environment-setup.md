@@ -1,5 +1,49 @@
 # WAFL v2 Expo Environment Setup
 
+## Alpha.79 finalization runtime boundary
+
+- Internal APP_VERSION is `2.0.0-alpha.79`; Expo public version remains `2.0.0` and iOS build number remains `1`.
+- The accepted existing-project Development Builds remain unchanged; finalization creates no EAS Build, EAS Update,
+  re-sign, Production build, TestFlight, or App Store submission.
+- Canonical physical-device runtime remains Node `24.14.0`, Next `3100`, Metro `8081`, Tailscale Serve HTTPS
+  `443 -> 3100`, and DeveloperAutoConnect. Finalization changes no dependency/native/config/EAS behavior.
+
+## Alpha.79 Stage 3B physical runtime boundary
+
+- The Owner purge control is DEV/external-QA-only and reuses the existing Development Client, authenticated current-
+  Maker document capability, and canonical purge service. It has no Production exposure and accepts no object key.
+- The retained physical fixture is `QA A79 generated revoke access`; Owner uses only `PDF 삭제 QA` once. Exact R2
+  ownership/absence verification is server-owned. No manual R2 tool, dependency, native/config/EAS delta, build,
+  re-sign, Update, or store operation is required.
+- Runtime remains Node `24.14.0`, Next `3100`, Metro `8081`, Tailscale Serve HTTPS `443 -> 3100`, and
+  DeveloperAutoConnect under `alpha67-current-maker / current-maker-alpha67`. Physical PASS is not inferred.
+
+## Alpha.79 Stage 2A physical runtime boundary
+
+- The Owner fixture uses the existing Development Client and canonical current-Maker external-QA profile. No dependency,
+  native/config/EAS, build, re-sign, Update, or store operation is required.
+- Failure injection is server-internal and local-loopback only; it is unavailable to mobile/public generation requests.
+  Owner uses only the ordinary mobile `PDF 다시 생성` action.
+- Runtime remains Node `24.14.0`, Next `3100`, Metro `8081`, Tailscale Serve HTTPS `443 -> 3100`, and
+  DeveloperAutoConnect. The `alpha67-current-maker / current-maker-alpha67` capability profile is DEV/TEST only.
+
+## Alpha.79 Stage 1.5 physical harness runtime boundary
+
+- The A79 physical artifact harness is enabled only by the existing Development Client plus
+  `EXPO_PUBLIC_WAFL_EXTERNAL_QA=true`. It has no production route and no server/API transport import.
+- The exact physical access path is DeveloperAutoConnect -> authenticated WAFL header -> `A79 문서 QA`.
+- The harness is JS/TS-only and requires no dependency, native/config/EAS delta, Development Build, EAS Update,
+  re-sign, or store operation. It reuses the canonical Node `24.14.0`, Next `3100`, Metro `8081`, Tailscale Serve HTTPS
+  `443 -> 3100`, and DeveloperAutoConnect runtime.
+
+## Alpha.79 Stage 1 runtime boundary
+
+- Internal APP_VERSION remains `2.0.0-alpha.78`; Expo public/native identity is unchanged.
+- Current-Revision document selection is JS/TS-only. It adds no dependency, native/config/EAS delta, Development Build,
+  EAS Update, re-sign, or store operation.
+- Physical re-QA reuses the canonical Node `24.14.0`, Next `3100`, Metro `8081`, Tailscale Serve HTTPS `443 -> 3100`,
+  and DeveloperAutoConnect runtime. Physical PASS is not inferred.
+
 ## Alpha.78 finalization runtime boundary
 
 - Internal APP_VERSION is `2.0.0-alpha.78`; Expo public version remains `2.0.0` and iOS build number remains `1`.
@@ -98,7 +142,7 @@ Document role: canonical owner for supported Expo/native environment, app identi
 | iOS bundle identifier | `com.wafl.app` |
 | Android package | `com.wafl.app` |
 | Expo public version | `2.0.0` |
-| Internal APP_VERSION | `2.0.0-alpha.78` |
+| Internal APP_VERSION | `2.0.0-alpha.79` |
 | iOS Development Build | build number `1`; latest installable alpha.74 compact native-mask development build `90ec13f2-b6ec-4e2e-baba-c1195161a69c` |
 | Android Development Build | version code `1`; latest installable alpha.72B development build `a2416e06-2ca0-431a-b575-67dafc29e871` |
 

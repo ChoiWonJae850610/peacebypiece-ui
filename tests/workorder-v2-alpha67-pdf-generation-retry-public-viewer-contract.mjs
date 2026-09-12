@@ -19,6 +19,7 @@ const env = {
 const transport = read("apps/mobile/lib/apiTransport.ts");
 const api = read("apps/mobile/lib/api/documentsApi.ts");
 const workbench = read("apps/mobile/features/work-orders/documents/WorkOrderDocumentWorkbench.tsx");
+const currentRevisionDocumentState = read("apps/mobile/features/work-orders/documents/currentRevisionDocumentState.ts");
 const generation = read("lib/generated-documents/work-order-pdf/generationService.ts");
 const accessRepository = read("lib/generated-documents/document-access/repository.ts");
 const accessService = read("lib/generated-documents/document-access/service.ts");
@@ -34,7 +35,10 @@ assert.match(transport, /MAX_REQUEST_TIMEOUT_MS = 120_000/);
 assert.match(api, /DOCUMENT_GENERATION_REQUEST_TIMEOUT_MS = 120_000/);
 assert.match(api, /documents\/generate[\s\S]*timeoutMs: DOCUMENT_GENERATION_REQUEST_TIMEOUT_MS/);
 assert.match(workbench, /generateAndReconcile/);
-assert.match(workbench, /status === "pending" \|\| item\.status === "generated"/);
+assert.match(workbench, /resolveCurrentRevisionDocumentState/);
+assert.match(currentRevisionDocumentState, /document\.revisionId === currentRevisionId/);
+assert.match(currentRevisionDocumentState, /status === "pending"/);
+assert.match(currentRevisionDocumentState, /status === "generated"/);
 assert.match(workbench, /retryGeneration[\s\S]*generateAndReconcile\("retry-generation"\)/);
 assert.doesNotMatch(workbench.match(/async function retryGeneration[\s\S]*?\n  }/)?.[0] ?? "", /issueWorkOrderR0/);
 

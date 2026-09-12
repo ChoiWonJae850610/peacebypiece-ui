@@ -390,6 +390,13 @@ const alpha70ApiPaths = [
 const alpha73ApiPaths = [
   ...alpha70ApiPaths,
   "app/api/dev/wafl-input-sheet-geometry-evidence/route.ts",
+  "app/api/dev/a79-stage2a-generation-failure/route.ts",
+  "app/api/dev/a79-stage2b-artifact-state/route.ts",
+  "app/api/dev/a79-stage3a-revoked-object-audit/route.ts",
+  "app/api/dev/a79-stage3b-deleted-object-audit/route.ts",
+  "app/api/v2/work-orders/documents/[documentRef]/health/route.ts",
+  "app/api/v2/work-orders/[workOrderId]/documents/[documentRef]/revoke/route.ts",
+  "app/api/v2/work-orders/[workOrderId]/documents/[documentRef]/purge/route.ts",
   "app/api/v2/work-orders/[workOrderId]/drawings/primary-sketch/route.ts",
 ];
 const alpha62ApiPaths = [

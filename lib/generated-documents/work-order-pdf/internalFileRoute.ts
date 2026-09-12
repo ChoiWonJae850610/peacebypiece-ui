@@ -1,6 +1,6 @@
 import "server-only";
 
-import { createHash, randomUUID } from "node:crypto";
+import { randomUUID } from "node:crypto";
 
 import { NextResponse } from "next/server";
 
@@ -10,6 +10,7 @@ import type { CompanyId, CompanyMemberId, CorrelationId, TenantMemberScope } fro
 import { installTenantClaims } from "@/lib/domain/work-orders/command/commandRepository";
 import { getWorkOrderV2ReadRuntimeGuard } from "@/lib/domain/work-orders/read/runtimeGuard";
 import { DOCUMENT_ACCESS_UUID_PATTERN } from "@/lib/generated-documents/document-access/constants";
+import { classifyGeneratedDocumentArtifact } from "./artifactHealthCore";
 import { R2WorkerGeneratedDocumentTransport } from "./r2WorkerTransport";
 
 type GeneratedDocumentFileRow = DbQueryResultRow & {
@@ -117,11 +118,16 @@ export async function handleGetInternalGeneratedDocumentFile(request: Request, d
 
     const body = await new R2WorkerGeneratedDocumentTransport().get(metadata.storage_object_key);
     if (!body) return notFound(correlationId);
-    const expectedSize = Number(metadata.file_size_bytes);
-    const expectedSha = String(metadata.content_sha256);
-    if (body.byteLength !== expectedSize
-      || createHash("sha256").update(body).digest("hex") !== expectedSha
-      || body.subarray(0, 5).toString("ascii") !== "%PDF-") {
+    const health = classifyGeneratedDocumentArtifact({
+      metadata: {
+        documentId: documentRef,
+        objectKey: metadata.storage_object_key,
+        fileSizeBytes: Number(metadata.file_size_bytes),
+        contentSha256: String(metadata.content_sha256),
+      },
+      body,
+    });
+    if (health !== "healthy") {
       throw new Error("GENERATED_DOCUMENT_FILE_INTEGRITY_INVALID");
     }
 

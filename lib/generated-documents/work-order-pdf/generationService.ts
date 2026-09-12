@@ -21,8 +21,9 @@ import { loadWorkOrderPdfDrawingScene } from "./drawingSnapshot";
 // @ts-expect-error The canonical renderer is an ESM .mts module loaded by the Node.js route runtime.
 import { LocalChromiumIssuedWorkOrderPdfRenderer } from "./localChromiumRenderer.mts";
 import { writeLocalIssuedPdfRenderInput } from "./localRenderInput";
-import { R2WorkerGeneratedDocumentObjectStore } from "./objectStore";
+import { R2WorkerGeneratedDocumentObjectStore, type GeneratedDocumentObjectStore } from "./objectStore";
 import { R2WorkerGeneratedDocumentTransport } from "./r2WorkerTransport";
+import { loadLatestGeneratedDocumentArtifact } from "./artifactHealth";
 import {
   createWorkOrderIssuedPdfSnapshot,
   hashWorkOrderIssuedPdfSnapshot,
@@ -51,6 +52,10 @@ type GeneratedRow = DbQueryResultRow & {
   readonly generated_at: Date | string | null;
   readonly work_order_id: string;
   readonly work_order_revision_id: string;
+  readonly storage_object_key?: string | null;
+  readonly file_size_bytes?: number | string | null;
+  readonly content_sha256?: string | null;
+  readonly updated_at: Date | string;
 };
 
 function hash(value: string | Buffer) { return createHash("sha256").update(value).digest("hex"); }
@@ -167,6 +172,16 @@ function publicResult(row: GeneratedRow, replay: boolean) {
   };
 }
 
+export type GenerationExecutionHooks = {
+  readonly beforeObjectPut?: (input: { readonly generatedDocumentId: string; readonly objectKey: string }) => void | Promise<void>;
+  readonly afterObjectPutBeforeFinalize?: (input: { readonly generatedDocumentId: string; readonly objectKey: string }) => void | Promise<void>;
+};
+
+export type GenerationExecutionOptions = {
+  readonly hooks?: GenerationExecutionHooks;
+  readonly objectStore?: GeneratedDocumentObjectStore;
+};
+
 export async function generateIssuedWorkOrderDocument(input: {
   readonly scope: WorkspaceApiCompanyScope;
   readonly companyMemberId: string | null;
@@ -174,8 +189,9 @@ export async function generateIssuedWorkOrderDocument(input: {
   readonly workOrderId: string;
   readonly revisionId: string;
   readonly idempotencyKey: string;
+  /** Canonical issued-content refresh; creates N+1 and never mutates N. */
   readonly refreshActive?: boolean;
-}) {
+}, execution: GenerationExecutionOptions = {}) {
   const runtime = getWorkOrderV2DocumentR0MutationRuntimeGuard();
   if (!runtime.ok) throw new GeneratedDocumentGenerationError("FORBIDDEN", 403, "승인된 문서 생성 runtime에서만 실행할 수 있습니다.");
   if (!UUID.test(input.workOrderId) || !UUID.test(input.revisionId)) throw new GeneratedDocumentGenerationError("NOT_FOUND", 404, "발행된 작업지시서를 찾을 수 없습니다.");
@@ -203,6 +219,13 @@ export async function generateIssuedWorkOrderDocument(input: {
   });
   const scopedKey = hash([GENERATED_DOCUMENT_COMMAND_CODE, tenantScope.companyId, tenantScope.companyMemberId, input.workOrderId, input.revisionId, input.idempotencyKey].join("\0"));
   const requestHash = hash(JSON.stringify({ workOrderId: input.workOrderId, revisionId: input.revisionId, refreshActive: input.refreshActive === true }));
+  const latestGeneratedArtifact = await loadLatestGeneratedDocumentArtifact({
+    scope: input.scope,
+    companyMemberId: input.companyMemberId,
+    correlationId: input.correlationId,
+    workOrderId: input.workOrderId,
+    revisionId: input.revisionId,
+  });
 
   const prepared = await withWaflV2TenantWriteTransaction(async (client) => {
     await installTenantClaims(client, tenantScope);
@@ -234,40 +257,30 @@ export async function generateIssuedWorkOrderDocument(input: {
     const activeGeneration = await client.query<GeneratedRow>(`
       SELECT * FROM generated_documents
       WHERE company_id=$1 AND work_order_revision_id=$2::uuid AND document_type='factory_instruction'
-        AND (
-          status='generated'
-          OR (status='pending' AND updated_at > now() - interval '5 minutes')
-        )
         AND revoked_at IS NULL AND deleted_at IS NULL
-      ORDER BY CASE status WHEN 'generated' THEN 0 ELSE 1 END, generation_no DESC
+      ORDER BY generation_no DESC, id DESC
       LIMIT 1
     `, [tenantScope.companyId, input.revisionId]);
     const current = activeGeneration.rows[0];
     if (current) {
-      if (input.refreshActive === true && current.status === "generated") {
-        const refreshed = await client.query<GeneratedRow>(`
-          UPDATE generated_documents
-          SET status='pending', failure_code=NULL, renderer_version=$4, dto_schema_version=$5,
-              snapshot=$6::jsonb, updated_at=now()
-          WHERE company_id=$1 AND id=$2::uuid AND work_order_revision_id=$3::uuid
-            AND status='generated' AND revoked_at IS NULL AND deleted_at IS NULL
-          RETURNING *
-        `, [tenantScope.companyId, current.id, input.revisionId, snapshot.rendererVersion, snapshot.dtoSchemaVersion, JSON.stringify(snapshot)]);
-        const row = refreshed.rows[0];
-        if (!row) throw new GeneratedDocumentGenerationError("CONFLICT", 409, "최신 문서 갱신을 시작하지 못했습니다.");
+      const pendingIsCurrent = current.status === "pending" && new Date(String(current.updated_at)).getTime() > Date.now() - 300_000;
+      const generatedHealth = current.status === "generated" && latestGeneratedArtifact?.metadata.documentId === current.id
+        ? latestGeneratedArtifact.health
+        : null;
+      if (current.status === "generated" && generatedHealth === null) {
+        throw new GeneratedDocumentGenerationError("CONFLICT", 409, "최신 PDF 상태가 변경되었습니다. 다시 시도해 주세요.");
+      }
+      if (generatedHealth === "transient_error") {
+        throw new GeneratedDocumentGenerationError("GENERATION_FAILED", 503, "PDF 파일 상태를 확인하지 못했습니다. 잠시 후 다시 시도해 주세요.");
+      }
+      if (pendingIsCurrent || (generatedHealth === "healthy" && input.refreshActive !== true)) {
         await client.query(`
           UPDATE work_order_command_receipts
           SET work_order_id=$4::uuid,result_revision_id=$5::uuid,result_generated_document_id=$6::uuid,result_entity_version=$7
           WHERE company_id=$1 AND command_code=$2 AND idempotency_key=$3
-        `, [tenantScope.companyId, GENERATED_DOCUMENT_COMMAND_CODE, scopedKey, input.workOrderId, input.revisionId, row.id, Number(target.rows[0].entity_version)]);
-        return { row, replay: false };
+        `, [tenantScope.companyId, GENERATED_DOCUMENT_COMMAND_CODE, scopedKey, input.workOrderId, input.revisionId, current.id, Number(target.rows[0].entity_version)]);
+        return { row: current, replay: true };
       }
-      await client.query(`
-        UPDATE work_order_command_receipts
-        SET work_order_id=$4::uuid,result_revision_id=$5::uuid,result_generated_document_id=$6::uuid,result_entity_version=$7
-        WHERE company_id=$1 AND command_code=$2 AND idempotency_key=$3
-      `, [tenantScope.companyId, GENERATED_DOCUMENT_COMMAND_CODE, scopedKey, input.workOrderId, input.revisionId, current.id, Number(target.rows[0].entity_version)]);
-      return { row: current, replay: true };
     }
     const generation = await client.query<{ generation_no: number | string } & DbQueryResultRow>(`
       SELECT COALESCE(max(generation_no), 0) + 1 AS generation_no FROM generated_documents
@@ -292,9 +305,14 @@ export async function generateIssuedWorkOrderDocument(input: {
   });
 
   if (prepared.replay) return publicResult(prepared.row, true);
-  const representative = assets.find((asset) => asset.assetType === "image" && asset.isRepresentative);
-  if (!representative) throw new GeneratedDocumentGenerationError("DOCUMENT_NOT_READY", 409, "대표 이미지가 필요합니다.");
+  const store = execution.objectStore
+    ?? new R2WorkerGeneratedDocumentObjectStore(new R2WorkerGeneratedDocumentTransport());
+  let exactCreatedObjectKey: string | null = null;
+  let generatedFinalizationStarted = false;
+  let generatedFinalizationCompleted = false;
   try {
+    const representative = assets.find((asset) => asset.assetType === "image" && asset.isRepresentative);
+    if (!representative) throw new Error("PDF_REPRESENTATIVE_IMAGE_REQUIRED");
     const representativeImageDataUrl = await readWorkOrderPdfAsset(representative);
     const includedSupplementalImages = await Promise.all(selectSupplementalGalleryAssets(assets, SUPPORTED_INLINE_IMAGE)
       .map(async (asset) => ({ filename: asset.filename, dataUrl: await readWorkOrderPdfAsset(asset) })));
@@ -312,14 +330,19 @@ export async function generateIssuedWorkOrderDocument(input: {
       outputFileName: `${snapshot.documentIdentity.displayDocumentNumber}.pdf`,
       options: { printBackground: true, preferCssPageSize: true, maxFileSizeBytes: WORK_ORDER_PDF_MAX_FILE_SIZE_BYTES },
     });
-    const store = new R2WorkerGeneratedDocumentObjectStore(new R2WorkerGeneratedDocumentTransport());
     const metadata = { key: objectKey, contentType: "application/pdf" as const, fileSizeBytes: rendered.fileSizeBytes, contentSha256: rendered.contentSha256 };
+    const existing = await store.headPdf(objectKey);
+    if (existing) throw new Error("PDF_R2_OBJECT_PREEXISTING");
+    await execution.hooks?.beforeObjectPut?.({ generatedDocumentId: prepared.row.id, objectKey });
     await store.putPdf({ ...metadata, body: rendered.pdf });
+    exactCreatedObjectKey = objectKey;
     const head = await store.headPdf(objectKey);
     const body = await store.getPdf(objectKey);
     if (!head || !body || head.fileSizeBytes !== metadata.fileSizeBytes || head.contentSha256 !== metadata.contentSha256 || hash(body) !== metadata.contentSha256) {
       throw new Error("PDF_R2_VALIDATION_FAILED");
     }
+    await execution.hooks?.afterObjectPutBeforeFinalize?.({ generatedDocumentId: prepared.row.id, objectKey });
+    generatedFinalizationStarted = true;
     const finalized = await withWaflV2TenantWriteTransaction(async (client) => {
       await installTenantClaims(client, tenantScope);
       const result = await client.query<GeneratedRow>(`
@@ -335,6 +358,7 @@ export async function generateIssuedWorkOrderDocument(input: {
       `, [tenantScope.companyId, prepared.row.id, GENERATED_DOCUMENT_COMMAND_CODE, tenantScope.companyMemberId, tenantScope.correlationId, JSON.stringify({ workOrderId: input.workOrderId, revisionId: input.revisionId, generationNumber: Number(prepared.row.generation_no) })]);
       return result.rows[0];
     });
+    generatedFinalizationCompleted = true;
     return publicResult(finalized, false);
   } catch (error) {
     const failureCode = pdfFailureCode(error);
@@ -342,10 +366,30 @@ export async function generateIssuedWorkOrderDocument(input: {
       failureCode,
       errorName: error instanceof Error ? error.name : "UnknownError",
     });
-    await withWaflV2TenantWriteTransaction(async (client) => {
-      await installTenantClaims(client, tenantScope);
-      await client.query(`UPDATE generated_documents SET status='failed',failure_code=$3,updated_at=now() WHERE company_id=$1 AND id=$2::uuid AND status='pending'`, [tenantScope.companyId, prepared.row.id, failureCode]);
-    });
+    let failurePersistenceError: unknown = null;
+    try {
+      await withWaflV2TenantWriteTransaction(async (client) => {
+        await installTenantClaims(client, tenantScope);
+        await client.query(`UPDATE generated_documents SET status='failed',failure_code=$3,updated_at=now() WHERE company_id=$1 AND id=$2::uuid AND status='pending'`, [tenantScope.companyId, prepared.row.id, failureCode]);
+      });
+    } catch (persistenceError) {
+      failurePersistenceError = persistenceError;
+    }
+    let cleanupError: unknown = null;
+    if (exactCreatedObjectKey && !generatedFinalizationStarted && !generatedFinalizationCompleted) {
+      try {
+        await store.deletePdf(exactCreatedObjectKey);
+        if (await store.headPdf(exactCreatedObjectKey)) throw new Error("PDF_R2_EXACT_CLEANUP_VERIFICATION_FAILED");
+      } catch (objectCleanupError) {
+        cleanupError = objectCleanupError;
+      }
+    }
+    if (failurePersistenceError || cleanupError) {
+      console.error("[WORK_ORDER_PDF_FAILURE_RECOVERY_FAILED]", {
+        failurePersistence: failurePersistenceError ? "FAILED" : "PASS",
+        exactObjectCleanup: cleanupError ? "FAILED" : "PASS",
+      });
+    }
     throw new GeneratedDocumentGenerationError("GENERATION_FAILED", 500, "문서 생성에 실패했습니다. 잠시 후 PDF 다시 생성을 시도해 주세요.");
   }
 }
