@@ -1,5 +1,44 @@
 # WAFL v2 API Contract Test Plan
 
+## Alpha.80 finalization contract
+
+- `workorder-v2-alpha80-finalization-contract.mjs` pins `ALPHA80_COMPLETE` / `ALPHA80_FINALIZATION_COMPLETE`, canonical
+  internal version `2.0.0-alpha.80`, Owner actual Final Combined Smoke `PASS` on iPhone/iPad mini, and honest Regular/
+  Large iPad plus Android `NOT_RUN`.
+- It retains Stage 1 exact healthy-current artifact binding, Stage 2 DB-time expiry/revoke/explicit replacement and
+  current-link action identity, Stage 3 public credential security/isolation, and alpha.79 document lifecycle precedence.
+- Alpha.67 and alpha.72–79 regressions remain registered. Scene v1, WORLD `1000×1400`, output `1500×2100`, migration
+  `22/22`, three-day TTL, and dependency/native/config/EAS, API/schema, Production/Owner/ambiguous mutation deltas remain
+  unchanged/zero. Tag/release remain `0/0`; finalization creates no feature behavior.
+
+## Alpha.80 Stage 2 current Share link actions gate
+
+`workorder-v2-alpha80-stage2-current-share-link-actions-contract.mjs` locks the private update-authorized current-target
+route, exact document/WorkOrder/Revision/generation/token join, one URL for open/copy/native Share, same-token revoke,
+zero create/rotate on read actions, post-revoke action absence, retained healthy PDF/top-level Share, responsive action
+wrapping, and no raw credential display. Retained Stage 2 exact DEV evidence owns mutation lifecycle proof. The follow-up
+read-only runner records the current absent state after Owner revoke without DB/document/R2 mutation.
+
+## Alpha.80 Stage 2 permanent gate
+
+`workorder-v2-alpha80-stage2-share-expiry-revoke-replacement-contract.mjs` locks database-clock expiry, exact-boundary
+denial, exact-current revoke, one event, no resurrection/automatic replacement, deterministic predecessor-linked
+replacement, same/different-key concurrency convergence, fail-closed public denial, legacy non-takeover, and retained
+Stage 1/A79/PDF/data-safety boundaries. The exact DEV runner additionally proves real session/file bytes before and after
+revoke/expiry replacement.
+
+## Alpha.80 Stage 1 canonical Share binding contract
+
+- `workorder-v2-alpha80-stage1-canonical-share-binding-contract.mjs` executes current-Revision health projections and
+  guards newest/generated/healthy eligibility, exact tenant/WorkOrder/Revision/document/generation identity, deterministic
+  Maker-current credential reuse, advisory-lock concurrency, receipt replay, stale mobile response rejection, and exact
+  public immutable-artifact resolution.
+- The bounded DEV runner prepares only `QA A80 canonical share binding`, proves same-key, response-loss, different-key and
+  concurrent reuse, one canonical row/event, exact public PDF bytes/SHA, and read-only terminal A79 denial. Legacy manual
+  tokens are neither deleted nor normalized.
+- Permanent inventory advances by one; migration remains `22/22`, APP_VERSION remains `2.0.0-alpha.79`, and Stage 2/3,
+  dependency/native/config/EAS, billing, Production/Owner/ambiguous mutation deltas remain zero.
+
 ## Alpha.79 finalization contract
 
 - `workorder-v2-alpha79-finalization-contract.mjs` pins `ALPHA79_COMPLETE` / `ALPHA79_FINALIZATION_COMPLETE`, canonical

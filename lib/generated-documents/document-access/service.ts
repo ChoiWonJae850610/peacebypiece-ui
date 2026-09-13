@@ -4,6 +4,7 @@ import type { WorkspaceApiCompanyScope } from "@/lib/auth/apiRouteGuards";
 import type { DbTransactionClient } from "@/lib/db/client";
 import type { CompanyId, CompanyMemberId, CorrelationId, TenantMemberScope } from "@/lib/domain/work-orders/contracts";
 import { R2WorkerGeneratedDocumentTransport } from "@/lib/generated-documents/work-order-pdf/r2WorkerTransport";
+import { inspectGeneratedDocumentArtifact, loadCanonicalShareArtifact } from "@/lib/generated-documents/work-order-pdf/artifactHealth";
 import { createR2WorkerFileUrl } from "@/lib/storage/r2/r2WorkerUpload";
 import {
   DOCUMENT_ACCESS_DEFAULT_EXPIRY_DAYS,
@@ -31,11 +32,12 @@ import {
   createDocumentViewerUrl,
   deriveDocumentAccessToken,
   deriveEmbeddedQrAccessToken,
+  deriveMakerCurrentDocumentAccessToken,
   hashDocumentAccessRequest,
   hashDocumentAccessToken,
   scopeDocumentAccessIdempotencyKey,
 } from "./token";
-import type { CreatedDocumentAccessToken, CreatedEmbeddedQrAccessToken, PublicDocumentAccessMetadata } from "./types";
+import type { CreatedDocumentAccessToken, CreatedEmbeddedQrAccessToken, CurrentDocumentShareTarget, PublicDocumentAccessMetadata } from "./types";
 
 export type DocumentAccessErrorCode = "NOT_FOUND" | "FORBIDDEN" | "VALIDATION_ERROR" | "CONFLICT" | "INTERNAL_ERROR";
 
@@ -162,18 +164,33 @@ export async function createDocumentShare(input: {
   const idempotencyKey = assertIdempotencyKey(input.idempotencyKey);
   const policy = expiry(input.expiresInDays);
   const scope = toScope({ ...input, permissionCode: "workorder.update" });
-  const rawToken = deriveDocumentAccessToken({
+  const artifact = await loadCanonicalShareArtifact({
+    scope: input.scope,
+    companyMemberId: input.companyMemberId,
+    correlationId: input.correlationId,
+    documentId: input.generatedDocumentId,
+  });
+  if (!artifact || await inspectGeneratedDocumentArtifact(artifact.metadata) !== "healthy"
+      || artifact.metadata.objectKey === null || artifact.metadata.fileSizeBytes === null
+      || artifact.metadata.contentSha256 === null) {
+    throw new DocumentAccessServiceError("NOT_FOUND", 404, "공유할 수 있는 최신 PDF를 찾을 수 없습니다.");
+  }
+  const baseRawToken = deriveMakerCurrentDocumentAccessToken({
     companyId: scope.companyId,
     generatedDocumentId: input.generatedDocumentId,
-    commandCode: DOCUMENT_SHARE_COMMAND_CODE,
-    idempotencyKey,
+  });
+  const deriveReplacementRawToken = (predecessorTokenId: string) => deriveMakerCurrentDocumentAccessToken({
+    companyId: scope.companyId,
+    generatedDocumentId: input.generatedDocumentId,
+    rotatedFromTokenId: predecessorTokenId,
   });
   try {
     const result = await createDocumentAccessToken({
       scope,
       generatedDocumentId: input.generatedDocumentId,
-      tokenHash: hashDocumentAccessToken(rawToken),
-      expiresAt: policy.expiresAt,
+      tokenHash: hashDocumentAccessToken(baseRawToken),
+      expiryDays: policy.days,
+      deriveReplacementTokenHash: (predecessorTokenId) => hashDocumentAccessToken(deriveReplacementRawToken(predecessorTokenId)),
       scopedIdempotencyKey: scopeDocumentAccessIdempotencyKey({
         companyId: scope.companyId,
         generatedDocumentId: input.generatedDocumentId,
@@ -181,17 +198,32 @@ export async function createDocumentShare(input: {
         idempotencyKey,
       }),
       requestHash: hashDocumentAccessRequest({ generatedDocumentId: input.generatedDocumentId, expiresInDays: policy.days }),
+      expectedArtifact: {
+        workOrderId: artifact.workOrderId,
+        revisionId: artifact.revisionId,
+        generationNumber: artifact.generationNumber,
+        storageObjectKey: artifact.metadata.objectKey,
+        fileSizeBytes: artifact.metadata.fileSizeBytes,
+        contentSha256: artifact.metadata.contentSha256,
+      },
     });
+    const rawToken = result.token.rotatedFromTokenId
+      ? deriveReplacementRawToken(result.token.rotatedFromTokenId)
+      : baseRawToken;
     const viewerUrl = createDocumentViewerUrl(input.origin, rawToken);
     return {
       ...result.token,
-      expiresAt: policy.expiresAt,
+      expiresAt: result.token.expiresAt!,
       generatedDocumentId: input.generatedDocumentId,
       displayDocumentNumber: result.displayDocumentNumber,
+      workOrderId: result.workOrderId,
+      revisionId: result.revisionId,
+      generationNumber: result.generationNumber,
       rawToken,
       viewerUrl,
       qrSvg: createQrSvg(viewerUrl),
       idempotentReplay: result.idempotentReplay,
+      reusedExisting: result.reusedExisting,
     };
   } catch (error) {
     mapRepositoryError(error);
@@ -206,11 +238,107 @@ export async function getDocumentShares(input: {
 }) {
   assertRuntime(false);
   assertUuid(input.generatedDocumentId);
+  const artifact = await loadCanonicalShareArtifact({
+    scope: input.scope,
+    companyMemberId: input.companyMemberId,
+    correlationId: input.correlationId,
+    documentId: input.generatedDocumentId,
+  });
+  if (!artifact || await inspectGeneratedDocumentArtifact(artifact.metadata) !== "healthy"
+      || artifact.metadata.objectKey === null || artifact.metadata.fileSizeBytes === null
+      || artifact.metadata.contentSha256 === null) {
+    throw new DocumentAccessServiceError("NOT_FOUND", 404, "공유 링크를 확인할 수 있는 최신 PDF를 찾을 수 없습니다.");
+  }
   try {
+    const rawToken = deriveMakerCurrentDocumentAccessToken({
+      companyId: input.scope.companyId,
+      generatedDocumentId: input.generatedDocumentId,
+    });
     return await listDocumentAccessTokens({
       scope: toScope({ ...input, permissionCode: "workorder.read" }),
       generatedDocumentId: input.generatedDocumentId,
+      makerCurrentBaseTokenHash: hashDocumentAccessToken(rawToken),
+      deriveReplacementTokenHash: (predecessorTokenId) => hashDocumentAccessToken(deriveMakerCurrentDocumentAccessToken({
+        companyId: input.scope.companyId,
+        generatedDocumentId: input.generatedDocumentId,
+        rotatedFromTokenId: predecessorTokenId,
+      })),
+      expectedArtifact: {
+        workOrderId: artifact.workOrderId,
+        revisionId: artifact.revisionId,
+        generationNumber: artifact.generationNumber,
+        storageObjectKey: artifact.metadata.objectKey,
+        fileSizeBytes: artifact.metadata.fileSizeBytes,
+        contentSha256: artifact.metadata.contentSha256,
+      },
     });
+  } catch (error) {
+    mapRepositoryError(error);
+  }
+}
+
+export async function getCurrentDocumentShareTarget(input: {
+  readonly generatedDocumentId: string;
+  readonly origin: string;
+  readonly scope: WorkspaceApiCompanyScope;
+  readonly companyMemberId: string | null;
+  readonly correlationId: string;
+}): Promise<CurrentDocumentShareTarget | null> {
+  assertRuntime(false);
+  assertUuid(input.generatedDocumentId);
+  const artifact = await loadCanonicalShareArtifact({
+    scope: input.scope,
+    companyMemberId: input.companyMemberId,
+    correlationId: input.correlationId,
+    documentId: input.generatedDocumentId,
+  });
+  if (!artifact || await inspectGeneratedDocumentArtifact(artifact.metadata) !== "healthy"
+      || artifact.metadata.objectKey === null || artifact.metadata.fileSizeBytes === null
+      || artifact.metadata.contentSha256 === null) {
+    throw new DocumentAccessServiceError("NOT_FOUND", 404, "현재 공유 링크를 확인할 수 있는 최신 PDF를 찾을 수 없습니다.");
+  }
+  const baseRawToken = deriveMakerCurrentDocumentAccessToken({
+    companyId: input.scope.companyId,
+    generatedDocumentId: input.generatedDocumentId,
+  });
+  try {
+    const tokens = await listDocumentAccessTokens({
+      scope: toScope({ ...input, permissionCode: "workorder.update" }),
+      generatedDocumentId: input.generatedDocumentId,
+      makerCurrentBaseTokenHash: hashDocumentAccessToken(baseRawToken),
+      deriveReplacementTokenHash: (predecessorTokenId) => hashDocumentAccessToken(deriveMakerCurrentDocumentAccessToken({
+        companyId: input.scope.companyId,
+        generatedDocumentId: input.generatedDocumentId,
+        rotatedFromTokenId: predecessorTokenId,
+      })),
+      expectedArtifact: {
+        workOrderId: artifact.workOrderId,
+        revisionId: artifact.revisionId,
+        generationNumber: artifact.generationNumber,
+        storageObjectKey: artifact.metadata.objectKey,
+        fileSizeBytes: artifact.metadata.fileSizeBytes,
+        contentSha256: artifact.metadata.contentSha256,
+      },
+    });
+    const current = tokens.find((token) => token.tokenPurpose === "manual_share"
+      && token.status === "active" && token.isMakerCurrentShare === true);
+    if (!current?.expiresAt) return null;
+    const rawToken = current.rotatedFromTokenId
+      ? deriveMakerCurrentDocumentAccessToken({
+          companyId: input.scope.companyId,
+          generatedDocumentId: input.generatedDocumentId,
+          rotatedFromTokenId: current.rotatedFromTokenId,
+        })
+      : baseRawToken;
+    return {
+      tokenId: current.tokenId,
+      generatedDocumentId: input.generatedDocumentId,
+      workOrderId: artifact.workOrderId,
+      revisionId: artifact.revisionId,
+      generationNumber: artifact.generationNumber,
+      viewerUrl: createDocumentViewerUrl(input.origin, rawToken),
+      expiresAt: current.expiresAt,
+    };
   } catch (error) {
     mapRepositoryError(error);
   }
@@ -252,11 +380,41 @@ export async function revokeDocumentShare(input: {
   assertRuntime(true);
   assertUuid(input.generatedDocumentId);
   assertUuid(input.tokenId);
+  const artifact = await loadCanonicalShareArtifact({
+    scope: input.scope,
+    companyMemberId: input.companyMemberId,
+    correlationId: input.correlationId,
+    documentId: input.generatedDocumentId,
+  });
+  if (!artifact || await inspectGeneratedDocumentArtifact(artifact.metadata) !== "healthy"
+      || artifact.metadata.objectKey === null || artifact.metadata.fileSizeBytes === null
+      || artifact.metadata.contentSha256 === null) {
+    throw new DocumentAccessServiceError("NOT_FOUND", 404, "폐기할 수 있는 최신 공유 링크를 찾을 수 없습니다.");
+  }
+  const scope = toScope({ ...input, permissionCode: "workorder.update" });
+  const baseRawToken = deriveMakerCurrentDocumentAccessToken({
+    companyId: scope.companyId,
+    generatedDocumentId: input.generatedDocumentId,
+  });
   try {
     return await revokeDocumentAccessToken({
-      scope: toScope({ ...input, permissionCode: "workorder.update" }),
+      scope,
       generatedDocumentId: input.generatedDocumentId,
       tokenId: input.tokenId,
+      makerCurrentBaseTokenHash: hashDocumentAccessToken(baseRawToken),
+      deriveReplacementTokenHash: (predecessorTokenId) => hashDocumentAccessToken(deriveMakerCurrentDocumentAccessToken({
+        companyId: scope.companyId,
+        generatedDocumentId: input.generatedDocumentId,
+        rotatedFromTokenId: predecessorTokenId,
+      })),
+      expectedArtifact: {
+        workOrderId: artifact.workOrderId,
+        revisionId: artifact.revisionId,
+        generationNumber: artifact.generationNumber,
+        storageObjectKey: artifact.metadata.objectKey,
+        fileSizeBytes: artifact.metadata.fileSizeBytes,
+        contentSha256: artifact.metadata.contentSha256,
+      },
     });
   } catch (error) {
     mapRepositoryError(error);
@@ -299,10 +457,14 @@ export async function rotateDocumentShare(input: {
       expiresAt: policy.expiresAt,
       generatedDocumentId: input.generatedDocumentId,
       displayDocumentNumber: result.displayDocumentNumber,
+      workOrderId: result.workOrderId,
+      revisionId: result.revisionId,
+      generationNumber: result.generationNumber,
       rawToken,
       viewerUrl,
       qrSvg: createQrSvg(viewerUrl),
       idempotentReplay: result.idempotentReplay,
+      reusedExisting: false,
     };
   } catch (error) {
     mapRepositoryError(error);

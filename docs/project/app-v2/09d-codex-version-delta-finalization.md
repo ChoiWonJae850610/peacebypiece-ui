@@ -84,12 +84,35 @@ Declare completion only when every applicable Delta and Permanent Rule gate pass
 
 ## 7. External handoff file hygiene
 
-- `INBOX` keeps at most one current active WAFL handoff ZIP. After the active handoff and its evidence are verified, remove superseded WAFL handoff ZIPs only by exact filename plus verified byte size and SHA-256; never use a wildcard or broad deletion, and never touch unrelated files.
-- `RESULTS` keeps only the current task's official Result/QA pair. Publish and verify both current files before removing older WAFL result files individually; intermediate logs and raw evidence do not belong in `RESULTS`.
-- A failure preserves the active input and the previously verified official Result/QA pair unless the active Delta explicitly requires a new verified failure pair.
+The Owner gives standing authorization for verified WAFL artifact publication between the canonical local artifact directory `C:\CWJ_Project\Patch\PeacebyPiece\4. Newest` and the designated synchronized directories `G:\내 드라이브\WAFL_Codex\INBOX` and `G:\내 드라이브\WAFL_Codex\RESULTS`. The authorized artifact classes are WAFL handoff ZIPs, whole-product current-source snapshots, final Source ZIPs, matching repo-state, Official Result/QA pairs, and their manifests or verification records. A whole-product source archive is expected and authorized in those exact destinations; do not request repeated egress approval solely because it contains ordinary WAFL repository source or because the destination is synchronized Google Drive storage.
+
+This standing authorization never includes passwords, live credentials, API secrets, private keys, real `.env` contents, production database dumps, customer personal data, live-data backups, unrelated project material, another account/recipient/path, public-link creation, or sharing-permission expansion. Canonical source-only exclusions and secret scans remain mandatory. A failure in provenance, exclusion, secret, or destination verification is a stop for that artifact only.
+
+Use this exact publication and replacement order:
+
+1. create the new artifact;
+2. run exclusion and secret checks;
+3. publish only to an authorized exact destination;
+4. re-read the published copy and verify filename, byte size, full SHA-256, archive entry count/full-read when applicable, and exclusion/secret/duplicate/read violations;
+5. prove each predecessor's WAFL provenance, role, exact identity, and replacement relation;
+6. delete each obsolete predecessor by exact literal path only, after confirming its exact filename plus verified byte size and SHA-256;
+7. verify the final retained inventory.
+
+For artifact hygiene, never use a wildcard or broad deletion. Prefix deletion, directory-wide cleanup, unrelated-file deletion, and deleting a baseline before its replacement is verified are also prohibited. If one file's provenance or replacement relation is unclear, preserve that file and record why while continuing other independently safe exact cleanup.
+
+- `RESULTS` retains only the current task's official Result/QA pair after that latest pair is verified. Publish and verify both replacement files before deleting older WAFL Result/QA files individually. Intermediate logs and raw evidence do not belong in `RESULTS`.
+- `INBOX` retains the handoff required for the active execution and the latest verified current-source snapshot. Delete a consumed handoff only after execution and successor evidence are verified.
+- `4. Newest` retains the latest completed version's final Source ZIP plus matching repo-state. If the current workflow keeps an in-progress snapshot there, retain only its latest verified copy. A current in-progress snapshot never replaces or authorizes deletion of the most recent completed-version final Source ZIP/repo-state.
+- A prior instruction to retain a current Result/QA, snapshot, handoff, final ZIP, or repo-state is a replacement barrier, not permanent retention. It expires when a verified artifact of the same role supersedes it. An explicit `permanent retention` or `retain after successor version` instruction remains authoritative.
+- A failure preserves the active input and the previously verified Official Result/QA pair unless the active Delta explicitly requires a new verified failure pair.
+- Artifact hygiene changes files only. It cannot mutate source behavior, Git history/state, DB, R2, PDF/token lifecycle, or fixtures.
 
 ## 8. Current-source GPT review snapshot
 
 When an owner-approved Delta requires a GPT-reviewable current-source snapshot at a normal pre-finalization checkpoint, it is a diagnostic snapshot, not a release artifact. Create it only after the official Result/QA pair is verified, under `C:\CWJ_Project\Patch\PeacebyPiece\4. Newest`, with a timestamped `current-source-snapshot` filename. Include the current tracked and untracked source, current canonical docs and contracts, the current official Result/QA pair, and an index that states the checkpoint and collection scope.
 
 Apply the canonical Source ZIP exclusions for Git metadata, dependencies, builds, caches, runtime/test artifacts, reports, coverage, env files, secrets, credentials, logs, existing generated ZIPs, and repo-state/build-result outputs. Verify archive open/test, entry count, byte size, SHA-256, exclusion violations, and secret/env hits. Snapshot creation must not modify repository source, Git state, DB/R2/PDF/token state, fixtures, or Runtime. It does not replace the canonical release Source ZIP or authorize version, commit, push, or finalization work.
+
+Publish a verified current-source snapshot to the designated `INBOX` under the standing authorization in section 7 when the active Delta requires external handoff. Re-read the destination rather than trusting copy completion. Never overwrite an existing timestamped snapshot with different bytes. When policy or source changes after snapshot creation, create and verify a new timestamped snapshot, publish it, and only then remove the superseded snapshot by exact identity.
+
+Because a ZIP cannot contain a Result file that also embeds that ZIP's own final SHA-256 without a self-reference, the snapshot may embed the verified pre-publication Official Result/QA pair identified by the index. After the ZIP identity is known, the externally published Official Result may record the full snapshot identity. The index and report must label this two-phase relationship explicitly; it is not permission to embed stale product/source evidence.

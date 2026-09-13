@@ -92,6 +92,7 @@ Product policy starts with `docs/project/26-final-policy-decisions-and-master-to
 - Stop before commit when required validation or user/runtime evidence is absent, an unexpected file changed, a dependency/lockfile or migration appeared outside scope, or any secret/security boundary is uncertain.
 - Prefer `tools/pipeline/approved-workflow.ps1 -Action Verify -Profile <profile>`, then Plan/Finish according to the canonical workflow.
 - Final delivery requires synchronized `master`, clean Git, one matching Source ZIP and repo-state in `4. Newest`, and no excluded artifact or secret.
+- WAFL artifact publication and replacement hygiene follow `docs/project/app-v2/09d-codex-version-delta-finalization.md`. The Owner has standing approval for verified source snapshots, final Source ZIPs, matching repo-state, Official Result/QA, manifests, and verification records to move only among the canonical local `4. Newest` directory and the designated `G:\내 드라이브\WAFL_Codex\INBOX` / `RESULTS` directories; this never permits secrets, production/customer data, unrelated projects, public-link creation, or broader sharing.
 
 ## Runtime and internal access
 

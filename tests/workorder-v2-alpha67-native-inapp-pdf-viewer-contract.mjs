@@ -62,7 +62,8 @@ assert.match(workbench, /label="공유"/u);
 assert.match(workbench, /label="저장"/u);
 assert.match(workbench, /prepareAuthenticatedDocumentPdfForSave/u);
 assert.match(workbench, /url: `file:\/\/\$\{saveFile\.path\}`/u);
-assert.doesNotMatch(workbench, /Linking\.openURL/u);
+const currentLinkOpenFunction = workbench.match(/async function openCurrentShareLink\(action: CurrentShareLinkActionModel\) \{[\s\S]*?\n  \}/u)?.[0] ?? "";
+assert.match(currentLinkOpenFunction, /Linking\.openURL\(action\.openUrl\)/u);
 assert.match(workbench, /createDocumentShare/u, "Share keeps public /v token creation");
 
 console.log(JSON.stringify({

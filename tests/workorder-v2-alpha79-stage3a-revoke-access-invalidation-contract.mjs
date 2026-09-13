@@ -63,7 +63,7 @@ assert.equal(model.tokenTarget, null); // 24
 assert.equal(model.canRetry, false); // 25 no auto regenerate
 assert.match(repository, /UPDATE document_access_tokens SET revoked_at=COALESCE/u); // 26 token invalidation
 assert.match(public011, /document\.status = 'generated'[\s\S]*document\.revoked_at IS NULL/u); // 27 old public resolver
-assert.match(accessRepository, /status = 'generated' AND revoked_at IS NULL AND deleted_at IS NULL/u); // 28 new token denied
+assert.match(accessRepository, /d\.status\s*=\s*'generated'[\s\S]{0,80}d\.revoked_at IS NULL[\s\S]{0,80}d\.deleted_at IS NULL/u); // 28 new token denied
 assert.match(repository, /generated_document_id=\$2::uuid AND revoked_at IS NULL/u); // 29 exact token only
 assert.match(workbench, /tokenLoadGenerationRef\.current \+= 1/u); // 30 stale token result denied
 assert.match(fileRoute, /status\s*=\s*'generated'[\s\S]*revoked_at IS NULL/u); // 31 file deny
@@ -90,7 +90,7 @@ assert.match(verify, /workorder-v2-alpha79-stage2b-missing-corrupt-recovery-cont
 assert.match(verify, /workorder-v2-alpha78-sketch-pdf-output-fidelity-contract/u); // 52 alpha78
 assert.equal(fs.readdirSync("db/v2/migrations").filter((name) => /^\d{3}_.*\.sql$/u.test(name)).length, 22); // 53
 for (const dependency of ["@shopify/react-native-skia", "react-native-reanimated", "react-native-gesture-handler", "react-native-worklets"]) assert.equal(mobilePackage.dependencies[dependency], undefined); // 54-57
-assert.equal(appConfig.expo.extra.appVersion, "2.0.0-alpha.79"); // 58 finalized current version
+assert.equal(appConfig.expo.extra.appVersion, "2.0.0-alpha.80"); // 58 finalized current version
 assert.doesNotMatch(repository, /DELETE FROM generated_documents/u); // 59 Stage3B zero
 assert.match(route, /permissionCode: "workorder\.update"/u); // 60 guard
 assert.match(service, /getDocumentAccessRuntimeGuard\(\{ requireMutationApproval: true/u); // 61 runtime guard

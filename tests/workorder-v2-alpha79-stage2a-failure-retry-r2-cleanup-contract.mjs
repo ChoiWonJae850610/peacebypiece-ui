@@ -67,7 +67,7 @@ assert.match(verifySafe, /workorder-v2-alpha78-sketch-pdf-output-fidelity-contra
 assert.match(transport, /deleteR2ObjectViaWorker\(\{ key: assertKey\(key\) \}\)/u); // 42 canonical exact-key transport
 assert.match(objectStore, /deletePdf\(key: string\): Promise<void>/u); // 43 store contract retained
 assert.equal(fs.readdirSync("db/v2/migrations").filter((name) => /^\d{3}_.*\.sql$/u.test(name)).length, 22); // 44 migration zero
-assert.equal(appConfig.expo.extra.appVersion, "2.0.0-alpha.79"); // 45 finalized current version
+assert.equal(appConfig.expo.extra.appVersion, "2.0.0-alpha.80"); // 45 finalized current version
 assert.equal(mobilePackage.dependencies["@shopify/react-native-skia"], undefined); // 46 dependency delta zero
 assert.match(devRunner, /FAIL_BEFORE_OBJECT_PUT[\s\S]*FAIL_AFTER_OBJECT_PUT_BEFORE_FINALIZE/u); // 47 DEV runner injection
 assert.match(verifySafe, /workorder-v2-alpha79-stage2b-missing-corrupt-recovery-contract\.mjs/u); // 48 Stage 2B additive; Stage 3 still absent

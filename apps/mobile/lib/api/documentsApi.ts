@@ -1,4 +1,4 @@
-import type { DocumentAccessTokenSummary, WorkOrderDocumentPage } from "@/domain/mobileContract";
+import type { CurrentDocumentShareTarget, DocumentAccessTokenSummary, WorkOrderDocumentPage } from "@/domain/mobileContract";
 import { MobileApiError } from "@/domain/mobileContract";
 import { requestJson } from "../apiTransport";
 
@@ -80,9 +80,36 @@ export async function listDocumentAccessTokens(documentId: string): Promise<read
   return body.data.items;
 }
 
+export async function getCurrentDocumentShareTarget(documentId: string): Promise<CurrentDocumentShareTarget | null> {
+  try {
+    const body = await requestJson<{ ok: boolean; data?: { target: CurrentDocumentShareTarget | null } }>(
+      `/api/v2/work-orders/documents/${encodeURIComponent(documentId)}/access-tokens/current`,
+      { method: "GET" },
+    );
+    if (!body.ok || !body.data || !("target" in body.data)) {
+      throw new MobileApiError({ code: "MALFORMED_RESPONSE", message: "현재 공유 링크 응답이 올바르지 않습니다." });
+    }
+    return body.data.target;
+  } catch (error) {
+    if (error instanceof MobileApiError && error.code === "FORBIDDEN") return null;
+    throw error;
+  }
+}
+
 export async function createDocumentShare(documentId: string, expiresInDays: 3, clientRequestId: string) {
-  const body = await requestJson<{ ok: boolean; data?: { viewerUrl: string; expiresAt: string } }>(`/api/v2/work-orders/documents/${encodeURIComponent(documentId)}/access-tokens`, { method: "POST", idempotencyKey: clientRequestId, body: { expiresInDays } });
-  if (!body.ok || !body.data?.viewerUrl) throw new MobileApiError({ code: "MALFORMED_RESPONSE", message: "공유 링크 응답이 올바르지 않습니다." });
+  const body = await requestJson<{ ok: boolean; data?: {
+    viewerUrl: string;
+    expiresAt: string;
+    generatedDocumentId: string;
+    workOrderId: string;
+    revisionId: string;
+    generationNumber: number;
+    reusedExisting: boolean;
+  } }>(`/api/v2/work-orders/documents/${encodeURIComponent(documentId)}/access-tokens`, { method: "POST", idempotencyKey: clientRequestId, body: { expiresInDays } });
+  if (!body.ok || !body.data?.viewerUrl || body.data.generatedDocumentId !== documentId
+      || !body.data.workOrderId || !body.data.revisionId || !Number.isSafeInteger(body.data.generationNumber)) {
+    throw new MobileApiError({ code: "MALFORMED_RESPONSE", message: "공유 링크 응답이 올바르지 않습니다." });
+  }
   return body.data;
 }
 

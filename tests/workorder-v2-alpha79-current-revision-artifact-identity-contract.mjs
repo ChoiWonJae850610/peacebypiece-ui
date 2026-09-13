@@ -100,7 +100,7 @@ assert.match(immutableMigration, /generated_documents_immutable_guard/u); // 38 
 assert.match(verifySafe, /workorder-v2-alpha67-pdf-generation-retry-public-viewer-contract\.mjs/u); // 39 retry regression
 assert.match(verifySafe, /workorder-v2-alpha78-finalization-contract\.mjs/u); // 40 alpha78 regression
 assert.equal(migrations.length, 22); // 41 migration delta zero
-assert.equal(appConfig.expo.extra.appVersion, "2.0.0-alpha.79"); // 42 finalized current version
+assert.equal(appConfig.expo.extra.appVersion, "2.0.0-alpha.80"); // 42 finalized current version
 for (const dependency of ["@shopify/react-native-skia", "react-native-reanimated", "react-native-gesture-handler", "react-native-worklets"]) {
   assert.equal(mobilePackage.dependencies[dependency], undefined); // 43-46 dependency boundary
 }
@@ -112,6 +112,6 @@ console.log(JSON.stringify({
   checkpoint: "ALPHA79_CURRENT_REVISION_ARTIFACT_IDENTITY_IPHONE_IPAD_QA_REQUIRED",
   currentRevisionStates: [none.state, pending.state, failed.state, generated.state],
   migrationLedgerExpected: "22/22",
-  appVersion: "2.0.0-alpha.79",
+  appVersion: "2.0.0-alpha.80",
   physicalResult: "PHYSICAL_RESULT_NOT_INFERRED",
 }));

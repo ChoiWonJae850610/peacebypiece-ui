@@ -1,5 +1,74 @@
 # WAFL v2 App-first Roadmap and Version Delta
 
+## Alpha.80 finalization
+
+- Status: `ALPHA80_FINALIZATION_COMPLETE`; accepted product checkpoint: `ALPHA80_COMPLETE`.
+- Owner actual Final Combined Smoke is `PASS` on iPhone and iPad mini. One exact healthy current-Revision generated
+  artifact owns one canonical current Maker Share lineage; public Open, Copy, native Share, Revoke, terminal denial,
+  explicit successor creation, re-entry stability, Viewer minimization, and duplicate-current-link zero are accepted.
+- Stage 1 exact binding, Stage 2 DB-time expiry/revoke/replacement and current-link actions, Stage 3 token security/
+  isolation, and alpha.79 document lifecycle precedence remain canonical. The existing three-day TTL is unchanged.
+- Regular/Large iPad and Android remain honest `NOT_RUN`. APP_VERSION is `2.0.0-alpha.80`; migration remains `22/22`.
+  Finalization adds no feature behavior, dependency/native/config/EAS, API/schema/migration, business-data mutation,
+  tag, or release.
+
+## Alpha.80 Stage 3 public Share security / isolation Delta
+
+- Checkpoint: `ALPHA80_STAGE3_PUBLIC_SHARE_SECURITY_ISOLATION_IPHONE_IPAD_QA_REQUIRED`; Stage 3 physical PASS is not
+  inferred. Owner actual Stage 2 physical QA is PASS on iPhone and iPad mini.
+- One 256-bit HMAC-SHA256 opaque credential is persisted only by exact SHA-256 hash. Public bootstrap, signed session,
+  PDF, and attachment reads cannot accept arbitrary company/WorkOrder/Revision/document/generation/storage selectors;
+  terminal state is reauthorized on every artifact request and returns one generic fail-closed surface.
+- Sanitized DEV evidence proves the exact `VALID_A` PDF, twelve mutation/duplicate-selector denials, seven terminal
+  predecessor denials, no sensitive metadata leak, and zero lifecycle/document/R2 mutation. No safe `VALID_B` current
+  link existed, so cross-resource isolation is proved through zero-selector runtime evidence plus service/SQL contracts.
+- The public response no longer exposes its unused internal access counter. Existing private/no-store, no-referrer,
+  nosniff, noindex, CSP frame denial, exact digest, and Viewer-minimization owners remain canonical. A public route
+  rate-limit owner is absent; operational edge throttling is deferred under strong-token/no-enumeration conditions.
+- APP_VERSION stays `2.0.0-alpha.79`; migration stays `22/22`; dependency/native/config/EAS, API/schema, billing,
+  Factory, Production/Owner/ambiguous mutation, and commit/push/tag/release/finalization deltas are zero.
+
+## Alpha.80 Stage 2 current Share link actions Delta
+
+- Checkpoint: `ALPHA80_STAGE2_CURRENT_SHARE_LINK_ACTIONS_IPHONE_IPAD_REQA_REQUIRED`; physical PASS is not inferred.
+- One private authenticated current-target read joins the exact healthy current document/Revision/generation to the
+  canonical lineage head. The mobile model rejects any stale or mismatched projection.
+- One visible current URL owns `열기`, `링크 복사`, and native `공유하기`; its token owns `공유 링크 폐기`. Read actions
+  create/rotate zero credentials. Post-revoke current actions disappear, PDF health is unchanged, and top-level Share
+  remains the explicit replacement action.
+- APP_VERSION stays `2.0.0-alpha.79`; migration stays `22/22`; dependency/native/config/EAS, reconciliation DB/R2,
+  Production/Owner/ambiguous mutation, Stage 3, commit/push/tag/release/finalization deltas are zero.
+
+## Alpha.80 Stage 2 Share expiry / revoke / replacement Delta
+
+- Checkpoint: `ALPHA80_STAGE2_SHARE_EXPIRY_REVOKE_REPLACEMENT_IPHONE_IPAD_QA_REQUIRED`; Stage 2 physical PASS is not
+  inferred. Stage 1 Owner physical QA remains PASS on iPhone and iPad mini.
+- Database `now()` owns the canonical active predicate and TTL. Revoked or expired lineage heads are non-current and
+  fail closed across public session, Viewer, and file resolution without reason leakage or a sweeper.
+- One advisory-locked lineage owner handles exact current-link revoke and explicit replacement. Revoke changes no PDF,
+  WorkOrder, Revision, generation, or R2 object. Replacement is a deterministic child of the terminal predecessor and
+  every retry/concurrent key converges on one active child while old links remain denied.
+- Exact DEV evidence on `QA A80 canonical share binding` proved event-once revoke, A-to-B replacement, deterministic
+  expiry, B-to-F replacement, exact artifact equality, one final canonical active link, and untouched legacy rows.
+- APP_VERSION stays `2.0.0-alpha.79`; migration stays `22/22`; dependency/native/config/EAS,
+  Production/Owner/ambiguous mutation, billing, Stage 3, and delivery deltas are zero.
+
+## Alpha.80 Stage 1 canonical Share binding Delta
+
+- Checkpoint: `ALPHA80_STAGE1_CANONICAL_SHARE_BINDING_IPHONE_IPAD_QA_REQUIRED`; physical PASS is not inferred.
+- Existing recipient/manual multi-token compatibility is retained. The Maker current Share flow derives one opaque
+  HMAC credential per exact generated artifact and reuses its one active row under an exact company+document advisory
+  lock, independent of client request-key reuse.
+- Eligibility requires the authenticated company, current WorkOrder Revision, newest attempt, `generated` lifecycle,
+  non-terminal state, exact immutable storage metadata, and actual healthy PDF bytes. Stale/unhealthy/terminal attempts
+  cannot reserve a receipt, consume the canonical link, or resurrect access.
+- The mobile Workbench consumes only its healthy current generated projection, rejects a stale/mismatched response, and
+  clears its request identity on document transition. Public `/v` resolves the exact immutable artifact and retains the
+  existing hash-only/session/R2 security boundary.
+- APP_VERSION stays `2.0.0-alpha.79`; migration is `22/22`; Stage 2 expiry/manual-revoke/replacement and Stage 3 public
+  security expansion are not started. Dependency/native/config/EAS, billing, and Production/Owner/ambiguous mutation
+  deltas are zero.
+
 ## Alpha.79 finalization
 
 - Status: `ALPHA79_FINALIZATION_COMPLETE`; accepted product checkpoint: `ALPHA79_COMPLETE`.
@@ -644,20 +713,21 @@ Alpha.70 remains finalized at `ALPHA70_FINALIZATION_COMPLETE` with product check
 
 Document role: canonical owner for the current result, next candidate, and Version Delta boundary. It is not the historical implementation ledger; completed details live in numbered immutable evidence.
 
-## Current result — 2.0.0-alpha.79
+## Current result — 2.0.0-alpha.80
 
-Status: `ALPHA79_FINALIZATION_COMPLETE`.
+Status: `ALPHA80_FINALIZATION_COMPLETE`.
 
-Accepted product checkpoint: `ALPHA79_COMPLETE`.
+Accepted product checkpoint: `ALPHA80_COMPLETE`.
 
 Owner physical result: `PASS` on iPhone and iPad mini; Regular/Large iPad and Android are `NOT_RUN`.
 
-Alpha.79 finalizes the generated-document lifecycle from exact current-Revision action identity through failure cleanup,
-missing/corrupt same-Revision N+1 recovery, logical revoke, and exact-object purge into retained terminal deleted audit
-state. Owner Final Combined Smoke accepts healthy generated re-entry, deleted persistence with no actions/fallback/auto-
-generation, and generated-to-none selector clearing on iPhone and iPad mini. Alpha.78 Drawing Scene v1, WORLD
-`1000×1400`, `1500×2100`/`5:7` output and Camera independence remain unchanged. Finalization adds no feature behavior,
-dependency/native/config/EAS, API/schema/migration, business-data mutation, tag, or release.
+Alpha.80 finalizes exact current healthy generated-artifact Share binding, one canonical Maker-current lineage, DB-time
+expiry and exact revoke, explicit terminal successor creation, one-identity current actions, and fail-closed public token
+security/isolation. Owner Final Combined Smoke accepts exact PDF Open, public Viewer minimization, link reuse without
+duplicates, terminal/historical takeover zero, re-entry stability, and iPad-mini layout/orientation stability. Alpha.79
+document lifecycle and alpha.78 Drawing Scene v1, WORLD `1000×1400`, `1500×2100`/`5:7` output remain unchanged.
+Finalization adds no feature behavior, dependency/native/config/EAS, API/schema/migration, business-data mutation, tag,
+or release.
 
 ## Alpha.72 current candidate — Drawing Foundation
 

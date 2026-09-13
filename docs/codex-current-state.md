@@ -1,5 +1,58 @@
 # WAFL Current Baseline
 
+Alpha.80 is finalized at `ALPHA80_FINALIZATION_COMPLETE` with product checkpoint `ALPHA80_COMPLETE`. Owner actual
+Final Combined Smoke is `PASS` on iPhone and iPad mini: the exact current healthy generated PDF remains bound to one
+canonical Maker-current Share lineage, public Open resolves that artifact without Maker/private controls, Open/Copy/
+native Share/Revoke use one current identity, repeated Share reuses the link without duplicates, and re-entry preserves
+the same identity. Revoked and expired predecessors remain terminal, replacement is explicit, the existing three-day
+TTL is unchanged, and alpha.79 document
+missing/corrupt/revoked/deleted authority remains superior to Share lifecycle. Regular/Large iPad and Android remain
+`NOT_RUN` and are not inferred PASS. APP_VERSION is `2.0.0-alpha.80`; migration remains `22/22`. Finalization adds no
+product behavior, dependency/native/config/EAS, API/schema/migration, Production/Owner/ambiguous mutation, tag, or
+release.
+
+Alpha.80 Stage 3 public Share security and isolation is implemented at
+`ALPHA80_STAGE3_PUBLIC_SHARE_SECURITY_ISOLATION_IPHONE_IPAD_QA_REQUIRED`; Stage 3 physical result is not inferred.
+Owner actual Stage 2 physical QA is PASS on iPhone and iPad mini. The 256-bit HMAC-SHA256 bearer credential is stored
+hash-only and resolves one exact issued artifact without caller-controlled company, WorkOrder, Revision, document,
+generation, or storage-key selectors. Signed sessions are reauthorized for every file/attachment read, terminal states
+fail closed with generic errors, and private/no-store plus no-referrer/nosniff/noindex/frame-denial policies are retained.
+Sanitized DEV evidence proved valid exact-PDF identity, twelve mutation/duplicate-selector denials, seven terminal denials,
+and no internal identity leakage. The unused public `accessCount` field was removed. No rate-limit owner exists, so edge
+throttling remains deferred under the strong-token/no-enumeration boundary without a new dependency. APP_VERSION remains
+`2.0.0-alpha.79`; migration remains `22/22`; commit/push/tag/release/finalization remain zero.
+
+Alpha.80 Stage 2 current Share link actions are reconciled at
+`ALPHA80_STAGE2_CURRENT_SHARE_LINK_ACTIONS_IPHONE_IPAD_REQA_REQUIRED`; physical result is not inferred. The authenticated
+Maker workbench resolves the exact active canonical URL through a private read-only current-target route and exposes
+`열기`, `링크 복사`, `공유하기`, and `공유 링크 폐기` only when document, WorkOrder, Revision, generation, and canonical
+token identity all match. Open/copy/native Share reuse that URL without creating or rotating a token. Revoke refreshes
+to no current actions while retaining the healthy PDF and top-level Share for explicit replacement. The retained Stage 2
+lifecycle evidence remains authoritative; this reconciliation observed the Owner-revoked no-current state read-only and
+performed no DB/R2/business mutation. APP_VERSION remains `2.0.0-alpha.79`; migration remains `22/22`; Stage 3 is zero.
+
+Alpha.80 Stage 2 Share expiry, revoke, and replacement is implemented at
+`ALPHA80_STAGE2_SHARE_EXPIRY_REVOKE_REPLACEMENT_IPHONE_IPAD_QA_REQUIRED`; Stage 2 physical result is not inferred.
+Stage 1 Owner physical QA remains PASS on iPhone and iPad mini. The exact healthy current-Revision newest generated PDF
+has one database-clock-governed canonical Maker-current lineage. Manual revoke targets only its active head, is
+concurrency/idempotency safe, emits one event, immediately denies the public URL, and leaves the document and R2 object
+unchanged. Expiry is enforced at token/session/file resolution and current selection without a sweeper. The next explicit
+Share after revoke or expiry creates one deterministic child linked by `rotated_from_token_id`; old terminal URLs never
+reactivate and concurrent requests converge on one active replacement. Existing legacy manual links remain retained and
+non-canonical. Exact DEV evidence completed revoke/replacement/expiry/replacement on `QA A80 canonical share binding`.
+APP_VERSION remains `2.0.0-alpha.79`; migration remains `22/22`; Stage 3 remains zero.
+
+Alpha.80 Stage 1 canonical Share binding is implemented at
+`ALPHA80_STAGE1_CANONICAL_SHARE_BINDING_IPHONE_IPAD_QA_REQUIRED`; Owner physical result is not inferred. The existing
+intentional multi-token `manual_share` model remains compatible, while one deterministic HMAC-backed Maker-current link
+is reused for the exact healthy current-Revision newest generated artifact. Server validation binds company, WorkOrder,
+Revision, document, generation, immutable metadata, and R2 PDF health before a tenant transaction revalidates the same
+identity under one advisory lock. Same-key replay, response-loss retry, rapid double tap, concurrent and different-key
+requests cannot create a second Maker-current credential/event. Pending, failed, missing, corrupt, transient-unverified,
+revoked, deleted, historical and older attempts fail closed. Public resolution remains bound to the exact immutable
+generated document and exposes no Maker controls. APP_VERSION remains `2.0.0-alpha.79`; migration remains `22/22` and
+Stage 2 expiry/revoke/replacement plus Stage 3 security expansion remain zero.
+
 Alpha.79 is finalized at `ALPHA79_FINALIZATION_COMPLETE` with product checkpoint `ALPHA79_COMPLETE`. Owner actual Final
 Combined Smoke is `PASS` on iPhone and iPad mini: the healthy exact-current-Revision generated PDF remains usable after
 re-entry, the terminal deleted document remains inaccessible without historical fallback or automatic regeneration, and
@@ -703,9 +756,9 @@ Document type: **Current Baseline**
 
 Canonical owner: `docs/codex-current-state.md`
 
-Result version: `2.0.0-alpha.79`
-Status: `ALPHA79_FINALIZATION_COMPLETE`
-Product checkpoint: `ALPHA79_COMPLETE`
+Result version: `2.0.0-alpha.80`
+Status: `ALPHA80_FINALIZATION_COMPLETE`
+Product checkpoint: `ALPHA80_COMPLETE`
 Owner physical result: `PASS` on iPhone and iPad mini; Regular/Large iPad and Android are `NOT_RUN`
 
 ## Final alpha.75 Sketch editing-tools result

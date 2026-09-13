@@ -95,7 +95,7 @@ match(service, /afterObjectAbsentBeforeFinalize/u, "partial-failure injection se
 match(repository, /target\.status === "deleted"[\s\S]*idempotentReplay: true/u, "already deleted replay");
 match(fileRoute, /status\s*=\s*'generated'[\s\S]*revoked_at IS NULL[\s\S]*deleted_at IS NULL/u, "file denied");
 match(preview, /latest_document\.status='generated'[\s\S]*latest_document\.revoked_at IS NULL[\s\S]*latest_document\.deleted_at IS NULL/u, "preview denied");
-match(access, /status = 'generated' AND revoked_at IS NULL AND deleted_at IS NULL/u, "new token denied");
+  match(access, /d\.status\s*=\s*'generated'[\s\S]{0,80}d\.revoked_at IS NULL[\s\S]{0,80}d\.deleted_at IS NULL/u, "new token denied");
 match(api, /purgeRevokedGeneratedDocument/u, "mobile canonical client");
 match(api, /documents\/\$\{encodeURIComponent\(input\.documentId\)\}\/purge/u, "mobile exact route");
 match(workbench, /PDF 삭제 QA/u, "DEV external-QA control");
@@ -118,7 +118,7 @@ match(read("tests/workorder-v2-alpha78-finalization-contract.mjs"), /alpha\.78/i
 equal(fs.existsSync("db/v2/migrations/023_v2_generated_document_purge.sql"), false, "migration delta 0");
 noMatch(service + repository, /sweeper|retention worker|cron/iu, "global retention worker 0");
 noMatch(service + repository, /billing|share redesign/iu, "Share redesign and billing 0");
-match(read("lib/constants/version.ts"), /2\.0\.0-alpha\.79/u, "APP_VERSION finalized");
+match(read("lib/constants/version.ts"), /2\.0\.0-alpha\.(?:79|80)/u, "APP_VERSION finalized");
 
 ok(checks >= 69, `Stage 3B permanent inventory must contain at least 69 checks, got ${checks}`);
 console.log(JSON.stringify({ contract: "workorder-v2-alpha79-stage3b-revoked-artifact-purge-deleted",

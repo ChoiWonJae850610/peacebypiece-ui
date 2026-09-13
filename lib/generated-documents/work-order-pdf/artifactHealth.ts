@@ -15,6 +15,16 @@ import {
 export { classifyGeneratedDocumentArtifact } from "./artifactHealthCore";
 export type { GeneratedDocumentArtifactHealth, GeneratedDocumentArtifactMetadata } from "./artifactHealthCore";
 
+export type CanonicalShareArtifactIdentity = {
+  readonly companyId: string;
+  readonly workOrderId: string;
+  readonly revisionId: string;
+  readonly documentId: string;
+  readonly generationNumber: number;
+  readonly displayDocumentNumber: string;
+  readonly metadata: GeneratedDocumentArtifactMetadata;
+};
+
 export async function inspectGeneratedDocumentArtifact(
   metadata: GeneratedDocumentArtifactMetadata,
   store: GeneratedDocumentObjectStore = new R2WorkerGeneratedDocumentObjectStore(new R2WorkerGeneratedDocumentTransport()),
@@ -102,6 +112,52 @@ export async function loadCurrentGeneratedDocumentArtifactFixture(input: {
 export async function getGeneratedDocumentArtifactHealth(input: Parameters<typeof loadGeneratedDocumentArtifactMetadata>[0]) {
   const metadata = await loadGeneratedDocumentArtifactMetadata(input);
   return metadata ? inspectGeneratedDocumentArtifact(metadata) : null;
+}
+
+/**
+ * Resolves the only artifact that may own the Maker's current Share link.
+ * Newest means newest attempt, including terminal or failed attempts, so an
+ * older healthy generation can never take over after a newer attempt exists.
+ */
+export async function loadCanonicalShareArtifact(input: {
+  readonly scope: WorkspaceApiCompanyScope;
+  readonly companyMemberId: string | null;
+  readonly correlationId: string;
+  readonly documentId: string;
+}): Promise<CanonicalShareArtifactIdentity | null> {
+  return withWaflV2TenantReadOnlyTransaction(async (client) => {
+    await installTenantClaims(client, tenantScope(input));
+    const result = await client.query<DbQueryResultRow>(`
+      SELECT d.company_id,d.id::text,d.work_order_id::text,d.work_order_revision_id::text,
+             d.generation_no,d.display_document_number,d.storage_object_key,
+             d.file_size_bytes,d.content_sha256
+      FROM generated_documents d
+      JOIN work_orders w ON w.company_id=d.company_id AND w.id=d.work_order_id
+        AND w.current_revision_id=d.work_order_revision_id AND w.deleted_at IS NULL
+      WHERE d.company_id=$1 AND d.id=$2::uuid AND d.status='generated'
+        AND d.revoked_at IS NULL AND d.deleted_at IS NULL
+        AND d.generation_no=(SELECT max(candidate.generation_no) FROM generated_documents candidate
+          WHERE candidate.company_id=d.company_id AND candidate.work_order_id=d.work_order_id
+            AND candidate.work_order_revision_id=d.work_order_revision_id
+            AND candidate.document_type=d.document_type)
+      LIMIT 1
+    `, [input.scope.companyId, input.documentId]);
+    const row = result.rows[0];
+    return row ? {
+      companyId: String(row.company_id),
+      workOrderId: String(row.work_order_id),
+      revisionId: String(row.work_order_revision_id),
+      documentId: String(row.id),
+      generationNumber: Number(row.generation_no),
+      displayDocumentNumber: String(row.display_document_number),
+      metadata: {
+        documentId: String(row.id),
+        objectKey: row.storage_object_key === null ? null : String(row.storage_object_key),
+        fileSizeBytes: row.file_size_bytes === null ? null : Number(row.file_size_bytes),
+        contentSha256: row.content_sha256 === null ? null : String(row.content_sha256),
+      },
+    } : null;
+  });
 }
 
 export async function loadLatestGeneratedDocumentArtifact(input: {

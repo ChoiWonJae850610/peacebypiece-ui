@@ -1,5 +1,45 @@
 # WAFL v2 App Device Test Plan
 
+## Alpha.80 final device result
+
+- Owner actual iPhone Final Combined Smoke: `PASS` for exact current PDF identity, one canonical current Share, exact
+  public Open, minimized Viewer, same-URL Copy/native Share, repeated-link reuse, duplicate zero, re-entry stability,
+  and terminal/historical takeover zero.
+- Owner actual iPad-mini Final Combined Smoke: `PASS` for the same Share/document smoke plus layout/orientation
+  regression zero. Stage 1, Stage 2, and Stage 3 focused physical results are also `PASS` on both devices.
+- Regular/Large iPad actual-device QA: `NOT_RUN`; Android phone/tablet actual-device QA: `NOT_RUN`.
+- Finalization performs no fixture, token, document, DB, R2, or Owner mutation. This advances `ALPHA80_COMPLETE` and
+  `ALPHA80_FINALIZATION_COMPLETE`.
+
+## Alpha.80 Stage 2 current Share link actions re-QA
+
+- Checkpoint: `ALPHA80_STAGE2_CURRENT_SHARE_LINK_ACTIONS_IPHONE_IPAD_REQA_REQUIRED`; automated evidence is not physical
+  PASS. Use only `QA A80 canonical share binding`.
+- Because the retained fixture currently has no active link after Owner revoke, tap top-level Share once to create the
+  explicit replacement. Confirm one current block exposes `열기`, `링크 복사`, `공유하기`, and `공유 링크 폐기` without
+  horizontal clipping on iPhone and iPad mini.
+- Confirm Open and copied/native-shared URL resolve the same exact PDF, repeated read actions do not change the URL, then
+  revoke once. The block/actions must disappear, the PDF must remain generated/viewable, and top-level Share must remain.
+  Do not infer Regular/Large iPad or Android results.
+
+## Alpha.80 Stage 2 Share lifecycle physical re-QA
+
+- Stage 1 physical Share/open/re-entry is already PASS on iPhone and iPad mini and is retained.
+- Use only `QA A80 canonical share binding`. Confirm the current Link A opens, revoke via `공유 링크 폐기`, confirm A is
+  denied, then explicitly Share Link B and confirm B differs from A, opens the same PDF, and is reused on repeated Share.
+- Expiry is automated-only through an exact-owned DEV database-clock boundary; no Owner-side clock or hidden control is
+  introduced. Do not infer Stage 2 PASS until the revoke/replacement path is run on both required devices.
+
+## Alpha.80 Stage 1 canonical Share binding gate
+
+- Checkpoint: `ALPHA80_STAGE1_CANONICAL_SHARE_BINDING_IPHONE_IPAD_QA_REQUIRED`; automated evidence is not physical PASS.
+- Exact fixture: `QA A80 canonical share binding`. On iPhone, open Document, confirm the healthy current generated PDF,
+  Share and retain Link A, open its exact immutable PDF with no Maker controls, then Share again for Link B. Link B must
+  equal Link A, active Maker-current link count must remain one, and exit/re-entry must preserve the same identity.
+- On iPad mini, repeat Share/open/reuse and confirm orientation regression zero. The retained deleted A79 fixture may be
+  inspected read-only to confirm Share absence. Do not revoke or expire the link; those are Stage 2.
+- Regular/Large iPad and Android are `NOT_RUN` unless actual evidence is supplied. `PHYSICAL_RESULT_NOT_INFERRED` remains.
+
 ## Alpha.79 final device result
 
 - Owner actual iPhone Final Combined Smoke: `PASS` for healthy generated identity/view/re-entry, persistent terminal

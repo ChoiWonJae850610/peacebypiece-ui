@@ -11,6 +11,7 @@ import {
 import { deriveEmbeddedQrOpaqueToken, scopeEmbeddedQrIdempotencyKey } from "./tokenDerivation.mjs";
 
 const TOKEN_NAMESPACE = "document-share-token:v1";
+const MAKER_CURRENT_TOKEN_NAMESPACE = "document-maker-current-share-token:v1";
 const IDEMPOTENCY_NAMESPACE = "document-share-idempotency:v1";
 
 function hmac(namespace: string, parts: readonly string[]): Buffer {
@@ -35,6 +36,19 @@ export function deriveDocumentAccessToken(input: {
     input.commandCode,
     input.idempotencyKey,
   ]).toString("base64url");
+  if (!DOCUMENT_ACCESS_RAW_TOKEN_PATTERN.test(token)) throw new Error("DOCUMENT_ACCESS_TOKEN_DERIVATION_FAILED");
+  return token;
+}
+
+export function deriveMakerCurrentDocumentAccessToken(input: {
+  readonly companyId: string;
+  readonly generatedDocumentId: string;
+  readonly rotatedFromTokenId?: string | null;
+}): string {
+  const parts = input.rotatedFromTokenId
+    ? [input.companyId, input.generatedDocumentId, input.rotatedFromTokenId]
+    : [input.companyId, input.generatedDocumentId];
+  const token = hmac(MAKER_CURRENT_TOKEN_NAMESPACE, parts).toString("base64url");
   if (!DOCUMENT_ACCESS_RAW_TOKEN_PATTERN.test(token)) throw new Error("DOCUMENT_ACCESS_TOKEN_DERIVATION_FAILED");
   return token;
 }

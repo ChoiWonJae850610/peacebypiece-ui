@@ -279,6 +279,7 @@ const alpha73ApiPaths = [
   "app/api/dev/a79-stage3a-revoked-object-audit/route.ts",
   "app/api/dev/a79-stage3b-deleted-object-audit/route.ts",
   "app/api/v2/work-orders/documents/[documentRef]/health/route.ts",
+  "app/api/v2/work-orders/documents/[documentRef]/access-tokens/current/route.ts",
   "app/api/v2/work-orders/[workOrderId]/documents/[documentRef]/revoke/route.ts",
   "app/api/v2/work-orders/[workOrderId]/documents/[documentRef]/purge/route.ts",
   "app/api/v2/work-orders/[workOrderId]/drawings/primary-sketch/route.ts",

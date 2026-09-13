@@ -11,6 +11,17 @@ export type DocumentAccessTokenSummary = {
   readonly lastAccessedAt: string | null;
   readonly accessCount: number;
   readonly status: DocumentAccessTokenStatus;
+  readonly isMakerCurrentShare?: boolean;
+};
+
+export type CurrentDocumentShareTarget = {
+  readonly tokenId: string;
+  readonly generatedDocumentId: string;
+  readonly workOrderId: string;
+  readonly revisionId: string;
+  readonly generationNumber: number;
+  readonly viewerUrl: string;
+  readonly expiresAt: string;
 };
 
 export type CreatedEmbeddedQrAccessToken = {
@@ -29,10 +40,14 @@ export type CreatedDocumentAccessToken = Omit<DocumentAccessTokenSummary, "expir
   readonly expiresAt: string;
   readonly generatedDocumentId: string;
   readonly displayDocumentNumber: string;
+  readonly workOrderId: string;
+  readonly revisionId: string;
+  readonly generationNumber: number;
   readonly rawToken: string;
   readonly viewerUrl: string;
   readonly qrSvg: string;
   readonly idempotentReplay: boolean;
+  readonly reusedExisting: boolean;
 };
 
 export type PublicDocumentAccessMetadata = {
@@ -63,7 +78,6 @@ export type PublicDocumentViewerMetadata = {
   readonly title: "작업지시서";
   readonly displayDocumentNumber: string;
   readonly expiresAt: string | null;
-  readonly accessCount: number;
   readonly attachments: readonly {
     readonly ref: string;
     readonly filename: string;

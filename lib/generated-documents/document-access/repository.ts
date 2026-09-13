@@ -15,8 +15,8 @@ import {
   DOCUMENT_SHARE_EVENT_CODE,
   DOCUMENT_SHARE_REVOKED_EVENT_CODE,
 } from "./constants";
+import { resolveDocumentAccessTokenStatusAt, resolveMakerCurrentShareLineage } from "./makerCurrentShareLifecycle.mjs";
 import type {
-  DocumentAccessTokenStatus,
   DocumentAccessTokenSummary,
   DocumentAccessTokenPurpose,
   PublicDocumentAccessMetadata,
@@ -39,6 +39,10 @@ type DocumentRow = DbQueryResultRow & {
   readonly work_order_id: string;
   readonly work_order_revision_id: string;
   readonly display_document_number: string;
+  readonly generation_no: number | string;
+  readonly storage_object_key: string;
+  readonly file_size_bytes: number | string;
+  readonly content_sha256: string;
 };
 
 type TokenRow = DbQueryResultRow & {
@@ -51,6 +55,7 @@ type TokenRow = DbQueryResultRow & {
   readonly rotated_from_token_id: string | null;
   readonly last_accessed_at: Date | string | null;
   readonly access_count: number | string;
+  readonly token_hash?: string;
   readonly display_document_number?: string;
 };
 
@@ -76,12 +81,7 @@ export type EmbeddedViewerTargetIdentity = {
 };
 
 const iso = (value: Date | string | null) => value === null ? null : new Date(value).toISOString();
-const status = (row: TokenRow): DocumentAccessTokenStatus => {
-  if (row.revoked_at !== null) return "revoked";
-  return row.expires_at !== null && Date.parse(iso(row.expires_at)!) <= Date.now() ? "expired" : "active";
-};
-
-function mapToken(row: TokenRow): DocumentAccessTokenSummary {
+function mapToken(row: TokenRow, authoritativeNowMs: number, makerCurrentTokenId?: string | null): DocumentAccessTokenSummary {
   return {
     tokenId: String(row.id),
     tokenPurpose: row.token_purpose,
@@ -91,8 +91,27 @@ function mapToken(row: TokenRow): DocumentAccessTokenSummary {
     rotatedFromTokenId: row.rotated_from_token_id ? String(row.rotated_from_token_id) : null,
     lastAccessedAt: iso(row.last_accessed_at),
     accessCount: Number(row.access_count),
-    status: status(row),
+    status: resolveDocumentAccessTokenStatusAt({
+      expiresAt: iso(row.expires_at),
+      revokedAt: iso(row.revoked_at),
+    }, authoritativeNowMs),
+    isMakerCurrentShare: makerCurrentTokenId === undefined ? undefined : row.id === makerCurrentTokenId,
   };
+}
+
+const lifecycleToken = (row: TokenRow) => ({
+  tokenId: String(row.id),
+  tokenHash: String(row.token_hash),
+  rotatedFromTokenId: row.rotated_from_token_id ? String(row.rotated_from_token_id) : null,
+  expiresAt: iso(row.expires_at),
+  revokedAt: iso(row.revoked_at),
+});
+
+async function readAuthoritativeNow(client: DbTransactionClient): Promise<number> {
+  const result = await client.query<DbQueryResultRow & { readonly authoritative_now: Date | string }>("SELECT now() AS authoritative_now");
+  const value = result.rows[0]?.authoritative_now;
+  if (!value) throw new DocumentAccessRepositoryError("conflict");
+  return new Date(value).getTime();
 }
 
 function mapPublic(row: PublicRow): PublicDocumentAccessMetadata {
@@ -175,20 +194,44 @@ export async function readEmbeddedViewerTargetIdentity(input: {
   });
 }
 
-async function loadGeneratedDocument(
+async function loadCanonicalShareDocument(
   client: DbTransactionClient,
   companyId: string,
   generatedDocumentId: string,
+  expected: {
+    readonly workOrderId: string;
+    readonly revisionId: string;
+    readonly generationNumber: number;
+    readonly storageObjectKey: string;
+    readonly fileSizeBytes: number;
+    readonly contentSha256: string;
+  },
+  lockRows = true,
 ): Promise<DocumentRow> {
   const result = await client.query<DocumentRow>(`
-    SELECT id, work_order_id, work_order_revision_id, display_document_number
-    FROM generated_documents
-    WHERE company_id = $1 AND id = $2::uuid
-      AND status = 'generated' AND revoked_at IS NULL AND deleted_at IS NULL
-    FOR SHARE
+    SELECT d.id,d.work_order_id,d.work_order_revision_id,d.display_document_number,
+           d.generation_no,d.storage_object_key,d.file_size_bytes,d.content_sha256
+    FROM generated_documents d
+    JOIN work_orders w ON w.company_id=d.company_id AND w.id=d.work_order_id
+      AND w.current_revision_id=d.work_order_revision_id AND w.deleted_at IS NULL
+    WHERE d.company_id=$1 AND d.id=$2::uuid AND d.status='generated'
+      AND d.revoked_at IS NULL AND d.deleted_at IS NULL
+      AND d.generation_no=(SELECT max(candidate.generation_no) FROM generated_documents candidate
+        WHERE candidate.company_id=d.company_id AND candidate.work_order_id=d.work_order_id
+          AND candidate.work_order_revision_id=d.work_order_revision_id
+          AND candidate.document_type=d.document_type)
+    ${lockRows ? "FOR SHARE OF d,w" : ""}
   `, [companyId, generatedDocumentId]);
   const row = result.rows[0];
   if (!row) throw new DocumentAccessRepositoryError("not_found");
+  if (row.work_order_id !== expected.workOrderId
+      || row.work_order_revision_id !== expected.revisionId
+      || Number(row.generation_no) !== expected.generationNumber
+      || row.storage_object_key !== expected.storageObjectKey
+      || Number(row.file_size_bytes) !== expected.fileSizeBytes
+      || row.content_sha256 !== expected.contentSha256) {
+    throw new DocumentAccessRepositoryError("conflict");
+  }
   return row;
 }
 
@@ -225,12 +268,39 @@ export async function createDocumentAccessToken(input: {
   readonly scope: TenantMemberScope;
   readonly generatedDocumentId: string;
   readonly tokenHash: string;
-  readonly expiresAt: string | null;
+  readonly expiryDays: number;
+  readonly deriveReplacementTokenHash: (predecessorTokenId: string) => string;
   readonly scopedIdempotencyKey: string;
   readonly requestHash: string;
-}): Promise<{ readonly token: DocumentAccessTokenSummary; readonly displayDocumentNumber: string; readonly idempotentReplay: boolean }> {
+  readonly expectedArtifact: {
+    readonly workOrderId: string;
+    readonly revisionId: string;
+    readonly generationNumber: number;
+    readonly storageObjectKey: string;
+    readonly fileSizeBytes: number;
+    readonly contentSha256: string;
+  };
+}): Promise<{
+  readonly token: DocumentAccessTokenSummary;
+  readonly displayDocumentNumber: string;
+  readonly workOrderId: string;
+  readonly revisionId: string;
+  readonly generationNumber: number;
+  readonly idempotentReplay: boolean;
+  readonly reusedExisting: boolean;
+}> {
   return withWaflV2TenantWriteTransaction(async (client) => {
     await installTenantClaims(client, input.scope);
+    await client.query("SELECT pg_advisory_xact_lock(hashtextextended($1::text, 0))", [
+      `maker-current-share:${input.scope.companyId}:${input.generatedDocumentId}`,
+    ]);
+    const document = await loadCanonicalShareDocument(
+      client,
+      input.scope.companyId,
+      input.generatedDocumentId,
+      input.expectedArtifact,
+    );
+    const authoritativeNowMs = await readAuthoritativeNow(client);
     const reserved = await client.query(`
       INSERT INTO work_order_command_receipts (
         company_id, command_code, idempotency_key, request_sha256, correlation_id
@@ -240,44 +310,71 @@ export async function createDocumentAccessToken(input: {
     `, [input.scope.companyId, DOCUMENT_SHARE_COMMAND_CODE, input.scopedIdempotencyKey, input.requestHash, input.scope.correlationId]);
 
     if (reserved.rowCount === 0) {
-      const receipt = await client.query<DbQueryResultRow & { readonly request_sha256: string }>(`
-        SELECT request_sha256
+      const receipt = await client.query<DbQueryResultRow & {
+        readonly request_sha256: string;
+        readonly work_order_id: string | null;
+        readonly result_revision_id: string | null;
+        readonly result_generated_document_id: string | null;
+      }>(`
+        SELECT request_sha256,work_order_id,result_revision_id,result_generated_document_id
         FROM work_order_command_receipts
         WHERE company_id = $1 AND command_code = $2 AND idempotency_key = $3
         FOR UPDATE
       `, [input.scope.companyId, DOCUMENT_SHARE_COMMAND_CODE, input.scopedIdempotencyKey]);
       if (!receipt.rows[0]) throw new DocumentAccessRepositoryError("idempotency_incomplete");
       if (receipt.rows[0].request_sha256 !== input.requestHash) throw new DocumentAccessRepositoryError("idempotency_conflict");
-      const replay = await client.query<TokenRow & { readonly display_document_number: string }>(`
-        SELECT token.*, document.display_document_number
-        FROM document_access_tokens token
-        JOIN generated_documents document
-          ON document.company_id = token.company_id AND document.id = token.generated_document_id
-        WHERE token.company_id = $1 AND token.generated_document_id = $2::uuid AND token.token_hash = $3
-          AND token.token_purpose = 'manual_share'
-      `, [input.scope.companyId, input.generatedDocumentId, input.tokenHash]);
-      if (!replay.rows[0]) throw new DocumentAccessRepositoryError("idempotency_incomplete");
-      return { token: mapToken(replay.rows[0]), displayDocumentNumber: replay.rows[0].display_document_number, idempotentReplay: true };
+      if ((receipt.rows[0].work_order_id !== null && receipt.rows[0].work_order_id !== document.work_order_id)
+          || (receipt.rows[0].result_revision_id !== null && receipt.rows[0].result_revision_id !== document.work_order_revision_id)
+          || (receipt.rows[0].result_generated_document_id !== null
+            && receipt.rows[0].result_generated_document_id !== input.generatedDocumentId)) {
+        throw new DocumentAccessRepositoryError("idempotency_conflict");
+      }
     }
 
-    const document = await loadGeneratedDocument(client, input.scope.companyId, input.generatedDocumentId);
-    const inserted = await client.query<TokenRow>(`
-      INSERT INTO document_access_tokens (
-        company_id, generated_document_id, token_hash, expires_at, token_purpose
-      ) VALUES ($1, $2::uuid, $3::char(64), $4::timestamptz, $5)
-      RETURNING id, generated_document_id, token_purpose, created_at, expires_at, revoked_at,
-                rotated_from_token_id, last_accessed_at, access_count
-    `, [input.scope.companyId, input.generatedDocumentId, input.tokenHash, input.expiresAt, DOCUMENT_MANUAL_SHARE_PURPOSE]);
-    const token = inserted.rows[0];
-    if (!token) throw new DocumentAccessRepositoryError("conflict");
-    await appendEvent(client, {
-      scope: input.scope,
-      tokenId: token.id,
-      generatedDocumentId: input.generatedDocumentId,
-      displayDocumentNumber: document.display_document_number,
-      commandCode: DOCUMENT_SHARE_EVENT_CODE,
-      summary: "Controlled document link created.",
+    const existing = await client.query<TokenRow>(`
+      SELECT id,generated_document_id,token_hash,token_purpose,created_at,expires_at,revoked_at,
+             rotated_from_token_id,last_accessed_at,access_count
+      FROM document_access_tokens
+      WHERE company_id=$1 AND generated_document_id=$2::uuid
+        AND token_purpose='manual_share'
+      ORDER BY created_at ASC,id ASC
+      LIMIT 100
+    `, [input.scope.companyId, input.generatedDocumentId]);
+    const lineage = resolveMakerCurrentShareLineage({
+      tokens: existing.rows.map(lifecycleToken),
+      baseTokenHash: input.tokenHash,
+      authoritativeNowMs,
+      deriveReplacementTokenHash: input.deriveReplacementTokenHash,
     });
+    if (!lineage.valid) throw new DocumentAccessRepositoryError("conflict");
+    const current = lineage.activeTokenId
+      ? existing.rows.find((row) => row.id === lineage.activeTokenId) ?? null
+      : null;
+    const predecessorTokenId = current ? null : lineage.head?.tokenId ?? null;
+    const nextTokenHash = predecessorTokenId
+      ? input.deriveReplacementTokenHash(predecessorTokenId)
+      : input.tokenHash;
+    const inserted = current ? null : await client.query<TokenRow>(`
+      INSERT INTO document_access_tokens (
+        company_id, generated_document_id, token_hash, expires_at, rotated_from_token_id, token_purpose
+      ) VALUES ($1, $2::uuid, $3::char(64), now() + make_interval(days => $4::integer), $5::uuid, $6)
+      RETURNING id, generated_document_id, token_hash, token_purpose, created_at, expires_at, revoked_at,
+                rotated_from_token_id, last_accessed_at, access_count
+    `, [input.scope.companyId, input.generatedDocumentId, nextTokenHash, input.expiryDays, predecessorTokenId, DOCUMENT_MANUAL_SHARE_PURPOSE]);
+    const token = current ?? inserted?.rows[0];
+    if (!token) throw new DocumentAccessRepositoryError("conflict");
+    if (!current) {
+      await appendEvent(client, {
+        scope: input.scope,
+        tokenId: token.id,
+        generatedDocumentId: input.generatedDocumentId,
+        displayDocumentNumber: document.display_document_number,
+        commandCode: DOCUMENT_SHARE_EVENT_CODE,
+        summary: predecessorTokenId
+          ? "Canonical Maker replacement document link created."
+          : "Canonical Maker current document link created.",
+      });
+    }
     await client.query(`
       UPDATE work_order_command_receipts
       SET work_order_id = $4::uuid, result_revision_id = $5::uuid,
@@ -291,24 +388,47 @@ export async function createDocumentAccessToken(input: {
       document.work_order_revision_id,
       input.generatedDocumentId,
     ]);
-    return { token: mapToken(token), displayDocumentNumber: document.display_document_number, idempotentReplay: false };
+    return {
+      token: mapToken(token, authoritativeNowMs, token.id),
+      displayDocumentNumber: document.display_document_number,
+      workOrderId: document.work_order_id,
+      revisionId: document.work_order_revision_id,
+      generationNumber: Number(document.generation_no),
+      idempotentReplay: reserved.rowCount === 0,
+      reusedExisting: current !== null,
+    };
   });
 }
 
 export async function listDocumentAccessTokens(input: {
   readonly scope: TenantMemberScope;
   readonly generatedDocumentId: string;
+  readonly makerCurrentBaseTokenHash?: string;
+  readonly deriveReplacementTokenHash?: (predecessorTokenId: string) => string;
+  readonly expectedArtifact?: {
+    readonly workOrderId: string;
+    readonly revisionId: string;
+    readonly generationNumber: number;
+    readonly storageObjectKey: string;
+    readonly fileSizeBytes: number;
+    readonly contentSha256: string;
+  };
 }): Promise<readonly DocumentAccessTokenSummary[]> {
   return withWaflV2TenantReadOnlyTransaction(async (client) => {
     await installTenantClaims(client, input.scope);
-    const document = await client.query(`
-      SELECT id FROM generated_documents
-      WHERE company_id = $1 AND id = $2::uuid
-        AND status = 'generated' AND deleted_at IS NULL
-    `, [input.scope.companyId, input.generatedDocumentId]);
-    if (document.rowCount !== 1) throw new DocumentAccessRepositoryError("not_found");
+    if (input.expectedArtifact) {
+      await loadCanonicalShareDocument(client, input.scope.companyId, input.generatedDocumentId, input.expectedArtifact, false);
+    } else {
+      const document = await client.query(`
+        SELECT id FROM generated_documents
+        WHERE company_id = $1 AND id = $2::uuid
+          AND status = 'generated' AND revoked_at IS NULL AND deleted_at IS NULL
+      `, [input.scope.companyId, input.generatedDocumentId]);
+      if (document.rowCount !== 1) throw new DocumentAccessRepositoryError("not_found");
+    }
+    const authoritativeNowMs = await readAuthoritativeNow(client);
     const result = await client.query<TokenRow>(`
-      SELECT id, generated_document_id, token_purpose, created_at, expires_at, revoked_at,
+      SELECT id, generated_document_id, token_hash, token_purpose, created_at, expires_at, revoked_at,
              rotated_from_token_id, last_accessed_at, access_count
       FROM document_access_tokens
       WHERE company_id = $1 AND generated_document_id = $2::uuid
@@ -316,7 +436,16 @@ export async function listDocumentAccessTokens(input: {
       ORDER BY created_at DESC, id DESC
       LIMIT 100
     `, [input.scope.companyId, input.generatedDocumentId]);
-    return result.rows.map(mapToken);
+    const lineage = input.makerCurrentBaseTokenHash && input.deriveReplacementTokenHash
+      ? resolveMakerCurrentShareLineage({
+          tokens: result.rows.map(lifecycleToken),
+          baseTokenHash: input.makerCurrentBaseTokenHash,
+          authoritativeNowMs,
+          deriveReplacementTokenHash: input.deriveReplacementTokenHash,
+        })
+      : null;
+    const currentTokenId = lineage?.valid ? lineage.activeTokenId : null;
+    return result.rows.map((row) => mapToken(row, authoritativeNowMs, currentTokenId));
   });
 }
 
@@ -324,9 +453,24 @@ export async function revokeDocumentAccessToken(input: {
   readonly scope: TenantMemberScope;
   readonly generatedDocumentId: string;
   readonly tokenId: string;
+  readonly makerCurrentBaseTokenHash: string;
+  readonly deriveReplacementTokenHash: (predecessorTokenId: string) => string;
+  readonly expectedArtifact: {
+    readonly workOrderId: string;
+    readonly revisionId: string;
+    readonly generationNumber: number;
+    readonly storageObjectKey: string;
+    readonly fileSizeBytes: number;
+    readonly contentSha256: string;
+  };
 }): Promise<{ readonly token: DocumentAccessTokenSummary; readonly idempotentReplay: boolean }> {
   return withWaflV2TenantWriteTransaction(async (client) => {
     await installTenantClaims(client, input.scope);
+    await client.query("SELECT pg_advisory_xact_lock(hashtextextended($1::text, 0))", [
+      `maker-current-share:${input.scope.companyId}:${input.generatedDocumentId}`,
+    ]);
+    await loadCanonicalShareDocument(client, input.scope.companyId, input.generatedDocumentId, input.expectedArtifact);
+    const authoritativeNowMs = await readAuthoritativeNow(client);
     const result = await client.query<TokenRow & { readonly display_document_number: string }>(`
       SELECT token.*, document.display_document_number
       FROM document_access_tokens token
@@ -339,8 +483,28 @@ export async function revokeDocumentAccessToken(input: {
     `, [input.scope.companyId, input.generatedDocumentId, input.tokenId]);
     const current = result.rows[0];
     if (!current) throw new DocumentAccessRepositoryError("not_found");
-    if (current.revoked_at !== null) return { token: mapToken(current), idempotentReplay: true };
-    if (current.expires_at !== null && Date.parse(iso(current.expires_at)!) <= Date.now()) throw new DocumentAccessRepositoryError("not_found");
+    if (current.token_purpose === DOCUMENT_MANUAL_SHARE_PURPOSE) {
+      const tokens = await client.query<TokenRow>(`
+        SELECT id,generated_document_id,token_hash,token_purpose,created_at,expires_at,revoked_at,
+               rotated_from_token_id,last_accessed_at,access_count
+        FROM document_access_tokens
+        WHERE company_id=$1 AND generated_document_id=$2::uuid AND token_purpose='manual_share'
+        ORDER BY created_at ASC,id ASC
+        LIMIT 100
+      `, [input.scope.companyId, input.generatedDocumentId]);
+      const lineage = resolveMakerCurrentShareLineage({
+        tokens: tokens.rows.map(lifecycleToken),
+        baseTokenHash: input.makerCurrentBaseTokenHash,
+        authoritativeNowMs,
+        deriveReplacementTokenHash: input.deriveReplacementTokenHash,
+      });
+      if (!lineage.valid || lineage.head?.tokenId !== input.tokenId) throw new DocumentAccessRepositoryError("not_found");
+      if (current.revoked_at !== null) return { token: mapToken(current, authoritativeNowMs, null), idempotentReplay: true };
+      if (lineage.activeTokenId !== input.tokenId) throw new DocumentAccessRepositoryError("not_found");
+    } else if (current.revoked_at !== null) {
+      return { token: mapToken(current, authoritativeNowMs), idempotentReplay: true };
+    }
+    if (current.expires_at !== null && Date.parse(iso(current.expires_at)!) <= authoritativeNowMs) throw new DocumentAccessRepositoryError("not_found");
     const updated = await client.query<TokenRow>(`
       UPDATE document_access_tokens
       SET revoked_at = now()
@@ -357,7 +521,7 @@ export async function revokeDocumentAccessToken(input: {
       commandCode: DOCUMENT_SHARE_REVOKED_EVENT_CODE,
       summary: "Controlled document link revoked.",
     });
-    return { token: mapToken(updated.rows[0]), idempotentReplay: false };
+    return { token: mapToken(updated.rows[0], authoritativeNowMs, null), idempotentReplay: false };
   });
 }
 
@@ -367,11 +531,24 @@ export async function rotateDocumentAccessToken(input: {
   readonly tokenId: string;
   readonly newTokenHash: string;
   readonly expiresAt: string;
-}): Promise<{ readonly token: DocumentAccessTokenSummary; readonly displayDocumentNumber: string; readonly idempotentReplay: boolean }> {
+}): Promise<{
+  readonly token: DocumentAccessTokenSummary;
+  readonly displayDocumentNumber: string;
+  readonly workOrderId: string;
+  readonly revisionId: string;
+  readonly generationNumber: number;
+  readonly idempotentReplay: boolean;
+}> {
   return withWaflV2TenantWriteTransaction(async (client) => {
     await installTenantClaims(client, input.scope);
-    const result = await client.query<TokenRow & { readonly display_document_number: string }>(`
-      SELECT token.*, document.display_document_number
+    const result = await client.query<TokenRow & {
+      readonly display_document_number: string;
+      readonly work_order_id: string;
+      readonly work_order_revision_id: string;
+      readonly generation_no: number | string;
+    }>(`
+      SELECT token.*, document.display_document_number,document.work_order_id,
+             document.work_order_revision_id,document.generation_no
       FROM document_access_tokens token
       JOIN generated_documents document
         ON document.company_id = token.company_id AND document.id = token.generated_document_id
@@ -392,7 +569,14 @@ export async function rotateDocumentAccessToken(input: {
           AND token_purpose = 'manual_share'
       `, [input.scope.companyId, input.generatedDocumentId, input.tokenId, input.newTokenHash]);
       if (!replay.rows[0]) throw new DocumentAccessRepositoryError("not_found");
-      return { token: mapToken(replay.rows[0]), displayDocumentNumber: current.display_document_number, idempotentReplay: true };
+      return {
+        token: mapToken(replay.rows[0], Date.now()),
+        displayDocumentNumber: current.display_document_number,
+        workOrderId: current.work_order_id,
+        revisionId: current.work_order_revision_id,
+        generationNumber: Number(current.generation_no),
+        idempotentReplay: true,
+      };
     }
     if (Date.parse(iso(current.expires_at)!) <= Date.now()) throw new DocumentAccessRepositoryError("not_found");
     await client.query(`
@@ -418,7 +602,14 @@ export async function rotateDocumentAccessToken(input: {
       displayDocumentNumber: current.display_document_number,
       commandCode: DOCUMENT_SHARE_EVENT_CODE, summary: "Replacement controlled document link created.",
     });
-    return { token: mapToken(next), displayDocumentNumber: current.display_document_number, idempotentReplay: false };
+    return {
+      token: mapToken(next, Date.now()),
+      displayDocumentNumber: current.display_document_number,
+      workOrderId: current.work_order_id,
+      revisionId: current.work_order_revision_id,
+      generationNumber: Number(current.generation_no),
+      idempotentReplay: false,
+    };
   });
 }
 
@@ -445,7 +636,7 @@ export async function insertEmbeddedQrAccessToken(input: {
               rotated_from_token_id, last_accessed_at, access_count
   `, [input.companyId, input.generatedDocumentId, input.tokenHash, input.expiresAt, DOCUMENT_EMBEDDED_QR_PURPOSE]);
   if (inserted.rowCount !== 1 || !inserted.rows[0]) throw new DocumentAccessRepositoryError("conflict");
-  return mapToken(inserted.rows[0]);
+  return mapToken(inserted.rows[0], Date.now());
 }
 
 export async function redeemDocumentAccessTokenHash(input: {

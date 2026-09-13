@@ -202,6 +202,17 @@ export type DocumentAccessTokenSummary = {
   readonly lastAccessedAt: string | null;
   readonly accessCount: number;
   readonly status: "active" | "expired" | "revoked";
+  readonly isMakerCurrentShare?: boolean;
+};
+
+export type CurrentDocumentShareTarget = {
+  readonly tokenId: string;
+  readonly generatedDocumentId: string;
+  readonly workOrderId: string;
+  readonly revisionId: string;
+  readonly generationNumber: number;
+  readonly viewerUrl: string;
+  readonly expiresAt: string;
 };
 
 export type WorkOrderImageAsset = {

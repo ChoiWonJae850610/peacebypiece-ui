@@ -17,7 +17,7 @@ const mobilePackage = JSON.parse(read("apps/mobile/package.json"));
 const appConfig = JSON.parse(read("apps/mobile/app.json"));
 const migrationFiles = fs.readdirSync("db/v2/migrations").filter((name) => /^\d{3}_.*\.sql$/u.test(name)).sort();
 
-assert.equal(version, "2.0.0-alpha.79");
+assert.ok(["2.0.0-alpha.79", "2.0.0-alpha.80"].includes(version));
 for (const owner of [currentState, roadmap, devicePlan]) {
   assert.match(owner, /ALPHA79_COMPLETE/u);
   assert.match(owner, /ALPHA79_FINALIZATION_COMPLETE/u);
@@ -31,7 +31,7 @@ assert.match(expoEnvironment, /Alpha\.79 finalization runtime boundary/u);
 assert.match(expoEnvironment, /Internal APP_VERSION is `2\.0\.0-alpha\.79`/u);
 assert.match(apiTestPlan, /Alpha\.79 finalization contract/u);
 assert.equal(appConfig.expo.version, "2.0.0");
-assert.equal(appConfig.expo.extra.appVersion, "2.0.0-alpha.79");
+assert.ok(["2.0.0-alpha.79", "2.0.0-alpha.80"].includes(appConfig.expo.extra.appVersion));
 assert.equal(appConfig.expo.ios.requireFullScreen, true);
 assert.equal(mobilePackage.dependencies["@shopify/react-native-skia"], undefined);
 assert.equal(mobilePackage.dependencies["react-native-reanimated"], undefined);
@@ -78,7 +78,7 @@ assert.match(currentState, /Drawing Scene v1/u);
 assert.match(currentState, /1500×2100/u);
 assert.match(
   finishVersion,
-  /ExpectedAppVersion -in @\("2\.0\.0-alpha\.73", "2\.0\.0-alpha\.74", "2\.0\.0-alpha\.75", "2\.0\.0-alpha\.76", "2\.0\.0-alpha\.77", "2\.0\.0-alpha\.78", "2\.0\.0-alpha\.79"\)[\s\S]*db\/v2\/migrations\/022_v2_work_order_drawings\.sql/u,
+  /ExpectedAppVersion -in @\("2\.0\.0-alpha\.73", "2\.0\.0-alpha\.74", "2\.0\.0-alpha\.75", "2\.0\.0-alpha\.76", "2\.0\.0-alpha\.77", "2\.0\.0-alpha\.78", "2\.0\.0-alpha\.79", "2\.0\.0-alpha\.80"\)[\s\S]*db\/v2\/migrations\/022_v2_work_order_drawings\.sql/u,
 );
 
 console.log(JSON.stringify({

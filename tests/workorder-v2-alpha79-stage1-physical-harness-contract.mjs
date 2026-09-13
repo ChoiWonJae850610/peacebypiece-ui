@@ -94,7 +94,7 @@ assert.match(harnessUi, /doc-a-generated/u); // 55 historical diagnostic
 assert.match(harnessModelSource, /token-a-historical/u); // 56 historical token fixture retained
 assert.match(harnessModelSource, /token-b-current/u); // 57 current token fixture
 assert.match(verifySafe, /workorder-v2-alpha79-current-revision-artifact-identity-contract\.mjs/u); // 58 Stage 1 retained
-assert.equal(appConfig.expo.extra.appVersion, "2.0.0-alpha.79"); // 59 finalized current version
+assert.equal(appConfig.expo.extra.appVersion, "2.0.0-alpha.80"); // 59 finalized current version
 assert.equal(fs.readdirSync("db/v2/migrations").filter((name) => /^\d{3}_.*\.sql$/u.test(name)).length, 22); // 60 migration delta zero
 for (const dependency of ["@shopify/react-native-skia", "react-native-reanimated", "react-native-gesture-handler", "react-native-worklets"]) {
   assert.equal(mobilePackage.dependencies[dependency], undefined); // 61-64 dependency boundary

@@ -12,6 +12,7 @@ import {
 import {
   createDocumentShare,
   DocumentAccessServiceError,
+  getCurrentDocumentShareTarget,
   getDocumentShares,
   getDocumentViewerTarget,
   getPublicDocumentSession,
@@ -103,6 +104,26 @@ export async function handleListDocumentAccessTokens(generatedDocumentId: string
   }
 }
 
+export async function handleGetCurrentDocumentShareTarget(request: Request, generatedDocumentId: string) {
+  const correlationId = randomUUID();
+  const guard = await requireWorkspaceApiGuard({ permissionCode: "workorder.update" });
+  if (!guard.ok) return guard.response;
+  try {
+    const target = await getCurrentDocumentShareTarget({
+      generatedDocumentId,
+      origin: documentViewerOrigin(request),
+      scope: guard.scope,
+      companyMemberId: guard.session.companyMemberId,
+      correlationId,
+    });
+    return NextResponse.json({ ok: true, data: { target } }, {
+      headers: { "Cache-Control": "private, no-store", "X-WAFL-Correlation-Id": correlationId },
+    });
+  } catch (error) {
+    return internalError(error, correlationId);
+  }
+}
+
 export async function handleCreateDocumentAccessToken(request: Request, generatedDocumentId: string) {
   const correlationId = randomUUID();
   const guard = await requireWorkspaceApiGuard({ permissionCode: "workorder.update" });
@@ -120,7 +141,7 @@ export async function handleCreateDocumentAccessToken(request: Request, generate
       correlationId,
     });
     return NextResponse.json({ ok: true, data: created }, {
-      status: created.idempotentReplay ? 200 : 201,
+      status: created.idempotentReplay || created.reusedExisting ? 200 : 201,
       headers: { "Cache-Control": "no-store", "X-WAFL-Correlation-Id": correlationId },
     });
   } catch (error) {
@@ -224,7 +245,6 @@ export async function handlePublicDocumentViewerSession(request: Request) {
         title: "작업지시서",
         displayDocumentNumber: redeemed.displayDocumentNumber,
         expiresAt: redeemed.expiresAt,
-        accessCount: redeemed.accessCount,
         attachments,
       },
     }, { headers: { ...PUBLIC_HEADERS, "X-WAFL-Correlation-Id": correlationId } });

@@ -1,5 +1,35 @@
 # WAFL v2 Expo Environment Setup
 
+## Alpha.80 finalization runtime boundary
+
+- Internal APP_VERSION is `2.0.0-alpha.80`; Expo public version remains `2.0.0` and iOS build number remains `1`.
+- Existing accepted Development Builds are unchanged; finalization creates no dependency, native/config/EAS delta,
+  EAS Build, EAS Update, re-sign, Production build, TestFlight, or App Store submission.
+- Canonical physical-device runtime remains Node `24.14.0`, Next `3100`, Metro `8081`, Tailscale Serve HTTPS
+  `443 -> 3100`, and DeveloperAutoConnect.
+
+## Alpha.80 Stage 2 current-link action runtime
+
+The action reconciliation is mobile/server source only and reuses Node 24.14.0, Next 3100, Metro 8081, Tailscale Serve
+443-to-3100, DeveloperAutoConnect, and the existing Development Build. The current-target route is admitted only on the
+same authenticated current-Maker external-QA surface. React Native core Linking, Clipboard, and Share are reused; new
+dependency, native source, Expo config, EAS, build, re-sign, Update, and store operations are zero.
+
+## Alpha.80 Stage 2 external QA runtime
+
+Stage 2 reuses the canonical Node 24.14.0, Next 3100, Metro 8081, Tailscale Serve 443-to-3100, and
+DeveloperAutoConnect `alpha67-current-maker` capability profile. No dependency, native, config, EAS, or Development Build
+delta is introduced. The profile authorizes only the exact retained DEV fixture lifecycle evidence; Production and Owner
+business mutation remain forbidden.
+
+## Alpha.80 Stage 1 runtime boundary
+
+- APP_VERSION remains `2.0.0-alpha.79`; the canonical Share binding is mobile/server TypeScript plus contracts only.
+- It reuses the installed Development Builds and the current-Maker external-QA capability. Dependency, native source,
+  Expo config, EAS project/profile, credential, build, re-sign, Update, and store-operation deltas are zero.
+- Physical QA reuses Node `24.14.0`, Next `3100`, Metro `8081`, Tailscale Serve HTTPS `443 -> 3100`, and
+  DeveloperAutoConnect. Build/runtime completion does not infer Owner Share QA.
+
 ## Alpha.79 finalization runtime boundary
 
 - Internal APP_VERSION is `2.0.0-alpha.79`; Expo public version remains `2.0.0` and iOS build number remains `1`.
@@ -142,7 +172,7 @@ Document role: canonical owner for supported Expo/native environment, app identi
 | iOS bundle identifier | `com.wafl.app` |
 | Android package | `com.wafl.app` |
 | Expo public version | `2.0.0` |
-| Internal APP_VERSION | `2.0.0-alpha.79` |
+| Internal APP_VERSION | `2.0.0-alpha.80` |
 | iOS Development Build | build number `1`; latest installable alpha.74 compact native-mask development build `90ec13f2-b6ec-4e2e-baba-c1195161a69c` |
 | Android Development Build | version code `1`; latest installable alpha.72B development build `a2416e06-2ca0-431a-b575-67dafc29e871` |
 

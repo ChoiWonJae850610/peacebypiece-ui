@@ -84,7 +84,7 @@ assert.equal(corrupt.viewerTarget ?? corrupt.tokenTarget, null); // 25
 assert.equal(corrupt.canRetry, true); // 26
 assert.equal(transient.artifactUnavailable, false); // 27
 assert.equal(transient.canRetry, false); // 28
-assert.equal(transient.canView, true); // 29 ambiguous transport is not confirmed corrupt
+assert.equal(transient.canView, false); // 29 alpha.80 Share/access fail closed while transport health is unverified
 
 assert.match(generation, /ORDER BY generation_no DESC, id DESC/u); // 30 newest attempt owner
 assert.match(generation, /generatedHealth === "healthy" && input\.refreshActive !== true/u); // 31 healthy reuse
@@ -120,7 +120,7 @@ assert.match(verifySafe, /workorder-v2-alpha79-stage1-physical-harness-contract\
 assert.match(verifySafe, /workorder-v2-alpha79-stage2a-failure-retry-r2-cleanup-contract\.mjs/u); // 58 Stage 2A retained
 assert.match(verifySafe, /workorder-v2-alpha78-sketch-pdf-output-fidelity-contract\.mjs/u); // 59 alpha.78 retained
 assert.equal(fs.readdirSync("db/v2/migrations").filter((name) => /^\d{3}_.*\.sql$/u.test(name)).length, 22); // 60 migration zero
-assert.equal(appConfig.expo.extra.appVersion, "2.0.0-alpha.79"); // 61 finalized current version
+assert.equal(appConfig.expo.extra.appVersion, "2.0.0-alpha.80"); // 61 finalized current version
 for (const dependency of ["@shopify/react-native-skia", "react-native-reanimated", "react-native-gesture-handler", "react-native-worklets"]) {
   assert.equal(mobilePackage.dependencies[dependency], undefined); // 62-65 dependency boundary
 }

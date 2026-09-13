@@ -10,7 +10,6 @@ type ViewerMetadata = {
   readonly title: "작업지시서";
   readonly displayDocumentNumber: string;
   readonly expiresAt: string | null;
-  readonly accessCount: number;
   readonly attachments: readonly {
     readonly ref: string;
     readonly filename: string;

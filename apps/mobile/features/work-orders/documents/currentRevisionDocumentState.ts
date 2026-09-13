@@ -72,7 +72,7 @@ export function resolveCurrentRevisionDocumentWorkbenchModel(
   const state = resolveCurrentRevisionDocumentState(documents, currentRevisionId);
   const generated = state.generated;
   const artifactUnavailable = artifactHealth === "missing" || artifactHealth === "corrupt";
-  const canUseGenerated = generated !== null && !artifactUnavailable && artifactHealth !== "unknown";
+  const canUseGenerated = generated !== null && artifactHealth === "healthy";
 
   return {
     ...state,

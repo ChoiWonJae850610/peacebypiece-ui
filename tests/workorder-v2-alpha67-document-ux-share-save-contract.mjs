@@ -26,7 +26,9 @@ assert.doesNotMatch(production, /action === "complete"/u);
 
 assert.match(workbench, /prepareAuthenticatedDocumentPdfForSave/u);
 assert.match(workbench, /Share\.share\(\{[\s\S]*url: `file:\/\/\$\{saveFile\.path\}`/u);
-assert.doesNotMatch(workbench, /Linking\.openURL/u);
+const nativePdfOpen = workbench.match(/function openInAppDocumentViewer\(\) \{[\s\S]*?\n  \}/u)?.[0] ?? "";
+assert.doesNotMatch(nativePdfOpen, /Linking\.openURL/u);
+assert.match(workbench, /Linking\.openURL\(action\.openUrl\)/u, "current public link Open is distinct from native PDF View");
 assert.match(transport, /Accept: "application\/pdf"/u);
 assert.match(transport, /contentType\.includes\("application\/pdf"\)/u);
 assert.match(transport, /startsWith\("JVBERi0"\)/u);

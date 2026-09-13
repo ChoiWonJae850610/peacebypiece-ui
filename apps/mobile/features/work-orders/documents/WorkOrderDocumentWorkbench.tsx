@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
+  Clipboard,
   Image,
+  Linking,
   Pressable,
   Share,
   StyleSheet,
@@ -12,6 +14,7 @@ import {
   ChevronDown,
   ChevronUp,
   Download,
+  Copy,
   ExternalLink,
   FileText,
   FileX2,
@@ -28,6 +31,7 @@ import { beginWaflPresentationFirstOperation } from "@/application/waflPresentat
 import { WAFL_FONTS } from "@/constants/fonts";
 import { WAFL_THEME } from "@/constants/theme";
 import type {
+  CurrentDocumentShareTarget,
   DocumentAccessTokenSummary,
   GeneratedWorkOrderDocument,
   MaterialPartnerOption,
@@ -45,6 +49,7 @@ import {
   createDocumentShare,
   generateWorkOrderR0,
   getGeneratedDocumentArtifactHealth,
+  getCurrentDocumentShareTarget,
   getWorkOrderDocuments,
   issueWorkOrderR0,
   listDocumentAccessTokens,
@@ -58,6 +63,7 @@ import QuickDeliveryFoundation from "./QuickDeliveryFoundation";
 import WaflAuthenticatedPdfViewer from "./WaflAuthenticatedPdfViewer";
 import { prepareAuthenticatedDocumentPdfForSave } from "./authenticatedPdfTransport";
 import { buildWorkOrderShareMessage } from "./documentShareMessage";
+import { resolveCurrentShareLinkActionModel, type CurrentShareLinkActionModel } from "./currentShareLinkActions";
 import type { WaflActionConfirmationState } from "@/features/feedback/WaflActionConfirmationCard";
 import { requestWaflDecision, showWaflAlert } from "@/features/feedback/waflFeedbackStore";
 import {
@@ -188,6 +194,7 @@ function WorkOrderDocumentWorkbenchBody({ detail, attachments, attachmentBusy, s
 }) {
   const [documents, setDocuments] = useState<readonly GeneratedWorkOrderDocument[]>([]);
   const [tokens, setTokens] = useState<readonly DocumentAccessTokenSummary[]>([]);
+  const [currentShareTarget, setCurrentShareTarget] = useState<CurrentDocumentShareTarget | null>(null);
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [version, setVersion] = useState(detail.header.entityVersion);
@@ -205,6 +212,10 @@ function WorkOrderDocumentWorkbenchBody({ detail, attachments, attachmentBusy, s
   const mountedRef = useRef(true);
   const tokenLoadGenerationRef = useRef(0);
   const currentGeneratedDocumentIdRef = useRef<string | null>(null);
+  const shareRequestRef = useRef<{ readonly documentId: string; readonly clientRequestId: string } | null>(null);
+  const shareBusyRef = useRef(false);
+  const revokeBusyRef = useRef(false);
+  const currentLinkActionBusyRef = useRef(false);
 
   const currentDocumentState = useMemo(
     () => resolveCurrentRevisionDocumentWorkbenchModel(documents, detail.header.currentRevisionId, currentArtifactHealth),
@@ -214,6 +225,14 @@ function WorkOrderDocumentWorkbenchBody({ detail, attachments, attachmentBusy, s
   const issued = detail.header.status === "issued" || detail.header.status === "revised" || detail.header.status === "completed";
   const quantityRows = useMemo(() => documentQuantityDisclosureRows(sizeColorMatrix), [sizeColorMatrix]);
   const inlineQuantityRows = quantityRows.slice(0, DOCUMENT_QUANTITY_INLINE_LIMIT);
+  const currentShareActions = useMemo(() => resolveCurrentShareLinkActionModel({
+    target: currentShareTarget,
+    tokens,
+    generatedDocumentId: generated?.id ?? null,
+    workOrderId: detail.header.id,
+    revisionId: detail.header.currentRevisionId,
+    generationNumber: generated?.generationNumber ?? null,
+  }), [currentShareTarget, detail.header.currentRevisionId, detail.header.id, generated?.generationNumber, generated?.id, tokens]);
 
   const loadTokensForCurrentDocument = useCallback(async (document: GeneratedWorkOrderDocument | null) => {
     const generation = tokenLoadGenerationRef.current + 1;
@@ -221,12 +240,17 @@ function WorkOrderDocumentWorkbenchBody({ detail, attachments, attachmentBusy, s
     if (!document) {
       if (!mountedRef.current || currentGeneratedDocumentIdRef.current !== null) return;
       setTokens([]);
+      setCurrentShareTarget(null);
       return;
     }
     if (currentGeneratedDocumentIdRef.current !== document.id) return;
-    const nextTokens = manualShareTokens(await listDocumentAccessTokens(document.id));
+    const [nextTokens, nextTarget] = await Promise.all([
+      listDocumentAccessTokens(document.id).then(manualShareTokens),
+      getCurrentDocumentShareTarget(document.id),
+    ]);
     if (mountedRef.current && tokenLoadGenerationRef.current === generation && currentGeneratedDocumentIdRef.current === document.id) {
       setTokens(nextTokens);
+      setCurrentShareTarget(nextTarget);
     }
   }, []);
 
@@ -242,6 +266,7 @@ function WorkOrderDocumentWorkbenchBody({ detail, attachments, attachmentBusy, s
     }
     if (!mountedRef.current) return state;
     currentGeneratedDocumentIdRef.current = state.generated?.id ?? null;
+    if (shareRequestRef.current?.documentId !== state.generated?.id) shareRequestRef.current = null;
     setCurrentArtifactHealth(artifactHealth);
     setDocuments(items);
     const model = resolveCurrentRevisionDocumentWorkbenchModel(items, detail.header.currentRevisionId, artifactHealth);
@@ -311,6 +336,7 @@ function WorkOrderDocumentWorkbenchBody({ detail, attachments, attachmentBusy, s
       mountedRef.current = false;
       tokenLoadGenerationRef.current += 1;
       currentGeneratedDocumentIdRef.current = null;
+      currentLinkActionBusyRef.current = false;
     };
   }, []);
 
@@ -392,11 +418,23 @@ function WorkOrderDocumentWorkbenchBody({ detail, attachments, attachmentBusy, s
 
   async function shareDocument() {
     const shareTarget = currentDocumentState.shareTarget;
-    if (!shareTarget) return;
+    if (!shareTarget || shareBusyRef.current) return;
+    const shareRequest = shareRequestRef.current?.documentId === shareTarget.id
+      ? shareRequestRef.current
+      : { documentId: shareTarget.id, clientRequestId: requestId("maker-current-share") };
+    shareRequestRef.current = shareRequest;
+    shareBusyRef.current = true;
     setBusy(true);
     setMessage(null);
     try {
-      const created = await createDocumentShare(shareTarget.id, 3, requestId("manual-share"));
+      const created = await createDocumentShare(shareTarget.id, 3, shareRequest.clientRequestId);
+      if (currentGeneratedDocumentIdRef.current !== shareTarget.id
+          || created.generatedDocumentId !== shareTarget.id
+          || created.workOrderId !== detail.header.id
+          || created.revisionId !== detail.header.currentRevisionId
+          || created.generationNumber !== shareTarget.generationNumber) {
+        throw new Error("STALE_CANONICAL_SHARE_RESPONSE");
+      }
       await Share.share({
         title: "작업지시서",
         message: buildWorkOrderShareMessage({
@@ -411,6 +449,7 @@ function WorkOrderDocumentWorkbenchBody({ detail, attachments, attachmentBusy, s
     } catch {
       setMessage("공유 링크를 만들지 못했습니다.");
     } finally {
+      shareBusyRef.current = false;
       setBusy(false);
     }
   }
@@ -468,25 +507,72 @@ function WorkOrderDocumentWorkbenchBody({ detail, attachments, attachmentBusy, s
     });
   }
 
-  function confirmRevoke(token: DocumentAccessTokenSummary) {
-    const embedded = token.tokenPurpose === "embedded_qr";
+  async function openCurrentShareLink(action: CurrentShareLinkActionModel) {
+    if (currentLinkActionBusyRef.current) return;
+    currentLinkActionBusyRef.current = true;
+    setBusy(true);
+    setMessage(null);
+    try {
+      await Linking.openURL(action.openUrl);
+    } catch {
+      setMessage("현재 공유 링크를 열지 못했습니다.");
+    } finally {
+      currentLinkActionBusyRef.current = false;
+      setBusy(false);
+    }
+  }
+
+  function copyCurrentShareLink(action: CurrentShareLinkActionModel) {
+    if (currentLinkActionBusyRef.current) return;
+    Clipboard.setString(action.copyUrl);
+    setMessage("공유 링크를 복사했습니다.");
+  }
+
+  async function shareCurrentShareLink(action: CurrentShareLinkActionModel) {
+    if (currentLinkActionBusyRef.current) return;
+    currentLinkActionBusyRef.current = true;
+    setBusy(true);
+    setMessage(null);
+    try {
+      await Share.share({
+        title: "작업지시서",
+        message: buildWorkOrderShareMessage({
+          productName: detail.header.productName,
+          totalQuantity: detail.header.totalQuantity,
+          dueDate: detail.header.dueDate,
+          viewerUrl: action.nativeShareUrl,
+        }),
+      });
+    } catch {
+      setMessage("현재 공유 링크를 공유하지 못했습니다.");
+    } finally {
+      currentLinkActionBusyRef.current = false;
+      setBusy(false);
+    }
+  }
+
+  function confirmRevokeCurrentShare(action: CurrentShareLinkActionModel) {
     requestWaflDecision({
-      title: embedded ? "인쇄된 QR을 해제합니다" : "공유 링크를 해제합니다",
-      helper: embedded ? "해제하면 이 PDF에 인쇄된 QR은 다시 사용할 수 없습니다." : "해제된 링크는 다시 열 수 없습니다.",
+      title: "공유 링크를 폐기합니다",
+      helper: "현재 외부 공유 링크만 사용할 수 없게 됩니다. PDF 자체는 삭제되지 않습니다.",
       cancelAccessibilityLabel: "문서 접근 유지",
       confirmAccessibilityLabel: "문서 접근 해제",
       safeOptionLabel: "유지",
       actionOptionLabel: "해제",
       destructive: true,
-      onConfirm: () => void (async () => {
-          if (!generated) return;
+        onConfirm: () => void (async () => {
+          if (!generated || generated.id !== action.generatedDocumentId || revokeBusyRef.current) return;
+          revokeBusyRef.current = true;
           setBusy(true);
           try {
-            await revokeDocumentAccessToken(generated.id, token.tokenId);
+            await revokeDocumentAccessToken(generated.id, action.tokenId);
+            shareRequestRef.current = null;
             await loadTokensForCurrentDocument(generated);
+            setMessage("현재 공유 링크를 폐기했습니다. PDF는 그대로 유지됩니다.");
           } catch {
             setMessage("문서 접근을 해제하지 못했습니다.");
           } finally {
+            revokeBusyRef.current = false;
             setBusy(false);
           }
         })(),
@@ -703,12 +789,22 @@ function WorkOrderDocumentWorkbenchBody({ detail, attachments, attachmentBusy, s
                   <View style={styles.tokenIdentity}>
                     <Link2 color={WAFL_THEME.color.deepNavy} size={17} />
                     <View style={styles.flex}>
-                      <Text style={styles.tokenTitle}>공유 링크</Text>
+                      <Text style={styles.tokenTitle}>{token.isMakerCurrentShare ? "현재 공유 링크" : "기존 공유 링크"}</Text>
                       <Text style={styles.tokenStatus}>{token.status === "active" ? "사용 중" : token.status === "revoked" ? "해제됨" : "만료됨"}</Text>
+                      {currentShareActions?.tokenId === token.tokenId ? <Text numberOfLines={1} style={styles.tokenUrlStatus}>공개 링크 준비됨</Text> : null}
                       <DocumentAccessMetadata token={token} />
                     </View>
                   </View>
-                  {token.status === "active" ? <CompactAction disabled={busy} emphasis="danger" icon={Link2} label="해제" onPress={() => confirmRevoke(token)} /> : null}
+                  {currentShareActions?.tokenId === token.tokenId ? (
+                    <View style={styles.currentLinkControls} testID="current-share-link-actions">
+                      <View style={styles.currentLinkActions}>
+                        <CompactAction disabled={busy} icon={ExternalLink} label="열기" onPress={() => void openCurrentShareLink(currentShareActions)} />
+                        <CompactAction disabled={busy} icon={Copy} label="링크 복사" onPress={() => copyCurrentShareLink(currentShareActions)} />
+                        <CompactAction disabled={busy} icon={Share2} label="공유하기" onPress={() => void shareCurrentShareLink(currentShareActions)} />
+                      </View>
+                      <CompactAction disabled={busy} emphasis="danger" icon={Link2} label="공유 링크 폐기" onPress={() => confirmRevokeCurrentShare(currentShareActions)} />
+                    </View>
+                  ) : null}
                 </View>
               ))}
             </View>
@@ -875,10 +971,13 @@ const styles = StyleSheet.create({
   secondaryControlTitle: { alignItems: "center", flexDirection: "row", gap: 6 },
   secondaryControlToggle: { color: WAFL_THEME.color.deepNavy, fontFamily: WAFL_FONTS.bold, fontSize: 11 },
   accessRows: { gap: 2 },
-  tokenRow: { alignItems: "center", borderTopColor: "#ece4da", borderTopWidth: 1, flexDirection: "row", gap: 8, justifyContent: "space-between", paddingVertical: 9 },
+  tokenRow: { alignItems: "stretch", borderTopColor: "#ece4da", borderTopWidth: 1, gap: 8, paddingVertical: 9 },
   tokenIdentity: { alignItems: "center", flex: 1, flexDirection: "row", gap: 8, minWidth: 0 },
   tokenTitle: { color: "#433a32", fontFamily: WAFL_FONTS.bold, fontSize: 12 },
   tokenStatus: { color: WAFL_THEME.color.readOnly, fontFamily: WAFL_FONTS.semibold, fontSize: 10, marginTop: 2 },
+  tokenUrlStatus: { color: WAFL_THEME.color.deepNavy, fontFamily: WAFL_FONTS.medium, fontSize: 10, marginTop: 2 },
+  currentLinkControls: { alignItems: "flex-start", gap: 7, width: "100%" },
+  currentLinkActions: { flexDirection: "row", flexWrap: "wrap", gap: 7, width: "100%" },
   accessMetadata: { gap: 2, marginTop: 6 },
   accessMetadataRow: { alignItems: "baseline", flexDirection: "row", gap: 8, minHeight: 18 },
   accessMetadataLabel: { color: WAFL_THEME.color.readOnly, fontFamily: WAFL_FONTS.medium, fontSize: 10, width: 60 },

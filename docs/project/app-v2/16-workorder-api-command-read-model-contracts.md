@@ -1,5 +1,34 @@
 # WAFL v2 WorkOrder API, Command, and Read Model Contracts
 
+## Alpha.80 Stage 2 current Share target read model
+
+`GET /api/v2/work-orders/documents/{documentId}/access-tokens/current` is a private/no-store authenticated Maker read,
+requires `workorder.update`, and returns either the one active canonical target or `null`. The service reuses the Stage 2
+database-clock/current-lineage classification and exact healthy current WorkOrder Revision/newest generation checks.
+The DTO includes only token, document, WorkOrder, Revision, generation, URL, and expiry identity. It never creates,
+rotates, revokes, or persists a credential. The mobile action model additionally requires the target token to match the
+authoritative active `isMakerCurrentShare` summary before enabling open/copy/native-share/revoke.
+
+## Alpha.80 Stage 2 canonical Maker Share lifecycle
+
+- Canonical active selection uses database time and the deterministic lineage head; legacy manual rows cannot become the
+  Maker-current link.
+- Revoke validates tenant/company, current WorkOrder Revision, newest healthy generated artifact, and exact active head
+  under one advisory lock. Terminal replay is idempotent and event-once; generated-document and R2 mutation are zero.
+- A later explicit Share derives one child credential from the exact predecessor token UUID, stores the lineage edge in
+  `rotated_from_token_id`, and never clears a terminal timestamp. Public terminal outcomes remain generic not-found.
+
+## Alpha.80 Stage 1 canonical Maker-current Share contract
+
+The existing access-token API remains the only Share owner. Global `manual_share` compatibility permits intentional
+recipient/history rows, while Maker's current Share action uses one deterministic, hash-only HMAC credential for the
+exact generated document. Creation requires tenant company, current WorkOrder Revision, newest attempt across every
+lifecycle, `generated`/non-terminal state, exact immutable object metadata, and a healthy PDF body. A company+document
+advisory lock serializes same/different idempotency keys; an existing active canonical credential is reused and only a
+new credential appends `pdf.shared`. The response repeats server-derived WorkOrder, Revision, document, and generation
+identity. No request accepts company or storage key. Public redemption remains exact-document and immutable; historical
+links never become mutable current-Recipe aliases. Expiry/revoke/replacement stays owned by Alpha.80 Stage 2.
+
 ## Alpha.78 saved Sketch PDF snapshot read boundary
 
 Draft PDF Preview and issued PDF generation read `work_order_drawings` only by authenticated tenant, exact WorkOrder,
